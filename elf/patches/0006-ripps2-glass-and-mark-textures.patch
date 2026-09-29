@@ -1,0 +1,49 @@
+diff --git a/Makefile b/Makefile
+index 36c3264..2b6730b 100644
+--- a/Makefile
++++ b/Makefile
+@@ -163,6 +163,9 @@ PNG_ASSETS = load0 load1 load2 load3 load4 load5 load6 load7 usb usb_bd ilk_bd \
+ 	Index_0 Index_1 Index_2 Index_3 Index_4 fav fav_mark R3 L3 L1 R1 PS1 PS2 case_overlay
+ 	# unused icons - up down l2 r2
+ 
++# RIPPS2: glass info panel and PS2 selector mark (gfx/ripps2_*.png, copied in by RIPPS2's build.sh)
++PNG_ASSETS += ripps2_glass ripps2_mark
++
+ # The RA cover mark is embedded ONLY in the RA flavour: the default build has no
+ # RA_MARK enum member and no table row for it, so embedding the bitmap there would
+ # be dead weight and would break the "default ELF is unaffected" acceptance gate.
+diff --git a/include/textures.h b/include/textures.h
+index 840f6cd..404d7c6 100644
+--- a/include/textures.h
++++ b/include/textures.h
+@@ -120,6 +120,8 @@ enum INTERNAL_TEXTURE {
+     UDPFS_ICON,
+     L1_ICON, // Settings peer-page navigation hint
+     R1_ICON, // Settings peer-page navigation hint
++    RIPPS2_GLASS, // RIPPS2: glass info panel (theme name "ripps2_glass")
++    RIPPS2_MARK,  // RIPPS2: PS2 selector mark (theme name "ripps2_mark")
+ #ifdef RETROACHIEVEMENTS
+     // RA mark over a tracked game's cover (theme override "ra_mark"). Appended last:
+     // texId is positional.
+diff --git a/src/textures.c b/src/textures.c
+index c05f5dc..fd850da 100644
+--- a/src/textures.c
++++ b/src/textures.c
+@@ -111,6 +111,8 @@ extern void *PS2_png;
+ extern void *case_overlay_png;
+ #ifdef RETROACHIEVEMENTS
+ extern void *ra_mark_png;
++extern void *ripps2_glass_png;
++extern void *ripps2_mark_png;
+ #endif
+ 
+ // Not related to screen size, just to limit at some point
+@@ -273,6 +275,8 @@ static texture_t internalDefault[TEXTURES_COUNT] = {
+     {UDPFS_ICON, "udp_fs", &udp_fs_png},
+     {L1_ICON, "L1", &L1_png},
+     {R1_ICON, "R1", &R1_png},
++    {RIPPS2_GLASS, "ripps2_glass", &ripps2_glass_png},
++    {RIPPS2_MARK, "ripps2_mark", &ripps2_mark_png},
+ #ifdef RETROACHIEVEMENTS
+     // Positional: guarded by the same #ifdef as RA_MARK in enum INTERNAL_TEXTURE. Without
+     // this row TEXTURES_COUNT grows but the initialiser does not, leaving the last slot
