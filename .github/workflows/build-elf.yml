@@ -3,7 +3,7 @@ name: Build RIPPS2.elf
 on:
   push:
     branches: [main]
-    paths: ["elf/**", ".github/workflows/build-elf.yml"]
+    paths: ["elf/**", "assets/master.ttf", ".github/workflows/build-elf.yml"]
   workflow_dispatch:
 
 concurrency:

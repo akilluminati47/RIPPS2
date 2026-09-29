@@ -1,0 +1,117 @@
+diff --git a/Makefile b/Makefile
+index 83ff4ef..54d9624 100644
+--- a/Makefile
++++ b/Makefile
+@@ -184,7 +184,7 @@ AUDIO_OBJS =	boot.o cancel.o confirm.o cursor.o message.o transition.o bd_connec
+ # icon_sys.o + save_icn.o are the memory-card browser save icon for the settings folder.
+ # icon.sys names list.icn, copy.icn and del.icn; all three are the same artwork, so ONE blob is
+ # embedded and util.c writes it out under all three names (see saveIconName in src/util.c).
+-MISC_OBJS =	icon_sys.o save_icn.o icon_sys_A.o icon_sys_J.o icon_sys_C.o conf_theme_OPL.o theme_coverflow.o
++MISC_OBJS =	icon_sys.o save_icn.o icon_sys_A.o icon_sys_J.o icon_sys_C.o conf_theme_OPL.o theme_coverflow.o ripps2_font.o
+ 
+ TRANSLATIONS = Albanian Arabic Bulgarian Cebuano Croatian Czech Danish Dutch Filipino French \
+ 	Galician German Greek Hungarian Indonesian Italian Japanese Korean Laotian Persian Polish Portuguese \
+@@ -1102,6 +1102,10 @@ $(EE_ASM_DIR)conf_theme_OPL.c: misc/conf_theme_OPL.cfg | $(EE_ASM_DIR)
+ $(EE_ASM_DIR)theme_coverflow.c: misc/theme_coverflow.cfg | $(EE_ASM_DIR)
+ 	$(BIN2C) $< $@ $(*F)_cfg
+ 
++# RIPPS2: theme font compiled in (misc/ripps2_font.ttf is copied in by RIPPS2's build.sh)
++$(EE_ASM_DIR)ripps2_font.c: misc/ripps2_font.ttf | $(EE_ASM_DIR)
++	$(BIN2C) $< $@ $(*F)_raw
++
+ $(EE_ASM_DIR)boot.c: audio/boot.adp | $(EE_ASM_DIR)
+ 	$(BIN2C) $< $@ $(*F)_adp
+ 
+diff --git a/src/fntsys.c b/src/fntsys.c
+index 21d9325..1069d5c 100644
+--- a/src/fntsys.c
++++ b/src/fntsys.c
+@@ -19,6 +19,8 @@
+ 
+ extern void *poeveticanew_raw;
+ extern int size_poeveticanew_raw;
++extern void *ripps2_font_raw;
++extern int size_ripps2_font_raw;
+ 
+ /// Maximal count of atlases per font
+ #define ATLAS_MAX    4
+@@ -273,6 +275,11 @@ static void *fntReadData(char *path, int *bufferSize, int *owned)
+         *bufferSize = size_poeveticanew_raw;
+         return &poeveticanew_raw;
+     }
++    // RIPPS2: the theme font compiled into the ELF, so the built-in theme needs no files
++    if (strcmp(path, "builtin:ripps2") == 0) {
++        *bufferSize = size_ripps2_font_raw;
++        return &ripps2_font_raw;
++    }
+ 
+     buffer = readFile(path, -1, bufferSize);
+     if (!buffer) {
+diff --git a/src/opl.c b/src/opl.c
+index 3df4259..dbade34 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -4863,21 +4863,22 @@ void deinit(int exception, int modeSelected)
+ 
+ void setDefaultColors(void)
+ {
+-    gDefaultBgColor[0] = 0x28;
+-    gDefaultBgColor[1] = 0xC5;
+-    gDefaultBgColor[2] = 0xF9;
++    // RIPPS2 palette: deep PS2 blue, dimmed rows, the selection in white
++    gDefaultBgColor[0] = 0x12;
++    gDefaultBgColor[1] = 0x2A;
++    gDefaultBgColor[2] = 0x7A;
+ 
+-    gDefaultTextColor[0] = 0xFF;
+-    gDefaultTextColor[1] = 0xFF;
+-    gDefaultTextColor[2] = 0xFF;
++    gDefaultTextColor[0] = 0x8F;
++    gDefaultTextColor[1] = 0xA4;
++    gDefaultTextColor[2] = 0xD8;
+ 
+-    gDefaultSelTextColor[0] = 0x00;
+-    gDefaultSelTextColor[1] = 0xAE;
++    gDefaultSelTextColor[0] = 0xFF;
++    gDefaultSelTextColor[1] = 0xFF;
+     gDefaultSelTextColor[2] = 0xFF;
+ 
+-    gDefaultUITextColor[0] = 0x58;
+-    gDefaultUITextColor[1] = 0x68;
+-    gDefaultUITextColor[2] = 0xB4;
++    gDefaultUITextColor[0] = 0x9F;
++    gDefaultUITextColor[1] = 0xB4;
++    gDefaultUITextColor[2] = 0xE8;
+ 
+     // Seeded from the general text colour: out of the box titles look exactly as before, and
+     // only diverge once the user actually picks something in the new row.
+@@ -5050,9 +5051,9 @@ static void setDefaults(void)
+     // every device wait for the worst device's constraint is not a trade worth a default.
+     gArtDelay = 0;
+     gEnableFolderNav = 0;
+-    gDefaultPlasBlendColor[0] = 0x00;
+-    gDefaultPlasBlendColor[1] = 0x00;
+-    gDefaultPlasBlendColor[2] = 0x00;
++    gDefaultPlasBlendColor[0] = 0x01; // RIPPS2: near-black navy low end
++    gDefaultPlasBlendColor[1] = 0x03;
++    gDefaultPlasBlendColor[2] = 0x0D;
+     gEnableILK = 0;
+     gEnableMX4SIO = 0;
+     gEnableBdmHDD = 0;
+diff --git a/src/themes.c b/src/themes.c
+index eb50b09..f4113e1 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -3193,7 +3193,11 @@ static void thmLoadFonts(config_set_t *themeConfig, const char *themePath, theme
+         char fullPath[128];
+         const char *fntFile;
+         if (configGetStr(themeConfig, fntKey, &fntFile)) {
+-            snprintf(fullPath, sizeof(fullPath), "%s%s", themePath, fntFile);
++            // RIPPS2: "builtin:" fonts live in the ELF, not beside the theme
++            if (strncmp(fntFile, "builtin:", 8) == 0)
++                snprintf(fullPath, sizeof(fullPath), "%s", fntFile);
++            else
++                snprintf(fullPath, sizeof(fullPath), "%s%s", themePath, fntFile);
+ 
+             int fontSize;
+             char sizeKey[64];

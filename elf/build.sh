@@ -24,6 +24,11 @@ for p in "$HERE"/patches/*.patch; do
   git -C "$SRC" apply --whitespace=nowarn "$p"
 done
 
+# Embedded RIPPS2 assets: our layout becomes the built-in theme, and the menu font
+# is compiled in (patch 0001 loads it as builtin:ripps2)
+cp -f "$HERE/theme/conf_theme.cfg" "$SRC/misc/conf_theme_OPL.cfg"
+cp -f "$ROOT/assets/master.ttf" "$SRC/misc/ripps2_font.ttf"
+
 cd "$SRC"
 sh .github/scripts/install_coherent_mmce.sh
 make clean
