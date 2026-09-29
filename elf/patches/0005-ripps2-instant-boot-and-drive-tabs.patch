@@ -1,0 +1,145 @@
+diff --git a/src/gui.c b/src/gui.c
+index ae7f205..5276f0a 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -3809,8 +3809,8 @@ static void guiRenderGreeting(int alpha)
+ // shows the splash, never a half-drawn menu.
+ void guiRenderGreetingScreen(void)
+ {
++    // RIPPS2: no logo while the config loads, just the plain background frame
+     guiStartFrame();
+-    guiRenderGreeting(0x80);
+     guiEndFrame();
+ }
+ 
+@@ -4363,53 +4363,17 @@ static void guiShow()
+ 
+ void guiIntroLoop(void)
+ {
+-    int greetingAlpha = 0x80;
+-    const int fadeFrameCount = 0x80 / 2;
+-    const int fadeDuration = (fadeFrameCount * 1000) / 55; // Average between 50 and 60 fps
+-    // Elapsed, not an absolute deadline: this comparison is the ONLY exit from the loop below,
+-    // so a clock() wrap between arming and testing it parks OPL on the boot splash for up to
+-    // ~71 minutes with no timeout and no escape. clock() is not reset when OPL is re-launched
+-    // from a game, so a console that has been on for a while rolls this dice on every boot.
+-    clock_t tFadeStart = 0;
+-    clock_t tFadeDelay = 0;
+-    int tFadeArmed = 0;
+-
+-    // oplIsBootInProgress() can become false while background startup work is still queued. That
+-    // is correct for runtime overlays, but the animated greeting owns the entire intro lifecycle.
++    // RIPPS2: no boot splash, no fade and no boot jingle. The loop stays because it pumps frames
++    // and deferred ops while the background init finishes; it draws nothing over the plain
++    // background and hands over to the main UI on the first frame after init completes.
+     gIntroSplashActive = 1;
+     while (!endIntro) {
+         guiStartFrame();
+ 
+-        if (greetingAlpha < 0x80)
++        if (gInitComplete) {
+             guiShow();
+-
+-        if (greetingAlpha > 0)
+-            guiRenderGreeting(greetingAlpha);
+-
+-        // Initialize boot sound
+-        if (gInitComplete && !tFadeArmed && gEnableBootSND) {
+-            // Start playing sound
+-            sfxPlay(SFX_BOOT);
+-            // Calculate transition delay
+-            tFadeStart = clock();
+-            // CLAMP AT ZERO. sfxGetSoundDuration returns 0 when audsrv failed to initialise, and a
+-            // custom theme's boot sound can legitimately be shorter than the fade -- either way this
+-            // subtraction goes negative, and clock_t is UNSIGNED LONG, so the cast turns ~-1163 into
+-            // ~4.29 billion and the wait below becomes ~71 minutes on the boot splash with no exit.
+-            // The absolute-deadline form this replaced was accidentally immune (a deadline in the
+-            // past reads as already elapsed); converting it to the elapsed form is what exposed it.
+-            int fadeDelayMs = sfxGetSoundDuration(SFX_BOOT) - fadeDuration;
+-            if (fadeDelayMs < 0)
+-                fadeDelayMs = 0;
+-            tFadeDelay = (clock_t)fadeDelayMs * (CLOCKS_PER_SEC / 1000);
+-            tFadeArmed = 1;
+-        }
+-
+-        if (gInitComplete && (clock() - tFadeStart) >= tFadeDelay)
+-            greetingAlpha -= 2;
+-
+-        if (greetingAlpha <= 0)
+             endIntro = 1;
++        }
+ 
+         guiDrawOverlays();
+ 
+diff --git a/src/menusys.c b/src/menusys.c
+index 7697ee6..968a665 100644
+--- a/src/menusys.c
++++ b/src/menusys.c
+@@ -1793,9 +1793,9 @@ void menuHandleInputMain()
+     int viewPending = support != NULL && libViewPending(support->mode);
+ 
+     if (getKey(KEY_LEFT)) {
+-        menuNavigateLeft();
++        menuPrevPage(); // RIPPS2: paging moved from L1/R1 to Left/Right
+     } else if (getKey(KEY_RIGHT)) {
+-        menuNavigateRight();
++        menuNextPage();
+     } else if (getKey(KEY_UP)) {
+         menuNavigateUp();
+     } else if (getKey(KEY_DOWN)) {
+@@ -1819,10 +1819,10 @@ void menuHandleInputMain()
+     } else if (getKeyOn(KEY_SELECT)) {
+         if (!viewPending)
+             selected_item->item->refresh(selected_item->item);
+-    } else if (getKey(KEY_L1)) {
+-        menuPrevPage();
+-    } else if (getKey(KEY_R1)) {
+-        menuNextPage();
++    } else if (getKeyOn(KEY_L1)) {
++        menuNavigateLeft(); // RIPPS2: L1/R1 switch drives, like the orb formations
++    } else if (getKeyOn(KEY_R1)) {
++        menuNavigateRight();
+     } else if (getKeyOn(KEY_L2)) { // home
+         menuFirstPage();
+     } else if (getKeyOn(KEY_R2)) { // end
+@@ -1881,11 +1881,11 @@ void menuHandleInputInfo()
+         menuPrevV();
+     } else if (getKey(KEY_DOWN)) {
+         menuNextV();
+-    } else if (getKey(KEY_LEFT)) {
+-        // RIPPS2: tabbing away from the info page lands on that tab's game list
++    } else if (getKeyOn(KEY_L1)) {
++        // RIPPS2: L1/R1 switch drives; leaving the info page lands on that drive's game list
+         menuNavigateLeft();
+         guiSwitchScreen(GUI_SCREEN_MAIN);
+-    } else if (getKey(KEY_RIGHT)) {
++    } else if (getKeyOn(KEY_R1)) {
+         menuNavigateRight();
+         guiSwitchScreen(GUI_SCREEN_MAIN);
+     } else if (getKeyOn(KEY_CIRCLE)) {
+@@ -1893,9 +1893,9 @@ void menuHandleInputInfo()
+             guiSwitchScreen(GUI_SCREEN_MAIN);
+         else
+             selected_item->item->execCircle(selected_item->item);
+-    } else if (getKey(KEY_L1)) {
+-        menuPrevPage();
+-    } else if (getKey(KEY_R1)) {
++    } else if (getKey(KEY_LEFT)) {
++        menuPrevPage(); // RIPPS2: paging moved from L1/R1 to Left/Right
++    } else if (getKey(KEY_RIGHT)) {
+         menuNextPage();
+     } else if (getKeyOn(KEY_L2)) {
+         menuFirstPage();
+diff --git a/src/opl.c b/src/opl.c
+index 26590b6..65d3b28 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -4989,7 +4989,7 @@ static void setDefaults(void)
+     gXSensitivity = 1;
+     gYSensitivity = 1;
+ 
+-    gBDMStartMode = START_MODE_AUTO; // RIPPS2: games show up at boot with no setup
++    gBDMStartMode = START_MODE_MANUAL; // RIPPS2: drives start on request, so boot stays instant
+     gHDDStartMode = START_MODE_DISABLED;
+     gETHStartMode = START_MODE_DISABLED;
+     gAPPStartMode = START_MODE_DISABLED;
