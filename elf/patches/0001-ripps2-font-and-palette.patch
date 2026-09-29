@@ -99,7 +99,7 @@ index 3df4259..dbade34 100644
      gEnableMX4SIO = 0;
      gEnableBdmHDD = 0;
 diff --git a/src/themes.c b/src/themes.c
-index eb50b09..f4113e1 100644
+index eb50b09..830c731 100644
 --- a/src/themes.c
 +++ b/src/themes.c
 @@ -3193,7 +3193,11 @@ static void thmLoadFonts(config_set_t *themeConfig, const char *themePath, theme
@@ -115,3 +115,14 @@ index eb50b09..f4113e1 100644
  
              int fontSize;
              char sizeKey[64];
+@@ -3340,8 +3344,8 @@ static int thmLoad(const char *themePath)
+ 
+     // before loading the element definitions, we have to have the fonts prepared
+     // for that, we load the fonts and a translation table
+-    if (themePath)
+-        thmLoadFonts(themeConfig, themePath, newT);
++    // RIPPS2: the built-in theme loads fonts too (its builtin: fonts come from the ELF)
++    thmLoadFonts(themeConfig, themePath ? themePath : "", newT);
+ 
+     int i = 1, j;
+     snprintf(path, sizeof(path), "main0");
