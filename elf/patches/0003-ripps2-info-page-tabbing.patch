@@ -1,0 +1,18 @@
+diff --git a/src/menusys.c b/src/menusys.c
+index 919a8bf..3fa00d3 100644
+--- a/src/menusys.c
++++ b/src/menusys.c
+@@ -1874,6 +1874,13 @@ void menuHandleInputInfo()
+         menuPrevV();
+     } else if (getKey(KEY_DOWN)) {
+         menuNextV();
++    } else if (getKey(KEY_LEFT)) {
++        // RIPPS2: tabbing away from the info page lands on that tab's game list
++        menuNavigateLeft();
++        guiSwitchScreen(GUI_SCREEN_MAIN);
++    } else if (getKey(KEY_RIGHT)) {
++        menuNavigateRight();
++        guiSwitchScreen(GUI_SCREEN_MAIN);
+     } else if (getKeyOn(KEY_CIRCLE)) {
+         if (gSelectButton == KEY_CROSS)
+             guiSwitchScreen(GUI_SCREEN_MAIN);
