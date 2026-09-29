@@ -1,0 +1,41 @@
+/* Shared top menu: LAUNCH DISC | STORAGE | MEMORY FILES, set in the site font and
+   gently floating. Labels are localized by menu.js; any label the font cannot draw
+   falls back as a whole to the menu font. */
+@font-face { font-family: "Master"; font-display: swap;
+  src: url("assets/master.ttf") format("truetype"); }
+@font-face { font-family: "Albert Sans"; font-weight: 300; font-display: swap;
+  src: url("vendor/fonts/albert-sans-300.woff2") format("woff2"); }
+@font-face { font-family: "Albert Sans"; font-weight: 400; font-display: swap;
+  src: url("vendor/fonts/albert-sans-400.woff2") format("woff2"); }
+
+:root { --menu-font: "SST", "SST W01 Light", "SST W01 Roman", "Albert Sans", "Segoe UI", system-ui, sans-serif; }
+
+/* Center column holds STORAGE so it sits dead center whatever the side label widths */
+.options { position: fixed; top: 16px; left: 0; right: 0; z-index: 10; padding: 0 16px;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline;
+  column-gap: clamp(18px, 5vw, 72px);
+  font-family: "Master", var(--menu-font); font-size: clamp(.95rem, 2.3vw, 1.9rem);
+  text-transform: uppercase; letter-spacing: .06em; line-height: 1.2; }
+.options .fb { font-family: var(--menu-font); letter-spacing: .12em; font-weight: 400; }
+
+.options a { color: #dce7ff; text-decoration: none; white-space: nowrap; outline: none; opacity: .5;
+  -webkit-tap-highlight-color: transparent;
+  text-shadow: 0 0 10px rgba(110, 160, 255, .45);
+  transition: opacity .4s ease, text-shadow .4s ease, color .4s ease; }
+.options a:first-child { justify-self: end; }
+.options a:last-child { justify-self: start; }
+.options a:hover, .options a:focus-visible { opacity: .85; }
+.options a[aria-current="page"] { opacity: 1; color: #f4f8ff;
+  text-shadow: 0 0 6px rgba(200, 222, 255, .9), 0 0 22px rgba(110, 160, 255, .8); }
+
+/* Floating: menu.js drifts each word on its own phase, in step with the selector */
+.options .label { display: inline-block; will-change: transform; }
+
+/* Selector: the PS2 mark under the chosen word. Sized in em, so it scales with the
+   menu text and looks the same at every resolution. menu.js positions and flies it. */
+.options .selector { position: absolute; left: 0; top: 0; height: 1em; width: auto;
+  pointer-events: none; user-select: none; transform-origin: 50% 50%; will-change: transform, opacity;
+  filter: drop-shadow(0 0 .12em rgba(90, 160, 255, .75)); }
+.options .selector.ghost { opacity: 0; filter: blur(.02em); }
+
+@media (max-height: 500px) { .options { top: 10px; font-size: clamp(.85rem, 2vw, 1.3rem); } }

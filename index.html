@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RIPPS2</title>
+<link rel="stylesheet" href="menu.css">
+<style>
+  :root { --bg: #03040b; --ink: #e8eeff; --muted: #9aa6c8; }
+  html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--ink);
+    font-family: system-ui, "Segoe UI", sans-serif; }
+
+  /* Drop-in hero: the canvas sits behind whatever is inside .hero-content */
+  .hero { position: relative; height: 100vh; height: 100dvh; min-height: 300px;
+    display: grid; place-items: center; overflow: hidden; cursor: crosshair; touch-action: pan-y;
+    background: radial-gradient(ellipse at 50% 70%, #0b1a4a 0%, var(--bg) 70%); }
+  .hero canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block;
+    opacity: 0; transition: opacity 1.2s ease; }
+  .hero canvas[data-pillars="ready"] { opacity: 1; }
+  .arrived .hero canvas { transition: none; }
+  .hero::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+    background:
+      linear-gradient(to bottom, transparent 60%, var(--bg) 100%),
+      radial-gradient(ellipse at center, transparent 45%, rgba(3, 4, 11, .75) 100%); }
+
+  /* Image slots: drop your own PNGs into assets/. A missing file simply disappears. */
+  .hero-content { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center;
+    gap: 4vh; padding: 0 16px; pointer-events: none; transform: translateY(-8vh); }
+  .hero-content img { display: block; height: auto; user-select: none; -webkit-user-drag: none; }
+  .console { max-width: min(520px, 72vw); max-height: 34vh;
+    filter: drop-shadow(0 18px 30px rgba(0, 0, 0, .7)) drop-shadow(0 0 26px rgba(70, 120, 255, .3));
+    -webkit-box-reflect: below 2px linear-gradient(transparent 70%, rgba(255, 255, 255, .14));
+    animation: float 7s ease-in-out infinite; }
+  @keyframes float { 50% { transform: translateY(-10px); } }
+  @media (prefers-reduced-motion: reduce) { .console { animation: none; } }
+
+  /* Phones on their side: tighter images so both fit above the towers */
+  @media (max-height: 500px) {
+    .hero-content { gap: 2vh; transform: translateY(-6vh); }
+    .console { max-height: 30vh; }
+  }
+
+</style>
+</head>
+<body>
+
+<nav class="options" aria-label="Sections">
+  <a data-item="launch" href="index.html#launch-disc"><span class="label">Launch Disc</span></a>
+  <a data-item="storage" href="index.html#storage"><span class="label">Storage</span></a>
+  <a data-item="memory" href="orbs.html"><span class="label">Memory Files</span></a>
+</nav>
+
+<section class="hero" id="hero">
+  <canvas id="pillars" aria-hidden="true"></canvas>
+  <div class="hero-content">
+    <img class="console" src="assets/console.png" alt="Console" onerror="this.remove()">
+  </div>
+</section>
+
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "./vendor/three.module.js",
+    "three/addons/": "./vendor/addons/"
+  }
+}
+</script>
+<script type="module">
+  import { createPillars } from "./pillars.js";
+  import { initMenu } from "./menu.js";
+
+  const hero = document.getElementById("hero");
+
+  // Launch Disc sparks the field: two blasts straight into the center
+  let pillars;
+  const spark = () => { pillars.blast(); setTimeout(() => pillars.blast(), 220); };
+  const { arrived } = initMenu({ onLaunch: spark });
+
+  // Coming over from the orbs page skips the rise-up intro so the towers are already standing
+  if (arrived) document.documentElement.classList.add("arrived");
+  pillars = createPillars(document.getElementById("pillars"), {
+    palette: "cobalt",
+    interactTarget: hero,
+    startTime: arrived ? 6 : Number(new URLSearchParams(location.search).get("t")) || 0,
+  });
+  if (arrived === "launch") spark();
+
+</script>
+</body>
+</html>
