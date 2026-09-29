@@ -1,0 +1,39 @@
+name: Build RIPPS2.elf
+
+on:
+  push:
+    branches: [main]
+    paths: ["elf/**", ".github/workflows/build-elf.yml"]
+  workflow_dispatch:
+
+concurrency:
+  group: build-elf-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    # Same pinned toolchain RiptOPL's own pinned build uses
+    container: ps2dev/ps2dev@sha256:c64ae69c9817865ed98ff054e4ae5360b9e280ed952c97946bca95d9d35be995
+    steps:
+      # ps2dev images are Alpine and ship without git, which checkout and the build need
+      - name: Install host dependencies
+        run: |
+          apk add --no-cache bash make git zip unzip tar gzip xz python3 py3-pip py3-yaml \
+            gmp mpfr4 mpc1 perl cmake pkgconf coreutils findutils grep sed gawk diffutils
+
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Build
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          sh elf/build.sh
+
+      - name: Upload RIPPS2.elf
+        uses: actions/upload-artifact@v6
+        with:
+          name: RIPPS2-elf
+          path: out/RIPPS2.elf
+          if-no-files-found: error
+          retention-days: 30
