@@ -28,6 +28,8 @@ done
 # is compiled in (patch 0001 loads it as builtin:ripps2)
 cp -f "$HERE/theme/conf_theme.cfg" "$SRC/misc/conf_theme_OPL.cfg"
 cp -f "$ROOT/assets/master.ttf" "$SRC/misc/ripps2_font.ttf"
+# The Memory Files ELF, compiled in and launched from RAM (patch 0004)
+cp -f "$HERE/embed/MEMORY_FILES.ELF" "$SRC/misc/ripps2_memfiles.elf"
 
 cd "$SRC"
 sh .github/scripts/install_coherent_mmce.sh
