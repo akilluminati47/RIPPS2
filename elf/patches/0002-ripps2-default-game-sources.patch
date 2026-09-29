@@ -1,0 +1,31 @@
+diff --git a/src/opl.c b/src/opl.c
+index dbade34..26590b6 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -4989,7 +4989,7 @@ static void setDefaults(void)
+     gXSensitivity = 1;
+     gYSensitivity = 1;
+ 
+-    gBDMStartMode = START_MODE_DISABLED;
++    gBDMStartMode = START_MODE_AUTO; // RIPPS2: games show up at boot with no setup
+     gHDDStartMode = START_MODE_DISABLED;
+     gETHStartMode = START_MODE_DISABLED;
+     gAPPStartMode = START_MODE_DISABLED;
+@@ -5002,7 +5002,7 @@ static void setDefaults(void)
+     gMMCEAckWaitCycles = 5;
+     gMMCEUseAlarms = 1;
+ 
+-    gEnableUSB = 0; // USB block device is opt-in, like the other BDM transports
++    gEnableUSB = 1; // RIPPS2: USB on by default (RiptOPL ships it opt-in)
+     // Visual GameID barcode ships OFF, matching fork commit cc2cdfed ("GameID defaults OFF"): the
+     // HDMI auto-profile latch is only verifiable on real GameID hardware, so it stays opt-in.
+     gApplyGameID = 0;
+@@ -5056,7 +5056,7 @@ static void setDefaults(void)
+     gDefaultPlasBlendColor[2] = 0x0D;
+     gEnableILK = 0;
+     gEnableMX4SIO = 0;
+-    gEnableBdmHDD = 0;
++    gEnableBdmHDD = 1; // RIPPS2: internal exFAT HDD on by default; iLink stays off (it breaks PCSX2)
+     gEnableUDPBD = 0;                  // the UDPBD BLOCK device stays opt-in
+     gNetBootProtocol = NET_BOOT_UDPBD; // default transport when network boot is enabled (back-compat)
+     // Unified network selector defaults to OFF. The reason is the NIC latch: every network stack
