@@ -1,0 +1,323 @@
+diff --git a/Makefile b/Makefile
+index 2b6730b..9a74f40 100644
+--- a/Makefile
++++ b/Makefile
+@@ -131,7 +131,7 @@ ifneq ($(GIT_TAG),latest)
+ endif
+ endif
+ 
+-FRONTEND_OBJS = ripps2.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o \
++FRONTEND_OBJS = ripps2.o ripps2ui.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o \
+ 		dia.o ioman.o texcache.o themes.o supportbase.o bdmsupport.o netsupport.o ethsupport.o httpcatalog.o httpsupport.o udpfssupport.o hddsupport.o zso.o lz4.o launchdiag.o \
+ 		appsupport.o mmcesupport.o artindex.o vcdsupport.o cuesupport.o libview.o retrogem.o folderbrowse.o gui.o guigame.o vmc_groups.o textures.o opl.o atlas.o nbns.o httpclient.o gsm.o cheatman.o sound.o ps2cnf.o tar.o
+ 
+diff --git a/include/gui.h b/include/gui.h
+index ede51ee..6540a83 100644
+--- a/include/gui.h
++++ b/include/gui.h
+@@ -63,6 +63,8 @@ extern int guiFrameId;
+ #define GUI_SCREEN_INFO      2
+ #define GUI_SCREEN_GAME_MENU 3
+ #define GUI_SCREEN_APP_MENU  4
++#define GUI_SCREEN_RIPPS2_LAUNCH 5 // RIPPS2: Launch Disc category
++#define GUI_SCREEN_RIPPS2_MEMORY 6 // RIPPS2: Memory Files category
+ 
+ void guiSwitchScreen(int target);
+ 
+diff --git a/include/ripps2.h b/include/ripps2.h
+index bc0b589..4308299 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -5,4 +5,24 @@
+ // returns < 0 (before touching anything) when the bundled image fails validation.
+ int ripps2LaunchMemoryFiles(void);
+ 
++// ---- Front end shell (ripps2ui.c): LAUNCH DISC | STORAGE | MEMORY FILES ----
++enum {
++    RIPPS2_CAT_LAUNCH = 0,
++    RIPPS2_CAT_STORAGE,
++    RIPPS2_CAT_MEMORY,
++    RIPPS2_CAT_COUNT
++};
++
++extern int gRipps2Category;  // current category; boots on Storage
++extern int gRipps2Formation; // Memory Files orb formation, switched with L1/R1
++
++void ripps2SetCategory(int cat);    // switch screens and fly the PS2 mark
++void ripps2StepCategory(int dir);   // -1 / +1, clamped at the ends
++void ripps2RenderCategoryBar(void); // the three labels plus the mark
++
++void ripps2HandleInputLaunch(void);
++void ripps2RenderLaunch(void);
++void ripps2HandleInputMemory(void);
++void ripps2RenderMemory(void);
++
+ #endif
+diff --git a/src/gui.c b/src/gui.c
+index 5276f0a..214f4cd 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -9,6 +9,7 @@
+ #include "include/diag.h" // gLastDeferredTimedOut -- a bounded wait that expired means the handler never ran
+ #include "include/renderman.h"
+ #include "include/menusys.h"
++#include "include/ripps2.h" // RIPPS2 category screens
+ #include "include/fntsys.h"
+ #include "include/ioman.h"
+ #include "include/lang.h"
+@@ -161,7 +162,10 @@ static gui_screen_handler_t screenHandlers[] = {{&menuHandleInputMain, &menuRend
+                                                 {&menuHandleInputMenu, &menuRenderMenu, 1},
+                                                 {&menuHandleInputInfo, &menuRenderInfo, 1},
+                                                 {&menuHandleInputGameMenu, &menuRenderGameMenu, 1},
+-                                                {&menuHandleInputAppMenu, &menuRenderAppMenu, 1}};
++                                                {&menuHandleInputAppMenu, &menuRenderAppMenu, 1},
++                                                // RIPPS2: the Launch Disc and Memory Files categories
++                                                {&ripps2HandleInputLaunch, &ripps2RenderLaunch, 1},
++                                                {&ripps2HandleInputMemory, &ripps2RenderMemory, 1}};
+ 
+ // default screen handler (menu screen)
+ static gui_screen_handler_t *screenHandler = &screenHandlers[GUI_SCREEN_MENU];
+diff --git a/src/menusys.c b/src/menusys.c
+index 968a665..9041f8f 100644
+--- a/src/menusys.c
++++ b/src/menusys.c
+@@ -1750,6 +1750,7 @@ void menuRenderMain(void)
+         // Page) derefs gTheme->itemsList->extended with no NULL check.
+         gTheme->itemsList = thmResolveItemsList(&gTheme->mainElems, gTheme->gamesItemsList, selected_item->item->icon_id);
+     }
++    ripps2RenderCategoryBar(); // RIPPS2: LAUNCH DISC | STORAGE | MEMORY FILES on top
+ }
+ 
+ // Coverflow rotates the nav axis on the MAIN screen only: Left/Right step through the
+@@ -1792,10 +1793,10 @@ void menuHandleInputMain()
+     item_list_t *support = selected_item != NULL && selected_item->item != NULL ? selected_item->item->userdata : NULL;
+     int viewPending = support != NULL && libViewPending(support->mode);
+ 
+-    if (getKey(KEY_LEFT)) {
+-        menuPrevPage(); // RIPPS2: paging moved from L1/R1 to Left/Right
+-    } else if (getKey(KEY_RIGHT)) {
+-        menuNextPage();
++    if (getKeyOn(KEY_LEFT)) {
++        ripps2StepCategory(-1); // RIPPS2: Left/Right switch categories (Launch Disc / Memory Files)
++    } else if (getKeyOn(KEY_RIGHT)) {
++        ripps2StepCategory(1);
+     } else if (getKey(KEY_UP)) {
+         menuNavigateUp();
+     } else if (getKey(KEY_DOWN)) {
+@@ -1868,6 +1869,7 @@ void menuRenderInfo(void)
+         menuRenderElements(menuGetInfoElems(list));
+         gTheme->itemsList = thmResolveItemsList(&gTheme->infoElems, gTheme->gamesItemsList, selected_item->item->icon_id);
+     }
++    ripps2RenderCategoryBar(); // RIPPS2: LAUNCH DISC | STORAGE | MEMORY FILES on top
+ }
+ 
+ void menuHandleInputInfo()
+@@ -1893,10 +1895,10 @@ void menuHandleInputInfo()
+             guiSwitchScreen(GUI_SCREEN_MAIN);
+         else
+             selected_item->item->execCircle(selected_item->item);
+-    } else if (getKey(KEY_LEFT)) {
+-        menuPrevPage(); // RIPPS2: paging moved from L1/R1 to Left/Right
+-    } else if (getKey(KEY_RIGHT)) {
+-        menuNextPage();
++    } else if (getKeyOn(KEY_LEFT)) {
++        ripps2StepCategory(-1); // RIPPS2: Left/Right switch categories, leaving the info page
++    } else if (getKeyOn(KEY_RIGHT)) {
++        ripps2StepCategory(1);
+     } else if (getKeyOn(KEY_L2)) {
+         menuFirstPage();
+     } else if (getKeyOn(KEY_R2)) {
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+new file mode 100644
+index 0000000..d979312
+--- /dev/null
++++ b/src/ripps2ui.c
+@@ -0,0 +1,188 @@
++/*
++  RIPPS2 front end shell: LAUNCH DISC | STORAGE | MEMORY FILES.
++
++  Storage is RiptOPL's own games list and info page; the other two categories are screens of
++  their own. The category bar is drawn on all of them, with the PS2 mark flying to the chosen
++  category: a swoop to a neighbour, a deeper dive with a coin flip when going end to end.
++  Left/Right switch categories everywhere; L1/R1 stay local to the page (drives on Storage,
++  formations on Memory Files). Start runs the page's action.
++
++  Coordinates are theme space (640 wide, gTheme->usedHeight tall), like the theme's elements.
++*/
++
++#include <time.h>
++#include <math.h>
++#include <stdio.h>
++
++#include "include/opl.h"
++#include "include/gui.h"
++#include "include/renderman.h"
++#include "include/fntsys.h"
++#include "include/themes.h"
++#include "include/textures.h"
++#include "include/pad.h"
++#include "include/system.h"
++#include "include/lang.h"
++#include "include/ripps2.h"
++
++int gRipps2Category = RIPPS2_CAT_STORAGE;
++
++static const char *categoryLabel[RIPPS2_CAT_COUNT] = {"LAUNCH DISC", "STORAGE", "MEMORY FILES"};
++static const int categoryX[RIPPS2_CAT_COUNT] = {128, 320, 512};
++
++#define BAR_Y        30
++#define MARK_Y       50
++#define MARK_W       76
++#define MARK_H       13
++#define COLOR_LIT    GS_SETREG_RGBA(0xFF, 0xFF, 0xFF, 0x80)
++#define COLOR_DIM    GS_SETREG_RGBA(0x7A, 0x8C, 0xBA, 0x80)
++#define COLOR_SOFT   GS_SETREG_RGBA(0xCE, 0xD9, 0xF5, 0x80)
++#define COLOR_TEX    GS_SETREG_RGBA(0x80, 0x80, 0x80, 0x80)
++
++// Memory Files orb formations (the orbs themselves arrive with the native renderer)
++static const char *formationName[] = {
++    "BROWSER ORBIT", "BORROMEAN RINGS", "TORUS ORBIT", "ICOSAHEDRON", "DOUBLE HELIX", "STRANGE ATTRACTOR",
++    "TREFOIL KNOT", "M\xD6" "BIUS STRIP", "KLEIN BOTTLE", "GOLDEN SPIRAL", "LISSAJOUS", "SEVEN-POINT STAR"};
++#define FORMATION_COUNT ((int)(sizeof(formationName) / sizeof(formationName[0])))
++int gRipps2Formation = 0;
++
++// ---- The flying PS2 mark ----
++static int flyFrom = RIPPS2_CAT_STORAGE;
++static int flyTo = RIPPS2_CAT_STORAGE;
++static clock_t flyStart = 0;
++static float flyDuration = 0.0f; // seconds; 0 = resting
++
++static float easeInOutCubic(float x)
++{
++    if (x < 0.5f)
++        return 4.0f * x * x * x;
++    float k = -2.0f * x + 2.0f;
++    return 1.0f - k * k * k / 2.0f;
++}
++
++void ripps2RenderCategoryBar(void)
++{
++    int i;
++    int font = gTheme->fonts[2];
++
++    for (i = 0; i < RIPPS2_CAT_COUNT; i++)
++        fntRenderString(font, categoryX[i], BAR_Y, ALIGN_CENTER, 0, 0, categoryLabel[i], i == gRipps2Category ? COLOR_LIT : COLOR_DIM);
++
++    GSTEXTURE *mark = thmGetTexture(RIPPS2_MARK);
++    if (mark == NULL)
++        return;
++
++    float x = (float)categoryX[flyTo], y = (float)MARK_Y, w = (float)MARK_W;
++    if (flyDuration > 0.0f) {
++        float t = (float)(clock() - flyStart) / (float)CLOCKS_PER_SEC / flyDuration;
++        if (t >= 1.0f) {
++            flyDuration = 0.0f;
++        } else {
++            int hops = flyTo > flyFrom ? flyTo - flyFrom : flyFrom - flyTo;
++            float e = easeInOutCubic(t < 0.0f ? 0.0f : t);
++            x = categoryX[flyFrom] + (categoryX[flyTo] - categoryX[flyFrom]) * e;
++            y += sinf(3.14159265f * e) * (6.0f + 6.0f * hops);     // swoop under the labels
++            if (hops >= 2)
++                w *= fmaxf(0.08f, fabsf(cosf(3.14159265f * e))); // coin flip end to end
++            else
++                w *= 1.0f + 0.25f * sinf(3.14159265f * t);      // stretch while flying
++        }
++    }
++    rmDrawPixmap(mark, (int)x, (int)y, ALIGN_CENTER, (int)w, MARK_H, SCALING_RATIO, COLOR_TEX, 0);
++}
++
++void ripps2SetCategory(int cat)
++{
++    if (cat < 0 || cat >= RIPPS2_CAT_COUNT || cat == gRipps2Category)
++        return;
++
++    int hops = cat > gRipps2Category ? cat - gRipps2Category : gRipps2Category - cat;
++    flyFrom = gRipps2Category;
++    flyTo = cat;
++    flyStart = clock();
++    flyDuration = 0.52f + 0.23f * hops;
++    gRipps2Category = cat;
++
++    if (cat == RIPPS2_CAT_STORAGE)
++        guiSwitchScreen(GUI_SCREEN_MAIN);
++    else if (cat == RIPPS2_CAT_LAUNCH)
++        guiSwitchScreen(GUI_SCREEN_RIPPS2_LAUNCH);
++    else
++        guiSwitchScreen(GUI_SCREEN_RIPPS2_MEMORY);
++}
++
++void ripps2StepCategory(int dir)
++{
++    ripps2SetCategory(gRipps2Category + (dir < 0 ? -1 : 1));
++}
++
++// A START button glyph followed by the action name, centred as one unit
++static void renderStartPrompt(const char *action, int y)
++{
++    GSTEXTURE *start = thmGetTexture(START_ICON);
++    int textW = fntCalcDimensions(gTheme->fonts[2], action);
++    int iconW = start ? start->Width : 0, iconH = start ? start->Height : 0;
++    int gap = start ? 10 : 0;
++    int x0 = 320 - (iconW + gap + textW) / 2;
++
++    if (start)
++        rmDrawPixmap(start, x0 + iconW / 2, y, ALIGN_CENTER, iconW, iconH, SCALING_RATIO, COLOR_TEX, 0);
++    fntRenderString(gTheme->fonts[2], x0 + iconW + gap, y, ALIGN_VCENTER, 0, 0, action, COLOR_LIT);
++}
++
++// ---- LAUNCH DISC ----
++void ripps2RenderLaunch(void)
++{
++    guiDrawBGPlasma();
++    ripps2RenderCategoryBar();
++    renderStartPrompt("START DISC", 423);
++    fntRenderString(gTheme->fonts[3], 320, 450, ALIGN_CENTER, 0, 0, "INSERT A PS2 DISC", COLOR_DIM);
++}
++
++void ripps2HandleInputLaunch(void)
++{
++    if (getKeyOn(KEY_RIGHT)) {
++        ripps2SetCategory(RIPPS2_CAT_STORAGE);
++    } else if (getKeyOn(KEY_START)) {
++        // success never returns; a cancelled wait is not an error
++        int r = sysLaunchDisc(&guiRenderProbeFrame);
++        if (r < 0 && r != SYS_DISC_CANCELLED)
++            guiMsgBox(_l(_STR_DISC_LAUNCH_ERR), 0, NULL);
++        readPads();
++    }
++}
++
++// ---- MEMORY FILES ----
++void ripps2RenderMemory(void)
++{
++    char count[16];
++    GSTEXTURE *l1 = thmGetTexture(L1_ICON), *r1 = thmGetTexture(R1_ICON);
++
++    guiDrawBGPlasma();
++    ripps2RenderCategoryBar();
++    renderStartPrompt("START BROWSER", 395);
++
++    if (l1)
++        rmDrawPixmap(l1, 170, 433, ALIGN_CENTER, l1->Width, l1->Height, SCALING_RATIO, COLOR_TEX, 0);
++    if (r1)
++        rmDrawPixmap(r1, 470, 433, ALIGN_CENTER, r1->Width, r1->Height, SCALING_RATIO, COLOR_TEX, 0);
++    fntRenderString(gTheme->fonts[2], 320, 433, ALIGN_CENTER, 0, 0, formationName[gRipps2Formation], COLOR_LIT);
++    snprintf(count, sizeof(count), "%02d / %02d", gRipps2Formation + 1, FORMATION_COUNT);
++    fntRenderString(gTheme->fonts[3], 320, 456, ALIGN_CENTER, 0, 0, count, COLOR_SOFT);
++}
++
++void ripps2HandleInputMemory(void)
++{
++    if (getKeyOn(KEY_LEFT)) {
++        ripps2SetCategory(RIPPS2_CAT_STORAGE);
++    } else if (getKeyOn(KEY_L1)) {
++        gRipps2Formation = (gRipps2Formation + FORMATION_COUNT - 1) % FORMATION_COUNT;
++    } else if (getKeyOn(KEY_R1)) {
++        gRipps2Formation = (gRipps2Formation + 1) % FORMATION_COUNT;
++    } else if (getKeyOn(KEY_START)) {
++        // success never returns; a rejected image leaves RIPPS2 untouched
++        if (ripps2LaunchMemoryFiles() < 0)
++            guiMsgBox("Memory Files could not start.", 0, NULL);
++        readPads();
++    }
++}

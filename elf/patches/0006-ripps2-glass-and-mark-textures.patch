@@ -26,18 +26,18 @@ index 840f6cd..404d7c6 100644
      // RA mark over a tracked game's cover (theme override "ra_mark"). Appended last:
      // texId is positional.
 diff --git a/src/textures.c b/src/textures.c
-index c05f5dc..fd850da 100644
+index c05f5dc..7477634 100644
 --- a/src/textures.c
 +++ b/src/textures.c
-@@ -111,6 +111,8 @@ extern void *PS2_png;
+@@ -109,6 +109,8 @@ extern void *case_png;
+ extern void *PS1_png;
+ extern void *PS2_png;
  extern void *case_overlay_png;
++extern void *ripps2_glass_png; // RIPPS2
++extern void *ripps2_mark_png;  // RIPPS2
  #ifdef RETROACHIEVEMENTS
  extern void *ra_mark_png;
-+extern void *ripps2_glass_png;
-+extern void *ripps2_mark_png;
  #endif
- 
- // Not related to screen size, just to limit at some point
 @@ -273,6 +275,8 @@ static texture_t internalDefault[TEXTURES_COUNT] = {
      {UDPFS_ICON, "udp_fs", &udp_fs_png},
      {L1_ICON, "L1", &L1_png},
