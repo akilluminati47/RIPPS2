@@ -1,0 +1,360 @@
+diff --git a/include/ripps2.h b/include/ripps2.h
+index 2ba1fbb..259b3c6 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -9,6 +9,10 @@ int ripps2LaunchMemoryFiles(void);
+ // card when installed, else the console's own. Never returns on success; < 0 if there is none.
+ int ripps2LaunchDvdPlayer(void);
+ 
++// Boots the PlayStation disc in the drive through the console's own PS1 driver (rom0:PS1DRV), the way
++// the browser does. Never returns on success; < 0 when the disc has nothing to boot.
++int ripps2LaunchPs1Disc(void);
++
+ // ---- Front end shell (ripps2ui.c): LAUNCH DISC | STORAGE | MEMORY FILES ----
+ enum {
+     RIPPS2_CAT_LAUNCH = 0,
+diff --git a/include/system.h b/include/system.h
+index 8255550..9c445a5 100644
+--- a/include/system.h
++++ b/include/system.h
+@@ -20,6 +20,7 @@ void sysExecExit(void);
+ // slow or unresponsive drive can always be escaped by the user rather than only by the budget.
+ #define SYS_DISC_CANCELLED (-4)
+ #define SYS_DISC_DVDVIDEO  (-5) // RIPPS2: a DVD video disc -- LAUNCH DISC hands it to a DVD player
++#define SYS_DISC_PS1       (-6) // RIPPS2: a PlayStation disc -- LAUNCH DISC hands it to the PS1 driver
+ int sysLaunchDisc(int (*progress)(void));
+ int sysGetDiscBootPath(char *path, int pathSize, int (*progress)(void));
+ 
+diff --git a/include/themes.h b/include/themes.h
+index 9e7464a..3900701 100644
+--- a/include/themes.h
++++ b/include/themes.h
+@@ -105,6 +105,7 @@ typedef struct theme_element
+     int imageAlpha;       // RIPPS2: GameImage opacity, 0..128 (<name>_alpha, default 128 = opaque)
+     int lineHeight;       // RIPPS2: wrapped text line step (<name>_line_height; 0 = the default)
+     int vcenter;          // RIPPS2: centre wrapped text in the element's height (<name>_vcenter=1)
++    int itemHeight;       // RIPPS2: ItemsList row pitch (<name>_item_height; 0 = MENU_ITEM_HEIGHT)
+     // Per-device element filter (theme key devices=usb,hdd,...): bitmask over the thmDeviceVocab
+     // table indices in themes.c. 0 = unfiltered (the pre-existing behavior). deviceCoverage is
+     // filled at theme-load validation for UNFILTERED MenuIcon/ItemsList/HintText elements: the
+diff --git a/src/ripps2.c b/src/ripps2.c
+index 82376e8..dd1f721 100644
+--- a/src/ripps2.c
++++ b/src/ripps2.c
+@@ -214,3 +214,82 @@ int ripps2LaunchDvdPlayer(void)
+     LoadExecPS2("moduleload2 rom1:UDNL rom1:DVDCNF", 3, args);
+     return -1; // unreachable on success
+ }
++
++// ---- PlayStation discs from LAUNCH DISC ----
++//
++// PS1DRV takes the boot file's name (SYSTEM.CNF's BOOT line, without its path or ;1) and the disc's
++// VER value, "???" standing in for either when the disc does not say. A disc with no SYSTEM.CNF but a
++// PSX.EXE is a generic PlayStation title.
++
++// Copies the value of "key = value" from SYSTEM.CNF text into out (trimmed); 0 when absent
++static int r2CnfValue(const char *cnf, const char *key, char *out, int size)
++{
++    const char *p = cnf;
++    int klen = strlen(key);
++    while (*p) {
++        while (*p == ' ' || *p == '\t' || *p == '\r' || *p == '\n')
++            p++;
++        if (strncmp(p, key, klen) == 0) {
++            const char *q = p + klen;
++            while (*q == ' ' || *q == '\t')
++                q++;
++            if (*q == '=') {
++                int n = 0;
++                q++;
++                while (*q == ' ' || *q == '\t')
++                    q++;
++                while (*q && *q != '\r' && *q != '\n' && n < size - 1)
++                    out[n++] = *q++;
++                while (n > 0 && (out[n - 1] == ' ' || out[n - 1] == '\t'))
++                    n--;
++                out[n] = '\0';
++                return 1;
++            }
++        }
++        while (*p && *p != '\n')
++            p++;
++    }
++    return 0;
++}
++
++int ripps2LaunchPs1Disc(void)
++{
++    static char bootArg[32], verArg[16];
++    char cnf[2048], line[128], *args[2];
++    int fd, n;
++
++    snprintf(bootArg, sizeof(bootArg), "???");
++    snprintf(verArg, sizeof(verArg), "???");
++
++    fd = open("cdrom0:\\SYSTEM.CNF;1", O_RDONLY);
++    if (fd >= 0) {
++        n = read(fd, cnf, sizeof(cnf) - 1);
++        close(fd);
++        cnf[n > 0 ? n : 0] = '\0';
++        if (r2CnfValue(cnf, "BOOT", line, sizeof(line))) {
++            // "cdrom:\SLUS_000.67;1" -> "SLUS_000.67"
++            char *start = line, *c;
++            for (c = line; *c; c++)
++                if (*c == '\\' || *c == ':')
++                    start = c + 1;
++            for (c = start; *c && *c != ';'; c++)
++                ;
++            *c = '\0';
++            if (*start)
++                snprintf(bootArg, sizeof(bootArg), "%s", start);
++        }
++        if (r2CnfValue(cnf, "VER", line, sizeof(line)) && line[0])
++            snprintf(verArg, sizeof(verArg), "%s", line);
++    } else if (!r2FileExists("cdrom0:\\PSX.EXE;1")) {
++        LOG("RIPPS2 PS1: no SYSTEM.CNF or PSX.EXE on the disc\n");
++        return -2;
++    }
++
++    LOG("RIPPS2 PS1: booting %s (VER %s)\n", bootArg, verArg);
++    ripps2PlayLaunchSequence();
++    deinit(NO_EXCEPTION, IO_MODE_SELECTED_ALL);
++    args[0] = bootArg;
++    args[1] = verArg;
++    LoadExecPS2("rom0:PS1DRV", 2, args);
++    return -1; // unreachable on success
++}
+diff --git a/src/ripps2bg.c b/src/ripps2bg.c
+index e0fe727..eba8743 100644
+--- a/src/ripps2bg.c
++++ b/src/ripps2bg.c
+@@ -19,6 +19,7 @@
+ #include "include/fntsys.h"
+ #include "include/themes.h"
+ #include "include/gui.h"
++#include "include/pad.h"
+ #include "include/ripps2.h"
+ 
+ #define RIPPS2_PERF_HUD 0 // 1: show the background's EE time and the FPS in the corner (dev builds)
+@@ -302,12 +303,13 @@ void ripps2DrawPillars(void)
+             RGBA(0x0B + (int)(0x12 * glowAll), 0x19 + (int)(0x24 * glowAll), 0x4C + (int)(0x44 * glowAll), 0x80),
+             RGBA(0x02, 0x04, 0x10 + (int)(0x10 * glowAll), 0x80));
+ 
+-    // Camera: the boot swoop eases into the idle Storage view (radius 40, height 7.5, looking at 10.5),
++    // Camera: the boot swoop eases into the idle Storage view,
+     // then drifts slowly round; a launch pushes in and tilts up the beams, with a short shake
++    // (idle: radius 32, height 8, looking at 11.8: the field closer and sitting lower on screen)
+     float a = t * 0.03f + 0.7f;
+-    float radius = lerpf(12.0f, 40.0f, intro) - 16.0f * push;
+-    float camY = lerpf(1.6f, 7.5f, intro) + 4.5f * push;
+-    float lookY = lerpf(9.0f, 10.5f, intro) + 5.5f * push;
++    float radius = lerpf(12.0f, 32.0f, intro) - 12.0f * push;
++    float camY = lerpf(1.6f, 8.0f, intro) + 4.0f * push;
++    float lookY = lerpf(9.0f, 11.8f, intro) + 4.2f * push;
+     v3 eye = {cosf(a) * radius, camY, sinf(a) * radius};
+     if (L >= 0.0f) {
+         float kick = expf(-L * 3.5f);
+@@ -713,9 +715,45 @@ static v3 guidePt(int f, int k, float u, float t)
+     }
+ }
+ 
++// ---- the right stick spins the formation: speed ramps up while held and slides to a stop ----
++#define SPIN_MAX_SPEED 2.4f // rad/s at full tilt
++#define SPIN_RAMP      3.2f // how fast the spin catches the stick (1/s)
++#define SPIN_SLIDE     1.5f // how fast a released spin slows (1/s)
++#define SPIN_PITCH_MAX 1.1f // keep the formation from tipping over
++
++static float spinYaw = 0.0f, spinPitch = 0.0f, spinYawVel = 0.0f, spinPitchVel = 0.0f;
++
++static void spinUpdate(float dt)
++{
++    int sx, sy;
++    padGetRightStick(&sx, &sy);
++    if (sx != 0 || sy != 0) {
++        float k = fminf(1.0f, dt * SPIN_RAMP);
++        spinYawVel += ((sx / 128.0f) * SPIN_MAX_SPEED - spinYawVel) * k;
++        spinPitchVel += ((sy / 128.0f) * SPIN_MAX_SPEED * 0.6f - spinPitchVel) * k;
++    } else {
++        float k = expf(-dt * SPIN_SLIDE);
++        spinYawVel *= k;
++        spinPitchVel *= k;
++    }
++    spinYaw = fmodf(spinYaw + spinYawVel * dt, TAU);
++    spinPitch += spinPitchVel * dt;
++    if (spinPitch > SPIN_PITCH_MAX || spinPitch < -SPIN_PITCH_MAX) {
++        spinPitch = spinPitch > 0.0f ? SPIN_PITCH_MAX : -SPIN_PITCH_MAX;
++        spinPitchVel = 0.0f;
++    }
++}
++
++static v3 spin(v3 p)
++{
++    float cy = cosf(spinYaw), sy = sinf(spinYaw), cp = cosf(spinPitch), sp = sinf(spinPitch);
++    v3 q = V(p.x * cy + p.z * sy, p.y, -p.x * sy + p.z * cy);
++    return V(q.x, q.y * cp - q.z * sp, q.y * sp + q.z * cp);
++}
++
+ static void guideLine(int f, v3 a, v3 b, float t, u64 col)
+ {
+-    p2 pa = project(toWorld(f, a, t)), pb = project(toWorld(f, b, t));
++    p2 pa = project(spin(toWorld(f, a, t))), pb = project(spin(toWorld(f, b, t)));
+     if (pa.ok && pb.ok)
+         rmDrawLine((int)pa.x, (int)pa.y, (int)pb.x, (int)pb.y, col);
+ }
+@@ -843,6 +881,7 @@ void ripps2DrawOrbs(void)
+     if (lorenzPathCount == 0)
+         guidesInit();
+     lorenzStep(fminf(dt, 0.05f));
++    spinUpdate(fminf(dt, 0.1f));
+ 
+     int f = gRipps2Formation % FORMATIONS;
+     if (shownFormation < 0)
+@@ -904,7 +943,7 @@ void ripps2DrawOrbs(void)
+             a = V((b.x + (a.x - b.x) * e) * arc, (b.y + (a.y - b.y) * e) * arc, (b.z + (a.z - b.z) * e) * arc);
+             vis[i] = (i < pn ? 1.0f : 0.0f) + (vis[i] - (i < pn ? 1.0f : 0.0f)) * e;
+         }
+-        pos[i] = a;
++        pos[i] = spin(a);
+     }
+ 
+     // tails first, so the orbs sit on their heads
+@@ -945,6 +984,15 @@ static int fpsFrames = 0, fpsShown = 0;
+ static float fpsWindow = 0.0f;
+ #endif
+ 
++// The top and bottom of the screen darken like the mockups, so the category bar and the hints read
++// cleanly over whatever moves behind them
++static void drawVignette(void)
++{
++    u64 dark = RGBA(0x00, 0x02, 0x0A, 0x68), clear = RGBA(0x00, 0x02, 0x0A, 0x00);
++    rmDrawQuadGouraud(0, 0, dark, 640, 0, dark, 0, 96, clear, 640, 96, clear);
++    rmDrawQuadGouraud(0, 372, clear, 640, 372, clear, 0, 480, dark, 640, 480, dark);
++}
++
+ void ripps2DrawBackground(void)
+ {
+ #if RIPPS2_PERF_HUD
+@@ -954,6 +1002,7 @@ void ripps2DrawBackground(void)
+         ripps2DrawOrbs();
+     else
+         ripps2DrawPillars();
++    drawVignette();
+ 
+ #if RIPPS2_PERF_HUD
+     float ms = (float)(cpuTicks() - t0) / 294912.0f;
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index 95a53c7..f82188a 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -38,7 +38,7 @@ static const int categoryX[RIPPS2_CAT_COUNT] = {128, 320, 512};
+ // Text and textures are modulated by the GS (0x80 = full), and the font atlas is white, so
+ // a text colour shows at twice its value: #7A8CBA on screen is 0x3D,0x46,0x5D here.
+ #define COLOR_LIT    GS_SETREG_RGBA(0x80, 0x80, 0x80, 0x80) // #FFFFFF
+-#define COLOR_DIM    GS_SETREG_RGBA(0x3D, 0x46, 0x5D, 0x80) // #7A8CBA
++#define COLOR_DIM    GS_SETREG_RGBA(0x37, 0x3B, 0x4A, 0x80) // #6E7694, a greyer blue
+ #define COLOR_SOFT   GS_SETREG_RGBA(0x67, 0x6C, 0x7A, 0x80) // #CED9F5
+ #define COLOR_TEX    GS_SETREG_RGBA(0x80, 0x80, 0x80, 0x80)
+ 
+@@ -97,8 +97,9 @@ void ripps2RenderCategoryBar(void)
+     u64 lit = (COLOR_LIT & ~(0xFFULL << 24)) | ((u64)alpha << 24);
+     u64 dim = (COLOR_DIM & ~(0xFFULL << 24)) | ((u64)alpha << 24);
+ 
++    // the current category bright at full size (font2), the other two greyer and a size down (font7)
+     for (i = 0; i < RIPPS2_CAT_COUNT; i++)
+-        fntRenderString(font, categoryX[i], BAR_Y, ALIGN_CENTER, 0, 0, categoryLabel[i], i == gRipps2Category ? lit : dim);
++        fntRenderString(i == gRipps2Category ? font : gTheme->fonts[7], categoryX[i], BAR_Y, ALIGN_CENTER, 0, 0, categoryLabel[i], i == gRipps2Category ? lit : dim);
+ 
+     GSTEXTURE *mark = thmGetTexture(RIPPS2_MARK);
+     if (mark == NULL)
+@@ -179,7 +180,7 @@ void ripps2RenderLaunch(void)
+     ripps2DrawBackground();
+     ripps2RenderCategoryBar();
+     renderStartPrompt("START DISC", 423);
+-    fntRenderString(gTheme->fonts[3], 320, 450, ALIGN_CENTER, 0, 0, "PS2 GAMES AND DVD VIDEO", COLOR_DIM);
++    fntRenderString(gTheme->fonts[3], 320, 450, ALIGN_CENTER, 0, 0, "INSERT PS1/PS2 GAME OR CD/DVD MEDIA", COLOR_DIM);
+ }
+ 
+ void ripps2HandleInputLaunch(void)
+diff --git a/src/system.c b/src/system.c
+index 75306a1..2326e48 100644
+--- a/src/system.c
++++ b/src/system.c
+@@ -603,6 +603,8 @@ int sysGetDiscBootPath(char *path, int pathSize, int (*progress)(void))
+ 
+     if (type == SCECdDVDV) // RIPPS2: a DVD video, not a game -- the caller boots a DVD player
+         return SYS_DISC_DVDVIDEO;
++    if (type == SCECdPSCD || type == SCECdPSCDDA) // RIPPS2: a PlayStation disc -- the caller boots PS1DRV
++        return SYS_DISC_PS1;
+     if (type != SCECdPS2DVD && type != SCECdPS2CD) // no disc / not a PS2 game disc
+         return -2;
+ 
+@@ -667,6 +669,8 @@ int sysLaunchDisc(int (*progress)(void))
+     result = sysGetDiscBootPath(path, sizeof(path), progress);
+     if (result == SYS_DISC_DVDVIDEO)
+         return ripps2LaunchDvdPlayer(); // RIPPS2: never returns on success
++    if (result == SYS_DISC_PS1)
++        return ripps2LaunchPs1Disc(); // RIPPS2: never returns on success
+     if (result < 0)
+         return result;
+ 
+diff --git a/src/themes.c b/src/themes.c
+index d4dfe04..a7e28b5 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -1882,6 +1882,7 @@ static theme_element_t *initBasic(const char *themePath, config_set_t *themeConf
+     elem->imageAlpha = 0x80;
+     elem->lineHeight = 0;
+     elem->vcenter = 0;
++    elem->itemHeight = 0;
+     elem->showRun = 1;
+     elem->deviceFilter = 0;   // malloc'd without memset: MUST be zeroed explicitly (0 = unfiltered)
+     elem->deviceCoverage = 0; // filled at validateGUIElems for unfiltered MenuIcon/ItemsList/HintText
+@@ -1980,6 +1981,9 @@ static theme_element_t *initBasic(const char *themePath, config_set_t *themeConf
+     snprintf(elemProp, sizeof(elemProp), "%s_tilt_y", name);
+     if (configGetInt(themeConfig, elemProp, &intValue))
+         elem->tiltY = intValue;
++    snprintf(elemProp, sizeof(elemProp), "%s_item_height", name);
++    if (configGetInt(themeConfig, elemProp, &intValue) && intValue >= MENU_ITEM_HEIGHT && intValue <= 64)
++        elem->itemHeight = intValue;
+     snprintf(elemProp, sizeof(elemProp), "%s_line_height", name);
+     if (configGetInt(themeConfig, elemProp, &intValue) && intValue > 0 && intValue <= 64)
+         elem->lineHeight = intValue;
+@@ -2184,12 +2188,16 @@ static void drawItemsList(struct menu_list *menu, struct submenu_list *item, con
+         int others = 0;
+         u64 color;
+         int textEndX = 0;
++        // RIPPS2: rows on the theme's pitch (item_height), each title centred in its row
++        int rowStep = elem->itemHeight > 0 ? elem->itemHeight : MENU_ITEM_HEIGHT;
++        int rowTop = posY;
++        posY = rowTop + (rowStep - MENU_ITEM_HEIGHT) / 2;
+         while (ps && (others++ < itemsList->displayedItems)) {
+             if (ps == item) {
+                 color = gTheme->selTextColor;
+-                // RIPPS2: the highlighted row sits on a PS2-blue bar with a light leading edge
+-                rmDrawRect(posX - 12, posY - 1, elem->width + 12, MENU_ITEM_HEIGHT, GS_SETREG_RGBAQ(0x1E, 0x3C, 0x9C, 0x5C, 0x00));
+-                rmDrawRect(posX - 12, posY - 1, 3, MENU_ITEM_HEIGHT, GS_SETREG_RGBAQ(0xB4, 0xC8, 0xFF, 0x80, 0x00));
++                // RIPPS2: the highlighted row fills its whole row: a PS2-blue bar with a light leading edge
++                rmDrawRect(posX - 12, rowTop + 1, elem->width + 12, rowStep - 2, GS_SETREG_RGBAQ(0x1E, 0x3C, 0x9C, 0x5C, 0x00));
++                rmDrawRect(posX - 12, rowTop + 1, 3, rowStep - 2, GS_SETREG_RGBAQ(0xB4, 0xC8, 0xFF, 0x80, 0x00));
+             } else
+                 color = elem->color;
+ 
+@@ -2229,7 +2237,8 @@ static void drawItemsList(struct menu_list *menu, struct submenu_list *item, con
+                     rmDrawPixmap(favTex, textEndX + 4, posY, elem->aligned, MENU_ITEM_HEIGHT, MENU_ITEM_HEIGHT, elem->scaled, gDefaultCol, 0);
+             }
+ 
+-            posY += MENU_ITEM_HEIGHT;
++            posY += rowStep;
++            rowTop += rowStep;
+             ps = ps->next;
+         }
+     }
+@@ -2247,7 +2256,7 @@ static void initItemsList(const char *themePath, config_set_t *themeConfig, them
+     if (elem->height == DIM_UNDEF)
+         elem->height = theme->usedHeight - (MENU_POS_V + HINT_HEIGHT);
+ 
+-    itemsList->displayedItems = elem->height / MENU_ITEM_HEIGHT;
++    itemsList->displayedItems = elem->height / (elem->itemHeight > 0 ? elem->itemHeight : MENU_ITEM_HEIGHT); // RIPPS2: row pitch
+     LOG("THEMES ItemsList %s: displaying %d elems, item height: %d\n", name, itemsList->displayedItems, elem->height);
+ 
+     itemsList->decorator = NULL;
