@@ -1,0 +1,100 @@
+diff --git a/src/menusys.c b/src/menusys.c
+index 1e31947..96deb96 100644
+--- a/src/menusys.c
++++ b/src/menusys.c
+@@ -639,7 +639,7 @@ static void menuInitMainMenu(void)
+         submenuDestroy(&mainMenu);
+ 
+     // initialize the menu
+-    submenuAppendItem(&mainMenu, -1, NULL, MENU_LAUNCH_PS2_DISC, _STR_LAUNCH_PS2_DISC);
++    // RIPPS2: no Launch PS2 Disc here -- LAUNCH DISC is the first category
+ #ifdef RETROACHIEVEMENTS
+     submenuAppendItem(&mainMenu, -1, NULL, MENU_RA_DISC_CHECK, _STR_RA_DISC_CHECK);
+     submenuAppendItem(&mainMenu, -1, NULL, MENU_RA_DISC_LAUNCH, _STR_RA_DISC_LAUNCH);
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index 9745379..2388804 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -24,6 +24,7 @@
+ #include "include/system.h"
+ #include "include/lang.h"
+ #include "include/ripps2.h"
++#include "include/sound.h"
+ 
+ int gRipps2Category = RIPPS2_CAT_STORAGE;
+ 
+@@ -186,6 +187,7 @@ void ripps2HandleInputLaunch(void)
+     if (getKeyOn(KEY_RIGHT)) {
+         ripps2SetCategory(RIPPS2_CAT_STORAGE);
+     } else if (getKeyOn(KEY_START)) {
++        sfxPlay(SFX_CONFIRM);
+         // success never returns; a cancelled wait is not an error
+         int r = sysLaunchDisc(&guiRenderProbeFrame);
+         if (r < 0 && r != SYS_DISC_CANCELLED)
+@@ -219,9 +221,12 @@ void ripps2HandleInputMemory(void)
+         ripps2SetCategory(RIPPS2_CAT_STORAGE);
+     } else if (getKeyOn(KEY_L1)) {
+         gRipps2Formation = (gRipps2Formation + FORMATION_COUNT - 1) % FORMATION_COUNT;
++        sfxPlay(SFX_CURSOR);
+     } else if (getKeyOn(KEY_R1)) {
+         gRipps2Formation = (gRipps2Formation + 1) % FORMATION_COUNT;
++        sfxPlay(SFX_CURSOR);
+     } else if (getKeyOn(KEY_START)) {
++        sfxPlay(SFX_CONFIRM);
+         // success never returns; a rejected image leaves RIPPS2 untouched
+         if (ripps2LaunchMemoryFiles() < 0)
+             guiMsgBox("Memory Files could not start.", 0, NULL);
+diff --git a/src/sound.c b/src/sound.c
+index 76a6986..a3e33ec 100644
+--- a/src/sound.c
++++ b/src/sound.c
+@@ -105,16 +105,22 @@ static int sfxIsUiOneShot(int id)
+     return (id == SFX_CONFIRM) || (id == SFX_CANCEL) || (id == SFX_MESSAGE) || (id == SFX_TRANSITION);
+ }
+ 
+-// RIPPS2: every sound interrupts the one before it, cursor ticks included. audsrv cannot stop an
+-// adpcm voice, so the previous sound's channel is muted instead, and a channel gets its volume back
+-// right before it plays again. The coalescing above still drops a double-raise of the SAME sound.
++// RIPPS2: every sound cuts the one before it off and starts fresh -- the same sound again too, so a
++// category switch or an info page toggle always answers with a new transition, never a tail.
++// audsrv cannot stop an adpcm voice, and replaying a voice that is still sounding does not restart
++// it, so one-shots rotate through a pool of their own channels (like the cursor ticks do): each play
++// takes the next channel and mutes the one before, and a channel gets its volume back right before
++// it plays again. The coalescing above still drops a double-raise of the same sound in one frame.
++#define ONESHOT_SFX_CHANNEL_BASE  (CURSOR_SFX_CHANNEL_BASE + CURSOR_SFX_CHANNEL_COUNT)
++#define ONESHOT_SFX_CHANNEL_COUNT 8 // channels 14..21 of audsrv's 24
++static int oneShotChannelIndex = 0;
+ static int sfxLastChannel = -1;
+ 
+-static void sfxInterruptPrevious(int channel)
++static void sfxInterruptPrevious(int channel, int volume)
+ {
+     if (sfxLastChannel >= 0 && sfxLastChannel != channel)
+         audsrv_adpcm_set_volume_and_pan(sfxLastChannel, 0, 0);
+-    audsrv_adpcm_set_volume_and_pan(channel, channel == 0 ? gBootSndVolume : gSFXVolume, 0);
++    audsrv_adpcm_set_volume_and_pan(channel, volume, 0);
+     sfxLastChannel = channel;
+ }
+ 
+@@ -422,7 +428,7 @@ void sfxPlay(int id)
+             channel = sfxGetCursorChannel(chosenSlot);
+ 
+             // Replaying a rotation channel replaces its old sample in one SIF RPC.
+-            sfxInterruptPrevious(channel);
++            sfxInterruptPrevious(channel, gSFXVolume);
+             audsrv_ch_play_adpcm(channel, &sfx[id]);
+         } else {
+             if (sfxIsUiOneShot(id)) { // see SFX_ONESHOT_COALESCE_MS
+@@ -435,8 +441,10 @@ void sfxPlay(int id)
+                 lastOneShotTicks = sfxStartTicks;
+                 lastOneShotId = id;
+             }
+-            sfxInterruptPrevious(id);
+-            audsrv_ch_play_adpcm(id, &sfx[id]);
++            channel = ONESHOT_SFX_CHANNEL_BASE + oneShotChannelIndex;
++            oneShotChannelIndex = (oneShotChannelIndex + 1) % ONESHOT_SFX_CHANNEL_COUNT;
++            sfxInterruptPrevious(channel, id == SFX_BOOT ? gBootSndVolume : gSFXVolume);
++            audsrv_ch_play_adpcm(channel, &sfx[id]);
+         }
+ 
+         unsigned int costMs = (unsigned int)((cpu_ticks() - sfxStartTicks) / SFX_CLOCKS_PER_MS);
