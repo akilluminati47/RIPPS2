@@ -1,0 +1,87 @@
+diff --git a/include/ripps2.h b/include/ripps2.h
+index 33b8c2a..08a0c41 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -32,7 +32,7 @@ void ripps2RenderMemory(void);
+ 
+ // ---- INFO page right-stick tilt (theme keys <name>_tilt / _tilt_x / _tilt_y) ----
+ void ripps2UpdateTilt(void);            // once per info frame: ease the view after the right stick
+-void ripps2TiltBegin(int cx, int cy);   // tilt what is drawn next about (cx, cy), theme coordinates
++void ripps2TiltBegin(int cx, int cy, int scalePct); // tilt what is drawn next about (cx, cy), theme coords
+ void ripps2TiltEnd(void);
+ 
+ // ---- Storage art panel glass (theme element Ripps2PanelGlass) ----
+diff --git a/include/themes.h b/include/themes.h
+index ae469a2..cfd0c8e 100644
+--- a/include/themes.h
++++ b/include/themes.h
+@@ -101,6 +101,7 @@ typedef struct theme_element
+     int showRun;          // InfoHintText: draw the Run hint (theme key <name>_show_run; default 1)
+     int tilt;             // RIPPS2: tilts with the right stick (theme key <name>_tilt=1)
+     int tiltX, tiltY;     // RIPPS2: the tilt's pivot (<name>_tilt_x / _tilt_y); elements sharing one tilt together
++    int tiltScale;        // RIPPS2: the tilt's angle in percent (<name>_tilt_scale, default 100)
+     // Per-device element filter (theme key devices=usb,hdd,...): bitmask over the thmDeviceVocab
+     // table indices in themes.c. 0 = unfiltered (the pre-existing behavior). deviceCoverage is
+     // filled at theme-load validation for UNFILTERED MenuIcon/ItemsList/HintText elements: the
+diff --git a/src/menusys.c b/src/menusys.c
+index 5dfde42..48a4531 100644
+--- a/src/menusys.c
++++ b/src/menusys.c
+@@ -1653,7 +1653,7 @@ static void menuRenderElements(theme_elems_t *elems)
+     while (elem) {
+         if (elem->drawElem) {
+             if (elem->tilt) // RIPPS2: this element tilts with the right stick about its group's pivot
+-                ripps2TiltBegin(elem->tiltX, elem->tiltY);
++                ripps2TiltBegin(elem->tiltX, elem->tiltY, elem->tiltScale);
+             elem->drawElem(selected_item, selected_item->item->current, itemConfig, elem);
+             if (elem->tilt)
+                 ripps2TiltEnd();
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index 1d1d068..f8aafbc 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -266,7 +266,8 @@ void ripps2DrawPanelGlass(int x, int y, int w, int h, int hasItem)
+ // ---- INFO page: right-stick view tilt ----
+ // The stick tips the art panel (with everything on it) and the disc-and-cover showcase a few degrees
+ // in any direction, each about its own centre; the view eases after the stick and starts level each
+-// time the page opens. Pushing a side sends that side away.
++// time the page opens. Pushing a side sends that side away. A narrow group (the disc and its case)
++// turns further (theme key tilt_scale), the way a case turns in the hand, or it would barely read.
+ #define TILT_YAW_MAX   0.16f // ~9 degrees
+ #define TILT_PITCH_MAX 0.12f // ~7 degrees
+ 
+@@ -290,10 +291,10 @@ void ripps2UpdateTilt(void)
+     tiltPitch += ((sy / 128.0f) * TILT_PITCH_MAX - tiltPitch) * k;
+ }
+ 
+-void ripps2TiltBegin(int cx, int cy)
++void ripps2TiltBegin(int cx, int cy, int scalePct)
+ {
+     if (fabsf(tiltYaw) > 0.0005f || fabsf(tiltPitch) > 0.0005f)
+-        rmSetTilt(1, cx, cy, tiltYaw, tiltPitch);
++        rmSetTilt(1, cx, cy, tiltYaw * scalePct / 100.0f, tiltPitch * scalePct / 100.0f);
+ }
+ 
+ void ripps2TiltEnd(void)
+diff --git a/src/themes.c b/src/themes.c
+index 7ebaf11..08662d4 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -1860,6 +1860,7 @@ static theme_element_t *initBasic(const char *themePath, config_set_t *themeConf
+     elem->tilt = 0;
+     elem->tiltX = x;
+     elem->tiltY = y;
++    elem->tiltScale = 100;
+     elem->showRun = 1;
+     elem->deviceFilter = 0;   // malloc'd without memset: MUST be zeroed explicitly (0 = unfiltered)
+     elem->deviceCoverage = 0; // filled at validateGUIElems for unfiltered MenuIcon/ItemsList/HintText
+@@ -1958,6 +1959,9 @@ static theme_element_t *initBasic(const char *themePath, config_set_t *themeConf
+     snprintf(elemProp, sizeof(elemProp), "%s_tilt_y", name);
+     if (configGetInt(themeConfig, elemProp, &intValue))
+         elem->tiltY = intValue;
++    snprintf(elemProp, sizeof(elemProp), "%s_tilt_scale", name);
++    if (configGetInt(themeConfig, elemProp, &intValue) && intValue > 0 && intValue <= 400)
++        elem->tiltScale = intValue;
+ 
+     snprintf(elemProp, sizeof(elemProp), "%s_reflection_offset", name);
+     if (configGetInt(themeConfig, elemProp, &intValue)) {
