@@ -4,7 +4,7 @@ A PS2-inspired front end, starting life as a web theme. This first beta is the b
 
 **Live demo:** https://akilluminati47.github.io/RIPPS2/
 
-> Status: **beta 0.0.0.1** (web version). The ELF build is in progress.
+> **Note:** this README still describes the web version. The PS2 ELF has moved on: **build 22** is out as a pre-pre-pre-alpha (runs in PCSX2, untested on real hardware). Everything about it is on the [build 22 release](https://github.com/akilluminati47/RIPPS2/releases/tag/v0.0.22-pppalpha), and there is a [demo reel](media/ripps2-b22-demo.mp4) plus short clips in [media/](media/).
 
 ## The menu
 
