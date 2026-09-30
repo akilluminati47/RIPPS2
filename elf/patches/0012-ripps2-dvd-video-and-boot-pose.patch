@@ -1,0 +1,184 @@
+diff --git a/include/ripps2.h b/include/ripps2.h
+index fc5eefb..5681015 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -5,6 +5,10 @@
+ // returns < 0 (before touching anything) when the bundled image fails validation.
+ int ripps2LaunchMemoryFiles(void);
+ 
++// Boots a DVD player for the DVD video in the drive: the user's RGB-patched player from a memory
++// card when installed, else the console's own. Never returns on success; < 0 if there is none.
++int ripps2LaunchDvdPlayer(void);
++
+ // ---- Front end shell (ripps2ui.c): LAUNCH DISC | STORAGE | MEMORY FILES ----
+ enum {
+     RIPPS2_CAT_LAUNCH = 0,
+diff --git a/include/system.h b/include/system.h
+index 93c7f37..8255550 100644
+--- a/include/system.h
++++ b/include/system.h
+@@ -19,6 +19,7 @@ void sysExecExit(void);
+ // A progress callback that returns non-zero ABANDONS the wait and yields SYS_DISC_CANCELLED, so a
+ // slow or unresponsive drive can always be escaped by the user rather than only by the budget.
+ #define SYS_DISC_CANCELLED (-4)
++#define SYS_DISC_DVDVIDEO  (-5) // RIPPS2: a DVD video disc -- LAUNCH DISC hands it to a DVD player
+ int sysLaunchDisc(int (*progress)(void));
+ int sysGetDiscBootPath(char *path, int pathSize, int (*progress)(void));
+ 
+diff --git a/src/ripps2.c b/src/ripps2.c
+index 72302f5..82376e8 100644
+--- a/src/ripps2.c
++++ b/src/ripps2.c
+@@ -15,6 +15,9 @@
+ #include <sifrpc.h>
+ #include <iopcontrol.h>
+ #include <string.h>
++#include <stdio.h>
++#include <fcntl.h>
++#include <unistd.h>
+ 
+ #include "include/opl.h"
+ #include "include/iosupport.h"
+@@ -141,3 +144,73 @@ int ripps2LaunchMemoryFiles(void)
+     ExecPS2((void *)eh->entry, NULL, 0, NULL);
+     return -7; // ExecPS2 does not return
+ }
++
++// ---- DVD video from LAUNCH DISC ----
++//
++// Sony's DVD player switches the video output to YPbPr for DVD video whatever the console is set to,
++// so a PS2 on an RGB (SCART) cable shows films green. The known fix is krHACKen's modified DVD
++// player, which keeps RGB. It is built from Sony's player, so RIPPS2 never ships it: the user installs
++// it, signed for their console (KELF Twin Signer), where the browser looks for DVD player updates --
++// mc0:/ or mc1:/B?EXEC-DVDPLAYER/dvdplayer.elf, ? being the console's region letter.
++// LAUNCH DISC boots that player when it is there, and the console's own ROM player otherwise.
++
++static const char *dvdUpdateFolders[] = {"BEEXEC-DVDPLAYER", "BAEXEC-DVDPLAYER", "BIEXEC-DVDPLAYER", "BCEXEC-DVDPLAYER"};
++
++static int r2FileExists(const char *path)
++{
++    int fd = open(path, O_RDONLY);
++    if (fd < 0)
++        return 0;
++    close(fd);
++    return 1;
++}
++
++int ripps2LaunchDvdPlayer(void)
++{
++    static char playerArg[64], eromdrvArg[24], dvdelfArg[24];
++    char path[48], *args[4];
++    int port, i;
++    char c;
++
++    // 1. an installed DVD player update (the RGB-patched player), booted like the browser boots it
++    for (port = 0; port < 2; port++) {
++        for (i = 0; i < (int)(sizeof(dvdUpdateFolders) / sizeof(dvdUpdateFolders[0])); i++) {
++            snprintf(path, sizeof(path), "mc%d:/%s/dvdplayer.elf", port, dvdUpdateFolders[i]);
++            if (r2FileExists(path)) {
++                LOG("RIPPS2 DVD: booting the player update %s\n", path);
++                snprintf(playerArg, sizeof(playerArg), "-x %s", path);
++                ripps2PlayLaunchSequence();
++                deinit(NO_EXCEPTION, IO_MODE_SELECTED_ALL);
++                args[0] = "-m rom0:SIO2MAN";
++                args[1] = "-m rom0:MCMAN";
++                args[2] = "-m rom0:MCSERV";
++                args[3] = playerArg;
++                LoadExecPS2("moduleload", 4, args);
++                return -1; // unreachable on success
++            }
++        }
++    }
++
++    // 2. the console's own player: region-specific on later consoles (EROMDRVx + DVDPLx), else the
++    //    original EROMDRV + DVDELF pair. When rom1: cannot be probed, the original pair is the bet.
++    snprintf(eromdrvArg, sizeof(eromdrvArg), "-k rom1:EROMDRV");
++    snprintf(dvdelfArg, sizeof(dvdelfArg), "-x erom0:DVDELF");
++    if (!r2FileExists("rom1:DVDID")) {
++        for (c = 'A'; c <= 'Z'; c++) {
++            snprintf(path, sizeof(path), "rom1:DVDID%c", c);
++            if (r2FileExists(path)) {
++                snprintf(eromdrvArg, sizeof(eromdrvArg), "-k rom1:EROMDRV%c", c);
++                snprintf(dvdelfArg, sizeof(dvdelfArg), "-x erom0:DVDPL%c", c);
++                break;
++            }
++        }
++    }
++    LOG("RIPPS2 DVD: booting the ROM player (%s %s)\n", eromdrvArg, dvdelfArg);
++    ripps2PlayLaunchSequence();
++    deinit(NO_EXCEPTION, IO_MODE_SELECTED_ALL);
++    args[0] = eromdrvArg;
++    args[1] = "-m erom0:UDFIO";
++    args[2] = dvdelfArg;
++    LoadExecPS2("moduleload2 rom1:UDNL rom1:DVDCNF", 3, args);
++    return -1; // unreachable on success
++}
+diff --git a/src/ripps2bg.c b/src/ripps2bg.c
+index ff02713..5616fe6 100644
+--- a/src/ripps2bg.c
++++ b/src/ripps2bg.c
+@@ -143,15 +143,18 @@ static float easeInOutCubicf(float x)
+     return 1.0f - k * k * k / 2.0f;
+ }
+ 
+-static int bootFreeze = 0; // boot screens before the intro loop: hold frame 0, clock not started
++// Boot screens before the intro loop (the config load) hold one pose of the swoop -- the centre
++// towers already rising, the camera still low -- and the swoop then carries on from that pose.
++#define BOOT_POSE_S 1.1f
++static int bootFreeze = 0, bootPoseShown = 0;
+ 
+ static float sceneTime(void)
+ {
+     if (bootFreeze && sceneT0 < 0.0f)
+-        return 0.0f;
++        return BOOT_POSE_S;
+     float now = nowSeconds();
+     if (sceneT0 < 0.0f)
+-        sceneT0 = now;
++        sceneT0 = now - (bootPoseShown ? BOOT_POSE_S : 0.0f);
+     return now - sceneT0;
+ }
+ 
+@@ -389,6 +392,7 @@ void ripps2DrawPillars(void)
+ 
+ void ripps2DrawBootFrame(void)
+ {
++    bootPoseShown = 1;
+     bootFreeze = 1;
+     ripps2DrawPillars();
+     bootFreeze = 0;
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index 3fb4e1b..bf18a1f 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -175,7 +175,7 @@ void ripps2RenderLaunch(void)
+     guiDrawBGPlasma();
+     ripps2RenderCategoryBar();
+     renderStartPrompt("START DISC", 423);
+-    fntRenderString(gTheme->fonts[3], 320, 450, ALIGN_CENTER, 0, 0, "INSERT A PS2 DISC", COLOR_DIM);
++    fntRenderString(gTheme->fonts[3], 320, 450, ALIGN_CENTER, 0, 0, "PS2 GAMES AND DVD VIDEO", COLOR_DIM);
+ }
+ 
+ void ripps2HandleInputLaunch(void)
+diff --git a/src/system.c b/src/system.c
+index 980a7dc..75306a1 100644
+--- a/src/system.c
++++ b/src/system.c
+@@ -601,6 +601,8 @@ int sysGetDiscBootPath(char *path, int pathSize, int (*progress)(void))
+             return SYS_DISC_CANCELLED;
+     }
+ 
++    if (type == SCECdDVDV) // RIPPS2: a DVD video, not a game -- the caller boots a DVD player
++        return SYS_DISC_DVDVIDEO;
+     if (type != SCECdPS2DVD && type != SCECdPS2CD) // no disc / not a PS2 game disc
+         return -2;
+ 
+@@ -663,6 +665,8 @@ int sysLaunchDisc(int (*progress)(void))
+         return -1;
+ #endif
+     result = sysGetDiscBootPath(path, sizeof(path), progress);
++    if (result == SYS_DISC_DVDVIDEO)
++        return ripps2LaunchDvdPlayer(); // RIPPS2: never returns on success
+     if (result < 0)
+         return result;
+ 
