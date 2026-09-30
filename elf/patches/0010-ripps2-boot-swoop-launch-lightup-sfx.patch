@@ -1,0 +1,774 @@
+diff --git a/include/gui.h b/include/gui.h
+index 23eee8c..8eb1034 100644
+--- a/include/gui.h
++++ b/include/gui.h
+@@ -68,6 +68,8 @@ extern int guiFrameId;
+ 
+ void guiSwitchScreen(int target);
+ void guiSwitchScreenInstant(int target); // RIPPS2: no fade (category switches)
++void guiStartFrame(void); // RIPPS2: the frame bracket, for ripps2bg.c's own launch frames
++void guiEndFrame(void);
+ 
+ void guiReloadScreenExtents();
+ 
+diff --git a/include/ripps2.h b/include/ripps2.h
+index e452067..fc5eefb 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -19,19 +19,26 @@ extern int gRipps2Formation; // Memory Files orb formation, switched with L1/R1
+ void ripps2SetCategory(int cat);    // switch screens and fly the PS2 mark
+ void ripps2StepCategory(int dir);   // -1 / +1, clamped at the ends
+ void ripps2RenderCategoryBar(void); // the three labels plus the mark
++void ripps2UiEnter(void);           // the menu's first frame: the bar fades in, the mark pops in
+ 
+ void ripps2HandleInputLaunch(void);
+ void ripps2RenderLaunch(void);
+ void ripps2HandleInputMemory(void);
+ void ripps2RenderMemory(void);
+ 
+-// ---- Storage art panel layers (theme elements Ripps2PanelBack / Ripps2PanelGlass) ----
+-void ripps2DrawPanelBack(int x, int y, int w, int h);
+-void ripps2DrawPanelGlass(int x, int y, int w, int h, int hasItem, int started);
++// ---- Storage art panel glass (theme element Ripps2PanelGlass) ----
++void ripps2DrawPanelGlass(int x, int y, int w, int h, int hasItem);
+ 
+ // ---- Native backgrounds (ripps2bg.c), drawn in place of the plasma ----
+ void ripps2DrawBackground(void); // orbs on Memory Files, pillars everywhere else
+ void ripps2DrawPillars(void);
+ void ripps2DrawOrbs(void);
+ 
++// ---- Boot swoop and launch light-up (ripps2bg.c) ----
++void ripps2DrawBootFrame(void);     // the swoop's first frame, for boot screens before the intro
++int ripps2IntroUiReady(void);       // the boot swoop has run long enough to bring the menu in
++void ripps2PlayLaunchSequence(void); // pillars only, light-up and flash; the last frame holds
++int ripps2LaunchScreenHeld(void);    // that frame is up: the teardown must not draw over it
++void ripps2LaunchAborted(void);      // the launch failed and returned to the menu
++
+ #endif
+diff --git a/src/gui.c b/src/gui.c
+index a79d4dd..f749ae9 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -3813,8 +3813,9 @@ static void guiRenderGreeting(int alpha)
+ // shows the splash, never a half-drawn menu.
+ void guiRenderGreetingScreen(void)
+ {
+-    // RIPPS2: no logo while the config loads, just the plain background frame
++    // RIPPS2: no logo while the config loads: the pillars' boot swoop, held on its first frame
+     guiStartFrame();
++    ripps2DrawBootFrame();
+     guiEndFrame();
+ }
+ 
+@@ -4371,16 +4372,20 @@ static void guiShow()
+ 
+ void guiIntroLoop(void)
+ {
+-    // RIPPS2: no boot splash, no fade and no boot jingle. The loop stays because it pumps frames
+-    // and deferred ops while the background init finishes; it draws nothing over the plain
+-    // background and hands over to the main UI on the first frame after init completes.
++    // RIPPS2: no boot splash, no fade and no boot jingle. The pillars play their boot swoop on
++    // their own (the web theme's intro: low and close, pulling back as the towers rise) while the
++    // background init finishes, and the menu comes in once both are ready, with the camera still
++    // settling into the idle Storage view. No input reaches the menu before it is on screen.
+     gIntroSplashActive = 1;
+     while (!endIntro) {
+         guiStartFrame();
+ 
+-        if (gInitComplete) {
++        if (gInitComplete && ripps2IntroUiReady()) {
++            ripps2UiEnter();
+             guiShow();
+             endIntro = 1;
++        } else {
++            ripps2DrawPillars();
+         }
+ 
+         guiDrawOverlays();
+@@ -4389,7 +4394,7 @@ void guiIntroLoop(void)
+ 
+         guiEndFrame();
+ 
+-        if (!screenHandlerTarget && screenHandler)
++        if (endIntro && !screenHandlerTarget && screenHandler)
+             screenHandler->handleInput();
+     }
+     gIntroSplashActive = 0;
+diff --git a/src/opl.c b/src/opl.c
+index cb2acef..56ba248 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -45,6 +45,7 @@
+ #include "include/vcdsupport.h"
+ #include "include/cuesupport.h" // cueIsCueEntry -- a PS1 row names its own core   // VCD display naming + POPSTARTER launch helpers
+ #include "include/libview.h"    // libViewActive / libListViewActive -- which list this page shows
++#include "include/ripps2.h"     // RIPPS2: launch light-up
+ #ifdef RETROACHIEVEMENTS
+ #include "include/rabadge.h" // RA: "tracked game" badge in the list
+ #endif
+@@ -425,8 +426,11 @@ static void itemExecSelect(struct menu_item *curMenu)
+                     snprintf(gameIdStartup, sizeof(gameIdStartup), "%s", startup);
+                 // Flash the GameID barcode (Pixel FX/RetroGEM HDMI auto-profile) before handoff. Use
+                 // the stack copy: the hold renders/unlocks for many frames while source lists may refresh.
++                // RIPPS2: the pillars light up (no menu), then the handoff; a launch that returns failed
++                ripps2PlayLaunchSequence();
+                 guiShowGameID(gameIdStartup);
+                 support->itemLaunch(support, launchId, configSet);
++                ripps2LaunchAborted();
+             }
+         } else {
+             // If we're trying to enable BDM support we need to enable it for all BDM menu slots.
+@@ -4722,7 +4726,9 @@ void deinitEx(int exception, int modeSelected, int modeSelected2)
+     // so a per-launch-leg banner would have to be repeated in each and would still miss some. The
+     // frame flips and then persists on its own -- nothing draws again until the handoff -- so one
+     // call covers the entire wait.
+-    guiRenderTextScreen(_l(_STR_PLEASE_WAIT));
++    // RIPPS2: after a launch light-up its final frame stays on screen instead of "Please Wait"
++    if (!ripps2LaunchScreenHeld())
++        guiRenderTextScreen(_l(_STR_PLEASE_WAIT));
+     if (gLaunchDiag)
+         launchDiagMark(5); // "Please Wait" is up -- the io/art drain below runs next
+ 
+@@ -4803,7 +4809,9 @@ void deinit(int exception, int modeSelected)
+     // so a per-launch-leg banner would have to be repeated in each and would still miss some. The
+     // frame flips and then persists on its own -- nothing draws again until the handoff -- so one
+     // call covers the entire wait.
+-    guiRenderTextScreen(_l(_STR_PLEASE_WAIT));
++    // RIPPS2: after a launch light-up its final frame stays on screen instead of "Please Wait"
++    if (!ripps2LaunchScreenHeld())
++        guiRenderTextScreen(_l(_STR_PLEASE_WAIT));
+     if (gLaunchDiag)
+         launchDiagMark(5); // "Please Wait" is up -- the io/art drain below runs next
+ 
+@@ -4977,7 +4985,7 @@ static void setDefaults(void)
+ #endif
+     gEnableArt = 1;
+     gEnableDiscArt = 1; // preserve existing ItemIcon/ICO behavior unless the user disables it
+-    gWideScreen = 1;
++    gWideScreen = 0; // RIPPS2: a 4:3 canvas, drawn in code as much as in pixmaps (widescreen stays a setting)
+     gEnableSFX = 1; // safe now: sfxPlay dispatches asynchronously (#340)
+     gEnableRumble = 1;
+     gEnableBootSND = 1;
+diff --git a/src/ripps2.c b/src/ripps2.c
+index 3bcc6f6..72302f5 100644
+--- a/src/ripps2.c
++++ b/src/ripps2.c
+@@ -114,6 +114,7 @@ int ripps2LaunchMemoryFiles(void)
+         return rc;
+     }
+ 
++    ripps2PlayLaunchSequence(); // pillars light up; the last frame holds through the handoff
+     deinit(NO_EXCEPTION, IO_MODE_SELECTED_ALL);
+ 
+     // Start the program on a clean IOP
+diff --git a/src/ripps2bg.c b/src/ripps2bg.c
+index 7e17106..543eb1e 100644
+--- a/src/ripps2bg.c
++++ b/src/ripps2bg.c
+@@ -18,6 +18,7 @@
+ #include "include/renderman.h"
+ #include "include/fntsys.h"
+ #include "include/themes.h"
++#include "include/gui.h"
+ #include "include/ripps2.h"
+ 
+ #define RIPPS2_PERF_HUD 1 // beta builds: show BG time and FPS in the corner
+@@ -95,15 +96,27 @@ static p2 project(v3 p)
+ }
+ 
+ // ---------------------------------------------------------------- pillars
++//
++// One continuous scene clock drives three phases of the same field:
++//   boot   - the web theme's intro: the camera starts low and close and pulls back while the towers
++//            rise from the centre outward, settling exactly into the idle Storage view
++//   idle   - the towers breathe and a slow swell rolls across them
++//   launch - shock rings roll out from the centre and light the towers up, each one sending a
++//            beam of light up from its top as a ring passes; the camera pushes in and looks up
++//            the beams, and a white flash peaks before the handoff (the last frame holds on screen)
+ 
+ #define GRID        11
+ #define MAX_TOWERS  (GRID * GRID)
+ #define SPACING     2.4f
+ #define MAX_HEIGHT  13.0f
++#define INTRO_S     5.0f    // boot swoop length (the web theme's)
++#define INTRO_UI_S  3.2f    // the menu appears here, while the camera finishes settling
++#define LAUNCH_S    2.1f    // launch light-up length
++#define SAFE_XY     1800.0f // keep projected points well inside the GS's 12.4 fixed-point range
+ 
+ typedef struct
+ {
+-    float x, z, w, base, phase, depth, h;
++    float x, z, w, base, phase, d, depth, h, heat;
+ } tower_t;
+ 
+ static tower_t towers[MAX_TOWERS];
+@@ -111,6 +124,42 @@ static int towerIdx[MAX_TOWERS];
+ static int towerCount = 0;
+ static unsigned int rngState = 47;
+ 
++static float sceneT0 = -1.0f;  // clock() seconds at the first pillars frame
++static float launchT0 = -1.0f; // scene time a launch began; < 0 when not launching
++static int launchHeld = 0;     // the launch's final frame is on screen and must stay there
++
++static float clamp01(float x) { return x < 0.0f ? 0.0f : (x > 1.0f ? 1.0f : x); }
++static float lerpf(float a, float b, float t) { return a + (b - a) * t; }
++static float easeOutCubicf(float x)
++{
++    float k = 1.0f - x;
++    return 1.0f - k * k * k;
++}
++static float easeInOutCubicf(float x)
++{
++    if (x < 0.5f)
++        return 4.0f * x * x * x;
++    float k = -2.0f * x + 2.0f;
++    return 1.0f - k * k * k / 2.0f;
++}
++
++static int bootFreeze = 0; // boot screens before the intro loop: hold frame 0, clock not started
++
++static float sceneTime(void)
++{
++    if (bootFreeze && sceneT0 < 0.0f)
++        return 0.0f;
++    float now = nowSeconds();
++    if (sceneT0 < 0.0f)
++        sceneT0 = now;
++    return now - sceneT0;
++}
++
++static int onScreen(p2 p)
++{
++    return p.ok && fabsf(p.x - CX) < SAFE_XY && fabsf(p.y - CY) < SAFE_XY;
++}
++
+ static float rnd(void)
+ {
+     rngState = rngState * 1664525u + 1013904223u;
+@@ -137,6 +186,8 @@ static void pillarsInit(void)
+             t->z = z * SPACING;
+             t->w = SPACING * (0.42f + rnd() * 0.2f);
+             t->phase = rnd() * TAU;
++            t->d = d;
++            t->heat = 0.0f;
+             towerIdx[towerCount] = towerCount;
+             towerCount++;
+         }
+@@ -149,71 +200,142 @@ static void drawSky(u64 top, u64 horizon, u64 floor)
+     rmDrawQuadGouraud(0, 290, horizon, 640, 290, horizon, 0, 480, floor, 640, 480, floor);
+ }
+ 
+-static void drawFloorGrid(void)
++// A floor line, clipped against a near plane so the low boot camera keeps the grid under it
++static void gridLine(v3 a, v3 b, u64 c)
++{
++    const float zn = 3.0f;
++    float za = vdot(vsub(a, camEye), camF), zb = vdot(vsub(b, camEye), camF);
++    if (za < zn && zb < zn)
++        return;
++    if (za < zn || zb < zn) {
++        float t = (zn - za) / (zb - za);
++        v3 m = {a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, a.z + (b.z - a.z) * t};
++        if (za < zn)
++            a = m;
++        else
++            b = m;
++    }
++    p2 pa = project(a), pb = project(b);
++    if (onScreen(pa) && onScreen(pb))
++        rmDrawLine((int)pa.x, (int)pa.y, (int)pb.x, (int)pb.y, c);
++}
++
++static void drawFloorGrid(float glowAll)
+ {
+     int i;
+     const float ext = 9.0f * SPACING;
++    u64 c = RGBA(0x1C + (int)(0x30 * glowAll), 0x34 + (int)(0x40 * glowAll), 0x80 + (int)(0x50 * glowAll), 0x30 + (int)(0x20 * glowAll));
+     for (i = -9; i <= 9; i++) {
+-        float c = (i + 0.5f) * SPACING;
+-        v3 a = {c, 0.0f, -ext}, b = {c, 0.0f, ext}, e = {-ext, 0.0f, c}, f = {ext, 0.0f, c};
+-        p2 pa = project(a), pb = project(b), pe = project(e), pf = project(f);
+-        if (pa.ok && pb.ok)
+-            rmDrawLine((int)pa.x, (int)pa.y, (int)pb.x, (int)pb.y, RGBA(0x1C, 0x34, 0x80, 0x30));
+-        if (pe.ok && pf.ok)
+-            rmDrawLine((int)pe.x, (int)pe.y, (int)pf.x, (int)pf.y, RGBA(0x1C, 0x34, 0x80, 0x30));
++        float k = (i + 0.5f) * SPACING;
++        v3 a = {k, 0.0f, -ext}, b = {k, 0.0f, ext}, e = {-ext, 0.0f, k}, f = {ext, 0.0f, k};
++        gridLine(a, b, c);
++        gridLine(e, f, c);
+     }
+ }
+ 
+-static u64 shade(float k, int a)
++// Tower face colour at shade k, pushed toward a hot blue-white by heat
++static u64 shadeHot(float k, float heat, int a)
+ {
+-    return RGBA((int)(0x1A * k), (int)(0x3A * k), (int)(0x9A * k), a);
++    float hk = fminf(1.0f, heat * 0.45f);
++    return RGBA((int)lerpf(0x1A * k, 0x7E, hk), (int)lerpf(0x3A * k, 0xB4, hk), (int)lerpf(0x9A * k, 0xFF, hk), a);
+ }
+ 
+ // One side of a tower. c[] = BL, BR, TL, TR in world space; n = outward normal.
+-static void drawSide(const v3 *c, v3 n, float k)
++static void drawSide(const v3 *c, v3 n, float k, float heat)
+ {
+     v3 mid = {(c[0].x + c[3].x) * 0.5f, (c[0].y + c[3].y) * 0.5f, (c[0].z + c[3].z) * 0.5f};
+     if (vdot(n, vsub(camEye, mid)) <= 0.0f)
+         return; // back face
+     p2 bl = project(c[0]), br = project(c[1]), tl = project(c[2]), tr = project(c[3]);
+-    if (!bl.ok || !br.ok || !tl.ok || !tr.ok)
++    if (!onScreen(bl) || !onScreen(br) || !onScreen(tl) || !onScreen(tr))
+         return;
+-    u64 bottom = RGBA(0x04, 0x0A, 0x24, 0x80);
+-    u64 top = shade(k, 0x80);
++    float hk = fminf(1.0f, heat);
++    u64 bottom = RGBA(0x04 + (int)(0x10 * hk), 0x0A + (int)(0x1C * hk), 0x24 + (int)(0x40 * hk), 0x80);
++    u64 top = shadeHot(k, heat, 0x80);
+     rmDrawQuadGouraud(tl.x, tl.y, top, tr.x, tr.y, top, bl.x, bl.y, bottom, br.x, br.y, bottom);
+ 
+-    // glowing vertical edges and the rim at the top
++    // glowing vertical edges and the rim at the top, brighter as the tower heats
+     rmSetBlendAdditive(1);
+-    u64 edge = RGBA(0x40, 0x80, 0xFF, 0x38), rim = RGBA(0x7E, 0xC2, 0xFF, 0x60);
++    u64 edge = RGBA(0x40, 0x80, 0xFF, 0x38 + (int)(0x48 * hk)), rim = RGBA(0x7E, 0xC2, 0xFF, 0x60 + (int)(0x20 * hk));
+     rmDrawLine((int)bl.x, (int)bl.y, (int)tl.x, (int)tl.y, edge);
+     rmDrawLine((int)br.x, (int)br.y, (int)tr.x, (int)tr.y, edge);
+     rmDrawLine((int)tl.x, (int)tl.y, (int)tr.x, (int)tr.y, rim);
+     rmSetBlendAdditive(0);
+ }
+ 
++// A tower's light path: a beam rising from its top, bright at the base and fading upward
++static void drawBeam(float x, float z, float y0, float w, float b)
++{
++    if (b <= 0.02f)
++        return;
++    v3 base = {x, y0, z}, tip = {x, y0 + 38.0f, z};
++    p2 pb = project(base), pt = project(tip);
++    if (!onScreen(pb) || !onScreen(pt))
++        return;
++    float hwb = w * 0.5f * camFocal / pb.z, hwt = w * 0.5f * camFocal / pt.z;
++    int a = (int)(0x58 * fminf(1.0f, b));
++    u64 c0 = RGBA(0x5C, 0x98, 0xFF, a), c1 = RGBA(0x5C, 0x98, 0xFF, 0);
++    u64 k0 = RGBA(0xDC, 0xEA, 0xFF, a), k1 = RGBA(0xDC, 0xEA, 0xFF, 0);
++    rmSetBlendAdditive(1);
++    rmDrawQuadGouraud(pt.x - hwt, pt.y, c1, pt.x + hwt, pt.y, c1, pb.x - hwb, pb.y, c0, pb.x + hwb, pb.y, c0);
++    rmDrawQuadGouraud(pt.x - hwt * 0.25f, pt.y, k1, pt.x + hwt * 0.25f, pt.y, k1, pb.x - hwb * 0.25f, pb.y, k0, pb.x + hwb * 0.25f, pb.y, k0); // hot core
++    rmSetBlendAdditive(0);
++}
++
+ void ripps2DrawPillars(void)
+ {
+-    int i, j;
+-    float t = nowSeconds();
++    int i, j, k;
++    float t = sceneTime();
+ 
+     if (towerCount == 0)
+         pillarsInit();
+ 
+-    drawSky(RGBA(0x01, 0x02, 0x09, 0x80), RGBA(0x0B, 0x19, 0x4C, 0x80), RGBA(0x02, 0x04, 0x10, 0x80));
++    float L = launchT0 >= 0.0f ? t - launchT0 : -1.0f;
++    float intro = easeInOutCubicf(clamp01(t / INTRO_S));
++    float push = L >= 0.0f ? easeInOutCubicf(clamp01(L / 1.8f)) : 0.0f;
++    float glowAll = L >= 0.0f ? easeInOutCubicf(clamp01(L / 1.5f)) : 0.0f;
++
++    drawSky(RGBA(0x01, 0x02, 0x09 + (int)(0x10 * glowAll), 0x80),
++            RGBA(0x0B + (int)(0x12 * glowAll), 0x19 + (int)(0x24 * glowAll), 0x4C + (int)(0x44 * glowAll), 0x80),
++            RGBA(0x02, 0x04, 0x10 + (int)(0x10 * glowAll), 0x80));
+ 
++    // Camera: the boot swoop eases into the idle Storage view (radius 40, height 7.5, looking at 10.5),
++    // then drifts slowly round; a launch pushes in and tilts up the beams, with a short shake
+     float a = t * 0.03f + 0.7f;
+-    v3 eye = {cosf(a) * 40.0f, 7.5f, sinf(a) * 40.0f};
+-    v3 target = {0.0f, 10.5f, 0.0f};
++    float radius = lerpf(12.0f, 40.0f, intro) - 16.0f * push;
++    float camY = lerpf(1.6f, 7.5f, intro) + 4.5f * push;
++    float lookY = lerpf(9.0f, 10.5f, intro) + 5.5f * push;
++    v3 eye = {cosf(a) * radius, camY, sinf(a) * radius};
++    if (L >= 0.0f) {
++        float kick = expf(-L * 3.5f);
++        eye.y += sinf(t * 47.0f) * kick * 0.22f;
++        eye.x += sinf(t * 39.0f + 1.3f) * kick * 0.18f;
++    }
++    v3 target = {0.0f, lookY, 0.0f};
+     camLook(eye, target, 40.0f);
+ 
+-    drawFloorGrid();
++    drawFloorGrid(glowAll);
+ 
+-    // heights breathe and a slow swell rolls across the field
++    // heights: the boot rise, breathing, the idle swell, and the launch heat
+     for (i = 0; i < towerCount; i++) {
+         tower_t *tw = &towers[i];
++        float rise = easeOutCubicf(clamp01((t - 0.3f - tw->d * 1.6f) / 1.8f));
+         float breathe = 0.9f + 0.1f * sinf(t * 0.5f + tw->phase);
+         float swell = 0.5f + 0.5f * sinf(tw->x * 0.18f + tw->z * 0.11f - t * 0.6f);
+-        tw->h = fmaxf(0.05f, tw->base * breathe * MAX_HEIGHT + swell * 1.4f);
++        float heat = 0.0f;
++        if (L >= 0.0f) {
++            float dist = sqrtf(tw->x * tw->x + tw->z * tw->z);
++            for (k = 0; k < 3; k++) { // three rings, 0.28 s apart
++                float age = L - k * 0.28f;
++                if (age < 0.0f || age > 1.8f)
++                    continue;
++                float q = (dist - age * 16.0f) / (2.2f * 1.6f);
++                heat += expf(-q * q) * 1.6f * powf(1.0f - age / 1.8f, 1.5f);
++            }
++            heat = fminf(2.4f, heat + glowAll * 0.8f);
++        }
++        tw->heat = heat;
++        tw->h = fmaxf(0.05f, (tw->base * breathe * MAX_HEIGHT + swell * 1.4f + heat * 3.2f) * rise);
+         v3 c = {tw->x, tw->h * 0.5f, tw->z};
+         tw->depth = vdot(vsub(c, camEye), camF);
+     }
+@@ -225,31 +347,90 @@ void ripps2DrawPillars(void)
+         towerIdx[j + 1] = v;
+     }
+ 
++    float beamIn = L >= 0.0f ? clamp01(L / 0.25f) : 0.0f;
+     for (i = 0; i < towerCount; i++) {
+         tower_t *tw = &towers[towerIdx[i]];
+         float hw = tw->w * 0.5f, h = tw->h;
+         float x0 = tw->x - hw, x1 = tw->x + hw, z0 = tw->z - hw, z1 = tw->z + hw;
+-        float k = 0.35f + 0.65f * fminf(1.0f, h / MAX_HEIGHT);
++        float kk = 0.35f + 0.65f * fminf(1.0f, h / MAX_HEIGHT);
+         v3 s1[4] = {{x0, 0, z1}, {x1, 0, z1}, {x0, h, z1}, {x1, h, z1}}; // +z
+         v3 s2[4] = {{x1, 0, z0}, {x0, 0, z0}, {x1, h, z0}, {x0, h, z0}}; // -z
+         v3 s3[4] = {{x1, 0, z1}, {x1, 0, z0}, {x1, h, z1}, {x1, h, z0}}; // +x
+         v3 s4[4] = {{x0, 0, z0}, {x0, 0, z1}, {x0, h, z0}, {x0, h, z1}}; // -x
+         v3 nz = {0, 0, 1}, nnz = {0, 0, -1}, nx = {1, 0, 0}, nnx = {-1, 0, 0};
+-        drawSide(s1, nz, k * 0.85f);
+-        drawSide(s2, nnz, k * 0.85f);
+-        drawSide(s3, nx, k * 0.65f);
+-        drawSide(s4, nnx, k * 0.65f);
++        drawSide(s1, nz, kk * 0.85f, tw->heat);
++        drawSide(s2, nnz, kk * 0.85f, tw->heat);
++        drawSide(s3, nx, kk * 0.65f, tw->heat);
++        drawSide(s4, nnx, kk * 0.65f, tw->heat);
+         if (camEye.y > h) { // top cap
+             v3 a0 = {x0, h, z0}, a1 = {x1, h, z0}, a2 = {x0, h, z1}, a3 = {x1, h, z1};
+             p2 q0 = project(a0), q1 = project(a1), q2 = project(a2), q3 = project(a3);
+-            if (q0.ok && q1.ok && q2.ok && q3.ok) {
+-                u64 cap = RGBA(0x16, 0x30, 0x80, 0x80);
++            if (onScreen(q0) && onScreen(q1) && onScreen(q2) && onScreen(q3)) {
++                float hk = fminf(1.0f, tw->heat * 0.5f);
++                u64 cap = RGBA((int)lerpf(0x16, 0xA0, hk), (int)lerpf(0x30, 0xC8, hk), (int)lerpf(0x80, 0xFF, hk), 0x80);
+                 rmDrawQuadGouraud(q0.x, q0.y, cap, q1.x, q1.y, cap, q2.x, q2.y, cap, q3.x, q3.y, cap);
+             }
+         }
++        if (beamIn > 0.0f)
++            drawBeam(tw->x, tw->z, h, tw->w * 0.34f, fminf(1.0f, tw->heat * 0.6f) * beamIn);
++    }
++
++    // the flash: peaks at 1.45 s and settles to a light haze that holds through the handoff
++    if (L >= 0.0f) {
++        float q = (L - 1.45f) / 0.32f;
++        float f = fmaxf(expf(-q * q), 0.12f * clamp01((L - 1.45f) / 0.3f));
++        int fa = (int)(0x70 * f);
++        if (fa > 0)
++            rmDrawRect(0, 0, 640, 480, RGBA(0xE8, 0xF0, 0xFF, fa));
+     }
+ }
+ 
++// ---- boot and launch hooks ----
++
++void ripps2DrawBootFrame(void)
++{
++    bootFreeze = 1;
++    ripps2DrawPillars();
++    bootFreeze = 0;
++}
++
++int ripps2IntroUiReady(void)
++{
++    return sceneTime() >= INTRO_UI_S;
++}
++
++void ripps2PlayLaunchSequence(void)
++{
++    // Pillars only: no menu, no HUD. Runs its own frames on the GUI thread, outside any frame.
++    launchT0 = sceneTime();
++    launchHeld = 0;
++    for (;;) {
++        float L = sceneTime() - launchT0;
++        guiStartFrame();
++        ripps2DrawPillars();
++        guiEndFrame();
++        if (L >= LAUNCH_S)
++            break;
++    }
++    // once more, so both framebuffers hold the final lit frame through the teardown and handoff
++    guiStartFrame();
++    ripps2DrawPillars();
++    guiEndFrame();
++    launchHeld = 1;
++}
++
++int ripps2LaunchScreenHeld(void)
++{
++    return launchHeld;
++}
++
++void ripps2LaunchAborted(void)
++{
++    // the launch returned (it failed): back to the idle field under the menu
++    launchT0 = -1.0f;
++    launchHeld = 0;
++}
++
+ // ---------------------------------------------------------------- orbs
+ 
+ #define MAX_ORBS 28
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index c66b5a5..3fb4e1b 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -62,19 +62,48 @@ static float easeInOutCubic(float x)
+     return 1.0f - k * k * k / 2.0f;
+ }
+ 
++// The menu's entrance after the boot swoop: labels fade in, the mark pops in under its category
++static clock_t enterStart = 0;
++#define ENTER_S 0.6f
++
++void ripps2UiEnter(void)
++{
++    enterStart = clock();
++}
++
++static float easeOutBack(float x)
++{
++    const float c1 = 1.70158f, c3 = c1 + 1.0f;
++    float k = x - 1.0f;
++    return 1.0f + c3 * k * k * k + c1 * k * k;
++}
++
+ void ripps2RenderCategoryBar(void)
+ {
+     int i;
+     int font = gTheme->fonts[2];
+ 
++    float enter = 1.0f;
++    if (enterStart != 0) {
++        enter = (float)(clock() - enterStart) / (float)CLOCKS_PER_SEC / ENTER_S;
++        if (enter >= 1.0f) {
++            enter = 1.0f;
++            enterStart = 0;
++        } else if (enter < 0.0f)
++            enter = 0.0f;
++    }
++    int alpha = (int)(0x80 * fminf(1.0f, enter * 1.6f));
++    u64 lit = (COLOR_LIT & ~(0xFFULL << 24)) | ((u64)alpha << 24);
++    u64 dim = (COLOR_DIM & ~(0xFFULL << 24)) | ((u64)alpha << 24);
++
+     for (i = 0; i < RIPPS2_CAT_COUNT; i++)
+-        fntRenderString(font, categoryX[i], BAR_Y, ALIGN_CENTER, 0, 0, categoryLabel[i], i == gRipps2Category ? COLOR_LIT : COLOR_DIM);
++        fntRenderString(font, categoryX[i], BAR_Y, ALIGN_CENTER, 0, 0, categoryLabel[i], i == gRipps2Category ? lit : dim);
+ 
+     GSTEXTURE *mark = thmGetTexture(RIPPS2_MARK);
+     if (mark == NULL)
+         return;
+ 
+-    float x = (float)categoryX[flyTo], y = (float)MARK_Y, w = (float)MARK_W;
++    float x = (float)categoryX[flyTo], y = (float)MARK_Y + (1.0f - enter) * 10.0f, w = (float)MARK_W * fmaxf(0.0f, easeOutBack(enter));
+     if (flyDuration > 0.0f) {
+         float t = (float)(clock() - flyStart) / (float)CLOCKS_PER_SEC / flyDuration;
+         if (t >= 1.0f) {
+@@ -198,13 +227,11 @@ void ripps2HandleInputMemory(void)
+ }
+ 
+ // ---- STORAGE art panel ----
+-// Two theme layers around the game's BG art (elements Ripps2PanelBack and Ripps2PanelGlass):
+-//   back  - under the art: an opaque PS2-blue backdrop with the PS2 mark. It is the panel's
+-//           placeholder, seen before a device starts and for games without art.
+-//   glass - over the art: a navy tint, light at the top so the art shows, deep where the text
+-//           sits, and a thin PS2-blue frame. Text elements come after it and stay on top.
+-//           With no game selected it carries the placeholder line (start the device / empty).
+-// Both are drawn procedurally, so they stay crisp at any panel size.
++// The glass over the game's BG art (theme element Ripps2PanelGlass): a navy tint, light at the top
++// so the art shows, deep where the text sits, and a thin PS2-blue frame. Text elements come after it
++// and stay on top. With no game selected (before a device starts, or nothing listed) it is clear
++// glass: a light even tint over the pillars and the frame, nothing else. Drawn procedurally, so it
++// stays crisp at any size.
+ 
+ #define RGBA_PRIM(r, g, b, a) GS_SETREG_RGBAQ((r), (g), (b), (a), 0x00) // untextured: 0x80 = opaque
+ 
+@@ -218,20 +245,15 @@ static void panelFrame(int x, int y, int w, int h)
+     rmDrawLine(x + 1, y + 1, x + w - 1, y + 1, shine); // glass catching the light along the top
+ }
+ 
+-void ripps2DrawPanelBack(int x, int y, int w, int h)
++void ripps2DrawPanelGlass(int x, int y, int w, int h, int hasItem)
+ {
+-    u64 top = RGBA_PRIM(0x10, 0x26, 0x6C, 0x80), bottom = RGBA_PRIM(0x03, 0x08, 0x1E, 0x80);
+-    rmDrawQuadGouraud(x, y, top, x + w, y, top, x, y + h, bottom, x + w, y + h, bottom);
+-
+-    GSTEXTURE *mark = thmGetTexture(RIPPS2_MARK);
+-    if (mark) {
+-        int mw = (w * 44) / 100, mh = (mw * mark->Height) / mark->Width;
+-        rmDrawPixmap(mark, x + w / 2, y + (h * 34) / 100, ALIGN_CENTER, mw, mh, SCALING_RATIO, GS_SETREG_RGBA(0x80, 0x80, 0x80, 0x60), 0);
++    if (!hasItem) {
++        u64 clear = RGBA_PRIM(0x04, 0x0C, 0x2E, 0x1C); // ~22%: the pillars read through
++        rmDrawQuadGouraud(x, y, clear, x + w, y, clear, x, y + h, clear, x + w, y + h, clear);
++        panelFrame(x, y, w, h);
++        return;
+     }
+-}
+ 
+-void ripps2DrawPanelGlass(int x, int y, int w, int h, int hasItem, int started)
+-{
+     // tint: 30% over the upper art, deepening to 85% by the text zone (the lower 44%)
+     int y1 = y + (h * 38) / 100, y2 = y + (h * 56) / 100;
+     u64 light = RGBA_PRIM(0x04, 0x0C, 0x2E, 0x26), mid = RGBA_PRIM(0x04, 0x0C, 0x2E, 0x40), deep = RGBA_PRIM(0x03, 0x08, 0x22, 0x6C);
+@@ -239,22 +261,4 @@ void ripps2DrawPanelGlass(int x, int y, int w, int h, int hasItem, int started)
+     rmDrawQuadGouraud(x, y1, light, x + w, y1, light, x, y2, mid, x + w, y2, mid);
+     rmDrawQuadGouraud(x, y2, mid, x + w, y2, mid, x, y + h, deep, x + w, y + h, deep);
+     panelFrame(x, y, w, h);
+-
+-    if (hasItem)
+-        return; // the game's own Description element draws next
+-
+-    // Placeholder line where the game's description would start (same x/y as that element)
+-    int tx = x + 16, ty = y + h - 122;
+-    if (!started) {
+-        GSTEXTURE *btn = thmGetTexture(gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON);
+-        int px = fntRenderString(gTheme->fonts[3], tx, ty, ALIGN_NONE, 0, 0, "PRESS", COLOR_SOFT) + 6;
+-        if (btn) {
+-            int bw = (btn->Width * 18) / btn->Height;
+-            rmDrawPixmap(btn, px + bw / 2, ty + 6, ALIGN_CENTER, bw, 18, SCALING_RATIO, COLOR_TEX, 0);
+-            px += bw + 6;
+-        }
+-        fntRenderString(gTheme->fonts[3], px, ty, ALIGN_NONE, 0, 0, "TO START THIS DEVICE", COLOR_SOFT);
+-    } else {
+-        fntRenderString(gTheme->fonts[3], tx, ty, ALIGN_NONE, 0, 0, "NO GAMES FOUND ON THIS DEVICE", COLOR_SOFT);
+-    }
+ }
+diff --git a/src/sound.c b/src/sound.c
+index d1e3c97..76a6986 100644
+--- a/src/sound.c
++++ b/src/sound.c
+@@ -105,6 +105,19 @@ static int sfxIsUiOneShot(int id)
+     return (id == SFX_CONFIRM) || (id == SFX_CANCEL) || (id == SFX_MESSAGE) || (id == SFX_TRANSITION);
+ }
+ 
++// RIPPS2: every sound interrupts the one before it, cursor ticks included. audsrv cannot stop an
++// adpcm voice, so the previous sound's channel is muted instead, and a channel gets its volume back
++// right before it plays again. The coalescing above still drops a double-raise of the SAME sound.
++static int sfxLastChannel = -1;
++
++static void sfxInterruptPrevious(int channel)
++{
++    if (sfxLastChannel >= 0 && sfxLastChannel != channel)
++        audsrv_adpcm_set_volume_and_pan(sfxLastChannel, 0, 0);
++    audsrv_adpcm_set_volume_and_pan(channel, channel == 0 ? gBootSndVolume : gSFXVolume, 0);
++    sfxLastChannel = channel;
++}
++
+ // Returns 0 if the specified file was read. The sfxEffect structure will not be updated unless the file is successfully read.
+ static int sfxRead(const char *full_path, struct sfxEffect *sfx)
+ {
+@@ -408,17 +421,21 @@ void sfxPlay(int id)
+             cursorChannelIndex = (cursorChannelIndex + 1) % CURSOR_SFX_CHANNEL_COUNT;
+             channel = sfxGetCursorChannel(chosenSlot);
+ 
+-            // Volumes are configured once by audioSetVolume(). Replaying a
+-            // rotation channel replaces its old sample in one SIF RPC.
++            // Replaying a rotation channel replaces its old sample in one SIF RPC.
++            sfxInterruptPrevious(channel);
+             audsrv_ch_play_adpcm(channel, &sfx[id]);
+         } else {
+             if (sfxIsUiOneShot(id)) { // see SFX_ONESHOT_COALESCE_MS
+                 static u32 lastOneShotTicks = 0;
+-                if (lastOneShotTicks != 0 &&
++                static int lastOneShotId = -1;
++                // RIPPS2: only the same sound raised twice is dropped; a different one interrupts
++                if (lastOneShotTicks != 0 && id == lastOneShotId &&
+                     (sfxStartTicks - lastOneShotTicks) / SFX_CLOCKS_PER_MS < SFX_ONESHOT_COALESCE_MS)
+                     return;
+                 lastOneShotTicks = sfxStartTicks;
++                lastOneShotId = id;
+             }
++            sfxInterruptPrevious(id);
+             audsrv_ch_play_adpcm(id, &sfx[id]);
+         }
+ 
+diff --git a/src/system.c b/src/system.c
+index ae81393..980a7dc 100644
+--- a/src/system.c
++++ b/src/system.c
+@@ -30,6 +30,7 @@
+ #include "include/util.h"
+ #include "include/pad.h"
+ #include "include/system.h"
++#include "include/ripps2.h" // RIPPS2: launch light-up
+ #ifdef RETROACHIEVEMENTS
+ #include "include/discsupport.h"
+ #endif
+@@ -697,6 +698,7 @@ int sysLaunchDisc(int (*progress)(void))
+         }
+     }
+ 
++    ripps2PlayLaunchSequence(); // RIPPS2: pillars light up; the last frame holds through the handoff
+     deinit(NO_EXCEPTION, IO_MODE_SELECTED_ALL); // tear OPL down (mirrors sysExecExit)
+ 
+     args[0] = path;
+diff --git a/src/themes.c b/src/themes.c
+index 93b898d..9b41cc0 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -103,7 +103,6 @@ enum ELEM_ATTRIBUTE_TYPE {
+     ELEM_TYPE_BDM_INDEX,
+     ELEM_TYPE_GAME_COUNT_TEXT,
+     ELEM_TYPE_COVERFLOW,
+-    ELEM_TYPE_RIPPS2_PANEL_BACK,  // RIPPS2: art panel backdrop / placeholder (under a GameImage)
+     ELEM_TYPE_RIPPS2_PANEL_GLASS, // RIPPS2: art panel tint + frame (over a GameImage, under text)
+     ELEM_TYPE_COUNT
+ };
+@@ -135,7 +134,6 @@ static const char *elementsType[ELEM_TYPE_COUNT] = {
+     "BdmIndex",
+     "GameCountText",
+     "Coverflow",
+-    "Ripps2PanelBack",
+     "Ripps2PanelGlass"};
+ 
+ // Per-device element filter (theme key devices=usb,hdd,... on MenuIcon/ItemsList/HintText) /////////////////////////////////
+@@ -839,7 +837,7 @@ static void drawStaticImage(struct menu_list *menu, struct submenu_list *item, c
+         rmDrawPixmap(&staticImage->defaultTexture->source, elem->posX, elem->posY, elem->aligned, elem->width, elem->height, elem->scaled, gDefaultCol, 0);
+ }
+ 
+-// RIPPS2 art panel layers (ripps2ui.c draws them). Geometry comes from the element's x/y/width/height.
++// RIPPS2 art panel glass (ripps2ui.c draws it). Geometry comes from the element's x/y/width/height.
+ static void ripps2PanelRect(struct theme_element *elem, int *x, int *y)
+ {
+     *x = elem->posX;
+@@ -850,19 +848,11 @@ static void ripps2PanelRect(struct theme_element *elem, int *x, int *y)
+     }
+ }
+ 
+-static void drawRipps2PanelBack(struct menu_list *menu, struct submenu_list *item, config_set_t *config, struct theme_element *elem)
+-{
+-    int x, y;
+-    ripps2PanelRect(elem, &x, &y);
+-    ripps2DrawPanelBack(x, y, elem->width, elem->height);
+-}
+-
+ static void drawRipps2PanelGlass(struct menu_list *menu, struct submenu_list *item, config_set_t *config, struct theme_element *elem)
+ {
+     int x, y;
+-    item_list_t *support = menu->item->userdata;
+     ripps2PanelRect(elem, &x, &y);
+-    ripps2DrawPanelGlass(x, y, elem->width, elem->height, item != NULL, support != NULL ? support->enabled : 1);
++    ripps2DrawPanelGlass(x, y, elem->width, elem->height, item != NULL);
+ }
+ 
+ static void initStaticImage(const char *themePath, config_set_t *themeConfig, theme_t *theme, theme_element_t *elem, const char *name, const char *imageName)
+@@ -2936,9 +2926,6 @@ static int addGUIElem(const char *themePath, config_set_t *themeConfig, theme_t
+             } else if (!strcmp(elementsType[ELEM_TYPE_BDM_INDEX], type)) {
+                 elem = initBasic(themePath, themeConfig, theme, name, ELEM_TYPE_BDM_INDEX, screenWidth >> 1, 355, ALIGN_CENTER, DIM_UNDEF, DIM_UNDEF, SCALING_RATIO, gDefaultCol, theme->fonts[0]);
+                 elem->drawElem = &drawBDMIndex;
+-            } else if (!strcmp(elementsType[ELEM_TYPE_RIPPS2_PANEL_BACK], type)) {
+-                elem = initBasic(themePath, themeConfig, theme, name, ELEM_TYPE_RIPPS2_PANEL_BACK, 0, 0, ALIGN_NONE, 320, 240, SCALING_RATIO, gDefaultCol, theme->fonts[0]);
+-                elem->drawElem = &drawRipps2PanelBack;
+             } else if (!strcmp(elementsType[ELEM_TYPE_RIPPS2_PANEL_GLASS], type)) {
+                 elem = initBasic(themePath, themeConfig, theme, name, ELEM_TYPE_RIPPS2_PANEL_GLASS, 0, 0, ALIGN_NONE, 320, 240, SCALING_RATIO, gDefaultCol, theme->fonts[0]);
+                 elem->drawElem = &drawRipps2PanelGlass;
