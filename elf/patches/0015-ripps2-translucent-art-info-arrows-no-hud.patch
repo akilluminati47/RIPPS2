@@ -1,0 +1,135 @@
+diff --git a/include/themes.h b/include/themes.h
+index cfd0c8e..557401a 100644
+--- a/include/themes.h
++++ b/include/themes.h
+@@ -102,6 +102,7 @@ typedef struct theme_element
+     int tilt;             // RIPPS2: tilts with the right stick (theme key <name>_tilt=1)
+     int tiltX, tiltY;     // RIPPS2: the tilt's pivot (<name>_tilt_x / _tilt_y); elements sharing one tilt together
+     int tiltScale;        // RIPPS2: the tilt's angle in percent (<name>_tilt_scale, default 100)
++    int imageAlpha;       // RIPPS2: GameImage opacity, 0..128 (<name>_alpha, default 128 = opaque)
+     // Per-device element filter (theme key devices=usb,hdd,...): bitmask over the thmDeviceVocab
+     // table indices in themes.c. 0 = unfiltered (the pre-existing behavior). deviceCoverage is
+     // filled at theme-load validation for UNFILTERED MenuIcon/ItemsList/HintText elements: the
+diff --git a/src/menusys.c b/src/menusys.c
+index 48a4531..80cfc84 100644
+--- a/src/menusys.c
++++ b/src/menusys.c
+@@ -1902,10 +1902,10 @@ void menuHandleInputInfo()
+             guiSwitchScreen(GUI_SCREEN_MAIN);
+         else
+             selected_item->item->execCircle(selected_item->item);
+-    } else if (getKeyOn(KEY_LEFT)) {
+-        ripps2StepCategory(-1); // RIPPS2: Left/Right switch categories, leaving the info page
+-    } else if (getKeyOn(KEY_RIGHT)) {
+-        ripps2StepCategory(1);
++    } else if (getKey(KEY_LEFT)) {
++        menuPrevV(); // RIPPS2: no category bar on the info page, so Left/Right step games like Up/Down
++    } else if (getKey(KEY_RIGHT)) {
++        menuNextV();
+     } else if (getKeyOn(KEY_L2)) {
+         menuFirstPage();
+     } else if (getKeyOn(KEY_R2)) {
+diff --git a/src/renderman.c b/src/renderman.c
+index 79e8d63..f4a6d3e 100644
+--- a/src/renderman.c
++++ b/src/renderman.c
+@@ -436,11 +436,12 @@ static void rmSetupQuad(GSTEXTURE *txt, int x, int y, short aligned, int w, int
+ 
+ void rmDrawQuad(rm_quad_t *q)
+ {
++    // RIPPS2: a translucent draw (vertex alpha below 0x80) blends even when the texture has no alpha
+     if ((q->txt->PSM == GS_PSM_CT32) || (q->txt->Clut && q->txt->ClutPSM == GS_PSM_CT32)) {
+         gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
+         gsKit_set_test(gsGlobal, GS_ATEST_ON);
+     } else {
+-        gsGlobal->PrimAlphaEnable = GS_SETTING_OFF;
++        gsGlobal->PrimAlphaEnable = ((q->color >> 24) & 0xFF) < 0x80 ? GS_SETTING_ON : GS_SETTING_OFF;
+         gsKit_set_test(gsGlobal, GS_ATEST_OFF);
+     }
+ 
+diff --git a/src/ripps2bg.c b/src/ripps2bg.c
+index 5616fe6..e0fe727 100644
+--- a/src/ripps2bg.c
++++ b/src/ripps2bg.c
+@@ -21,7 +21,7 @@
+ #include "include/gui.h"
+ #include "include/ripps2.h"
+ 
+-#define RIPPS2_PERF_HUD 1 // beta builds: show BG time and FPS in the corner
++#define RIPPS2_PERF_HUD 0 // 1: show the background's EE time and the FPS in the corner (dev builds)
+ 
+ #define PI   3.14159265f
+ #define TAU  6.28318531f
+@@ -939,21 +939,25 @@ void ripps2DrawOrbs(void)
+ 
+ // ---------------------------------------------------------------- entry + perf HUD
+ 
++#if RIPPS2_PERF_HUD
+ static float bgMsAvg = 0.0f;
+ static int fpsFrames = 0, fpsShown = 0;
+ static float fpsWindow = 0.0f;
++#endif
+ 
+ void ripps2DrawBackground(void)
+ {
++#if RIPPS2_PERF_HUD
+     unsigned int t0 = cpuTicks();
++#endif
+     if (gRipps2Category == RIPPS2_CAT_MEMORY)
+         ripps2DrawOrbs();
+     else
+         ripps2DrawPillars();
+-    float ms = (float)(cpuTicks() - t0) / 294912.0f;
+-    bgMsAvg = bgMsAvg * 0.9f + ms * 0.1f;
+ 
+ #if RIPPS2_PERF_HUD
++    float ms = (float)(cpuTicks() - t0) / 294912.0f;
++    bgMsAvg = bgMsAvg * 0.9f + ms * 0.1f;
+     float t = nowSeconds();
+     fpsFrames++;
+     if (t - fpsWindow >= 1.0f) {
+diff --git a/src/themes.c b/src/themes.c
+index 08662d4..61877bc 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -1221,16 +1221,18 @@ static void drawGameImage(struct menu_list *menu, struct submenu_list *item, con
+         }
+ 
+         // RIPPS2: a GameImage honours <name>_reflection / _reflection_offset the way Coverflow does,
+-        // so a single cover (the info page's) gets the same mirrored, fading reflection and case art.
++        // so a single cover (the info page's) gets the same mirrored, fading reflection and case art,
++        // and <name>_alpha lets what is behind it show through (the Storage viewport's art).
++        u64 imageCol = drawElem->imageAlpha < 0x80 ? GS_SETREG_RGBA(0x80, 0x80, 0x80, drawElem->imageAlpha) : gDefaultCol;
+         rmSetReflectionYOffset(drawElem->reflectionOffset);
+         if (gameImage->overlayTexture) {
+-            rmDrawOverlayPixmap(&gameImage->overlayTexture->source, drawElem->posX, drawElem->posY, drawElem->aligned, drawElem->width, drawElem->height, drawElem->scaled, gDefaultCol,
++            rmDrawOverlayPixmap(&gameImage->overlayTexture->source, drawElem->posX, drawElem->posY, drawElem->aligned, drawElem->width, drawElem->height, drawElem->scaled, imageCol,
+                                 texture, gameImage->overlayTexture->upperLeft_x, gameImage->overlayTexture->upperLeft_y, gameImage->overlayTexture->upperRight_x, gameImage->overlayTexture->upperRight_y,
+                                 gameImage->overlayTexture->lowerLeft_x, gameImage->overlayTexture->lowerLeft_y, gameImage->overlayTexture->lowerRight_x, gameImage->overlayTexture->lowerRight_y, drawElem->reflection);
+             if (gameImage->overlayTexture2)
+-                rmDrawPixmap(&gameImage->overlayTexture2->source, drawElem->posX, drawElem->posY, drawElem->aligned, drawElem->width, drawElem->height, drawElem->scaled, gDefaultCol, drawElem->reflection);
++                rmDrawPixmap(&gameImage->overlayTexture2->source, drawElem->posX, drawElem->posY, drawElem->aligned, drawElem->width, drawElem->height, drawElem->scaled, imageCol, drawElem->reflection);
+         } else
+-            rmDrawPixmap(texture, drawElem->posX, drawElem->posY, drawElem->aligned, drawElem->width, drawElem->height, drawElem->scaled, gDefaultCol, drawElem->reflection);
++            rmDrawPixmap(texture, drawElem->posX, drawElem->posY, drawElem->aligned, drawElem->width, drawElem->height, drawElem->scaled, imageCol, drawElem->reflection);
+         rmSetReflectionYOffset(0); // don't leak the offset to any other reflection draw
+ 
+ #ifdef RETROACHIEVEMENTS
+@@ -1861,6 +1863,7 @@ static theme_element_t *initBasic(const char *themePath, config_set_t *themeConf
+     elem->tiltX = x;
+     elem->tiltY = y;
+     elem->tiltScale = 100;
++    elem->imageAlpha = 0x80;
+     elem->showRun = 1;
+     elem->deviceFilter = 0;   // malloc'd without memset: MUST be zeroed explicitly (0 = unfiltered)
+     elem->deviceCoverage = 0; // filled at validateGUIElems for unfiltered MenuIcon/ItemsList/HintText
+@@ -1959,6 +1962,9 @@ static theme_element_t *initBasic(const char *themePath, config_set_t *themeConf
+     snprintf(elemProp, sizeof(elemProp), "%s_tilt_y", name);
+     if (configGetInt(themeConfig, elemProp, &intValue))
+         elem->tiltY = intValue;
++    snprintf(elemProp, sizeof(elemProp), "%s_alpha", name);
++    if (configGetInt(themeConfig, elemProp, &intValue) && intValue >= 0 && intValue <= 0x80)
++        elem->imageAlpha = intValue;
+     snprintf(elemProp, sizeof(elemProp), "%s_tilt_scale", name);
+     if (configGetInt(themeConfig, elemProp, &intValue) && intValue > 0 && intValue <= 400)
+         elem->tiltScale = intValue;
