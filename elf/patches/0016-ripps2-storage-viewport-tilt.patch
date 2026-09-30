@@ -1,0 +1,34 @@
+diff --git a/src/menusys.c b/src/menusys.c
+index 80cfc84..96f860c 100644
+--- a/src/menusys.c
++++ b/src/menusys.c
+@@ -1728,6 +1728,8 @@ void menuRenderMain(void)
+     item_list_t *list = selected_item->item->userdata;
+     theme_elems_t *kindElems = menuGetMainElems(list);
+ 
++    ripps2UpdateTilt(); // RIPPS2: the right stick tilts the art viewport and its description
++
+     if (kindElems == &gTheme->favsVcdMainElems || kindElems == &gTheme->favsAppsMainElems) {
+         // A Favourites per-kind family page. Its lists own no global slot, so navigation takes the list
+         // the theme declared in the family (the one drawn), falling back to the slot this view used
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index f8aafbc..1b2317c 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -263,11 +263,11 @@ void ripps2DrawPanelGlass(int x, int y, int w, int h, int hasItem)
+     panelFrame(x, y, w, h);
+ }
+ 
+-// ---- INFO page: right-stick view tilt ----
+-// The stick tips the art panel (with everything on it) and the disc-and-cover showcase a few degrees
+-// in any direction, each about its own centre; the view eases after the stick and starts level each
+-// time the page opens. Pushing a side sends that side away. A narrow group (the disc and its case)
+-// turns further (theme key tilt_scale), the way a case turns in the hand, or it would barely read.
++// ---- STORAGE and INFO pages: right-stick view tilt ----
++// The stick tips the art viewport with everything on it (and, on the info page, the disc and case in
++// the same plane) a few degrees in any direction about the group's centre. The view eases after the
++// stick and starts level whenever a page opens. Pushing a side sends that side away. A group can turn
++// further than the default (theme key tilt_scale).
+ #define TILT_YAW_MAX   0.16f // ~9 degrees
+ #define TILT_PITCH_MAX 0.12f // ~7 degrees
+ 
