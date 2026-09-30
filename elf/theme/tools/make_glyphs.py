@@ -3,7 +3,7 @@
 They replace RiptOPL's built-in icons of the same names at build time (build.sh copies
 elf/theme/gfx over the source tree's gfx/), so the hint bar, the drive row and the info page
 badges all share the mockups' look: thin light-blue outlines on a faint navy fill, labels in
-the RIPPS2 font. Everything is drawn 4x and downsampled for clean edges.
+RIPPS2 Sleek. Everything is drawn 4x and downsampled for clean edges.
 
     python elf/theme/tools/make_glyphs.py
 """
@@ -12,7 +12,8 @@ from PIL import Image, ImageDraw, ImageFont
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.normpath(os.path.join(HERE, '..', 'gfx'))
-FONT = os.path.normpath(os.path.join(HERE, '..', '..', '..', 'assets', 'master.ttf'))
+# labels in RIPPS2 Sleek (make_sleek_font.py), the font the hint text beside these glyphs uses
+FONT = os.path.normpath(os.path.join(HERE, '..', 'fonts', 'ripps2_sleek.ttf'))
 
 SS = 4  # supersampling factor
 LINE = (178, 198, 248, 240)   # outline
@@ -47,7 +48,8 @@ def centered_text(d, cx, cy, text, px, fill=TEXT, max_w=None):
         px -= 1
         f = font(px, text)
         l, t, r, b = d.textbbox((0, 0), text, font=f)
-    d.text((cx * SS - (l + r) / 2, cy * SS - (t + b) / 2), text, font=f, fill=fill)
+    # a touch of stroke: the Sleek letters are one thin line, which would thin out at hint size
+    d.text((cx * SS - (l + r) / 2, cy * SS - (t + b) / 2), text, font=f, fill=fill, stroke_width=2, stroke_fill=fill)
 
 
 def pill(d, w, h, radius, stroke=2.0, inset=1.5):
