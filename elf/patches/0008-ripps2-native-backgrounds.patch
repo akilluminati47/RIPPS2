@@ -1,0 +1,687 @@
+diff --git a/Makefile b/Makefile
+index 9a74f40..07d4aa4 100644
+--- a/Makefile
++++ b/Makefile
+@@ -131,7 +131,7 @@ ifneq ($(GIT_TAG),latest)
+ endif
+ endif
+ 
+-FRONTEND_OBJS = ripps2.o ripps2ui.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o \
++FRONTEND_OBJS = ripps2.o ripps2ui.o ripps2bg.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o \
+ 		dia.o ioman.o texcache.o themes.o supportbase.o bdmsupport.o netsupport.o ethsupport.o httpcatalog.o httpsupport.o udpfssupport.o hddsupport.o zso.o lz4.o launchdiag.o \
+ 		appsupport.o mmcesupport.o artindex.o vcdsupport.o cuesupport.o libview.o retrogem.o folderbrowse.o gui.o guigame.o vmc_groups.o textures.o opl.o atlas.o nbns.o httpclient.o gsm.o cheatman.o sound.o ps2cnf.o tar.o
+ 
+diff --git a/include/renderman.h b/include/renderman.h
+index 376d151..410d7b2 100644
+--- a/include/renderman.h
++++ b/include/renderman.h
+@@ -122,6 +122,12 @@ void rmDrawFramedRect(int x, int y, int w, int h, int border, u64 frameColor, u6
+ /** Queues a single color line to be rendered */
+ void rmDrawLine(int x1, int y1, int x2, int y2, u64 color);
+ 
++// RIPPS2: gradient-shaded triangle / quad (corners TL, TR, BL, BR) and additive blending
++void rmDrawTriGouraud(float x1, float y1, u64 c1, float x2, float y2, u64 c2, float x3, float y3, u64 c3);
++void rmDrawQuadGouraud(float x1, float y1, u64 c1, float x2, float y2, u64 c2,
++                       float x3, float y3, u64 c3, float x4, float y4, u64 c4);
++void rmSetBlendAdditive(int on);
++
+ /** Starts the frame - first to call every frame */
+ void rmStartFrame(void);
+ 
+diff --git a/include/ripps2.h b/include/ripps2.h
+index 4308299..97ff710 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -25,4 +25,9 @@ void ripps2RenderLaunch(void);
+ void ripps2HandleInputMemory(void);
+ void ripps2RenderMemory(void);
+ 
++// ---- Native backgrounds (ripps2bg.c), drawn in place of the plasma ----
++void ripps2DrawBackground(void); // orbs on Memory Files, pillars everywhere else
++void ripps2DrawPillars(void);
++void ripps2DrawOrbs(void);
++
+ #endif
+diff --git a/src/gui.c b/src/gui.c
+index 214f4cd..5642536 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -3981,6 +3981,10 @@ void guiDrawBGPlasma()
+ {
+     int x, y;
+ 
++    // RIPPS2: the native pillars / orbs replace the plasma on every screen
++    ripps2DrawBackground();
++    return;
++
+     // transition the colors
+     curbgColor[0] += cdirection(curbgColor[0], gTheme->bgColor[0]);
+     curbgColor[1] += cdirection(curbgColor[1], gTheme->bgColor[1]);
+diff --git a/src/opl.c b/src/opl.c
+index 65d3b28..cb2acef 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -4868,17 +4868,17 @@ void setDefaultColors(void)
+     gDefaultBgColor[1] = 0x2A;
+     gDefaultBgColor[2] = 0x7A;
+ 
+-    gDefaultTextColor[0] = 0x8F;
+-    gDefaultTextColor[1] = 0xA4;
+-    gDefaultTextColor[2] = 0xD8;
++    gDefaultTextColor[0] = 0x47; // text is GS-modulated: shows as #8FA4D8
++    gDefaultTextColor[1] = 0x52;
++    gDefaultTextColor[2] = 0x6C;
+ 
+     gDefaultSelTextColor[0] = 0xFF;
+     gDefaultSelTextColor[1] = 0xFF;
+     gDefaultSelTextColor[2] = 0xFF;
+ 
+-    gDefaultUITextColor[0] = 0x9F;
+-    gDefaultUITextColor[1] = 0xB4;
+-    gDefaultUITextColor[2] = 0xE8;
++    gDefaultUITextColor[0] = 0x4F; // shows as #9FB4E8
++    gDefaultUITextColor[1] = 0x5A;
++    gDefaultUITextColor[2] = 0x74;
+ 
+     // Seeded from the general text colour: out of the box titles look exactly as before, and
+     // only diverge once the user actually picks something in the new row.
+diff --git a/src/renderman.c b/src/renderman.c
+index e6011f1..d29e077 100644
+--- a/src/renderman.c
++++ b/src/renderman.c
+@@ -621,6 +621,39 @@ void rmDrawLine(int x1, int y1, int x2, int y2, u64 color)
+     order++;
+ }
+ 
++// RIPPS2: gradient-shaded primitives in theme space (640x480, like every rm* call) for the
++// native pillars and orbs. Vertex colours are interpolated by the GS, alpha included.
++void rmDrawTriGouraud(float x1, float y1, u64 c1, float x2, float y2, u64 c2, float x3, float y3, u64 c3)
++{
++    gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
++    gsKit_prim_triangle_gouraud(gsGlobal,
++                                X_SCALE(x1) + fRenderXOff, Y_SCALE(y1) + fRenderYOff,
++                                X_SCALE(x2) + fRenderXOff, Y_SCALE(y2) + fRenderYOff,
++                                X_SCALE(x3) + fRenderXOff, Y_SCALE(y3) + fRenderYOff,
++                                order, c1, c2, c3);
++    order++;
++}
++
++// Quad as a triangle strip: (1,2,3) + (2,3,4), so pass corners as TL, TR, BL, BR
++void rmDrawQuadGouraud(float x1, float y1, u64 c1, float x2, float y2, u64 c2,
++                       float x3, float y3, u64 c3, float x4, float y4, u64 c4)
++{
++    gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
++    gsKit_prim_quad_gouraud(gsGlobal,
++                            X_SCALE(x1) + fRenderXOff, Y_SCALE(y1) + fRenderYOff,
++                            X_SCALE(x2) + fRenderXOff, Y_SCALE(y2) + fRenderYOff,
++                            X_SCALE(x3) + fRenderXOff, Y_SCALE(y3) + fRenderYOff,
++                            X_SCALE(x4) + fRenderXOff, Y_SCALE(y4) + fRenderYOff,
++                            order, c1, c2, c3, c4);
++    order++;
++}
++
++// Additive blend (Cs*As + Cd) for glows, back to the default source-over when off
++void rmSetBlendAdditive(int on)
++{
++    gsKit_set_primalpha(gsGlobal, on ? GS_SETREG_ALPHA(0, 2, 0, 1, 0) : gDefaultAlpha, 0);
++}
++
+ void rmSetDisplayOffset(int x, int y)
+ {
+     gsKit_set_display_offset(gsGlobal, x * rm_mode_table[vmode].VCK, y);
+diff --git a/src/ripps2bg.c b/src/ripps2bg.c
+new file mode 100644
+index 0000000..7e17106
+--- /dev/null
++++ b/src/ripps2bg.c
+@@ -0,0 +1,515 @@
++/*
++  RIPPS2 native backgrounds, drawn by the PS2 in place of RiptOPL's plasma:
++    - Pillars: a field of glass towers (Storage, Launch Disc and every other screen)
++    - Orbs: glowing orbs in the current formation (Memory Files)
++  Ports of the RIPPS2 web theme, sized for a vsync-locked frame: the towers are culled and
++  sorted on the EE and drawn as gradient quads; the orbs are additive gradient fans.
++
++  The EE time spent here is measured every frame (COP0 Count, 294.912 MHz) and shown in the
++  corner of beta builds together with the frame rate, both in PS2 time, so the numbers are
++  true however fast the host runs an emulator.
++*/
++
++#include <math.h>
++#include <time.h>
++#include <stdio.h>
++
++#include "include/opl.h"
++#include "include/renderman.h"
++#include "include/fntsys.h"
++#include "include/themes.h"
++#include "include/ripps2.h"
++
++#define RIPPS2_PERF_HUD 1 // beta builds: show BG time and FPS in the corner
++
++#define PI   3.14159265f
++#define TAU  6.28318531f
++#define PHI  1.61803399f
++#define CX   320.0f
++#define CY   240.0f
++#define RGBA(r, g, b, a) GS_SETREG_RGBAQ((r), (g), (b), (a), 0x00)
++
++typedef struct
++{
++    float x, y, z;
++} v3;
++
++typedef struct
++{
++    float x, y, z;
++    int ok;
++} p2;
++
++static float nowSeconds(void)
++{
++    return (float)clock() / (float)CLOCKS_PER_SEC;
++}
++
++static inline unsigned int cpuTicks(void)
++{
++    unsigned int c;
++    __asm__ __volatile__("mfc0 %0, $9" : "=r"(c));
++    return c;
++}
++
++// ---------------------------------------------------------------- camera
++
++static v3 camEye, camR, camU, camF;
++static float camFocal;
++
++static v3 vsub(v3 a, v3 b) { v3 r = {a.x - b.x, a.y - b.y, a.z - b.z}; return r; }
++static float vdot(v3 a, v3 b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
++static v3 vnorm(v3 a)
++{
++    float l = sqrtf(vdot(a, a));
++    v3 r = {a.x / l, a.y / l, a.z / l};
++    return r;
++}
++static v3 vcross(v3 a, v3 b)
++{
++    v3 r = {a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x};
++    return r;
++}
++
++static void camLook(v3 eye, v3 target, float fovDeg)
++{
++    v3 up = {0.0f, 1.0f, 0.0f};
++    camEye = eye;
++    camF = vnorm(vsub(target, eye));
++    camR = vnorm(vcross(camF, up));
++    camU = vcross(camR, camF);
++    camFocal = 240.0f / tanf(fovDeg * PI / 360.0f);
++}
++
++static p2 project(v3 p)
++{
++    v3 d = vsub(p, camEye);
++    p2 o;
++    o.z = vdot(d, camF);
++    o.ok = o.z > 0.5f;
++    if (o.ok) {
++        o.x = CX + vdot(d, camR) / o.z * camFocal;
++        o.y = CY - vdot(d, camU) / o.z * camFocal;
++    }
++    return o;
++}
++
++// ---------------------------------------------------------------- pillars
++
++#define GRID        11
++#define MAX_TOWERS  (GRID * GRID)
++#define SPACING     2.4f
++#define MAX_HEIGHT  13.0f
++
++typedef struct
++{
++    float x, z, w, base, phase, depth, h;
++} tower_t;
++
++static tower_t towers[MAX_TOWERS];
++static int towerIdx[MAX_TOWERS];
++static int towerCount = 0;
++static unsigned int rngState = 47;
++
++static float rnd(void)
++{
++    rngState = rngState * 1664525u + 1013904223u;
++    return (float)(rngState >> 8) / 16777216.0f;
++}
++
++static void pillarsInit(void)
++{
++    int gx, gz;
++    float half = (GRID - 1) / 2.0f;
++    towerCount = 0;
++    for (gx = 0; gx < GRID; gx++) {
++        for (gz = 0; gz < GRID; gz++) {
++            float x = gx - half, z = gz - half;
++            float d = sqrtf(x * x + z * z) / half;
++            if (d > 1.02f)
++                continue;
++            tower_t *t = &towers[towerCount];
++            float falloff = 0.22f + 0.78f * expf(-(d * d) / (2.0f * 0.38f * 0.38f));
++            t->base = falloff * (0.45f + rnd() * 0.55f);
++            if (rnd() < 0.06f)
++                t->base = fminf(1.15f, t->base * 1.6f);
++            t->x = x * SPACING;
++            t->z = z * SPACING;
++            t->w = SPACING * (0.42f + rnd() * 0.2f);
++            t->phase = rnd() * TAU;
++            towerIdx[towerCount] = towerCount;
++            towerCount++;
++        }
++    }
++}
++
++static void drawSky(u64 top, u64 horizon, u64 floor)
++{
++    rmDrawQuadGouraud(0, 0, top, 640, 0, top, 0, 290, horizon, 640, 290, horizon);
++    rmDrawQuadGouraud(0, 290, horizon, 640, 290, horizon, 0, 480, floor, 640, 480, floor);
++}
++
++static void drawFloorGrid(void)
++{
++    int i;
++    const float ext = 9.0f * SPACING;
++    for (i = -9; i <= 9; i++) {
++        float c = (i + 0.5f) * SPACING;
++        v3 a = {c, 0.0f, -ext}, b = {c, 0.0f, ext}, e = {-ext, 0.0f, c}, f = {ext, 0.0f, c};
++        p2 pa = project(a), pb = project(b), pe = project(e), pf = project(f);
++        if (pa.ok && pb.ok)
++            rmDrawLine((int)pa.x, (int)pa.y, (int)pb.x, (int)pb.y, RGBA(0x1C, 0x34, 0x80, 0x30));
++        if (pe.ok && pf.ok)
++            rmDrawLine((int)pe.x, (int)pe.y, (int)pf.x, (int)pf.y, RGBA(0x1C, 0x34, 0x80, 0x30));
++    }
++}
++
++static u64 shade(float k, int a)
++{
++    return RGBA((int)(0x1A * k), (int)(0x3A * k), (int)(0x9A * k), a);
++}
++
++// One side of a tower. c[] = BL, BR, TL, TR in world space; n = outward normal.
++static void drawSide(const v3 *c, v3 n, float k)
++{
++    v3 mid = {(c[0].x + c[3].x) * 0.5f, (c[0].y + c[3].y) * 0.5f, (c[0].z + c[3].z) * 0.5f};
++    if (vdot(n, vsub(camEye, mid)) <= 0.0f)
++        return; // back face
++    p2 bl = project(c[0]), br = project(c[1]), tl = project(c[2]), tr = project(c[3]);
++    if (!bl.ok || !br.ok || !tl.ok || !tr.ok)
++        return;
++    u64 bottom = RGBA(0x04, 0x0A, 0x24, 0x80);
++    u64 top = shade(k, 0x80);
++    rmDrawQuadGouraud(tl.x, tl.y, top, tr.x, tr.y, top, bl.x, bl.y, bottom, br.x, br.y, bottom);
++
++    // glowing vertical edges and the rim at the top
++    rmSetBlendAdditive(1);
++    u64 edge = RGBA(0x40, 0x80, 0xFF, 0x38), rim = RGBA(0x7E, 0xC2, 0xFF, 0x60);
++    rmDrawLine((int)bl.x, (int)bl.y, (int)tl.x, (int)tl.y, edge);
++    rmDrawLine((int)br.x, (int)br.y, (int)tr.x, (int)tr.y, edge);
++    rmDrawLine((int)tl.x, (int)tl.y, (int)tr.x, (int)tr.y, rim);
++    rmSetBlendAdditive(0);
++}
++
++void ripps2DrawPillars(void)
++{
++    int i, j;
++    float t = nowSeconds();
++
++    if (towerCount == 0)
++        pillarsInit();
++
++    drawSky(RGBA(0x01, 0x02, 0x09, 0x80), RGBA(0x0B, 0x19, 0x4C, 0x80), RGBA(0x02, 0x04, 0x10, 0x80));
++
++    float a = t * 0.03f + 0.7f;
++    v3 eye = {cosf(a) * 40.0f, 7.5f, sinf(a) * 40.0f};
++    v3 target = {0.0f, 10.5f, 0.0f};
++    camLook(eye, target, 40.0f);
++
++    drawFloorGrid();
++
++    // heights breathe and a slow swell rolls across the field
++    for (i = 0; i < towerCount; i++) {
++        tower_t *tw = &towers[i];
++        float breathe = 0.9f + 0.1f * sinf(t * 0.5f + tw->phase);
++        float swell = 0.5f + 0.5f * sinf(tw->x * 0.18f + tw->z * 0.11f - t * 0.6f);
++        tw->h = fmaxf(0.05f, tw->base * breathe * MAX_HEIGHT + swell * 1.4f);
++        v3 c = {tw->x, tw->h * 0.5f, tw->z};
++        tw->depth = vdot(vsub(c, camEye), camF);
++    }
++    // back to front (insertion sort: the order barely changes frame to frame)
++    for (i = 1; i < towerCount; i++) {
++        int v = towerIdx[i];
++        for (j = i - 1; j >= 0 && towers[towerIdx[j]].depth < towers[v].depth; j--)
++            towerIdx[j + 1] = towerIdx[j];
++        towerIdx[j + 1] = v;
++    }
++
++    for (i = 0; i < towerCount; i++) {
++        tower_t *tw = &towers[towerIdx[i]];
++        float hw = tw->w * 0.5f, h = tw->h;
++        float x0 = tw->x - hw, x1 = tw->x + hw, z0 = tw->z - hw, z1 = tw->z + hw;
++        float k = 0.35f + 0.65f * fminf(1.0f, h / MAX_HEIGHT);
++        v3 s1[4] = {{x0, 0, z1}, {x1, 0, z1}, {x0, h, z1}, {x1, h, z1}}; // +z
++        v3 s2[4] = {{x1, 0, z0}, {x0, 0, z0}, {x1, h, z0}, {x0, h, z0}}; // -z
++        v3 s3[4] = {{x1, 0, z1}, {x1, 0, z0}, {x1, h, z1}, {x1, h, z0}}; // +x
++        v3 s4[4] = {{x0, 0, z0}, {x0, 0, z1}, {x0, h, z0}, {x0, h, z1}}; // -x
++        v3 nz = {0, 0, 1}, nnz = {0, 0, -1}, nx = {1, 0, 0}, nnx = {-1, 0, 0};
++        drawSide(s1, nz, k * 0.85f);
++        drawSide(s2, nnz, k * 0.85f);
++        drawSide(s3, nx, k * 0.65f);
++        drawSide(s4, nnx, k * 0.65f);
++        if (camEye.y > h) { // top cap
++            v3 a0 = {x0, h, z0}, a1 = {x1, h, z0}, a2 = {x0, h, z1}, a3 = {x1, h, z1};
++            p2 q0 = project(a0), q1 = project(a1), q2 = project(a2), q3 = project(a3);
++            if (q0.ok && q1.ok && q2.ok && q3.ok) {
++                u64 cap = RGBA(0x16, 0x30, 0x80, 0x80);
++                rmDrawQuadGouraud(q0.x, q0.y, cap, q1.x, q1.y, cap, q2.x, q2.y, cap, q3.x, q3.y, cap);
++            }
++        }
++    }
++}
++
++// ---------------------------------------------------------------- orbs
++
++#define MAX_ORBS 28
++#define LORENZ_N 24
++
++typedef struct
++{
++    const char *name;
++    int n;
++    float tilt, spin;
++} formation_t;
++
++// Same order as the Memory Files names in ripps2ui.c
++static const formation_t formations[] = {
++    {"Browser Orbit", 7, 0.12f, 0.0f}, {"Borromean Rings", 24, 0.35f, 0.14f}, {"Torus Orbit", 28, 0.75f, 0.0f},
++    {"Icosahedron", 12, 0.0f, 0.0f}, {"Double Helix", 20, 0.3f, 0.0f}, {"Strange Attractor", LORENZ_N, 0.0f, 0.08f},
++    {"Trefoil Knot", 24, 0.0f, 0.12f}, {"Mobius Strip", 27, 0.6f, 0.1f}, {"Klein Bottle", 28, 0.15f, 0.0f},
++    {"Golden Spiral", 21, 1.15f, 0.0f}, {"Lissajous", 28, 0.0f, 0.1f}, {"Seven-Point Star", 21, 0.0f, 0.0f}};
++#define FORMATIONS ((int)(sizeof(formations) / sizeof(formations[0])))
++
++static v3 lorenz[LORENZ_N];
++static int lorenzReady = 0;
++static const int STAR[7] = {0, 3, 6, 2, 5, 1, 4};
++
++static void lorenzStep(float dt)
++{
++    int i, k;
++    if (!lorenzReady) {
++        for (i = 0; i < LORENZ_N; i++) {
++            lorenz[i].x = 0.1f + (i % 6) * 0.35f;
++            lorenz[i].y = 0.2f * i - 2.0f;
++            lorenz[i].z = 16.0f + (i % 5) * 1.8f;
++        }
++        lorenzReady = 1;
++    }
++    float h = fminf(dt, 0.05f) * 0.35f / 4.0f;
++    for (i = 0; i < LORENZ_N; i++) {
++        v3 *p = &lorenz[i];
++        for (k = 0; k < 4; k++) {
++            float dx = 10.0f * (p->y - p->x), dy = p->x * (28.0f - p->z) - p->y, dz = p->x * p->y - (8.0f / 3.0f) * p->z;
++            p->x += dx * h;
++            p->y += dy * h;
++            p->z += dz * h;
++        }
++    }
++}
++
++static v3 V(float x, float y, float z)
++{
++    v3 r = {x, y, z};
++    return r;
++}
++
++static v3 menuOrbit(int k, float a, float t)
++{
++    float r = (2.5f + (k % 4) * 0.55f) * (1.0f + 0.06f * sinf(t * 0.4f + k));
++    float incl = 0.3f + fmodf(k * 0.61f, 1.0f);
++    float node = (k / 7.0f) * TAU + t * 0.05f;
++    float x0 = cosf(a) * r, z0 = sinf(a) * r;
++    float y1 = -z0 * sinf(incl), z1 = z0 * cosf(incl);
++    return V(x0 * cosf(node) + z1 * sinf(node), y1, -x0 * sinf(node) + z1 * cosf(node));
++}
++
++static v3 klein(float u, float v)
++{
++    float cu = cosf(u), su = sinf(u), cv = cosf(v), sv = sinf(v);
++    float c2 = cu * cu, c4 = c2 * c2, c6 = c4 * c2;
++    float x = -2.0f / 15.0f * cu * (3 * cv - 30 * su + 90 * c4 * su - 60 * c6 * su + 5 * cu * cv * su);
++    float y = -1.0f / 15.0f * su * (3 * cv - 3 * c2 * cv - 48 * c4 * cv + 48 * c6 * cv - 60 * su + 5 * cu * cv * su - 5 * c2 * cu * cv * su - 80 * c4 * cu * cv * su + 80 * c6 * cu * cv * su);
++    float z = 2.0f / 15.0f * (3 + 5 * cu * su) * sv;
++    return V((x - 0.15f) * 1.55f, (y - 2.1f) * 1.55f, z * 1.55f);
++}
++
++// Position of orb i of n in formation f at time t (formation frame, before tilt/spin)
++static v3 formationAt(int f, int i, int n, float t)
++{
++    float s, a, b;
++    switch (f) {
++        case 0: // Browser Orbit
++            return menuOrbit(i, t * (0.3f + fmodf(i * 0.37f, 1.0f) * 0.35f) + i * 2.1f, t);
++        case 1: { // Borromean Rings
++            int per = n / 3, ring = i / per, idx = i % per;
++            s = ((float)idx / per) * TAU + t * (0.4f + ring * 0.07f) + ring * 1.1f;
++            a = 3.2f * cosf(s);
++            b = 1.6f * sinf(s);
++            return ring == 0 ? V(a, b, 0) : ring == 1 ? V(0, a, b) : V(b, 0, a);
++        }
++        case 2: { // Torus Orbit
++            float u = ((float)i / n) * TAU + t * 0.3f, v = ((float)i / n) * TAU * 4.0f + t * 1.1f;
++            return V((3.3f + 1.25f * cosf(v)) * cosf(u), 1.25f * sinf(v), (3.3f + 1.25f * cosf(v)) * sinf(u));
++        }
++        case 3: { // Icosahedron: 12 vertices, tumbling
++            static const float ico[12][3] = {{0, -1, -PHI}, {0, -1, PHI}, {0, 1, -PHI}, {0, 1, PHI}, {-1, -PHI, 0}, {-1, PHI, 0},
++                                             {1, -PHI, 0}, {1, PHI, 0}, {-PHI, 0, -1}, {-PHI, 0, 1}, {PHI, 0, -1}, {PHI, 0, 1}};
++            float sc = 3.4f / sqrtf(1.0f + PHI * PHI);
++            v3 p = V(ico[i][0] * sc, ico[i][1] * sc, ico[i][2] * sc);
++            float ax = t * 0.31f, ay = t * 0.23f;
++            v3 q = V(p.x, p.y * cosf(ax) - p.z * sinf(ax), p.y * sinf(ax) + p.z * cosf(ax));
++            return V(q.x * cosf(ay) + q.z * sinf(ay), q.y, -q.x * sinf(ay) + q.z * cosf(ay));
++        }
++        case 4: { // Double Helix
++            float k = (float)(i / 2) / (n / 2 - 1);
++            s = k * TAU * 1.4f + t * 0.8f + (i % 2) * PI;
++            return V((k - 0.5f) * 8.5f, cosf(s) * 1.7f, sinf(s) * 1.7f);
++        }
++        case 5: // Strange Attractor (live Lorenz system)
++            return V(lorenz[i].x * 0.17f, (lorenz[i].z - 25.0f) * 0.17f, lorenz[i].y * 0.17f);
++        case 6: // Trefoil Knot
++            s = ((float)i / n) * TAU + t * 0.2f;
++            return V((sinf(s) + 2 * sinf(2 * s)) * 1.45f, (cosf(s) - 2 * cosf(2 * s)) * 1.45f, -sinf(3 * s) * 1.45f);
++        case 7: { // Mobius Strip: three lanes across the width
++            int per = n / 3;
++            float v = ((i % 3) - 1) * 1.15f;
++            s = ((float)(i / 3) / per) * TAU + t * 0.28f;
++            float R = 3.6f + v * cosf(s / 2);
++            return V(R * cosf(s), v * sinf(s / 2), R * sinf(s));
++        }
++        case 8: { // Klein Bottle: 7 x 4 grid sliding through the neck
++            int per = n / 4;
++            float uu = ((float)(i / 4) / per) * PI + t * 0.12f;
++            int wraps = (int)floorf(uu / PI);
++            float v = ((float)(i % 4) / 4.0f) * TAU + t * 0.5f;
++            if (wraps & 1)
++                v = PI - v;
++            return klein(uu - wraps * PI, v);
++        }
++        case 9: { // Golden Spiral
++            float k = (float)i / (n - 1);
++            a = k * 3.0f * PI;
++            float r = 0.24f * expf((logf(PHI) / (PI / 2)) * a) * (1.0f + 0.06f * sinf(t * 1.1f));
++            float rot = a + t * 0.25f;
++            return V(cosf(rot) * r, (k - 0.5f) * 1.2f, sinf(rot) * r);
++        }
++        case 10: // Lissajous
++            s = ((float)i / n) * TAU + t * 0.25f;
++            return V(4.2f * sinf(3 * s + PI / 2), 2.6f * sinf(2 * s), 2.4f * sinf(5 * s));
++        default: { // Seven-Point Star {7/3}
++            float p = fmodf((float)i / n + t * 0.03f, 1.0f) * 7.0f;
++            int seg = (int)p;
++            float f2 = p - seg, r = 4.0f * (1.0f + 0.1f * sinf(t * 1.2f));
++            float a0 = (STAR[seg % 7] / 7.0f) * TAU + t * 0.12f - PI / 2, a1 = (STAR[(seg + 1) % 7] / 7.0f) * TAU + t * 0.12f - PI / 2;
++            return V((cosf(a0) + (cosf(a1) - cosf(a0)) * f2) * r, (sinf(a0) + (sinf(a1) - sinf(a0)) * f2) * r, 0);
++        }
++    }
++}
++
++// Formation frame to world: tilt toward the camera, then spin
++static v3 toWorld(int f, v3 p, float t)
++{
++    float tl = formations[f].tilt, sp = formations[f].spin * t;
++    if (tl != 0.0f)
++        p = V(p.x, p.y * cosf(tl) - p.z * sinf(tl), p.y * sinf(tl) + p.z * cosf(tl));
++    if (sp != 0.0f)
++        p = V(p.x * cosf(sp) + p.z * sinf(sp), p.y, -p.x * sinf(sp) + p.z * cosf(sp));
++    return p;
++}
++
++// Additive glow: a fan bright in the centre, clear at the rim
++static void glow(float x, float y, float r, int cr, int cg, int cb, int ca)
++{
++    int k;
++    const int seg = 10;
++    u64 centre = RGBA(cr, cg, cb, ca), rimC = RGBA(cr, cg, cb, 0);
++    float px = x + r, py = y;
++    for (k = 1; k <= seg; k++) {
++        float ang = TAU * k / seg;
++        float nx = x + cosf(ang) * r, ny = y + sinf(ang) * r * 0.9f;
++        rmDrawTriGouraud(x, y, centre, px, py, rimC, nx, ny, rimC);
++        px = nx;
++        py = ny;
++    }
++}
++
++static int shownFormation = -1, prevFormation = 0;
++static float morphStart = -10.0f, lastT = 0.0f;
++
++void ripps2DrawOrbs(void)
++{
++    int i;
++    float t = nowSeconds();
++    float dt = lastT > 0.0f ? t - lastT : 0.016f;
++    lastT = t;
++
++    lorenzStep(dt);
++
++    int f = gRipps2Formation % FORMATIONS;
++    if (shownFormation < 0)
++        shownFormation = prevFormation = f;
++    if (f != shownFormation) { // morph from wherever the orbs are
++        prevFormation = shownFormation;
++        shownFormation = f;
++        morphStart = t;
++    }
++    float m = fminf(1.0f, (t - morphStart) / 2.0f);
++    float e = m < 0.5f ? 4 * m * m * m : 1 - powf(-2 * m + 2, 3) / 2;
++
++    drawSky(RGBA(0x01, 0x02, 0x0A, 0x80), RGBA(0x08, 0x16, 0x46, 0x80), RGBA(0x01, 0x02, 0x08, 0x80));
++    rmSetBlendAdditive(1);
++    glow(320, 230, 260, 0x12, 0x35, 0x7F, 0x30); // soft haze behind the formation
++
++    float sway = sinf(t * 0.07f) * 0.3f;
++    v3 eye = {sinf(sway) * 15.0f, 1.5f + sinf(t * 0.13f) * 0.8f, cosf(sway) * 15.0f};
++    v3 target = {0.0f, -0.7f, 0.0f};
++    camLook(eye, target, 42.0f);
++
++    int n = formations[f].n, pn = formations[prevFormation].n;
++    int count = (e < 1.0f && pn > n) ? pn : n;
++    float sizeCur = fmaxf(0.55f, sqrtf(7.0f / n)), sizePrev = fmaxf(0.55f, sqrtf(7.0f / pn));
++    float size = sizePrev + (sizeCur - sizePrev) * e;
++
++    for (i = 0; i < count && i < MAX_ORBS; i++) {
++        v3 a = toWorld(f, formationAt(f, i % n, n, t), t);
++        float vis = i < n ? 1.0f : 0.0f;
++        if (e < 1.0f) { // split off / merge back, arcing outward mid-flight
++            v3 b = toWorld(prevFormation, formationAt(prevFormation, i % pn, pn, t), t);
++            float arc = 1.0f + sinf(e * PI) * 0.3f;
++            a = V((b.x + (a.x - b.x) * e) * arc, (b.y + (a.y - b.y) * e) * arc, (b.z + (a.z - b.z) * e) * arc);
++            vis = (i < pn ? 1.0f : 0.0f) + (vis - (i < pn ? 1.0f : 0.0f)) * e;
++        }
++        if (vis <= 0.01f)
++            continue;
++        p2 p = project(a);
++        if (!p.ok)
++            continue;
++        float depthDim = fminf(1.0f, fmaxf(0.45f, 1.0f - (p.z - 12.0f) / 9.0f)) * vis;
++        float r = 14.0f * 15.0f / p.z * size;
++        glow(p.x, p.y, r, 0x64, 0x96, 0xFF, (int)(0x40 * depthDim));
++        glow(p.x, p.y, r * 0.3f, 0xEB, 0xF2, 0xFF, (int)(0x80 * depthDim));
++    }
++    rmSetBlendAdditive(0);
++}
++
++// ---------------------------------------------------------------- entry + perf HUD
++
++static float bgMsAvg = 0.0f;
++static int fpsFrames = 0, fpsShown = 0;
++static float fpsWindow = 0.0f;
++
++void ripps2DrawBackground(void)
++{
++    unsigned int t0 = cpuTicks();
++    if (gRipps2Category == RIPPS2_CAT_MEMORY)
++        ripps2DrawOrbs();
++    else
++        ripps2DrawPillars();
++    float ms = (float)(cpuTicks() - t0) / 294912.0f;
++    bgMsAvg = bgMsAvg * 0.9f + ms * 0.1f;
++
++#if RIPPS2_PERF_HUD
++    float t = nowSeconds();
++    fpsFrames++;
++    if (t - fpsWindow >= 1.0f) {
++        fpsShown = (int)(fpsFrames / (t - fpsWindow) + 0.5f);
++        fpsFrames = 0;
++        fpsWindow = t;
++    }
++    char hud[32];
++    int tenths = (int)(bgMsAvg * 10.0f + 0.5f); // integer formatting: no float printf needed
++    snprintf(hud, sizeof(hud), "BG %d.%dMS %dFPS", tenths / 10, tenths % 10, fpsShown);
++    int w = fntCalcDimensions(gTheme->fonts[3], hud);
++    fntRenderString(gTheme->fonts[3], 628 - w, 472, ALIGN_VCENTER, 0, 0, hud, GS_SETREG_RGBA(0x3D, 0x46, 0x5D, 0x80));
++#endif
++}
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index d979312..8e51a62 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -34,9 +34,11 @@ static const int categoryX[RIPPS2_CAT_COUNT] = {128, 320, 512};
+ #define MARK_Y       50
+ #define MARK_W       76
+ #define MARK_H       13
+-#define COLOR_LIT    GS_SETREG_RGBA(0xFF, 0xFF, 0xFF, 0x80)
+-#define COLOR_DIM    GS_SETREG_RGBA(0x7A, 0x8C, 0xBA, 0x80)
+-#define COLOR_SOFT   GS_SETREG_RGBA(0xCE, 0xD9, 0xF5, 0x80)
++// Text and textures are modulated by the GS (0x80 = full), and the font atlas is white, so
++// a text colour shows at twice its value: #7A8CBA on screen is 0x3D,0x46,0x5D here.
++#define COLOR_LIT    GS_SETREG_RGBA(0x80, 0x80, 0x80, 0x80) // #FFFFFF
++#define COLOR_DIM    GS_SETREG_RGBA(0x3D, 0x46, 0x5D, 0x80) // #7A8CBA
++#define COLOR_SOFT   GS_SETREG_RGBA(0x67, 0x6C, 0x7A, 0x80) // #CED9F5
+ #define COLOR_TEX    GS_SETREG_RGBA(0x80, 0x80, 0x80, 0x80)
+ 
+ // Memory Files orb formations (the orbs themselves arrive with the native renderer)
+diff --git a/src/themes.c b/src/themes.c
+index 830c731..3450041 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -3536,6 +3536,11 @@ static int thmLoad(const char *themePath)
+     thmLoadResource(&newT->textures[L1_ICON], L1_ICON, themePath, GS_PSM_CT32, newT->useDefault);
+     thmLoadResource(&newT->textures[R1_ICON], R1_ICON, themePath, GS_PSM_CT32, newT->useDefault);
+ 
++    // RIPPS2: the glass panel and the flying PS2 mark are drawn by the shell itself, so load them
++    // even when no theme element references them (a StaticImage would otherwise be the only loader).
++    thmLoadResource(&newT->textures[RIPPS2_GLASS], RIPPS2_GLASS, themePath, GS_PSM_CT32, 1);
++    thmLoadResource(&newT->textures[RIPPS2_MARK], RIPPS2_MARK, themePath, GS_PSM_CT32, 1);
++
+     // Embedded attribute glyphs (#Format/#Media/Aspect/Rating/Scan/Vmode values): BUILT-IN theme
+     // ONLY. a1ae5e5e decoded these for every theme so badges could fall back to them on disk themes
+     // -- but the fallback fires on every frame BEFORE the theme's own glyph PNG has loaded off the
