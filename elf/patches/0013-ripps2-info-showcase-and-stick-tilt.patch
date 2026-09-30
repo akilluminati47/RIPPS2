@@ -1,0 +1,420 @@
+diff --git a/include/pad.h b/include/pad.h
+index 73d3037..0f940c9 100644
+--- a/include/pad.h
++++ b/include/pad.h
+@@ -28,6 +28,7 @@ void unloadPadsEx(int keepIopRpc);
+ int getKey(int num);
+ 
+ int getKeyOn(int num);
++void padGetRightStick(int *x, int *y); // RIPPS2: -128..127, 0 at rest or without an analog pad
+ int getKeyOff(int num);
+ int getKeyPressed(int num);
+ 
+diff --git a/include/renderman.h b/include/renderman.h
+index 410d7b2..8ef0474 100644
+--- a/include/renderman.h
++++ b/include/renderman.h
+@@ -127,6 +127,9 @@ void rmDrawTriGouraud(float x1, float y1, u64 c1, float x2, float y2, u64 c2, fl
+ void rmDrawQuadGouraud(float x1, float y1, u64 c1, float x2, float y2, u64 c2,
+                        float x3, float y3, u64 c3, float x4, float y4, u64 c4);
+ void rmSetBlendAdditive(int on);
++// RIPPS2: view tilt -- while on, every primitive is rotated (yaw, pitch in radians) in perspective
++// about the pivot (theme coordinates), sprites included
++void rmSetTilt(int on, int cx, int cy, float yaw, float pitch);
+ 
+ /** Starts the frame - first to call every frame */
+ void rmStartFrame(void);
+diff --git a/include/ripps2.h b/include/ripps2.h
+index 5681015..33b8c2a 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -30,6 +30,11 @@ void ripps2RenderLaunch(void);
+ void ripps2HandleInputMemory(void);
+ void ripps2RenderMemory(void);
+ 
++// ---- INFO page right-stick tilt (theme keys <name>_tilt / _tilt_x / _tilt_y) ----
++void ripps2UpdateTilt(void);            // once per info frame: ease the view after the right stick
++void ripps2TiltBegin(int cx, int cy);   // tilt what is drawn next about (cx, cy), theme coordinates
++void ripps2TiltEnd(void);
++
+ // ---- Storage art panel glass (theme element Ripps2PanelGlass) ----
+ void ripps2DrawPanelGlass(int x, int y, int w, int h, int hasItem);
+ 
+diff --git a/include/themes.h b/include/themes.h
+index 6ddde11..ae469a2 100644
+--- a/include/themes.h
++++ b/include/themes.h
+@@ -99,6 +99,8 @@ typedef struct theme_element
+     int reflection;
+     int reflectionOffset; // Coverflow: vertical px shift of the mirror (theme key reflection_offset; -up / +down)
+     int showRun;          // InfoHintText: draw the Run hint (theme key <name>_show_run; default 1)
++    int tilt;             // RIPPS2: tilts with the right stick (theme key <name>_tilt=1)
++    int tiltX, tiltY;     // RIPPS2: the tilt's pivot (<name>_tilt_x / _tilt_y); elements sharing one tilt together
+     // Per-device element filter (theme key devices=usb,hdd,...): bitmask over the thmDeviceVocab
+     // table indices in themes.c. 0 = unfiltered (the pre-existing behavior). deviceCoverage is
+     // filled at theme-load validation for UNFILTERED MenuIcon/ItemsList/HintText elements: the
+diff --git a/src/menusys.c b/src/menusys.c
+index 5f84171..5dfde42 100644
+--- a/src/menusys.c
++++ b/src/menusys.c
+@@ -1651,8 +1651,13 @@ static void menuRenderElements(theme_elems_t *elems)
+     WaitSema(menuSemaId);
+ 
+     while (elem) {
+-        if (elem->drawElem)
++        if (elem->drawElem) {
++            if (elem->tilt) // RIPPS2: this element tilts with the right stick about its group's pivot
++                ripps2TiltBegin(elem->tiltX, elem->tiltY);
+             elem->drawElem(selected_item, selected_item->item->current, itemConfig, elem);
++            if (elem->tilt)
++                ripps2TiltEnd();
++        }
+ 
+         elem = elem->next;
+     }
+@@ -1851,6 +1856,8 @@ void menuRenderInfo(void)
+     item_list_t *list = selected_item->item->userdata;
+     theme_elems_t *kindElems = menuGetInfoElems(list);
+ 
++    ripps2UpdateTilt(); // RIPPS2: the right stick tilts the art panel, the cover and the disc
++
+     if (kindElems == &gTheme->favsVcdInfoElems || kindElems == &gTheme->favsAppsInfoElems) {
+         // Favourites per-kind info page: same slot-free list resolution as menuRenderMain.
+         theme_element_t *slot = (kindElems == &gTheme->favsVcdInfoElems) ? (gTheme->vcdItemsList ? gTheme->vcdItemsList : gTheme->gamesItemsList) : (gTheme->favsItemsList ? gTheme->favsItemsList : gTheme->gamesItemsList);
+diff --git a/src/pad.c b/src/pad.c
+index 11c4898..1a077a3 100644
+--- a/src/pad.c
++++ b/src/pad.c
+@@ -862,6 +862,26 @@ int getKey(int id)
+  * @param id The button ID
+  * @return nonzero if button is being pressed just now
+  */
++// RIPPS2: the right stick, for views that tilt with it. -128..127 per axis from the first pad in
++// analog mode; 0 when there is none or the stick rests inside a small deadzone.
++void padGetRightStick(int *x, int *y)
++{
++    int i;
++    *x = 0;
++    *y = 0;
++    for (i = 0; i < pad_count && i < MAX_PADS; i++) {
++        struct pad_data_t *pad = &pad_data[i];
++        if (pad->state != PAD_STATE_STABLE || (pad->buttons.mode >> 4) != 0x07)
++            continue;
++        int h = (int)pad->buttons.rjoy_h - 128, v = (int)pad->buttons.rjoy_v - 128;
++        if (h * h + v * v > 24 * 24) {
++            *x = h;
++            *y = v;
++        }
++        return;
++    }
++}
++
+ int getKeyOn(int id)
+ {
+     if ((id <= 0) || (id >= 17))
+diff --git a/src/renderman.c b/src/renderman.c
+index d29e077..79e8d63 100644
+--- a/src/renderman.c
++++ b/src/renderman.c
+@@ -5,6 +5,7 @@
+ */
+ 
+ #include <stdio.h>
++#include <math.h>
+ #include <kernel.h>
+ 
+ #include "include/opl.h"
+@@ -342,6 +343,53 @@ void rmEnd(void)
+ #define X_SCALE(x) (((x)*iDisplayWidth) / 640)
+ #define Y_SCALE(y) (((y)*iDisplayHeight) / 480)
+ /** If txt is null, don't use DIM_UNDEF size */
++// RIPPS2: view tilt. While on, every primitive is drawn rotated a few degrees about a pivot, in
++// perspective (yaw about the vertical axis, then pitch about the horizontal one), so a group of
++// theme elements -- art, glass, text glyphs, badges, a cover in its case -- tilts together. Sprites
++// become 4-corner quads for it. Points are in native screen space, before the render offset.
++static int gTiltOn = 0;
++static float gTiltCx, gTiltCy, gTiltCosY, gTiltSinY, gTiltCosP, gTiltSinP, gTiltD;
++
++void rmSetTilt(int on, int cx, int cy, float yaw, float pitch)
++{
++    gTiltOn = on;
++    if (!on)
++        return;
++    gTiltCx = X_SCALE(cx);
++    gTiltCy = Y_SCALE(cy);
++    gTiltCosY = cosf(yaw);
++    gTiltSinY = sinf(yaw);
++    gTiltCosP = cosf(pitch);
++    gTiltSinP = sinf(pitch);
++    gTiltD = X_SCALE(900); // viewing distance: a gentle perspective
++}
++
++static void rmTiltPoint(float *x, float *y)
++{
++    float px = *x - gTiltCx, py = *y - gTiltCy;
++    float x1 = px * gTiltCosY, z1 = -px * gTiltSinY;     // yaw
++    float y2 = py * gTiltCosP - z1 * gTiltSinP;           // pitch
++    float z2 = py * gTiltSinP + z1 * gTiltCosP;
++    float k = gTiltD / (gTiltD + z2);
++    *x = gTiltCx + x1 * k;
++    *y = gTiltCy + y2 * k;
++}
++
++// A textured axis-aligned rect (x0,y0)-(x1,y1) through the tilt, as a quad
++static void rmTiltTexRect(GSTEXTURE *txt, float x0, float y0, float u0, float v0, float x1, float y1, float u1, float v1, u64 color)
++{
++    float ax = x0, ay = y0, bx = x1, by = y0, cx = x0, cy = y1, dx = x1, dy = y1;
++    rmTiltPoint(&ax, &ay);
++    rmTiltPoint(&bx, &by);
++    rmTiltPoint(&cx, &cy);
++    rmTiltPoint(&dx, &dy);
++    gsKit_prim_quad_texture(gsGlobal, txt,
++                            ax + fRenderXOff, ay + fRenderYOff, u0, v0,
++                            bx + fRenderXOff, by + fRenderYOff, u1, v0,
++                            cx + fRenderXOff, cy + fRenderYOff, u0, v1,
++                            dx + fRenderXOff, dy + fRenderYOff, u1, v1, order, color);
++}
++
+ static void rmSetupQuad(GSTEXTURE *txt, int x, int y, short aligned, int w, int h, short scaled, u64 color, rm_quad_t *q)
+ {
+     if (w == DIM_UNDEF)
+@@ -397,11 +445,14 @@ void rmDrawQuad(rm_quad_t *q)
+     }
+ 
+     gsKit_TexManager_bind(gsGlobal, q->txt);
+-    gsKit_prim_sprite_texture(gsGlobal, q->txt,
+-                              q->ul.x + fRenderXOff, q->ul.y + fRenderYOff,
+-                              q->ul.u, q->ul.v,
+-                              q->br.x + fRenderXOff, q->br.y + fRenderYOff,
+-                              q->br.u, q->br.v, order, q->color);
++    if (gTiltOn)
++        rmTiltTexRect(q->txt, q->ul.x, q->ul.y, q->ul.u, q->ul.v, q->br.x, q->br.y, q->br.u, q->br.v, q->color);
++    else
++        gsKit_prim_sprite_texture(gsGlobal, q->txt,
++                                  q->ul.x + fRenderXOff, q->ul.y + fRenderYOff,
++                                  q->ul.u, q->ul.v,
++                                  q->br.x + fRenderXOff, q->br.y + fRenderYOff,
++                                  q->br.u, q->br.v, order, q->color);
+     order++;
+ }
+ 
+@@ -448,11 +499,14 @@ static void rmDrawReflection(GSTEXTURE *txt, rm_quad_t *q, float bottomY, float
+         float y1 = ry + (float)reflH * (s + 1) / strips;
+         float v0 = botV + (q->ul.v - botV) * s / strips;
+         float v1 = botV + (q->ul.v - botV) * (s + 1) / strips;
+-        gsKit_prim_sprite_texture(gsGlobal, txt,
+-                                  q->ul.x + fRenderXOff, y0 + fRenderYOff,
+-                                  q->ul.u, v0,
+-                                  q->br.x + fRenderXOff, y1 + fRenderYOff,
+-                                  q->br.u, v1, order, GS_SETREG_RGBA(0x80, 0x80, 0x80, a));
++        if (gTiltOn)
++            rmTiltTexRect(txt, q->ul.x, y0, q->ul.u, v0, q->br.x, y1, q->br.u, v1, GS_SETREG_RGBA(0x80, 0x80, 0x80, a));
++        else
++            gsKit_prim_sprite_texture(gsGlobal, txt,
++                                      q->ul.x + fRenderXOff, y0 + fRenderYOff,
++                                      q->ul.u, v0,
++                                      q->br.x + fRenderXOff, y1 + fRenderYOff,
++                                      q->br.u, v1, order, GS_SETREG_RGBA(0x80, 0x80, 0x80, a));
+         order++;
+     }
+ }
+@@ -487,15 +541,21 @@ void rmDrawOverlayPixmap(GSTEXTURE *overlay, int x, int y, short aligned, int w,
+         gsGlobal->PrimAlphaEnable = GS_SETTING_OFF;
+ 
+     gsKit_TexManager_bind(gsGlobal, inlay);
+-    gsKit_prim_quad_texture(gsGlobal, inlay,
+-                            quad.ul.x + ulx + fRenderXOff, quad.ul.y + uly + fRenderYOff,
+-                            0.0f, 0.0f,
+-                            quad.ul.x + urx + fRenderXOff, quad.ul.y + ury + fRenderYOff,
+-                            inlay->Width, 0.0f,
+-                            quad.ul.x + blx + fRenderXOff, quad.ul.y + bly + fRenderYOff,
+-                            0.0f, inlay->Height,
+-                            quad.ul.x + brx + fRenderXOff, quad.ul.y + bry + fRenderYOff,
+-                            inlay->Width, inlay->Height, order, color);
++    {
++        float ix0 = quad.ul.x + ulx, iy0 = quad.ul.y + uly, ix1 = quad.ul.x + urx, iy1 = quad.ul.y + ury;
++        float ix2 = quad.ul.x + blx, iy2 = quad.ul.y + bly, ix3 = quad.ul.x + brx, iy3 = quad.ul.y + bry;
++        if (gTiltOn) {
++            rmTiltPoint(&ix0, &iy0);
++            rmTiltPoint(&ix1, &iy1);
++            rmTiltPoint(&ix2, &iy2);
++            rmTiltPoint(&ix3, &iy3);
++        }
++        gsKit_prim_quad_texture(gsGlobal, inlay,
++                                ix0 + fRenderXOff, iy0 + fRenderYOff, 0.0f, 0.0f,
++                                ix1 + fRenderXOff, iy1 + fRenderYOff, inlay->Width, 0.0f,
++                                ix2 + fRenderXOff, iy2 + fRenderYOff, 0.0f, inlay->Height,
++                                ix3 + fRenderXOff, iy3 + fRenderYOff, inlay->Width, inlay->Height, order, color);
++    }
+     order++;
+ 
+     rmDrawQuad(&quad);
+@@ -575,13 +635,22 @@ void rmDrawInlayPixmap(GSTEXTURE *txt, int x, int y, short aligned, int w, int h
+ 
+ void rmDrawRect(int x, int y, int w, int h, u64 color)
+ {
+-    float fx = X_SCALE(x) + fRenderXOff;
+-    float fy = Y_SCALE(y) + fRenderYOff;
++    float fx = X_SCALE(x);
++    float fy = Y_SCALE(y);
+     float fw = X_SCALE(w);
+     float fh = Y_SCALE(h);
+ 
+     gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
+-    gsKit_prim_sprite(gsGlobal, fx, fy, fx + fw, fy + fh, order, color);
++    if (gTiltOn) {
++        float ax = fx, ay = fy, bx = fx + fw, by = fy, cx = fx, cy = fy + fh, dx = fx + fw, dy = fy + fh;
++        rmTiltPoint(&ax, &ay);
++        rmTiltPoint(&bx, &by);
++        rmTiltPoint(&cx, &cy);
++        rmTiltPoint(&dx, &dy);
++        gsKit_prim_quad(gsGlobal, ax + fRenderXOff, ay + fRenderYOff, bx + fRenderXOff, by + fRenderYOff,
++                        cx + fRenderXOff, cy + fRenderYOff, dx + fRenderXOff, dy + fRenderYOff, order, color);
++    } else
++        gsKit_prim_sprite(gsGlobal, fx + fRenderXOff, fy + fRenderYOff, fx + fw + fRenderXOff, fy + fh + fRenderYOff, order, color);
+     order++;
+ }
+ 
+@@ -611,13 +680,17 @@ void rmDrawFramedRect(int x, int y, int w, int h, int border, u64 frameColor, u6
+ 
+ void rmDrawLine(int x1, int y1, int x2, int y2, u64 color)
+ {
+-    float fx1 = X_SCALE(x1) + fRenderXOff;
+-    float fy1 = Y_SCALE(y1) + fRenderYOff;
+-    float fx2 = X_SCALE(x2) + fRenderXOff;
+-    float fy2 = Y_SCALE(y2) + fRenderYOff;
++    float fx1 = X_SCALE(x1);
++    float fy1 = Y_SCALE(y1);
++    float fx2 = X_SCALE(x2);
++    float fy2 = Y_SCALE(y2);
+ 
++    if (gTiltOn) {
++        rmTiltPoint(&fx1, &fy1);
++        rmTiltPoint(&fx2, &fy2);
++    }
+     gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
+-    gsKit_prim_line(gsGlobal, fx1, fy1, fx2, fy2, order, color);
++    gsKit_prim_line(gsGlobal, fx1 + fRenderXOff, fy1 + fRenderYOff, fx2 + fRenderXOff, fy2 + fRenderYOff, order, color);
+     order++;
+ }
+ 
+@@ -625,11 +698,16 @@ void rmDrawLine(int x1, int y1, int x2, int y2, u64 color)
+ // native pillars and orbs. Vertex colours are interpolated by the GS, alpha included.
+ void rmDrawTriGouraud(float x1, float y1, u64 c1, float x2, float y2, u64 c2, float x3, float y3, u64 c3)
+ {
++    float p[6] = {X_SCALE(x1), Y_SCALE(y1), X_SCALE(x2), Y_SCALE(y2), X_SCALE(x3), Y_SCALE(y3)};
++    int i;
++    if (gTiltOn)
++        for (i = 0; i < 6; i += 2)
++            rmTiltPoint(&p[i], &p[i + 1]);
+     gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
+     gsKit_prim_triangle_gouraud(gsGlobal,
+-                                X_SCALE(x1) + fRenderXOff, Y_SCALE(y1) + fRenderYOff,
+-                                X_SCALE(x2) + fRenderXOff, Y_SCALE(y2) + fRenderYOff,
+-                                X_SCALE(x3) + fRenderXOff, Y_SCALE(y3) + fRenderYOff,
++                                p[0] + fRenderXOff, p[1] + fRenderYOff,
++                                p[2] + fRenderXOff, p[3] + fRenderYOff,
++                                p[4] + fRenderXOff, p[5] + fRenderYOff,
+                                 order, c1, c2, c3);
+     order++;
+ }
+@@ -638,12 +716,17 @@ void rmDrawTriGouraud(float x1, float y1, u64 c1, float x2, float y2, u64 c2, fl
+ void rmDrawQuadGouraud(float x1, float y1, u64 c1, float x2, float y2, u64 c2,
+                        float x3, float y3, u64 c3, float x4, float y4, u64 c4)
+ {
++    float p[8] = {X_SCALE(x1), Y_SCALE(y1), X_SCALE(x2), Y_SCALE(y2), X_SCALE(x3), Y_SCALE(y3), X_SCALE(x4), Y_SCALE(y4)};
++    int i;
++    if (gTiltOn)
++        for (i = 0; i < 8; i += 2)
++            rmTiltPoint(&p[i], &p[i + 1]);
+     gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
+     gsKit_prim_quad_gouraud(gsGlobal,
+-                            X_SCALE(x1) + fRenderXOff, Y_SCALE(y1) + fRenderYOff,
+-                            X_SCALE(x2) + fRenderXOff, Y_SCALE(y2) + fRenderYOff,
+-                            X_SCALE(x3) + fRenderXOff, Y_SCALE(y3) + fRenderYOff,
+-                            X_SCALE(x4) + fRenderXOff, Y_SCALE(y4) + fRenderYOff,
++                            p[0] + fRenderXOff, p[1] + fRenderYOff,
++                            p[2] + fRenderXOff, p[3] + fRenderYOff,
++                            p[4] + fRenderXOff, p[5] + fRenderYOff,
++                            p[6] + fRenderXOff, p[7] + fRenderYOff,
+                             order, c1, c2, c3, c4);
+     order++;
+ }
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index bf18a1f..1d1d068 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -262,3 +262,41 @@ void ripps2DrawPanelGlass(int x, int y, int w, int h, int hasItem)
+     rmDrawQuadGouraud(x, y2, mid, x + w, y2, mid, x, y + h, deep, x + w, y + h, deep);
+     panelFrame(x, y, w, h);
+ }
++
++// ---- INFO page: right-stick view tilt ----
++// The stick tips the art panel (with everything on it) and the disc-and-cover showcase a few degrees
++// in any direction, each about its own centre; the view eases after the stick and starts level each
++// time the page opens. Pushing a side sends that side away.
++#define TILT_YAW_MAX   0.16f // ~9 degrees
++#define TILT_PITCH_MAX 0.12f // ~7 degrees
++
++static float tiltYaw = 0.0f, tiltPitch = 0.0f;
++static clock_t tiltLast = 0;
++
++void ripps2UpdateTilt(void)
++{
++    int sx, sy;
++    clock_t now = clock();
++    float dt = tiltLast != 0 ? (float)(now - tiltLast) / (float)CLOCKS_PER_SEC : 1.0f;
++    tiltLast = now;
++    if (dt > 0.25f) { // the page just opened
++        tiltYaw = 0.0f;
++        tiltPitch = 0.0f;
++        dt = 0.016f;
++    }
++    padGetRightStick(&sx, &sy);
++    float k = fminf(1.0f, dt * 8.0f);
++    tiltYaw += (-(sx / 128.0f) * TILT_YAW_MAX - tiltYaw) * k;
++    tiltPitch += ((sy / 128.0f) * TILT_PITCH_MAX - tiltPitch) * k;
++}
++
++void ripps2TiltBegin(int cx, int cy)
++{
++    if (fabsf(tiltYaw) > 0.0005f || fabsf(tiltPitch) > 0.0005f)
++        rmSetTilt(1, cx, cy, tiltYaw, tiltPitch);
++}
++
++void ripps2TiltEnd(void)
++{
++    rmSetTilt(0, 0, 0, 0.0f, 0.0f);
++}
+diff --git a/src/themes.c b/src/themes.c
+index 9b41cc0..7ebaf11 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -1857,6 +1857,9 @@ static theme_element_t *initBasic(const char *themePath, config_set_t *themeConf
+     elem->type = type;
+     elem->reflection = 0;
+     elem->reflectionOffset = 0;
++    elem->tilt = 0;
++    elem->tiltX = x;
++    elem->tiltY = y;
+     elem->showRun = 1;
+     elem->deviceFilter = 0;   // malloc'd without memset: MUST be zeroed explicitly (0 = unfiltered)
+     elem->deviceCoverage = 0; // filled at validateGUIElems for unfiltered MenuIcon/ItemsList/HintText
+@@ -1945,6 +1948,17 @@ static theme_element_t *initBasic(const char *themePath, config_set_t *themeConf
+     if (configGetInt(themeConfig, elemProp, &intValue))
+         elem->reflection = intValue ? 1 : 0;
+ 
++    // RIPPS2: right-stick tilt; elements that share a pivot tilt as one group
++    snprintf(elemProp, sizeof(elemProp), "%s_tilt", name);
++    if (configGetInt(themeConfig, elemProp, &intValue))
++        elem->tilt = intValue ? 1 : 0;
++    snprintf(elemProp, sizeof(elemProp), "%s_tilt_x", name);
++    if (configGetInt(themeConfig, elemProp, &intValue))
++        elem->tiltX = intValue;
++    snprintf(elemProp, sizeof(elemProp), "%s_tilt_y", name);
++    if (configGetInt(themeConfig, elemProp, &intValue))
++        elem->tiltY = intValue;
++
+     snprintf(elemProp, sizeof(elemProp), "%s_reflection_offset", name);
+     if (configGetInt(themeConfig, elemProp, &intValue)) {
+         // Clamp to a sane band: an offset beyond a screen height only draws strips off-canvas
