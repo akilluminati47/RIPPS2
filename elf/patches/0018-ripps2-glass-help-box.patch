@@ -1,0 +1,54 @@
+diff --git a/include/ripps2.h b/include/ripps2.h
+index 5c212d2..2ba1fbb 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -38,6 +38,7 @@ void ripps2TiltEnd(void);
+ // ---- Storage art panel glass (theme element Ripps2PanelGlass) ----
+ void ripps2DrawPanelGlass(int x, int y, int w, int h, int hasItem);
+ void ripps2DrawPagePanel(void); // menus / settings / dialogs: one clear-glass panel behind the page
++void ripps2DrawHintBox(int x, int y, int w, int h); // the settings help text's box, in the same glass
+ 
+ // ---- Native backgrounds (ripps2bg.c), drawn in place of the plasma ----
+ void ripps2DrawBackground(void); // orbs on Memory Files, pillars everywhere else
+diff --git a/src/dia.c b/src/dia.c
+index 3776153..cc6040b 100644
+--- a/src/dia.c
++++ b/src/dia.c
+@@ -12,6 +12,7 @@
+ #include "include/renderman.h"
+ #include "include/fntsys.h"
+ #include "include/themes.h"
++#include "include/ripps2.h" // RIPPS2: glass hint box
+ #include "include/util.h"
+ #include "include/sound.h"
+ 
+@@ -711,8 +712,8 @@ static void diaDrawHint(int text_id)
+     int boxH = lines * MENU_ITEM_HEIGHT + 10;
+     int y = gTheme->usedHeight - 32 - boxH;
+ 
+-    // render hint on the lower side of the screen.
+-    rmDrawRect(x, y, boxW, boxH, gColDarker);
++    // render hint on the lower side of the screen, on RIPPS2's deep glass (was a flat dark box)
++    ripps2DrawHintBox(x, y, boxW, boxH);
+     fntRenderString(RIPPS2_UI_FONT, x + 5, y + 5, ALIGN_NONE, innerW, boxH - 5, wrapped, gTheme->textColor);
+ }
+ 
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index 5c37558..9745379 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -258,6 +258,14 @@ void ripps2DrawPagePanel(void)
+     panelFrame(x, y, w, h);
+ }
+ 
++// The settings help text: the deep end of the viewport glass, with the same frame
++void ripps2DrawHintBox(int x, int y, int w, int h)
++{
++    u64 deep = RGBA_PRIM(0x03, 0x08, 0x22, 0x6C);
++    rmDrawQuadGouraud(x, y, deep, x + w, y, deep, x, y + h, deep, x + w, y + h, deep);
++    panelFrame(x, y, w, h);
++}
++
+ void ripps2DrawPanelGlass(int x, int y, int w, int h, int hasItem)
+ {
+     if (!hasItem) {
