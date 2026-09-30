@@ -1,0 +1,221 @@
+diff --git a/include/fntsys.h b/include/fntsys.h
+index 2706fe3..4681d9f 100644
+--- a/include/fntsys.h
++++ b/include/fntsys.h
+@@ -36,6 +36,7 @@ int fntRenderString(int id, int x, int y, short aligned, size_t width, size_t he
+  * @note A destrutive operation - modifies the given string!
+  */
+ void fntFitString(int id, char *string, size_t width);
++void fntSetLineHeight(int height); // RIPPS2: multi-line text line step, 0 = MENU_ITEM_HEIGHT
+ 
+ /** Calculates the width of the given text string
+  * We can't use the height for alignment, as the horizontal center would depends of the contained text itself */
+diff --git a/include/themes.h b/include/themes.h
+index 0c18426..9e7464a 100644
+--- a/include/themes.h
++++ b/include/themes.h
+@@ -103,6 +103,8 @@ typedef struct theme_element
+     int tiltX, tiltY;     // RIPPS2: the tilt's pivot (<name>_tilt_x / _tilt_y); elements sharing one tilt together
+     int tiltScale;        // RIPPS2: the tilt's angle in percent (<name>_tilt_scale, default 100)
+     int imageAlpha;       // RIPPS2: GameImage opacity, 0..128 (<name>_alpha, default 128 = opaque)
++    int lineHeight;       // RIPPS2: wrapped text line step (<name>_line_height; 0 = the default)
++    int vcenter;          // RIPPS2: centre wrapped text in the element's height (<name>_vcenter=1)
+     // Per-device element filter (theme key devices=usb,hdd,...): bitmask over the thmDeviceVocab
+     // table indices in themes.c. 0 = unfiltered (the pre-existing behavior). deviceCoverage is
+     // filled at theme-load validation for UNFILTERED MenuIcon/ItemsList/HintText elements: the
+diff --git a/src/fntsys.c b/src/fntsys.c
+index ba0e38f..5a21f11 100644
+--- a/src/fntsys.c
++++ b/src/fntsys.c
+@@ -568,6 +568,14 @@ static void fntRenderGlyph(fnt_glyph_cache_entry_t *glyph, int pen_x, int pen_y)
+ }
+ 
+ 
++// RIPPS2: the distance between lines of multi-line text; 0 = MENU_ITEM_HEIGHT (the default)
++static int fntLineStep = 0;
++
++void fntSetLineHeight(int height)
++{
++    fntLineStep = height;
++}
++
+ #ifndef __RTL
+ int fntRenderString(int id, int x, int y, short aligned, size_t width, size_t height, const char *string, u64 colour)
+ {
+@@ -635,7 +643,7 @@ int fntRenderString(int id, int x, int y, short aligned, size_t width, size_t he
+         if (width) {
+             if (codepoint == '\n') {
+                 pen_x = x;
+-                y += rmScaleY(MENU_ITEM_HEIGHT); // hmax is too tight and unordered, generally
++                y += rmScaleY(fntLineStep > 0 ? fntLineStep : MENU_ITEM_HEIGHT); // hmax is too tight and unordered, generally
+                 continue;
+             }
+ 
+@@ -762,7 +770,7 @@ int fntRenderString(int id, int x, int y, short aligned, size_t width, size_t he
+         if (width) {
+             if (codepoint == '\n') {
+                 pen_x = x;
+-                y += rmScaleY(MENU_ITEM_HEIGHT); // hmax is too tight and unordered, generally
++                y += rmScaleY(fntLineStep > 0 ? fntLineStep : MENU_ITEM_HEIGHT); // hmax is too tight and unordered, generally
+                 continue;
+             }
+ 
+diff --git a/src/renderman.c b/src/renderman.c
+index f4a6d3e..be09625 100644
+--- a/src/renderman.c
++++ b/src/renderman.c
+@@ -375,19 +375,45 @@ static void rmTiltPoint(float *x, float *y)
+     *y = gTiltCy + y2 * k;
+ }
+ 
+-// A textured axis-aligned rect (x0,y0)-(x1,y1) through the tilt, as a quad
++// A textured quad through the tilt; px/py are its corners TL, TR, BL, BR before the tilt. The GS
++// maps a texture affinely across each of a quad's two triangles, so one big perspective quad shears
++// its art along the diagonal. Big quads are cut into cells of about 40 px, each projected on its own,
++// which keeps the art flat; small ones (text glyphs) stay a single quad.
++#define TILT_CELL_PX 40.0f
++static void rmTiltTexQuad(GSTEXTURE *txt, const float *px, const float *py, float u0, float v0, float u1, float v1, u64 color)
++{
++    float w = fmaxf(fabsf(px[1] - px[0]), fabsf(px[3] - px[2])), h = fmaxf(fabsf(py[2] - py[0]), fabsf(py[3] - py[1]));
++    int nx = (int)(w / TILT_CELL_PX) + 1, ny = (int)(h / TILT_CELL_PX) + 1, i, j, k;
++    if (nx > 8)
++        nx = 8;
++    if (ny > 8)
++        ny = 8;
++    for (j = 0; j < ny; j++) {
++        for (i = 0; i < nx; i++) {
++            float s[4] = {(float)i / nx, (float)(i + 1) / nx, (float)i / nx, (float)(i + 1) / nx};
++            float t[4] = {(float)j / ny, (float)j / ny, (float)(j + 1) / ny, (float)(j + 1) / ny};
++            float cx[4], cy[4];
++            for (k = 0; k < 4; k++) { // bilinear point in the quad, then through the tilt
++                float topX = px[0] + (px[1] - px[0]) * s[k], topY = py[0] + (py[1] - py[0]) * s[k];
++                float botX = px[2] + (px[3] - px[2]) * s[k], botY = py[2] + (py[3] - py[2]) * s[k];
++                cx[k] = topX + (botX - topX) * t[k];
++                cy[k] = topY + (botY - topY) * t[k];
++                rmTiltPoint(&cx[k], &cy[k]);
++            }
++            gsKit_prim_quad_texture(gsGlobal, txt,
++                                    cx[0] + fRenderXOff, cy[0] + fRenderYOff, u0 + (u1 - u0) * s[0], v0 + (v1 - v0) * t[0],
++                                    cx[1] + fRenderXOff, cy[1] + fRenderYOff, u0 + (u1 - u0) * s[1], v0 + (v1 - v0) * t[1],
++                                    cx[2] + fRenderXOff, cy[2] + fRenderYOff, u0 + (u1 - u0) * s[2], v0 + (v1 - v0) * t[2],
++                                    cx[3] + fRenderXOff, cy[3] + fRenderYOff, u0 + (u1 - u0) * s[3], v0 + (v1 - v0) * t[3], order, color);
++        }
++    }
++}
++
++// A textured axis-aligned rect (x0,y0)-(x1,y1) through the tilt
+ static void rmTiltTexRect(GSTEXTURE *txt, float x0, float y0, float u0, float v0, float x1, float y1, float u1, float v1, u64 color)
+ {
+-    float ax = x0, ay = y0, bx = x1, by = y0, cx = x0, cy = y1, dx = x1, dy = y1;
+-    rmTiltPoint(&ax, &ay);
+-    rmTiltPoint(&bx, &by);
+-    rmTiltPoint(&cx, &cy);
+-    rmTiltPoint(&dx, &dy);
+-    gsKit_prim_quad_texture(gsGlobal, txt,
+-                            ax + fRenderXOff, ay + fRenderYOff, u0, v0,
+-                            bx + fRenderXOff, by + fRenderYOff, u1, v0,
+-                            cx + fRenderXOff, cy + fRenderYOff, u0, v1,
+-                            dx + fRenderXOff, dy + fRenderYOff, u1, v1, order, color);
++    float px[4] = {x0, x1, x0, x1}, py[4] = {y0, y0, y1, y1};
++    rmTiltTexQuad(txt, px, py, u0, v0, u1, v1, color);
+ }
+ 
+ static void rmSetupQuad(GSTEXTURE *txt, int x, int y, short aligned, int w, int h, short scaled, u64 color, rm_quad_t *q)
+@@ -543,19 +569,16 @@ void rmDrawOverlayPixmap(GSTEXTURE *overlay, int x, int y, short aligned, int w,
+ 
+     gsKit_TexManager_bind(gsGlobal, inlay);
+     {
+-        float ix0 = quad.ul.x + ulx, iy0 = quad.ul.y + uly, ix1 = quad.ul.x + urx, iy1 = quad.ul.y + ury;
+-        float ix2 = quad.ul.x + blx, iy2 = quad.ul.y + bly, ix3 = quad.ul.x + brx, iy3 = quad.ul.y + bry;
+-        if (gTiltOn) {
+-            rmTiltPoint(&ix0, &iy0);
+-            rmTiltPoint(&ix1, &iy1);
+-            rmTiltPoint(&ix2, &iy2);
+-            rmTiltPoint(&ix3, &iy3);
+-        }
+-        gsKit_prim_quad_texture(gsGlobal, inlay,
+-                                ix0 + fRenderXOff, iy0 + fRenderYOff, 0.0f, 0.0f,
+-                                ix1 + fRenderXOff, iy1 + fRenderYOff, inlay->Width, 0.0f,
+-                                ix2 + fRenderXOff, iy2 + fRenderYOff, 0.0f, inlay->Height,
+-                                ix3 + fRenderXOff, iy3 + fRenderYOff, inlay->Width, inlay->Height, order, color);
++        float ipx[4] = {quad.ul.x + ulx, quad.ul.x + urx, quad.ul.x + blx, quad.ul.x + brx};
++        float ipy[4] = {quad.ul.y + uly, quad.ul.y + ury, quad.ul.y + bly, quad.ul.y + bry};
++        if (gTiltOn)
++            rmTiltTexQuad(inlay, ipx, ipy, 0.0f, 0.0f, inlay->Width, inlay->Height, color);
++        else
++            gsKit_prim_quad_texture(gsGlobal, inlay,
++                                    ipx[0] + fRenderXOff, ipy[0] + fRenderYOff, 0.0f, 0.0f,
++                                    ipx[1] + fRenderXOff, ipy[1] + fRenderYOff, inlay->Width, 0.0f,
++                                    ipx[2] + fRenderXOff, ipy[2] + fRenderYOff, 0.0f, inlay->Height,
++                                    ipx[3] + fRenderXOff, ipy[3] + fRenderYOff, inlay->Width, inlay->Height, order, color);
+     }
+     order++;
+ 
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index 2388804..95a53c7 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -280,8 +280,8 @@ void ripps2DrawPanelGlass(int x, int y, int w, int h, int hasItem)
+         return;
+     }
+ 
+-    // tint: 30% over the upper art, deepening to 85% by the text zone (the lower 44%)
+-    int y1 = y + (h * 38) / 100, y2 = y + (h * 56) / 100;
++    // tint: 30% over the upper art, deepening to 85% by the text zone (from about a third down)
++    int y1 = y + (h * 22) / 100, y2 = y + (h * 38) / 100;
+     u64 light = RGBA_PRIM(0x04, 0x0C, 0x2E, 0x26), mid = RGBA_PRIM(0x04, 0x0C, 0x2E, 0x40), deep = RGBA_PRIM(0x03, 0x08, 0x22, 0x6C);
+     rmDrawQuadGouraud(x, y, light, x + w, y, light, x, y1, light, x + w, y1, light);
+     rmDrawQuadGouraud(x, y1, light, x + w, y1, light, x, y2, mid, x + w, y2, mid);
+diff --git a/src/themes.c b/src/themes.c
+index 369c597..d4dfe04 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -512,8 +512,24 @@ static void drawAttributeText(struct menu_list *menu, struct submenu_list *item,
+                 } else {
+                     if (mutableText->sizingMode == SIZING_NONE)
+                         fntRenderString(elem->font, elem->posX, elem->posY, elem->aligned, 0, 0, mutableText->currentValue, elem->color);
+-                    else
+-                        fntRenderString(elem->font, elem->posX, elem->posY, elem->aligned, elem->width, elem->height, mutableText->currentValue, elem->color);
++                    else {
++                        // RIPPS2: wrapped text may use its own line step and sit centred in the box
++                        int step = elem->lineHeight > 0 ? elem->lineHeight : MENU_ITEM_HEIGHT;
++                        int y = elem->posY;
++                        if (elem->vcenter && mutableText->sizingMode == SIZING_WRAP) {
++                            int lines = 1;
++                            const char *c;
++                            for (c = mutableText->currentValue; *c; c++)
++                                if (*c == '\n')
++                                    lines++;
++                            int room = elem->height / step + 1; // the lines the box shows
++                            if (lines < room)
++                                y += ((room - lines) * step) / 2;
++                        }
++                        fntSetLineHeight(elem->lineHeight);
++                        fntRenderString(elem->font, elem->posX, y, elem->aligned, elem->width, elem->height - (y - elem->posY), mutableText->currentValue, elem->color);
++                        fntSetLineHeight(0);
++                    }
+                 }
+             } else {
+                 if (!strncmp(mutableText->alias, _l(_STR_SIZE), strlen(_l(_STR_SIZE))))
+@@ -1864,6 +1880,8 @@ static theme_element_t *initBasic(const char *themePath, config_set_t *themeConf
+     elem->tiltY = y;
+     elem->tiltScale = 100;
+     elem->imageAlpha = 0x80;
++    elem->lineHeight = 0;
++    elem->vcenter = 0;
+     elem->showRun = 1;
+     elem->deviceFilter = 0;   // malloc'd without memset: MUST be zeroed explicitly (0 = unfiltered)
+     elem->deviceCoverage = 0; // filled at validateGUIElems for unfiltered MenuIcon/ItemsList/HintText
+@@ -1962,6 +1980,12 @@ static theme_element_t *initBasic(const char *themePath, config_set_t *themeConf
+     snprintf(elemProp, sizeof(elemProp), "%s_tilt_y", name);
+     if (configGetInt(themeConfig, elemProp, &intValue))
+         elem->tiltY = intValue;
++    snprintf(elemProp, sizeof(elemProp), "%s_line_height", name);
++    if (configGetInt(themeConfig, elemProp, &intValue) && intValue > 0 && intValue <= 64)
++        elem->lineHeight = intValue;
++    snprintf(elemProp, sizeof(elemProp), "%s_vcenter", name);
++    if (configGetInt(themeConfig, elemProp, &intValue))
++        elem->vcenter = intValue ? 1 : 0;
+     snprintf(elemProp, sizeof(elemProp), "%s_alpha", name);
+     if (configGetInt(themeConfig, elemProp, &intValue) && intValue >= 0 && intValue <= 0x80)
+         elem->imageAlpha = intValue;
