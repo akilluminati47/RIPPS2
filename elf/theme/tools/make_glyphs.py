@@ -52,43 +52,70 @@ def centered_text(d, cx, cy, text, px, fill=TEXT, max_w=None):
     d.text((cx * SS - (l + r) / 2, cy * SS - (t + b) / 2), text, font=f, fill=fill, stroke_width=2, stroke_fill=fill)
 
 
-def pill(d, w, h, radius, stroke=2.0, inset=1.5):
-    s, i = stroke * SS, inset * SS
-    d.rounded_rectangle((i, i, w * SS - i, h * SS - i), radius=radius * SS, fill=FILL, outline=LINE, width=round(s))
+# One geometry for every glyph, so the families match to the eye: every outline spans y 2..30 (28 px
+# tall) with the same stroke, every symbol inside a ring sits in the same 11 px box, the shoulder and
+# stick pills share one width, and each family's labels share one size (the largest that fits all).
+TOP, BOT = 2, 30
+OUTLINE = 2.0
+SYM = 2.1                  # symbol stroke
+S0, S1 = 10.5, 21.5        # the symbol box inside a ring
+PILL_W = 44                # L1 / R1 / L3 / R3
+BADGE_W = 64
 
 
-# ---- face buttons: a ring with the symbol inside ----
-def face(name, draw_symbol):
+def outline_box(d, w, radius):
+    d.rounded_rectangle((1.5 * SS, TOP * SS, (w - 1.5) * SS, BOT * SS), radius=radius * SS,
+                        fill=FILL, outline=LINE, width=round(OUTLINE * SS))
+
+
+def fit_size(texts, max_w, start=16):
+    """The largest label size at which every text fits max_w: one size for a whole family."""
+    probe = ImageDraw.Draw(Image.new('RGBA', (8, 8)))
+    for px in range(start, 5, -1):
+        if all((lambda b: b[2] - b[0])(probe.textbbox((0, 0), t, font=font(px, t), stroke_width=2)) <= max_w * SS for t in texts):
+            return px
+    return 6
+
+
+# ---- ring buttons: the face buttons, and START / SELECT as the DualShock 2 draws them ----
+def ring(name, draw_symbol):
     im, d = canvas(32, 32)
-    d.ellipse((2 * SS, 2 * SS, 30 * SS, 30 * SS), fill=FILL, outline=LINE, width=2 * SS)
+    d.ellipse((TOP * SS, TOP * SS, BOT * SS, BOT * SS), fill=FILL, outline=LINE, width=round(OUTLINE * SS))
     draw_symbol(d)
     save(im, name)
 
 
 def sym_cross(d):
-    w = round(2.2 * SS)
-    d.line((11 * SS, 11 * SS, 21 * SS, 21 * SS), fill=TEXT, width=w)
-    d.line((21 * SS, 11 * SS, 11 * SS, 21 * SS), fill=TEXT, width=w)
+    w = round(SYM * SS)
+    d.line((S0 * SS, S0 * SS, S1 * SS, S1 * SS), fill=TEXT, width=w)
+    d.line((S1 * SS, S0 * SS, S0 * SS, S1 * SS), fill=TEXT, width=w)
 
 
 def sym_circle(d):
-    d.ellipse((10.5 * SS, 10.5 * SS, 21.5 * SS, 21.5 * SS), outline=TEXT, width=round(2.2 * SS))
+    d.ellipse((S0 * SS, S0 * SS, S1 * SS, S1 * SS), outline=TEXT, width=round(SYM * SS))
 
 
 def sym_square(d):
-    d.rectangle((11 * SS, 11 * SS, 21 * SS, 21 * SS), outline=TEXT, width=round(2.2 * SS))
+    d.rectangle((S0 * SS, S0 * SS, S1 * SS, S1 * SS), outline=TEXT, width=round(SYM * SS))
 
 
 def sym_triangle(d):
-    pts = [(16 * SS, 9.5 * SS), (22.5 * SS, 20.5 * SS), (9.5 * SS, 20.5 * SS)]
-    d.polygon(pts, outline=TEXT, width=round(2.2 * SS))
+    d.polygon([(16 * SS, (S0 - 0.5) * SS), (S1 * SS, (S1 - 1) * SS), (S0 * SS, (S1 - 1) * SS)], outline=TEXT, width=round(SYM * SS))
 
 
-# ---- shoulder / system buttons: a pill with the label ----
-def label_pill(name, text, w, px):
-    im, d = canvas(w, 32)
-    pill(d, w, 32, 10)
-    centered_text(d, w / 2, 16.5, text, px, max_w=w - 14)
+def sym_start(d):  # the START button: a small triangle pointing right
+    d.polygon([((S0 + 1.5) * SS, S0 * SS), ((S1 + 0.5) * SS, 16 * SS), ((S0 + 1.5) * SS, S1 * SS)], outline=TEXT, width=round(SYM * SS))
+
+
+def sym_select(d):  # the SELECT button: a short flat bar
+    d.rounded_rectangle((S0 * SS, 13.5 * SS, S1 * SS, 18.5 * SS), radius=1.5 * SS, outline=TEXT, width=round(SYM * SS))
+
+
+# ---- shoulder and stick buttons: a pill with the label ----
+def label_pill(name, text, px):
+    im, d = canvas(PILL_W, 32)
+    outline_box(d, PILL_W, 9)
+    centered_text(d, PILL_W / 2, 16.5, text, px)
     save(im, name)
 
 
@@ -99,59 +126,44 @@ def blank(name):
     save(im, name)
 
 
-# ---- metadata badges (64x32): a label, optionally with a caption or button symbols ----
-def badge(name, text, sub=None, symbols=None):
-    im, d = canvas(64, 32)
-    pill(d, 64, 32, 7)
-    if sub is None and symbols is None:
-        centered_text(d, 32, 16.5, text, 15, max_w=52)
-    else:
-        centered_text(d, 32, 12, text, 13, max_w=52)
-        if sub:
-            centered_text(d, 32, 24.5, sub, 7, SUB, max_w=52)
-        if symbols:
-            for k, s in enumerate(symbols):
-                cx, cy, r = 27 + 10 * k, 24.5, 3.4
-                box = ((cx - r) * SS, (cy - r) * SS, (cx + r) * SS, (cy + r) * SS)
-                if s == 'triangle':
-                    d.polygon([(cx * SS, (cy - r) * SS), ((cx + r) * SS, (cy + r * 0.8) * SS), ((cx - r) * SS, (cy + r * 0.8) * SS)], outline=SUB, width=SS)
-                elif s == 'circle':
-                    d.ellipse(box, outline=SUB, width=SS)
-                elif s == 'cross':
-                    d.line((box[0], box[1], box[2], box[3]), fill=SUB, width=SS)
-                    d.line((box[2], box[1], box[0], box[3]), fill=SUB, width=SS)
+# ---- metadata badges: one label each, all at one size ----
+def badge(name, text, px):
+    im, d = canvas(BADGE_W, 32)
+    outline_box(d, BADGE_W, 7)
+    centered_text(d, BADGE_W / 2, 16.5, text, px)
     save(im, name)
 
 
+# Variants of a value (a patch, GSM or a button combo) show the value alone: the caption was too small
+# to read at badge size.
 BADGES = {
-    'APPS': ('APP',), 'ELF': ('ELF',), 'HDL': ('HDL',), 'ISO': ('ISO',), 'ZSO': ('ZSO',), 'UL': ('UL',),
-    'CD': ('CD',), 'DVD': ('DVD',), 'VCD': ('VCD',), 'PS1': ('PS1',), 'PS2': ('PS2',),
-    'Vmode_ntsc': ('NTSC',), 'Vmode_pal': ('PAL',), 'Vmode_multi': ('MULTI',),
-    'Aspect_s': ('4:3',), 'Aspect_w': ('16:9',), 'Aspect_w1': ('16:9', 'PS2RD'), 'Aspect_w2': ('16:9', 'HEX ISO'),
-    'Scan_240p': ('240p',), 'Scan_240p1': ('240p', 'HEX ISO'), 'Scan_480i': ('480i',), 'Scan_480p': ('480p',),
-    'Scan_480p1': ('480p', None, ('triangle', 'cross')), 'Scan_480p2': ('480p', None, ('circle', 'cross')),
-    'Scan_480p3': ('480p', 'GSM'), 'Scan_480p4': ('480p', 'PS2RD'), 'Scan_480p5': ('480p', 'HEX ISO'),
-    'Scan_576i': ('576i',), 'Scan_576p': ('576p', 'GSM'), 'Scan_720p': ('720p', 'GSM'),
-    'Scan_1080i': ('1080i',), 'Scan_1080i2': ('1080i', 'GSM'), 'Scan_1080p': ('1080p', 'GSM'),
-    'missing': ('?',),
+    'APPS': 'APP', 'ELF': 'ELF', 'HDL': 'HDL', 'ISO': 'ISO', 'ZSO': 'ZSO', 'UL': 'UL',
+    'CD': 'CD', 'DVD': 'DVD', 'VCD': 'VCD', 'PS1': 'PS1', 'PS2': 'PS2',
+    'Vmode_ntsc': 'NTSC', 'Vmode_pal': 'PAL', 'Vmode_multi': 'MULTI',
+    'Aspect_s': '4:3', 'Aspect_w': '16:9', 'Aspect_w1': '16:9', 'Aspect_w2': '16:9',
+    'Scan_240p': '240p', 'Scan_240p1': '240p', 'Scan_480i': '480i', 'Scan_480p': '480p',
+    'Scan_480p1': '480p', 'Scan_480p2': '480p', 'Scan_480p3': '480p', 'Scan_480p4': '480p', 'Scan_480p5': '480p',
+    'Scan_576i': '576i', 'Scan_576p': '576p', 'Scan_720p': '720p',
+    'Scan_1080i': '1080i', 'Scan_1080i2': '1080i', 'Scan_1080p': '1080p',
+    'missing': '?',
 }
+PILLS = ('L1', 'R1', 'L3', 'R3')
 
 
 def main():
     os.makedirs(OUT, exist_ok=True)
-    face('cross', sym_cross)
-    face('circle', sym_circle)
-    face('square', sym_square)
-    face('triangle', sym_triangle)
-    label_pill('select', 'SELECT', 76, 12)
-    label_pill('start', 'START', 68, 12)
-    for n in ('L1', 'R1', 'L3', 'R3'):
-        label_pill(n, n, 48, 15)
+    for name, sym in (('cross', sym_cross), ('circle', sym_circle), ('square', sym_square),
+                      ('triangle', sym_triangle), ('start', sym_start), ('select', sym_select)):
+        ring(name, sym)
+    pill_px = fit_size(PILLS, PILL_W - 16)
+    for n in PILLS:
+        label_pill(n, n, pill_px)
+    badge_px = fit_size(set(BADGES.values()), BADGE_W - 12)
+    for name, text in BADGES.items():
+        badge(name, text, badge_px)
     blank('left')
     blank('right')
-    for name, spec in BADGES.items():
-        badge(name, *spec)
-    print('wrote', 16 + len(BADGES), 'images to', OUT)
+    print('wrote', 6 + len(PILLS) + len(BADGES) + 2, 'images to', OUT, '(pill labels %dpx, badge labels %dpx)' % (pill_px, badge_px))
 
 
 if __name__ == '__main__':
