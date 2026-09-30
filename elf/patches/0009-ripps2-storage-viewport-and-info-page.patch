@@ -1,0 +1,308 @@
+diff --git a/include/gui.h b/include/gui.h
+index 6540a83..23eee8c 100644
+--- a/include/gui.h
++++ b/include/gui.h
+@@ -67,6 +67,7 @@ extern int guiFrameId;
+ #define GUI_SCREEN_RIPPS2_MEMORY 6 // RIPPS2: Memory Files category
+ 
+ void guiSwitchScreen(int target);
++void guiSwitchScreenInstant(int target); // RIPPS2: no fade (category switches)
+ 
+ void guiReloadScreenExtents();
+ 
+diff --git a/include/ripps2.h b/include/ripps2.h
+index 97ff710..e452067 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -25,6 +25,10 @@ void ripps2RenderLaunch(void);
+ void ripps2HandleInputMemory(void);
+ void ripps2RenderMemory(void);
+ 
++// ---- Storage art panel layers (theme elements Ripps2PanelBack / Ripps2PanelGlass) ----
++void ripps2DrawPanelBack(int x, int y, int w, int h);
++void ripps2DrawPanelGlass(int x, int y, int w, int h, int hasItem, int started);
++
+ // ---- Native backgrounds (ripps2bg.c), drawn in place of the plasma ----
+ void ripps2DrawBackground(void); // orbs on Memory Files, pillars everywhere else
+ void ripps2DrawPillars(void);
+diff --git a/src/gui.c b/src/gui.c
+index 5642536..a79d4dd 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -4460,6 +4460,16 @@ void guiSwitchScreen(int target)
+     screenHandlerTarget = &screenHandlers[target];
+ }
+ 
++// RIPPS2: category switches cut straight to the next screen. The fade above would black out the
++// PS2 mark's flight between LAUNCH DISC / STORAGE / MEMORY FILES, which is the transition there.
++void guiSwitchScreenInstant(int target)
++{
++    if (screenHandlerTarget != NULL)
++        return; // a faded switch is already under way; let it finish
++    sfxPlay(SFX_TRANSITION);
++    screenHandler = &screenHandlers[target];
++}
++
+ struct gui_update_t *guiOpCreate(gui_op_type_t type)
+ {
+     struct gui_update_t *op = (struct gui_update_t *)malloc(sizeof(struct gui_update_t));
+diff --git a/src/menusys.c b/src/menusys.c
+index 9041f8f..5f84171 100644
+--- a/src/menusys.c
++++ b/src/menusys.c
+@@ -1869,7 +1869,7 @@ void menuRenderInfo(void)
+         menuRenderElements(menuGetInfoElems(list));
+         gTheme->itemsList = thmResolveItemsList(&gTheme->infoElems, gTheme->gamesItemsList, selected_item->item->icon_id);
+     }
+-    ripps2RenderCategoryBar(); // RIPPS2: LAUNCH DISC | STORAGE | MEMORY FILES on top
++    // RIPPS2: no category bar here -- the info page gives the whole screen to the game's art panel
+ }
+ 
+ void menuHandleInputInfo()
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index 8e51a62..c66b5a5 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -105,12 +105,13 @@ void ripps2SetCategory(int cat)
+     flyDuration = 0.52f + 0.23f * hops;
+     gRipps2Category = cat;
+ 
++    // no fade: the mark's flight across the bar is the transition
+     if (cat == RIPPS2_CAT_STORAGE)
+-        guiSwitchScreen(GUI_SCREEN_MAIN);
++        guiSwitchScreenInstant(GUI_SCREEN_MAIN);
+     else if (cat == RIPPS2_CAT_LAUNCH)
+-        guiSwitchScreen(GUI_SCREEN_RIPPS2_LAUNCH);
++        guiSwitchScreenInstant(GUI_SCREEN_RIPPS2_LAUNCH);
+     else
+-        guiSwitchScreen(GUI_SCREEN_RIPPS2_MEMORY);
++        guiSwitchScreenInstant(GUI_SCREEN_RIPPS2_MEMORY);
+ }
+ 
+ void ripps2StepCategory(int dir)
+@@ -118,12 +119,19 @@ void ripps2StepCategory(int dir)
+     ripps2SetCategory(gRipps2Category + (dir < 0 ? -1 : 1));
+ }
+ 
++// Button glyphs draw at the hint bar's height (20), keeping each image's own aspect
++#define GLYPH_H 20
++static int glyphWidth(GSTEXTURE *t)
++{
++    return t ? (t->Width * GLYPH_H) / t->Height : 0;
++}
++
+ // A START button glyph followed by the action name, centred as one unit
+ static void renderStartPrompt(const char *action, int y)
+ {
+     GSTEXTURE *start = thmGetTexture(START_ICON);
+     int textW = fntCalcDimensions(gTheme->fonts[2], action);
+-    int iconW = start ? start->Width : 0, iconH = start ? start->Height : 0;
++    int iconW = glyphWidth(start), iconH = start ? GLYPH_H : 0;
+     int gap = start ? 10 : 0;
+     int x0 = 320 - (iconW + gap + textW) / 2;
+ 
+@@ -165,9 +173,9 @@ void ripps2RenderMemory(void)
+     renderStartPrompt("START BROWSER", 395);
+ 
+     if (l1)
+-        rmDrawPixmap(l1, 170, 433, ALIGN_CENTER, l1->Width, l1->Height, SCALING_RATIO, COLOR_TEX, 0);
++        rmDrawPixmap(l1, 170, 433, ALIGN_CENTER, glyphWidth(l1), GLYPH_H, SCALING_RATIO, COLOR_TEX, 0);
+     if (r1)
+-        rmDrawPixmap(r1, 470, 433, ALIGN_CENTER, r1->Width, r1->Height, SCALING_RATIO, COLOR_TEX, 0);
++        rmDrawPixmap(r1, 470, 433, ALIGN_CENTER, glyphWidth(r1), GLYPH_H, SCALING_RATIO, COLOR_TEX, 0);
+     fntRenderString(gTheme->fonts[2], 320, 433, ALIGN_CENTER, 0, 0, formationName[gRipps2Formation], COLOR_LIT);
+     snprintf(count, sizeof(count), "%02d / %02d", gRipps2Formation + 1, FORMATION_COUNT);
+     fntRenderString(gTheme->fonts[3], 320, 456, ALIGN_CENTER, 0, 0, count, COLOR_SOFT);
+@@ -188,3 +196,65 @@ void ripps2HandleInputMemory(void)
+         readPads();
+     }
+ }
++
++// ---- STORAGE art panel ----
++// Two theme layers around the game's BG art (elements Ripps2PanelBack and Ripps2PanelGlass):
++//   back  - under the art: an opaque PS2-blue backdrop with the PS2 mark. It is the panel's
++//           placeholder, seen before a device starts and for games without art.
++//   glass - over the art: a navy tint, light at the top so the art shows, deep where the text
++//           sits, and a thin PS2-blue frame. Text elements come after it and stay on top.
++//           With no game selected it carries the placeholder line (start the device / empty).
++// Both are drawn procedurally, so they stay crisp at any panel size.
++
++#define RGBA_PRIM(r, g, b, a) GS_SETREG_RGBAQ((r), (g), (b), (a), 0x00) // untextured: 0x80 = opaque
++
++static void panelFrame(int x, int y, int w, int h)
++{
++    u64 edge = RGBA_PRIM(0x4A, 0x72, 0xDC, 0x80), shine = RGBA_PRIM(0x9C, 0xB8, 0xFF, 0x50);
++    rmDrawLine(x, y, x + w, y, edge);
++    rmDrawLine(x, y + h, x + w, y + h, edge);
++    rmDrawLine(x, y, x, y + h, edge);
++    rmDrawLine(x + w, y, x + w, y + h, edge);
++    rmDrawLine(x + 1, y + 1, x + w - 1, y + 1, shine); // glass catching the light along the top
++}
++
++void ripps2DrawPanelBack(int x, int y, int w, int h)
++{
++    u64 top = RGBA_PRIM(0x10, 0x26, 0x6C, 0x80), bottom = RGBA_PRIM(0x03, 0x08, 0x1E, 0x80);
++    rmDrawQuadGouraud(x, y, top, x + w, y, top, x, y + h, bottom, x + w, y + h, bottom);
++
++    GSTEXTURE *mark = thmGetTexture(RIPPS2_MARK);
++    if (mark) {
++        int mw = (w * 44) / 100, mh = (mw * mark->Height) / mark->Width;
++        rmDrawPixmap(mark, x + w / 2, y + (h * 34) / 100, ALIGN_CENTER, mw, mh, SCALING_RATIO, GS_SETREG_RGBA(0x80, 0x80, 0x80, 0x60), 0);
++    }
++}
++
++void ripps2DrawPanelGlass(int x, int y, int w, int h, int hasItem, int started)
++{
++    // tint: 30% over the upper art, deepening to 85% by the text zone (the lower 44%)
++    int y1 = y + (h * 38) / 100, y2 = y + (h * 56) / 100;
++    u64 light = RGBA_PRIM(0x04, 0x0C, 0x2E, 0x26), mid = RGBA_PRIM(0x04, 0x0C, 0x2E, 0x40), deep = RGBA_PRIM(0x03, 0x08, 0x22, 0x6C);
++    rmDrawQuadGouraud(x, y, light, x + w, y, light, x, y1, light, x + w, y1, light);
++    rmDrawQuadGouraud(x, y1, light, x + w, y1, light, x, y2, mid, x + w, y2, mid);
++    rmDrawQuadGouraud(x, y2, mid, x + w, y2, mid, x, y + h, deep, x + w, y + h, deep);
++    panelFrame(x, y, w, h);
++
++    if (hasItem)
++        return; // the game's own Description element draws next
++
++    // Placeholder line where the game's description would start (same x/y as that element)
++    int tx = x + 16, ty = y + h - 122;
++    if (!started) {
++        GSTEXTURE *btn = thmGetTexture(gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON);
++        int px = fntRenderString(gTheme->fonts[3], tx, ty, ALIGN_NONE, 0, 0, "PRESS", COLOR_SOFT) + 6;
++        if (btn) {
++            int bw = (btn->Width * 18) / btn->Height;
++            rmDrawPixmap(btn, px + bw / 2, ty + 6, ALIGN_CENTER, bw, 18, SCALING_RATIO, COLOR_TEX, 0);
++            px += bw + 6;
++        }
++        fntRenderString(gTheme->fonts[3], px, ty, ALIGN_NONE, 0, 0, "TO START THIS DEVICE", COLOR_SOFT);
++    } else {
++        fntRenderString(gTheme->fonts[3], tx, ty, ALIGN_NONE, 0, 0, "NO GAMES FOUND ON THIS DEVICE", COLOR_SOFT);
++    }
++}
+diff --git a/src/themes.c b/src/themes.c
+index 3450041..93b898d 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -13,6 +13,7 @@
+ #include "include/favsupport.h"
+ #include "include/vcdsupport.h" // vcdDisplayName -- display-only VCD game-ID prefix hide
+ #include "include/libview.h"    // libViewActive / libListViewActive -- which list this page shows
++#include "include/ripps2.h"     // RIPPS2: art panel layers
+ #ifdef RETROACHIEVEMENTS
+ #include "include/rabadge.h" // RA: mark over the cover
+ #endif
+@@ -102,6 +103,8 @@ enum ELEM_ATTRIBUTE_TYPE {
+     ELEM_TYPE_BDM_INDEX,
+     ELEM_TYPE_GAME_COUNT_TEXT,
+     ELEM_TYPE_COVERFLOW,
++    ELEM_TYPE_RIPPS2_PANEL_BACK,  // RIPPS2: art panel backdrop / placeholder (under a GameImage)
++    ELEM_TYPE_RIPPS2_PANEL_GLASS, // RIPPS2: art panel tint + frame (over a GameImage, under text)
+     ELEM_TYPE_COUNT
+ };
+ 
+@@ -131,7 +134,9 @@ static const char *elementsType[ELEM_TYPE_COUNT] = {
+     "LoadingIcon",
+     "BdmIndex",
+     "GameCountText",
+-    "Coverflow"};
++    "Coverflow",
++    "Ripps2PanelBack",
++    "Ripps2PanelGlass"};
+ 
+ // Per-device element filter (theme key devices=usb,hdd,... on MenuIcon/ItemsList/HintText) /////////////////////////////////
+ //
+@@ -834,6 +839,32 @@ static void drawStaticImage(struct menu_list *menu, struct submenu_list *item, c
+         rmDrawPixmap(&staticImage->defaultTexture->source, elem->posX, elem->posY, elem->aligned, elem->width, elem->height, elem->scaled, gDefaultCol, 0);
+ }
+ 
++// RIPPS2 art panel layers (ripps2ui.c draws them). Geometry comes from the element's x/y/width/height.
++static void ripps2PanelRect(struct theme_element *elem, int *x, int *y)
++{
++    *x = elem->posX;
++    *y = elem->posY;
++    if (elem->aligned) {
++        *x -= elem->width >> 1;
++        *y -= elem->height >> 1;
++    }
++}
++
++static void drawRipps2PanelBack(struct menu_list *menu, struct submenu_list *item, config_set_t *config, struct theme_element *elem)
++{
++    int x, y;
++    ripps2PanelRect(elem, &x, &y);
++    ripps2DrawPanelBack(x, y, elem->width, elem->height);
++}
++
++static void drawRipps2PanelGlass(struct menu_list *menu, struct submenu_list *item, config_set_t *config, struct theme_element *elem)
++{
++    int x, y;
++    item_list_t *support = menu->item->userdata;
++    ripps2PanelRect(elem, &x, &y);
++    ripps2DrawPanelGlass(x, y, elem->width, elem->height, item != NULL, support != NULL ? support->enabled : 1);
++}
++
+ static void initStaticImage(const char *themePath, config_set_t *themeConfig, theme_t *theme, theme_element_t *elem, const char *name, const char *imageName)
+ {
+     mutable_image_t *mutableImage = initMutableImage(themePath, themeConfig, theme, name, elem->type, NULL, 0, imageName, NULL);
+@@ -1199,14 +1230,18 @@ static void drawGameImage(struct menu_list *menu, struct submenu_list *item, con
+             }
+         }
+ 
++        // RIPPS2: a GameImage honours <name>_reflection / _reflection_offset the way Coverflow does,
++        // so a single cover (the info page's) gets the same mirrored, fading reflection and case art.
++        rmSetReflectionYOffset(drawElem->reflectionOffset);
+         if (gameImage->overlayTexture) {
+             rmDrawOverlayPixmap(&gameImage->overlayTexture->source, drawElem->posX, drawElem->posY, drawElem->aligned, drawElem->width, drawElem->height, drawElem->scaled, gDefaultCol,
+                                 texture, gameImage->overlayTexture->upperLeft_x, gameImage->overlayTexture->upperLeft_y, gameImage->overlayTexture->upperRight_x, gameImage->overlayTexture->upperRight_y,
+-                                gameImage->overlayTexture->lowerLeft_x, gameImage->overlayTexture->lowerLeft_y, gameImage->overlayTexture->lowerRight_x, gameImage->overlayTexture->lowerRight_y, 0);
++                                gameImage->overlayTexture->lowerLeft_x, gameImage->overlayTexture->lowerLeft_y, gameImage->overlayTexture->lowerRight_x, gameImage->overlayTexture->lowerRight_y, drawElem->reflection);
+             if (gameImage->overlayTexture2)
+-                rmDrawPixmap(&gameImage->overlayTexture2->source, drawElem->posX, drawElem->posY, drawElem->aligned, drawElem->width, drawElem->height, drawElem->scaled, gDefaultCol, 0);
++                rmDrawPixmap(&gameImage->overlayTexture2->source, drawElem->posX, drawElem->posY, drawElem->aligned, drawElem->width, drawElem->height, drawElem->scaled, gDefaultCol, drawElem->reflection);
+         } else
+-            rmDrawPixmap(texture, drawElem->posX, drawElem->posY, drawElem->aligned, drawElem->width, drawElem->height, drawElem->scaled, gDefaultCol, 0);
++            rmDrawPixmap(texture, drawElem->posX, drawElem->posY, drawElem->aligned, drawElem->width, drawElem->height, drawElem->scaled, gDefaultCol, drawElem->reflection);
++        rmSetReflectionYOffset(0); // don't leak the offset to any other reflection draw
+ 
+ #ifdef RETROACHIEVEMENTS
+         /* The RA mark over the cover of a tracked game. Only elements whose pattern is
+@@ -2112,9 +2147,12 @@ static void drawItemsList(struct menu_list *menu, struct submenu_list *item, con
+         u64 color;
+         int textEndX = 0;
+         while (ps && (others++ < itemsList->displayedItems)) {
+-            if (ps == item)
++            if (ps == item) {
+                 color = gTheme->selTextColor;
+-            else
++                // RIPPS2: the highlighted row sits on a PS2-blue bar with a light leading edge
++                rmDrawRect(posX - 12, posY - 1, elem->width + 12, MENU_ITEM_HEIGHT, GS_SETREG_RGBAQ(0x1E, 0x3C, 0x9C, 0x5C, 0x00));
++                rmDrawRect(posX - 12, posY - 1, 3, MENU_ITEM_HEIGHT, GS_SETREG_RGBAQ(0xB4, 0xC8, 0xFF, 0x80, 0x00));
++            } else
+                 color = elem->color;
+ 
+             const char *dispText = ps->item.isFolder ? submenuItemGetText(&ps->item) :
+@@ -2898,6 +2936,12 @@ static int addGUIElem(const char *themePath, config_set_t *themeConfig, theme_t
+             } else if (!strcmp(elementsType[ELEM_TYPE_BDM_INDEX], type)) {
+                 elem = initBasic(themePath, themeConfig, theme, name, ELEM_TYPE_BDM_INDEX, screenWidth >> 1, 355, ALIGN_CENTER, DIM_UNDEF, DIM_UNDEF, SCALING_RATIO, gDefaultCol, theme->fonts[0]);
+                 elem->drawElem = &drawBDMIndex;
++            } else if (!strcmp(elementsType[ELEM_TYPE_RIPPS2_PANEL_BACK], type)) {
++                elem = initBasic(themePath, themeConfig, theme, name, ELEM_TYPE_RIPPS2_PANEL_BACK, 0, 0, ALIGN_NONE, 320, 240, SCALING_RATIO, gDefaultCol, theme->fonts[0]);
++                elem->drawElem = &drawRipps2PanelBack;
++            } else if (!strcmp(elementsType[ELEM_TYPE_RIPPS2_PANEL_GLASS], type)) {
++                elem = initBasic(themePath, themeConfig, theme, name, ELEM_TYPE_RIPPS2_PANEL_GLASS, 0, 0, ALIGN_NONE, 320, 240, SCALING_RATIO, gDefaultCol, theme->fonts[0]);
++                elem->drawElem = &drawRipps2PanelGlass;
+             } else if (!strcmp(elementsType[ELEM_TYPE_COVERFLOW], type)) {
+                 // GAME_IMAGE-backed (COV cache) so initMutableImage/findDuplicate work unchanged.
+                 // Allow one per list (e.g. a games "main" coverflow + an "appsMain" coverflow,
+@@ -3536,9 +3580,8 @@ static int thmLoad(const char *themePath)
+     thmLoadResource(&newT->textures[L1_ICON], L1_ICON, themePath, GS_PSM_CT32, newT->useDefault);
+     thmLoadResource(&newT->textures[R1_ICON], R1_ICON, themePath, GS_PSM_CT32, newT->useDefault);
+ 
+-    // RIPPS2: the glass panel and the flying PS2 mark are drawn by the shell itself, so load them
+-    // even when no theme element references them (a StaticImage would otherwise be the only loader).
+-    thmLoadResource(&newT->textures[RIPPS2_GLASS], RIPPS2_GLASS, themePath, GS_PSM_CT32, 1);
++    // RIPPS2: the flying PS2 mark (category bar, art panel backdrop) is drawn by the shell itself,
++    // so load it even though no theme element names it. The art panel's glass is procedural now.
+     thmLoadResource(&newT->textures[RIPPS2_MARK], RIPPS2_MARK, themePath, GS_PSM_CT32, 1);
+ 
+     // Embedded attribute glyphs (#Format/#Media/Aspect/Rating/Scan/Vmode values): BUILT-IN theme
