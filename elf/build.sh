@@ -29,6 +29,7 @@ done
 cp -f "$HERE/theme/conf_theme.cfg" "$SRC/misc/conf_theme_OPL.cfg"
 cp -f "$ROOT/assets/master.ttf" "$SRC/misc/ripps2_font.ttf"
 cp -f "$HERE/theme/fonts/ripps2_sleek.ttf" "$SRC/misc/ripps2_sleek.ttf"
+cp -f "$HERE/theme/fonts/ripps2_sleek_bold.ttf" "$SRC/misc/ripps2_sleekbold.ttf"
 # The Memory Files ELF, compiled in and launched from RAM (patch 0004)
 cp -f "$HERE/embed/MEMORY_FILES.ELF" "$SRC/misc/ripps2_memfiles.elf"
 # Built-in textures: glass info panel and PS2 selector mark (patch 0006)

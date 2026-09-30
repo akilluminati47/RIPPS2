@@ -1,18 +1,20 @@
-"""Builds RIPPS2 Sleek (elf/theme/fonts/ripps2_sleek.ttf), the UI font for hints, glyph labels,
-menus and settings.
+"""Builds RIPPS2 Sleek (elf/theme/fonts/ripps2_sleek.ttf) and RIPPS2 Sleek Bold
+(ripps2_sleek_bold.ttf), the UI fonts for hints, glyph labels, menus and settings.
 
 The letters take the PS2 logo's lettering as their model: one thin, even stroke, square corners,
 letters built from horizontal and vertical bars on a grid, and the logo's own open forms -- the P
 with no stem above its bowl, the zigzag 2 carried into the S. They are narrower than
 the main font (Planet N Compact, assets/master.ttf), so a full hint bar fits the screen. The digits
-are the main font's own, copied in so numbers read the same everywhere. The S is the square form:
-the logo's stepped S (kept as --s-variant logo) reads as a stray stroke inside words. Metrics match
-the main font, so both sit on one baseline.
+are drawn the same way (the 2 is the logo's; the 5 takes clipped corners to stay apart from the S,
+the 0 is narrower than the O and slashed). The S is the square form: the logo's stepped S (kept as
+--s-variant logo) reads as a stray stroke inside words. Bold is the same drawing with a heavier
+stroke, for labels that need the weight (the glyph pills and badges, text beside big glyphs).
+Metrics match the main font, so the two sit on one baseline.
 
 Each glyph is a set of polylines on a grid 6 units tall (the cap height); every segment becomes a
 stroke rectangle, extended half a stroke past its ends so the corners close square.
 
-    python elf/theme/tools/make_sleek_font.py [--s-variant logo|square] [--preview out.png]
+    python elf/theme/tools/make_sleek_font.py [--weight regular|bold|both] [--s-variant logo|square]
 """
 import argparse
 import math
@@ -21,11 +23,9 @@ import unicodedata
 
 from fontTools.fontBuilder import FontBuilder
 from fontTools.pens.ttGlyphPen import TTGlyphPen
-from fontTools.ttLib import TTFont
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(HERE, '..', '..', '..'))
-MASTER = os.path.join(ROOT, 'assets', 'master.ttf')
 OUT = os.path.normpath(os.path.join(HERE, '..', 'fonts', 'ripps2_sleek.ttf'))
 
 UPM = 1000
@@ -33,6 +33,7 @@ CAP = 680            # the main font's cap height
 ASC, DESC = 894, -182
 U = CAP / 6.0        # one grid unit
 STROKE = 0.7 * U     # a thin, even line, as in the logo
+STROKE_BOLD = 1.25 * U
 SB = 60              # side bearing each side
 
 # polylines per glyph, x in grid units from 0 to the glyph's width, y from 0 (baseline) to 6 (cap)
@@ -92,7 +93,18 @@ GLYPHS = {
     '|': [[(0, -0.6), (0, 6.6)]],
     '~': [[(0, 3), (1, 3.8), (2, 3), (3, 3.8)]],
 }
-MASTER_DIGITS = '0123456789'  # numbers are the main font's own
+DIGITS = {
+    '0': [[(0, 0), (0, 6), (3.4, 6), (3.4, 0), (0, 0)], [(1.1, 2.2), (2.3, 3.8)]],
+    '1': [[(0, 4.8), (1.2, 6), (1.2, 0)]],
+    '2': [[(0, 6), (4, 6), (4, 3), (0, 3), (0, 0), (4, 0)]],                    # the logo's 2
+    '3': [[(0, 6), (4, 6), (4, 0), (0, 0)], [(1.2, 3), (4, 3)]],
+    '4': [[(0, 6), (0, 2.4), (4, 2.4)], [(3, 6), (3, 0)]],
+    '5': [[(4, 6), (0, 6), (0, 3.2), (3, 3.2), (4, 2.2), (4, 1), (3, 0), (0, 0)]],
+    '6': [[(4, 6), (0, 6), (0, 0), (4, 0), (4, 3), (0, 3)]],
+    '7': [[(0, 6), (4, 6), (4, 0)]],
+    '8': [[(0, 0), (0, 6), (4, 6), (4, 0), (0, 0)], [(0, 3), (4, 3)]],
+    '9': [[(4, 3), (0, 3), (0, 6), (4, 6), (4, 0), (0, 0)]],
+}
 
 
 def stroke_rect(p, q, half):
@@ -113,12 +125,12 @@ def stroke_rect(p, q, half):
     return pts if area < 0 else pts[::-1]
 
 
-def draw_polylines(polys):
+def draw_polylines(polys, stroke):
     pen = TTGlyphPen(None)
     xs = [x for poly in polys for x, _ in poly]
     width_units = max(xs) - min(xs) if xs else 0
-    ox = SB + STROKE / 2 - min(xs) * U
-    half = STROKE / 2
+    ox = SB + stroke / 2 - min(xs) * U
+    half = stroke / 2
     for poly in polys:
         pts = [(ox + x * U, y * U) for x, y in poly]
         for p, q in zip(pts, pts[1:]):
@@ -127,15 +139,12 @@ def draw_polylines(polys):
             for c in corners[1:]:
                 pen.lineTo((round(c[0]), round(c[1])))
             pen.closePath()
-    advance = round(width_units * U + STROKE + 2 * SB)
+    advance = round(width_units * U + stroke + 2 * SB)
     return pen.glyph(), advance
 
 
-def build(s_variant):
-    master = TTFont(MASTER)
-    mcmap = master.getBestCmap()
-    mglyphs = master.getGlyphSet()
-
+def build(s_variant, bold=False):
+    stroke = STROKE_BOLD if bold else STROKE
     order = ['.notdef', 'space']
     glyf, hmtx, cmap = {}, {}, {}
 
@@ -149,26 +158,16 @@ def build(s_variant):
     defs['S'] = defs.pop('S_logo') if s_variant == 'logo' else defs.pop('S_square')
     defs.pop('S_logo', None)
     defs.pop('S_square', None)
-    for ch in MASTER_DIGITS:
-        defs.pop(ch, None)
+    defs.update(DIGITS)
 
     for ch, polys in defs.items():
         name = 'g%04X' % ord(ch)
-        glyph, adv = draw_polylines(polys)
+        glyph, adv = draw_polylines(polys, stroke)
         glyf[name], hmtx[name] = glyph, (adv, 0)
         order.append(name)
         cmap[ord(ch)] = name
         if ch.isalpha():
             cmap[ord(ch.lower())] = name  # all capitals, as in the logo
-
-    for ch in MASTER_DIGITS:  # the main font's own digits, outlines copied across
-        src = mcmap[ord(ch)]
-        pen = TTGlyphPen(None)
-        mglyphs[src].draw(pen)
-        name = 'digit' + ch
-        glyf[name], hmtx[name] = pen.glyph(), (master['hmtx'][src][0], 0)
-        order.append(name)
-        cmap[ord(ch)] = name
 
     # accented Latin letters fall back to their base letter, so other languages stay readable
     for cp in range(0xC0, 0x250):
@@ -182,9 +181,10 @@ def build(s_variant):
     fb.setupGlyf(glyf)
     fb.setupHorizontalMetrics(hmtx)
     fb.setupHorizontalHeader(ascent=ASC, descent=DESC, lineGap=9)
-    fb.setupNameTable({'familyName': 'RIPPS2 Sleek', 'styleName': 'Regular',
-                       'uniqueFontIdentifier': 'RIPPS2 Sleek Regular', 'fullName': 'RIPPS2 Sleek',
-                       'psName': 'RIPPS2Sleek-Regular', 'version': 'Version 1.0'})
+    style = 'Bold' if bold else 'Regular'
+    fb.setupNameTable({'familyName': 'RIPPS2 Sleek', 'styleName': style,
+                       'uniqueFontIdentifier': 'RIPPS2 Sleek ' + style, 'fullName': 'RIPPS2 Sleek ' + style,
+                       'psName': 'RIPPS2Sleek-' + style, 'version': 'Version 1.1'})
     fb.setupOS2(sTypoAscender=750, sTypoDescender=-170, sTypoLineGap=0, usWinAscent=ASC, usWinDescent=-DESC,
                 sCapHeight=CAP, sxHeight=CAP)
     fb.setupPost()
@@ -210,14 +210,18 @@ def preview(font_path, out):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--s-variant', choices=('logo', 'square'), default='square')
-    ap.add_argument('--out', default=OUT)
+    ap.add_argument('--weight', choices=('regular', 'bold', 'both'), default='both')
+    ap.add_argument('--out-dir', default=os.path.dirname(OUT))
     ap.add_argument('--preview')
     a = ap.parse_args()
-    os.makedirs(os.path.dirname(a.out), exist_ok=True)
-    build(a.s_variant).save(a.out)
-    print('wrote', a.out)
-    if a.preview:
-        preview(a.out, a.preview)
+    os.makedirs(a.out_dir, exist_ok=True)
+    weights = ('regular', 'bold') if a.weight == 'both' else (a.weight,)
+    for w in weights:
+        path = os.path.join(a.out_dir, 'ripps2_sleek_bold.ttf' if w == 'bold' else 'ripps2_sleek.ttf')
+        build(a.s_variant, bold=(w == 'bold')).save(path)
+        print('wrote', path)
+        if a.preview:
+            preview(path, a.preview.replace('.png', '_' + w + '.png'))
 
 
 if __name__ == '__main__':

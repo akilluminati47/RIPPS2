@@ -1,0 +1,53 @@
+diff --git a/Makefile b/Makefile
+index af43b92..653ac1c 100644
+--- a/Makefile
++++ b/Makefile
+@@ -187,7 +187,7 @@ AUDIO_OBJS =	boot.o cancel.o confirm.o cursor.o message.o transition.o bd_connec
+ # icon_sys.o + save_icn.o are the memory-card browser save icon for the settings folder.
+ # icon.sys names list.icn, copy.icn and del.icn; all three are the same artwork, so ONE blob is
+ # embedded and util.c writes it out under all three names (see saveIconName in src/util.c).
+-MISC_OBJS =	icon_sys.o save_icn.o icon_sys_A.o icon_sys_J.o icon_sys_C.o conf_theme_OPL.o theme_coverflow.o ripps2_font.o ripps2_sleek.o ripps2_memfiles.o
++MISC_OBJS =	icon_sys.o save_icn.o icon_sys_A.o icon_sys_J.o icon_sys_C.o conf_theme_OPL.o theme_coverflow.o ripps2_font.o ripps2_sleek.o ripps2_sleekbold.o ripps2_memfiles.o
+ 
+ TRANSLATIONS = Albanian Arabic Bulgarian Cebuano Croatian Czech Danish Dutch Filipino French \
+ 	Galician German Greek Hungarian Indonesian Italian Japanese Korean Laotian Persian Polish Portuguese \
+@@ -1113,6 +1113,10 @@ $(EE_ASM_DIR)ripps2_font.c: misc/ripps2_font.ttf | $(EE_ASM_DIR)
+ $(EE_ASM_DIR)ripps2_sleek.c: misc/ripps2_sleek.ttf | $(EE_ASM_DIR)
+ 	$(BIN2C) $< $@ $(*F)_raw
+ 
++# RIPPS2: its bold weight (misc/ripps2_sleekbold.ttf), for text beside big button glyphs
++$(EE_ASM_DIR)ripps2_sleekbold.c: misc/ripps2_sleekbold.ttf | $(EE_ASM_DIR)
++	$(BIN2C) $< $@ $(*F)_raw
++
+ # RIPPS2: the Memory Files ELF compiled in (misc/ripps2_memfiles.elf, copied in by build.sh)
+ $(EE_ASM_DIR)ripps2_memfiles.c: misc/ripps2_memfiles.elf | $(EE_ASM_DIR)
+ 	$(BIN2C) $< $@ $(*F)_elf
+diff --git a/src/fntsys.c b/src/fntsys.c
+index 5a21f11..477f44b 100644
+--- a/src/fntsys.c
++++ b/src/fntsys.c
+@@ -23,6 +23,8 @@ extern void *ripps2_font_raw;
+ extern int size_ripps2_font_raw;
+ extern void *ripps2_sleek_raw;
+ extern int size_ripps2_sleek_raw;
++extern void *ripps2_sleekbold_raw;
++extern int size_ripps2_sleekbold_raw;
+ 
+ /// Maximal count of atlases per font
+ #define ATLAS_MAX    4
+@@ -282,10 +284,14 @@ static void *fntReadData(char *path, int *bufferSize, int *owned)
+         *bufferSize = size_ripps2_font_raw;
+         return &ripps2_font_raw;
+     }
+-    if (strcmp(path, "builtin:ripps2sleek") == 0) { // RIPPS2 Sleek: hints, glyph labels, menus, settings
++    if (strcmp(path, "builtin:ripps2sleek") == 0) { // RIPPS2 Sleek: hints, menus, settings
+         *bufferSize = size_ripps2_sleek_raw;
+         return &ripps2_sleek_raw;
+     }
++    if (strcmp(path, "builtin:ripps2sleekbold") == 0) { // its bold weight: text beside big glyphs
++        *bufferSize = size_ripps2_sleekbold_raw;
++        return &ripps2_sleekbold_raw;
++    }
+ 
+     buffer = readFile(path, -1, bufferSize);
+     if (!buffer) {

@@ -3,7 +3,7 @@
 They replace RiptOPL's built-in icons of the same names at build time (build.sh copies
 elf/theme/gfx over the source tree's gfx/), so the hint bar, the drive row and the info page
 badges all share the mockups' look: thin light-blue outlines on a faint navy fill, labels in
-RIPPS2 Sleek. Everything is drawn 4x and downsampled for clean edges.
+RIPPS2 Sleek Bold. Everything is drawn 4x and downsampled for clean edges.
 
     python elf/theme/tools/make_glyphs.py
 """
@@ -12,8 +12,8 @@ from PIL import Image, ImageDraw, ImageFont
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.normpath(os.path.join(HERE, '..', 'gfx'))
-# labels in RIPPS2 Sleek (make_sleek_font.py), the font the hint text beside these glyphs uses
-FONT = os.path.normpath(os.path.join(HERE, '..', 'fonts', 'ripps2_sleek.ttf'))
+# labels in RIPPS2 Sleek Bold (make_sleek_font.py): the weight a label needs at glyph size
+FONT = os.path.normpath(os.path.join(HERE, '..', 'fonts', 'ripps2_sleek_bold.ttf'))
 
 SS = 4  # supersampling factor
 LINE = (178, 198, 248, 240)   # outline
@@ -48,8 +48,7 @@ def centered_text(d, cx, cy, text, px, fill=TEXT, max_w=None):
         px -= 1
         f = font(px, text)
         l, t, r, b = d.textbbox((0, 0), text, font=f)
-    # a touch of stroke: the Sleek letters are one thin line, which would thin out at hint size
-    d.text((cx * SS - (l + r) / 2, cy * SS - (t + b) / 2), text, font=f, fill=fill, stroke_width=2, stroke_fill=fill)
+    d.text((cx * SS - (l + r) / 2, cy * SS - (t + b) / 2), text, font=f, fill=fill)
 
 
 # One geometry for every glyph, so the families match to the eye: every outline spans y 2..30 (28 px
@@ -72,7 +71,7 @@ def fit_size(texts, max_w, start=16):
     """The largest label size at which every text fits max_w: one size for a whole family."""
     probe = ImageDraw.Draw(Image.new('RGBA', (8, 8)))
     for px in range(start, 5, -1):
-        if all((lambda b: b[2] - b[0])(probe.textbbox((0, 0), t, font=font(px, t), stroke_width=2)) <= max_w * SS for t in texts):
+        if all((lambda b: b[2] - b[0])(probe.textbbox((0, 0), t, font=font(px, t))) <= max_w * SS for t in texts):
             return px
     return 6
 
