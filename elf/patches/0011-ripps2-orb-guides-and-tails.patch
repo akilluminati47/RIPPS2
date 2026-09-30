@@ -1,0 +1,340 @@
+diff --git a/src/ripps2bg.c b/src/ripps2bg.c
+index 543eb1e..ff02713 100644
+--- a/src/ripps2bg.c
++++ b/src/ripps2bg.c
+@@ -604,28 +604,261 @@ static void glow(float x, float y, float r, int cr, int cg, int cb, int ca)
+     }
+ }
+ 
++// ---- Guide lines: each formation's outline, as in the web theme ----
++// Drawn on (with a bright flash) when the Memory Files tab opens and each time a formation snaps
++// into place, held a moment, then faded back to just the orbs. Hidden while a formation morphs.
++
++#define GUIDE_REVEAL_S 0.7f
++#define GUIDE_HOLD_S   1.9f
++#define GUIDE_FADE_S   1.2f
++#define LPATH_N        320
++
++static v3 lorenzPath[LPATH_N];
++static int lorenzPathCount = 0;
++static int icoEdges[30][2];
++static int icoEdgeCount = 0;
++
++static void guidesInit(void)
++{
++    int i, j, k;
++    // the attractor's long-run path (the web theme's LORENZ_PATH, thinned for the EE)
++    v3 p = {0.1f, 0.0f, 0.0f};
++    for (k = 0; k < 9000 && lorenzPathCount < LPATH_N; k++) {
++        const float h = 0.004f;
++        float dx = 10.0f * (p.y - p.x), dy = p.x * (28.0f - p.z) - p.y, dz = p.x * p.y - (8.0f / 3.0f) * p.z;
++        p.x += dx * h;
++        p.y += dy * h;
++        p.z += dz * h;
++        if (k > 600 && k % 27 == 0)
++            lorenzPath[lorenzPathCount++] = V(p.x * 0.17f, (p.z - 25.0f) * 0.17f, p.y * 0.17f);
++    }
++    // the icosahedron's 30 edges: vertex pairs at distance 2 on the (0, +-1, +-PHI) layout
++    static const float ico[12][3] = {{0, -1, -PHI}, {0, -1, PHI}, {0, 1, -PHI}, {0, 1, PHI}, {-1, -PHI, 0}, {-1, PHI, 0},
++                                     {1, -PHI, 0}, {1, PHI, 0}, {-PHI, 0, -1}, {-PHI, 0, 1}, {PHI, 0, -1}, {PHI, 0, 1}};
++    for (i = 0; i < 12; i++)
++        for (j = i + 1; j < 12; j++) {
++            float dx = ico[i][0] - ico[j][0], dy = ico[i][1] - ico[j][1], dz = ico[i][2] - ico[j][2];
++            if (fabsf(dx * dx + dy * dy + dz * dz - 4.0f) < 1e-3f && icoEdgeCount < 30) {
++                icoEdges[icoEdgeCount][0] = i;
++                icoEdges[icoEdgeCount][1] = j;
++                icoEdgeCount++;
++            }
++        }
++}
++
++static v3 borromeanPt(int ring, float s)
++{
++    float a = 3.2f * cosf(s), b = 1.6f * sinf(s);
++    return ring == 0 ? V(a, b, 0) : ring == 1 ? V(0, a, b) : V(b, 0, a);
++}
++
++static v3 helixPt(float k, int strand, float t)
++{
++    float s = k * TAU * 1.4f + t * 0.8f + strand * PI;
++    return V((k - 0.5f) * 8.5f, cosf(s) * 1.7f, sinf(s) * 1.7f);
++}
++
++static v3 mobiusPt(float s, float v)
++{
++    float R = 3.6f + v * cosf(s / 2);
++    return V(R * cosf(s), v * sinf(s / 2), R * sinf(s));
++}
++
++// A point on curve k of formation f at parameter u in [0, 1] (formation frame)
++static v3 guidePt(int f, int k, float u, float t)
++{
++    switch (f) {
++        case 0: // Browser Orbit: each orb's own tilted orbit
++            return menuOrbit(k, u * TAU, t);
++        case 1:
++            return borromeanPt(k, u * TAU);
++        case 2:
++            if (k == 0) { // the knot the orbs ride
++                float uu = u * TAU + t * 0.3f, v = u * TAU * 4.0f + t * 1.1f;
++                return V((3.3f + 1.25f * cosf(v)) * cosf(uu), 1.25f * sinf(v), (3.3f + 1.25f * cosf(v)) * sinf(uu));
++            } else { // the donut's rims: inner, outer, top, bottom
++                static const float rad[4] = {2.05f, 4.55f, 3.3f, 3.3f}, y[4] = {0.0f, 0.0f, 1.25f, -1.25f};
++                return V(cosf(u * TAU) * rad[k - 1], y[k - 1], sinf(u * TAU) * rad[k - 1]);
++            }
++        case 4:
++            return helixPt(u, k, t);
++        case 5: {
++            int idx = (int)(u * (lorenzPathCount - 1) + 0.5f);
++            return lorenzPath[idx];
++        }
++        case 6: {
++            float s = u * TAU + t * 0.2f;
++            return V((sinf(s) + 2 * sinf(2 * s)) * 1.45f, (cosf(s) - 2 * cosf(2 * s)) * 1.45f, -sinf(3 * s) * 1.45f);
++        }
++        case 7: // Mobius: the single edge, twice round
++            return mobiusPt(u * 2.0f * TAU, 1.15f);
++        case 8: // Klein: rings along the bottle, then the two profile lines
++            if (k < 10)
++                return klein(((k + 0.5f) / 10.0f) * PI, u * TAU);
++            return klein(u * PI, k == 10 ? 0.0f : PI);
++        case 9: {
++            float a = u * 3.0f * PI;
++            float r = 0.24f * expf((logf(PHI) / (PI / 2)) * a) * (1.0f + 0.06f * sinf(t * 1.1f));
++            float rot = a + t * 0.25f;
++            return V(cosf(rot) * r, (u - 0.5f) * 1.2f, sinf(rot) * r);
++        }
++        default: { // 10 Lissajous
++            float s = u * TAU + t * 0.25f;
++            return V(4.2f * sinf(3 * s + PI / 2), 2.6f * sinf(2 * s), 2.4f * sinf(5 * s));
++        }
++    }
++}
++
++static void guideLine(int f, v3 a, v3 b, float t, u64 col)
++{
++    p2 pa = project(toWorld(f, a, t)), pb = project(toWorld(f, b, t));
++    if (pa.ok && pb.ok)
++        rmDrawLine((int)pa.x, (int)pa.y, (int)pb.x, (int)pb.y, col);
++}
++
++// A sampled curve, drawn on up to `reveal` of its length
++static void guideCurve(int f, int k, int samples, int closed, float t, float reveal, u64 col)
++{
++    int segs = closed ? samples : samples - 1, s;
++    int shown = (int)(segs * reveal + 0.5f);
++    float den = (float)(closed ? samples : samples - 1);
++    v3 prev = guidePt(f, k, 0.0f, t);
++    for (s = 1; s <= shown; s++) {
++        v3 cur = guidePt(f, k, (float)s / den, t);
++        guideLine(f, prev, cur, t, col);
++        prev = cur;
++    }
++}
++
++static void drawGuides(int f, float t, float reveal, u64 col)
++{
++    int k, n;
++    switch (f) {
++        case 0:
++            for (k = 0; k < 7; k++)
++                guideCurve(f, k, 48, 1, t, reveal, col);
++            break;
++        case 1:
++            for (k = 0; k < 3; k++)
++                guideCurve(f, k, 64, 1, t, reveal, col);
++            break;
++        case 2:
++            guideCurve(f, 0, 120, 1, t, reveal, col);
++            for (k = 1; k <= 4; k++)
++                guideCurve(f, k, 48, 1, t, reveal, col);
++            break;
++        case 3: // icosahedron edges between the live (tumbling) vertices
++            n = (int)(icoEdgeCount * reveal + 0.5f);
++            for (k = 0; k < n; k++)
++                guideLine(f, formationAt(3, icoEdges[k][0], 12, t), formationAt(3, icoEdges[k][1], 12, t), t, col);
++            break;
++        case 4:
++            guideCurve(f, 0, 64, 0, t, reveal, col);
++            guideCurve(f, 1, 64, 0, t, reveal, col);
++            n = (int)(10 * reveal + 0.5f);
++            for (k = 0; k < n; k++)
++                guideLine(f, helixPt(k / 9.0f, 0, t), helixPt(k / 9.0f, 1, t), t, col);
++            break;
++        case 5:
++            guideCurve(f, 0, lorenzPathCount, 0, t, reveal, col);
++            break;
++        case 7:
++            guideCurve(f, 0, 160, 1, t, reveal, col);
++            n = (int)(14 * reveal + 0.5f);
++            for (k = 0; k < n; k++)
++                guideLine(f, mobiusPt((k / 14.0f) * TAU, -1.15f), mobiusPt((k / 14.0f) * TAU, 1.15f), t, col);
++            break;
++        case 8:
++            for (k = 0; k < 10; k++)
++                guideCurve(f, k, 28, 1, t, reveal, col);
++            guideCurve(f, 10, 64, 0, t, reveal, col);
++            guideCurve(f, 11, 64, 0, t, reveal, col);
++            break;
++        case 9:
++            guideCurve(f, 0, 120, 0, t, reveal, col);
++            break;
++        case 11: { // the {7/3} star the orbs glide along
++            float r = 4.0f * (1.0f + 0.1f * sinf(t * 1.2f));
++            n = (int)(7 * reveal + 0.5f);
++            for (k = 0; k < n; k++) {
++                float a0 = (STAR[k] / 7.0f) * TAU + t * 0.12f - PI / 2, a1 = (STAR[(k + 1) % 7] / 7.0f) * TAU + t * 0.12f - PI / 2;
++                guideLine(f, V(cosf(a0) * r, sinf(a0) * r, 0), V(cosf(a1) * r, sinf(a1) * r, 0), t, col);
++            }
++            break;
++        }
++        default: // 6 Trefoil, 10 Lissajous
++            guideCurve(f, 0, f == 6 ? 120 : 180, 1, t, reveal, col);
++            break;
++    }
++}
++
++// ---- Tails: a short comet ribbon behind each orb, from its recent positions ----
++#define TRAIL_N  12    // samples kept per orb
++#define TRAIL_HZ 30.0f // sampled at a fixed rate, so tails look the same at 50 or 60 fps
++
++static v3 trail[MAX_ORBS][TRAIL_N];
++static int trailHead = 0, trailValid = 0;
++static float trailLastSample = -1.0f;
++
++static void drawTail(int i, p2 head, float r, float vis)
++{
++    int k;
++    p2 prev = head;
++    float prevW = r * 0.45f;
++    for (k = 0; k < TRAIL_N; k++) {
++        p2 p = project(trail[i][(trailHead - k + TRAIL_N) % TRAIL_N]);
++        if (!p.ok || !prev.ok)
++            break;
++        float dx = p.x - prev.x, dy = p.y - prev.y, len = sqrtf(dx * dx + dy * dy);
++        float fall = 1.0f - (float)(k + 1) / TRAIL_N;
++        float w = r * 0.45f * fall;
++        if (len > 0.5f) { // a still orb has no tail
++            float nx = -dy / len, ny = dx / len;
++            int a0 = (int)(0x30 * powf(fall + 1.0f / TRAIL_N, 1.8f) * vis), a1 = (int)(0x30 * powf(fall, 1.8f) * vis);
++            u64 c0 = RGBA(0x6F, 0x9C, 0xFF, a0), c1 = RGBA(0x6F, 0x9C, 0xFF, a1);
++            rmDrawQuadGouraud(prev.x + nx * prevW, prev.y + ny * prevW, c0, prev.x - nx * prevW, prev.y - ny * prevW, c0,
++                              p.x + nx * w, p.y + ny * w, c1, p.x - nx * w, p.y - ny * w, c1);
++        }
++        prev = p;
++        prevW = w;
++    }
++}
++
+ static int shownFormation = -1, prevFormation = 0;
+ static float morphStart = -10.0f, lastT = 0.0f;
++static float guideStart = -1.0f;
++static int morphing = 0;
+ 
+ void ripps2DrawOrbs(void)
+ {
+-    int i;
++    int i, k;
+     float t = nowSeconds();
+-    float dt = lastT > 0.0f ? t - lastT : 0.016f;
++    float dt = lastT > 0.0f ? t - lastT : 1.0f;
+     lastT = t;
+ 
+-    lorenzStep(dt);
++    if (lorenzPathCount == 0)
++        guidesInit();
++    lorenzStep(fminf(dt, 0.05f));
+ 
+     int f = gRipps2Formation % FORMATIONS;
+     if (shownFormation < 0)
+         shownFormation = prevFormation = f;
++    if (dt > 0.25f) { // the tab was just opened: fresh tails, and show the outline
++        trailValid = 0;
++        guideStart = t;
++    }
+     if (f != shownFormation) { // morph from wherever the orbs are
+         prevFormation = shownFormation;
+         shownFormation = f;
+         morphStart = t;
++        morphing = 1;
+     }
+     float m = fminf(1.0f, (t - morphStart) / 2.0f);
+     float e = m < 0.5f ? 4 * m * m * m : 1 - powf(-2 * m + 2, 3) / 2;
++    if (morphing && m >= 1.0f) { // snapped into the new formation: show its outline
++        morphing = 0;
++        guideStart = t;
++    }
+ 
+     drawSky(RGBA(0x01, 0x02, 0x0A, 0x80), RGBA(0x08, 0x16, 0x46, 0x80), RGBA(0x01, 0x02, 0x08, 0x80));
+     rmSetBlendAdditive(1);
+@@ -636,27 +869,64 @@ void ripps2DrawOrbs(void)
+     v3 target = {0.0f, -0.7f, 0.0f};
+     camLook(eye, target, 42.0f);
+ 
++    // outline: draw on, flash, hold, fade (never mid-morph)
++    if (guideStart >= 0.0f && !morphing) {
++        float age = t - guideStart;
++        float level = age < GUIDE_HOLD_S ? 1.0f : fmaxf(0.0f, 1.0f - (age - GUIDE_HOLD_S) / GUIDE_FADE_S);
++        if (level <= 0.0f)
++            guideStart = -1.0f;
++        else {
++            float flash = expf(-age * 3.0f);
++            int a = (int)((0x22 + 0x44 * flash) * level);
++            drawGuides(f, t, clamp01(age / GUIDE_REVEAL_S), RGBA(0x51, 0x8E, 0xEB, a));
++        }
++    }
++
+     int n = formations[f].n, pn = formations[prevFormation].n;
+     int count = (e < 1.0f && pn > n) ? pn : n;
++    if (count > MAX_ORBS)
++        count = MAX_ORBS;
+     float sizeCur = fmaxf(0.55f, sqrtf(7.0f / n)), sizePrev = fmaxf(0.55f, sqrtf(7.0f / pn));
+     float size = sizePrev + (sizeCur - sizePrev) * e;
+ 
+-    for (i = 0; i < count && i < MAX_ORBS; i++) {
++    v3 pos[MAX_ORBS];
++    float vis[MAX_ORBS];
++    for (i = 0; i < count; i++) {
+         v3 a = toWorld(f, formationAt(f, i % n, n, t), t);
+-        float vis = i < n ? 1.0f : 0.0f;
++        vis[i] = i < n ? 1.0f : 0.0f;
+         if (e < 1.0f) { // split off / merge back, arcing outward mid-flight
+             v3 b = toWorld(prevFormation, formationAt(prevFormation, i % pn, pn, t), t);
+             float arc = 1.0f + sinf(e * PI) * 0.3f;
+             a = V((b.x + (a.x - b.x) * e) * arc, (b.y + (a.y - b.y) * e) * arc, (b.z + (a.z - b.z) * e) * arc);
+-            vis = (i < pn ? 1.0f : 0.0f) + (vis - (i < pn ? 1.0f : 0.0f)) * e;
++            vis[i] = (i < pn ? 1.0f : 0.0f) + (vis[i] - (i < pn ? 1.0f : 0.0f)) * e;
+         }
+-        if (vis <= 0.01f)
++        pos[i] = a;
++    }
++
++    // tails first, so the orbs sit on their heads
++    if (!trailValid || t - trailLastSample >= 1.0f / TRAIL_HZ) {
++        if (!trailValid) {
++            for (i = 0; i < MAX_ORBS; i++)
++                for (k = 0; k < TRAIL_N; k++)
++                    trail[i][k] = i < count ? pos[i] : V(0, 0, 0);
++            trailValid = 1;
++        } else {
++            trailHead = (trailHead + 1) % TRAIL_N;
++            for (i = 0; i < count; i++)
++                trail[i][trailHead] = pos[i];
++        }
++        trailLastSample = t;
++    }
++
++    for (i = 0; i < count; i++) {
++        if (vis[i] <= 0.01f)
+             continue;
+-        p2 p = project(a);
++        p2 p = project(pos[i]);
+         if (!p.ok)
+             continue;
+-        float depthDim = fminf(1.0f, fmaxf(0.45f, 1.0f - (p.z - 12.0f) / 9.0f)) * vis;
++        float depthDim = fminf(1.0f, fmaxf(0.45f, 1.0f - (p.z - 12.0f) / 9.0f)) * vis[i];
+         float r = 14.0f * 15.0f / p.z * size;
++        drawTail(i, p, r, depthDim);
+         glow(p.x, p.y, r, 0x64, 0x96, 0xFF, (int)(0x40 * depthDim));
+         glow(p.x, p.y, r * 0.3f, 0xEB, 0xF2, 0xFF, (int)(0x80 * depthDim));
+     }
