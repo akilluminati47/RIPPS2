@@ -1,0 +1,180 @@
+diff --git a/include/dialogs.h b/include/dialogs.h
+index 1ad32db..f80a1f0 100644
+--- a/include/dialogs.h
++++ b/include/dialogs.h
+@@ -33,6 +33,7 @@ enum UI_ITEMS {
+     UICFG_NOTIFICATIONS,
+     UICFG_GAMEVIEW,
+     UICFG_APPSVIEW,
++    UICFG_RIPPS2_RANDOM, // RIPPS2: Random Game (Off / On / Boot)
+ 
+     CFG_DEBUG,
+     CFG_PS2LOGO,
+diff --git a/include/ripps2.h b/include/ripps2.h
+index ec84f97..90621e3 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -25,6 +25,11 @@ extern int gRipps2Category;  // current category; boots on Storage
+ extern int gRipps2Formation; // Memory Files orb formation, switched with L1/R1; saved in the settings
+ void ripps2SaveSettingsInBackground(void); // opl.c: a quiet settings save on the io worker
+ 
++// Random Game (Interface settings): L2 + R2 together jump to a random game; Boot also opens each
++// game list on a random game at startup, ahead of the last played one
++enum { RIPPS2_RANDOM_OFF = 0, RIPPS2_RANDOM_ON, RIPPS2_RANDOM_BOOT };
++extern int gRipps2Random;
++
+ void ripps2SetCategory(int cat);    // switch screens and fly the PS2 mark
+ void ripps2StepCategory(int dir);   // -1 / +1, clamped at the ends
+ void ripps2RenderCategoryBar(void); // the three labels plus the mark
+diff --git a/lng_tmpl/_base.yml b/lng_tmpl/_base.yml
+index 542a412..2fb3be0 100644
+--- a/lng_tmpl/_base.yml
++++ b/lng_tmpl/_base.yml
+@@ -1380,3 +1380,7 @@ gui_strings:
+   string: Random
+ - label: RIPPS2_ALL
+   string: All
++- label: RIPPS2_RANDOM_GAME
++  string: Random Game
++- label: HINT_RIPPS2_RANDOM_GAME
++  string: "L2 and R2 together jump to a random game in the list. Boot also opens each game list on a random game at startup, ahead of the last played one, for a new look at your library each time."
+diff --git a/src/dialogs.c b/src/dialogs.c
+index c9a6a7e..a63dfbc 100644
+--- a/src/dialogs.c
++++ b/src/dialogs.c
+@@ -733,6 +733,11 @@ struct UIItem diaUIConfig[] = {
+     {UI_ENUM, UICFG_APPSVIEW, 1, 1, _STR_HINT_APPS_DISPLAY, 0, 0, {.intvalue = {0, 0}}},
+     {UI_BREAK},
+ 
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_RANDOM_GAME}}},
++    {UI_SPACER},
++    {UI_ENUM, UICFG_RIPPS2_RANDOM, 1, 1, _STR_HINT_RIPPS2_RANDOM_GAME, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BREAK},
++
+     {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_VMODE}}},
+     {UI_SPACER},
+     {UI_ENUM, UICFG_VMODE, 1, 1, -1, 0, 0, {.intvalue = {0, 0}}},
+diff --git a/src/gui.c b/src/gui.c
+index 9e13b1d..beefa60 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -1095,6 +1095,7 @@ static void guiFreeNameList(const char **list)
+ // the user-facing order requested by the display model.
+ static const char *guiGameViewNames[] = {"Mixed (L3)", "Both (L3)", "PS2", "PS1", NULL}; // RIPPS2: Mixed first
+ static const char *guiAppsViewNames[] = {"Mixed", "Apps / PS1ELF (L3)", NULL};
++static const char *guiRipps2RandomNames[] = {"Off", "On (L2+R2)", "Boot", NULL}; // RIPPS2: Random Game
+ 
+ static int guiGameViewToPicker(int view)
+ {
+@@ -1132,12 +1133,19 @@ static int guiReadGameViewPicker(struct UIItem *ui)
+ 
+ static void guiSetAppsViewPicker(struct UIItem *ui)
+ {
++    // RIPPS2: the Random Game row sits under Applications Display on the same page
++    diaSetEnum(ui, UICFG_RIPPS2_RANDOM, guiRipps2RandomNames);
++    diaSetInt(ui, UICFG_RIPPS2_RANDOM, gRipps2Random);
+     diaSetEnum(ui, UICFG_APPSVIEW, guiAppsViewNames);
+     diaSetInt(ui, UICFG_APPSVIEW, gAppsDisplay);
+ }
+ 
+ static int guiReadAppsViewPicker(struct UIItem *ui)
+ {
++    int random = gRipps2Random; // RIPPS2: Random Game
++    diaGetInt(ui, UICFG_RIPPS2_RANDOM, &random);
++    if (random >= RIPPS2_RANDOM_OFF && random <= RIPPS2_RANDOM_BOOT)
++        gRipps2Random = random;
+     int previous = gAppsDisplay;
+ 
+     diaGetInt(ui, UICFG_APPSVIEW, &gAppsDisplay);
+diff --git a/src/menusys.c b/src/menusys.c
+index be46c07..11e22d2 100644
+--- a/src/menusys.c
++++ b/src/menusys.c
+@@ -1259,7 +1259,7 @@ static void menuFirstPage()
+ 
+ // RIPPS2: L2 + R2 jump to a random game (never the one already selected, never a folder row), placed
+ // a third of the way down the page
+-static void menuRandomItem(void)
++static void menuRandomItem(int quiet)
+ {
+     submenu_list_t *it, *cur = selected_item->item->current;
+     int count = 0, games = 0, pick;
+@@ -1295,7 +1295,8 @@ static void menuRandomItem(void)
+         rows++;
+     }
+     selected_item->item->pagestart = ps;
+-    sfxPlay(SFX_TRANSITION);
++    if (!quiet)
++        sfxPlay(SFX_TRANSITION);
+ }
+ 
+ static void menuLastPage()
+@@ -1843,8 +1844,8 @@ void menuHandleInputMain()
+     static int shoulderChord = 0; // this L2/R2 hold became a chord
+     int l2 = getKeyPressed(KEY_L2), r2 = getKeyPressed(KEY_R2);
+     if (l2 && r2) {
+-        if (!shoulderChord && !viewPending)
+-            menuRandomItem();
++        if (!shoulderChord && !viewPending && gRipps2Random != RIPPS2_RANDOM_OFF)
++            menuRandomItem(0);
+         shoulderChord = 1;
+     } else {
+         if (getKeyOff(KEY_L2) && !shoulderChord)
+@@ -1855,6 +1856,16 @@ void menuHandleInputMain()
+             shoulderChord = 0;
+     }
+ 
++    // RIPPS2: Random Game "Boot": each game list opens on a random game, once per session, once the
++    // list has settled (after its rebuild, so it lands after the last played game is restored)
++    static unsigned char bootRandomDone[64];
++    if (gRipps2Random == RIPPS2_RANDOM_BOOT && support != NULL && support->enabled && support->mode >= 0 &&
++        support->mode < 64 && !bootRandomDone[support->mode] && selected_item->item->current != NULL && !viewPending &&
++        ioGetPending(IO_MENU_UPDATE_DEFFERED) == 0) {
++        bootRandomDone[support->mode] = 1;
++        menuRandomItem(1);
++    }
++
+     if (getKeyOn(KEY_LEFT)) {
+         ripps2StepCategory(-1); // RIPPS2: Left/Right switch categories (Launch Disc / Memory Files)
+     } else if (getKeyOn(KEY_RIGHT)) {
+diff --git a/src/opl.c b/src/opl.c
+index cd12409..12c4806 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -375,7 +375,6 @@ void moduleUpdateMenuInternal(opl_io_module_t *mod, int themeChanged, int langCh
+             }
+             menuAddHint(&mod->menuItem, hint, L3_ICON);
+         }
+-        menuAddHint(&mod->menuItem, _STR_RIPPS2_RANDOM, R2_ICON); // RIPPS2: L2 + R2 pick a random game
+     }
+ 
+     menuHintsUnlock();
+@@ -3099,6 +3098,8 @@ static void _loadConfig()
+             configGetInt(configOPL, CONFIG_OPL_SCROLLING, &gScrollSpeed);
+             if (configGetInt(configOPL, "ripps2_formation", &value) && value >= 0 && value < 12)
+                 gRipps2Formation = value; // RIPPS2: the Memory Files formation last left on
++            if (configGetInt(configOPL, "ripps2_random", &value) && value >= RIPPS2_RANDOM_OFF && value <= RIPPS2_RANDOM_BOOT)
++                gRipps2Random = value; // RIPPS2: Random Game
+             configGetColor(configOPL, CONFIG_OPL_BGCOLOR, gDefaultBgColor);
+             configGetColor(configOPL, CONFIG_OPL_TEXTCOLOR, gDefaultTextColor);
+             configGetColor(configOPL, CONFIG_OPL_UI_TEXTCOLOR, gDefaultUITextColor);
+@@ -3764,6 +3765,7 @@ static void _saveConfig()
+         config_set_t *configOPL = configGetByType(CONFIG_OPL);
+         configSetInt(configOPL, CONFIG_OPL_SCROLLING, gScrollSpeed);
+         configSetInt(configOPL, "ripps2_formation", gRipps2Formation); // RIPPS2
++        configSetInt(configOPL, "ripps2_random", gRipps2Random);       // RIPPS2
+         configSetStr(configOPL, CONFIG_OPL_THEME, thmGetValue());
+         configSetStr(configOPL, CONFIG_OPL_LANGUAGE, lngGetValue());
+         configSetColor(configOPL, CONFIG_OPL_BGCOLOR, gDefaultBgColor);
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index 6415ba6..458394e 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -48,6 +48,7 @@ static const char *formationName[] = {
+     "TREFOIL KNOT", "M\xD6" "BIUS STRIP", "KLEIN BOTTLE", "GOLDEN SPIRAL", "LISSAJOUS", "SEVEN-POINT STAR"};
+ #define FORMATION_COUNT ((int)(sizeof(formationName) / sizeof(formationName[0])))
+ int gRipps2Formation = 0;
++int gRipps2Random = RIPPS2_RANDOM_ON;
+ static int formationDirty = 0; // changed since the last save
+ 
+ // ---- The flying PS2 mark ----
