@@ -1,0 +1,33 @@
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index 8bd6264..75fccfc 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -264,9 +264,8 @@ static int fbCompare(const void *a, const void *b)
+ }
+ 
+ // The drive list is kept between visits: probing cards and slots that are not there takes seconds, and
+-// coming back up to the list should be instant. It is probed again when older than this, after START
+-// DRIVES, and on Select.
+-#define FB_DEV_FRESH_S 20
++// coming back up to the list should be instant. It is probed again on entering the browser, after
++// START DRIVES, and on Select.
+ static fb_entry_t fbDevCache[16];
+ static int fbDevCacheCount = 0, fbDevForce = 1;
+ static clock_t fbDevCacheAt = 0;
+@@ -276,7 +275,7 @@ static void fbScanDevices(void)
+     int i, n = 0, haveMass = 0;
+     char label[FB_TITLE];
+ 
+-    if (!fbDevForce && fbDevCacheAt != 0 && (float)(clock() - fbDevCacheAt) / CLOCKS_PER_SEC < FB_DEV_FRESH_S) {
++    if (!fbDevForce && fbDevCacheAt != 0) {
+         memcpy(fbList, fbDevCache, fbDevCacheCount * sizeof(fb_entry_t));
+         fbCount = fbDevCacheCount;
+         return;
+@@ -682,6 +681,7 @@ void ripps2FilesEnter(void)
+         if (fbCount > 0 && fbCursor < fbCount)
+             snprintf(fbKeepName, sizeof(fbKeepName), "%s", fbList[fbCursor].name);
+         fbMenuOpen = 0;
++        fbDevForce = 1; // drives may have come or gone since the last visit
+         fbRun(FB_OP_SCAN, "READING");
+     }
+     guiSwitchScreen(GUI_SCREEN_RIPPS2_FILES);
