@@ -1,0 +1,309 @@
+diff --git a/Makefile b/Makefile
+index 0566030..942678b 100644
+--- a/Makefile
++++ b/Makefile
+@@ -187,7 +187,7 @@ AUDIO_OBJS =	boot.o cancel.o confirm.o cursor.o message.o transition.o bd_connec
+ # icon_sys.o + save_icn.o are the memory-card browser save icon for the settings folder.
+ # icon.sys names list.icn, copy.icn and del.icn; all three are the same artwork, so ONE blob is
+ # embedded and util.c writes it out under all three names (see saveIconName in src/util.c).
+-MISC_OBJS =	icon_sys.o save_icn.o icon_sys_A.o icon_sys_J.o icon_sys_C.o conf_theme_OPL.o theme_coverflow.o ripps2_font.o ripps2_sleek.o ripps2_sleekbold.o ripps2_memfiles.o
++MISC_OBJS =	icon_sys.o save_icn.o icon_sys_A.o icon_sys_J.o icon_sys_C.o conf_theme_OPL.o theme_coverflow.o ripps2_font.o ripps2_sleek.o ripps2_sleekbold.o
+ 
+ TRANSLATIONS = Albanian Arabic Bulgarian Cebuano Croatian Czech Danish Dutch Filipino French \
+ 	Galician German Greek Hungarian Indonesian Italian Japanese Korean Laotian Persian Polish Portuguese \
+@@ -1117,10 +1117,6 @@ $(EE_ASM_DIR)ripps2_sleek.c: misc/ripps2_sleek.ttf | $(EE_ASM_DIR)
+ $(EE_ASM_DIR)ripps2_sleekbold.c: misc/ripps2_sleekbold.ttf | $(EE_ASM_DIR)
+ 	$(BIN2C) $< $@ $(*F)_raw
+ 
+-# RIPPS2: the Memory Files ELF compiled in (misc/ripps2_memfiles.elf, copied in by build.sh)
+-$(EE_ASM_DIR)ripps2_memfiles.c: misc/ripps2_memfiles.elf | $(EE_ASM_DIR)
+-	$(BIN2C) $< $@ $(*F)_elf
+-
+ $(EE_ASM_DIR)boot.c: audio/boot.adp | $(EE_ASM_DIR)
+ 	$(BIN2C) $< $@ $(*F)_adp
+ 
+diff --git a/include/ripps2.h b/include/ripps2.h
+index e91e357..6169d6d 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -3,7 +3,6 @@
+ 
+ // Launches the Memory Files ELF bundled inside RIPPS2.elf. Never returns on success;
+ // returns < 0 (before touching anything) when the bundled image fails validation.
+-int ripps2LaunchMemoryFiles(void);
+ 
+ // Boots a DVD player for the DVD video in the drive: the user's RGB-patched player from a memory
+ // card when installed, else the console's own. Never returns on success; < 0 if there is none.
+diff --git a/src/dia.c b/src/dia.c
+index cc6040b..ee3fd7c 100644
+--- a/src/dia.c
++++ b/src/dia.c
+@@ -59,7 +59,8 @@ static void diaDrawBoundingBox(int x, int y, int w, int h, int focus)
+     color |= GS_SETREG_RGBA(0, 0, 0, 0xFF);
+     color &= gColFocus;
+ 
+-    rmDrawRect(x - 5, y, w + 10, h + 10, color);
++    // RIPPS2: 3 up, so the text sits in the middle of the box instead of along its top edge
++    rmDrawRect(x - 5, y - 3, w + 10, h + 10, color);
+ }
+ 
+ // Rendered width of text[from..to), in the same 640-wide units the caret has always been placed in.
+diff --git a/src/ripps2.c b/src/ripps2.c
+index 6c5fb09..3af2d0b 100644
+--- a/src/ripps2.c
++++ b/src/ripps2.c
+@@ -1,14 +1,6 @@
+ /*
+-  RIPPS2: launch the Memory Files ELF bundled inside RIPPS2.elf.
+-
+-  The ELF is compiled in (misc/ripps2_memfiles.elf via bin2c), so its image already sits in RAM
+-  inside our own data. After tearing RIPPS2 down the way a disc launch does, reset the IOP so the
+-  program starts on a clean IOP (as the PS2 browser leaves it), copy its PT_LOAD segments to their
+-  load addresses, and jump in with ExecPS2.
+-
+-  The copy runs from our own code and stack, so every segment is checked up front: it must stay in
+-  user RAM and clear of our image (which holds the source copy) and of the live stack. The bundled
+-  Memory Files is a packed homebrew whose one segment loads high (~0x1bd5a20), well clear of both.
++  RIPPS2 launchers: DVD video (a DVD player, or ESR for an ESR-patched game) and PlayStation discs
++  from LAUNCH DISC.
+ */
+ 
+ #include <kernel.h>
+@@ -29,127 +21,6 @@
+ #include "include/ioman.h"
+ #include "include/ripps2.h"
+ 
+-extern unsigned char ripps2_memfiles_elf[];
+-extern unsigned int size_ripps2_memfiles_elf;
+-extern char _end[]; // end of our image (code, data, bss) from the ps2sdk linkfile
+-
+-#define R2_ELF_MAGIC   0x464c457f
+-#define R2_PT_LOAD     1
+-#define R2_USER_START  0x00100000
+-#define R2_USER_END    0x02000000
+-#define R2_STACK_GUARD 0x00010000 // keep this much below the current stack pointer free
+-
+-typedef struct
+-{
+-    u8 ident[16];
+-    u16 type;
+-    u16 machine;
+-    u32 version;
+-    u32 entry;
+-    u32 phoff;
+-    u32 shoff;
+-    u32 flags;
+-    u16 ehsize;
+-    u16 phentsize;
+-    u16 phnum;
+-    u16 shentsize;
+-    u16 shnum;
+-    u16 shstrndx;
+-} r2_elf_header_t;
+-
+-typedef struct
+-{
+-    u32 type;
+-    u32 offset;
+-    u32 vaddr;
+-    u32 paddr;
+-    u32 filesz;
+-    u32 memsz;
+-    u32 flags;
+-    u32 align;
+-} r2_elf_pheader_t;
+-
+-static const r2_elf_pheader_t *r2Segment(const u8 *img, const r2_elf_header_t *eh, u32 i)
+-{
+-    return (const r2_elf_pheader_t *)(img + eh->phoff + i * sizeof(r2_elf_pheader_t));
+-}
+-
+-static int r2Overlaps(u32 a0, u32 a1, u32 b0, u32 b1)
+-{
+-    return a0 < b1 && b0 < a1;
+-}
+-
+-// Everything is checked before RIPPS2 is torn down, so a bad image just returns to the menu.
+-static int r2CheckElf(const u8 *img, u32 size)
+-{
+-    const r2_elf_header_t *eh = (const r2_elf_header_t *)img;
+-    u32 sp, i;
+-
+-    if (size < sizeof(*eh) || *(const u32 *)eh->ident != R2_ELF_MAGIC)
+-        return -1;
+-    if (eh->phentsize != sizeof(r2_elf_pheader_t) || eh->phoff + (u32)eh->phnum * sizeof(r2_elf_pheader_t) > size)
+-        return -2;
+-
+-    __asm__ __volatile__("move %0, $sp" : "=r"(sp));
+-
+-    for (i = 0; i < eh->phnum; i++) {
+-        const r2_elf_pheader_t *ph = r2Segment(img, eh, i);
+-        u32 end = ph->vaddr + ph->memsz;
+-
+-        if (ph->type != R2_PT_LOAD)
+-            continue;
+-        if (ph->filesz > ph->memsz || ph->offset + ph->filesz > size)
+-            return -3;
+-        if (ph->vaddr < R2_USER_START || end > R2_USER_END || end < ph->vaddr)
+-            return -4;
+-        if (r2Overlaps(ph->vaddr, end, R2_USER_START, (u32)_end))
+-            return -5; // would overwrite our own code or the source image
+-        if (r2Overlaps(ph->vaddr, end, sp - R2_STACK_GUARD, R2_USER_END))
+-            return -6; // would overwrite the stack the copy loop runs on
+-    }
+-    return 0;
+-}
+-
+-int ripps2LaunchMemoryFiles(void)
+-{
+-    const u8 *img = ripps2_memfiles_elf;
+-    const r2_elf_header_t *eh = (const r2_elf_header_t *)img;
+-    u32 i;
+-    int rc = r2CheckElf(img, size_ripps2_memfiles_elf);
+-
+-    if (rc < 0) {
+-        LOG("RIPPS2 Memory Files ELF rejected (%d)\n", rc);
+-        return rc;
+-    }
+-
+-    ripps2PlayLaunchSequence(); // pillars light up; the last frame holds through the handoff
+-    deinit(NO_EXCEPTION, IO_MODE_SELECTED_ALL);
+-
+-    // Start the program on a clean IOP
+-    SifInitRpc(0);
+-    while (!SifIopReset("", 0))
+-        ;
+-    while (!SifIopSync())
+-        ;
+-    SifInitRpc(0);
+-    SifExitRpc();
+-
+-    for (i = 0; i < eh->phnum; i++) {
+-        const r2_elf_pheader_t *ph = r2Segment(img, eh, i);
+-
+-        if (ph->type != R2_PT_LOAD)
+-            continue;
+-        memcpy((void *)ph->vaddr, img + ph->offset, ph->filesz);
+-        if (ph->memsz > ph->filesz)
+-            memset((void *)(ph->vaddr + ph->filesz), 0, ph->memsz - ph->filesz);
+-    }
+-
+-    FlushCache(0);
+-    FlushCache(2);
+-    ExecPS2((void *)eh->entry, NULL, 0, NULL);
+-    return -7; // ExecPS2 does not return
+-}
+-
+ // ---- DVD video from LAUNCH DISC ----
+ //
+ // Sony's DVD player switches the video output to YPbPr for DVD video whatever the console is set to,
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index a7a60e6..b3a0dbc 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -633,11 +633,19 @@ static void fbDeleteWork(void)
+ }
+ 
+ // What happened, top right: "PASTED 3", "MOVED 2, 1 SKIPPED", "DELETED 1, 1 FAILED"
++// "3 FILES PASTED", "1 FILE MOVED" (folders count as one each, as on the clipboard)
++static const char *fbFiles(int n)
++{
++    return n == 1 ? "FILE" : "FILES";
++}
++
+ static void fbReport(const char *verb, int done)
+ {
+     char text[48];
+     int ok = done - fbFailed - fbSkipped - fbKept;
+-    int n = snprintf(text, sizeof(text), "%s %d", verb, ok < 0 ? 0 : ok);
++    if (ok < 0)
++        ok = 0;
++    int n = snprintf(text, sizeof(text), "%d %s %s", ok, fbFiles(ok), verb);
+     if (fbSkipped > 0)
+         n += snprintf(text + n, sizeof(text) - n, ", %d SKIPPED", fbSkipped);
+     if (fbKept > 0)
+@@ -876,7 +884,7 @@ static void fbAction(int act)
+             snprintf(fbClipDir, sizeof(fbClipDir), "%s", fbPath);
+             fbClipCut = act == FB_ACT_CUT;
+             fbClearMarks();
+-            snprintf(ask, sizeof(ask), "%d %s", fbClipCount, fbClipCut ? "CUT" : "COPIED");
++            snprintf(ask, sizeof(ask), "%d %s %s", fbClipCount, fbFiles(fbClipCount), fbClipCut ? "CUT" : "COPIED");
+             fbSetToast(ask);
+             sfxPlay(SFX_CONFIRM);
+             break;
+@@ -1073,7 +1081,7 @@ void ripps2RenderFiles(void)
+     if (fbToastAt != 0 && (float)(clock() - fbToastAt) / CLOCKS_PER_SEC < 2.5f)
+         snprintf(buf, sizeof(buf), "%s", fbToast);
+     else if (fbClipCount > 0)
+-        snprintf(buf, sizeof(buf), "CLIPBOARD %d %s", fbClipCount, fbClipCut ? "CUT" : "COPIED");
++        snprintf(buf, sizeof(buf), "%d %s %s", fbClipCount, fbFiles(fbClipCount), fbClipCut ? "CUT" : "COPIED");
+     else
+         buf[0] = '\0';
+     if (buf[0])
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index 9c9f5b2..827dd9c 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -369,22 +369,19 @@ void ripps2RenderMemory(void)
+ 
+     ripps2DrawBackground();
+     ripps2RenderCategoryBar();
+-    renderStartPrompt("START BROWSER", 395);
++    // the same footnotes as LAUNCH DISC: the prompt where START DISC sits, the formation on the line of
++    // the disc note (small, between small L1 / R1), its count just under it
++    renderStartPrompt("START BROWSER", 423);
+ 
++    const char *name = formationName[gRipps2Formation];
++    int half = fntCalcDimensions(gTheme->fonts[3], name) / 2, gw = l1 ? glyphWidth(l1) * 3 / 4 : 0;
++    fntRenderString(gTheme->fonts[3], 320, 450, ALIGN_CENTER, 0, 0, name, COLOR_SOFT);
+     if (l1)
+-        rmDrawPixmap(l1, 170, 433, ALIGN_CENTER, glyphWidth(l1), GLYPH_H, SCALING_RATIO, COLOR_TEX, 0);
++        rmDrawPixmap(l1, 320 - half - 10 - gw / 2, 450, ALIGN_CENTER, gw, GLYPH_H * 3 / 4, SCALING_RATIO, COLOR_TEX, 0);
+     if (r1)
+-        rmDrawPixmap(r1, 470, 433, ALIGN_CENTER, glyphWidth(r1), GLYPH_H, SCALING_RATIO, COLOR_TEX, 0);
+-    fntRenderString(PROMPT_FONT, 320, 433, ALIGN_CENTER, 0, 0, formationName[gRipps2Formation], COLOR_LIT);
++        rmDrawPixmap(r1, 320 + half + 10 + gw / 2, 450, ALIGN_CENTER, gw, GLYPH_H * 3 / 4, SCALING_RATIO, COLOR_TEX, 0);
+     snprintf(count, sizeof(count), "%02d / %02d", gRipps2Formation + 1, FORMATION_COUNT);
+-    fntRenderString(gTheme->fonts[3], 320, 456, ALIGN_CENTER, 0, 0, count, COLOR_SOFT);
+-
+-    // the bundled wLaunchELF stays a button away
+-    GSTEXTURE *sel = thmGetTexture(SELECT_ICON);
+-    int selW = glyphWidth(sel), tx = 596 - fntCalcDimensions(gTheme->fonts[3], "WLAUNCHELF");
+-    fntRenderString(gTheme->fonts[3], tx, 456, ALIGN_VCENTER, 0, 0, "WLAUNCHELF", COLOR_DIM);
+-    if (sel)
+-        rmDrawPixmap(sel, tx - 8 - selW * 3 / 8, 456, ALIGN_CENTER, selW * 3 / 4, GLYPH_H * 3 / 4, SCALING_RATIO, COLOR_TEX, 0);
++    fntRenderString(gTheme->fonts[3], 320, 467, ALIGN_CENTER, 0, 0, count, COLOR_DIM);
+ }
+ 
+ void ripps2HandleInputMemory(void)
+@@ -409,16 +406,6 @@ void ripps2HandleInputMemory(void)
+             formationDirty = 0;
+         }
+         ripps2FilesEnter();
+-    } else if (getKeyOn(KEY_SELECT)) {
+-        sfxPlay(SFX_CONFIRM);
+-        if (formationDirty) { // queued before the launch; the teardown drains the io worker
+-            ripps2SaveSettingsInBackground();
+-            formationDirty = 0;
+-        }
+-        // the bundled wLaunchELF; success never returns, a rejected image leaves RIPPS2 untouched
+-        if (ripps2LaunchMemoryFiles() < 0)
+-            guiMsgBox("Memory Files could not start.", 0, NULL);
+-        readPads();
+     }
+ }
+ 
+diff --git a/src/themes.c b/src/themes.c
+index fcdd012..df60a9f 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -2211,7 +2211,8 @@ static void drawItemsList(struct menu_list *menu, struct submenu_list *item, con
+         // RIPPS2: rows on the theme's pitch (item_height), each title centred in its row
+         int rowStep = elem->itemHeight > 0 ? elem->itemHeight : MENU_ITEM_HEIGHT;
+         int rowTop = posY;
+-        posY = rowTop + (rowStep - MENU_ITEM_HEIGHT) / 2;
++        // RIPPS2: +3 puts the capitals in the middle of the highlight bar (measured on screen)
++        posY = rowTop + (rowStep - MENU_ITEM_HEIGHT) / 2 + 3;
+         while (ps && (others++ < itemsList->displayedItems)) {
+             if (ps == item) {
+                 color = gTheme->selTextColor;
