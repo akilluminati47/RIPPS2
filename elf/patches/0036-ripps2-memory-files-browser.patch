@@ -1,0 +1,1172 @@
+diff --git a/Makefile b/Makefile
+index a55dc3c..0566030 100644
+--- a/Makefile
++++ b/Makefile
+@@ -131,7 +131,7 @@ ifneq ($(GIT_TAG),latest)
+ endif
+ endif
+ 
+-FRONTEND_OBJS = ripps2.o ripps2ui.o ripps2bg.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o mixsupport.o metadb.o \
++FRONTEND_OBJS = ripps2.o ripps2ui.o ripps2bg.o ripps2files.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o mixsupport.o metadb.o \
+ 		dia.o ioman.o texcache.o themes.o supportbase.o bdmsupport.o netsupport.o ethsupport.o httpcatalog.o httpsupport.o udpfssupport.o hddsupport.o zso.o lz4.o launchdiag.o \
+ 		appsupport.o mmcesupport.o artindex.o vcdsupport.o cuesupport.o libview.o retrogem.o folderbrowse.o gui.o guigame.o vmc_groups.o textures.o opl.o atlas.o nbns.o httpclient.o gsm.o cheatman.o sound.o ps2cnf.o tar.o
+ 
+diff --git a/include/gui.h b/include/gui.h
+index 8eb1034..ccadc0b 100644
+--- a/include/gui.h
++++ b/include/gui.h
+@@ -65,6 +65,7 @@ extern int guiFrameId;
+ #define GUI_SCREEN_APP_MENU  4
+ #define GUI_SCREEN_RIPPS2_LAUNCH 5 // RIPPS2: Launch Disc category
+ #define GUI_SCREEN_RIPPS2_MEMORY 6 // RIPPS2: Memory Files category
++#define GUI_SCREEN_RIPPS2_FILES  7 // RIPPS2: the Memory Files browser
+ 
+ void guiSwitchScreen(int target);
+ void guiSwitchScreenInstant(int target); // RIPPS2: no fade (category switches)
+diff --git a/include/ripps2.h b/include/ripps2.h
+index 8ab2914..3e92f07 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -59,6 +59,12 @@ void ripps2DrawPanelMorph(int ax, int ay, int aw, int ah, int bx, int by, int bw
+ void ripps2DrawBackground(void); // orbs on Memory Files, pillars everywhere else
+ void ripps2DrawPillars(void);
+ void ripps2DrawOrbs(void);
++
++// The Memory Files browser (ripps2files.c)
++void ripps2FilesEnter(void); // from the Memory Files page: open it where it was left
++void ripps2RenderFiles(void);
++void ripps2HandleInputFiles(void);
++void ripps2StartSources(void); // opl.c: start every game source that waits for a start
+ void ripps2SetOrbInput(int showPaths, int boost); // Memory Files: L2 shows the paths, R2 builds the orbs to 2x
+ 
+ // ---- Boot swoop and launch light-up (ripps2bg.c) ----
+diff --git a/src/gui.c b/src/gui.c
+index e07d304..21471c9 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -166,7 +166,8 @@ static gui_screen_handler_t screenHandlers[] = {{&menuHandleInputMain, &menuRend
+                                                 {&menuHandleInputAppMenu, &menuRenderAppMenu, 1},
+                                                 // RIPPS2: the Launch Disc and Memory Files categories
+                                                 {&ripps2HandleInputLaunch, &ripps2RenderLaunch, 1},
+-                                                {&ripps2HandleInputMemory, &ripps2RenderMemory, 1}};
++                                                {&ripps2HandleInputMemory, &ripps2RenderMemory, 1},
++                                                {&ripps2HandleInputFiles, &ripps2RenderFiles, 1}};
+ 
+ // default screen handler (menu screen)
+ static gui_screen_handler_t *screenHandler = &screenHandlers[GUI_SCREEN_MENU];
+@@ -4373,6 +4374,13 @@ static void guiScreenPanel(gui_screen_handler_t *handler, int *x, int *y, int *w
+         return;
+     if (handler == &screenHandlers[GUI_SCREEN_INFO] && thmGetPanelRect(1, x, y, w, h))
+         return;
++    if (handler == &screenHandlers[GUI_SCREEN_RIPPS2_MEMORY]) { // the START BROWSER prompt grows into the browser
++        *x = 150;
++        *y = 375;
++        *w = 340;
++        *h = 93;
++        return;
++    }
+     *x = 14;
+     *y = 10;
+     *w = 612;
+diff --git a/src/opl.c b/src/opl.c
+index 8415092..018b714 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -410,6 +410,18 @@ static void itemInitSupport(item_list_t *support)
+         ioPutRequest(IO_MENU_UPDATE_DEFFERED, &support->mode);
+ }
+ 
++// RIPPS2: start every game source that waits for a start (All Games' Start, the file browser's drive row)
++void ripps2StartSources(void)
++{
++    for (int i = 0; i < MODE_COUNT; i++) {
++        item_list_t *source = list_support[i].support;
++        if (i == APP_MODE || i == FAV_MODE || i == MIX_MODE || source == NULL || source->enabled ||
++            modeStartMode(i) == START_MODE_DISABLED)
++            continue;
++        itemInitSupport(source);
++    }
++}
++
+ static void itemExecSelect(struct menu_item *curMenu)
+ {
+     item_list_t *support = curMenu->userdata;
+@@ -450,13 +462,7 @@ static void itemExecSelect(struct menu_item *curMenu)
+             // If we're trying to enable BDM support we need to enable it for all BDM menu slots.
+             if (support->mode == MIX_MODE) {
+                 // RIPPS2: starting All Games starts every game source that waits for a start
+-                for (int i = 0; i < MODE_COUNT; i++) {
+-                    item_list_t *source = list_support[i].support;
+-                    if (i == APP_MODE || i == FAV_MODE || i == MIX_MODE || source == NULL || source->enabled ||
+-                        modeStartMode(i) == START_MODE_DISABLED)
+-                        continue;
+-                    itemInitSupport(source);
+-                }
++                ripps2StartSources();
+                 itemInitSupport(support);
+             } else if (support->mode == BDM_MODE) {
+                 // Initialize support for all bdm modules.
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+new file mode 100644
+index 0000000..d1ef54c
+--- /dev/null
++++ b/src/ripps2files.c
+@@ -0,0 +1,1019 @@
++/*
++  Copyright 2026, RIPPS2 contributors
++  Licenced under Academic Free License version 3.0
++  Review OpenUsbLd README & LICENSE files for further details.
++
++  RIPPS2 Memory Files browser: a file manager drawn in the RIPPS2 glass over the orbs, on RiptOPL's
++  own file I/O (open / read / opendir through the drivers RiptOPL already runs), so nothing else has
++  to boot. It works the way the classic PS2 file managers do (wLaunchELF and its forks were the
++  behaviour reference; none of their code is used): a list of drives, a folder tree, marks, copy /
++  cut / paste, delete, rename, new folder, and running an ELF.
++
++  - Memory card saves show the title from their icon.sys next to the folder name.
++  - Pasting a save folder (one with an icon.sys) onto a memory card always lands it in the card's
++    root, where the console looks for saves, wherever on the card you are.
++  - The clipboard count and what happened last (COPIED, CUT, PASTED, DELETED) sit top right.
++
++  Reading folders and copying run on the IO worker; the screen keeps animating and shows progress.
++  The list is only read by the GUI while the worker is idle (fbBusy), so it needs no lock.
++*/
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <strings.h>
++#include <fcntl.h>
++#include <unistd.h>
++#include <dirent.h>
++#include <sys/stat.h>
++#include <time.h>
++#include <math.h>
++#include <malloc.h>
++
++#include "include/opl.h"
++#include "include/gui.h"
++#include "include/renderman.h"
++#include "include/fntsys.h"
++#include "include/themes.h"
++#include "include/textures.h"
++#include "include/pad.h"
++#include "include/system.h"
++#include "include/ioman.h"
++#include "include/iosupport.h"
++#include "include/sound.h"
++#include "include/ripps2.h"
++
++#define FB_MAX      400 // entries in one folder
++#define FB_NAME     128
++#define FB_TITLE    48
++#define FB_ROWS     15
++#define FB_ROW_H    22
++#define FB_LIST_Y   58
++#define FB_X        30
++#define FB_RIGHT    610
++#define FB_CLIP_MAX 64
++#define FB_BUF_SIZE (128 * 1024)
++
++#define FB_LIT  GS_SETREG_RGBA(0x80, 0x80, 0x80, 0x80)
++#define FB_DIM  GS_SETREG_RGBA(0x4C, 0x52, 0x64, 0x80)
++#define FB_SOFT GS_SETREG_RGBA(0x67, 0x6C, 0x7A, 0x80)
++#define FB_PRIM(r, g, b, a) GS_SETREG_RGBAQ((r), (g), (b), (a), 0x00)
++
++enum { FB_KIND_DEVICE = 0, FB_KIND_START, FB_KIND_DIR, FB_KIND_SAVE, FB_KIND_FILE, FB_KIND_ELF };
++
++typedef struct
++{
++    char name[FB_NAME];
++    char title[FB_TITLE]; // a device's label, or a save's icon.sys title
++    u32 size;
++    unsigned char kind, marked;
++} fb_entry_t;
++
++static fb_entry_t fbList[FB_MAX];
++static int fbCount = 0, fbCursor = 0, fbTop = 0;
++static char fbPath[256] = ""; // "" = the drive list; otherwise a folder, ending in '/'
++static char fbKeepName[FB_NAME]; // after a rescan, put the cursor back on this entry
++static volatile int fbBusy = 0;
++static int fbStarted = 0;          // the drives were started from here: look again in a moment
++static clock_t fbRescanAt = 0;
++
++// what happened last, shown top right for a moment
++static char fbToast[48];
++static clock_t fbToastAt = 0;
++
++// the clipboard: names in one folder
++static char fbClipDir[256];
++static char fbClip[FB_CLIP_MAX][FB_NAME];
++static unsigned char fbClipIsDir[FB_CLIP_MAX];
++static int fbClipCount = 0, fbClipCut = 0;
++
++// a paste or delete in progress
++static volatile u32 fbDoneBytes = 0, fbTotalBytes = 0;
++static volatile int fbDoneItems = 0, fbTotalItems = 0, fbFailed = 0, fbSkipped = 0;
++static const char *fbOpLabel = "";
++static int fbOp = 0; // what the worker runs next
++enum { FB_OP_SCAN = 0, FB_OP_PASTE, FB_OP_DELETE };
++static char fbDeleteNames[FB_CLIP_MAX][FB_NAME];
++static unsigned char fbDeleteIsDir[FB_CLIP_MAX];
++static int fbDeleteCount = 0;
++
++// the actions menu (Triangle)
++enum { FB_ACT_COPY = 0, FB_ACT_CUT, FB_ACT_PASTE, FB_ACT_DELETE, FB_ACT_RENAME, FB_ACT_NEWDIR, FB_ACT_MARKALL, FB_ACT_COUNT };
++static const char *fbActName[FB_ACT_COUNT] = {"COPY", "CUT", "PASTE", "DELETE", "RENAME", "NEW FOLDER", "MARK ALL"};
++static int fbMenuOpen = 0, fbMenuSel = 0, fbMenuItems[FB_ACT_COUNT], fbMenuCount = 0;
++
++static const char *fbDevices[] = {"mc0:/", "mc1:/", "mass0:/", "mass1:/", "mass2:/", "mass3:/", "mass4:/", "mass5:/", "mass6:/",
++                                  "mass7:/", "mmce0:/", "mmce1:/", "pfs0:/", NULL};
++
++static void fbSetToast(const char *text)
++{
++    snprintf(fbToast, sizeof(fbToast), "%s", text);
++    fbToastAt = clock();
++}
++
++static int fbIsMc(const char *path)
++{
++    return path[0] == 'm' && path[1] == 'c' && (path[2] == '0' || path[2] == '1') && path[3] == ':';
++}
++
++static void fbJoin(char *out, int size, const char *dir, const char *name)
++{
++    snprintf(out, size, "%s%s", dir, name);
++}
++
++static const char *fbDeviceLabel(const char *dev, char *buf, int size)
++{
++    if (!strncmp(dev, "mc", 2))
++        snprintf(buf, size, "MEMORY CARD %c", dev[2] == '0' ? '1' : '2');
++    else if (!strncmp(dev, "mass", 4))
++        snprintf(buf, size, "USB / BDM DRIVE %c", dev[4]);
++    else if (!strncmp(dev, "mmce", 4))
++        snprintf(buf, size, "MMCE %c", dev[4] == '0' ? '1' : '2');
++    else
++        snprintf(buf, size, "HDD (OPL HOME)");
++    return buf;
++}
++
++// ---- reading ----
++
++// Shift-JIS from an icon.sys title to plain ASCII: full-width letters, digits and common punctuation
++// map across, everything else (kana, kanji) is dropped
++static void fbSjisToAscii(const unsigned char *s, int len, int lineBreak, char *out, int size)
++{
++    int i = 0, o = 0;
++    while (i < len && s[i] && o < size - 1) {
++        if (i == lineBreak && o > 0 && out[o - 1] != ' ')
++            out[o++] = ' ';
++        unsigned int c = s[i];
++        if (c < 0x80) {
++            out[o++] = (char)c;
++            i++;
++            continue;
++        }
++        if (i + 1 >= len)
++            break;
++        unsigned int w = (c << 8) | s[i + 1];
++        char a = 0;
++        i += 2;
++        if (w >= 0x824F && w <= 0x8258)
++            a = (char)('0' + (w - 0x824F));
++        else if (w >= 0x8260 && w <= 0x8279)
++            a = (char)('A' + (w - 0x8260));
++        else if (w >= 0x8281 && w <= 0x829A)
++            a = (char)('a' + (w - 0x8281));
++        else
++            switch (w) {
++                case 0x8140: a = ' '; break;
++                case 0x8143: a = ','; break;
++                case 0x8144: a = '.'; break;
++                case 0x8146: a = ':'; break;
++                case 0x8147: a = ';'; break;
++                case 0x8148: a = '?'; break;
++                case 0x8149: a = '!'; break;
++                case 0x8151: a = '_'; break;
++                case 0x815B:
++                case 0x815C:
++                case 0x817C: a = '-'; break;
++                case 0x815E: a = '/'; break;
++                case 0x8160: a = '~'; break;
++                case 0x8166: a = '\''; break;
++                case 0x8168: a = '"'; break;
++                case 0x8169: a = '('; break;
++                case 0x816A: a = ')'; break;
++                case 0x817B: a = '+'; break;
++                case 0x8181: a = '='; break;
++                case 0x8190: a = '$'; break;
++                case 0x8193: a = '%'; break;
++                case 0x8194: a = '#'; break;
++                case 0x8195: a = '&'; break;
++                default: break;
++            }
++        if (a)
++            out[o++] = a;
++    }
++    while (o > 0 && out[o - 1] == ' ')
++        o--;
++    out[o] = '\0';
++}
++
++// A memory card save's title, from its icon.sys; 0 when it has none
++static int fbReadSaveTitle(const char *dir, char *out, int size)
++{
++    char path[320];
++    unsigned char sys[0xC0 + 68];
++    int fd, n;
++
++    snprintf(path, sizeof(path), "%sicon.sys", dir);
++    fd = open(path, O_RDONLY);
++    if (fd < 0)
++        return 0;
++    n = read(fd, sys, sizeof(sys));
++    close(fd);
++    if (n < (int)sizeof(sys) || memcmp(sys, "PS2D", 4) != 0)
++        return 0;
++    fbSjisToAscii(sys + 0xC0, 68, sys[6] | (sys[7] << 8), out, size);
++    return out[0] != '\0';
++}
++
++// A folder? stat decides: d_type is not dependable on every driver here (MMCE clones mislabel
++// entries, see cuesupport.c); it is only the answer when stat cannot say
++static int fbIsDirEntry(const char *dir, struct dirent *e)
++{
++    char path[320];
++    struct stat st;
++    fbJoin(path, sizeof(path), dir, e->d_name);
++    if (stat(path, &st) == 0)
++        return S_ISDIR(st.st_mode) ? 1 : 0;
++#ifdef DT_DIR
++    return e->d_type == DT_DIR;
++#else
++    return 0;
++#endif
++}
++
++static int fbHasSuffix(const char *name, const char *suffix)
++{
++    int n = strlen(name), s = strlen(suffix);
++    return n >= s && !strcasecmp(name + n - s, suffix);
++}
++
++static int fbCompare(const void *a, const void *b)
++{
++    const fb_entry_t *x = (const fb_entry_t *)a, *y = (const fb_entry_t *)b;
++    int xd = x->kind == FB_KIND_DIR || x->kind == FB_KIND_SAVE, yd = y->kind == FB_KIND_DIR || y->kind == FB_KIND_SAVE;
++    if (xd != yd)
++        return xd ? -1 : 1;
++    return strcasecmp(x->name, y->name);
++}
++
++static void fbScanDevices(void)
++{
++    int i, n = 0, haveMass = 0;
++    char label[FB_TITLE];
++
++    for (i = 0; fbDevices[i] != NULL && n < FB_MAX; i++) {
++        DIR *d = opendir(fbDevices[i]);
++        if (d == NULL)
++            continue;
++        closedir(d);
++        fb_entry_t *e = &fbList[n++];
++        memset(e, 0, sizeof(*e));
++        snprintf(e->name, sizeof(e->name), "%s", fbDevices[i]);
++        snprintf(e->title, sizeof(e->title), "%s", fbDeviceLabel(fbDevices[i], label, sizeof(label)));
++        e->kind = FB_KIND_DEVICE;
++        if (!strncmp(fbDevices[i], "mass", 4))
++            haveMass = 1;
++    }
++    if (!haveMass && n < FB_MAX) { // USB and HDD start on request: offer it here
++        fb_entry_t *e = &fbList[n++];
++        memset(e, 0, sizeof(*e));
++        snprintf(e->name, sizeof(e->name), "START DRIVES");
++        snprintf(e->title, sizeof(e->title), "%s", fbStarted ? "STARTING..." : "USB, HDD AND OTHER GAME DRIVES");
++        e->kind = FB_KIND_START;
++    }
++    fbCount = n;
++}
++
++static void fbScanDir(void)
++{
++    DIR *d = opendir(fbPath);
++    struct dirent *de;
++    int n = 0, i, mcRoot;
++    char child[320];
++
++    if (d == NULL) {
++        fbCount = 0;
++        return;
++    }
++    while (n < FB_MAX && (de = readdir(d)) != NULL) {
++        if (!strcmp(de->d_name, ".") || !strcmp(de->d_name, ".."))
++            continue;
++        fb_entry_t *e = &fbList[n++];
++        memset(e, 0, sizeof(*e));
++        snprintf(e->name, sizeof(e->name), "%s", de->d_name);
++        e->kind = fbIsDirEntry(fbPath, de) ? FB_KIND_DIR : FB_KIND_FILE;
++    }
++    closedir(d);
++
++    mcRoot = fbIsMc(fbPath) && strchr(fbPath + 5, '/') == NULL; // "mc0:/" itself
++    for (i = 0; i < n; i++) {
++        fb_entry_t *e = &fbList[i];
++        if (e->kind == FB_KIND_DIR) {
++            if (mcRoot) {
++                snprintf(child, sizeof(child), "%s%s/", fbPath, e->name);
++                if (fbReadSaveTitle(child, e->title, sizeof(e->title)))
++                    e->kind = FB_KIND_SAVE;
++            }
++        } else {
++            struct stat st;
++            fbJoin(child, sizeof(child), fbPath, e->name);
++            if (stat(child, &st) == 0)
++                e->size = (u32)st.st_size;
++            if (fbHasSuffix(e->name, ".elf"))
++                e->kind = FB_KIND_ELF;
++        }
++    }
++    qsort(fbList, n, sizeof(fb_entry_t), &fbCompare);
++    fbCount = n;
++}
++
++// ---- copying and deleting (all on the IO worker) ----
++
++static u8 *fbBuf = NULL;
++
++// A folder's entries, read whole before anything recurses (memory cards allow few open handles)
++typedef struct
++{
++    char name[FB_NAME];
++    unsigned char isDir;
++    u32 size;
++} fb_child_t;
++
++static fb_child_t *fbListChildren(const char *dir, int *count)
++{
++    DIR *d = opendir(dir);
++    struct dirent *de;
++    fb_child_t *list = NULL;
++    int n = 0, cap = 0;
++    char child[320];
++
++    *count = 0;
++    if (d == NULL)
++        return NULL;
++    while ((de = readdir(d)) != NULL) {
++        if (!strcmp(de->d_name, ".") || !strcmp(de->d_name, ".."))
++            continue;
++        if (n == cap) {
++            cap = cap ? cap * 2 : 32;
++            fb_child_t *grown = realloc(list, cap * sizeof(fb_child_t));
++            if (grown == NULL)
++                break;
++            list = grown;
++        }
++        snprintf(list[n].name, FB_NAME, "%s", de->d_name);
++        list[n].isDir = (unsigned char)fbIsDirEntry(dir, de);
++        list[n].size = 0;
++        n++;
++    }
++    closedir(d);
++    for (int i = 0; i < n; i++) {
++        struct stat st;
++        if (!list[i].isDir) {
++            snprintf(child, sizeof(child), "%s%s", dir, list[i].name);
++            if (stat(child, &st) == 0)
++                list[i].size = (u32)st.st_size;
++        }
++    }
++    *count = n;
++    return list;
++}
++
++static u32 fbTreeSize(const char *path, int isDir, int depth)
++{
++    struct stat st;
++    if (!isDir)
++        return stat(path, &st) == 0 ? (u32)st.st_size : 0;
++    if (depth > 16)
++        return 0;
++    char dir[320], child[320];
++    int n, i;
++    u32 total = 0;
++    snprintf(dir, sizeof(dir), "%s/", path);
++    fb_child_t *kids = fbListChildren(dir, &n);
++    for (i = 0; i < n; i++) {
++        snprintf(child, sizeof(child), "%s%s", dir, kids[i].name);
++        total += kids[i].isDir ? fbTreeSize(child, 1, depth + 1) : kids[i].size;
++    }
++    free(kids);
++    return total;
++}
++
++static int fbCopyFile(const char *src, const char *dst)
++{
++    int in = open(src, O_RDONLY), out, r, ok = 1;
++    if (in < 0)
++        return 0;
++    out = open(dst, O_WRONLY | O_CREAT | O_TRUNC, 0666);
++    if (out < 0) {
++        close(in);
++        return 0;
++    }
++    while ((r = read(in, fbBuf, FB_BUF_SIZE)) > 0) {
++        if (write(out, fbBuf, r) != r) {
++            ok = 0;
++            break;
++        }
++        fbDoneBytes += r;
++    }
++    if (r < 0)
++        ok = 0;
++    close(out);
++    close(in);
++    if (!ok)
++        remove(dst);
++    return ok;
++}
++
++static int fbCopyTree(const char *src, const char *dst, int isDir, int depth)
++{
++    if (!isDir)
++        return fbCopyFile(src, dst);
++    if (depth > 16)
++        return 0;
++    mkdir(dst, 0777); // an existing folder merges
++    char sdir[320], ddir[320], s[320], d[320];
++    int n, i, ok = 1;
++    snprintf(sdir, sizeof(sdir), "%s/", src);
++    snprintf(ddir, sizeof(ddir), "%s/", dst);
++    fb_child_t *kids = fbListChildren(sdir, &n);
++    for (i = 0; i < n; i++) {
++        snprintf(s, sizeof(s), "%s%s", sdir, kids[i].name);
++        snprintf(d, sizeof(d), "%s%s", ddir, kids[i].name);
++        if (!fbCopyTree(s, d, kids[i].isDir, depth + 1))
++            ok = 0;
++    }
++    free(kids);
++    return ok;
++}
++
++static int fbDeleteTree(const char *path, int isDir, int depth)
++{
++    if (!isDir)
++        return remove(path) == 0;
++    if (depth > 16)
++        return 0;
++    char dir[320], child[320];
++    int n, i, ok = 1;
++    snprintf(dir, sizeof(dir), "%s/", path);
++    fb_child_t *kids = fbListChildren(dir, &n);
++    for (i = 0; i < n; i++) {
++        snprintf(child, sizeof(child), "%s%s", dir, kids[i].name);
++        if (!fbDeleteTree(child, kids[i].isDir, depth + 1))
++            ok = 0;
++    }
++    free(kids);
++    return rmdir(path) == 0 && ok;
++}
++
++static int fbFolderHasIconSys(const char *folder)
++{
++    char path[320];
++    int fd;
++    snprintf(path, sizeof(path), "%s/icon.sys", folder);
++    fd = open(path, O_RDONLY);
++    if (fd < 0)
++        return 0;
++    close(fd);
++    return 1;
++}
++
++// The card root ("mc0:/") of a memory card path
++static void fbMcRoot(const char *path, char *out, int size)
++{
++    snprintf(out, size, "%.4s/", path);
++}
++
++static void fbPasteWork(void)
++{
++    char src[320], dst[320], destDir[256];
++    int i;
++
++    fbBuf = memalign(64, FB_BUF_SIZE);
++    if (fbBuf == NULL) {
++        fbFailed = fbClipCount;
++        return;
++    }
++    fbTotalBytes = 0;
++    for (i = 0; i < fbClipCount; i++) {
++        snprintf(src, sizeof(src), "%s%s", fbClipDir, fbClip[i]);
++        fbTotalBytes += fbTreeSize(src, fbClipIsDir[i], 0);
++    }
++    for (i = 0; i < fbClipCount; i++) {
++        snprintf(src, sizeof(src), "%s%s", fbClipDir, fbClip[i]);
++        snprintf(destDir, sizeof(destDir), "%s", fbPath);
++        // a save folder pasted anywhere on a memory card goes to the card's root, where saves live
++        if (fbIsMc(fbPath) && fbClipIsDir[i] && fbFolderHasIconSys(src))
++            fbMcRoot(fbPath, destDir, sizeof(destDir));
++        snprintf(dst, sizeof(dst), "%s%s", destDir, fbClip[i]);
++        struct stat st;
++        if (!strcmp(src, dst) || stat(dst, &st) == 0) {
++            fbSkipped++; // never over the top of something
++        } else if (fbCopyTree(src, dst, fbClipIsDir[i], 0)) {
++            if (fbClipCut && !fbDeleteTree(src, fbClipIsDir[i], 0))
++                fbFailed++;
++        } else
++            fbFailed++;
++        fbDoneItems++;
++    }
++    free(fbBuf);
++    fbBuf = NULL;
++}
++
++static void fbDeleteWork(void)
++{
++    char path[320];
++    int i;
++    for (i = 0; i < fbDeleteCount; i++) {
++        snprintf(path, sizeof(path), "%s%s", fbPath, fbDeleteNames[i]);
++        if (!fbDeleteTree(path, fbDeleteIsDir[i], 0))
++            fbFailed++;
++        fbDoneItems++;
++    }
++}
++
++static void fbWorker(void)
++{
++    if (fbOp == FB_OP_PASTE)
++        fbPasteWork();
++    else if (fbOp == FB_OP_DELETE)
++        fbDeleteWork();
++    if (fbPath[0])
++        fbScanDir();
++    else
++        fbScanDevices();
++    fbBusy = 0;
++}
++
++static void fbRun(int op, const char *label)
++{
++    if (fbBusy)
++        return;
++    fbOp = op;
++    fbOpLabel = label;
++    fbDoneItems = fbFailed = fbSkipped = 0;
++    fbDoneBytes = 0;
++    fbBusy = 1;
++    if (ioPutRequest(IO_CUSTOM_SIMPLEACTION, &fbWorker) != IO_OK)
++        fbBusy = 0;
++}
++
++// ---- moving around ----
++
++static void fbFixScroll(void)
++{
++    if (fbCursor >= fbCount)
++        fbCursor = fbCount > 0 ? fbCount - 1 : 0;
++    if (fbCursor < 0)
++        fbCursor = 0;
++    if (fbCursor < fbTop)
++        fbTop = fbCursor;
++    if (fbCursor >= fbTop + FB_ROWS)
++        fbTop = fbCursor - FB_ROWS + 1;
++    if (fbTop < 0)
++        fbTop = 0;
++}
++
++static void fbOpenPath(const char *path, const char *keep)
++{
++    snprintf(fbPath, sizeof(fbPath), "%s", path);
++    snprintf(fbKeepName, sizeof(fbKeepName), "%s", keep ? keep : "");
++    fbCursor = fbTop = 0;
++    fbMenuOpen = 0;
++    fbRun(FB_OP_SCAN, "READING");
++}
++
++// Put the cursor back on the entry it was on (by name) once a rescan lands
++static void fbRestoreCursor(void)
++{
++    int i;
++    if (!fbKeepName[0])
++        return;
++    for (i = 0; i < fbCount; i++)
++        if (!strcmp(fbList[i].name, fbKeepName)) {
++            fbCursor = i;
++            break;
++        }
++    fbKeepName[0] = '\0';
++    fbFixScroll();
++}
++
++// From the Memory Files page: back where it was left, read fresh (the cursor stays on its entry)
++void ripps2FilesEnter(void)
++{
++    if (!fbBusy) {
++        if (fbCount > 0 && fbCursor < fbCount)
++            snprintf(fbKeepName, sizeof(fbKeepName), "%s", fbList[fbCursor].name);
++        fbMenuOpen = 0;
++        fbRun(FB_OP_SCAN, "READING");
++    }
++    guiSwitchScreen(GUI_SCREEN_RIPPS2_FILES);
++}
++
++static void fbUp(void)
++{
++    char parent[256], last[FB_NAME];
++    int len = strlen(fbPath), i;
++
++    sfxPlay(SFX_CANCEL);
++    if (len == 0) { // the drive list: back to the orbs
++        guiSwitchScreen(GUI_SCREEN_RIPPS2_MEMORY);
++        return;
++    }
++    if (len >= 2 && fbPath[len - 2] == ':') { // a drive's root ("mass0:/"): back to the drive list
++        snprintf(last, sizeof(last), "%s", fbPath);
++        fbOpenPath("", last);
++        return;
++    }
++    // "mass0:/A/B/" -> "mass0:/A/", with "B" under the cursor
++    for (i = len - 2; i >= 0 && fbPath[i] != '/'; i--)
++        ;
++    if (i < 0) {
++        fbOpenPath("", NULL);
++        return;
++    }
++    snprintf(last, sizeof(last), "%.*s", len - 2 - i, fbPath + i + 1);
++    snprintf(parent, sizeof(parent), "%.*s", i + 1, fbPath);
++    fbOpenPath(parent, last);
++}
++
++static int fbSelection(char names[][FB_NAME], unsigned char *isDir, int max)
++{
++    int i, n = 0;
++    for (i = 0; i < fbCount && n < max; i++)
++        if (fbList[i].marked) {
++            snprintf(names[n], FB_NAME, "%s", fbList[i].name);
++            isDir[n++] = fbList[i].kind == FB_KIND_DIR || fbList[i].kind == FB_KIND_SAVE;
++        }
++    if (n == 0 && fbCount > 0) {
++        snprintf(names[0], FB_NAME, "%s", fbList[fbCursor].name);
++        isDir[0] = fbList[fbCursor].kind == FB_KIND_DIR || fbList[fbCursor].kind == FB_KIND_SAVE;
++        n = 1;
++    }
++    return n;
++}
++
++static void fbClearMarks(void)
++{
++    for (int i = 0; i < fbCount; i++)
++        fbList[i].marked = 0;
++}
++
++static void fbRunElf(const fb_entry_t *e)
++{
++    static char elfPath[320];
++    char ask[200];
++    char *argv[1];
++
++    snprintf(ask, sizeof(ask), "Run %s?", e->name);
++    if (!guiMsgBox(ask, 1, NULL))
++        return;
++    fbJoin(elfPath, sizeof(elfPath), fbPath, e->name);
++    if (!strncmp(elfPath, "pfs", 3)) { // an HDD ELF needs its partition path; not handled here yet
++        guiMsgBox("Run HDD programs from the APPS page for now.", 0, NULL);
++        return;
++    }
++    argv[0] = elfPath;
++    ripps2PlayLaunchSequence();
++    deinit(UNMOUNT_EXCEPTION, IO_MODE_SELECTED_ALL_SPARE); // keep the drive the ELF is on
++    sysLoadELFApp(elfPath, NULL, 1, argv, 1, 0);
++    ripps2LaunchAborted();
++}
++
++static void fbOpen(void)
++{
++    if (fbCount == 0)
++        return;
++    fb_entry_t *e = &fbList[fbCursor];
++    char path[256];
++
++    switch (e->kind) {
++        case FB_KIND_START:
++            sfxPlay(SFX_CONFIRM);
++            ripps2StartSources();
++            fbStarted = 1;
++            fbRescanAt = clock() + 3 * CLOCKS_PER_SEC; // the drives attach in the background
++            fbRun(FB_OP_SCAN, "STARTING DRIVES");
++            break;
++        case FB_KIND_DEVICE:
++            sfxPlay(SFX_CONFIRM);
++            fbOpenPath(e->name, NULL);
++            break;
++        case FB_KIND_DIR:
++        case FB_KIND_SAVE:
++            sfxPlay(SFX_CONFIRM);
++            snprintf(path, sizeof(path), "%s%s/", fbPath, e->name);
++            fbOpenPath(path, NULL);
++            break;
++        case FB_KIND_ELF:
++            sfxPlay(SFX_CONFIRM);
++            fbRunElf(e);
++            break;
++        default:
++            break;
++    }
++}
++
++static void fbMenuBuild(void)
++{
++    int inFolder = fbPath[0] != '\0', haveItem = inFolder && fbCount > 0;
++    fbMenuCount = 0;
++    if (haveItem) {
++        fbMenuItems[fbMenuCount++] = FB_ACT_COPY;
++        fbMenuItems[fbMenuCount++] = FB_ACT_CUT;
++    }
++    if (inFolder && fbClipCount > 0)
++        fbMenuItems[fbMenuCount++] = FB_ACT_PASTE;
++    if (haveItem) {
++        fbMenuItems[fbMenuCount++] = FB_ACT_DELETE;
++        fbMenuItems[fbMenuCount++] = FB_ACT_RENAME;
++    }
++    if (inFolder) {
++        fbMenuItems[fbMenuCount++] = FB_ACT_NEWDIR;
++        if (fbCount > 0)
++            fbMenuItems[fbMenuCount++] = FB_ACT_MARKALL;
++    }
++    fbMenuSel = 0;
++}
++
++static void fbAction(int act)
++{
++    char ask[160], name[FB_NAME], from[320], to[320];
++    int n;
++
++    fbMenuOpen = 0;
++    switch (act) {
++        case FB_ACT_COPY:
++        case FB_ACT_CUT:
++            fbClipCount = fbSelection(fbClip, fbClipIsDir, FB_CLIP_MAX);
++            snprintf(fbClipDir, sizeof(fbClipDir), "%s", fbPath);
++            fbClipCut = act == FB_ACT_CUT;
++            fbClearMarks();
++            snprintf(ask, sizeof(ask), "%d %s", fbClipCount, fbClipCut ? "CUT" : "COPIED");
++            fbSetToast(ask);
++            sfxPlay(SFX_CONFIRM);
++            break;
++        case FB_ACT_PASTE:
++            sfxPlay(SFX_CONFIRM);
++            fbTotalItems = fbClipCount;
++            fbRun(FB_OP_PASTE, fbClipCut ? "MOVING" : "PASTING");
++            break;
++        case FB_ACT_DELETE:
++            n = fbSelection(fbDeleteNames, fbDeleteIsDir, FB_CLIP_MAX);
++            if (n == 1)
++                snprintf(ask, sizeof(ask), "Delete %s?", fbDeleteNames[0]);
++            else
++                snprintf(ask, sizeof(ask), "Delete %d items?", n);
++            if (guiMsgBox(ask, 1, NULL)) {
++                fbDeleteCount = n;
++                fbTotalItems = n;
++                fbClearMarks();
++                fbRun(FB_OP_DELETE, "DELETING");
++            }
++            break;
++        case FB_ACT_RENAME:
++            snprintf(name, sizeof(name), "%s", fbList[fbCursor].name);
++            if (guiShowKeyboard(name, sizeof(name)) && name[0] && strcmp(name, fbList[fbCursor].name) != 0) {
++                fbJoin(from, sizeof(from), fbPath, fbList[fbCursor].name);
++                fbJoin(to, sizeof(to), fbPath, name);
++                fbSetToast(rename(from, to) == 0 ? "RENAMED" : "RENAME FAILED");
++                snprintf(fbKeepName, sizeof(fbKeepName), "%s", name);
++                fbRun(FB_OP_SCAN, "READING");
++            }
++            break;
++        case FB_ACT_NEWDIR:
++            snprintf(name, sizeof(name), "NEW FOLDER");
++            if (guiShowKeyboard(name, sizeof(name)) && name[0]) {
++                fbJoin(to, sizeof(to), fbPath, name);
++                fbSetToast(mkdir(to, 0777) == 0 ? "FOLDER MADE" : "COULD NOT MAKE IT");
++                snprintf(fbKeepName, sizeof(fbKeepName), "%s", name);
++                fbRun(FB_OP_SCAN, "READING");
++            }
++            break;
++        case FB_ACT_MARKALL: {
++            int any = 0, i;
++            for (i = 0; i < fbCount; i++)
++                any |= fbList[i].marked;
++            for (i = 0; i < fbCount; i++)
++                fbList[i].marked = !any;
++            sfxPlay(SFX_CURSOR);
++            break;
++        }
++    }
++}
++
++void ripps2HandleInputFiles(void)
++{
++    int openKey = gSelectButton == KEY_CIRCLE ? KEY_CIRCLE : KEY_CROSS;
++    int backKey = gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE;
++
++    if (fbBusy)
++        return;
++
++    if (fbMenuOpen) {
++        if (getKeyOn(KEY_UP) && fbMenuSel > 0) {
++            fbMenuSel--;
++            sfxPlay(SFX_CURSOR);
++        } else if (getKeyOn(KEY_DOWN) && fbMenuSel < fbMenuCount - 1) {
++            fbMenuSel++;
++            sfxPlay(SFX_CURSOR);
++        } else if (getKeyOn(openKey)) {
++            fbAction(fbMenuItems[fbMenuSel]);
++        } else if (getKeyOn(backKey) || getKeyOn(KEY_TRIANGLE)) {
++            fbMenuOpen = 0;
++            sfxPlay(SFX_CANCEL);
++        }
++        return;
++    }
++
++    if (getKeyOn(KEY_UP)) {
++        if (fbCursor > 0) {
++            fbCursor--;
++            sfxPlay(SFX_CURSOR);
++        }
++    } else if (getKeyOn(KEY_DOWN)) {
++        if (fbCursor < fbCount - 1) {
++            fbCursor++;
++            sfxPlay(SFX_CURSOR);
++        }
++    } else if (getKeyOn(KEY_L1)) {
++        fbCursor -= FB_ROWS;
++        sfxPlay(SFX_CURSOR);
++    } else if (getKeyOn(KEY_R1)) {
++        fbCursor += FB_ROWS;
++        sfxPlay(SFX_CURSOR);
++    } else if (getKeyOn(openKey)) {
++        fbOpen();
++    } else if (getKeyOn(backKey)) {
++        fbUp();
++    } else if (getKeyOn(KEY_SQUARE)) {
++        if (fbPath[0] && fbCount > 0) {
++            fbList[fbCursor].marked ^= 1;
++            if (fbCursor < fbCount - 1)
++                fbCursor++;
++            sfxPlay(SFX_CURSOR);
++        }
++    } else if (getKeyOn(KEY_TRIANGLE)) {
++        fbMenuBuild();
++        if (fbMenuCount > 0) {
++            fbMenuOpen = 1;
++            sfxPlay(SFX_CONFIRM);
++        }
++    }
++    fbFixScroll();
++}
++
++// ---- drawing ----
++
++static void fbGlyph(int kind, int x, int y, u64 col)
++{
++    u64 c = col;
++    switch (kind) {
++        case FB_KIND_DIR:
++            rmDrawRect(x, y + 3, 7, 3, c);
++            rmDrawRect(x, y + 5, 16, 10, c);
++            break;
++        case FB_KIND_SAVE: // a little memory card
++            rmDrawRect(x + 1, y + 1, 12, 15, c);
++            rmDrawRect(x + 3, y + 3, 8, 5, FB_PRIM(0x03, 0x08, 0x22, 0x80));
++            break;
++        case FB_KIND_ELF: // a play mark
++            rmDrawLine(x + 2, y + 2, x + 13, y + 8, c);
++            rmDrawLine(x + 13, y + 8, x + 2, y + 14, c);
++            rmDrawLine(x + 2, y + 14, x + 2, y + 2, c);
++            break;
++        case FB_KIND_DEVICE:
++        case FB_KIND_START:
++            rmDrawRect(x, y + 4, 16, 9, c);
++            rmDrawRect(x + 2, y + 6, 4, 2, FB_PRIM(0x03, 0x08, 0x22, 0x80));
++            break;
++        default: // a page with a folded corner
++            rmDrawLine(x + 2, y + 1, x + 10, y + 1, c);
++            rmDrawLine(x + 10, y + 1, x + 14, y + 5, c);
++            rmDrawLine(x + 14, y + 5, x + 14, y + 16, c);
++            rmDrawLine(x + 14, y + 16, x + 2, y + 16, c);
++            rmDrawLine(x + 2, y + 16, x + 2, y + 1, c);
++            break;
++    }
++}
++
++static void fbSizeText(u32 size, char *out, int n)
++{
++    if (size >= 1024 * 1024)
++        snprintf(out, n, "%u.%u MB", size >> 20, ((size & 0xFFFFF) * 10) >> 20);
++    else if (size >= 1024)
++        snprintf(out, n, "%u KB", (size + 1023) >> 10);
++    else
++        snprintf(out, n, "%u B", size);
++}
++
++static void fbHint(int icon, const char *text, int *x, int y)
++{
++    GSTEXTURE *t = thmGetTexture(icon);
++    if (t != NULL) {
++        rmDrawPixmap(t, *x, y - 10, ALIGN_NONE, 20, 20, SCALING_RATIO, FB_LIT, 0);
++        *x += 24;
++    }
++    fntRenderString(gTheme->fonts[4], *x, y, ALIGN_VCENTER, 0, 0, text, FB_SOFT);
++    *x += fntCalcDimensions(gTheme->fonts[4], text) + 18;
++}
++
++void ripps2RenderFiles(void)
++{
++    int i, rowFont = gTheme->fonts[8], smallFont = gTheme->fonts[5], uiFont = gTheme->fonts[4];
++    char buf[96];
++
++    ripps2DrawBackground();
++    ripps2DrawPagePanel();
++
++    if (!fbBusy && fbRescanAt != 0 && clock() >= fbRescanAt && fbPath[0] == '\0') {
++        fbRescanAt = 0; // drives started from here have had time to attach
++        fbStarted = 0;
++        fbRun(FB_OP_SCAN, "READING");
++    }
++    if (!fbBusy)
++        fbRestoreCursor();
++
++    // the path, and the clipboard / what just happened
++    fntRenderString(uiFont, FB_X, 30, ALIGN_VCENTER, 0, 0, fbPath[0] ? fbPath : "MEMORY FILES", FB_LIT);
++    if (fbToastAt != 0 && (float)(clock() - fbToastAt) / CLOCKS_PER_SEC < 2.5f)
++        snprintf(buf, sizeof(buf), "%s", fbToast);
++    else if (fbClipCount > 0)
++        snprintf(buf, sizeof(buf), "CLIPBOARD %d %s", fbClipCount, fbClipCut ? "CUT" : "COPIED");
++    else
++        buf[0] = '\0';
++    if (buf[0])
++        fntRenderString(uiFont, FB_RIGHT - fntCalcDimensions(uiFont, buf), 30, ALIGN_VCENTER, 0, 0, buf, FB_SOFT);
++    rmDrawLine(FB_X, 46, FB_RIGHT, 46, FB_PRIM(0x4A, 0x72, 0xDC, 0x60));
++
++    if (fbBusy) {
++        // reading, or a paste / delete with its progress
++        fntRenderString(uiFont, 320, 210, ALIGN_CENTER, 0, 0, fbOpLabel, FB_LIT);
++        if (fbOp != FB_OP_SCAN && fbTotalItems > 0) {
++            float p = fbTotalBytes > 0 ? (float)fbDoneBytes / (float)fbTotalBytes : (float)fbDoneItems / (float)fbTotalItems;
++            if (p > 1.0f)
++                p = 1.0f;
++            rmDrawRect(170, 236, 300, 6, FB_PRIM(0x03, 0x08, 0x22, 0x80));
++            rmDrawRect(170, 236, (int)(300 * p), 6, FB_PRIM(0x4A, 0x8C, 0xF0, 0x80));
++            snprintf(buf, sizeof(buf), "%d / %d", fbDoneItems, fbTotalItems);
++            fntRenderString(smallFont, 320, 258, ALIGN_CENTER, 0, 0, buf, FB_SOFT);
++        }
++        return;
++    }
++
++    if (fbCount == 0)
++        fntRenderString(uiFont, 320, 200, ALIGN_CENTER, 0, 0, fbPath[0] ? "EMPTY" : "NO DRIVES", FB_DIM);
++
++    for (i = 0; i < FB_ROWS && fbTop + i < fbCount; i++) {
++        fb_entry_t *e = &fbList[fbTop + i];
++        int y = FB_LIST_Y + i * FB_ROW_H, cur = (fbTop + i) == fbCursor;
++        u64 col = cur ? FB_LIT : FB_DIM;
++        if (cur) {
++            rmDrawRect(FB_X - 6, y - 1, FB_RIGHT - FB_X + 12, FB_ROW_H - 2, FB_PRIM(0x1E, 0x3C, 0x96, 0x58));
++            rmDrawRect(FB_X - 6, y - 1, 3, FB_ROW_H - 2, FB_PRIM(0x6A, 0x9A, 0xFF, 0x80));
++        }
++        if (e->marked)
++            rmDrawRect(FB_X, y + 6, 6, 6, FB_PRIM(0x6A, 0x9A, 0xFF, 0x80));
++        fbGlyph(e->kind, FB_X + 12, y + 1, cur ? FB_PRIM(0x9C, 0xB8, 0xFF, 0x80) : FB_PRIM(0x4A, 0x72, 0xDC, 0x80));
++        int tx = FB_X + 36;
++        if (e->kind == FB_KIND_DEVICE || e->kind == FB_KIND_START) {
++            fntRenderString(rowFont, tx, y + 9, ALIGN_VCENTER, 0, 0, e->title, col);
++            if (e->kind == FB_KIND_DEVICE)
++                fntRenderString(smallFont, FB_RIGHT - fntCalcDimensions(smallFont, e->name), y + 9, ALIGN_VCENTER, 0, 0, e->name, FB_DIM);
++        } else if (e->kind == FB_KIND_SAVE) {
++            fntRenderString(rowFont, tx, y + 9, ALIGN_VCENTER, 0, 0, e->title, col);
++            fntRenderString(smallFont, FB_RIGHT - fntCalcDimensions(smallFont, e->name), y + 9, ALIGN_VCENTER, 0, 0, e->name, FB_DIM);
++        } else {
++            fntRenderString(rowFont, tx, y + 9, ALIGN_VCENTER, 0, 0, e->name, col);
++            if (e->kind != FB_KIND_DIR) {
++                fbSizeText(e->size, buf, sizeof(buf));
++                fntRenderString(smallFont, FB_RIGHT - fntCalcDimensions(smallFont, buf), y + 9, ALIGN_VCENTER, 0, 0, buf, FB_DIM);
++            }
++        }
++    }
++    if (fbCount > FB_ROWS) { // where you are in a long folder
++        int h = FB_ROWS * FB_ROW_H, bar = h * FB_ROWS / fbCount;
++        rmDrawRect(FB_RIGHT + 4, FB_LIST_Y + h * fbTop / fbCount, 2, bar < 8 ? 8 : bar, FB_PRIM(0x6A, 0x9A, 0xFF, 0x60));
++    }
++
++    // the actions menu
++    if (fbMenuOpen) {
++        int w = 200, h = fbMenuCount * 24 + 20, x = 420, y = 120;
++        rmDrawRect(x, y, w, h, FB_PRIM(0x03, 0x08, 0x22, 0x70));
++        rmDrawLine(x, y, x + w, y, FB_PRIM(0x4A, 0x72, 0xDC, 0x80));
++        rmDrawLine(x, y + h, x + w, y + h, FB_PRIM(0x4A, 0x72, 0xDC, 0x80));
++        rmDrawLine(x, y, x, y + h, FB_PRIM(0x4A, 0x72, 0xDC, 0x80));
++        rmDrawLine(x + w, y, x + w, y + h, FB_PRIM(0x4A, 0x72, 0xDC, 0x80));
++        for (i = 0; i < fbMenuCount; i++) {
++            int ry = y + 10 + i * 24;
++            if (i == fbMenuSel)
++                rmDrawRect(x + 4, ry, w - 8, 22, FB_PRIM(0x1E, 0x3C, 0x96, 0x60));
++            fntRenderString(uiFont, x + 16, ry + 11, ALIGN_VCENTER, 0, 0, fbActName[fbMenuItems[i]], i == fbMenuSel ? FB_LIT : FB_SOFT);
++        }
++    }
++
++    // the hints
++    int hx = 60, hy = 448;
++    int selIcon = gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON, backIcon = gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON;
++    if (fbMenuOpen) {
++        fbHint(selIcon, "SELECT", &hx, hy);
++        fbHint(backIcon, "CLOSE", &hx, hy);
++    } else {
++        fb_entry_t *e = fbCount > 0 ? &fbList[fbCursor] : NULL;
++        fbHint(selIcon, e != NULL && e->kind == FB_KIND_ELF ? "RUN" : "OPEN", &hx, hy);
++        fbHint(backIcon, fbPath[0] ? "BACK" : "EXIT", &hx, hy);
++        if (fbPath[0]) {
++            fbHint(SQUARE_ICON, "MARK", &hx, hy);
++            fbHint(TRIANGLE_ICON, "ACTIONS", &hx, hy);
++        }
++    }
++}
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index 2b7ad80..9c9f5b2 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -378,6 +378,13 @@ void ripps2RenderMemory(void)
+     fntRenderString(PROMPT_FONT, 320, 433, ALIGN_CENTER, 0, 0, formationName[gRipps2Formation], COLOR_LIT);
+     snprintf(count, sizeof(count), "%02d / %02d", gRipps2Formation + 1, FORMATION_COUNT);
+     fntRenderString(gTheme->fonts[3], 320, 456, ALIGN_CENTER, 0, 0, count, COLOR_SOFT);
++
++    // the bundled wLaunchELF stays a button away
++    GSTEXTURE *sel = thmGetTexture(SELECT_ICON);
++    int selW = glyphWidth(sel), tx = 596 - fntCalcDimensions(gTheme->fonts[3], "WLAUNCHELF");
++    fntRenderString(gTheme->fonts[3], tx, 456, ALIGN_VCENTER, 0, 0, "WLAUNCHELF", COLOR_DIM);
++    if (sel)
++        rmDrawPixmap(sel, tx - 8 - selW * 3 / 8, 456, ALIGN_CENTER, selW * 3 / 4, GLYPH_H * 3 / 4, SCALING_RATIO, COLOR_TEX, 0);
+ }
+ 
+ void ripps2HandleInputMemory(void)
+@@ -396,12 +403,19 @@ void ripps2HandleInputMemory(void)
+         formationDirty = 1;
+         sfxPlay(SFX_CURSOR);
+     } else if (getKeyOn(KEY_START)) {
++        // RIPPS2 23c: Start opens the browser built in here; the orbs keep moving behind it
++        if (formationDirty) {
++            ripps2SaveSettingsInBackground();
++            formationDirty = 0;
++        }
++        ripps2FilesEnter();
++    } else if (getKeyOn(KEY_SELECT)) {
+         sfxPlay(SFX_CONFIRM);
+         if (formationDirty) { // queued before the launch; the teardown drains the io worker
+             ripps2SaveSettingsInBackground();
+             formationDirty = 0;
+         }
+-        // success never returns; a rejected image leaves RIPPS2 untouched
++        // the bundled wLaunchELF; success never returns, a rejected image leaves RIPPS2 untouched
+         if (ripps2LaunchMemoryFiles() < 0)
+             guiMsgBox("Memory Files could not start.", 0, NULL);
+         readPads();
