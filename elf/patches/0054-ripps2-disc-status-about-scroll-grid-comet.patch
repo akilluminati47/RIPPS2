@@ -1,0 +1,227 @@
+diff --git a/src/gui.c b/src/gui.c
+index e06acd1..073623f 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -353,6 +353,9 @@ void guiShowAbout()
+     char OPLBuildDetails[40];
+ 
+     snprintf(OPLVersion, sizeof(OPLVersion), "Pre-alpha, on RiptOPL %s", OPL_VERSION);
++    char *dirty = strstr(OPLVersion, "-dirty"); // RIPPS2 builds from a patched tree; not worth showing
++    if (dirty != NULL)
++        memmove(dirty, dirty + 6, strlen(dirty + 6) + 1);
+ 
+     snprintf(OPLBuildDetails, sizeof(OPLBuildDetails), "GSM %s"
+                                                        " - UDMA+"
+diff --git a/src/ripps2about.c b/src/ripps2about.c
+index c585082..b7fc9a0 100644
+--- a/src/ripps2about.c
++++ b/src/ripps2about.c
+@@ -191,7 +191,10 @@ void ripps2ShowAbout(const char *version, const char *build)
+         else if (getKey(KEY_UP))
+             hand = -240.0f;
+         if (hand != 0.0f) {
++            float handEnd = (float)abHeight() - (AB_BOTTOM - AB_TOP) / 6.0f; // the last credit at mid view
+             scroll += hand * dt;
++            if (scroll > handEnd)
++                scroll = handEnd;
+             waited = 0.0f;
+         } else {
+             waited += dt;
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index 58994cb..b1b0216 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -1386,6 +1386,20 @@ static void fbEdgePoint(int l, int t, int r, int b, float q, float *x, float *y)
+     }
+ }
+ 
++// A soft additive point of light (the orbs' motes are drawn the same way)
++static void fbGlowDot(float x, float y, float rad, int a)
++{
++    int k;
++    float px = x + rad, py = y;
++    u64 centre = FB_PRIM(0xB4, 0xD2, 0xFF, a), rim = FB_PRIM(0xB4, 0xD2, 0xFF, 0);
++    for (k = 1; k <= 8; k++) {
++        float ang = 6.2832f * k / 8, nx = x + cosf(ang) * rad, ny = y + sinf(ang) * rad;
++        rmDrawTriGouraud(x, y, centre, px, py, rim, nx, ny, rim);
++        px = nx;
++        py = ny;
++    }
++}
++
+ // The active tile: its edge breathes a blue glow, and a spark of light runs round it
+ static void fbTileAlive(int l, int t, int r, int b, float now, int a)
+ {
+@@ -1394,19 +1408,18 @@ static void fbTileAlive(int l, int t, int r, int b, float now, int a)
+     int d, k;
+ 
+     rmSetBlendAdditive(1);
+-    for (d = 1; d <= 7; d++) { // the glow outside the edge, fading out
+-        float f = 1.0f - d / 8.0f;
+-        fbOutline(l, t, r, b, d, FB_PRIM(0x38, 0x68, 0xFF, (int)(a * 0.42f * breathe * f * f)));
+-    }
+-    for (d = 1; d <= 3; d++) // and a little inside it
+-        fbOutline(l, t, r, b, -d, FB_PRIM(0x38, 0x68, 0xFF, (int)(a * 0.22f * breathe * (1.0f - d / 4.0f))));
+-    for (k = 0; k < 18; k++) { // the spark and its tail
+-        float f = 1.0f - k / 18.0f, q = head - k * 3.0f;
++    for (d = 1; d <= 9; d++) { // the glow outside the edge, fading out
++        float f = 1.0f - d / 10.0f;
++        fbOutline(l, t, r, b, d, FB_PRIM(0x40, 0x74, 0xFF, (int)(a * 0.8f * breathe * f * f)));
++    }
++    for (d = 1; d <= 4; d++) // and a little inside it
++        fbOutline(l, t, r, b, -d, FB_PRIM(0x40, 0x74, 0xFF, (int)(a * 0.36f * breathe * (1.0f - d / 5.0f))));
++    for (k = 0; k < 24; k++) { // the spark: a soft head and a tail that thins away behind it
++        float f = 1.0f - k / 24.0f, q = head - k * 2.5f;
+         if (q < 0)
+             q += per;
+         fbEdgePoint(l, t, r, b, q, &x, &y);
+-        int sz = k < 3 ? 3 : 2;
+-        rmDrawRect((int)x - sz / 2, (int)y - sz / 2, sz, sz, FB_PRIM(0xB4, 0xD2, 0xFF, (int)(a * f * f)));
++        fbGlowDot(x, y, k == 0 ? 9.0f : 2.0f + 4.0f * f, (int)(a * (k == 0 ? 0.9f : 0.55f * f * f)));
+     }
+     rmSetBlendAdditive(0);
+     fbOutline(l, t, r, b, 0, FB_PRIM(0xB4, 0xC8, 0xFF, a)); // the edge itself, bright
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index 100dcf0..ab65b4d 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -26,6 +26,14 @@
+ #include "include/lang.h"
+ #include "include/ripps2.h"
+ #include "include/sound.h"
++#include "include/ioman.h"
++#include "include/config.h"
++#include "include/metadb.h"
++#include <libcdvd.h>
++#include <fcntl.h>
++#include <unistd.h>
++#include <kernel.h>
++#include <delaythread.h>
+ 
+ int gRipps2Category = RIPPS2_CAT_STORAGE;
+ 
+@@ -339,12 +347,107 @@ static void renderStartPrompt(const char *action, int y)
+ }
+ 
+ // ---- LAUNCH DISC ----
++//
++// What is in the drive, under START DISC: asked on the IO worker about once a second while the page is
++// up (the drive's own disc type, which costs nothing), and only when that changes is the disc read for
++// its ID, and the ID looked up in the metadata database for a title. Nothing here ever waits on the drive.
++
++static volatile int discPollBusy = 0;
++static clock_t discPolledAt = 0;
++static int discLastType = -1;
++static char discLine[80] = ""; // "" = the drive is empty: say what to insert
++
++// A PS2 disc's title from the metadata database (OPL's home first, then the first USB drive)
++static void discTitle(const char *id, char *out, int size)
++{
++    const char *prefixes[2] = {configGetHomePath(), "mass0:/"}, *v = NULL;
++    int i;
++    out[0] = '\0';
++    for (i = 0; i < 2 && !out[0]; i++) {
++        config_set_t *c;
++        if (prefixes[i] == NULL || prefixes[i][0] == '\0' || (c = configAlloc(0, NULL, NULL)) == NULL)
++            continue;
++        metaDbMerge(c, prefixes[i], "/", id);
++        if (metaDbGetStr(c, "Title", &v) && v != NULL)
++            snprintf(out, size, "%s", v);
++        configFree(c);
++    }
++}
++
++static void discPollWorker(void)
++{
++    char line[80] = "", path[64], id[16], title[48];
++    int type = sceCdGetDiskType(), fd, i;
++
++    if (type == discLastType) {
++        discPollBusy = 0;
++        return;
++    }
++    switch (type) {
++        case SCECdNODISC:
++            break;
++        case SCECdDETCT:
++        case SCECdDETCTCD:
++        case SCECdDETCTDVDS:
++        case SCECdDETCTDVDD:
++            snprintf(line, sizeof(line), "READING THE DISC");
++            type = -1; // ask again until it settles
++            break;
++        case SCECdPSCD:
++        case SCECdPSCDDA:
++            snprintf(line, sizeof(line), "PS1 GAME");
++            break;
++        case SCECdPS2CD:
++        case SCECdPS2CDDA:
++        case SCECdPS2DVD:
++            snprintf(line, sizeof(line), "PS2 GAME");
++            if (sysGetDiscBootPath(path, sizeof(path), NULL) == 0) {
++                const char *s = strrchr(path, '\\');
++                s = s ? s + 1 : path;
++                for (i = 0; s[i] && s[i] != ';' && i < (int)sizeof(id) - 1; i++)
++                    id[i] = s[i];
++                id[i] = '\0';
++                discTitle(id, title, sizeof(title));
++                if (title[0])
++                    snprintf(line, sizeof(line), "PS2 GAME   %s   %s", id, title);
++                else
++                    snprintf(line, sizeof(line), "PS2 GAME   %s", id);
++            }
++            break;
++        case SCECdDVDV:
++            // an ESR-patched game reads as DVD video, its own files beside the video ones
++            fd = open("cdrom0:\\SYSTEM.CNF;1", O_RDONLY);
++            snprintf(line, sizeof(line), fd >= 0 ? "ESR DISC: A PATCHED PS2 GAME" : "DVD VIDEO");
++            if (fd >= 0)
++                close(fd);
++            break;
++        case SCECdCDDA:
++            snprintf(line, sizeof(line), "AUDIO CD: NOT ONE RIPPS2 STARTS");
++            break;
++        default:
++            snprintf(line, sizeof(line), "A DISC RIPPS2 CANNOT START");
++            break;
++    }
++    snprintf(discLine, sizeof(discLine), "%s", line);
++    discLastType = type;
++    discPollBusy = 0;
++}
++
+ void ripps2RenderLaunch(void)
+ {
+     ripps2DrawBackground();
+     ripps2RenderCategoryBar();
+     renderStartPrompt("START DISC", 423);
+-    fntRenderString(gTheme->fonts[3], 320, 450, ALIGN_CENTER, 0, 0, "INSERT PS1/PS2 GAME OR CD/DVD MEDIA", COLOR_DIM);
++    if (!discPollBusy && (float)(clock() - discPolledAt) / CLOCKS_PER_SEC > 1.0f) {
++        discPollBusy = 1;
++        discPolledAt = clock();
++        if (ioPutRequest(IO_CUSTOM_SIMPLEACTION, &discPollWorker) != IO_OK)
++            discPollBusy = 0;
++    }
++    if (discLine[0])
++        fntRenderString(gTheme->fonts[3], 320, 450, ALIGN_CENTER, 0, 0, discLine, COLOR_SOFT);
++    else
++        fntRenderString(gTheme->fonts[3], 320, 450, ALIGN_CENTER, 0, 0, "INSERT PS1/PS2 GAME OR CD/DVD MEDIA", COLOR_DIM);
+ }
+ 
+ void ripps2HandleInputLaunch(void)
+@@ -353,10 +456,14 @@ void ripps2HandleInputLaunch(void)
+         ripps2SetCategory(RIPPS2_CAT_STORAGE);
+     } else if (getKeyOn(KEY_START)) {
+         sfxPlay(SFX_CONFIRM);
++        int wait;
++        for (wait = 0; discPollBusy && wait < 60; wait++) // the drive is the launch's alone
++            DelayThread(50 * 1000);
+         // success never returns; a cancelled wait is not an error
+         int r = sysLaunchDisc(&guiRenderProbeFrame);
+         if (r < 0 && r != SYS_DISC_CANCELLED)
+-            guiMsgBox(_l(_STR_DISC_LAUNCH_ERR), 0, NULL);
++            guiMsgBox("No disc RIPPS2 can start is in the drive. Insert a PS1 or PS2 game, a DVD video or an ESR disc, then press Start.", 0, NULL);
++        discLastType = -1; // look again
+         readPads();
+     }
+ }
