@@ -1,0 +1,305 @@
+diff --git a/include/ripps2.h b/include/ripps2.h
+index 16b3016..e73cf0f 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -51,6 +51,9 @@ void ripps2TiltEnd(void);
+ void ripps2DrawPanelGlass(int x, int y, int w, int h, int hasItem);
+ void ripps2DrawPagePanel(void); // menus / settings / dialogs: one clear-glass panel behind the page
+ void ripps2DrawHintBox(int x, int y, int w, int h); // the settings help text's box, in the same glass
++void ripps2DrawPanelVeil(int x, int y, int w, int h, float amount); // deep glass over a panel, 0..1
++// A screen switch between two panels: the pillars, and one glass panel p (0..1) of the way from a to b
++void ripps2DrawPanelMorph(int ax, int ay, int aw, int ah, int bx, int by, int bw, int bh, float p);
+ 
+ // ---- Native backgrounds (ripps2bg.c), drawn in place of the plasma ----
+ void ripps2DrawBackground(void); // orbs on Memory Files, pillars everywhere else
+diff --git a/include/themes.h b/include/themes.h
+index 3900701..9679c68 100644
+--- a/include/themes.h
++++ b/include/themes.h
+@@ -250,6 +250,7 @@ theme_element_t *thmFamilyItemsList(theme_elems_t *family, theme_element_t *fall
+ int thmSetGuiValue(int themeID, int reload);
+ int thmGetGuiValue(void);
+ int thmFindGuiID(const char *theme);
++int thmGetPanelRect(int infoPage, int *x, int *y, int *w, int *h); // RIPPS2: the page's glass panel
+ const char **thmGetGuiList(void);
+ char *thmGetFilePath(int themeID);
+ 
+diff --git a/src/gui.c b/src/gui.c
+index 32e804c..e07d304 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -173,7 +173,9 @@ static gui_screen_handler_t *screenHandler = &screenHandlers[GUI_SCREEN_MENU];
+ 
+ // screen transition handling
+ static gui_screen_handler_t *screenHandlerTarget = NULL;
+-static int transIndex;
++static clock_t transStart;   // RIPPS2: the panel morph is timed, not counted in frames
++static int transArrived = 0; // RIPPS2: the panel has reached the new screen
++static void guiDrawStatusBackdrop(void); // RIPPS2: status screens on the pillars, see guiShow
+ 
+ // Helper perlin noise data
+ #define PLASMA_H              32
+@@ -3220,9 +3222,7 @@ static int guiSettingsPromptSave(void)
+         if (guiDrawBGSettings() == 0)
+             guiDrawBGPlasma();
+ 
+-        rmDrawRect(0, 0, screenWidth, screenHeight, gColDarker);
+-        rmDrawLine(50, 75, screenWidth - 50, 75, gColWhite);
+-        rmDrawLine(50, 410, screenWidth - 50, 410, gColWhite);
++        guiDrawStatusBackdrop(); // RIPPS2: the pillars behind the glass page panel (was a dark wash and two rules)
+         fntRenderString(RIPPS2_UI_FONT, screenWidth >> 1, 150, ALIGN_CENTER, 0, 0,
+                         _l(_STR_SETTINGS_SAVE_PROMPT), gTheme->selTextColor);
+         fntRenderString(RIPPS2_UI_FONT, screenWidth >> 1, 205, ALIGN_CENTER, 0, 0,
+@@ -4349,37 +4349,65 @@ static void guiReadPads()
+     cacheTickArt();
+ }
+ 
++// RIPPS2: status screens and prompts stand on the moving pillars behind the glass page panel, where
++// RiptOPL painted the screen black with two white rules
++static void guiDrawStatusBackdrop(void)
++{
++    ripps2DrawBackground();
++    ripps2DrawPagePanel();
++}
++
++// RIPPS2: screen switches morph instead of fading through black. The old screen's panel dims, the
++// panel glides and resizes into the new screen's panel over the moving pillars (the art viewport
++// opening out into the Start menu's page, and back), and the new screen's content comes up inside it
++// once it has arrived.
++#define MORPH_CONCEAL_S 0.08f
++#define MORPH_MOVE_S    0.30f
++#define MORPH_REVEAL_S  0.14f
++
++// The glass panel a screen's content sits in: the art viewport on the Storage and info pages, the
++// page panel on every menu
++static void guiScreenPanel(gui_screen_handler_t *handler, int *x, int *y, int *w, int *h)
++{
++    if (handler == &screenHandlers[GUI_SCREEN_MAIN] && thmGetPanelRect(0, x, y, w, h))
++        return;
++    if (handler == &screenHandlers[GUI_SCREEN_INFO] && thmGetPanelRect(1, x, y, w, h))
++        return;
++    *x = 14;
++    *y = 10;
++    *w = 612;
++    *h = 460;
++}
++
+ // renders the screen and handles inputs. Also handles screen transitions between numerous
+-// screen handlers. Fade transition code written by Maximus32
++// screen handlers.
+ static void guiShow()
+ {
+-    // is there a transmission effect going on or are
+-    // we in a normal rendering state?
+     if (screenHandlerTarget) {
+-        u8 alpha;
+-        const u8 transition_frames = 26;
+-        if (transIndex < (transition_frames / 2)) {
+-            // Fade-out old screen
+-            // index: 0..7
+-            // alpha: 1..8 * transition_step
++        float t = (float)(clock() - transStart) / (float)CLOCKS_PER_SEC;
++        int ax, ay, aw, ah, bx, by, bw, bh;
++
++        guiScreenPanel(screenHandler, &ax, &ay, &aw, &ah);
++        guiScreenPanel(screenHandlerTarget, &bx, &by, &bw, &bh);
++        if (t < MORPH_CONCEAL_S) {
+             screenHandler->renderScreen();
+-            alpha = fade((float)(transIndex + 1) / (transition_frames / 2)) * 0x80;
++            ripps2DrawPanelVeil(ax, ay, aw, ah, t / MORPH_CONCEAL_S);
++        } else if (t < MORPH_CONCEAL_S + MORPH_MOVE_S) {
++            ripps2DrawPanelMorph(ax, ay, aw, ah, bx, by, bw, bh, (t - MORPH_CONCEAL_S) / MORPH_MOVE_S);
+         } else {
+-            // Fade-in new screen
+-            // index: 8..15
+-            // alpha: 8..1 * transition_step
++            if (!transArrived) {
++                transArrived = 1;
++                if (screenHandlerTarget == &screenHandlers[GUI_SCREEN_MAIN])
++                    ripps2UiEnter(); // the category bar fades back in with the page
++            }
++            float r = (t - MORPH_CONCEAL_S - MORPH_MOVE_S) / MORPH_REVEAL_S;
+             screenHandlerTarget->renderScreen();
+-            alpha = fade((float)(transition_frames - transIndex) / (transition_frames / 2)) * 0x80;
+-        }
+-
+-        // Overlay the actual "fade"
+-        rmDrawRect(0, 0, screenWidth, screenHeight, GS_SETREG_RGBA(0x00, 0x00, 0x00, alpha));
+-
+-        // Advance the effect
+-        transIndex++;
+-        if (transIndex >= transition_frames) {
+-            screenHandler = screenHandlerTarget;
+-            screenHandlerTarget = NULL;
++            if (r < 1.0f)
++                ripps2DrawPanelVeil(bx, by, bw, bh, 1.0f - r);
++            else {
++                screenHandler = screenHandlerTarget;
++                screenHandlerTarget = NULL;
++            }
+         }
+     } else
+         // render with the set screen handler
+@@ -4477,7 +4505,8 @@ void guiSwitchScreen(int target)
+         return;
+     }
+     sfxPlay(SFX_TRANSITION);
+-    transIndex = 0;
++    transStart = clock();
++    transArrived = 0;
+     screenHandlerTarget = &screenHandlers[target];
+ }
+ 
+@@ -4622,10 +4651,12 @@ int guiMsgBox(const char *text, int addAccept, struct UIItem *ui)
+         // With ui == NULL the backdrop is just whichever menu happened to be on screen -- it carries
+         // no information and, at gColDarker's ~75%, left the menu legible straight through the
+         // message. Errors get their own background in that case.
+-        rmDrawRect(0, 0, screenWidth, screenHeight, ui ? gColDarker : gColBlack);
+-
+-        rmDrawLine(50, 75, screenWidth - 50, 75, gColWhite);
+-        rmDrawLine(50, 410, screenWidth - 50, 410, gColWhite);
++        // RIPPS2: over a dialog a wash and the glass page panel; otherwise the pillars behind it
++        if (ui) {
++            rmDrawRect(0, 0, screenWidth, screenHeight, gColDarker);
++            ripps2DrawPagePanel();
++        } else
++            guiDrawStatusBackdrop();
+ 
+         // Render the wrapped lines ONE AT A TIME: ALIGN_CENTER centres on the measured width of the
+         // WHOLE string, so handing it a multi-line buffer would centre it as a single long run and
+@@ -4684,10 +4715,7 @@ int guiPromptRebootIop(void)
+ 
+         guiShow();
+ 
+-        rmDrawRect(0, 0, screenWidth, screenHeight, gColBlack);
+-
+-        rmDrawLine(50, 75, screenWidth - 50, 75, gColWhite);
+-        rmDrawLine(50, 410, screenWidth - 50, 410, gColWhite);
++        guiDrawStatusBackdrop(); // RIPPS2: was black with two white rules
+ 
+         fntRenderString(RIPPS2_UI_FONT, screenWidth >> 1, gTheme->usedHeight >> 1, ALIGN_CENTER, 0, 0, "REBOOT IOP?", gTheme->textColor);
+ 
+@@ -4817,7 +4845,7 @@ void guiRenderTextScreen(const char *message)
+     // information, so it is hidden. Interactive dialogs keep the translucent overlay only when the
+     // caller chose what sits behind them (guiMsgBox with a ui, the prompts over the settings
+     // background); the video-mode, remove-settings and cheat-selection screens went opaque too.
+-    rmDrawRect(0, 0, screenWidth, screenHeight, gColBlack);
++    guiDrawStatusBackdrop(); // RIPPS2: was opaque black
+ 
+     fntRenderString(RIPPS2_UI_FONT, screenWidth >> 1, gTheme->usedHeight >> 1, ALIGN_CENTER, 0, 0, message, gTheme->textColor);
+ 
+@@ -4998,10 +5026,7 @@ void guiWarning(const char *text, int count)
+ 
+     // Same reasoning as guiRenderTextScreen: a warning is a non-interactive surface shown for a
+     // fixed number of frames, so it gets an opaque backdrop rather than a ~75% wash.
+-    rmDrawRect(0, 0, screenWidth, screenHeight, gColBlack);
+-
+-    rmDrawLine(50, 75, screenWidth - 50, 75, gColWhite);
+-    rmDrawLine(50, 410, screenWidth - 50, 410, gColWhite);
++    guiDrawStatusBackdrop(); // RIPPS2: was black with two white rules
+ 
+     fntRenderString(RIPPS2_UI_FONT, screenWidth >> 1, gTheme->usedHeight >> 1, ALIGN_CENTER, screenWidth, screenHeight, text, gTheme->textColor);
+ 
+@@ -5063,10 +5088,7 @@ int guiConfirmVideoMode(void)
+         // behind the prompt. Once the backdrop went opaque, rendering that page first (guiShow) was
+         // pure frame time -- in the heavy high-res modes enough that the hold bar advanced in big
+         // steps and the keep landed while it still looked 4/5 full (zackcage6, 09-26).
+-        rmDrawRect(0, 0, screenWidth, screenHeight, gColBlack);
+-
+-        rmDrawLine(50, 75, screenWidth - 50, 75, gColWhite);
+-        rmDrawLine(50, 410, screenWidth - 50, 410, gColWhite);
++        guiDrawStatusBackdrop(); // RIPPS2: was black with two white rules
+ 
+         fntRenderString(RIPPS2_UI_FONT, screenWidth >> 1, gTheme->usedHeight >> 1, ALIGN_CENTER, 0, 0, _l(_STR_CFM_VMODE_CHG), gTheme->textColor);
+         // How long until the automatic revert (zackcage6's idea). Hidden during a hold. A hold does NOT
+@@ -5126,10 +5148,7 @@ int guiGameShowRemoveSettings(config_set_t *configSet, config_set_t *configGame)
+         guiShow();
+ 
+         // Opaque for the same reason as guiConfirmVideoMode: the backdrop is just guiShow().
+-        rmDrawRect(0, 0, screenWidth, screenHeight, gColBlack);
+-
+-        rmDrawLine(50, 75, screenWidth - 50, 75, gColWhite);
+-        rmDrawLine(50, 410, screenWidth - 50, 410, gColWhite);
++        guiDrawStatusBackdrop(); // RIPPS2: was black with two white rules
+ 
+         fntRenderString(RIPPS2_UI_FONT, screenWidth >> 1, gTheme->usedHeight >> 1, ALIGN_CENTER, 0, 0, _l(_STR_GAME_SETTINGS_PROMPT), gTheme->textColor);
+ 
+@@ -5215,9 +5234,7 @@ void guiManageCheats(void)
+ 
+         // Opaque for the same reason as guiConfirmVideoMode: the backdrop is just guiShow(), and
+         // the cheat names are far easier to read on black than over the menu.
+-        rmDrawRect(0, 0, screenWidth, screenHeight, gColBlack);
+-        rmDrawLine(50, 75, screenWidth - 50, 75, gColWhite);
+-        rmDrawLine(50, 410, screenWidth - 50, 410, gColWhite);
++        guiDrawStatusBackdrop(); // RIPPS2: was black with two white rules
+ 
+         fntRenderString(RIPPS2_UI_FONT, screenWidth >> 1, 60, ALIGN_CENTER, 0, 0, _l(_STR_CHEAT_SELECTION), gTheme->textColor);
+ 
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index 1603b0f..5560a63 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -442,6 +442,33 @@ void ripps2DrawHintBox(int x, int y, int w, int h)
+     panelFrame(x, y, w, h);
+ }
+ 
++// ---- Screen switches: one glass panel moves between pages (no fade through black) ----
++#define MORPH_GLASS_A 0x60 // the travelling panel's tint: a veiled panel's depth, so the hand-offs match
++
++// Deep glass over a panel, `amount` 0..1: how a page's content dims before its panel moves off, and
++// how the next page's content comes up once the panel has arrived
++void ripps2DrawPanelVeil(int x, int y, int w, int h, float amount)
++{
++    if (amount <= 0.0f)
++        return;
++    u64 veil = RGBA_PRIM(0x03, 0x08, 0x22, (int)(MORPH_GLASS_A * fminf(1.0f, amount)));
++    rmDrawQuadGouraud(x, y, veil, x + w, y, veil, x, y + h, veil, x + w, y + h, veil);
++}
++
++// The pillars, and the glass panel p (0..1) of the way from rect a to rect b: it glides and resizes,
++// easing out of the first page's place and into the next one's
++void ripps2DrawPanelMorph(int ax, int ay, int aw, int ah, int bx, int by, int bw, int bh, float p)
++{
++    float e = easeInOutCubic(p < 0.0f ? 0.0f : p > 1.0f ? 1.0f : p);
++    int x = (int)(ax + (bx - ax) * e), y = (int)(ay + (by - ay) * e);
++    int w = (int)(aw + (bw - aw) * e), h = (int)(ah + (bh - ah) * e);
++    u64 glass = RGBA_PRIM(0x03, 0x08, 0x22, MORPH_GLASS_A);
++
++    ripps2DrawBackground();
++    rmDrawQuadGouraud(x, y, glass, x + w, y, glass, x, y + h, glass, x + w, y + h, glass);
++    panelFrame(x, y, w, h);
++}
++
+ void ripps2DrawPanelGlass(int x, int y, int w, int h, int hasItem)
+ {
+     if (!hasItem) {
+diff --git a/src/themes.c b/src/themes.c
+index a38d197..2634b5d 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -871,6 +871,25 @@ static void drawRipps2PanelGlass(struct menu_list *menu, struct submenu_list *it
+     ripps2DrawPanelGlass(x, y, elem->width, elem->height, item != NULL);
+ }
+ 
++// RIPPS2: the on-screen rect of the main or info page's glass panel (the art viewport), for the
++// screen switches that morph one page's panel into the next. 0 when the page has none.
++int thmGetPanelRect(int infoPage, int *x, int *y, int *w, int *h)
++{
++    theme_element_t *elem;
++
++    if (gTheme == NULL)
++        return 0;
++    for (elem = infoPage ? gTheme->infoElems.first : gTheme->mainElems.first; elem != NULL; elem = elem->next) {
++        if (elem->type == ELEM_TYPE_RIPPS2_PANEL_GLASS) {
++            ripps2PanelRect(elem, x, y);
++            *w = elem->width;
++            *h = elem->height;
++            return 1;
++        }
++    }
++    return 0;
++}
++
+ static void initStaticImage(const char *themePath, config_set_t *themeConfig, theme_t *theme, theme_element_t *elem, const char *name, const char *imageName)
+ {
+     mutable_image_t *mutableImage = initMutableImage(themePath, themeConfig, theme, name, elem->type, NULL, 0, imageName, NULL);
