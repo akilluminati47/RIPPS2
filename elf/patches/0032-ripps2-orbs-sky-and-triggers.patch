@@ -1,0 +1,152 @@
+diff --git a/include/ripps2.h b/include/ripps2.h
+index e73cf0f..c0e2134 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -59,6 +59,7 @@ void ripps2DrawPanelMorph(int ax, int ay, int aw, int ah, int bx, int by, int bw
+ void ripps2DrawBackground(void); // orbs on Memory Files, pillars everywhere else
+ void ripps2DrawPillars(void);
+ void ripps2DrawOrbs(void);
++void ripps2SetOrbInput(int showPaths, int boost); // Memory Files: L2 shows the paths, R2 speeds the orbs
+ 
+ // ---- Boot swoop and launch light-up (ripps2bg.c) ----
+ void ripps2DrawBootFrame(void);     // the swoop's first frame, for boot screens before the intro
+diff --git a/src/ripps2bg.c b/src/ripps2bg.c
+index e77e04d..d216b3c 100644
+--- a/src/ripps2bg.c
++++ b/src/ripps2bg.c
+@@ -302,7 +302,7 @@ static void drawMotes(float t, int nearPass)
+         float y = fmodf(motePos[i].y + t * 0.35f, 16.0f);
+         v3 w = {motePos[i].x + sinf(t * 0.3f + motePh[i]) * 0.8f, y, motePos[i].z + cosf(t * 0.25f + motePh[i]) * 0.8f};
+         p2 p = project(w);
+-        if (!onScreen(p) || (p.z < 32.0f) != nearPass)
++        if (!onScreen(p) || p.z < 4.0f || (p.z < 32.0f) != nearPass)
+             continue;
+         int a = (int)(0x48 * sinf(PI * y / 16.0f)); // fade in at the floor, out at the top
+         if (a > 2)
+@@ -981,6 +981,23 @@ static float morphStart = -10.0f, lastT = 0.0f;
+ static float guideStart = -1.0f;
+ static int morphing = 0;
+ 
++// Memory Files on the triggers: R2 held eases the orbs up to 15% faster and they ease back when it
++// is let go (their own clock, so nothing jumps); L2 held brings their paths up and lets them fade
++// when released
++#define ORB_BOOST         1.15f
++#define ORB_RAMP_UP_S     0.6f
++#define ORB_RAMP_DOWN_S   0.9f
++#define PATHS_IN_S        0.2f
++#define PATHS_OUT_S       0.4f
++static float orbClock = 0.0f, orbSpeed = 1.0f, pathsLevel = 0.0f;
++static int orbBoostHeld = 0, orbPathsHeld = 0;
++
++void ripps2SetOrbInput(int showPaths, int boost)
++{
++    orbPathsHeld = showPaths;
++    orbBoostHeld = boost;
++}
++
+ void ripps2DrawOrbs(void)
+ {
+     int i, k;
+@@ -990,7 +1007,19 @@ void ripps2DrawOrbs(void)
+ 
+     if (lorenzPathCount == 0)
+         guidesInit();
+-    lorenzStep(fminf(dt, 0.05f));
++    if (!skyReady)
++        skyInit();
++
++    float step = fminf(dt, 0.1f);
++    if (orbBoostHeld)
++        orbSpeed = fminf(ORB_BOOST, orbSpeed + (ORB_BOOST - 1.0f) * step / ORB_RAMP_UP_S);
++    else
++        orbSpeed = fmaxf(1.0f, orbSpeed - (ORB_BOOST - 1.0f) * step / ORB_RAMP_DOWN_S);
++    orbClock += step * orbSpeed;
++    float ot = orbClock; // where the orbs are along their paths
++    pathsLevel = orbPathsHeld ? fminf(1.0f, pathsLevel + step / PATHS_IN_S) : fmaxf(0.0f, pathsLevel - step / PATHS_OUT_S);
++
++    lorenzStep(fminf(dt, 0.05f) * orbSpeed);
+     spinUpdate(fminf(dt, 0.1f));
+ 
+     int f = gRipps2Formation % FORMATIONS;
+@@ -1014,26 +1043,43 @@ void ripps2DrawOrbs(void)
+     }
+ 
+     drawSky(RGBA(0x01, 0x02, 0x0A, 0x80), RGBA(0x08, 0x16, 0x46, 0x80), RGBA(0x01, 0x02, 0x08, 0x80));
+-    rmSetBlendAdditive(1);
+-    glow(320, 230, 260, 0x12, 0x35, 0x7F, 0x30); // soft haze behind the formation
+ 
+     float sway = sinf(t * 0.07f) * 0.3f;
+     v3 eye = {sinf(sway) * 15.0f, 1.5f + sinf(t * 0.13f) * 0.8f, cosf(sway) * 15.0f};
+     v3 target = {0.0f, -0.7f, 0.0f};
+     camLook(eye, target, 42.0f);
+ 
++    // the Storage sky's stars and drifting motes, behind the formation
++    drawStars(t, sway, 0.0f);
++    drawMotes(t, 0);
++    drawMotes(t, 1);
++
++    rmSetBlendAdditive(1);
++    glow(320, 230, 260, 0x12, 0x35, 0x7F, 0x30); // soft haze behind the formation
++
+     // outline: draw on, flash, hold, fade (never mid-morph)
+     rmSetLineAA(1);
+-    if (guideStart >= 0.0f && !morphing) {
+-        float age = t - guideStart;
+-        float level = age < GUIDE_HOLD_S ? 1.0f : fmaxf(0.0f, 1.0f - (age - GUIDE_HOLD_S) / GUIDE_FADE_S);
+-        if (level <= 0.0f)
+-            guideStart = -1.0f;
+-        else {
+-            float flash = expf(-age * 3.0f);
+-            int a = (int)((0x22 + 0x44 * flash) * level);
+-            drawGuides(f, t, clamp01(age / GUIDE_REVEAL_S), RGBA(0x51, 0x8E, 0xEB, a));
++    if (!morphing) {
++        int a = 0;
++        float reveal = 1.0f;
++        if (guideStart >= 0.0f) {
++            float age = t - guideStart;
++            float level = age < GUIDE_HOLD_S ? 1.0f : fmaxf(0.0f, 1.0f - (age - GUIDE_HOLD_S) / GUIDE_FADE_S);
++            if (level <= 0.0f)
++                guideStart = -1.0f;
++            else {
++                float flash = expf(-age * 3.0f);
++                a = (int)((0x22 + 0x44 * flash) * level);
++                reveal = clamp01(age / GUIDE_REVEAL_S);
++            }
++        }
++        int held = (int)(0x40 * pathsLevel); // L2: the whole path, steady
++        if (held > a) {
++            a = held;
++            reveal = 1.0f;
+         }
++        if (a > 0)
++            drawGuides(f, ot, reveal, RGBA(0x51, 0x8E, 0xEB, a));
+     }
+     rmSetLineAA(0);
+ 
+@@ -1047,10 +1093,10 @@ void ripps2DrawOrbs(void)
+     v3 pos[MAX_ORBS];
+     float vis[MAX_ORBS];
+     for (i = 0; i < count; i++) {
+-        v3 a = toWorld(f, formationAt(f, i % n, n, t), t);
++        v3 a = toWorld(f, formationAt(f, i % n, n, ot), ot);
+         vis[i] = i < n ? 1.0f : 0.0f;
+         if (e < 1.0f) { // split off / merge back, arcing outward mid-flight
+-            v3 b = toWorld(prevFormation, formationAt(prevFormation, i % pn, pn, t), t);
++            v3 b = toWorld(prevFormation, formationAt(prevFormation, i % pn, pn, ot), ot);
+             float arc = 1.0f + sinf(e * PI) * 0.3f;
+             a = V((b.x + (a.x - b.x) * e) * arc, (b.y + (a.y - b.y) * e) * arc, (b.z + (a.z - b.z) * e) * arc);
+             vis[i] = (i < pn ? 1.0f : 0.0f) + (vis[i] - (i < pn ? 1.0f : 0.0f)) * e;
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index 5560a63..2b7ad80 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -382,6 +382,9 @@ void ripps2RenderMemory(void)
+ 
+ void ripps2HandleInputMemory(void)
+ {
++    // the triggers play with the orbs: L2 held shows their paths, R2 held speeds them up
++    ripps2SetOrbInput(getKeyPressed(KEY_L2), getKeyPressed(KEY_R2));
++
+     if (getKeyOn(KEY_LEFT)) {
+         ripps2SetCategory(RIPPS2_CAT_STORAGE);
+     } else if (getKeyOn(KEY_L1)) {
