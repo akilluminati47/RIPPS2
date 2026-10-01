@@ -1,0 +1,1599 @@
+diff --git a/Makefile b/Makefile
+index 942678b..31b0140 100644
+--- a/Makefile
++++ b/Makefile
+@@ -131,7 +131,7 @@ ifneq ($(GIT_TAG),latest)
+ endif
+ endif
+ 
+-FRONTEND_OBJS = ripps2.o ripps2ui.o ripps2bg.o ripps2files.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o mixsupport.o metadb.o \
++FRONTEND_OBJS = ripps2.o ripps2ui.o ripps2bg.o ripps2files.o ripps2edit.o ripps2hdd.o ripps2kbd.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o mixsupport.o metadb.o \
+ 		dia.o ioman.o texcache.o themes.o supportbase.o bdmsupport.o netsupport.o ethsupport.o httpcatalog.o httpsupport.o udpfssupport.o hddsupport.o zso.o lz4.o launchdiag.o \
+ 		appsupport.o mmcesupport.o artindex.o vcdsupport.o cuesupport.o libview.o retrogem.o folderbrowse.o gui.o guigame.o vmc_groups.o textures.o opl.o atlas.o nbns.o httpclient.o gsm.o cheatman.o sound.o ps2cnf.o tar.o
+ 
+@@ -143,7 +143,7 @@ IOP_OBJS =	iomanx.o filexio.o ps2fs.o usbd.o usbhdfsd.o bdmevent.o \
+ 		httpclient-iop.o netman.o ps2ips.o \
+ 		bdm_mcemu.o mmce_mcemu.o hdd_mcemu.o smb_mcemu.o \
+ 		iremsndpatch.o apemodpatch.o f2techioppatch.o cleareffects.o resetspu.o \
+-		libsd.o audsrv.o
++		libsd.o audsrv.o ps2kbd.o
+ 
+ EECORE_OBJS = ee_core.o ioprp.o util.o \
+ 		udnl.o imgdrv.o eesync.o \
+@@ -164,7 +164,7 @@ PNG_ASSETS = load0 load1 load2 load3 load4 load5 load6 load7 usb usb_bd ilk_bd \
+ 	# unused icons - up down l2 r2
+ 
+ # RIPPS2: glass info panel and PS2 selector mark (gfx/ripps2_*.png, copied in by RIPPS2's build.sh)
+-PNG_ASSETS += ripps2_glass ripps2_mark L2R2 ripps2_ps1logo ripps2_ps2logo
++PNG_ASSETS += ripps2_glass ripps2_mark L2R2 ripps2_ps1logo ripps2_ps2logo ripps2_wle_folder ripps2_wle_warning
+ 
+ # The RA cover mark is embedded ONLY in the RA flavour: the default build has no
+ # RA_MARK enum member and no table row for it, so embedding the bitmap there would
+@@ -218,7 +218,7 @@ MMCE_ASSETS_DIR = $(PS2SDK)/iop/irx
+ MAPFILE = opl.map
+ EE_LDFLAGS += -Wl,-Map,$(MAPFILE)
+ 
+-EE_LIBS = -L$(PS2SDK)/ports/lib -L$(GSKIT)/lib -L./lib -lgskit -ldmakit -lpoweroff -lfileXio -lpatches -lpng -lz -lmc -lfreetype -lvux -lcdvd -lnetman -lps2ips -laudsrv -lvorbisfile -lvorbis -logg -lpadx -lelf-loader-nocolour
++EE_LIBS = -L$(PS2SDK)/ports/lib -L$(GSKIT)/lib -L./lib -lgskit -ldmakit -lpoweroff -lfileXio -lpatches -lpng -lz -lmc -lfreetype -lvux -lcdvd -lnetman -lps2ips -laudsrv -lvorbisfile -lvorbis -logg -lpadx -lelf-loader-nocolour -lkbd
+ EE_INCS += -I$(PS2SDK)/ports/include -I$(PS2SDK)/ports/include/freetype2 -I$(GSKIT)/include -I$(GSKIT)/ee/dma/include -I$(GSKIT)/ee/gs/include -Imodules/iopcore/common -Imodules/network/common -Imodules/hdd/common -Iinclude
+ BIN2C = $(PS2SDK)/bin/bin2c
+ 
+@@ -999,6 +999,10 @@ $(EE_ASM_DIR)hdpro_atad.c: $(PS2SDK)/iop/irx/hdproatad.irx | $(EE_ASM_DIR)
+ $(EE_ASM_DIR)poweroff.c: $(PS2SDK)/iop/irx/poweroff.irx | $(EE_ASM_DIR)
+ 	$(BIN2C) $< $@ $(*F)_irx
+ 
++# RIPPS2: USB keyboards on the keyboard dialog (loaded the first time it opens)
++$(EE_ASM_DIR)ps2kbd.c: $(PS2SDK)/iop/irx/ps2kbd.irx | $(EE_ASM_DIR)
++	$(BIN2C) $< $@ $(*F)_irx
++
+ modules/hdd/xhdd/xhdd.irx: modules/hdd/xhdd
+ 	$(MAKE) -C $<
+ 
+diff --git a/include/extern_irx.h b/include/extern_irx.h
+index 73fb3a9..57fb47f 100644
+--- a/include/extern_irx.h
++++ b/include/extern_irx.h
+@@ -109,6 +109,7 @@ IMPORT_BIN2C(ps2hdd_irx);
+ IMPORT_BIN2C(ps2ips_irx);
+ 
+ IMPORT_BIN2C(ps2ip_irx);
++IMPORT_BIN2C(ps2kbd_irx); // RIPPS2: USB keyboards
+ 
+ IMPORT_BIN2C(ps2link_irx);
+ 
+diff --git a/include/ripps2.h b/include/ripps2.h
+index 6169d6d..a1032a2 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -65,6 +65,19 @@ void ripps2FilesEnter(void); // from the Memory Files page: open it where it was
+ void ripps2RenderFiles(void);
+ void ripps2HandleInputFiles(void);
+ void ripps2StartSources(void); // opl.c: start every game source that waits for a start
++
++// USB keyboard (ripps2kbd.c): one key at a time, 0 when none
++enum { RIPPS2_KEY_ENTER = 0x100, RIPPS2_KEY_ESC, RIPPS2_KEY_BACKSPACE, RIPPS2_KEY_DELETE, RIPPS2_KEY_LEFT, RIPPS2_KEY_RIGHT,
++       RIPPS2_KEY_UP, RIPPS2_KEY_DOWN, RIPPS2_KEY_HOME, RIPPS2_KEY_END };
++int ripps2KbdPoll(void);
++
++// The editor (ripps2edit.c): a text file, or a game's metadata as a form
++#include "include/config.h"
++int ripps2EditFile(const char *path);                              // 1 when it saved
++int ripps2EditMetadata(config_set_t *config, const char *gameName); // 1 when SAVE was chosen (values set, not written)
++
++void ripps2HddManager(void); // ripps2hdd.c
++int ripps2PickList(const char *const *items, int count); // ripps2edit.c: a small glass list; -1 = none
+ void ripps2SetOrbInput(int showPaths, int boost); // Memory Files: L2 shows the paths, R2 builds the orbs to 2x
+ 
+ // ---- Boot swoop and launch light-up (ripps2bg.c) ----
+diff --git a/include/textures.h b/include/textures.h
+index e8109ac..eb41fb7 100644
+--- a/include/textures.h
++++ b/include/textures.h
+@@ -125,6 +125,8 @@ enum INTERNAL_TEXTURE {
+     R2_ICON,      // RIPPS2: the L2+R2 "Random" hint (image L2R2)
+     RIPPS2_PS1_LOGO, // RIPPS2: the PS1 games filter's splash (image ripps2_ps1logo)
+     RIPPS2_PS2_LOGO, // RIPPS2: the PS2 games filter's splash (image ripps2_ps2logo)
++    RIPPS2_WLE_FOLDER,  // RIPPS2: wLaunchELF's folder icon (ps2homebrew/wLaunchELF, AFL-2.0)
++    RIPPS2_WLE_WARNING, // RIPPS2: wLaunchELF's warning icon (ps2homebrew/wLaunchELF, AFL-2.0)
+ #ifdef RETROACHIEVEMENTS
+     // RA mark over a tracked game's cover (theme override "ra_mark"). Appended last:
+     // texId is positional.
+diff --git a/include/themes.h b/include/themes.h
+index 9679c68..ca5e0e2 100644
+--- a/include/themes.h
++++ b/include/themes.h
+@@ -106,6 +106,7 @@ typedef struct theme_element
+     int lineHeight;       // RIPPS2: wrapped text line step (<name>_line_height; 0 = the default)
+     int vcenter;          // RIPPS2: centre wrapped text in the element's height (<name>_vcenter=1)
+     int itemHeight;       // RIPPS2: ItemsList row pitch (<name>_item_height; 0 = MENU_ITEM_HEIGHT)
++    int slide;            // RIPPS2: GameImage slideshow position (<name>_slide=1..4; 0 = not a slide)
+     // Per-device element filter (theme key devices=usb,hdd,...): bitmask over the thmDeviceVocab
+     // table indices in themes.c. 0 = unfiltered (the pre-existing behavior). deviceCoverage is
+     // filled at theme-load validation for UNFILTERED MenuIcon/ItemsList/HintText elements: the
+diff --git a/lng_tmpl/_base.yml b/lng_tmpl/_base.yml
+index 24d8e86..22bfcde 100644
+--- a/lng_tmpl/_base.yml
++++ b/lng_tmpl/_base.yml
+@@ -1386,3 +1386,5 @@ gui_strings:
+   string: "L2 and R2 together jump to a random game in the list. Boot also opens each game list on a random game at startup, ahead of the last played one, for a new look at your library each time."
+ - label: RIPPS2_ALL_GAMES
+   string: All Games
++- label: RIPPS2_SET_METADATA
++  string: Set Metadata
+diff --git a/src/dia.c b/src/dia.c
+index ee3fd7c..02387ed 100644
+--- a/src/dia.c
++++ b/src/dia.c
+@@ -144,10 +144,66 @@ int diaShowKeyb(char *text, int maxLen, int hide_text, const char *title)
+         mask_buffer = NULL;
+     }
+ 
++    int usbTyping = 0; // RIPPS2: a USB keyboard is typing; the on-screen keys hide until a pad press
+     while (1) {
+-        readPads();
++        int padActive = readPads();
+         caretFrame++;
+ 
++        // RIPPS2: keys from a USB keyboard go straight in at the caret
++        {
++            int k, guard = 0;
++            while (guard++ < 16 && (k = ripps2KbdPoll()) != 0) {
++                usbTyping = 1;
++                if (k == RIPPS2_KEY_ENTER) {
++                    sfxPlay(SFX_CONFIRM);
++                    if (mask_buffer != NULL)
++                        free(mask_buffer);
++                    return 1;
++                } else if (k == RIPPS2_KEY_ESC) {
++                    sfxPlay(SFX_CANCEL);
++                    if (mask_buffer != NULL)
++                        free(mask_buffer);
++                    return 0;
++                } else if (k == RIPPS2_KEY_BACKSPACE) {
++                    if (caret > 0) {
++                        memmove(&text[caret - 1], &text[caret], len - caret + 1);
++                        len--;
++                        caret--;
++                        if (mask_buffer != NULL)
++                            mask_buffer[len] = '\0';
++                    }
++                } else if (k == RIPPS2_KEY_DELETE) {
++                    if (caret < len) {
++                        memmove(&text[caret], &text[caret + 1], len - caret);
++                        len--;
++                        if (mask_buffer != NULL)
++                            mask_buffer[len] = '\0';
++                    }
++                } else if (k == RIPPS2_KEY_LEFT) {
++                    if (caret > 0)
++                        caret--;
++                } else if (k == RIPPS2_KEY_RIGHT) {
++                    if (caret < len)
++                        caret++;
++                } else if (k == RIPPS2_KEY_HOME) {
++                    caret = 0;
++                } else if (k == RIPPS2_KEY_END) {
++                    caret = len;
++                } else if (k >= 0x20 && k < 0x7F && len < (maxLen - 1)) {
++                    memmove(&text[caret + 1], &text[caret], len - caret + 1);
++                    text[caret] = (char)k;
++                    if (mask_buffer != NULL) {
++                        mask_buffer[len] = '*';
++                        mask_buffer[len + 1] = '\0';
++                    }
++                    len++;
++                    caret++;
++                }
++            }
++            if (padActive && usbTyping)
++                usbTyping = 0; // the pad is back: so are the on-screen keys
++        }
++
+         rmStartFrame();
+         if (guiDrawBGSettings() == 0)
+             guiDrawBGPlasma();
+@@ -192,6 +248,10 @@ int diaShowKeyb(char *text, int maxLen, int hide_text, const char *title)
+         // separating line for simpler orientation
+         rmDrawLine(25, 138, 615, 138, gColWhite);
+ 
++        if (usbTyping) { // RIPPS2: typing on a USB keyboard: the on-screen keys step aside
++            fntRenderString(RIPPS2_UI_FONT, 320, 200, ALIGN_CENTER, 0, 0, "USB KEYBOARD", gTheme->textColor);
++            fntRenderString(RIPPS2_UI_FONT, 320, 228, ALIGN_CENTER, 0, 0, "ENTER ACCEPTS, ESC CANCELS. ANY BUTTON SHOWS THE KEYS.", gTheme->uiTextColor);
++        } else {
+         for (j = 0; j < KEYB_HEIGHT; j++) {
+             for (i = 0; i < KEYB_WIDTH; i++) {
+                 c[0] = keyb[i + j * KEYB_WIDTH];
+@@ -216,6 +276,7 @@ int diaShowKeyb(char *text, int maxLen, int hide_text, const char *title)
+             if (i == selcommand)
+                 diaDrawBoundingBox(x, 170 + 3 * UI_SPACING_H * i, w, UI_SPACING_H, 0);
+         }
++        } // RIPPS2: the on-screen keys
+ 
+         // Caret hint, laid out as the Settings peer-page footer does it: [L1] label [R1], using the
+         // button TEXTURES rather than a written "L1"/"R1" so disk themes can restyle them. Without
+diff --git a/src/menusys.c b/src/menusys.c
+index 2bea526..75502f2 100644
+--- a/src/menusys.c
++++ b/src/menusys.c
+@@ -50,7 +50,8 @@ enum MENU_IDs {
+ };
+ 
+ enum GAME_MENU_IDs {
+-    GAME_COMPAT_SETTINGS = 0,
++    GAME_SET_METADATA = 0, // RIPPS2: the game's details, edited on the same page as the text editor
++    GAME_COMPAT_SETTINGS,
+     GAME_CHEAT_SETTINGS,
+     GAME_GSM_SETTINGS,
+     GAME_VMC_SETTINGS,
+@@ -667,6 +668,7 @@ void menuInitGameMenu(item_list_t *support)
+         submenuDestroy(&gameMenu);
+ 
+     // initialize the menu
++    submenuAppendItem(&gameMenu, -1, NULL, GAME_SET_METADATA, _STR_RIPPS2_SET_METADATA);
+     submenuAppendItem(&gameMenu, -1, NULL, GAME_COMPAT_SETTINGS, _STR_COMPAT_SETTINGS);
+     submenuAppendItem(&gameMenu, -1, NULL, GAME_CHEAT_SETTINGS, _STR_CHEAT_SETTINGS);
+     submenuAppendItem(&gameMenu, -1, NULL, GAME_GSM_SETTINGS, _STR_GSCONFIG);
+@@ -2139,7 +2141,13 @@ void menuHandleInputGameMenu()
+             guiShowRANotice(_l(_STR_RA_LOOKING_FOR_PC), NULL);
+         } else
+ #endif
+-            if (menuID == GAME_COMPAT_SETTINGS) {
++            if (menuID == GAME_SET_METADATA) {
++            // RIPPS2: the user's own details go in the game's CFG and win over the metadata database
++            if (ripps2EditMetadata(itemConfig, selected_item->item->current->item.text)) {
++                if (menuSaveConfig())
++                    guiMsgBox(_l(_STR_GAME_SETTINGS_SAVED), 0, NULL);
++            }
++        } else if (menuID == GAME_COMPAT_SETTINGS) {
+             guiGameShowCompatConfig(selected_item->item->current->item.id, selected_item->item->userdata, itemConfig);
+         } else if (menuID == GAME_CHEAT_SETTINGS) {
+             if (gameMenuCoreIsNeutrino())
+diff --git a/src/ripps2edit.c b/src/ripps2edit.c
+new file mode 100644
+index 0000000..295ecd1
+--- /dev/null
++++ b/src/ripps2edit.c
+@@ -0,0 +1,488 @@
++/*
++  Copyright 2026, RIPPS2 contributors
++  Licenced under Academic Free License version 3.0
++  Review OpenUsbLd README & LICENSE files for further details.
++
++  RIPPS2 editor: one glass page, two uses.
++
++  - The Memory Files TEXT EDITOR: a text file (CFG, TXT, CNF, INI...) line by line. Cross edits the
++    line on the keyboard; Triangle has insert, delete, save and close.
++  - Storage's SET METADATA: a game's details as a form (title, description, genre, developer,
++    publisher, release, and the badge values). What the game's own CFG says is shown bright; what
++    the metadata database fills in is shown dim. Cross edits a text field on the keyboard, Left /
++    Right step a badge field through its values, Square clears a field back to the database's.
++    Saving writes the game's CFG/<GAMEID>.cfg, so the user's words win from then on.
++
++  Both type on the same keyboard (diaShowKeyb), which also takes a USB keyboard.
++*/
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <fcntl.h>
++#include <unistd.h>
++
++#include "include/opl.h"
++#include "include/gui.h"
++#include "include/dia.h"
++#include "include/renderman.h"
++#include "include/fntsys.h"
++#include "include/themes.h"
++#include "include/textures.h"
++#include "include/pad.h"
++#include "include/sound.h"
++#include "include/config.h"
++#include "include/ripps2.h"
++
++#define ED_MAX_LINES 1000
++#define ED_LINE      256
++#define ED_FILE_MAX  (64 * 1024)
++#define ED_ROWS      16
++#define ED_ROW_H     22
++#define ED_LIST_Y    60
++#define ED_X         30
++#define ED_RIGHT     610
++
++#define ED_LIT  GS_SETREG_RGBA(0x80, 0x80, 0x80, 0x80)
++#define ED_DIM  GS_SETREG_RGBA(0x4C, 0x52, 0x64, 0x80)
++#define ED_SOFT GS_SETREG_RGBA(0x67, 0x6C, 0x7A, 0x80)
++#define ED_PRIM(r, g, b, a) GS_SETREG_RGBAQ((r), (g), (b), (a), 0x00)
++
++// ---- shared drawing ----
++
++static void edHint(int icon, const char *text, int *x, int y)
++{
++    GSTEXTURE *t = thmGetTexture(icon);
++    if (t != NULL) {
++        rmDrawPixmap(t, *x, y - 10, ALIGN_NONE, 20, 20, SCALING_RATIO, ED_LIT, 0);
++        *x += 24;
++    }
++    fntRenderString(gTheme->fonts[4], *x, y, ALIGN_VCENTER, 0, 0, text, ED_SOFT);
++    *x += fntCalcDimensions(gTheme->fonts[4], text) + 18;
++}
++
++static void edHighlight(int y)
++{
++    rmDrawRect(ED_X - 6, y - 1, ED_RIGHT - ED_X + 12, ED_ROW_H - 2, ED_PRIM(0x1E, 0x3C, 0x96, 0x58));
++    rmDrawRect(ED_X - 6, y - 1, 3, ED_ROW_H - 2, ED_PRIM(0x6A, 0x9A, 0xFF, 0x80));
++}
++
++static void edFrameStart(const char *title, const char *right)
++{
++    guiDrawBGPlasma(); // the moving background and the glass page panel
++    fntRenderString(gTheme->fonts[4], ED_X, 30, ALIGN_VCENTER, 0, 0, title, ED_LIT);
++    if (right != NULL && right[0])
++        fntRenderString(gTheme->fonts[4], ED_RIGHT - fntCalcDimensions(gTheme->fonts[4], right), 30, ALIGN_VCENTER, 0, 0, right, ED_SOFT);
++    rmDrawLine(ED_X, 46, ED_RIGHT, 46, ED_PRIM(0x4A, 0x72, 0xDC, 0x60));
++}
++
++static int edMenu(const char *const *items, int count)
++{
++    // a small glass list over the page; returns the choice or -1
++    int sel = 0, i;
++    while (1) {
++        readPads();
++        rmStartFrame();
++        guiDrawBGPlasma();
++        int w = 220, h = count * 24 + 20, x = 400, y = 120;
++        rmDrawRect(x, y, w, h, ED_PRIM(0x03, 0x08, 0x22, 0x70));
++        rmDrawLine(x, y, x + w, y, ED_PRIM(0x4A, 0x72, 0xDC, 0x80));
++        rmDrawLine(x, y + h, x + w, y + h, ED_PRIM(0x4A, 0x72, 0xDC, 0x80));
++        rmDrawLine(x, y, x, y + h, ED_PRIM(0x4A, 0x72, 0xDC, 0x80));
++        rmDrawLine(x + w, y, x + w, y + h, ED_PRIM(0x4A, 0x72, 0xDC, 0x80));
++        for (i = 0; i < count; i++) {
++            int ry = y + 10 + i * 24;
++            if (i == sel)
++                rmDrawRect(x + 4, ry, w - 8, 22, ED_PRIM(0x1E, 0x3C, 0x96, 0x60));
++            fntRenderString(gTheme->fonts[4], x + 16, ry + 11, ALIGN_VCENTER, 0, 0, items[i], i == sel ? ED_LIT : ED_SOFT);
++        }
++        rmEndFrame();
++        if (getKey(KEY_UP) && sel > 0) {
++            sel--;
++            sfxPlay(SFX_CURSOR);
++        } else if (getKey(KEY_DOWN) && sel < count - 1) {
++            sel++;
++            sfxPlay(SFX_CURSOR);
++        } else if (getKeyOn(gSelectButton)) {
++            sfxPlay(SFX_CONFIRM);
++            return sel;
++        } else if (getKeyOn(gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE) || getKeyOn(KEY_TRIANGLE)) {
++            sfxPlay(SFX_CANCEL);
++            return -1;
++        }
++    }
++}
++
++// A list to pick from (installers and the like): the choice, or -1
++int ripps2PickList(const char *const *items, int count)
++{
++    return edMenu(items, count);
++}
++
++// ---- the text editor ----
++
++static char *edLines[ED_MAX_LINES];
++static int edCount = 0;
++
++static void edFree(void)
++{
++    int i;
++    for (i = 0; i < edCount; i++)
++        free(edLines[i]);
++    edCount = 0;
++}
++
++static int edInsert(int at, const char *text)
++{
++    if (edCount >= ED_MAX_LINES)
++        return 0;
++    char *line = malloc(ED_LINE);
++    if (line == NULL)
++        return 0;
++    snprintf(line, ED_LINE, "%s", text);
++    memmove(&edLines[at + 1], &edLines[at], (edCount - at) * sizeof(char *));
++    edLines[at] = line;
++    edCount++;
++    return 1;
++}
++
++static void edDelete(int at)
++{
++    if (at < 0 || at >= edCount)
++        return;
++    free(edLines[at]);
++    memmove(&edLines[at], &edLines[at + 1], (edCount - at - 1) * sizeof(char *));
++    edCount--;
++}
++
++// 1 = loaded (a missing file is an empty one), 0 = too big or unreadable
++static int edLoad(const char *path, int *crlf)
++{
++    int fd = open(path, O_RDONLY), n;
++    char *buf, *p, *e;
++
++    edFree();
++    *crlf = 0;
++    if (fd < 0)
++        return edInsert(0, "");
++    n = lseek(fd, 0, SEEK_END);
++    lseek(fd, 0, SEEK_SET);
++    if (n < 0 || n > ED_FILE_MAX) {
++        close(fd);
++        return 0;
++    }
++    buf = malloc(n + 1);
++    if (buf == NULL) {
++        close(fd);
++        return 0;
++    }
++    n = read(fd, buf, n);
++    close(fd);
++    if (n < 0) {
++        free(buf);
++        return 0;
++    }
++    buf[n] = '\0';
++    for (p = buf; *p && edCount < ED_MAX_LINES; p = e) {
++        e = strchr(p, '\n');
++        if (e != NULL)
++            *e++ = '\0';
++        else
++            e = p + strlen(p);
++        int l = strlen(p);
++        if (l > 0 && p[l - 1] == '\r') {
++            p[l - 1] = '\0';
++            *crlf = 1;
++        }
++        edInsert(edCount, p);
++    }
++    free(buf);
++    if (edCount == 0)
++        edInsert(0, "");
++    return 1;
++}
++
++static int edSave(const char *path, int crlf)
++{
++    int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0666), i, ok = 1;
++    if (fd < 0)
++        return 0;
++    for (i = 0; i < edCount && ok; i++) {
++        int l = strlen(edLines[i]);
++        if (write(fd, edLines[i], l) != l)
++            ok = 0;
++        else if (i < edCount - 1 || l > 0) {
++            if (write(fd, crlf ? "\r\n" : "\n", crlf ? 2 : 1) != (crlf ? 2 : 1))
++                ok = 0;
++        }
++    }
++    close(fd);
++    return ok;
++}
++
++int ripps2EditFile(const char *path)
++{
++    static const char *const actions[] = {"INSERT LINE", "DELETE LINE", "SAVE", "SAVE AND CLOSE", "CLOSE"};
++    int cursor = 0, top = 0, modified = 0, crlf = 0, saved = 0, i;
++    char line[ED_LINE], status[48] = "";
++    const char *name = strrchr(path, '/');
++    name = name ? name + 1 : path;
++
++    if (!edLoad(path, &crlf)) {
++        guiMsgBox("This file is too big to edit here (64 KB at most).", 0, NULL);
++        return 0;
++    }
++    while (1) {
++        readPads();
++        if (cursor >= edCount)
++            cursor = edCount - 1;
++        if (cursor < 0)
++            cursor = 0;
++        if (cursor < top)
++            top = cursor;
++        if (cursor >= top + ED_ROWS)
++            top = cursor - ED_ROWS + 1;
++
++        rmStartFrame();
++        snprintf(line, sizeof(line), "%s%s", modified ? "* " : "", path);
++        edFrameStart(line, status[0] ? status : "TEXT EDITOR");
++        for (i = 0; i < ED_ROWS && top + i < edCount; i++) {
++            int y = ED_LIST_Y + i * ED_ROW_H, cur = top + i == cursor;
++            char num[8];
++            if (cur)
++                edHighlight(y);
++            snprintf(num, sizeof(num), "%d", top + i + 1);
++            fntRenderString(gTheme->fonts[5], ED_X + 30 - fntCalcDimensions(gTheme->fonts[5], num), y + 9, ALIGN_VCENTER, 0, 0, num, ED_DIM);
++            fntRenderString(gTheme->fonts[8], ED_X + 42, y + 9, ALIGN_VCENTER, ED_RIGHT - ED_X - 46, 0, edLines[top + i], cur ? ED_LIT : ED_SOFT);
++        }
++        int hx = 44;
++        edHint(gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON, "EDIT LINE", &hx, 448);
++        edHint(TRIANGLE_ICON, "ACTIONS", &hx, 448);
++        edHint(gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON, "CLOSE", &hx, 448);
++        rmEndFrame();
++
++        if (getKey(KEY_UP) && cursor > 0) {
++            cursor--;
++            sfxPlay(SFX_CURSOR);
++        } else if (getKey(KEY_DOWN) && cursor < edCount - 1) {
++            cursor++;
++            sfxPlay(SFX_CURSOR);
++        } else if (getKey(KEY_L1)) {
++            cursor -= ED_ROWS;
++            sfxPlay(SFX_CURSOR);
++        } else if (getKey(KEY_R1)) {
++            cursor += ED_ROWS;
++            sfxPlay(SFX_CURSOR);
++        } else if (getKeyOn(gSelectButton)) {
++            sfxPlay(SFX_CONFIRM);
++            snprintf(line, sizeof(line), "%s", edLines[cursor]);
++            if (diaShowKeyb(line, sizeof(line), 0, name) && strcmp(line, edLines[cursor]) != 0) {
++                snprintf(edLines[cursor], ED_LINE, "%s", line);
++                modified = 1;
++            }
++        } else if (getKeyOn(KEY_TRIANGLE)) {
++            sfxPlay(SFX_CONFIRM);
++            int a = edMenu(actions, 5);
++            if (a == 0) {
++                if (edInsert(cursor + 1, "")) {
++                    cursor++;
++                    modified = 1;
++                }
++            } else if (a == 1) {
++                edDelete(cursor);
++                if (edCount == 0)
++                    edInsert(0, "");
++                modified = 1;
++            } else if (a == 2 || a == 3) {
++                if (edSave(path, crlf)) {
++                    modified = 0;
++                    saved = 1;
++                    snprintf(status, sizeof(status), "SAVED");
++                    if (a == 3)
++                        break;
++                } else
++                    snprintf(status, sizeof(status), "COULD NOT SAVE");
++            } else if (a == 4) {
++                if (!modified || guiMsgBox("Close without saving the changes?", 1, NULL))
++                    break;
++            }
++        } else if (getKeyOn(gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE)) {
++            sfxPlay(SFX_CANCEL);
++            if (!modified || guiMsgBox("Close without saving the changes?", 1, NULL))
++                break;
++        }
++    }
++    edFree();
++    readPads();
++    return saved;
++}
++
++// ---- SET METADATA ----
++
++typedef struct
++{
++    const char *key, *label;
++    const char *const *choices; // NULL = free text on the keyboard
++} ed_field_t;
++
++static const char *const vmodeChoices[] = {"vmode/ntsc", "vmode/pal", "vmode/multi", NULL};
++static const char *const aspectChoices[] = {"aspect/s", "aspect/w", "aspect/w1", "aspect/w2", NULL};
++static const char *const scanChoices[] = {"scan/480i", "scan/480p", "scan/576i", "scan/576p", "scan/720p", "scan/1080i", "scan/240p", NULL};
++static const char *const playersChoices[] = {"players/1", "players/2", "players/3", "players/4", "players/8", NULL};
++static const char *const ratingChoices[] = {"rating/0", "rating/1", "rating/2", "rating/3", "rating/4", "rating/5", NULL};
++
++static const ed_field_t mdFields[] = {
++    {"Title", "TITLE", NULL},
++    {"Description", "DESCRIPTION", NULL},
++    {"Genre", "GENRE", NULL},
++    {"Developer", "DEVELOPER", NULL},
++    {"Publisher", "PUBLISHER", NULL},
++    {"Release", "RELEASE", NULL},
++    {"Players", "PLAYERS", playersChoices},
++    {"Vmode", "VIDEO", vmodeChoices},
++    {"Aspect", "ASPECT", aspectChoices},
++    {"Scan", "SCAN", scanChoices},
++    {"Rating", "RATING", ratingChoices},
++};
++#define MD_COUNT ((int)(sizeof(mdFields) / sizeof(mdFields[0])))
++
++// A badge value shown plainly: "vmode/ntsc" -> "NTSC"
++static void mdPretty(const char *v, char *out, int size)
++{
++    const char *s = strchr(v, '/');
++    int i;
++    snprintf(out, size, "%s", s ? s + 1 : v);
++    for (i = 0; out[i]; i++)
++        if (out[i] >= 'a' && out[i] <= 'z')
++            out[i] -= 32;
++}
++
++int ripps2EditMetadata(config_set_t *config, const char *gameName)
++{
++    static const char *const actions[] = {"SAVE", "CLEAR THIS FIELD", "CLOSE"};
++    char user[MD_COUNT][CONFIG_KEY_VALUE_LEN]; // the user's own values ("" = none, the database shows)
++    char db[MD_COUNT][CONFIG_KEY_VALUE_LEN];
++    int cursor = 0, top = 0, modified = 0, i;
++    char title[128], shown[CONFIG_KEY_VALUE_LEN];
++
++    if (config == NULL)
++        return 0;
++    for (i = 0; i < MD_COUNT; i++) {
++        const char *v = NULL;
++        char rk[CONFIG_KEY_NAME_LEN];
++        user[i][0] = db[i][0] = '\0';
++        if (configGetStr(config, mdFields[i].key, &v) && v != NULL)
++            snprintf(user[i], sizeof(user[i]), "%s", v);
++        snprintf(rk, sizeof(rk), "#%s", mdFields[i].key);
++        v = NULL;
++        if (configGetStr(config, rk, &v) && v != NULL)
++            snprintf(db[i], sizeof(db[i]), "%s", v);
++    }
++    snprintf(title, sizeof(title), "SET METADATA: %s", gameName ? gameName : "");
++
++    while (1) {
++        readPads();
++        if (cursor < top)
++            top = cursor;
++        if (cursor >= top + ED_ROWS)
++            top = cursor - ED_ROWS + 1;
++
++        rmStartFrame();
++        edFrameStart(title, modified ? "NOT SAVED" : "");
++        for (i = 0; i < ED_ROWS && top + i < MD_COUNT; i++) {
++            int f = top + i, y = ED_LIST_Y + i * 34, cur = f == cursor;
++            const char *v = user[f][0] ? user[f] : db[f];
++            if (cur) {
++                rmDrawRect(ED_X - 6, y - 1, ED_RIGHT - ED_X + 12, 32, ED_PRIM(0x1E, 0x3C, 0x96, 0x58));
++                rmDrawRect(ED_X - 6, y - 1, 3, 32, ED_PRIM(0x6A, 0x9A, 0xFF, 0x80));
++            }
++            fntRenderString(gTheme->fonts[4], ED_X + 4, y + 8, ALIGN_VCENTER, 0, 0, mdFields[f].label, cur ? ED_LIT : ED_SOFT);
++            if (mdFields[f].choices && v[0])
++                mdPretty(v, shown, sizeof(shown));
++            else
++                snprintf(shown, sizeof(shown), "%s", v[0] ? v : "-");
++            // bright: the user's own value; dim: what the metadata database says
++            fntRenderString(gTheme->fonts[10], ED_X + 4, y + 22, ALIGN_VCENTER, ED_RIGHT - ED_X - 120, 0, shown, user[f][0] ? ED_LIT : ED_DIM);
++            if (!user[f][0] && db[f][0])
++                fntRenderString(gTheme->fonts[5], ED_RIGHT - fntCalcDimensions(gTheme->fonts[5], "DATABASE"), y + 8, ALIGN_VCENTER, 0, 0, "DATABASE", ED_DIM);
++            else if (user[f][0])
++                fntRenderString(gTheme->fonts[5], ED_RIGHT - fntCalcDimensions(gTheme->fonts[5], "YOURS"), y + 8, ALIGN_VCENTER, 0, 0, "YOURS", ED_SOFT);
++        }
++        int hx = 44;
++        edHint(gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON, mdFields[cursor].choices ? "NEXT VALUE" : "EDIT", &hx, 448);
++        edHint(SQUARE_ICON, "CLEAR", &hx, 448);
++        edHint(TRIANGLE_ICON, "ACTIONS", &hx, 448);
++        edHint(gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON, "CLOSE", &hx, 448);
++        rmEndFrame();
++
++        const ed_field_t *fd = &mdFields[cursor];
++        int step = 0;
++        if (getKey(KEY_UP) && cursor > 0) {
++            cursor--;
++            sfxPlay(SFX_CURSOR);
++        } else if (getKey(KEY_DOWN) && cursor < MD_COUNT - 1) {
++            cursor++;
++            sfxPlay(SFX_CURSOR);
++        } else if (getKey(KEY_LEFT) && fd->choices) {
++            step = -1;
++        } else if (getKey(KEY_RIGHT) && fd->choices) {
++            step = 1;
++        } else if (getKeyOn(gSelectButton)) {
++            if (fd->choices)
++                step = 1;
++            else {
++                sfxPlay(SFX_CONFIRM);
++                char text[CONFIG_KEY_VALUE_LEN];
++                snprintf(text, sizeof(text), "%s", user[cursor][0] ? user[cursor] : db[cursor]);
++                if (diaShowKeyb(text, sizeof(text), 0, fd->label) && strcmp(text, user[cursor][0] ? user[cursor] : db[cursor]) != 0) {
++                    snprintf(user[cursor], sizeof(user[cursor]), "%s", text);
++                    modified = 1;
++                }
++            }
++        } else if (getKeyOn(KEY_SQUARE)) {
++            if (user[cursor][0]) {
++                user[cursor][0] = '\0';
++                modified = 1;
++                sfxPlay(SFX_CANCEL);
++            }
++        } else if (getKeyOn(KEY_TRIANGLE)) {
++            sfxPlay(SFX_CONFIRM);
++            int a = edMenu(actions, 3);
++            if (a == 0) {
++                for (i = 0; i < MD_COUNT; i++) {
++                    if (user[i][0])
++                        configSetStr(config, mdFields[i].key, user[i]);
++                    else
++                        configRemoveKey(config, mdFields[i].key);
++                }
++                readPads();
++                return 1; // the caller writes the CFG
++            } else if (a == 1) {
++                user[cursor][0] = '\0';
++                modified = 1;
++            } else if (a == 2) {
++                if (!modified || guiMsgBox("Close without saving the changes?", 1, NULL))
++                    break;
++            }
++        } else if (getKeyOn(gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE)) {
++            sfxPlay(SFX_CANCEL);
++            if (!modified || guiMsgBox("Close without saving the changes?", 1, NULL))
++                break;
++        }
++        if (step != 0) { // a badge field steps through its values (and back to none)
++            int n = 0, at = -1;
++            const char *curv = user[cursor][0] ? user[cursor] : db[cursor];
++            while (fd->choices[n] != NULL) {
++                if (!strcmp(fd->choices[n], curv))
++                    at = n;
++                n++;
++            }
++            at = at < 0 ? (step > 0 ? 0 : n - 1) : (at + step + n) % n;
++            snprintf(user[cursor], sizeof(user[cursor]), "%s", fd->choices[at]);
++            modified = 1;
++            sfxPlay(SFX_CURSOR);
++        }
++    }
++    readPads();
++    return 0;
++}
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index b3a0dbc..b7494ca 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -814,6 +814,27 @@ static void fbRunElf(const fb_entry_t *e)
+     ripps2LaunchAborted();
+ }
+ 
++// Files the text editor opens from the browser
++static int fbIsText(const char *name)
++{
++    static const char *const ext[] = {".txt", ".cfg", ".cnf", ".ini", ".conf", ".lst", ".log", ".xml", ".json", ".md", ".arg", ".csv", NULL};
++    int i;
++    for (i = 0; ext[i] != NULL; i++)
++        if (fbHasSuffix(name, ext[i]))
++            return 1;
++    return 0;
++}
++
++static void fbEdit(const char *name)
++{
++    char path[320];
++    fbJoin(path, sizeof(path), fbPath, name);
++    if (ripps2EditFile(path))
++        fbSetToast("SAVED");
++    snprintf(fbKeepName, sizeof(fbKeepName), "%s", name);
++    fbRun(FB_OP_SCAN, "READING");
++}
++
+ static void fbOpen(void)
+ {
+     if (fbCount == 0)
+@@ -845,6 +866,10 @@ static void fbOpen(void)
+             fbRunElf(e);
+             break;
+         default:
++            if (fbIsText(e->name)) {
++                sfxPlay(SFX_CONFIRM);
++                fbEdit(e->name);
++            }
+             break;
+     }
+ }
+@@ -937,6 +962,272 @@ static void fbAction(int act)
+     }
+ }
+ 
++// ---- SETTINGS: Start opens a grid of tiles over the tree, like wLaunchELF's device page ----
++static void fbHint(int icon, const char *text, int *x, int y); // drawn with the tree's hints below
++enum { FB_TILE_BROWSER = 0, FB_TILE_EDITOR, FB_TILE_HDD, FB_TILE_EXPLOIT, FB_TILE_POWER, FB_TILE_EXIT, FB_TILE_COUNT };
++static const char *const fbTileLine1[FB_TILE_COUNT] = {"FILE", "TEXT", "HDD", "MC EXPLOIT", "POWER", "EXIT"};
++static const char *const fbTileLine2[FB_TILE_COUNT] = {"BROWSER", "EDITOR", "MANAGER", "INSTALLER", "OFF", "BROWSER"};
++#define FB_TILE_W   172
++#define FB_TILE_H   150
++#define FB_TILE_GAP 14
++#define FB_GRID_Y   86
++#define FB_GRID_IN  0.24f
++#define FB_GRID_OUT 0.16f
++static int fbGridOpen = 0, fbGridClosing = 0, fbGridSel = 0;
++static clock_t fbGridAt = 0;
++
++static void fbGridShow(int open)
++{
++    if (open) {
++        fbGridOpen = 1;
++        fbGridClosing = 0;
++        fbGridSel = 0;
++    } else
++        fbGridClosing = 1;
++    fbGridAt = clock();
++}
++
++// An installer the user keeps for their memory cards (FreeMcBoot, OpenTuna, wLaunchELF R3Z...)
++static int fbFindInstallers(char found[][96], int max)
++{
++    static const char *const folders[] = {"mc0:/APPS/", "mc1:/APPS/", "mc0:/BOOT/", "mc1:/BOOT/", "mass0:/", "mass0:/APPS/", NULL};
++    static const char *const keys[] = {"fmcb", "install", "tuna", "r3z", "booter", NULL};
++    int i, n = 0;
++    for (i = 0; folders[i] != NULL && n < max; i++) {
++        DIR *d = opendir(folders[i]);
++        struct dirent *de;
++        if (d == NULL)
++            continue;
++        while (n < max && (de = readdir(d)) != NULL) {
++            char low[FB_NAME];
++            int k, j;
++            if (!fbHasSuffix(de->d_name, ".elf"))
++                continue;
++            for (j = 0; de->d_name[j] && j < FB_NAME - 1; j++)
++                low[j] = (de->d_name[j] >= 'A' && de->d_name[j] <= 'Z') ? de->d_name[j] + 32 : de->d_name[j];
++            low[j] = '\0';
++            for (k = 0; keys[k] != NULL; k++)
++                if (strstr(low, keys[k]) != NULL) {
++                    snprintf(found[n++], 96, "%s%s", folders[i], de->d_name);
++                    break;
++                }
++        }
++        closedir(d);
++    }
++    return n;
++}
++
++static void fbRunInstaller(void)
++{
++    static char found[6][96];
++    const char *items[6];
++    int n = fbFindInstallers(found, 6), pick = 0, i;
++    if (n == 0) {
++        guiMsgBox("No installer found. Put your memory card exploit installer ELF (FreeMcBoot, OpenTuna, wLaunchELF R3Z...) in APPS on a memory card or USB drive, then choose this again.", 0, NULL);
++        return;
++    }
++    if (n > 1) {
++        for (i = 0; i < n; i++)
++            items[i] = found[i];
++        pick = ripps2PickList(items, n);
++        if (pick < 0)
++            return;
++    }
++    char ask[160];
++    snprintf(ask, sizeof(ask), "Run %s?", found[pick]);
++    if (!guiMsgBox(ask, 1, NULL))
++        return;
++    char *argv[1] = {found[pick]};
++    ripps2PlayLaunchSequence();
++    deinit(UNMOUNT_EXCEPTION, IO_MODE_SELECTED_ALL_SPARE);
++    sysLoadELFApp(found[pick], NULL, 1, argv, 1, 0);
++    ripps2LaunchAborted();
++}
++
++static void fbTile(int t)
++{
++    char name[FB_NAME];
++    switch (t) {
++        case FB_TILE_BROWSER:
++            sfxPlay(SFX_CANCEL);
++            fbGridShow(0);
++            break;
++        case FB_TILE_EDITOR:
++            sfxPlay(SFX_CONFIRM);
++            if (fbPath[0] && fbCount > 0 && fbIsText(fbList[fbCursor].name)) {
++                fbGridOpen = 0;
++                fbEdit(fbList[fbCursor].name);
++            } else if (fbPath[0]) { // a new file in this folder
++                snprintf(name, sizeof(name), "NEW.TXT");
++                if (guiShowKeyboard(name, sizeof(name)) && name[0]) {
++                    fbGridOpen = 0;
++                    fbEdit(name);
++                }
++            } else
++                guiMsgBox("Open a folder first, then pick a text file to edit, or make a new one there.", 0, NULL);
++            break;
++        case FB_TILE_HDD:
++            sfxPlay(SFX_CONFIRM);
++            ripps2HddManager();
++            break;
++        case FB_TILE_EXPLOIT:
++            sfxPlay(SFX_CONFIRM);
++            fbRunInstaller();
++            break;
++        case FB_TILE_POWER:
++            sfxPlay(SFX_CONFIRM);
++            if (guiMsgBox("Power off the console?", 1, NULL))
++                sysPowerOff();
++            break;
++        case FB_TILE_EXIT: // back to the orbs: the tree and the grid step away
++            sfxPlay(SFX_CANCEL);
++            fbGridOpen = 0;
++            guiSwitchScreen(GUI_SCREEN_RIPPS2_MEMORY);
++            break;
++    }
++}
++
++static void fbHandleGrid(void)
++{
++    int openKey = gSelectButton == KEY_CIRCLE ? KEY_CIRCLE : KEY_CROSS;
++    int backKey = gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE;
++    int col = fbGridSel % 3, row = fbGridSel / 3;
++
++    if (fbGridClosing)
++        return;
++    if (getKeyOn(KEY_LEFT) && col > 0) {
++        fbGridSel--;
++        sfxPlay(SFX_CURSOR);
++    } else if (getKeyOn(KEY_RIGHT) && col < 2) {
++        fbGridSel++;
++        sfxPlay(SFX_CURSOR);
++    } else if (getKeyOn(KEY_UP) && row > 0) {
++        fbGridSel -= 3;
++        sfxPlay(SFX_CURSOR);
++    } else if (getKeyOn(KEY_DOWN) && row < 1) {
++        fbGridSel += 3;
++        sfxPlay(SFX_CURSOR);
++    } else if (getKeyOn(openKey)) {
++        fbTile(fbGridSel);
++    } else if (getKeyOn(backKey) || getKeyOn(KEY_START)) {
++        sfxPlay(SFX_CANCEL);
++        fbGridShow(0);
++    }
++}
++
++static void fbCircle(float cx, float cy, float r, float from, float to, u64 c)
++{
++    int k, seg = 20;
++    float px = cx + cosf(from) * r, py = cy + sinf(from) * r;
++    for (k = 1; k <= seg; k++) {
++        float a = from + (to - from) * k / seg, nx = cx + cosf(a) * r, ny = cy + sinf(a) * r;
++        rmDrawLine((int)px, (int)py, (int)nx, (int)ny, c);
++        px = nx;
++        py = ny;
++    }
++}
++
++// A tile's icon, drawn at (cx, cy) about s px across
++static void fbTileIcon(int t, float cx, float cy, float s, int a)
++{
++    u64 c = FB_PRIM(0x9C, 0xB8, 0xFF, a), dim = FB_PRIM(0x4A, 0x72, 0xDC, a);
++    float h = s / 2;
++    GSTEXTURE *tex;
++    int i;
++    switch (t) {
++        case FB_TILE_BROWSER: // wLaunchELF's own folder, large
++            tex = thmGetTexture(RIPPS2_WLE_FOLDER);
++            if (tex != NULL)
++                rmDrawPixmap(tex, (int)(cx - h), (int)(cy - h), ALIGN_NONE, (int)s, (int)s, SCALING_RATIO, GS_SETREG_RGBA(0x80, 0x80, 0x80, a), 0);
++            break;
++        case FB_TILE_EDITOR: // a page of lines
++            rmDrawLine((int)(cx - h * 0.6f), (int)(cy - h), (int)(cx + h * 0.3f), (int)(cy - h), c);
++            rmDrawLine((int)(cx + h * 0.3f), (int)(cy - h), (int)(cx + h * 0.6f), (int)(cy - h * 0.7f), c);
++            rmDrawLine((int)(cx + h * 0.6f), (int)(cy - h * 0.7f), (int)(cx + h * 0.6f), (int)(cy + h), c);
++            rmDrawLine((int)(cx + h * 0.6f), (int)(cy + h), (int)(cx - h * 0.6f), (int)(cy + h), c);
++            rmDrawLine((int)(cx - h * 0.6f), (int)(cy + h), (int)(cx - h * 0.6f), (int)(cy - h), c);
++            for (i = 0; i < 4; i++)
++                rmDrawLine((int)(cx - h * 0.35f), (int)(cy - h * 0.4f + i * h * 0.4f), (int)(cx + h * (i == 3 ? 0.05f : 0.35f)), (int)(cy - h * 0.4f + i * h * 0.4f), dim);
++            break;
++        case FB_TILE_HDD: // a drive: body, a platter, a light
++            rmDrawRect((int)(cx - h), (int)(cy - h * 0.55f), (int)s, (int)(s * 0.55f), FB_PRIM(0x1E, 0x3C, 0x96, a / 2));
++            rmDrawLine((int)(cx - h), (int)(cy - h * 0.55f), (int)(cx + h), (int)(cy - h * 0.55f), c);
++            rmDrawLine((int)(cx + h), (int)(cy - h * 0.55f), (int)(cx + h), (int)(cy + h * 0.55f), c);
++            rmDrawLine((int)(cx + h), (int)(cy + h * 0.55f), (int)(cx - h), (int)(cy + h * 0.55f), c);
++            rmDrawLine((int)(cx - h), (int)(cy + h * 0.55f), (int)(cx - h), (int)(cy - h * 0.55f), c);
++            fbCircle(cx - h * 0.25f, cy, h * 0.35f, 0, 6.2832f, dim);
++            rmDrawRect((int)(cx + h * 0.55f), (int)(cy + h * 0.25f), 4, 3, FB_PRIM(0x6A, 0xF0, 0x9A, a));
++            break;
++        case FB_TILE_EXPLOIT: // a memory card with wLaunchELF's warning mark
++            rmDrawLine((int)(cx - h * 0.55f), (int)(cy - h), (int)(cx + h * 0.55f), (int)(cy - h), c);
++            rmDrawLine((int)(cx + h * 0.55f), (int)(cy - h), (int)(cx + h * 0.55f), (int)(cy + h), c);
++            rmDrawLine((int)(cx + h * 0.55f), (int)(cy + h), (int)(cx - h * 0.55f), (int)(cy + h), c);
++            rmDrawLine((int)(cx - h * 0.55f), (int)(cy + h), (int)(cx - h * 0.55f), (int)(cy - h), c);
++            rmDrawRect((int)(cx - h * 0.35f), (int)(cy - h * 0.75f), (int)(h * 0.7f), (int)(h * 0.5f), FB_PRIM(0x1E, 0x3C, 0x96, a / 2));
++            tex = thmGetTexture(RIPPS2_WLE_WARNING);
++            if (tex != NULL)
++                rmDrawPixmap(tex, (int)(cx + h * 0.15f), (int)(cy + h * 0.1f), ALIGN_NONE, (int)(h * 0.9f), (int)(h * 0.9f), SCALING_RATIO, GS_SETREG_RGBA(0x80, 0x80, 0x80, a), 0);
++            break;
++        case FB_TILE_POWER: // the power mark
++            fbCircle(cx, cy + h * 0.1f, h * 0.75f, -1.05f, 4.19f, c);
++            rmDrawLine((int)cx, (int)(cy - h), (int)cx, (int)(cy + h * 0.15f), c);
++            break;
++        default: // EXIT: a doorway and an arrow out of it, toward the orbs
++            rmDrawLine((int)(cx - h * 0.1f), (int)(cy - h), (int)(cx + h * 0.7f), (int)(cy - h), dim);
++            rmDrawLine((int)(cx + h * 0.7f), (int)(cy - h), (int)(cx + h * 0.7f), (int)(cy + h), dim);
++            rmDrawLine((int)(cx + h * 0.7f), (int)(cy + h), (int)(cx - h * 0.1f), (int)(cy + h), dim);
++            rmDrawLine((int)(cx + h * 0.4f), (int)cy, (int)(cx - h * 0.8f), (int)cy, c);
++            rmDrawLine((int)(cx - h * 0.8f), (int)cy, (int)(cx - h * 0.45f), (int)(cy - h * 0.35f), c);
++            rmDrawLine((int)(cx - h * 0.8f), (int)cy, (int)(cx - h * 0.45f), (int)(cy + h * 0.35f), c);
++            break;
++    }
++}
++
++static int fbDrawGrid(void)
++{
++    float t = (float)(clock() - fbGridAt) / CLOCKS_PER_SEC, k;
++    int i, uiFont = gTheme->fonts[4];
++
++    if (fbGridClosing) {
++        k = 1.0f - t / FB_GRID_OUT;
++        if (k <= 0.0f) {
++            fbGridOpen = fbGridClosing = 0; // the tree, smoothly back
++            return 0;
++        }
++    } else
++        k = t / FB_GRID_IN > 1.0f ? 1.0f : t / FB_GRID_IN;
++
++    rmDrawRect(14, 10, 612, 460, FB_PRIM(0x03, 0x08, 0x22, (int)(0x68 * k)));
++    fntRenderString(uiFont, FB_X, 30, ALIGN_VCENTER, 0, 0, "MEMORY FILES SETTINGS", GS_SETREG_RGBA(0x80, 0x80, 0x80, (int)(0x80 * k)));
++    int x0 = 320 - (3 * FB_TILE_W + 2 * FB_TILE_GAP) / 2;
++    for (i = 0; i < FB_TILE_COUNT; i++) {
++        float ki = fbGridClosing ? k : (k * 1.4f - i * 0.08f);
++        if (ki <= 0.0f)
++            continue;
++        if (ki > 1.0f)
++            ki = 1.0f;
++        float s = 0.9f + 0.1f * ki;
++        int sel = i == fbGridSel, a = (int)(0x80 * ki);
++        float cx = x0 + (i % 3) * (FB_TILE_W + FB_TILE_GAP) + FB_TILE_W / 2.0f, cy = FB_GRID_Y + (i / 3) * (FB_TILE_H + FB_TILE_GAP) + FB_TILE_H / 2.0f;
++        float hw = FB_TILE_W * s / 2, hh = FB_TILE_H * s / 2;
++        int l = (int)(cx - hw), r = (int)(cx + hw), tp = (int)(cy - hh), b = (int)(cy + hh);
++        u64 edge = sel ? FB_PRIM(0x9C, 0xB8, 0xFF, a) : FB_PRIM(0x4A, 0x72, 0xDC, a);
++        rmDrawRect(l, tp, r - l, b - tp, sel ? FB_PRIM(0x1E, 0x3C, 0x96, (int)(0x60 * ki)) : FB_PRIM(0x04, 0x0C, 0x2E, (int)(0x50 * ki)));
++        rmDrawLine(l, tp, r, tp, edge);
++        rmDrawLine(r, tp, r, b, edge);
++        rmDrawLine(r, b, l, b, edge);
++        rmDrawLine(l, b, l, tp, edge);
++        fbTileIcon(i, cx, cy - hh * 0.22f, 52 * s, a);
++        u64 tc = sel ? GS_SETREG_RGBA(0x80, 0x80, 0x80, a) : GS_SETREG_RGBA(0x67, 0x6C, 0x7A, a);
++        fntRenderString(uiFont, (int)cx, (int)(cy + hh * 0.48f), ALIGN_CENTER, 0, 0, fbTileLine1[i], tc);
++        fntRenderString(uiFont, (int)cx, (int)(cy + hh * 0.48f) + 17, ALIGN_CENTER, 0, 0, fbTileLine2[i], tc);
++    }
++    int hx = 44, hy = 448;
++    fbHint(gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON, "SELECT", &hx, hy);
++    fbHint(gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON, "BACK", &hx, hy);
++    return 1;
++}
++
+ void ripps2HandleInputFiles(void)
+ {
+     int openKey = gSelectButton == KEY_CIRCLE ? KEY_CIRCLE : KEY_CROSS;
+@@ -945,6 +1236,16 @@ void ripps2HandleInputFiles(void)
+     if (fbBusy)
+         return;
+ 
++    if (fbGridOpen) { // the settings grid has the pad
++        fbHandleGrid();
++        return;
++    }
++    if (getKeyOn(KEY_START) && !fbMenuOpen) {
++        sfxPlay(SFX_CONFIRM);
++        fbGridShow(1);
++        return;
++    }
++
+     if (fbMenuOpen) {
+         if (getKeyOn(KEY_UP) && fbMenuSel > 0) {
+             fbMenuSel--;
+@@ -1157,8 +1458,10 @@ void ripps2RenderFiles(void)
+         }
+     }
+ 
++    if (fbGridOpen && fbDrawGrid())
++        return; // the grid draws its own hints
+     // the hints
+-    int hx = 44, hy = 448;
++    int hx = 34, hy = 448;
+     int selIcon = gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON, backIcon = gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON;
+     if (fbMenuOpen) {
+         fbHint(selIcon, "SELECT", &hx, hy);
+@@ -1172,5 +1475,6 @@ void ripps2RenderFiles(void)
+             fbHint(TRIANGLE_ICON, "ACTIONS", &hx, hy);
+         }
+         fbHint(SELECT_ICON, "REFRESH", &hx, hy);
++        fbHint(START_ICON, "SETTINGS", &hx, hy);
+     }
+ }
+diff --git a/src/ripps2hdd.c b/src/ripps2hdd.c
+new file mode 100644
+index 0000000..9fc42c2
+--- /dev/null
++++ b/src/ripps2hdd.c
+@@ -0,0 +1,201 @@
++/*
++  Copyright 2026, RIPPS2 contributors
++  Licenced under Academic Free License version 3.0
++  Review OpenUsbLd README & LICENSE files for further details.
++
++  RIPPS2 HDD manager (Memory Files settings): the internal APA hard disk's partitions in the RIPPS2
++  glass, the way wLaunchELF's HDD manager lists them (ps2homebrew/wLaunchELF, AFL-2.0, was the
++  reference): each partition's name, kind and size, and the disk's total and free space. A user
++  partition can be removed, after two confirmations; the system partitions (__ names) never can.
++  Creating and formatting partitions are left to the dedicated tools for now: RiptOPL's HDD driver
++  refuses partition creates on purpose.
++*/
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <fileXio_rpc.h>
++#include <hdd-ioctl.h>
++
++#include "include/opl.h"
++#include "include/gui.h"
++#include "include/dia.h"
++#include "include/renderman.h"
++#include "include/fntsys.h"
++#include "include/themes.h"
++#include "include/textures.h"
++#include "include/pad.h"
++#include "include/sound.h"
++#include "include/hdd.h"
++#include "include/ripps2.h"
++
++#define HM_MAX   128
++#define HM_ROWS  14
++#define HM_ROW_H 22
++#define HM_Y     84
++#define HM_X     30
++#define HM_RIGHT 610
++
++#define HM_LIT  GS_SETREG_RGBA(0x80, 0x80, 0x80, 0x80)
++#define HM_DIM  GS_SETREG_RGBA(0x4C, 0x52, 0x64, 0x80)
++#define HM_SOFT GS_SETREG_RGBA(0x67, 0x6C, 0x7A, 0x80)
++#define HM_PRIM(r, g, b, a) GS_SETREG_RGBAQ((r), (g), (b), (a), 0x00)
++
++typedef struct
++{
++    char name[33];
++    unsigned int type;
++    u32 sectors;
++} hm_part_t;
++
++static hm_part_t hmParts[HM_MAX];
++static int hmCount = 0;
++
++static const char *hmTypeName(unsigned int type)
++{
++    switch (type) {
++        case APA_TYPE_PFS: return "PFS";
++        case APA_TYPE_HDL: return "HDL GAME";
++        case APA_TYPE_CFS: return "CFS";
++        case APA_TYPE_EXT2: return "EXT2";
++        case APA_TYPE_EXT2SWAP: return "EXT2 SWAP";
++        case APA_TYPE_REISER: return "REISER";
++        case APA_TYPE_MBR: return "MBR";
++        default: return "OTHER";
++    }
++}
++
++static void hmMb(u32 sectors, char *out, int size)
++{
++    u32 mb = sectors / 2048;
++    if (mb >= 1024)
++        snprintf(out, size, "%u.%u GB", mb / 1024, (mb % 1024) * 10 / 1024);
++    else
++        snprintf(out, size, "%u MB", mb);
++}
++
++static int hmScan(void)
++{
++    iox_dirent_t de;
++    int fd = fileXioDopen("hdd0:");
++    hmCount = 0;
++    if (fd < 0)
++        return fd;
++    while (hmCount < HM_MAX && fileXioDread(fd, &de) > 0) {
++        if (de.stat.mode == APA_TYPE_FREE)
++            continue;
++        hm_part_t *p = &hmParts[hmCount++];
++        snprintf(p->name, sizeof(p->name), "%s", de.name);
++        p->type = de.stat.mode;
++        p->sectors = de.stat.size;
++    }
++    fileXioDclose(fd);
++    return 0;
++}
++
++static void hmHint(int icon, const char *text, int *x, int y)
++{
++    GSTEXTURE *t = thmGetTexture(icon);
++    if (t != NULL) {
++        rmDrawPixmap(t, *x, y - 10, ALIGN_NONE, 20, 20, SCALING_RATIO, HM_LIT, 0);
++        *x += 24;
++    }
++    fntRenderString(gTheme->fonts[4], *x, y, ALIGN_VCENTER, 0, 0, text, HM_SOFT);
++    *x += fntCalcDimensions(gTheme->fonts[4], text) + 18;
++}
++
++void ripps2HddManager(void)
++{
++    int status = hddCheck(), cursor = 0, top = 0, i;
++    char line[96], total[24], freeTxt[24], toast[64] = "";
++
++    if (status < 0) {
++        guiMsgBox("No internal hard disk is ready. Start the drives first (START DRIVES), or check the HDD is connected.", 0, NULL);
++        return;
++    }
++    if (status == 1) {
++        guiMsgBox("The internal hard disk is not APA formatted. Format it with a dedicated HDD tool first.", 0, NULL);
++        return;
++    }
++    hmScan();
++
++    while (1) {
++        readPads();
++        if (cursor >= hmCount)
++            cursor = hmCount - 1;
++        if (cursor < 0)
++            cursor = 0;
++        if (cursor < top)
++            top = cursor;
++        if (cursor >= top + HM_ROWS)
++            top = cursor - HM_ROWS + 1;
++
++        u32 totalS = (u32)fileXioDevctl("hdd0:", HDIOC_TOTALSECTOR, NULL, 0, NULL, 0);
++        u32 freeS = (u32)fileXioDevctl("hdd0:", HDIOC_FREESECTOR, NULL, 0, NULL, 0);
++        hmMb(totalS, total, sizeof(total));
++        hmMb(freeS, freeTxt, sizeof(freeTxt));
++
++        rmStartFrame();
++        guiDrawBGPlasma();
++        fntRenderString(gTheme->fonts[4], HM_X, 30, ALIGN_VCENTER, 0, 0, "HDD MANAGER", HM_LIT);
++        snprintf(line, sizeof(line), "%d PARTITIONS   %s FREE OF %s", hmCount, freeTxt, total);
++        fntRenderString(gTheme->fonts[4], HM_RIGHT - fntCalcDimensions(gTheme->fonts[4], line), 30, ALIGN_VCENTER, 0, 0, line, HM_SOFT);
++        rmDrawLine(HM_X, 46, HM_RIGHT, 46, HM_PRIM(0x4A, 0x72, 0xDC, 0x60));
++        // the disk as a bar: used against free
++        if (totalS > 0) {
++            int w = HM_RIGHT - HM_X, used = (int)((float)w * (float)(totalS - freeS) / (float)totalS);
++            rmDrawRect(HM_X, 56, w, 8, HM_PRIM(0x03, 0x08, 0x22, 0x80));
++            rmDrawRect(HM_X, 56, used, 8, HM_PRIM(0x4A, 0x8C, 0xF0, 0x80));
++        }
++        for (i = 0; i < HM_ROWS && top + i < hmCount; i++) {
++            hm_part_t *p = &hmParts[top + i];
++            int y = HM_Y + i * HM_ROW_H, cur = top + i == cursor, sys = p->name[0] == '_' && p->name[1] == '_';
++            if (cur) {
++                rmDrawRect(HM_X - 6, y - 1, HM_RIGHT - HM_X + 12, HM_ROW_H - 2, HM_PRIM(0x1E, 0x3C, 0x96, 0x58));
++                rmDrawRect(HM_X - 6, y - 1, 3, HM_ROW_H - 2, HM_PRIM(0x6A, 0x9A, 0xFF, 0x80));
++            }
++            fntRenderString(gTheme->fonts[8], HM_X + 6, y + 9, ALIGN_VCENTER, 330, 0, p->name, cur ? HM_LIT : (sys ? HM_DIM : HM_SOFT));
++            fntRenderString(gTheme->fonts[5], 390, y + 9, ALIGN_VCENTER, 0, 0, sys ? "SYSTEM" : hmTypeName(p->type), HM_DIM);
++            hmMb(p->sectors, line, sizeof(line));
++            fntRenderString(gTheme->fonts[5], HM_RIGHT - fntCalcDimensions(gTheme->fonts[5], line), y + 9, ALIGN_VCENTER, 0, 0, line, HM_DIM);
++        }
++        if (toast[0])
++            fntRenderString(gTheme->fonts[5], HM_RIGHT - fntCalcDimensions(gTheme->fonts[5], toast), 432, ALIGN_VCENTER, 0, 0, toast, HM_SOFT);
++        int hx = 44;
++        hmHint(TRIANGLE_ICON, "REMOVE", &hx, 448);
++        hmHint(SELECT_ICON, "REFRESH", &hx, 448);
++        hmHint(gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON, "BACK", &hx, 448);
++        rmEndFrame();
++
++        if (getKey(KEY_UP) && cursor > 0) {
++            cursor--;
++            sfxPlay(SFX_CURSOR);
++        } else if (getKey(KEY_DOWN) && cursor < hmCount - 1) {
++            cursor++;
++            sfxPlay(SFX_CURSOR);
++        } else if (getKeyOn(KEY_SELECT)) {
++            sfxPlay(SFX_CONFIRM);
++            hmScan();
++            toast[0] = '\0';
++        } else if (getKeyOn(KEY_TRIANGLE) && hmCount > 0) {
++            hm_part_t *p = &hmParts[cursor];
++            if (p->name[0] == '_' && p->name[1] == '_') {
++                sfxPlay(SFX_CANCEL);
++                snprintf(toast, sizeof(toast), "SYSTEM PARTITIONS STAY");
++            } else {
++                char ask[96], path[48];
++                snprintf(ask, sizeof(ask), "Remove partition %s and everything on it?", p->name);
++                if (guiMsgBox(ask, 1, NULL) && guiMsgBox("This cannot be undone. Remove it?", 1, NULL)) {
++                    snprintf(path, sizeof(path), "hdd0:%s", p->name);
++                    int r = fileXioRemove(path);
++                    snprintf(toast, sizeof(toast), r >= 0 ? "REMOVED %s" : "COULD NOT REMOVE %s", p->name);
++                    hmScan();
++                }
++            }
++        } else if (getKeyOn(gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE)) {
++            sfxPlay(SFX_CANCEL);
++            break;
++        }
++    }
++    readPads();
++}
+diff --git a/src/ripps2kbd.c b/src/ripps2kbd.c
+new file mode 100644
+index 0000000..a79db20
+--- /dev/null
++++ b/src/ripps2kbd.c
+@@ -0,0 +1,90 @@
++/*
++  Copyright 2026, RIPPS2 contributors
++  Licenced under Academic Free License version 3.0
++  Review OpenUsbLd README & LICENSE files for further details.
++
++  RIPPS2 USB keyboard: ps2sdk's ps2kbd driver (on the usbd RiptOPL loads at boot), started the first
++  time something asks for text. ripps2KbdPoll hands back one key at a time without waiting, so the
++  on-screen keyboard can take typing from a USB keyboard and pad presses in the same frame loop.
++*/
++
++#include <stdio.h>
++#include <string.h>
++#include <libkbd.h>
++
++#include "include/opl.h"
++#include "include/system.h"
++#include "include/extern_irx.h"
++#include "include/ripps2.h"
++
++static int kbdState = 0; // 0 not tried, 1 running, -1 unavailable
++
++static int kbdStart(void)
++{
++    if (kbdState != 0)
++        return kbdState > 0;
++    kbdState = -1;
++    if (sysLoadModuleBuffer(&ps2kbd_irx, size_ps2kbd_irx, 0, NULL) < 0) {
++        LOG("RIPPS2 KBD: ps2kbd did not load\n");
++        return 0;
++    }
++    if (PS2KbdInit() == 0) {
++        LOG("RIPPS2 KBD: PS2KbdInit failed\n");
++        return 0;
++    }
++    PS2KbdSetReadmode(PS2KBD_READMODE_NORMAL);
++    PS2KbdSetBlockingMode(PS2KBD_NONBLOCKING);
++    PS2KbdFlushBuffer();
++    kbdState = 1;
++    return 1;
++}
++
++// One key, or 0 when nothing is waiting: a printable character, or one of the RIPPS2_KEY_* codes
++int ripps2KbdPoll(void)
++{
++    char c = 0;
++
++    if (!kbdStart())
++        return 0;
++    if (PS2KbdRead(&c) <= 0)
++        return 0;
++    if (c == PS2KBD_ESCAPE_KEY) { // a special key: the next byte says which
++        char code = 0;
++        if (PS2KbdRead(&code) <= 0)
++            return RIPPS2_KEY_ESC;
++        switch ((unsigned char)code) {
++            case 0x29: // right (ps2kbd's default special map)
++            case 0x4F:
++                return RIPPS2_KEY_RIGHT;
++            case 0x2A: // left
++            case 0x50:
++                return RIPPS2_KEY_LEFT;
++            case 0x2B: // down
++            case 0x51:
++                return RIPPS2_KEY_DOWN;
++            case 0x2C: // up
++            case 0x52:
++                return RIPPS2_KEY_UP;
++            case 0x26: // delete
++            case 0x4C:
++                return RIPPS2_KEY_DELETE;
++            case 0x24: // home
++            case 0x4A:
++                return RIPPS2_KEY_HOME;
++            case 0x27: // end
++            case 0x4D:
++                return RIPPS2_KEY_END;
++            default:
++                return 0;
++        }
++    }
++    if (c == 0x07 || c == 0x08 || c == 0x7F)
++        return RIPPS2_KEY_BACKSPACE;
++    if (c == '\n' || c == '\r')
++        return RIPPS2_KEY_ENTER;
++    if (c == '\t')
++        return ' ';
++    if ((unsigned char)c >= 0x20 && (unsigned char)c < 0x7F)
++        return (unsigned char)c;
++    return 0;
++}
+diff --git a/src/textures.c b/src/textures.c
+index 53f8675..05386a0 100644
+--- a/src/textures.c
++++ b/src/textures.c
+@@ -114,6 +114,8 @@ extern void *ripps2_mark_png;  // RIPPS2
+ extern void *L2R2_png;         // RIPPS2: the L2+R2 "Random" hint
+ extern void *ripps2_ps1logo_png; // RIPPS2: the L3 filter splashes
+ extern void *ripps2_ps2logo_png;
++extern void *ripps2_wle_folder_png;  // RIPPS2: from wLaunchELF's icon.c (AFL-2.0)
++extern void *ripps2_wle_warning_png;
+ #ifdef RETROACHIEVEMENTS
+ extern void *ra_mark_png;
+ #endif
+@@ -283,6 +285,8 @@ static texture_t internalDefault[TEXTURES_COUNT] = {
+     {R2_ICON, "L2R2", &L2R2_png},
+     {RIPPS2_PS1_LOGO, "ripps2_ps1logo", &ripps2_ps1logo_png},
+     {RIPPS2_PS2_LOGO, "ripps2_ps2logo", &ripps2_ps2logo_png},
++    {RIPPS2_WLE_FOLDER, "ripps2_wle_folder", &ripps2_wle_folder_png},
++    {RIPPS2_WLE_WARNING, "ripps2_wle_warning", &ripps2_wle_warning_png},
+ #ifdef RETROACHIEVEMENTS
+     // Positional: guarded by the same #ifdef as RA_MARK in enum INTERNAL_TEXTURE. Without
+     // this row TEXTURES_COUNT grows but the initialiser does not, leaving the last slot
+diff --git a/src/themes.c b/src/themes.c
+index df60a9f..9f3b84e 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -1158,6 +1158,108 @@ static void drawRAMark(struct submenu_list *item, struct theme_element *elem,
+ }
+ #endif /* RETROACHIEVEMENTS */
+ 
++// RIPPS2: the info page slideshow. GameImage elements with <name>_slide=N (1..4) in one family take
++// turns: each shows for SLIDE_HOLD_S, then crossfades into the next one that has art. A slide whose
++// file is missing is skipped, never shown as a blank; with no art at all nothing draws, and the glass
++// panel over them carries the page alone. The theme lists slides in ascending order, so in a
++// crossfade the earlier one is painted opaque and the later one fades in over it (or out of it).
++#define SLIDE_HOLD_S 5.0f
++#define SLIDE_FADE_S 1.0f
++#define SLIDE_MAX    4
++
++static struct
++{
++    int frame;                     // guiFrameId of the last update
++    void *item;                    // the game the show belongs to
++    struct theme_elems *family;    // the page it is on
++    GSTEXTURE *tex[SLIDE_MAX + 1]; // each slide's art this frame, by slide number (NULL = none yet)
++    int cur;                       // the slide on show (0 = none)
++    clock_t start;                 // when it began showing
++} slideShow;
++
++static int slideNext(int cur)
++{
++    int i, s;
++    for (i = 1; i <= SLIDE_MAX; i++) {
++        s = (cur - 1 + i) % SLIDE_MAX + 1;
++        if (slideShow.tex[s] != NULL)
++            return s;
++    }
++    return cur;
++}
++
++static float slideElapsed(void)
++{
++    return (float)(clock() - slideShow.start) / (float)CLOCKS_PER_SEC;
++}
++
++static void slideUpdate(struct menu_list *menu, struct submenu_list *item, struct theme_element *drawElem)
++{
++    theme_element_t *e;
++    int have = 0, s;
++
++    if (slideShow.frame == guiFrameId && slideShow.item == item && slideShow.family == drawElem->family)
++        return;
++    // another game, another page, or the page opened again: the show starts over at the first slide
++    if (slideShow.item != item || slideShow.family != drawElem->family || guiFrameId - slideShow.frame > 2) {
++        slideShow.cur = 0;
++        slideShow.start = clock();
++    }
++    slideShow.frame = guiFrameId;
++    slideShow.item = item;
++    slideShow.family = drawElem->family;
++    memset(slideShow.tex, 0, sizeof(slideShow.tex));
++
++    for (e = drawElem->family->first; e != NULL; e = e->next) {
++        if (e->slide < 1 || e->extended == NULL)
++            continue;
++        mutable_image_t *img = (mutable_image_t *)e->extended;
++        // the slide on show (or the first, before one is) asks first; the rest queue behind it
++        GSTEXTURE *t = getGameImageTextureEx(img->cache, menu->item->userdata, &item->item, slideShow.cur == 0 || e->slide == slideShow.cur);
++        if (t != NULL && t->Mem != NULL) {
++            slideShow.tex[e->slide] = t;
++            have++;
++        }
++    }
++    if (!have) {
++        slideShow.cur = 0;
++        slideShow.start = clock();
++        return;
++    }
++    if (slideShow.cur == 0 || slideShow.tex[slideShow.cur] == NULL) {
++        for (s = 1; s <= SLIDE_MAX && slideShow.tex[s] == NULL; s++)
++            ;
++        slideShow.cur = s;
++        slideShow.start = clock();
++    } else if (slideElapsed() >= SLIDE_HOLD_S + SLIDE_FADE_S) {
++        slideShow.cur = slideNext(slideShow.cur);
++        slideShow.start = clock();
++    }
++}
++
++// How much of slide s shows this frame, 0..1
++static float slideWeight(int s)
++{
++    int cur = slideShow.cur, next = slideNext(cur);
++    float f, t = slideElapsed();
++
++    if (cur == 0 || slideShow.tex[s] == NULL)
++        return 0.0f;
++    if (t < SLIDE_HOLD_S || next == cur)
++        return s == cur ? 1.0f : 0.0f;
++    f = (t - SLIDE_HOLD_S) / SLIDE_FADE_S;
++    if (f > 1.0f)
++        f = 1.0f;
++    f = f * f * (3.0f - 2.0f * f);
++    if (s == (cur < next ? cur : next))
++        return 1.0f; // painted first: the other one fades over it
++    if (s == cur)
++        return 1.0f - f;
++    if (s == next)
++        return f;
++    return 0.0f;
++}
++
+ static void drawGameImage(struct menu_list *menu, struct submenu_list *item, config_set_t *config, struct theme_element *elem)
+ {
+     if (item) {
+@@ -1175,6 +1277,16 @@ static void drawGameImage(struct menu_list *menu, struct submenu_list *item, con
+         if (!gEnableDiscArt && isDiscArtCache(gameImage->cache))
+             return;
+ 
++        // RIPPS2: a slideshow slide draws only its share of the show, and only with its own art
++        float slideW = 1.0f;
++        int isSlide = drawElem->slide > 0 && drawElem->family != NULL;
++        if (isSlide) {
++            slideUpdate(menu, item, drawElem);
++            slideW = slideWeight(drawElem->slide);
++            if (slideW <= 0.0f)
++                return;
++        }
++
+         // A per-game BACKGROUND must never be REQUESTED before the cover. This function draws both,
+         // and the theme's Background element is the FIRST in the list (painter's order), so on the
+         // settle frame its request reached the empty queue first and became the executing head --
+@@ -1193,7 +1305,9 @@ static void drawGameImage(struct menu_list *menu, struct submenu_list *item, con
+         GSTEXTURE *texture;
+         int coverflowCoverSettled = 1;
+ 
+-        if (isBackground) {
++        if (isSlide) {
++            texture = slideShow.tex[drawElem->slide];
++        } else if (isBackground) {
+             // Prioritize the highlighted game's cover before the background so the small cover
+             // is read and displayed first before starting the larger background read.
+             if (gTheme != NULL && !item->item.isFolder) {
+@@ -1259,7 +1373,8 @@ static void drawGameImage(struct menu_list *menu, struct submenu_list *item, con
+         // RIPPS2: a GameImage honours <name>_reflection / _reflection_offset the way Coverflow does,
+         // so a single cover (the info page's) gets the same mirrored, fading reflection and case art,
+         // and <name>_alpha lets what is behind it show through (the Storage viewport's art).
+-        u64 imageCol = drawElem->imageAlpha < 0x80 ? GS_SETREG_RGBA(0x80, 0x80, 0x80, drawElem->imageAlpha) : gDefaultCol;
++        int imageAlpha = slideW < 1.0f ? (int)((float)drawElem->imageAlpha * slideW) : drawElem->imageAlpha;
++        u64 imageCol = imageAlpha < 0x80 ? GS_SETREG_RGBA(0x80, 0x80, 0x80, imageAlpha) : gDefaultCol;
+         rmSetReflectionYOffset(drawElem->reflectionOffset);
+         if (gameImage->overlayTexture) {
+             rmDrawOverlayPixmap(&gameImage->overlayTexture->source, drawElem->posX, drawElem->posY, drawElem->aligned, drawElem->width, drawElem->height, drawElem->scaled, imageCol,
+@@ -1903,6 +2018,7 @@ static theme_element_t *initBasic(const char *themePath, config_set_t *themeConf
+     elem->lineHeight = 0;
+     elem->vcenter = 0;
+     elem->itemHeight = 0;
++    elem->slide = 0;
+     elem->showRun = 1;
+     elem->deviceFilter = 0;   // malloc'd without memset: MUST be zeroed explicitly (0 = unfiltered)
+     elem->deviceCoverage = 0; // filled at validateGUIElems for unfiltered MenuIcon/ItemsList/HintText
+@@ -2013,6 +2129,9 @@ static theme_element_t *initBasic(const char *themePath, config_set_t *themeConf
+     snprintf(elemProp, sizeof(elemProp), "%s_alpha", name);
+     if (configGetInt(themeConfig, elemProp, &intValue) && intValue >= 0 && intValue <= 0x80)
+         elem->imageAlpha = intValue;
++    snprintf(elemProp, sizeof(elemProp), "%s_slide", name);
++    if (configGetInt(themeConfig, elemProp, &intValue) && intValue > 0 && intValue <= 4)
++        elem->slide = intValue;
+     snprintf(elemProp, sizeof(elemProp), "%s_tilt_scale", name);
+     if (configGetInt(themeConfig, elemProp, &intValue) && intValue > 0 && intValue <= 400)
+         elem->tiltScale = intValue;
+@@ -3665,6 +3784,8 @@ static int thmLoad(const char *themePath)
+     thmLoadResource(&newT->textures[RIPPS2_MARK], RIPPS2_MARK, themePath, GS_PSM_CT32, 1);
+     thmLoadResource(&newT->textures[RIPPS2_PS1_LOGO], RIPPS2_PS1_LOGO, themePath, GS_PSM_CT32, 1); // RIPPS2: L3 splashes
+     thmLoadResource(&newT->textures[RIPPS2_PS2_LOGO], RIPPS2_PS2_LOGO, themePath, GS_PSM_CT32, 1);
++    thmLoadResource(&newT->textures[RIPPS2_WLE_FOLDER], RIPPS2_WLE_FOLDER, themePath, GS_PSM_CT32, 1); // RIPPS2: wLaunchELF icons
++    thmLoadResource(&newT->textures[RIPPS2_WLE_WARNING], RIPPS2_WLE_WARNING, themePath, GS_PSM_CT32, 1);
+     thmLoadResource(&newT->textures[R2_ICON], R2_ICON, themePath, GS_PSM_CT32, newT->useDefault); // RIPPS2: L2+R2 Random
+ 
+     // Embedded attribute glyphs (#Format/#Media/Aspect/Rating/Scan/Vmode values): BUILT-IN theme
