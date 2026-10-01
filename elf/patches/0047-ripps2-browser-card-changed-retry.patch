@@ -1,0 +1,46 @@
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index 93828b2..a7a60e6 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -450,8 +450,16 @@ static int fbCopyFile(const char *src, const char *dst)
+         snprintf(cardPath, sizeof(cardPath), "%.4s%s", dst, dst + 5);
+         target = cardPath;
+     }
+-    errno = 0;
+-    out = open(target, O_WRONLY | O_CREAT, 0666);
++    // a memory card answers "changed card" (ENXIO, mcman's sceMcResChangedCard) to the first access
++    // after it is detected; asking again is how every PS2 program deals with it
++    int tries = 0;
++    do {
++        errno = 0;
++        out = open(target, O_WRONLY | O_CREAT, 0666);
++        if (out >= 0 || !fbIsMc(dst))
++            break;
++        DelayThread(50 * 1000);
++    } while (++tries < 4);
+     if (out < 0) {
+         errno = -out > 0 && errno == 0 ? -out : errno;
+         fbNoteFail("CREATE", dst);
+@@ -488,8 +496,10 @@ static int fbCopyTree(const char *src, const char *dst, int isDir, int depth)
+         return 0;
+     if (fbIsMc(dst) && dst[4] == '/') { // RiptOPL's own card form, "mc1:SAVE"
+         char cardPath[320];
++        int tries;
+         snprintf(cardPath, sizeof(cardPath), "%.4s%s", dst, dst + 5);
+-        mkdir(cardPath, 0777); // an existing folder merges
++        for (tries = 0; tries < 4 && mkdir(cardPath, 0777) < 0 && errno == ENXIO; tries++)
++            DelayThread(50 * 1000); // "changed card": ask again (an existing folder merges)
+     } else
+         mkdir(dst, 0777);
+     char sdir[320], ddir[320], s[320], d[320];
+@@ -669,10 +679,6 @@ static void fbRun(int op, const char *label)
+     fbFailWhat[0] = '\0';
+     fbDoneBytes = 0;
+     fbBusy = 1;
+-    if (op == FB_OP_PASTE && fbIsMc(fbPath)) { // EXPERIMENT: card pastes on this thread
+-        fbWorker();
+-        return;
+-    }
+     if (ioPutRequest(IO_CUSTOM_SIMPLEACTION, &fbWorker) != IO_OK)
+         fbBusy = 0;
+ }
