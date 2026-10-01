@@ -1,0 +1,39 @@
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index 75fccfc..5fb1c73 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -517,6 +517,24 @@ static int fbDeleteTree(const char *path, int isDir, int depth)
+     return ok && fbRemoveRetry(path, 1);
+ }
+ 
++// Is something there? Opened, not stat()ed: on a memory card stat() reports success for a path that
++// does not exist (RiptOPL checks card files by opening them for the same reason)
++static int fbExists(const char *path)
++{
++    int fd = open(path, O_RDONLY);
++    DIR *d;
++    if (fd >= 0) {
++        close(fd);
++        return 1;
++    }
++    d = opendir(path);
++    if (d != NULL) {
++        closedir(d);
++        return 1;
++    }
++    return 0;
++}
++
+ static int fbFolderHasIconSys(const char *folder)
+ {
+     char path[320];
+@@ -557,8 +575,7 @@ static void fbPasteWork(void)
+         if (fbIsMc(fbPath) && fbClipIsDir[i] && fbFolderHasIconSys(src))
+             fbMcRoot(fbPath, destDir, sizeof(destDir));
+         snprintf(dst, sizeof(dst), "%s%s", destDir, fbClip[i]);
+-        struct stat st;
+-        if (!strcmp(src, dst) || stat(dst, &st) == 0) {
++        if (!strcmp(src, dst) || fbExists(dst)) {
+             fbSkipped++; // never over the top of something
+         } else if (fbCopyTree(src, dst, fbClipIsDir[i], 0)) {
+             if (fbClipCut && !fbDeleteTree(src, fbClipIsDir[i], 0))
