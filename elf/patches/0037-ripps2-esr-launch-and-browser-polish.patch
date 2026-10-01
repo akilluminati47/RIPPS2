@@ -1,0 +1,137 @@
+diff --git a/include/ripps2.h b/include/ripps2.h
+index 3e92f07..e91e357 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -59,6 +59,7 @@ void ripps2DrawPanelMorph(int ax, int ay, int aw, int ah, int bx, int by, int bw
+ void ripps2DrawBackground(void); // orbs on Memory Files, pillars everywhere else
+ void ripps2DrawPillars(void);
+ void ripps2DrawOrbs(void);
++int ripps2LaunchDvdVideo(void); // ripps2.c: a DVD video disc: ESR for an ESR-patched game, else a DVD player
+ 
+ // The Memory Files browser (ripps2files.c)
+ void ripps2FilesEnter(void); // from the Memory Files page: open it where it was left
+diff --git a/src/ripps2.c b/src/ripps2.c
+index dd1f721..6c5fb09 100644
+--- a/src/ripps2.c
++++ b/src/ripps2.c
+@@ -18,8 +18,13 @@
+ #include <stdio.h>
+ #include <fcntl.h>
+ #include <unistd.h>
++#include <strings.h>
++#include <dirent.h>
++#include <libcdvd.h>
+ 
+ #include "include/opl.h"
++#include "include/gui.h"
++#include "include/system.h"
+ #include "include/iosupport.h"
+ #include "include/ioman.h"
+ #include "include/ripps2.h"
+@@ -215,6 +220,66 @@ int ripps2LaunchDvdPlayer(void)
+     return -1; // unreachable on success
+ }
+ 
++// ---- ESR-patched PS2 games from LAUNCH DISC ----
++//
++// ESR patches a PS2 game disc so the drive reads it as DVD video; such a disc boots through ESR,
++// which the user installs (RIPPS2 does not ship it). Launch Disc looks for it where it is usually
++// kept: any esr*.elf in APPS, BOOT or ESR on either memory card, or on the first USB drive. A DVD
++// video disc that also carries a PS2 SYSTEM.CNF is an ESR game and starts straight away; for any
++// other DVD video disc, with ESR installed, the user picks ESR or the DVD player.
++
++static const char *esrFolders[] = {"mc0:/APPS/", "mc0:/BOOT/", "mc0:/ESR/", "mc1:/APPS/", "mc1:/BOOT/", "mc1:/ESR/",
++                                   "mass0:/APPS/", "mass0:/ESR/", "mass0:/", NULL};
++
++static int r2EndsWith(const char *name, const char *suffix)
++{
++    int n = strlen(name), s = strlen(suffix);
++    return n >= s && !strcasecmp(name + n - s, suffix);
++}
++
++static int r2FindEsr(char *out, int size)
++{
++    int i;
++    for (i = 0; esrFolders[i] != NULL; i++) {
++        DIR *d = opendir(esrFolders[i]);
++        struct dirent *e;
++        if (d == NULL)
++            continue;
++        while ((e = readdir(d)) != NULL) {
++            if (!strncasecmp(e->d_name, "esr", 3) && r2EndsWith(e->d_name, ".elf")) {
++                snprintf(out, size, "%s%s", esrFolders[i], e->d_name);
++                closedir(d);
++                return 1;
++            }
++        }
++        closedir(d);
++    }
++    return 0;
++}
++
++int ripps2LaunchDvdVideo(void)
++{
++    static char esrPath[160];
++    char *argv[1];
++
++    if (r2FindEsr(esrPath, sizeof(esrPath))) {
++        sceCdDiskReady(0);
++        int esr = r2FileExists("cdrom0:\\SYSTEM.CNF;1"); // the game's own files sit beside the video ones
++        if (!esr)
++            esr = guiMsgBox("This disc reads as DVD video. Start it with ESR, for an ESR-patched PS2 game? Choose No for the DVD player.", 1, NULL);
++        if (esr) {
++            LOG("RIPPS2 ESR: booting %s\n", esrPath);
++            argv[0] = esrPath;
++            ripps2PlayLaunchSequence();
++            deinit(UNMOUNT_EXCEPTION, IO_MODE_SELECTED_ALL_SPARE); // keep the drive ESR is on
++            sysLoadELFApp(esrPath, NULL, 1, argv, 1, 0);
++            ripps2LaunchAborted();
++            return -1; // reached only when the handoff failed
++        }
++    }
++    return ripps2LaunchDvdPlayer();
++}
++
+ // ---- PlayStation discs from LAUNCH DISC ----
+ //
+ // PS1DRV takes the boot file's name (SYSTEM.CNF's BOOT line, without its path or ;1) and the disc's
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index d1ef54c..9654104 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -268,7 +268,7 @@ static void fbScanDevices(void)
+         fb_entry_t *e = &fbList[n++];
+         memset(e, 0, sizeof(*e));
+         snprintf(e->name, sizeof(e->name), "START DRIVES");
+-        snprintf(e->title, sizeof(e->title), "%s", fbStarted ? "STARTING..." : "USB, HDD AND OTHER GAME DRIVES");
++        snprintf(e->title, sizeof(e->title), "%s", fbStarted ? "STARTING..." : "USB, HDD, MMCE");
+         e->kind = FB_KIND_START;
+     }
+     fbCount = n;
+@@ -966,9 +966,10 @@ void ripps2RenderFiles(void)
+         fbGlyph(e->kind, FB_X + 12, y + 1, cur ? FB_PRIM(0x9C, 0xB8, 0xFF, 0x80) : FB_PRIM(0x4A, 0x72, 0xDC, 0x80));
+         int tx = FB_X + 36;
+         if (e->kind == FB_KIND_DEVICE || e->kind == FB_KIND_START) {
+-            fntRenderString(rowFont, tx, y + 9, ALIGN_VCENTER, 0, 0, e->title, col);
+-            if (e->kind == FB_KIND_DEVICE)
+-                fntRenderString(smallFont, FB_RIGHT - fntCalcDimensions(smallFont, e->name), y + 9, ALIGN_VCENTER, 0, 0, e->name, FB_DIM);
++            // a drive: its label, its path on the right; the start row: START DRIVES, what it starts
++            const char *main = e->kind == FB_KIND_DEVICE ? e->title : e->name, *side = e->kind == FB_KIND_DEVICE ? e->name : e->title;
++            fntRenderString(rowFont, tx, y + 9, ALIGN_VCENTER, 0, 0, main, col);
++            fntRenderString(smallFont, FB_RIGHT - fntCalcDimensions(smallFont, side), y + 9, ALIGN_VCENTER, 0, 0, side, FB_DIM);
+         } else if (e->kind == FB_KIND_SAVE) {
+             fntRenderString(rowFont, tx, y + 9, ALIGN_VCENTER, 0, 0, e->title, col);
+             fntRenderString(smallFont, FB_RIGHT - fntCalcDimensions(smallFont, e->name), y + 9, ALIGN_VCENTER, 0, 0, e->name, FB_DIM);
+diff --git a/src/system.c b/src/system.c
+index 2326e48..21e912c 100644
+--- a/src/system.c
++++ b/src/system.c
+@@ -668,7 +668,7 @@ int sysLaunchDisc(int (*progress)(void))
+ #endif
+     result = sysGetDiscBootPath(path, sizeof(path), progress);
+     if (result == SYS_DISC_DVDVIDEO)
+-        return ripps2LaunchDvdPlayer(); // RIPPS2: never returns on success
++        return ripps2LaunchDvdVideo(); // RIPPS2: ESR for an ESR-patched game, else a DVD player; never returns on success
+     if (result == SYS_DISC_PS1)
+         return ripps2LaunchPs1Disc(); // RIPPS2: never returns on success
+     if (result < 0)
