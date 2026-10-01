@@ -1,0 +1,37 @@
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index 9654104..5b4669d 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -521,12 +521,30 @@ static void fbDeleteWork(void)
+     }
+ }
+ 
++// What happened, top right: "PASTED 3", "MOVED 2, 1 SKIPPED", "DELETED 1, 1 FAILED"
++static void fbReport(const char *verb, int done)
++{
++    char text[48];
++    int ok = done - fbFailed - fbSkipped;
++    int n = snprintf(text, sizeof(text), "%s %d", verb, ok < 0 ? 0 : ok);
++    if (fbSkipped > 0)
++        n += snprintf(text + n, sizeof(text) - n, ", %d SKIPPED", fbSkipped);
++    if (fbFailed > 0)
++        snprintf(text + n, sizeof(text) - n, ", %d FAILED", fbFailed);
++    fbSetToast(text);
++}
++
+ static void fbWorker(void)
+ {
+-    if (fbOp == FB_OP_PASTE)
++    if (fbOp == FB_OP_PASTE) {
+         fbPasteWork();
+-    else if (fbOp == FB_OP_DELETE)
++        fbReport(fbClipCut ? "MOVED" : "PASTED", fbDoneItems);
++        if (fbClipCut) // a cut moves once; a copy can be pasted again
++            fbClipCount = 0;
++    } else if (fbOp == FB_OP_DELETE) {
+         fbDeleteWork();
++        fbReport("DELETED", fbDoneItems);
++    }
+     if (fbPath[0])
+         fbScanDir();
+     else
