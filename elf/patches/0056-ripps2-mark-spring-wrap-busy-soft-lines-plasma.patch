@@ -1,0 +1,517 @@
+diff --git a/Makefile b/Makefile
+index 00b7ab9..ff9c24a 100644
+--- a/Makefile
++++ b/Makefile
+@@ -166,7 +166,7 @@ PNG_ASSETS = load0 load1 load2 load3 load4 load5 load6 load7 usb usb_bd ilk_bd \
+ 	# unused icons - up down l2 r2
+ 
+ # RIPPS2: glass info panel and PS2 selector mark (gfx/ripps2_*.png, copied in by RIPPS2's build.sh)
+-PNG_ASSETS += ripps2_glass ripps2_mark L2R2 ripps2_ps1logo ripps2_ps2logo ripps2_grid_icons
++PNG_ASSETS += ripps2_glass ripps2_mark ripps2_mark_glow L2R2 ripps2_ps1logo ripps2_ps2logo ripps2_grid_icons
+ 
+ # The RA cover mark is embedded ONLY in the RA flavour: the default build has no
+ # RA_MARK enum member and no table row for it, so embedding the bitmap there would
+diff --git a/include/ripps2.h b/include/ripps2.h
+index 4e6b857..427ee5a 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -32,6 +32,7 @@ extern int gRipps2Random;
+ void ripps2SetCategory(int cat);    // switch screens and fly the PS2 mark
+ void ripps2StepCategory(int dir);   // -1 / +1, clamped at the ends
+ void ripps2RenderCategoryBar(void); // the three labels plus the mark
++void ripps2DrawBusy(int alpha);     // loading: the mark breathes (in place, or small in the corner)
+ void ripps2UiEnter(void);           // the menu's first frame: the bar fades in, the mark pops in
+ void ripps2ShowViewWord(const char *word, int logo, const char *caption); // L3: name the new list, large (a word, or a texture id)
+ void ripps2DrawViewWord(void);      // drawn over the Storage page while it plays
+diff --git a/include/textures.h b/include/textures.h
+index bca518a..ac1b1f9 100644
+--- a/include/textures.h
++++ b/include/textures.h
+@@ -122,6 +122,7 @@ enum INTERNAL_TEXTURE {
+     R1_ICON, // Settings peer-page navigation hint
+     RIPPS2_GLASS, // RIPPS2: glass info panel (theme name "ripps2_glass")
+     RIPPS2_MARK,  // RIPPS2: PS2 selector mark (theme name "ripps2_mark")
++    RIPPS2_MARK_GLOW, // RIPPS2: the mark blurred, breathed over it while loading
+     R2_ICON,      // RIPPS2: the L2+R2 "Random" hint (image L2R2)
+     RIPPS2_PS1_LOGO, // RIPPS2: the PS1 games filter's splash (image ripps2_ps1logo)
+     RIPPS2_PS2_LOGO, // RIPPS2: the PS2 games filter's splash (image ripps2_ps2logo)
+diff --git a/src/gui.c b/src/gui.c
+index 073623f..0e5b8c8 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -3747,6 +3747,8 @@ void guiExecDeferredOps(void)
+ 
+ static void guiDrawBusy(int alpha)
+ {
++    ripps2DrawBusy(alpha); // RIPPS2: the PS2 mark breathes; the theme's loading frames are not drawn
++    return;
+     if (gTheme->loadingIcon) {
+         GSTEXTURE *texture = thmGetTexture(LOAD0_ICON + (guiFrameId >> 1) % gTheme->loadingIconCount);
+         if (texture && texture->Mem) {
+diff --git a/src/ripps2bg.c b/src/ripps2bg.c
+index 4fadb14..fa0ff4b 100644
+--- a/src/ripps2bg.c
++++ b/src/ripps2bg.c
+@@ -198,6 +198,34 @@ static void pillarsInit(void)
+     }
+ }
+ 
++// A soft line for the pillars and the floor: a core `core` px across with a feather of `feather` px
++// each side, fading to clear. On a CRT in 480i a one-scanline line exists in one field only and
++// flickers at 30 Hz; this one is at least two scanlines tall at any angle, so both fields carry it,
++// and the feather antialiases it at the same time. Colour as given; drawn in the current blend.
++static u64 softClear(u64 c)
++{
++    return c & ~(0xFFULL << 24);
++}
++
++static void softLine(float x1, float y1, float x2, float y2, float core, float feather, u64 c)
++{
++    float dx = x2 - x1, dy = y2 - y1, len = sqrtf(dx * dx + dy * dy);
++    if (len < 0.25f)
++        return;
++    // across the line: its true normal, but never thinner than two scanlines up and down, so a nearly
++    // flat line stays thick enough for both fields of an interlaced picture
++    float nx = -dy / len, ny = dx / len;
++    float h = core * 0.5f, ny2 = h;
++    if (fabsf(ny) > 0.7f && fabsf(ny) * h < 1.0f) // within 45 degrees of flat: a core two scanlines tall
++        ny2 = 1.0f / fabsf(ny);
++    float ax = nx * ny2, ay = ny * ny2;                 // half the core
++    float fx = nx * (ny2 + feather), fy = ny * (ny2 + feather); // to the outer edge of the feather
++    u64 clear = softClear(c);
++    rmDrawQuadGouraud(x1 + ax, y1 + ay, c, x2 + ax, y2 + ay, c, x1 - ax, y1 - ay, c, x2 - ax, y2 - ay, c);
++    rmDrawQuadGouraud(x1 + fx, y1 + fy, clear, x2 + fx, y2 + fy, clear, x1 + ax, y1 + ay, c, x2 + ax, y2 + ay, c);
++    rmDrawQuadGouraud(x1 - ax, y1 - ay, c, x2 - ax, y2 - ay, c, x1 - fx, y1 - fy, clear, x2 - fx, y2 - fy, clear);
++}
++
+ static void drawSky(u64 top, u64 horizon, u64 floor)
+ {
+     rmDrawQuadGouraud(0, 0, top, 640, 0, top, 0, 290, horizon, 640, 290, horizon);
+@@ -221,14 +249,14 @@ static void gridLine(v3 a, v3 b, u64 c)
+     }
+     p2 pa = project(a), pb = project(b);
+     if (onScreen(pa) && onScreen(pb))
+-        rmDrawLine((int)pa.x, (int)pa.y, (int)pb.x, (int)pb.y, c);
++        softLine(pa.x, pa.y, pb.x, pb.y, 1.0f, 1.2f, c);
+ }
+ 
+ static void drawFloorGrid(float glowAll)
+ {
+     int i;
+     const float ext = 9.0f * SPACING;
+-    u64 c = RGBA(0x1C + (int)(0x30 * glowAll), 0x34 + (int)(0x40 * glowAll), 0x80 + (int)(0x50 * glowAll), 0x30 + (int)(0x20 * glowAll));
++    u64 c = RGBA(0x1C + (int)(0x30 * glowAll), 0x34 + (int)(0x40 * glowAll), 0x80 + (int)(0x50 * glowAll), 0x22 + (int)(0x20 * glowAll));
+     for (i = -9; i <= 9; i++) {
+         float k = (i + 0.5f) * SPACING;
+         v3 a = {k, 0.0f, -ext}, b = {k, 0.0f, ext}, e = {-ext, 0.0f, k}, f = {ext, 0.0f, k};
+@@ -346,18 +374,16 @@ static void drawSide(const v3 *c, v3 n, float k, float heat, float phase, float
+     // glowing vertical edges and the rim at the top, brighter as the tower heats; seams every 2.4
+     // units up the face; now and then one window cell flickers on. Edges antialiased by the GS.
+     rmSetBlendAdditive(1);
+-    rmSetLineAA(1);
+-    u64 edge = RGBA(0x40, 0x80, 0xFF, 0x38 + (int)(0x48 * hk)), rim = RGBA(0x7E, 0xC2, 0xFF, 0x60 + (int)(0x20 * hk));
+-    rmDrawLine((int)bl.x, (int)bl.y, (int)tl.x, (int)tl.y, edge);
+-    rmDrawLine((int)br.x, (int)br.y, (int)tr.x, (int)tr.y, edge);
+-    rmDrawLine((int)tl.x, (int)tl.y, (int)tr.x, (int)tr.y, rim);
++    u64 edge = RGBA(0x40, 0x80, 0xFF, 0x30 + (int)(0x40 * hk)), rim = RGBA(0x7E, 0xC2, 0xFF, 0x50 + (int)(0x20 * hk));
++    softLine(bl.x, bl.y, tl.x, tl.y, 1.4f, 1.3f, edge);
++    softLine(br.x, br.y, tr.x, tr.y, 1.4f, 1.3f, edge);
++    softLine(tl.x, tl.y, tr.x, tr.y, 1.6f, 1.4f, rim);
+     float h = c[2].y - c[0].y, ys;
+-    u64 seam = RGBA(0x40, 0x80, 0xFF, 0x14 + (int)(0x20 * hk));
++    u64 seam = RGBA(0x40, 0x80, 0xFF, 0x10 + (int)(0x1C * hk));
+     for (ys = 2.4f; ys < h - 0.4f; ys += 2.4f) {
+         p2 a = facePoint(c, 0.0f, ys), b = facePoint(c, 1.0f, ys);
+-        rmDrawLine((int)a.x, (int)a.y, (int)b.x, (int)b.y, seam);
++        softLine(a.x, a.y, b.x, b.y, 1.0f, 1.1f, seam);
+     }
+-    rmSetLineAA(0);
+     if (h > 2.0f && sinf(t * 1.7f + phase * 3.1f) > 0.82f) {
+         float cy = 0.6f + fmodf(phase * 7.3f, 1.0f) * (h - 1.6f), u0 = 0.38f, u1 = 0.62f;
+         p2 q0 = facePoint(c, u0, cy + 0.5f), q1 = facePoint(c, u1, cy + 0.5f), q2 = facePoint(c, u0, cy), q3 = facePoint(c, u1, cy);
+@@ -424,9 +450,9 @@ void ripps2DrawPillars(void)
+     camLook(eye, target, 40.0f);
+ 
+     drawStars(t, a, glowAll);
+-    rmSetLineAA(1);
++    rmSetBlendAdditive(1);
+     drawFloorGrid(glowAll);
+-    rmSetLineAA(0);
++    rmSetBlendAdditive(0);
+     drawMotes(t, 0);
+ 
+     // heights: the boot rise, breathing, the idle swell, and the launch heat
+@@ -482,6 +508,13 @@ void ripps2DrawPillars(void)
+                 float hk = fminf(1.0f, tw->heat * 0.5f);
+                 u64 cap = RGBA((int)lerpf(0x16, 0xA0, hk), (int)lerpf(0x30, 0xC8, hk), (int)lerpf(0x80, 0xFF, hk), 0x80);
+                 rmDrawQuadGouraud(q0.x, q0.y, cap, q1.x, q1.y, cap, q2.x, q2.y, cap, q3.x, q3.y, cap);
++                u64 capRim = RGBA(0x7E, 0xC2, 0xFF, 0x28);
++                rmSetBlendAdditive(1);
++                softLine(q0.x, q0.y, q1.x, q1.y, 1.2f, 1.2f, capRim);
++                softLine(q1.x, q1.y, q3.x, q3.y, 1.2f, 1.2f, capRim);
++                softLine(q3.x, q3.y, q2.x, q2.y, 1.2f, 1.2f, capRim);
++                softLine(q2.x, q2.y, q0.x, q0.y, 1.2f, 1.2f, capRim);
++                rmSetBlendAdditive(0);
+             }
+         }
+         if (beamIn > 0.0f)
+@@ -865,7 +898,7 @@ static void guideLine(int f, v3 a, v3 b, float t, u64 col)
+ {
+     p2 pa = project(spin(toWorld(f, a, t))), pb = project(spin(toWorld(f, b, t)));
+     if (pa.ok && pb.ok)
+-        rmDrawLine((int)pa.x, (int)pa.y, (int)pb.x, (int)pb.y, col);
++        softLine(pa.x, pa.y, pb.x, pb.y, 0.9f, 1.0f, col); // soft, like the pillars': steady on a CRT
+ }
+ 
+ // A sampled curve, drawn on up to `reveal` of its length
+@@ -958,28 +991,88 @@ static v3 trail[MAX_ORBS][TRAIL_N];
+ static int trailHead = 0, trailValid = 0;
+ static float trailLastSample = -1.0f;
+ 
++// A plasma tail: the orb's recent path, smoothed into a curve (Catmull-Rom through the samples), drawn
++// as two soft ribbons that fade to clear at their edges: a wide blue glow and a narrow hot core that
++// is white at the orb and cools to blue, then violet, as it thins away. A faint ripple runs down it.
++#define TAIL_SUB 3                         // curve points between two samples
++#define TAIL_PTS ((TRAIL_N - 1) * TAIL_SUB + 1)
++
++static float catmull(float p0, float p1, float p2, float p3, float u)
++{
++    float u2 = u * u, u3 = u2 * u;
++    return 0.5f * (2.0f * p1 + (p2 - p0) * u + (2.0f * p0 - 5.0f * p1 + 4.0f * p2 - p3) * u2 + (3.0f * p1 - p0 - 3.0f * p2 + p3) * u3);
++}
++
++// One ribbon segment from (a) to (b): two quads, bright along the middle, clear at both edges
++static void tailRibbon(float ax, float ay, float bx, float by, float wa, float wb, float nax, float nay, float nbx, float nby, u64 ca, u64 cb)
++{
++    u64 za = ca & ~(0xFFULL << 24), zb = cb & ~(0xFFULL << 24);
++    rmDrawQuadGouraud(ax + nax * wa, ay + nay * wa, za, bx + nbx * wb, by + nby * wb, zb, ax, ay, ca, bx, by, cb);
++    rmDrawQuadGouraud(ax, ay, ca, bx, by, cb, ax - nax * wa, ay - nay * wa, za, bx - nbx * wb, by - nby * wb, zb);
++}
++
+ static void drawTail(int i, p2 head, float r, float vis)
+ {
+-    int k;
+-    p2 prev = head;
+-    float width = r * 0.45f * (1.0f + TRAIL_BOOST_WIDTH * trailBoost), glowUp = 1.0f + TRAIL_BOOST_GLOW * trailBoost;
+-    float prevW = width;
+-    for (k = 0; k < TRAIL_N; k++) {
++    float px[TRAIL_N + 2], py[TRAIL_N + 2], cx[TAIL_PTS], cy[TAIL_PTS], nxs[TAIL_PTS], nys[TAIL_PTS];
++    int k, s, n = 0, m = 0;
++    float width = r * 0.5f * (1.0f + TRAIL_BOOST_WIDTH * trailBoost), glowUp = 1.0f + TRAIL_BOOST_GLOW * trailBoost;
++    float t = nowSeconds();
++
++    // the control points: the orb itself, then its samples, newest first
++    px[n] = head.x;
++    py[n++] = head.y;
++    for (k = 1; k < TRAIL_N; k++) {
+         p2 p = project(trail[i][(trailHead - k + TRAIL_N) % TRAIL_N]);
+-        if (!p.ok || !prev.ok)
++        if (!p.ok)
+             break;
+-        float dx = p.x - prev.x, dy = p.y - prev.y, len = sqrtf(dx * dx + dy * dy);
+-        float fall = 1.0f - (float)(k + 1) / TRAIL_N;
+-        float w = width * fall;
+-        if (len > 0.5f) { // a still orb has no tail
+-            float nx = -dy / len, ny = dx / len;
+-            int a0 = (int)(0x30 * glowUp * powf(fall + 1.0f / TRAIL_N, 1.8f) * vis), a1 = (int)(0x30 * glowUp * powf(fall, 1.8f) * vis);
+-            u64 c0 = RGBA(0x6F, 0x9C, 0xFF, a0), c1 = RGBA(0x6F, 0x9C, 0xFF, a1);
+-            rmDrawQuadGouraud(prev.x + nx * prevW, prev.y + ny * prevW, c0, prev.x - nx * prevW, prev.y - ny * prevW, c0,
+-                              p.x + nx * w, p.y + ny * w, c1, p.x - nx * w, p.y - ny * w, c1);
++        px[n] = p.x;
++        py[n++] = p.y;
++    }
++    if (n < 2)
++        return;
++    float travel = 0.0f;
++    for (k = 1; k < n; k++)
++        travel += fabsf(px[k] - px[k - 1]) + fabsf(py[k] - py[k - 1]);
++    if (travel < 1.0f)
++        return; // a still orb has no tail
++
++    // the smooth curve through them
++    for (k = 0; k < n - 1; k++) {
++        int k0 = k > 0 ? k - 1 : 0, k3 = k + 2 < n ? k + 2 : n - 1;
++        for (s = 0; s < TAIL_SUB && m < TAIL_PTS; s++) {
++            float u = (float)s / TAIL_SUB;
++            cx[m] = catmull(px[k0], px[k], px[k + 1], px[k3], u);
++            cy[m++] = catmull(py[k0], py[k], py[k + 1], py[k3], u);
+         }
+-        prev = p;
+-        prevW = w;
++    }
++    if (m < TAIL_PTS) {
++        cx[m] = px[n - 1];
++        cy[m++] = py[n - 1];
++    }
++    // its normals, averaged at each point so the ribbon bends without kinks
++    for (k = 0; k < m; k++) {
++        int a = k > 0 ? k - 1 : 0, b = k + 1 < m ? k + 1 : m - 1;
++        float dx = cx[b] - cx[a], dy = cy[b] - cy[a], len = sqrtf(dx * dx + dy * dy);
++        nxs[k] = len > 0.001f ? -dy / len : 0.0f;
++        nys[k] = len > 0.001f ? dx / len : 1.0f;
++    }
++
++    for (k = 0; k < m - 1; k++) {
++        float f0 = 1.0f - (float)k / (m - 1), f1 = 1.0f - (float)(k + 1) / (m - 1); // 1 at the orb, 0 at the end
++        float rip0 = 1.0f + 0.12f * sinf(t * 9.0f - k * 0.55f), rip1 = 1.0f + 0.12f * sinf(t * 9.0f - (k + 1) * 0.55f);
++        float g0 = width * 2.1f * powf(f0, 0.7f) * rip0, g1 = width * 2.1f * powf(f1, 0.7f) * rip1;
++        int ga0 = (int)(0x26 * glowUp * f0 * vis), ga1 = (int)(0x26 * glowUp * f1 * vis);
++        // the glow: blue, shading toward violet at the far end
++        tailRibbon(cx[k], cy[k], cx[k + 1], cy[k + 1], g0, g1, nxs[k], nys[k], nxs[k + 1], nys[k + 1],
++                   RGBA((int)lerpf(0x70, 0x50, f0), (int)lerpf(0x40, 0x88, f0), 0xFF, ga0),
++                   RGBA((int)lerpf(0x70, 0x50, f1), (int)lerpf(0x40, 0x88, f1), 0xFF, ga1));
++        // the core: thin, hot white at the orb, cooling to blue
++        float c0 = width * 0.55f * powf(f0, 1.2f) * rip0, c1 = width * 0.55f * powf(f1, 1.2f) * rip1;
++        int ca0 = (int)(0x58 * glowUp * f0 * f0 * vis), ca1 = (int)(0x58 * glowUp * f1 * f1 * vis);
++        if (ca0 > 1)
++            tailRibbon(cx[k], cy[k], cx[k + 1], cy[k + 1], c0, c1, nxs[k], nys[k], nxs[k + 1], nys[k + 1],
++                       RGBA((int)lerpf(0x60, 0xE8, f0), (int)lerpf(0x90, 0xF0, f0), 0xFF, ca0),
++                       RGBA((int)lerpf(0x60, 0xE8, f1), (int)lerpf(0x90, 0xF0, f1), 0xFF, ca1));
+     }
+ }
+ 
+@@ -1069,7 +1162,6 @@ void ripps2DrawOrbs(void)
+     glow(320, 230, 260, 0x12, 0x35, 0x7F, 0x30); // soft haze behind the formation
+ 
+     // outline: draw on, flash, hold, fade (never mid-morph)
+-    rmSetLineAA(1);
+     if (!morphing) {
+         int a = 0;
+         float reveal = 1.0f;
+@@ -1090,9 +1182,8 @@ void ripps2DrawOrbs(void)
+             reveal = 1.0f;
+         }
+         if (a > 0)
+-            drawGuides(f, ot, reveal, RGBA(0x51, 0x8E, 0xEB, a));
++            drawGuides(f, ot, reveal, RGBA(0x51, 0x8E, 0xEB, a * 3 / 4));
+     }
+-    rmSetLineAA(0);
+ 
+     int n = formations[f].n, pn = formations[prevFormation].n;
+     int count = (e < 1.0f && pn > n) ? pn : n;
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index 719cad1..6bb2cb2 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -1339,7 +1339,7 @@ static void fbHandleGrid(void)
+ 
+ // A tile's icon from the RIPPS2 grid atlas (ps2-pillars elf/theme/make_grid_icons.py): row 0 holds the line
+ // art, row 1 the same lines blurred into a glow. The glow goes under the lines additively, so it adds light.
+-#define FB_ICON_CELL 96.0f
++#define FB_ICON_CELL 64.0f
+ static void fbTileIcon(int t, float cx, float cy, float s, int a, float glow, int lit)
+ {
+     GSTEXTURE *tex = thmGetTexture(RIPPS2_GRID_ICONS);
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index ab65b4d..903013b 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -61,10 +61,21 @@ int gRipps2Random = RIPPS2_RANDOM_ON;
+ static int formationDirty = 0; // changed since the last save
+ 
+ // ---- The flying PS2 mark ----
+-static int flyFrom = RIPPS2_CAT_STORAGE;
+-static int flyTo = RIPPS2_CAT_STORAGE;
+-static clock_t flyStart = 0;
+-static float flyDuration = 0.0f; // seconds; 0 = resting
++//
++// The mark is a weight on a damped spring pulled toward the selected category. It keeps its own
++// position and speed, so a new target mid-flight (two quick presses, or a wrap) bends the flight from
++// wherever the mark is, at whatever speed it has: it never jumps. Everything else is read off that
++// speed: it dives under the labels and stretches as it goes, so a longer jump, which is faster,
++// dives deeper. Going end to end (Left on Launch Disc, Right on Memory Files) wraps round, and the
++// mark turns over once on the way like a flipped coin.
++#define MARK_OMEGA 10.5f  // spring stiffness: about half a second to settle
++#define MARK_ZETA  0.78f  // a touch under critical: it eases in with the faintest settle
++#define FLIP_S     0.62f
++static float markX = 320.0f, markV = 0.0f; // px and px/s along the bar
++static int markReady = 0;
++static clock_t markLast = 0, flipStart = 0;
++static float markDrawX, markDrawY, markDrawW; // where the mark was drawn this frame, for the busy glow
++static int markDrawFrame = -1;
+ 
+ static float easeInOutCubic(float x)
+ {
+@@ -116,23 +127,80 @@ void ripps2RenderCategoryBar(void)
+     if (mark == NULL)
+         return;
+ 
+-    float x = (float)categoryX[flyTo], y = (float)MARK_Y + (1.0f - enter) * 10.0f, w = (float)MARK_W * fmaxf(0.0f, easeOutBack(enter));
+-    if (flyDuration > 0.0f) {
+-        float t = (float)(clock() - flyStart) / (float)CLOCKS_PER_SEC / flyDuration;
+-        if (t >= 1.0f) {
+-            flyDuration = 0.0f;
+-        } else {
+-            int hops = flyTo > flyFrom ? flyTo - flyFrom : flyFrom - flyTo;
+-            float e = easeInOutCubic(t < 0.0f ? 0.0f : t);
+-            x = categoryX[flyFrom] + (categoryX[flyTo] - categoryX[flyFrom]) * e;
+-            y += sinf(3.14159265f * e) * (6.0f + 6.0f * hops);     // swoop under the labels
+-            if (hops >= 2)
+-                w *= fmaxf(0.08f, fabsf(cosf(3.14159265f * e))); // coin flip end to end
+-            else
+-                w *= 1.0f + 0.25f * sinf(3.14159265f * t);      // stretch while flying
+-        }
++    // the spring, in small fixed steps so it behaves the same at any frame rate
++    clock_t now = clock();
++    float target = (float)categoryX[gRipps2Category];
++    float dt = markLast != 0 ? (float)(now - markLast) / (float)CLOCKS_PER_SEC : 0.0f;
++    markLast = now;
++    if (!markReady || dt > 0.25f) { // first frame, or the bar was away: rest where it belongs
++        markX = target;
++        markV = 0.0f;
++        markReady = 1;
++        dt = 0.0f;
++    }
++    while (dt > 0.0f) {
++        float h = dt > 0.004f ? 0.004f : dt;
++        markV += (MARK_OMEGA * MARK_OMEGA * (target - markX) - 2.0f * MARK_ZETA * MARK_OMEGA * markV) * h;
++        markX += markV * h;
++        dt -= h;
+     }
++    if (fabsf(target - markX) < 0.25f && fabsf(markV) < 3.0f) {
++        markX = target;
++        markV = 0.0f;
++    }
++
++    float speed = fabsf(markV);
++    float x = markX, y = (float)MARK_Y + (1.0f - enter) * 10.0f, w = (float)MARK_W * fmaxf(0.0f, easeOutBack(enter));
++    y += fminf(26.0f, speed * 0.017f); // the dive under the labels
++    if (flipStart != 0) {
++        float ft = (float)(now - flipStart) / (float)CLOCKS_PER_SEC / FLIP_S;
++        if (ft >= 1.0f)
++            flipStart = 0;
++        else // turns over once: edge-on halfway, then the face again
++            w *= fmaxf(0.06f, fabsf(cosf(3.14159265f * easeInOutCubic(ft))));
++    }
++    if (flipStart == 0)
++        w *= 1.0f + 0.22f * fminf(1.0f, speed / 900.0f); // stretches with its speed
+     rmDrawPixmap(mark, (int)x, (int)y, ALIGN_CENTER, (int)w, MARK_H, SCALING_RATIO, COLOR_TEX, 0);
++    markDrawX = x;
++    markDrawY = y;
++    markDrawW = w;
++    markDrawFrame = guiFrameId;
++}
++
++// Loading: the mark breathes, a soft glow swelling and settling under it. On a page with the category
++// bar it is the mark in the bar; elsewhere a small mark where the theme puts its loading icon.
++void ripps2DrawBusy(int alpha)
++{
++    GSTEXTURE *mark = thmGetTexture(RIPPS2_MARK), *glow = thmGetTexture(RIPPS2_MARK_GLOW);
++    float t = (float)clock() / (float)CLOCKS_PER_SEC, b = 0.5f + 0.5f * sinf(t * 6.2832f / 1.4f);
++    float x, y, w, h;
++    int own = markDrawFrame == guiFrameId;
++
++    if (mark == NULL || alpha <= 0)
++        return;
++    if (own) {
++        x = markDrawX;
++        y = markDrawY;
++        w = markDrawW;
++        h = MARK_H;
++    } else {
++        x = gTheme->loadingIcon ? gTheme->loadingIcon->posX : 590;
++        y = gTheme->loadingIcon ? gTheme->loadingIcon->posY : 440;
++        w = 54.0f;
++        h = 54.0f * MARK_H / MARK_W;
++        rmDrawPixmap(mark, (int)x, (int)y, ALIGN_CENTER, (int)w, (int)h, SCALING_RATIO,
++                     GS_SETREG_RGBA(0x80, 0x80, 0x80, (int)(alpha * (0.55f + 0.45f * b))), 0);
++    }
++    rmSetBlendAdditive(1);
++    if (glow != NULL) { // the glow texture is the mark padded by a fifth: 1.25 x its width, 108/44 its height
++        float s = 1.0f + 0.12f * b;
++        rmDrawPixmap(glow, (int)x, (int)y, ALIGN_CENTER, (int)(w * 1.25f * s), (int)(h * 108.0f / 44.0f * s), SCALING_RATIO,
++                     GS_SETREG_RGBAQ(0x30, 0x58, 0x80, (int)(alpha * (0.25f + 0.55f * b)), 0x00), 0);
++    }
++    // and the mark itself brightens a little with each breath
++    rmDrawPixmap(mark, (int)x, (int)y, ALIGN_CENTER, (int)w, (int)h, SCALING_RATIO, GS_SETREG_RGBAQ(0x50, 0x68, 0x80, (int)(alpha * 0.35f * b), 0x00), 0);
++    rmSetBlendAdditive(0);
+ }
+ 
+ // ---- The view word ----
+@@ -301,12 +369,7 @@ void ripps2SetCategory(int cat)
+         formationDirty = 0;
+     }
+ 
+-    int hops = cat > gRipps2Category ? cat - gRipps2Category : gRipps2Category - cat;
+-    flyFrom = gRipps2Category;
+-    flyTo = cat;
+-    flyStart = clock();
+-    flyDuration = 0.52f + 0.23f * hops;
+-    gRipps2Category = cat;
++    gRipps2Category = cat; // the mark's spring takes it from here, from wherever the mark is
+ 
+     // no fade: the mark's flight across the bar is the transition
+     if (cat == RIPPS2_CAT_STORAGE)
+@@ -317,9 +380,17 @@ void ripps2SetCategory(int cat)
+         guiSwitchScreenInstant(GUI_SCREEN_RIPPS2_MEMORY);
+ }
+ 
++// Left / Right on any category page: the next one along, wrapping end to end with a coin flip
+ void ripps2StepCategory(int dir)
+ {
+-    ripps2SetCategory(gRipps2Category + (dir < 0 ? -1 : 1));
++    int next = gRipps2Category + (dir < 0 ? -1 : 1);
++    if (next < 0 || next >= RIPPS2_CAT_COUNT) {
++        next = next < 0 ? RIPPS2_CAT_COUNT - 1 : 0;
++        flipStart = clock();
++        if (flipStart == 0)
++            flipStart = 1;
++    }
++    ripps2SetCategory(next);
+ }
+ 
+ // Button glyphs draw at the hint bar's height (20), keeping each image's own aspect
+@@ -453,7 +524,9 @@ void ripps2RenderLaunch(void)
+ void ripps2HandleInputLaunch(void)
+ {
+     if (getKeyOn(KEY_RIGHT)) {
+-        ripps2SetCategory(RIPPS2_CAT_STORAGE);
++        ripps2StepCategory(1);
++    } else if (getKeyOn(KEY_LEFT)) {
++        ripps2StepCategory(-1); // round to Memory Files
+     } else if (getKeyOn(KEY_START)) {
+         sfxPlay(SFX_CONFIRM);
+         int wait;
+@@ -497,7 +570,9 @@ void ripps2HandleInputMemory(void)
+     ripps2SetOrbInput(getKeyPressed(KEY_L2), getKeyPressed(KEY_R2));
+ 
+     if (getKeyOn(KEY_LEFT)) {
+-        ripps2SetCategory(RIPPS2_CAT_STORAGE);
++        ripps2StepCategory(-1);
++    } else if (getKeyOn(KEY_RIGHT)) {
++        ripps2StepCategory(1); // round to Launch Disc
+     } else if (getKeyOn(KEY_L1)) {
+         gRipps2Formation = (gRipps2Formation + FORMATION_COUNT - 1) % FORMATION_COUNT;
+         formationDirty = 1;
+diff --git a/src/textures.c b/src/textures.c
+index 7e4de81..e064547 100644
+--- a/src/textures.c
++++ b/src/textures.c
+@@ -111,6 +111,7 @@ extern void *PS2_png;
+ extern void *case_overlay_png;
+ extern void *ripps2_glass_png; // RIPPS2
+ extern void *ripps2_mark_png;  // RIPPS2
++extern void *ripps2_mark_glow_png; // RIPPS2: elf/theme/tools/make_mark_glow.py
+ extern void *L2R2_png;         // RIPPS2: the L2+R2 "Random" hint
+ extern void *ripps2_ps1logo_png; // RIPPS2: the L3 filter splashes
+ extern void *ripps2_ps2logo_png;
+@@ -281,6 +282,7 @@ static texture_t internalDefault[TEXTURES_COUNT] = {
+     {R1_ICON, "R1", &R1_png},
+     {RIPPS2_GLASS, "ripps2_glass", &ripps2_glass_png},
+     {RIPPS2_MARK, "ripps2_mark", &ripps2_mark_png},
++    {RIPPS2_MARK_GLOW, "ripps2_mark_glow", &ripps2_mark_glow_png},
+     {R2_ICON, "L2R2", &L2R2_png},
+     {RIPPS2_PS1_LOGO, "ripps2_ps1logo", &ripps2_ps1logo_png},
+     {RIPPS2_PS2_LOGO, "ripps2_ps2logo", &ripps2_ps2logo_png},
+diff --git a/src/themes.c b/src/themes.c
+index 68ff06c..bc2636a 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -3957,6 +3957,7 @@ static int thmLoad(const char *themePath)
+     // RIPPS2: the flying PS2 mark (category bar, art panel backdrop) is drawn by the shell itself,
+     // so load it even though no theme element names it. The art panel's glass is procedural now.
+     thmLoadResource(&newT->textures[RIPPS2_MARK], RIPPS2_MARK, themePath, GS_PSM_CT32, 1);
++    thmLoadResource(&newT->textures[RIPPS2_MARK_GLOW], RIPPS2_MARK_GLOW, themePath, GS_PSM_CT32, 1);
+     thmLoadResource(&newT->textures[RIPPS2_PS1_LOGO], RIPPS2_PS1_LOGO, themePath, GS_PSM_CT32, 1); // RIPPS2: L3 splashes
+     thmLoadResource(&newT->textures[RIPPS2_PS2_LOGO], RIPPS2_PS2_LOGO, themePath, GS_PSM_CT32, 1);
+     thmLoadResource(&newT->textures[RIPPS2_GRID_ICONS], RIPPS2_GRID_ICONS, themePath, GS_PSM_CT32, 1); // RIPPS2: grid icons

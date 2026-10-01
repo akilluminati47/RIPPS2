@@ -2,28 +2,32 @@
 
 Row 0: the icons, anti-aliased white strokes on transparency (tinted at draw time).
 Row 1: the same icons blurred into a soft glow, drawn additively under the active tile's icon.
-Cells are 96 px, drawn 4x supersampled and reduced, so the strokes stay smooth when the PS2 scales them.
+Cells are 64 px, the size the grid draws them at, so the GS never has to shrink a stroke (it has no
+mipmaps: a 96 px icon drawn at 64 sampled unevenly and looked warped). Shapes are laid out on a 96-unit
+design grid and drawn 8x supersampled, then reduced.
 """
 import math
 import sys
 from PIL import Image, ImageDraw, ImageFilter
 
-CELL, SS = 96, 4
-W = 3.2  # stroke width in cell pixels
+CELL, SS = 64, 8
+DESIGN = 96.0
+K = SS * CELL / DESIGN  # design units to supersampled pixels
+W = 3.2  # stroke width in design units (2.1 px on screen)
 OUT = sys.argv[1] if len(sys.argv) > 1 else 'ripps2_grid_icons.png'
 
 
 def P(x, y):
-    return (x * SS, y * SS)
+    return (x * K, y * K)
 
 
 def poly(d, pts, closed=True, w=W):
     pts = [P(*p) for p in pts]
     if closed:
         pts = pts + [pts[0]]
-    d.line(pts, fill=255, width=int(w * SS), joint='curve')
+    d.line(pts, fill=255, width=int(w * K), joint='curve')
     # round caps on an open path's ends, and round corners where a path turns sharply
-    r = w * SS / 2
+    r = w * K / 2
     ends = [pts[0], pts[-1]] if not closed else []
     for k in range(1, len(pts) - 1):
         ax, ay = pts[k][0] - pts[k - 1][0], pts[k][1] - pts[k - 1][1]
@@ -40,17 +44,20 @@ def line(d, a, b, w=W):
 
 
 def circle(d, cx, cy, r, w=W, fill=False):
-    box = (P(cx - r, cy - r), P(cx + r, cy + r))
     if fill:
-        d.ellipse(box, fill=255)
-    else:
-        d.ellipse(box, outline=255, width=int(w * SS))
+        d.ellipse((P(cx - r, cy - r), P(cx + r, cy + r)), fill=255)
+    else:  # PIL strokes inward from the box: grow it by half a stroke so the line is centred on r
+        h = w / 2
+        d.ellipse((P(cx - r - h, cy - r - h), P(cx + r + h, cy + r + h)), outline=255, width=int(w * K))
 
 
 def arc(d, cx, cy, r, a0, a1, w=W):
-    pts = [(cx + r * math.cos(math.radians(a)), cy + r * math.sin(math.radians(a)))
-           for a in [a0 + (a1 - a0) * i / 48 for i in range(49)]]
-    poly(d, pts, closed=False, w=w)
+    # PIL's own arc (a true curve, evenly stroked), centred on r, with round caps
+    h = w / 2
+    d.arc((P(cx - r - h, cy - r - h), P(cx + r + h, cy + r + h)), a0, a1, fill=255, width=int(w * K))
+    for a in (a0, a1):
+        x, y = P(cx + r * math.cos(math.radians(a)), cy + r * math.sin(math.radians(a)))
+        d.ellipse((x - w * K / 2, y - w * K / 2, x + w * K / 2, y + w * K / 2), fill=255)
 
 
 def rrect(d, x0, y0, x1, y1, r, w=W):
@@ -115,24 +122,17 @@ def exploit(d):  # a PS2 memory card taking an install: the card's cut corner, i
     line(d, (36, 80), (62, 80), w=W * 0.7)
 
 
-def power(d):  # the power mark
-    arc(d, 48, 51, 27, -55, 235)
-    line(d, (48, 14), (48, 46))
+def power(d):  # the power mark: a ring open at the top, symmetric about the stroke through it
+    arc(d, 48, 52, 28, -60, 240)
+    line(d, (48, 12), (48, 48))
 
 
-def exitb(d):  # out of the panel, back to the orbs: an arrow leaving a frame toward an orb on its orbit
-    poly(d, [(50, 16), (82, 16), (82, 80), (50, 80)], closed=False)
-    line(d, (70, 48), (38, 48))
-    poly(d, [(48, 38), (37, 48), (48, 58)], closed=False)
-    circle(d, 17, 48, 4.2, fill=True)
-    # the orbit, a thin tilted ellipse round the orb
-    pts = []
-    c, s_ = math.cos(math.radians(-24)), math.sin(math.radians(-24))
-    for i in range(72):
-        t = 2 * math.pi * i / 72
-        x, y = 14 * math.cos(t), 5.5 * math.sin(t)
-        pts.append((17 + x * c - y * s_, 48 + x * s_ + y * c))
-    poly(d, pts, w=W * 0.55)
+def exitb(d):  # leave the browser: a door standing open, an arrow out through it
+    rrect(d, 48, 10, 84, 86, 3)                                   # the frame
+    poly(d, [(48, 10), (64, 17), (64, 82), (48, 86)], w=W * 0.85)  # the door, swung open toward you
+    circle(d, 59, 50, 2.6, fill=True)                             # its handle
+    line(d, (40, 48), (10, 48))
+    poly(d, [(22, 36), (10, 48), (22, 60)], closed=False)
 
 
 ICONS = [browser, editor, hdd, exploit, power, exitb]
@@ -142,7 +142,7 @@ for i, fn in enumerate(ICONS):
     big = Image.new('L', (CELL * SS, CELL * SS), 0)
     fn(ImageDraw.Draw(big))
     a = big.resize((CELL, CELL), Image.LANCZOS)
-    glow = a.filter(ImageFilter.GaussianBlur(4.5))
+    glow = a.filter(ImageFilter.GaussianBlur(3.0))
     glow = glow.point(lambda v: min(255, int(v * 2.4)))
     for row, alpha in ((0, a), (1, glow)):
         cell = Image.new('RGBA', (CELL, CELL), (255, 255, 255, 0))
