@@ -1,0 +1,12 @@
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index 0529e1f..8bd6264 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -30,6 +30,7 @@
+ #include <math.h>
+ #include <malloc.h>
+ #include <kernel.h>
++#include <delaythread.h>
+ 
+ #include "include/opl.h"
+ #include "include/gui.h"
