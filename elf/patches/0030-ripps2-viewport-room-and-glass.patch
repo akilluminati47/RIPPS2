@@ -1,0 +1,17 @@
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index 9adbe22..1603b0f 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -451,9 +451,10 @@ void ripps2DrawPanelGlass(int x, int y, int w, int h, int hasItem)
+         return;
+     }
+ 
+-    // tint: 30% over the upper art, deepening to 85% by the text zone (from about a third down)
++    // tint: 23% over the upper art, deepening to 72% by the text zone (from about a third down), so
++    // the art and the pillars still read through
+     int y1 = y + (h * 22) / 100, y2 = y + (h * 38) / 100;
+-    u64 light = RGBA_PRIM(0x04, 0x0C, 0x2E, 0x26), mid = RGBA_PRIM(0x04, 0x0C, 0x2E, 0x40), deep = RGBA_PRIM(0x03, 0x08, 0x22, 0x6C);
++    u64 light = RGBA_PRIM(0x04, 0x0C, 0x2E, 0x1E), mid = RGBA_PRIM(0x04, 0x0C, 0x2E, 0x34), deep = RGBA_PRIM(0x03, 0x08, 0x22, 0x5C);
+     rmDrawQuadGouraud(x, y, light, x + w, y, light, x, y1, light, x + w, y1, light);
+     rmDrawQuadGouraud(x, y1, light, x + w, y1, light, x, y2, mid, x + w, y2, mid);
+     rmDrawQuadGouraud(x, y2, mid, x + w, y2, mid, x, y + h, deep, x + w, y + h, deep);
