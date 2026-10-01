@@ -1,0 +1,1764 @@
+diff --git a/Makefile b/Makefile
+index 8fc6583..1e39df2 100644
+--- a/Makefile
++++ b/Makefile
+@@ -133,7 +133,7 @@ ifneq ($(GIT_TAG),latest)
+ endif
+ endif
+ 
+-FRONTEND_OBJS = ripps2.o ripps2ui.o ripps2bg.o ripps2files.o ripps2edit.o ripps2hdd.o ripps2kbd.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o mixsupport.o metadb.o \
++FRONTEND_OBJS = ripps2.o ripps2ui.o ripps2bg.o ripps2files.o ripps2edit.o ripps2hdd.o ripps2kbd.o ripps2saves.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o mixsupport.o metadb.o \
+ 		dia.o ioman.o texcache.o themes.o supportbase.o bdmsupport.o netsupport.o ethsupport.o httpcatalog.o httpsupport.o udpfssupport.o hddsupport.o zso.o lz4.o launchdiag.o \
+ 		appsupport.o mmcesupport.o artindex.o vcdsupport.o cuesupport.o libview.o retrogem.o folderbrowse.o gui.o guigame.o vmc_groups.o textures.o opl.o atlas.o nbns.o httpclient.o gsm.o cheatman.o sound.o ps2cnf.o tar.o
+ 
+@@ -166,7 +166,7 @@ PNG_ASSETS = load0 load1 load2 load3 load4 load5 load6 load7 usb usb_bd ilk_bd \
+ 	# unused icons - up down l2 r2
+ 
+ # RIPPS2: glass info panel and PS2 selector mark (gfx/ripps2_*.png, copied in by RIPPS2's build.sh)
+-PNG_ASSETS += ripps2_glass ripps2_mark L2R2 ripps2_ps1logo ripps2_ps2logo ripps2_wle_folder ripps2_wle_warning
++PNG_ASSETS += ripps2_glass ripps2_mark L2R2 ripps2_ps1logo ripps2_ps2logo ripps2_grid_icons
+ 
+ # The RA cover mark is embedded ONLY in the RA flavour: the default build has no
+ # RA_MARK enum member and no table row for it, so embedding the bitmap there would
+diff --git a/include/renderman.h b/include/renderman.h
+index 0099a43..aa5a6e7 100644
+--- a/include/renderman.h
++++ b/include/renderman.h
+@@ -115,6 +115,9 @@ void rmSetReflectionYOffset(int yoff);
+ /** Queues a opaque rectangle to be rendered */
+ void rmDrawRect(int x, int y, int w, int h, u64 color);
+ 
++/** RIPPS2: one cell (u0,v0)-(u1,v1), in texels, of an atlas texture, placed the way rmDrawPixmap places a whole one */
++void rmDrawPixmapPart(GSTEXTURE *txt, int x, int y, short aligned, int w, int h, short scaled, u64 color, float u0, float v0, float u1, float v1);
++
+ /** Queues a rectangle of fillColor inside a frameColor border `border` virtual pixels wide, keeping at
+  * least one display pixel of border on every side in every video mode. */
+ void rmDrawFramedRect(int x, int y, int w, int h, int border, u64 frameColor, u64 fillColor);
+diff --git a/include/ripps2.h b/include/ripps2.h
+index a1032a2..b2a3a1f 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -77,6 +77,26 @@ int ripps2EditFile(const char *path);                              // 1 when it
+ int ripps2EditMetadata(config_set_t *config, const char *gameName); // 1 when SAVE was chosen (values set, not written)
+ 
+ void ripps2HddManager(void); // ripps2hdd.c
++
++// RIPPS2 saves (ripps2saves.c): PSU files and PS2 virtual memory card images, for the file browser
++enum { RIPPS2_SAVE_FOLDER = 0, RIPPS2_SAVE_VMC, RIPPS2_SAVE_PSU };
++typedef struct
++{
++    char name[33];
++    unsigned char isDir;
++    unsigned int size;
++} ripps2_vmc_ent_t;
++// A save from a folder (from = its parent, "mass0:/X/"), a card image (from = the image) or a .psu (from = the
++// file) to a folder (to = the parent it lands in), a card image's top (to = the image) or a .psu (to = the folder
++// the NAME.psu goes in). 1 = done, -1 = one of that name is already there, 0 = failed (ripps2SaveError says why).
++int ripps2SaveCopy(int fromKind, const char *from, const char *saveName, int toKind, const char *to);
++const char *ripps2SaveError(void);
++int ripps2PsuSaveName(const char *psu, char *name, int size);
++int ripps2VmcProbe(const char *image); // 0 = not a PS2 card image, 1 = one, 2 = one with ECC (read only)
++int ripps2VmcList(const char *image, const char *save, ripps2_vmc_ent_t *out, int max, unsigned int *freeKb);
++int ripps2VmcReadFile(const char *image, const char *save, const char *file, void *buf, int size);
++int ripps2VmcExtractFile(const char *image, const char *save, const char *file, const char *dst);
++int ripps2VmcDeleteSave(const char *image, const char *save);
+ int ripps2PickList(const char *const *items, int count); // ripps2edit.c: a small glass list; -1 = none
+ void ripps2SetOrbInput(int showPaths, int boost); // Memory Files: L2 shows the paths, R2 builds the orbs to 2x
+ 
+diff --git a/include/textures.h b/include/textures.h
+index eb41fb7..bca518a 100644
+--- a/include/textures.h
++++ b/include/textures.h
+@@ -125,8 +125,7 @@ enum INTERNAL_TEXTURE {
+     R2_ICON,      // RIPPS2: the L2+R2 "Random" hint (image L2R2)
+     RIPPS2_PS1_LOGO, // RIPPS2: the PS1 games filter's splash (image ripps2_ps1logo)
+     RIPPS2_PS2_LOGO, // RIPPS2: the PS2 games filter's splash (image ripps2_ps2logo)
+-    RIPPS2_WLE_FOLDER,  // RIPPS2: wLaunchELF's folder icon (ps2homebrew/wLaunchELF, AFL-2.0)
+-    RIPPS2_WLE_WARNING, // RIPPS2: wLaunchELF's warning icon (ps2homebrew/wLaunchELF, AFL-2.0)
++    RIPPS2_GRID_ICONS, // RIPPS2: the file browser settings grid's line icons and their glows, one atlas
+ #ifdef RETROACHIEVEMENTS
+     // RA mark over a tracked game's cover (theme override "ra_mark"). Appended last:
+     // texId is positional.
+diff --git a/src/renderman.c b/src/renderman.c
+index 0d328db..7be1a79 100644
+--- a/src/renderman.c
++++ b/src/renderman.c
+@@ -538,6 +538,17 @@ static void rmDrawReflection(GSTEXTURE *txt, rm_quad_t *q, float bottomY, float
+     }
+ }
+ 
++void rmDrawPixmapPart(GSTEXTURE *txt, int x, int y, short aligned, int w, int h, short scaled, u64 color, float u0, float v0, float u1, float v1)
++{
++    rm_quad_t quad;
++    rmSetupQuad(txt, x, y, aligned, w, h, scaled, color, &quad);
++    quad.ul.u = u0;
++    quad.ul.v = v0;
++    quad.br.u = u1;
++    quad.br.v = v1;
++    rmDrawQuad(&quad);
++}
++
+ void rmDrawPixmap(GSTEXTURE *txt, int x, int y, short aligned, int w, int h, short scaled, u64 color, int reflection)
+ {
+     rm_quad_t quad;
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index e8022a7..c205fe0 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -10,6 +10,10 @@
+   cut / paste, delete, rename, new folder, and running an ELF.
+ 
+   - Memory card saves show the title from their icon.sys next to the folder name.
++  - A PS2 card image (OPL's VMC folder, PCSX2's .ps2) opens like a folder: its saves listed with their
++    titles, copied out, and on an image without ECC pasted in and deleted (ripps2saves.c).
++  - PSU saves: PASTE AS PSU turns copied save folders into .psu files; a .psu pasted onto a memory card
++    or into a card image, or opened with Cross, unpacks into its save folder.
+   - Pasting a save folder (one with an icon.sys) onto a memory card always lands it in the card's
+     root, where the console looks for saves, wherever on the card you are.
+   - The clipboard count and what happened last (COPIED, CUT, PASTED, DELETED) sit top right.
+@@ -65,7 +69,7 @@
+ #define FB_SOFT GS_SETREG_RGBA(0x67, 0x6C, 0x7A, 0x80)
+ #define FB_PRIM(r, g, b, a) GS_SETREG_RGBAQ((r), (g), (b), (a), 0x00)
+ 
+-enum { FB_KIND_DEVICE = 0, FB_KIND_START, FB_KIND_DIR, FB_KIND_SAVE, FB_KIND_FILE, FB_KIND_ELF };
++enum { FB_KIND_DEVICE = 0, FB_KIND_START, FB_KIND_DIR, FB_KIND_SAVE, FB_KIND_FILE, FB_KIND_ELF, FB_KIND_VMC, FB_KIND_PSU };
+ 
+ typedef struct
+ {
+@@ -92,6 +96,16 @@ static char fbClipDir[256];
+ static char fbClip[FB_CLIP_MAX][FB_NAME];
+ static unsigned char fbClipIsDir[FB_CLIP_MAX];
+ static int fbClipCount = 0, fbClipCut = 0;
++static char fbClipVmc[256]; // the card image the clipboard was filled in ("" = none)
++
++// inside a PS2 card image: its path ("" = not in one), whether it is read only, its free space
++static char fbVmc[256];
++static int fbVmcRO = 0;
++static unsigned int fbVmcFreeKb = 0;
++
++// what a paste does: copy as it is, turn save folders into .psu files, or unpack .psu files into folders
++enum { FB_PASTE_PLAIN = 0, FB_PASTE_PSU, FB_PASTE_UNPACK };
++static int fbPasteMode = FB_PASTE_PLAIN;
+ 
+ // a paste or delete in progress
+ static volatile u32 fbDoneBytes = 0, fbTotalBytes = 0;
+@@ -110,14 +124,15 @@ static void fbNoteFail(const char *verb, const char *path)
+     snprintf(fbFailWhat, sizeof(fbFailWhat), "%s %s E%d", verb, name && name[1] ? name + 1 : path, err);
+ }
+ static int fbOp = 0; // what the worker runs next
+-enum { FB_OP_SCAN = 0, FB_OP_PASTE, FB_OP_DELETE };
++enum { FB_OP_SCAN = 0, FB_OP_PASTE, FB_OP_DELETE, FB_OP_UNPACK };
++static char fbUnpackName[FB_NAME]; // Cross on a .psu: the one to unpack here
+ static char fbDeleteNames[FB_CLIP_MAX][FB_NAME];
+ static unsigned char fbDeleteIsDir[FB_CLIP_MAX];
+ static int fbDeleteCount = 0;
+ 
+ // the actions menu (Triangle)
+-enum { FB_ACT_COPY = 0, FB_ACT_CUT, FB_ACT_PASTE, FB_ACT_DELETE, FB_ACT_RENAME, FB_ACT_NEWDIR, FB_ACT_MARKALL, FB_ACT_COUNT };
+-static const char *fbActName[FB_ACT_COUNT] = {"COPY", "CUT", "PASTE", "DELETE", "RENAME", "NEW FOLDER", "MARK ALL"};
++enum { FB_ACT_COPY = 0, FB_ACT_CUT, FB_ACT_PASTE, FB_ACT_PASTE_PSU, FB_ACT_UNPACK, FB_ACT_DELETE, FB_ACT_RENAME, FB_ACT_NEWDIR, FB_ACT_MARKALL, FB_ACT_COUNT };
++static const char *fbActName[FB_ACT_COUNT] = {"COPY", "CUT", "PASTE", "PASTE AS PSU", "UNPACK PSU HERE", "DELETE", "RENAME", "NEW FOLDER", "MARK ALL"};
+ static int fbMenuOpen = 0, fbMenuSel = 0, fbMenuItems[FB_ACT_COUNT], fbMenuCount = 0;
+ 
+ static const char *fbDevices[] = {"mc0:/", "mc1:/", "mass0:/", "mass1:/", "mass2:/", "mass3:/", "mass4:/", "mass5:/", "mass6:/",
+@@ -142,6 +157,19 @@ static void fbJoin(char *out, int size, const char *dir, const char *name)
+     snprintf(out, size, "%s%s", dir, name);
+ }
+ 
++// Is path inside the card image (image + "/...")? Then save gets the save folder it is in ("" at the card's top)
++static int fbVmcPath(const char *image, const char *path, char *save, int size)
++{
++    int n = strlen(image);
++    if (n == 0 || strncmp(path, image, n) != 0 || path[n] != '/')
++        return 0;
++    if (save != NULL) {
++        const char *p = path + n + 1, *e = strchr(p, '/');
++        snprintf(save, size, "%.*s", e ? (int)(e - p) : (int)strlen(p), p);
++    }
++    return 1;
++}
++
+ static const char *fbDeviceLabel(const char *dev, char *buf, int size)
+ {
+     if (!strncmp(dev, "mc", 2))
+@@ -321,13 +349,48 @@ static void fbScanDevices(void)
+     fbDevCacheAt = clock();
+ }
+ 
++// A file named like a card image: .vmc / .ps2 / .mc2, or a .bin of a card's size (OPL's VMC folder)
++static int fbIsCardImage(const char *name, u32 size)
++{
++    if (fbHasSuffix(name, ".vmc") || fbHasSuffix(name, ".ps2") || fbHasSuffix(name, ".mc2"))
++        return 1;
++    return fbHasSuffix(name, ".bin") && size >= 1024 * 1024 && (size % (512 * 1024) == 0 || size % (528 * 1024) == 0);
++}
++
++static void fbScanVmc(const char *save)
++{
++    static ripps2_vmc_ent_t list[FB_MAX];
++    unsigned char sys[0xC0 + 68];
++    int got = ripps2VmcList(fbVmc, save, list, FB_MAX, &fbVmcFreeKb), i, n = 0;
++
++    for (i = 0; i < got; i++) {
++        fb_entry_t *e = &fbList[n++];
++        memset(e, 0, sizeof(*e));
++        snprintf(e->name, sizeof(e->name), "%s", list[i].name);
++        e->size = list[i].size;
++        e->kind = list[i].isDir ? FB_KIND_DIR : FB_KIND_FILE;
++        if (list[i].isDir && !save[0] && ripps2VmcReadFile(fbVmc, e->name, "icon.sys", sys, sizeof(sys)) == (int)sizeof(sys) &&
++            !memcmp(sys, "PS2D", 4)) {
++            fbSjisToAscii(sys + 0xC0, 68, sys[6] | (sys[7] << 8), e->title, sizeof(e->title));
++            e->kind = FB_KIND_SAVE;
++        }
++    }
++    qsort(fbList, n, sizeof(fb_entry_t), &fbCompare);
++    fbCount = n;
++}
++
+ static void fbScanDir(void)
+ {
+-    DIR *d = opendir(fbPath);
++    DIR *d;
+     struct dirent *de;
+     int n = 0, i, mcRoot;
+-    char child[320];
++    char child[320], save[40];
+ 
++    if (fbVmcPath(fbVmc, fbPath, save, sizeof(save))) {
++        fbScanVmc(save);
++        return;
++    }
++    d = opendir(fbPath);
+     if (d == NULL) {
+         fbCount = 0;
+         return;
+@@ -358,6 +421,10 @@ static void fbScanDir(void)
+                 e->size = (u32)st.st_size;
+             if (fbHasSuffix(e->name, ".elf"))
+                 e->kind = FB_KIND_ELF;
++            else if (fbHasSuffix(e->name, ".psu"))
++                e->kind = FB_KIND_PSU;
++            else if (fbIsCardImage(e->name, e->size))
++                e->kind = FB_KIND_VMC;
+         }
+     }
+     qsort(fbList, n, sizeof(fb_entry_t), &fbCompare);
+@@ -585,10 +652,49 @@ static void fbMcRoot(const char *path, char *out, int size)
+     snprintf(out, size, "%.4s/", path);
+ }
+ 
++// One clipboard item through the save tools: 1 done, -1 already there, -3 not something this paste takes,
++// 0 failed, -2 not a save matter (a plain copy)
++static int fbSavePaste(int i, const char *src, int fromVmc, const char *srcSave, int toVmc, const char *toSave)
++{
++    char dest[256], dst[320];
++    int isPsu = !fbClipIsDir[i] && fbHasSuffix(fbClip[i], ".psu");
++
++    // saves land at a memory card's top, where the console looks for them
++    if (fbIsMc(fbPath))
++        fbMcRoot(fbPath, dest, sizeof(dest));
++    else
++        snprintf(dest, sizeof(dest), "%s", fbPath);
++
++    if (fbPasteMode == FB_PASTE_PSU) {
++        if (!fbClipIsDir[i] || (fromVmc && srcSave[0]))
++            return -3;
++        return fromVmc ? ripps2SaveCopy(RIPPS2_SAVE_VMC, fbClipVmc, fbClip[i], RIPPS2_SAVE_PSU, fbPath)
++                       : ripps2SaveCopy(RIPPS2_SAVE_FOLDER, fbClipDir, fbClip[i], RIPPS2_SAVE_PSU, fbPath);
++    }
++    if (toVmc) {
++        if (toSave[0])
++            return -3; // a card image takes whole saves, at its top
++        if (fbClipIsDir[i])
++            return fromVmc ? (srcSave[0] ? -3 : ripps2SaveCopy(RIPPS2_SAVE_VMC, fbClipVmc, fbClip[i], RIPPS2_SAVE_VMC, fbVmc))
++                           : ripps2SaveCopy(RIPPS2_SAVE_FOLDER, fbClipDir, fbClip[i], RIPPS2_SAVE_VMC, fbVmc);
++        return isPsu && !fromVmc ? ripps2SaveCopy(RIPPS2_SAVE_PSU, src, NULL, RIPPS2_SAVE_VMC, fbVmc) : -3;
++    }
++    if (fromVmc) {
++        if (fbClipIsDir[i]) // a save from the card image's top
++            return ripps2SaveCopy(RIPPS2_SAVE_VMC, fbClipVmc, fbClip[i], RIPPS2_SAVE_FOLDER, dest);
++        snprintf(dst, sizeof(dst), "%s%s", fbPath, fbClip[i]); // a file from inside one of its saves
++        return ripps2VmcExtractFile(fbClipVmc, srcSave, fbClip[i], dst);
++    }
++    if (isPsu && (fbPasteMode == FB_PASTE_UNPACK || fbIsMc(fbPath)))
++        return ripps2SaveCopy(RIPPS2_SAVE_PSU, src, NULL, RIPPS2_SAVE_FOLDER, dest);
++    return -2;
++}
++
+ static void fbPasteWork(void)
+ {
+-    char src[320], dst[320], destDir[256];
+-    int i;
++    char src[320], dst[320], destDir[256], srcSave[40] = "", toSave[40] = "";
++    int i, r;
++    int fromVmc = fbVmcPath(fbClipVmc, fbClipDir, srcSave, sizeof(srcSave)), toVmc = fbVmcPath(fbVmc, fbPath, toSave, sizeof(toSave));
+ 
+     fbBuf = memalign(64, FB_BUF_SIZE);
+     if (fbBuf == NULL) {
+@@ -596,12 +702,32 @@ static void fbPasteWork(void)
+         return;
+     }
+     fbTotalBytes = 0;
++    if (!fromVmc && !toVmc && fbPasteMode == FB_PASTE_PLAIN) // saves report by item, plain files by bytes
++        for (i = 0; i < fbClipCount; i++) {
++            snprintf(src, sizeof(src), "%s%s", fbClipDir, fbClip[i]);
++            fbTotalBytes += fbTreeSize(src, fbClipIsDir[i], 0);
++        }
+     for (i = 0; i < fbClipCount; i++) {
+         snprintf(src, sizeof(src), "%s%s", fbClipDir, fbClip[i]);
+-        fbTotalBytes += fbTreeSize(src, fbClipIsDir[i], 0);
+-    }
+-    for (i = 0; i < fbClipCount; i++) {
+-        snprintf(src, sizeof(src), "%s%s", fbClipDir, fbClip[i]);
++        r = fbSavePaste(i, src, fromVmc, srcSave, toVmc, toSave);
++        if (r != -2) {
++            if (r == 1) {
++                // a move takes the original away; an export or an unpack leaves it
++                if (fbClipCut && fbPasteMode == FB_PASTE_PLAIN) {
++                    int gone = fromVmc ? (fbClipIsDir[i] && !srcSave[0] && ripps2VmcDeleteSave(fbClipVmc, fbClip[i])) : fbDeleteTree(src, fbClipIsDir[i], 0);
++                    if (!gone)
++                        fbKept++;
++                }
++            } else if (r == -1 || r == -3)
++                fbSkipped++;
++            else {
++                fbFailed++;
++                if (!fbFailWhat[0])
++                    snprintf(fbFailWhat, sizeof(fbFailWhat), "%s", ripps2SaveError());
++            }
++            fbDoneItems++;
++            continue;
++        }
+         snprintf(destDir, sizeof(destDir), "%s", fbPath);
+         // a save folder pasted anywhere on a memory card goes to the card's root, where saves live
+         if (fbIsMc(fbPath) && fbClipIsDir[i] && fbFolderHasIconSys(src))
+@@ -620,13 +746,39 @@ static void fbPasteWork(void)
+     fbBuf = NULL;
+ }
+ 
++// Cross on a .psu: its save, unpacked here (on a memory card, at the card's top)
++static void fbUnpackWork(void)
++{
++    char src[320], dest[256];
++    int r;
++    fbJoin(src, sizeof(src), fbPath, fbUnpackName);
++    if (fbIsMc(fbPath))
++        fbMcRoot(fbPath, dest, sizeof(dest));
++    else
++        snprintf(dest, sizeof(dest), "%s", fbPath);
++    r = ripps2SaveCopy(RIPPS2_SAVE_PSU, src, NULL, RIPPS2_SAVE_FOLDER, dest);
++    if (r == -1)
++        fbSkipped++;
++    else if (r == 0) {
++        fbFailed++;
++        snprintf(fbFailWhat, sizeof(fbFailWhat), "%s", ripps2SaveError());
++    }
++    fbDoneItems++;
++}
++
+ static void fbDeleteWork(void)
+ {
+-    char path[320];
+-    int i;
++    char path[320], save[40];
++    int i, inVmc = fbVmcPath(fbVmc, fbPath, save, sizeof(save));
+     for (i = 0; i < fbDeleteCount; i++) {
+         snprintf(path, sizeof(path), "%s%s", fbPath, fbDeleteNames[i]);
+-        if (!fbDeleteTree(path, fbDeleteIsDir[i], 0))
++        if (inVmc) { // whole saves, at the card image's top
++            if (save[0] || !fbDeleteIsDir[i] || !ripps2VmcDeleteSave(fbVmc, fbDeleteNames[i])) {
++                fbFailed++;
++                if (!fbFailWhat[0])
++                    snprintf(fbFailWhat, sizeof(fbFailWhat), "%s", save[0] || !fbDeleteIsDir[i] ? "DELETE WHOLE SAVES HERE" : ripps2SaveError());
++            }
++        } else if (!fbDeleteTree(path, fbDeleteIsDir[i], 0))
+             fbFailed++;
+         fbDoneItems++;
+     }
+@@ -663,9 +815,12 @@ static void fbWorker(void)
+ {
+     if (fbOp == FB_OP_PASTE) {
+         fbPasteWork();
+-        fbReport(fbClipCut ? "MOVED" : "PASTED", fbDoneItems);
+-        if (fbClipCut) // a cut moves once; a copy can be pasted again
++        fbReport(fbPasteMode == FB_PASTE_PSU ? "EXPORTED AS PSU" : fbPasteMode == FB_PASTE_UNPACK ? "UNPACKED" : fbClipCut ? "MOVED" : "PASTED", fbDoneItems);
++        if (fbClipCut && fbPasteMode == FB_PASTE_PLAIN) // a cut moves once; a copy can be pasted again
+             fbClipCount = 0;
++    } else if (fbOp == FB_OP_UNPACK) {
++        fbUnpackWork();
++        fbReport("UNPACKED", fbDoneItems);
+     } else if (fbOp == FB_OP_DELETE) {
+         fbDeleteWork();
+         fbReport("DELETED", fbDoneItems);
+@@ -709,6 +864,8 @@ static void fbFixScroll(void)
+ 
+ static void fbOpenPath(const char *path, const char *keep)
+ {
++    if (fbVmc[0] && !fbVmcPath(fbVmc, path, NULL, 0))
++        fbVmc[0] = '\0';
+     snprintf(fbPath, sizeof(fbPath), "%s", path);
+     snprintf(fbKeepName, sizeof(fbKeepName), "%s", keep ? keep : "");
+     fbCursor = fbTop = 0;
+@@ -865,6 +1022,39 @@ static void fbOpen(void)
+             sfxPlay(SFX_CONFIRM);
+             fbRunElf(e);
+             break;
++        case FB_KIND_VMC: {
++            char image[320];
++            fbJoin(image, sizeof(image), fbPath, e->name);
++            int kind = ripps2VmcProbe(image);
++            if (kind == 0) {
++                sfxPlay(SFX_CANCEL);
++                fbSetToast(ripps2SaveError());
++                break;
++            }
++            sfxPlay(SFX_CONFIRM);
++            snprintf(fbVmc, sizeof(fbVmc), "%s", image);
++            fbVmcRO = kind == 2;
++            snprintf(path, sizeof(path), "%s/", image);
++            fbOpenPath(path, NULL);
++            break;
++        }
++        case FB_KIND_PSU: {
++            char psu[320], name[40], ask[160];
++            fbJoin(psu, sizeof(psu), fbPath, e->name);
++            if (!ripps2PsuSaveName(psu, name, sizeof(name))) {
++                sfxPlay(SFX_CANCEL);
++                fbSetToast("NOT A PSU SAVE");
++                break;
++            }
++            snprintf(ask, sizeof(ask), "Unpack the save %s %s?", name, fbIsMc(fbPath) ? "onto this memory card" : "into this folder");
++            if (guiMsgBox(ask, 1, NULL)) {
++                snprintf(fbUnpackName, sizeof(fbUnpackName), "%s", e->name);
++                snprintf(fbKeepName, sizeof(fbKeepName), "%s", name);
++                fbTotalItems = 1;
++                fbRun(FB_OP_UNPACK, "UNPACKING");
++            }
++            break;
++        }
+         default:
+             if (fbIsText(e->name)) {
+                 sfxPlay(SFX_CONFIRM);
+@@ -874,25 +1064,41 @@ static void fbOpen(void)
+     }
+ }
+ 
++static int fbClipHas(int dirs)
++{
++    int i;
++    for (i = 0; i < fbClipCount; i++)
++        if (dirs ? fbClipIsDir[i] : (!fbClipIsDir[i] && fbHasSuffix(fbClip[i], ".psu")))
++            return 1;
++    return 0;
++}
++
+ static void fbMenuBuild(void)
+ {
++    char save[40];
+     int inFolder = fbPath[0] != '\0', haveItem = inFolder && fbCount > 0;
++    int inVmc = fbVmcPath(fbVmc, fbPath, save, sizeof(save)), vmcTop = inVmc && !save[0] && !fbVmcRO;
++    int canChange = !inVmc || vmcTop; // a card image takes whole saves at its top, and only without ECC
+     fbMenuCount = 0;
+     if (haveItem) {
+         fbMenuItems[fbMenuCount++] = FB_ACT_COPY;
+-        fbMenuItems[fbMenuCount++] = FB_ACT_CUT;
++        if (canChange)
++            fbMenuItems[fbMenuCount++] = FB_ACT_CUT;
+     }
+-    if (inFolder && fbClipCount > 0)
++    if (inFolder && fbClipCount > 0 && canChange)
+         fbMenuItems[fbMenuCount++] = FB_ACT_PASTE;
+-    if (haveItem) {
++    if (inFolder && !inVmc && fbClipHas(1))
++        fbMenuItems[fbMenuCount++] = FB_ACT_PASTE_PSU;
++    if (inFolder && !inVmc && fbClipHas(0))
++        fbMenuItems[fbMenuCount++] = FB_ACT_UNPACK;
++    if (haveItem && canChange)
+         fbMenuItems[fbMenuCount++] = FB_ACT_DELETE;
++    if (haveItem && !inVmc)
+         fbMenuItems[fbMenuCount++] = FB_ACT_RENAME;
+-    }
+-    if (inFolder) {
++    if (inFolder && !inVmc)
+         fbMenuItems[fbMenuCount++] = FB_ACT_NEWDIR;
+-        if (fbCount > 0)
+-            fbMenuItems[fbMenuCount++] = FB_ACT_MARKALL;
+-    }
++    if (inFolder && fbCount > 0)
++        fbMenuItems[fbMenuCount++] = FB_ACT_MARKALL;
+     fbMenuSel = 0;
+ }
+ 
+@@ -907,6 +1113,7 @@ static void fbAction(int act)
+         case FB_ACT_CUT:
+             fbClipCount = fbSelection(fbClip, fbClipIsDir, FB_CLIP_MAX);
+             snprintf(fbClipDir, sizeof(fbClipDir), "%s", fbPath);
++            snprintf(fbClipVmc, sizeof(fbClipVmc), "%s", fbVmcPath(fbVmc, fbPath, NULL, 0) ? fbVmc : "");
+             fbClipCut = act == FB_ACT_CUT;
+             fbClearMarks();
+             snprintf(ask, sizeof(ask), "%d %s %s", fbClipCount, fbFiles(fbClipCount), fbClipCut ? "CUT" : "COPIED");
+@@ -914,9 +1121,12 @@ static void fbAction(int act)
+             sfxPlay(SFX_CONFIRM);
+             break;
+         case FB_ACT_PASTE:
++        case FB_ACT_PASTE_PSU:
++        case FB_ACT_UNPACK:
+             sfxPlay(SFX_CONFIRM);
++            fbPasteMode = act == FB_ACT_PASTE_PSU ? FB_PASTE_PSU : act == FB_ACT_UNPACK ? FB_PASTE_UNPACK : FB_PASTE_PLAIN;
+             fbTotalItems = fbClipCount;
+-            fbRun(FB_OP_PASTE, fbClipCut ? "MOVING" : "PASTING");
++            fbRun(FB_OP_PASTE, fbPasteMode == FB_PASTE_PSU ? "EXPORTING" : fbPasteMode == FB_PASTE_UNPACK ? "UNPACKING" : fbClipCut ? "MOVING" : "PASTING");
+             break;
+         case FB_ACT_DELETE:
+             n = fbSelection(fbDeleteNames, fbDeleteIsDir, FB_CLIP_MAX);
+@@ -1115,77 +1325,84 @@ static void fbHandleGrid(void)
+     }
+ }
+ 
+-static void fbCircle(float cx, float cy, float r, float from, float to, u64 c)
++// A tile's icon from the RIPPS2 grid atlas (ps2-pillars elf/theme/make_grid_icons.py): row 0 holds the line
++// art, row 1 the same lines blurred into a glow. The glow goes under the lines additively, so it adds light.
++#define FB_ICON_CELL 96.0f
++static void fbTileIcon(int t, float cx, float cy, float s, int a, float glow, int lit)
+ {
+-    int k, seg = 20;
+-    float px = cx + cosf(from) * r, py = cy + sinf(from) * r;
+-    for (k = 1; k <= seg; k++) {
+-        float a = from + (to - from) * k / seg, nx = cx + cosf(a) * r, ny = cy + sinf(a) * r;
+-        rmDrawLine((int)px, (int)py, (int)nx, (int)ny, c);
+-        px = nx;
+-        py = ny;
++    GSTEXTURE *tex = thmGetTexture(RIPPS2_GRID_ICONS);
++    float u0 = t * FB_ICON_CELL + 0.5f, u1 = (t + 1) * FB_ICON_CELL - 0.5f;
++
++    if (tex == NULL || tex->Mem == NULL)
++        return;
++    if (glow > 0.0f) {
++        int ga = (int)(a * glow);
++        rmSetBlendAdditive(1);
++        rmDrawPixmapPart(tex, (int)cx, (int)cy, ALIGN_CENTER, (int)(s * 1.08f), (int)(s * 1.08f), SCALING_RATIO,
++                         GS_SETREG_RGBA(0x2C, 0x50, 0x80, ga > 0x80 ? 0x80 : ga), u0, FB_ICON_CELL + 0.5f, u1, 2 * FB_ICON_CELL - 0.5f);
++        rmSetBlendAdditive(0);
+     }
++    rmDrawPixmapPart(tex, (int)cx, (int)cy, ALIGN_CENTER, (int)s, (int)s, SCALING_RATIO,
++                     lit ? GS_SETREG_RGBA(0x76, 0x7C, 0x80, a) : GS_SETREG_RGBA(0x4E, 0x5C, 0x80, a * 7 / 8), u0, 0.5f, u1, FB_ICON_CELL - 0.5f);
+ }
+ 
+-// A tile's icon, drawn at (cx, cy) about s px across
+-static void fbTileIcon(int t, float cx, float cy, float s, int a)
++// A 1 px outline d px outside the box [l, r) x [t, b)
++static void fbOutline(int l, int t, int r, int b, int d, u64 c)
+ {
+-    u64 c = FB_PRIM(0x9C, 0xB8, 0xFF, a), dim = FB_PRIM(0x4A, 0x72, 0xDC, a);
+-    float h = s / 2;
+-    GSTEXTURE *tex;
+-    int i;
+-    switch (t) {
+-        case FB_TILE_BROWSER: // wLaunchELF's own folder, large
+-            tex = thmGetTexture(RIPPS2_WLE_FOLDER);
+-            if (tex != NULL)
+-                rmDrawPixmap(tex, (int)(cx - h), (int)(cy - h), ALIGN_NONE, (int)s, (int)s, SCALING_RATIO, GS_SETREG_RGBA(0x80, 0x80, 0x80, a), 0);
+-            break;
+-        case FB_TILE_EDITOR: // a page of lines
+-            rmDrawLine((int)(cx - h * 0.6f), (int)(cy - h), (int)(cx + h * 0.3f), (int)(cy - h), c);
+-            rmDrawLine((int)(cx + h * 0.3f), (int)(cy - h), (int)(cx + h * 0.6f), (int)(cy - h * 0.7f), c);
+-            rmDrawLine((int)(cx + h * 0.6f), (int)(cy - h * 0.7f), (int)(cx + h * 0.6f), (int)(cy + h), c);
+-            rmDrawLine((int)(cx + h * 0.6f), (int)(cy + h), (int)(cx - h * 0.6f), (int)(cy + h), c);
+-            rmDrawLine((int)(cx - h * 0.6f), (int)(cy + h), (int)(cx - h * 0.6f), (int)(cy - h), c);
+-            for (i = 0; i < 4; i++)
+-                rmDrawLine((int)(cx - h * 0.35f), (int)(cy - h * 0.4f + i * h * 0.4f), (int)(cx + h * (i == 3 ? 0.05f : 0.35f)), (int)(cy - h * 0.4f + i * h * 0.4f), dim);
+-            break;
+-        case FB_TILE_HDD: // a drive: body, a platter, a light
+-            rmDrawRect((int)(cx - h), (int)(cy - h * 0.55f), (int)s, (int)(s * 0.55f), FB_PRIM(0x1E, 0x3C, 0x96, a / 2));
+-            rmDrawLine((int)(cx - h), (int)(cy - h * 0.55f), (int)(cx + h), (int)(cy - h * 0.55f), c);
+-            rmDrawLine((int)(cx + h), (int)(cy - h * 0.55f), (int)(cx + h), (int)(cy + h * 0.55f), c);
+-            rmDrawLine((int)(cx + h), (int)(cy + h * 0.55f), (int)(cx - h), (int)(cy + h * 0.55f), c);
+-            rmDrawLine((int)(cx - h), (int)(cy + h * 0.55f), (int)(cx - h), (int)(cy - h * 0.55f), c);
+-            fbCircle(cx - h * 0.25f, cy, h * 0.35f, 0, 6.2832f, dim);
+-            rmDrawRect((int)(cx + h * 0.55f), (int)(cy + h * 0.25f), 4, 3, FB_PRIM(0x6A, 0xF0, 0x9A, a));
+-            break;
+-        case FB_TILE_EXPLOIT: // a memory card with wLaunchELF's warning mark
+-            rmDrawLine((int)(cx - h * 0.55f), (int)(cy - h), (int)(cx + h * 0.55f), (int)(cy - h), c);
+-            rmDrawLine((int)(cx + h * 0.55f), (int)(cy - h), (int)(cx + h * 0.55f), (int)(cy + h), c);
+-            rmDrawLine((int)(cx + h * 0.55f), (int)(cy + h), (int)(cx - h * 0.55f), (int)(cy + h), c);
+-            rmDrawLine((int)(cx - h * 0.55f), (int)(cy + h), (int)(cx - h * 0.55f), (int)(cy - h), c);
+-            rmDrawRect((int)(cx - h * 0.35f), (int)(cy - h * 0.75f), (int)(h * 0.7f), (int)(h * 0.5f), FB_PRIM(0x1E, 0x3C, 0x96, a / 2));
+-            tex = thmGetTexture(RIPPS2_WLE_WARNING);
+-            if (tex != NULL)
+-                rmDrawPixmap(tex, (int)(cx + h * 0.15f), (int)(cy + h * 0.1f), ALIGN_NONE, (int)(h * 0.9f), (int)(h * 0.9f), SCALING_RATIO, GS_SETREG_RGBA(0x80, 0x80, 0x80, a), 0);
+-            break;
+-        case FB_TILE_POWER: // the power mark
+-            fbCircle(cx, cy + h * 0.1f, h * 0.75f, -1.05f, 4.19f, c);
+-            rmDrawLine((int)cx, (int)(cy - h), (int)cx, (int)(cy + h * 0.15f), c);
+-            break;
+-        default: // EXIT: a doorway and an arrow out of it, toward the orbs
+-            rmDrawLine((int)(cx - h * 0.1f), (int)(cy - h), (int)(cx + h * 0.7f), (int)(cy - h), dim);
+-            rmDrawLine((int)(cx + h * 0.7f), (int)(cy - h), (int)(cx + h * 0.7f), (int)(cy + h), dim);
+-            rmDrawLine((int)(cx + h * 0.7f), (int)(cy + h), (int)(cx - h * 0.1f), (int)(cy + h), dim);
+-            rmDrawLine((int)(cx + h * 0.4f), (int)cy, (int)(cx - h * 0.8f), (int)cy, c);
+-            rmDrawLine((int)(cx - h * 0.8f), (int)cy, (int)(cx - h * 0.45f), (int)(cy - h * 0.35f), c);
+-            rmDrawLine((int)(cx - h * 0.8f), (int)cy, (int)(cx - h * 0.45f), (int)(cy + h * 0.35f), c);
+-            break;
++    rmDrawRect(l - d, t - d, r - l + 2 * d, 1, c);
++    rmDrawRect(l - d, b - 1 + d, r - l + 2 * d, 1, c);
++    rmDrawRect(l - d, t - d + 1, 1, b - t + 2 * d - 2, c);
++    rmDrawRect(r - 1 + d, t - d + 1, 1, b - t + 2 * d - 2, c);
++}
++
++// A point q px along the box's edge, clockwise from the top left corner
++static void fbEdgePoint(int l, int t, int r, int b, float q, float *x, float *y)
++{
++    float w = r - l - 1, h = b - t - 1;
++    if (q < w) {
++        *x = l + q;
++        *y = t;
++    } else if (q < w + h) {
++        *x = r - 1;
++        *y = t + (q - w);
++    } else if (q < 2 * w + h) {
++        *x = r - 1 - (q - w - h);
++        *y = b - 1;
++    } else {
++        *x = l;
++        *y = b - 1 - (q - 2 * w - h);
++    }
++}
++
++// The active tile: its edge breathes a blue glow, and a spark of light runs round it
++static void fbTileAlive(int l, int t, int r, int b, float now, int a)
++{
++    float breathe = 0.7f + 0.3f * sinf(now * 3.4907f); // one breath per 1.8 s
++    float per = 2.0f * (r - l - 1 + b - t - 1), head = fmodf(now * per / 2.6f, per), x, y;
++    int d, k;
++
++    rmSetBlendAdditive(1);
++    for (d = 1; d <= 7; d++) { // the glow outside the edge, fading out
++        float f = 1.0f - d / 8.0f;
++        fbOutline(l, t, r, b, d, FB_PRIM(0x38, 0x68, 0xFF, (int)(a * 0.42f * breathe * f * f)));
++    }
++    for (d = 1; d <= 3; d++) // and a little inside it
++        fbOutline(l, t, r, b, -d, FB_PRIM(0x38, 0x68, 0xFF, (int)(a * 0.22f * breathe * (1.0f - d / 4.0f))));
++    for (k = 0; k < 18; k++) { // the spark and its tail
++        float f = 1.0f - k / 18.0f, q = head - k * 3.0f;
++        if (q < 0)
++            q += per;
++        fbEdgePoint(l, t, r, b, q, &x, &y);
++        int sz = k < 3 ? 3 : 2;
++        rmDrawRect((int)x - sz / 2, (int)y - sz / 2, sz, sz, FB_PRIM(0xB4, 0xD2, 0xFF, (int)(a * f * f)));
+     }
++    rmSetBlendAdditive(0);
++    fbOutline(l, t, r, b, 0, FB_PRIM(0xB4, 0xC8, 0xFF, a)); // the edge itself, bright
+ }
+ 
+ static int fbDrawGrid(void)
+ {
+-    float t = (float)(clock() - fbGridAt) / CLOCKS_PER_SEC, k;
++    float t = (float)(clock() - fbGridAt) / CLOCKS_PER_SEC, k, now = (float)clock() / CLOCKS_PER_SEC;
+     int i, uiFont = gTheme->fonts[4];
+ 
+     if (fbGridClosing) {
+@@ -1211,13 +1428,15 @@ static int fbDrawGrid(void)
+         float cx = x0 + (i % 3) * (FB_TILE_W + FB_TILE_GAP) + FB_TILE_W / 2.0f, cy = FB_GRID_Y + (i / 3) * (FB_TILE_H + FB_TILE_GAP) + FB_TILE_H / 2.0f;
+         float hw = FB_TILE_W * s / 2, hh = FB_TILE_H * s / 2;
+         int l = (int)(cx - hw), r = (int)(cx + hw), tp = (int)(cy - hh), b = (int)(cy + hh);
+-        u64 edge = sel ? FB_PRIM(0x9C, 0xB8, 0xFF, a) : FB_PRIM(0x4A, 0x72, 0xDC, a);
+-        rmDrawRect(l, tp, r - l, b - tp, sel ? FB_PRIM(0x1E, 0x3C, 0x96, (int)(0x60 * ki)) : FB_PRIM(0x04, 0x0C, 0x2E, (int)(0x50 * ki)));
+-        rmDrawLine(l, tp, r, tp, edge);
+-        rmDrawLine(r, tp, r, b, edge);
+-        rmDrawLine(r, b, l, b, edge);
+-        rmDrawLine(l, b, l, tp, edge);
+-        fbTileIcon(i, cx, cy - hh * 0.22f, 52 * s, a);
++        if (sel) { // lit from above: a deeper blue toward the foot
++            rmDrawQuadGouraud(l, tp, FB_PRIM(0x22, 0x44, 0xA8, (int)(0x70 * ki)), r, tp, FB_PRIM(0x22, 0x44, 0xA8, (int)(0x70 * ki)),
++                              l, b, FB_PRIM(0x0A, 0x18, 0x56, (int)(0x60 * ki)), r, b, FB_PRIM(0x0A, 0x18, 0x56, (int)(0x60 * ki)));
++            fbTileAlive(l, tp, r, b, now, a);
++        } else {
++            rmDrawRect(l, tp, r - l, b - tp, FB_PRIM(0x04, 0x0C, 0x2E, (int)(0x50 * ki)));
++            fbOutline(l, tp, r, b, 0, FB_PRIM(0x4A, 0x72, 0xDC, a * 3 / 4));
++        }
++        fbTileIcon(i, cx, cy - hh * 0.22f, 64 * s, a, sel ? 0.75f + 0.25f * sinf(now * 3.4907f) : 0.18f, sel);
+         u64 tc = sel ? GS_SETREG_RGBA(0x80, 0x80, 0x80, a) : GS_SETREG_RGBA(0x67, 0x6C, 0x7A, a);
+         fntRenderString(uiFont, (int)cx, (int)(cy + hh * 0.48f), ALIGN_CENTER, 0, 0, fbTileLine1[i], tc);
+         fntRenderString(uiFont, (int)cx, (int)(cy + hh * 0.48f) + 17, ALIGN_CENTER, 0, 0, fbTileLine2[i], tc);
+@@ -1315,6 +1534,14 @@ static void fbGlyph(int kind, int x, int y, u64 col)
+             rmDrawRect(x, y + 3, 7, 3, c);
+             rmDrawRect(x, y + 5, 16, 10, c);
+             break;
++        case FB_KIND_VMC: // a card image: a memory card, outlined
++            rmDrawLine(x + 2, y + 1, x + 11, y + 1, c);
++            rmDrawLine(x + 11, y + 1, x + 13, y + 3, c);
++            rmDrawLine(x + 13, y + 3, x + 13, y + 16, c);
++            rmDrawLine(x + 13, y + 16, x + 2, y + 16, c);
++            rmDrawLine(x + 2, y + 16, x + 2, y + 1, c);
++            rmDrawRect(x + 4, y + 4, 7, 4, c);
++            break;
+         case FB_KIND_SAVE: // a little memory card
+             rmDrawRect(x + 1, y + 1, 12, 15, c);
+             rmDrawRect(x + 3, y + 3, 8, 5, FB_PRIM(0x03, 0x08, 0x22, 0x80));
+@@ -1404,6 +1631,8 @@ void ripps2RenderFiles(void)
+         snprintf(buf, sizeof(buf), "%s", fbToast);
+     else if (fbClipCount > 0)
+         snprintf(buf, sizeof(buf), "%d %s %s", fbClipCount, fbFiles(fbClipCount), fbClipCut ? "CUT" : "COPIED");
++    else if (fbVmcPath(fbVmc, fbPath, NULL, 0))
++        snprintf(buf, sizeof(buf), "%u KB FREE%s", fbVmcFreeKb, fbVmcRO ? ", READ ONLY" : "");
+     else
+         buf[0] = '\0';
+     if (buf[0])
+diff --git a/src/ripps2saves.c b/src/ripps2saves.c
+new file mode 100644
+index 0000000..653fe9a
+--- /dev/null
++++ b/src/ripps2saves.c
+@@ -0,0 +1,1014 @@
++/*
++  Copyright 2026, RIPPS2 contributors
++  Licenced under Academic Free License version 3.0
++  Review OpenUsbLd README & LICENSE files for further details.
++
++  RIPPS2 saves: what the Memory Files browser does with PS2 saves beyond plain files.
++
++  - PSU, the single-file save format of EMS, uLaunchELF and Apollo: a save folder exported to one,
++    and one unpacked into a folder, onto a memory card, or into a virtual memory card.
++  - PS2 virtual memory card images (OPL's VMC folder, PCSX2's cards): the saves inside listed, read
++    and copied out; on an image without ECC (OPL's own), saves imported into it and deleted from it.
++    An image with ECC (PCSX2's .ps2) is read only here.
++
++  Written for RIPPS2 from the formats: the PS2 memory card file system as ps2sdk's mcman and OPL's
++  genvmc lay it out (superblock, indirect FAT, 512-byte directory entries), and the PSU layout (the
++  save folder's entry, "." and "..", then each file's entry and its data padded to 1 KB with 0xFF).
++  Apollo Save Tool (bucanero/apollo-ps2) was the reference for what a save tool should offer.
++
++  A save is read whole into memory, then written out whole: saves are small, and it keeps every
++  source (folder, PSU, VMC) and every destination independent of each other.
++*/
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <strings.h>
++#include <fcntl.h>
++#include <unistd.h>
++#include <dirent.h>
++#include <sys/stat.h>
++#include <time.h>
++#include <errno.h>
++#include <delaythread.h>
++
++#include "include/opl.h"
++#include "include/ioman.h"
++#include "include/ripps2.h"
++
++// directory entry modes (mcman's sceMcFileAttr* bits)
++#define MC_READ    0x0001
++#define MC_WRITE   0x0002
++#define MC_EXEC    0x0004
++#define MC_FILE    0x0010
++#define MC_DIR     0x0020
++#define MC_CLOSED  0x0080
++#define MC_0400    0x0400
++#define MC_HIDDEN  0x2000
++#define MC_EXISTS  0x8000
++#define MODE_DIR   (MC_EXISTS | MC_0400 | MC_DIR | MC_EXEC | MC_WRITE | MC_READ)            // 0x8427
++#define MODE_FILE  (MC_EXISTS | MC_0400 | MC_CLOSED | MC_FILE | MC_EXEC | MC_WRITE | MC_READ) // 0x8497
++
++#define FAT_USED 0x80000000u
++#define FAT_FREE 0x7FFFFFFFu
++#define FAT_END  0xFFFFFFFFu
++
++#define ENT_SIZE      512
++#define SAVE_FILES    64                 // files in one save folder
++#define SAVE_MAX_SIZE (8 * 1024 * 1024)  // a whole card
++#define PSU_ALIGN     1024
++
++typedef struct
++{
++    u16 mode;
++    u16 unused;
++    u32 length; // a file's size; a folder's entry count
++    u8 created[8];
++    u32 cluster; // first cluster, relative to the allocatable area
++    u32 dirEntry;
++    u8 modified[8];
++    u32 attr;
++    u8 unused2[28];
++    char name[32];
++    u8 unused3[416];
++} __attribute__((packed)) r2_ent_t;
++
++typedef char r2_ent_is_512[sizeof(r2_ent_t) == ENT_SIZE ? 1 : -1];
++
++typedef struct
++{
++    char name[33];
++    u32 size;
++    u8 created[8], modified[8];
++    u8 *data;
++} r2_file_t;
++
++typedef struct
++{
++    char name[33];
++    u8 created[8], modified[8];
++    int count;
++    r2_file_t files[SAVE_FILES];
++} r2_save_t;
++
++static char r2Err[40];
++
++const char *ripps2SaveError(void)
++{
++    return r2Err;
++}
++
++static int r2Fail(const char *what)
++{
++    snprintf(r2Err, sizeof(r2Err), "%s", what);
++    return 0;
++}
++
++static int r2IsMc(const char *path)
++{
++    return path[0] == 'm' && path[1] == 'c' && (path[2] == '0' || path[2] == '1') && path[3] == ':';
++}
++
++// "mc0:/A/B" in the form RiptOPL's card driver takes, "mc0:A/B"; any other path as it is
++static void r2DevPath(const char *path, char *out, int size)
++{
++    if (r2IsMc(path) && path[4] == '/')
++        snprintf(out, size, "%.4s%s", path, path + 5);
++    else
++        snprintf(out, size, "%s", path);
++}
++
++// A card's date stamp (sceMcStDateTime): reserved, sec, min, hour, day, month, year (LE u16), in Japan
++// time, as the console's clock and every card keep it
++static void r2Stamp(time_t t, u8 out[8])
++{
++    time_t jst = t + 9 * 60 * 60;
++    struct tm *tm = gmtime(&jst);
++    memset(out, 0, 8);
++    if (tm == NULL)
++        return;
++    out[1] = tm->tm_sec;
++    out[2] = tm->tm_min;
++    out[3] = tm->tm_hour;
++    out[4] = tm->tm_mday;
++    out[5] = tm->tm_mon + 1;
++    out[6] = (tm->tm_year + 1900) & 0xFF;
++    out[7] = (tm->tm_year + 1900) >> 8;
++}
++
++static void r2SaveFree(r2_save_t *s)
++{
++    int i;
++    for (i = 0; i < s->count; i++)
++        free(s->files[i].data);
++    s->count = 0;
++}
++
++static int r2ReadAll(int fd, u8 *buf, u32 size)
++{
++    u32 done = 0;
++    while (done < size) {
++        int r = read(fd, buf + done, size - done > 0x10000 ? 0x10000 : size - done);
++        if (r <= 0)
++            return 0;
++        done += r;
++    }
++    return 1;
++}
++
++static int r2WriteAll(int fd, const u8 *buf, u32 size)
++{
++    u32 done = 0;
++    while (done < size) {
++        int w = write(fd, buf + done, size - done > 0x10000 ? 0x10000 : size - done);
++        if (w <= 0)
++            return 0;
++        done += w;
++    }
++    return 1;
++}
++
++// ---- virtual memory card images ----
++
++typedef struct
++{
++    int fd, ecc, writable;
++    int raw, pageLen, ppc, csize; // bytes per stored page (512, or 528 with ECC), page, pages per cluster, cluster
++    u32 clusters, alloc, allocEnd, root;
++    u32 ifc[32];
++    u32 *fat;      // one entry per allocatable cluster
++    u32 *fatAbs;   // where each FAT cluster lives
++    u8 *fatDirty;
++    int fatClusters, epc; // FAT clusters, entries per cluster
++    u8 *cl;        // a cluster's worth of scratch
++} r2_vmc_t;
++
++static u32 r2U32(const u8 *p)
++{
++    return p[0] | (p[1] << 8) | (p[2] << 16) | ((u32)p[3] << 24);
++}
++
++static int r2VmcIo(r2_vmc_t *v, u32 abs, u8 *buf, int writing)
++{
++    int p;
++    for (p = 0; p < v->ppc; p++) {
++        if (lseek(v->fd, ((s64)abs * v->ppc + p) * v->raw, SEEK_SET) < 0)
++            return 0;
++        if (writing ? write(v->fd, buf + p * v->pageLen, v->pageLen) != v->pageLen : read(v->fd, buf + p * v->pageLen, v->pageLen) != v->pageLen)
++            return 0;
++    }
++    return 1;
++}
++
++static void r2VmcClose(r2_vmc_t *v)
++{
++    if (v->fd >= 0)
++        close(v->fd);
++    free(v->fat);
++    free(v->fatAbs);
++    free(v->fatDirty);
++    free(v->cl);
++    memset(v, 0, sizeof(*v));
++    v->fd = -1;
++}
++
++// 1 = open; 0 = not a PS2 card image (r2Err says why)
++static int r2VmcOpen(r2_vmc_t *v, const char *image, int forWrite)
++{
++    u8 sb[ENT_SIZE];
++    int k, lastInd = -1;
++    s64 size;
++
++    memset(v, 0, sizeof(*v));
++    v->fd = open(image, forWrite ? O_RDWR : O_RDONLY);
++    if (v->fd < 0)
++        return r2Fail("CANNOT OPEN THE IMAGE");
++    if (read(v->fd, sb, sizeof(sb)) != (int)sizeof(sb) || memcmp(sb, "Sony PS2 Memory Card Format ", 28) != 0) {
++        r2VmcClose(v);
++        return r2Fail("NOT A PS2 CARD IMAGE");
++    }
++    v->pageLen = sb[0x28] | (sb[0x29] << 8);
++    v->ppc = sb[0x2A] | (sb[0x2B] << 8);
++    v->clusters = r2U32(sb + 0x30);
++    v->alloc = r2U32(sb + 0x34);
++    v->allocEnd = r2U32(sb + 0x38);
++    v->root = r2U32(sb + 0x3C);
++    for (k = 0; k < 32; k++)
++        v->ifc[k] = r2U32(sb + 0x50 + k * 4);
++    v->csize = v->pageLen * v->ppc;
++    if (v->pageLen != 512 || v->ppc < 1 || v->ppc > 16 || v->csize > 8192 || v->allocEnd == 0 || v->allocEnd > 0x100000) {
++        r2VmcClose(v);
++        return r2Fail("UNKNOWN CARD LAYOUT");
++    }
++    size = lseek(v->fd, 0, SEEK_END);
++    s64 pages = (s64)v->clusters * v->ppc;
++    if (size >= pages * (v->pageLen + 16)) { // the spare area of every page: ECC (PCSX2's .ps2)
++        v->raw = v->pageLen + 16;
++        v->ecc = 1;
++    } else if (size >= pages * v->pageLen)
++        v->raw = v->pageLen;
++    else {
++        r2VmcClose(v);
++        return r2Fail("THE IMAGE IS CUT SHORT");
++    }
++    v->writable = forWrite && !v->ecc;
++
++    v->epc = v->csize / 4;
++    v->fatClusters = (v->allocEnd + v->epc - 1) / v->epc;
++    v->fat = malloc(v->fatClusters * v->epc * 4);
++    v->fatAbs = malloc(v->fatClusters * 4);
++    v->fatDirty = calloc(v->fatClusters, 1);
++    v->cl = malloc(v->csize);
++    u8 *ind = malloc(v->csize);
++    if (v->fat == NULL || v->fatAbs == NULL || v->fatDirty == NULL || v->cl == NULL || ind == NULL) {
++        free(ind);
++        r2VmcClose(v);
++        return r2Fail("OUT OF MEMORY");
++    }
++    // the indirect FAT names the FAT's clusters; the FAT chains the allocatable ones
++    for (k = 0; k < v->fatClusters; k++) {
++        int i = k / v->epc;
++        if (i >= 32 || (i != lastInd && !r2VmcIo(v, v->ifc[i], ind, 0))) {
++            free(ind);
++            r2VmcClose(v);
++            return r2Fail("BAD CARD TABLE");
++        }
++        lastInd = i;
++        v->fatAbs[k] = r2U32(ind + (k % v->epc) * 4);
++        if (!r2VmcIo(v, v->fatAbs[k], (u8 *)&v->fat[k * v->epc], 0)) {
++            free(ind);
++            r2VmcClose(v);
++            return r2Fail("BAD CARD TABLE");
++        }
++    }
++    free(ind);
++    return 1;
++}
++
++static int r2VmcFlushFat(r2_vmc_t *v)
++{
++    int k, ok = 1;
++    for (k = 0; k < v->fatClusters; k++)
++        if (v->fatDirty[k]) {
++            if (!r2VmcIo(v, v->fatAbs[k], (u8 *)&v->fat[k * v->epc], 1))
++                ok = 0;
++            v->fatDirty[k] = 0;
++        }
++    return ok;
++}
++
++static u32 r2VmcNext(r2_vmc_t *v, u32 c)
++{
++    u32 e;
++    if (c >= v->allocEnd)
++        return FAT_END;
++    e = v->fat[c];
++    if (e == FAT_END || !(e & FAT_USED))
++        return FAT_END;
++    return e & ~FAT_USED;
++}
++
++static void r2VmcSetFat(r2_vmc_t *v, u32 c, u32 value)
++{
++    v->fat[c] = value;
++    v->fatDirty[c / v->epc] = 1;
++}
++
++// The n-th cluster of a chain, or FAT_END
++static u32 r2VmcWalk(r2_vmc_t *v, u32 c, int n)
++{
++    while (n-- > 0 && c != FAT_END)
++        c = r2VmcNext(v, c);
++    return c;
++}
++
++static int r2VmcEnt(r2_vmc_t *v, u32 dir, int index, r2_ent_t *e, int writing)
++{
++    int per = v->csize / ENT_SIZE;
++    u32 c = r2VmcWalk(v, dir, index / per);
++    if (c == FAT_END || !r2VmcIo(v, v->alloc + c, v->cl, 0))
++        return 0;
++    if (!writing) {
++        memcpy(e, v->cl + (index % per) * ENT_SIZE, ENT_SIZE);
++        return 1;
++    }
++    memcpy(v->cl + (index % per) * ENT_SIZE, e, ENT_SIZE);
++    return r2VmcIo(v, v->alloc + c, v->cl, 1);
++}
++
++static int r2NameIs(const r2_ent_t *e, const char *name)
++{
++    return !strncmp(e->name, name, 32) && strlen(name) <= 32;
++}
++
++// A save folder in the card's root: its index there, or -1
++static int r2VmcFindSave(r2_vmc_t *v, const char *name, r2_ent_t *found)
++{
++    r2_ent_t dot, e;
++    int i;
++    if (!r2VmcEnt(v, v->root, 0, &dot, 0))
++        return -1;
++    for (i = 2; i < (int)dot.length; i++)
++        if (r2VmcEnt(v, v->root, i, &e, 0) && (e.mode & MC_EXISTS) && (e.mode & MC_DIR) && r2NameIs(&e, name)) {
++            if (found)
++                *found = e;
++            return i;
++        }
++    return -1;
++}
++
++static int r2VmcReadChain(r2_vmc_t *v, u32 c, u8 *out, u32 size)
++{
++    u32 done = 0;
++    while (done < size) {
++        if (c == FAT_END || !r2VmcIo(v, v->alloc + c, v->cl, 0))
++            return 0;
++        u32 n = size - done > (u32)v->csize ? (u32)v->csize : size - done;
++        memcpy(out + done, v->cl, n);
++        done += n;
++        c = r2VmcNext(v, c);
++    }
++    return 1;
++}
++
++static u32 r2VmcFreeCount(r2_vmc_t *v)
++{
++    u32 c, n = 0;
++    for (c = 0; c < v->allocEnd; c++)
++        if (!(v->fat[c] & FAT_USED))
++            n++;
++    return n;
++}
++
++// A chain of n new clusters (n > 0): its first cluster, or FAT_END when the card is full
++static u32 r2VmcAllocChain(r2_vmc_t *v, int n, u32 *hint)
++{
++    u32 first = FAT_END, prev = FAT_END, c;
++    for (c = *hint; c < v->allocEnd && n > 0; c++) {
++        if (v->fat[c] & FAT_USED)
++            continue;
++        r2VmcSetFat(v, c, FAT_END);
++        if (prev != FAT_END)
++            r2VmcSetFat(v, prev, FAT_USED | c);
++        else
++            first = c;
++        prev = c;
++        n--;
++    }
++    *hint = c;
++    return n == 0 ? first : FAT_END;
++}
++
++static void r2VmcFreeChain(r2_vmc_t *v, u32 c)
++{
++    while (c != FAT_END && c < v->allocEnd) {
++        u32 next = r2VmcNext(v, c);
++        r2VmcSetFat(v, c, FAT_FREE);
++        c = next;
++    }
++}
++
++static int r2LoadVmc(r2_save_t *s, const char *image, const char *name)
++{
++    r2_vmc_t v;
++    r2_ent_t dir, e;
++    int i;
++    u32 total = 0;
++
++    if (!r2VmcOpen(&v, image, 0))
++        return 0;
++    if (r2VmcFindSave(&v, name, &dir) < 0) {
++        r2VmcClose(&v);
++        return r2Fail("NO SUCH SAVE ON THE CARD");
++    }
++    snprintf(s->name, sizeof(s->name), "%.32s", dir.name);
++    memcpy(s->created, dir.created, 8);
++    memcpy(s->modified, dir.modified, 8);
++    for (i = 2; i < (int)dir.length && s->count < SAVE_FILES; i++) {
++        if (!r2VmcEnt(&v, dir.cluster, i, &e, 0)) {
++            r2VmcClose(&v);
++            return r2Fail("CANNOT READ THE SAVE");
++        }
++        if (!(e.mode & MC_EXISTS) || !(e.mode & MC_FILE))
++            continue;
++        r2_file_t *f = &s->files[s->count];
++        snprintf(f->name, sizeof(f->name), "%.32s", e.name);
++        f->size = e.length;
++        memcpy(f->created, e.created, 8);
++        memcpy(f->modified, e.modified, 8);
++        total += f->size;
++        f->data = malloc(f->size ? f->size : 1);
++        if (total > SAVE_MAX_SIZE || f->data == NULL) {
++            free(f->data);
++            r2VmcClose(&v);
++            return r2Fail("SAVE TOO BIG");
++        }
++        s->count++;
++        if (f->size && !r2VmcReadChain(&v, e.cluster, f->data, f->size)) {
++            r2VmcClose(&v);
++            return r2Fail("CANNOT READ THE SAVE");
++        }
++    }
++    r2VmcClose(&v);
++    return 1;
++}
++
++// The save into the card's root, a new folder of its own; -1 when one of that name is already there
++static int r2WriteVmc(const r2_save_t *s, const char *image)
++{
++    r2_vmc_t v;
++    r2_ent_t rootDot, e;
++    int i, slot = -1, per, dirEnts = 2 + s->count, dirClusters, need = 0, grow = 0;
++    u32 hint = 0, dirFirst, c;
++    u32 first[SAVE_FILES];
++    u8 *dirBuf;
++
++    if (!r2VmcOpen(&v, image, 1))
++        return 0;
++    if (!v.writable) {
++        int ecc = v.ecc;
++        r2VmcClose(&v);
++        return r2Fail(ecc ? "READ ONLY: AN ECC IMAGE" : "THE IMAGE IS READ ONLY");
++    }
++    if (r2VmcFindSave(&v, s->name, NULL) >= 0) {
++        r2VmcClose(&v);
++        snprintf(r2Err, sizeof(r2Err), "ALREADY ON THE CARD");
++        return -1;
++    }
++    if (!r2VmcEnt(&v, v.root, 0, &rootDot, 0)) {
++        r2VmcClose(&v);
++        return r2Fail("CANNOT READ THE CARD");
++    }
++    // a root slot: the first one a deleted save left, else one more on the end
++    for (i = 2; i < (int)rootDot.length && slot < 0; i++)
++        if (r2VmcEnt(&v, v.root, i, &e, 0) && !(e.mode & MC_EXISTS))
++            slot = i;
++    per = v.csize / ENT_SIZE;
++    if (slot < 0) {
++        slot = rootDot.length;
++        grow = slot % per == 0; // the root's last cluster is full
++    }
++
++    dirClusters = (dirEnts + per - 1) / per;
++    need = dirClusters + grow;
++    for (i = 0; i < s->count; i++)
++        need += (s->files[i].size + v.csize - 1) / v.csize;
++    if ((u32)need > r2VmcFreeCount(&v)) {
++        r2VmcClose(&v);
++        return r2Fail("NOT ENOUGH ROOM ON THE CARD");
++    }
++
++    // the files' data
++    for (i = 0; i < s->count; i++) {
++        const r2_file_t *f = &s->files[i];
++        int n = (f->size + v.csize - 1) / v.csize, k;
++        first[i] = FAT_END;
++        if (n == 0)
++            continue;
++        first[i] = r2VmcAllocChain(&v, n, &hint);
++        for (k = 0, c = first[i]; k < n; k++, c = r2VmcNext(&v, c)) {
++            u32 off = k * v.csize, len = f->size - off > (u32)v.csize ? (u32)v.csize : f->size - off;
++            memset(v.cl, 0xFF, v.csize);
++            memcpy(v.cl, f->data + off, len);
++            if (!r2VmcIo(&v, v.alloc + c, v.cl, 1)) {
++                r2VmcClose(&v);
++                return r2Fail("CANNOT WRITE THE IMAGE");
++            }
++        }
++    }
++
++    // the save's folder: ".", "..", then its files (mcman's layout for a new folder)
++    dirFirst = r2VmcAllocChain(&v, dirClusters, &hint);
++    dirBuf = calloc(dirClusters, v.csize);
++    if (dirBuf == NULL) {
++        r2VmcClose(&v);
++        return r2Fail("OUT OF MEMORY");
++    }
++    r2_ent_t *d = (r2_ent_t *)dirBuf;
++    d[0].mode = MODE_DIR;
++    memcpy(d[0].created, s->created, 8);
++    memcpy(d[0].modified, s->modified, 8);
++    d[0].cluster = v.root; // "." names the parent folder and this folder's place in it
++    d[0].dirEntry = slot;
++    strcpy(d[0].name, ".");
++    d[1].mode = MODE_DIR;
++    memcpy(d[1].created, rootDot.created, 8);
++    memcpy(d[1].modified, rootDot.created, 8);
++    d[1].cluster = rootDot.cluster;
++    d[1].dirEntry = rootDot.dirEntry;
++    strcpy(d[1].name, "..");
++    for (i = 0; i < s->count; i++) {
++        r2_ent_t *f = &d[2 + i];
++        f->mode = MODE_FILE;
++        f->length = s->files[i].size;
++        memcpy(f->created, s->files[i].created, 8);
++        memcpy(f->modified, s->files[i].modified, 8);
++        f->cluster = first[i];
++        strncpy(f->name, s->files[i].name, 32);
++    }
++    for (i = 0, c = dirFirst; i < dirClusters; i++, c = r2VmcNext(&v, c))
++        if (!r2VmcIo(&v, v.alloc + c, dirBuf + i * v.csize, 1)) {
++            free(dirBuf);
++            r2VmcClose(&v);
++            return r2Fail("CANNOT WRITE THE IMAGE");
++        }
++    free(dirBuf);
++
++    // room in the root for one more entry
++    if (grow) {
++        u32 last = v.root, add;
++        while (r2VmcNext(&v, last) != FAT_END)
++            last = r2VmcNext(&v, last);
++        add = r2VmcAllocChain(&v, 1, &hint);
++        memset(v.cl, 0, v.csize);
++        if (add == FAT_END || !r2VmcIo(&v, v.alloc + add, v.cl, 1)) {
++            r2VmcClose(&v);
++            return r2Fail("CANNOT WRITE THE IMAGE");
++        }
++        r2VmcSetFat(&v, last, FAT_USED | add);
++    }
++    if (!r2VmcFlushFat(&v)) {
++        r2VmcClose(&v);
++        return r2Fail("CANNOT WRITE THE IMAGE");
++    }
++
++    // and last, the save appears: its entry in the root, then the root's count
++    memset(&e, 0, sizeof(e));
++    e.mode = MODE_DIR;
++    e.length = dirEnts;
++    memcpy(e.created, s->created, 8);
++    memcpy(e.modified, s->modified, 8);
++    e.cluster = dirFirst;
++    strncpy(e.name, s->name, 32);
++    int ok = r2VmcEnt(&v, v.root, slot, &e, 1);
++    if (ok && slot >= (int)rootDot.length) {
++        rootDot.length = slot + 1;
++        ok = r2VmcEnt(&v, v.root, 0, &rootDot, 1);
++    }
++    r2VmcClose(&v);
++    return ok ? 1 : r2Fail("CANNOT WRITE THE IMAGE");
++}
++
++int ripps2VmcProbe(const char *image)
++{
++    r2_vmc_t v;
++    if (!r2VmcOpen(&v, image, 0))
++        return 0;
++    int ro = v.ecc;
++    r2VmcClose(&v);
++    return ro ? 2 : 1;
++}
++
++int ripps2VmcList(const char *image, const char *save, ripps2_vmc_ent_t *out, int max, unsigned int *freeKb)
++{
++    r2_vmc_t v;
++    r2_ent_t dir, e;
++    int i, n = 0;
++    u32 cluster;
++
++    if (!r2VmcOpen(&v, image, 0))
++        return -1;
++    if (freeKb)
++        *freeKb = r2VmcFreeCount(&v) * (v.csize / 1024);
++    if (save == NULL || save[0] == '\0') {
++        if (!r2VmcEnt(&v, v.root, 0, &dir, 0)) {
++            r2VmcClose(&v);
++            return -1;
++        }
++        cluster = v.root;
++    } else {
++        if (r2VmcFindSave(&v, save, &dir) < 0) {
++            r2VmcClose(&v);
++            return -1;
++        }
++        cluster = dir.cluster;
++    }
++    for (i = 0; i < (int)dir.length && n < max; i++) {
++        if (!r2VmcEnt(&v, cluster, i, &e, 0))
++            break;
++        if (!(e.mode & MC_EXISTS) || !strcmp(e.name, ".") || !strcmp(e.name, ".."))
++            continue;
++        snprintf(out[n].name, sizeof(out[n].name), "%.32s", e.name);
++        out[n].isDir = (e.mode & MC_DIR) != 0;
++        out[n].size = (e.mode & MC_DIR) ? 0 : e.length;
++        n++;
++    }
++    r2VmcClose(&v);
++    return n;
++}
++
++// Up to size bytes of one file in a save on the card (its icon.sys, say): the bytes read, or -1
++int ripps2VmcReadFile(const char *image, const char *save, const char *file, void *buf, int size)
++{
++    r2_vmc_t v;
++    r2_ent_t dir, e;
++    int i, got = -1;
++
++    if (!r2VmcOpen(&v, image, 0))
++        return -1;
++    if (r2VmcFindSave(&v, save, &dir) >= 0)
++        for (i = 2; i < (int)dir.length; i++)
++            if (r2VmcEnt(&v, dir.cluster, i, &e, 0) && (e.mode & MC_EXISTS) && (e.mode & MC_FILE) && r2NameIs(&e, file)) {
++                u32 n = e.length < (u32)size ? e.length : (u32)size;
++                u8 *all = malloc(e.length ? e.length : 1);
++                if (all != NULL && r2VmcReadChain(&v, e.cluster, all, e.length)) {
++                    memcpy(buf, all, n);
++                    got = n;
++                }
++                free(all);
++                break;
++            }
++    r2VmcClose(&v);
++    return got;
++}
++
++// One file out of a save on the card, to dst; -1 when dst is already there
++int ripps2VmcExtractFile(const char *image, const char *save, const char *file, const char *dst)
++{
++    r2_vmc_t v;
++    r2_ent_t dir, e;
++    char dev[320];
++    int i, fd = -1, tries, ok = 0;
++    u8 *all = NULL;
++
++    r2Err[0] = '\0';
++    if ((fd = open(dst, O_RDONLY)) >= 0) {
++        close(fd);
++        snprintf(r2Err, sizeof(r2Err), "ALREADY THERE");
++        return -1;
++    }
++    if (!r2VmcOpen(&v, image, 0))
++        return 0;
++    if (r2VmcFindSave(&v, save, &dir) >= 0)
++        for (i = 2; i < (int)dir.length; i++)
++            if (r2VmcEnt(&v, dir.cluster, i, &e, 0) && (e.mode & MC_EXISTS) && (e.mode & MC_FILE) && r2NameIs(&e, file)) {
++                all = malloc(e.length ? e.length : 1);
++                ok = all != NULL && r2VmcReadChain(&v, e.cluster, all, e.length);
++                break;
++            }
++    r2VmcClose(&v);
++    if (!ok) {
++        free(all);
++        return r2Fail("CANNOT READ IT FROM THE CARD");
++    }
++    r2DevPath(dst, dev, sizeof(dev));
++    for (tries = 0; tries < 4; tries++) {
++        fd = open(dev, O_WRONLY | O_CREAT | (r2IsMc(dst) ? 0 : O_TRUNC), 0666);
++        if (fd >= 0 || !r2IsMc(dst))
++            break;
++        DelayThread(50 * 1000);
++    }
++    if (fd < 0) {
++        free(all);
++        return r2Fail("CANNOT MAKE THE FILE");
++    }
++    ok = r2WriteAll(fd, all, e.length);
++    close(fd);
++    free(all);
++    if (!ok) {
++        remove(dst);
++        return r2Fail("CANNOT WRITE THE FILE");
++    }
++    return 1;
++}
++
++int ripps2VmcDeleteSave(const char *image, const char *save)
++{
++    r2_vmc_t v;
++    r2_ent_t dir, e;
++    int i, at;
++
++    if (!r2VmcOpen(&v, image, 1))
++        return 0;
++    if (!v.writable) {
++        int ecc = v.ecc;
++        r2VmcClose(&v);
++        return r2Fail(ecc ? "READ ONLY: AN ECC IMAGE" : "THE IMAGE IS READ ONLY");
++    }
++    at = r2VmcFindSave(&v, save, &dir);
++    if (at < 0) {
++        r2VmcClose(&v);
++        return r2Fail("NO SUCH SAVE ON THE CARD");
++    }
++    for (i = 2; i < (int)dir.length; i++)
++        if (r2VmcEnt(&v, dir.cluster, i, &e, 0) && (e.mode & MC_EXISTS) && (e.mode & MC_FILE) && e.length > 0)
++            r2VmcFreeChain(&v, e.cluster);
++    r2VmcFreeChain(&v, dir.cluster);
++    dir.mode &= ~MC_EXISTS; // the slot stays, empty, as mcman leaves it
++    int ok = r2VmcEnt(&v, v.root, at, &dir, 1) && r2VmcFlushFat(&v);
++    r2VmcClose(&v);
++    return ok ? 1 : r2Fail("CANNOT WRITE THE IMAGE");
++}
++
++// ---- PSU ----
++
++static int r2LoadPsu(r2_save_t *s, const char *path)
++{
++    r2_ent_t e;
++    int fd = open(path, O_RDONLY), i, n;
++    u32 total = 0;
++
++    if (fd < 0)
++        return r2Fail("CANNOT OPEN THE PSU");
++    if (read(fd, &e, ENT_SIZE) != ENT_SIZE || !(e.mode & MC_DIR) || e.length < 2 || e.name[0] == '\0') {
++        close(fd);
++        return r2Fail("NOT A PSU SAVE");
++    }
++    snprintf(s->name, sizeof(s->name), "%.32s", e.name);
++    memcpy(s->created, e.created, 8);
++    memcpy(s->modified, e.modified, 8);
++    n = e.length - 2;
++    lseek(fd, 2 * ENT_SIZE, SEEK_CUR); // "." and ".."
++    for (i = 0; i < n; i++) {
++        if (read(fd, &e, ENT_SIZE) != ENT_SIZE) {
++            close(fd);
++            return r2Fail("THE PSU IS CUT SHORT");
++        }
++        if (!(e.mode & MC_FILE)) // a folder inside a save: nothing follows it
++            continue;
++        if (s->count >= SAVE_FILES) {
++            close(fd);
++            return r2Fail("TOO MANY FILES IN THE PSU");
++        }
++        r2_file_t *f = &s->files[s->count];
++        snprintf(f->name, sizeof(f->name), "%.32s", e.name);
++        f->size = e.length;
++        memcpy(f->created, e.created, 8);
++        memcpy(f->modified, e.modified, 8);
++        total += f->size;
++        f->data = malloc(f->size ? f->size : 1);
++        if (total > SAVE_MAX_SIZE || f->data == NULL) {
++            free(f->data);
++            close(fd);
++            return r2Fail("SAVE TOO BIG");
++        }
++        s->count++;
++        if (!r2ReadAll(fd, f->data, f->size)) {
++            close(fd);
++            return r2Fail("THE PSU IS CUT SHORT");
++        }
++        if (f->size % PSU_ALIGN)
++            lseek(fd, PSU_ALIGN - f->size % PSU_ALIGN, SEEK_CUR);
++    }
++    close(fd);
++    return 1;
++}
++
++static int r2WritePsu(const r2_save_t *s, const char *path)
++{
++    r2_ent_t e;
++    u8 pad[PSU_ALIGN];
++    int fd, i, ok = 1;
++
++    if ((fd = open(path, O_RDONLY)) >= 0) {
++        close(fd);
++        snprintf(r2Err, sizeof(r2Err), "ALREADY THERE");
++        return -1;
++    }
++    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0666);
++    if (fd < 0)
++        return r2Fail("CANNOT MAKE THE PSU");
++    memset(pad, 0xFF, sizeof(pad));
++    memset(&e, 0, sizeof(e));
++    e.mode = MODE_DIR;
++    e.length = s->count + 2;
++    memcpy(e.created, s->created, 8);
++    memcpy(e.modified, s->modified, 8);
++    strncpy(e.name, s->name, 32);
++    ok &= write(fd, &e, ENT_SIZE) == ENT_SIZE;
++    e.length = 0;
++    memset(e.name, 0, sizeof(e.name));
++    strcpy(e.name, ".");
++    ok &= write(fd, &e, ENT_SIZE) == ENT_SIZE;
++    strcpy(e.name, "..");
++    ok &= write(fd, &e, ENT_SIZE) == ENT_SIZE;
++    for (i = 0; i < s->count && ok; i++) {
++        const r2_file_t *f = &s->files[i];
++        memset(&e, 0, sizeof(e));
++        e.mode = MODE_FILE;
++        e.length = f->size;
++        memcpy(e.created, f->created, 8);
++        memcpy(e.modified, f->modified, 8);
++        strncpy(e.name, f->name, 32);
++        ok &= write(fd, &e, ENT_SIZE) == ENT_SIZE;
++        ok &= r2WriteAll(fd, f->data, f->size);
++        if (ok && f->size % PSU_ALIGN)
++            ok &= write(fd, pad, PSU_ALIGN - f->size % PSU_ALIGN) == (int)(PSU_ALIGN - f->size % PSU_ALIGN);
++    }
++    close(fd);
++    if (!ok) {
++        remove(path);
++        return r2Fail("CANNOT WRITE THE PSU");
++    }
++    return 1;
++}
++
++int ripps2PsuSaveName(const char *psu, char *name, int size)
++{
++    r2_ent_t e;
++    int fd = open(psu, O_RDONLY), ok;
++    if (fd < 0)
++        return 0;
++    ok = read(fd, &e, ENT_SIZE) == ENT_SIZE && (e.mode & MC_DIR) && e.name[0];
++    close(fd);
++    if (ok)
++        snprintf(name, size, "%.32s", e.name);
++    return ok;
++}
++
++// ---- folders ----
++
++static int r2LoadFolder(r2_save_t *s, const char *parent, const char *name)
++{
++    char dir[320], path[384];
++    DIR *d;
++    struct dirent *de;
++    struct stat st;
++    u32 total = 0;
++    int i, names = 0;
++    char (*list)[33] = malloc(SAVE_FILES * 33);
++
++    if (list == NULL)
++        return r2Fail("OUT OF MEMORY");
++    snprintf(dir, sizeof(dir), "%s%s/", parent, name);
++    d = opendir(dir);
++    if (d == NULL) {
++        free(list);
++        return r2Fail("CANNOT OPEN THE FOLDER");
++    }
++    // the names first, then each file (memory cards allow few open handles)
++    while ((de = readdir(d)) != NULL) {
++        if (!strcmp(de->d_name, ".") || !strcmp(de->d_name, ".."))
++            continue;
++        snprintf(path, sizeof(path), "%s%s", dir, de->d_name);
++        if (stat(path, &st) == 0 && S_ISDIR(st.st_mode))
++            continue; // saves hold files only
++        if (names >= SAVE_FILES || strlen(de->d_name) > 32) {
++            closedir(d);
++            free(list);
++            return r2Fail(names >= SAVE_FILES ? "TOO MANY FILES FOR A SAVE" : "A NAME IS TOO LONG FOR A CARD");
++        }
++        snprintf(list[names++], 33, "%s", de->d_name);
++    }
++    closedir(d);
++    if (strlen(name) > 32) {
++        free(list);
++        return r2Fail("THE NAME IS TOO LONG FOR A CARD");
++    }
++    snprintf(s->name, sizeof(s->name), "%s", name);
++    r2Stamp(time(NULL), s->created);
++    memcpy(s->modified, s->created, 8);
++    for (i = 0; i < names; i++) {
++        r2_file_t *f = &s->files[s->count];
++        int fd;
++        snprintf(path, sizeof(path), "%s%s", dir, list[i]);
++        fd = open(path, O_RDONLY);
++        if (fd < 0) {
++            free(list);
++            return r2Fail("CANNOT READ A FILE");
++        }
++        int len = lseek(fd, 0, SEEK_END);
++        lseek(fd, 0, SEEK_SET);
++        if (len < 0 || total + len > SAVE_MAX_SIZE) {
++            close(fd);
++            free(list);
++            return r2Fail("SAVE TOO BIG");
++        }
++        snprintf(f->name, sizeof(f->name), "%s", list[i]);
++        f->size = len;
++        f->data = malloc(len ? len : 1);
++        if (f->data == NULL) {
++            close(fd);
++            free(list);
++            return r2Fail("OUT OF MEMORY");
++        }
++        s->count++;
++        total += len;
++        if (stat(path, &st) == 0)
++            r2Stamp(st.st_mtime, f->modified);
++        else
++            memcpy(f->modified, s->created, 8);
++        memcpy(f->created, f->modified, 8);
++        if (!r2ReadAll(fd, f->data, len)) {
++            close(fd);
++            free(list);
++            return r2Fail("CANNOT READ A FILE");
++        }
++        close(fd);
++    }
++    free(list);
++    return 1;
++}
++
++// A new folder <parent><name>/ holding the save; -1 when a folder of that name is already there
++static int r2WriteFolder(const r2_save_t *s, const char *parent)
++{
++    char path[320], dev[320];
++    int i, tries, fd;
++
++    snprintf(path, sizeof(path), "%s%s", parent, s->name);
++    r2DevPath(path, dev, sizeof(dev));
++    DIR *d = opendir(path);
++    if (d != NULL) {
++        closedir(d);
++        snprintf(r2Err, sizeof(r2Err), "ALREADY THERE");
++        return -1;
++    }
++    // a memory card answers "changed card" to the first access after it is seen: ask again
++    for (tries = 0; tries < 4 && mkdir(dev, 0777) < 0; tries++)
++        DelayThread(50 * 1000);
++    for (i = 0; i < s->count; i++) {
++        const r2_file_t *f = &s->files[i];
++        snprintf(path, sizeof(path), "%s%s/%s", parent, s->name, f->name);
++        r2DevPath(path, dev, sizeof(dev));
++        for (tries = 0; tries < 4; tries++) {
++            fd = open(dev, O_WRONLY | O_CREAT | (r2IsMc(path) ? 0 : O_TRUNC), 0666);
++            if (fd >= 0 || !r2IsMc(path))
++                break;
++            DelayThread(50 * 1000);
++        }
++        if (fd < 0) {
++            snprintf(r2Err, sizeof(r2Err), "CANNOT MAKE %.18s E%d", f->name, errno);
++            return 0;
++        }
++        int ok = r2WriteAll(fd, f->data, f->size);
++        close(fd);
++        if (!ok) {
++            snprintf(r2Err, sizeof(r2Err), "CANNOT WRITE %.18s", f->name);
++            return 0;
++        }
++    }
++    return 1;
++}
++
++// ---- the one entry point ----
++
++int ripps2SaveCopy(int fromKind, const char *from, const char *saveName, int toKind, const char *to)
++{
++    static r2_save_t s; // ~2 KB of names and pointers; one copy at a time (the IO worker)
++    int r = 0;
++    char psu[320];
++
++    r2Err[0] = '\0';
++    memset(&s, 0, sizeof(s));
++    if (fromKind == RIPPS2_SAVE_VMC)
++        r = r2LoadVmc(&s, from, saveName);
++    else if (fromKind == RIPPS2_SAVE_PSU)
++        r = r2LoadPsu(&s, from);
++    else
++        r = r2LoadFolder(&s, from, saveName);
++    if (r) {
++        if (toKind == RIPPS2_SAVE_VMC)
++            r = r2WriteVmc(&s, to);
++        else if (toKind == RIPPS2_SAVE_PSU) {
++            snprintf(psu, sizeof(psu), "%s%s.psu", to, s.name);
++            r = r2WritePsu(&s, psu);
++        } else
++            r = r2WriteFolder(&s, to);
++    }
++    r2SaveFree(&s);
++    if (r == 0) {
++        LOG("RIPPS2 SAVES: %s %s -> %s: %s\n", from, saveName ? saveName : "", to, r2Err);
++    }
++    return r;
++}
+diff --git a/src/textures.c b/src/textures.c
+index 05386a0..7e4de81 100644
+--- a/src/textures.c
++++ b/src/textures.c
+@@ -114,8 +114,7 @@ extern void *ripps2_mark_png;  // RIPPS2
+ extern void *L2R2_png;         // RIPPS2: the L2+R2 "Random" hint
+ extern void *ripps2_ps1logo_png; // RIPPS2: the L3 filter splashes
+ extern void *ripps2_ps2logo_png;
+-extern void *ripps2_wle_folder_png;  // RIPPS2: from wLaunchELF's icon.c (AFL-2.0)
+-extern void *ripps2_wle_warning_png;
++extern void *ripps2_grid_icons_png; // RIPPS2: made by ps2-pillars elf/theme/make_grid_icons.py
+ #ifdef RETROACHIEVEMENTS
+ extern void *ra_mark_png;
+ #endif
+@@ -285,8 +284,7 @@ static texture_t internalDefault[TEXTURES_COUNT] = {
+     {R2_ICON, "L2R2", &L2R2_png},
+     {RIPPS2_PS1_LOGO, "ripps2_ps1logo", &ripps2_ps1logo_png},
+     {RIPPS2_PS2_LOGO, "ripps2_ps2logo", &ripps2_ps2logo_png},
+-    {RIPPS2_WLE_FOLDER, "ripps2_wle_folder", &ripps2_wle_folder_png},
+-    {RIPPS2_WLE_WARNING, "ripps2_wle_warning", &ripps2_wle_warning_png},
++    {RIPPS2_GRID_ICONS, "ripps2_grid_icons", &ripps2_grid_icons_png},
+ #ifdef RETROACHIEVEMENTS
+     // Positional: guarded by the same #ifdef as RA_MARK in enum INTERNAL_TEXTURE. Without
+     // this row TEXTURES_COUNT grows but the initialiser does not, leaving the last slot
+diff --git a/src/themes.c b/src/themes.c
+index 5cef935..68ff06c 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -3959,8 +3959,7 @@ static int thmLoad(const char *themePath)
+     thmLoadResource(&newT->textures[RIPPS2_MARK], RIPPS2_MARK, themePath, GS_PSM_CT32, 1);
+     thmLoadResource(&newT->textures[RIPPS2_PS1_LOGO], RIPPS2_PS1_LOGO, themePath, GS_PSM_CT32, 1); // RIPPS2: L3 splashes
+     thmLoadResource(&newT->textures[RIPPS2_PS2_LOGO], RIPPS2_PS2_LOGO, themePath, GS_PSM_CT32, 1);
+-    thmLoadResource(&newT->textures[RIPPS2_WLE_FOLDER], RIPPS2_WLE_FOLDER, themePath, GS_PSM_CT32, 1); // RIPPS2: wLaunchELF icons
+-    thmLoadResource(&newT->textures[RIPPS2_WLE_WARNING], RIPPS2_WLE_WARNING, themePath, GS_PSM_CT32, 1);
++    thmLoadResource(&newT->textures[RIPPS2_GRID_ICONS], RIPPS2_GRID_ICONS, themePath, GS_PSM_CT32, 1); // RIPPS2: grid icons
+     thmLoadResource(&newT->textures[R2_ICON], R2_ICON, themePath, GS_PSM_CT32, newT->useDefault); // RIPPS2: L2+R2 Random
+ 
+     // Embedded attribute glyphs (#Format/#Media/Aspect/Rating/Scan/Vmode values): BUILT-IN theme
