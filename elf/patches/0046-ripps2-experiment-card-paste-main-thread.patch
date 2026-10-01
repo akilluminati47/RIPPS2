@@ -1,0 +1,15 @@
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index ac64666..93828b2 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -669,6 +669,10 @@ static void fbRun(int op, const char *label)
+     fbFailWhat[0] = '\0';
+     fbDoneBytes = 0;
+     fbBusy = 1;
++    if (op == FB_OP_PASTE && fbIsMc(fbPath)) { // EXPERIMENT: card pastes on this thread
++        fbWorker();
++        return;
++    }
+     if (ioPutRequest(IO_CUSTOM_SIMPLEACTION, &fbWorker) != IO_OK)
+         fbBusy = 0;
+ }
