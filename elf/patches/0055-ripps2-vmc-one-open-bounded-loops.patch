@@ -1,0 +1,199 @@
+diff --git a/include/ripps2.h b/include/ripps2.h
+index daa4a2e..4e6b857 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -86,6 +86,7 @@ typedef struct
+     char name[33];
+     unsigned char isDir;
+     unsigned int size;
++    unsigned char iconSys[0xC0 + 68]; // a save's icon.sys head (to its title), zeros when it has none
+ } ripps2_vmc_ent_t;
+ // A save from a folder (from = its parent, "mass0:/X/"), a card image (from = the image) or a .psu (from = the
+ // file) to a folder (to = the parent it lands in), a card image's top (to = the image) or a .psu (to = the folder
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index b1b0216..719cad1 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -369,9 +369,8 @@ static int fbIsCardImage(const char *path, const char *name, u32 size)
+ 
+ static void fbScanVmc(const char *save)
+ {
+-    static ripps2_vmc_ent_t list[FB_MAX];
+-    unsigned char sys[0xC0 + 68];
+-    int got = ripps2VmcList(fbVmc, save, list, FB_MAX, &fbVmcFreeKb), i, n = 0;
++    ripps2_vmc_ent_t *list = malloc(FB_MAX * sizeof(ripps2_vmc_ent_t));
++    int got = list ? ripps2VmcList(fbVmc, save, list, FB_MAX, &fbVmcFreeKb) : -1, i, n = 0;
+ 
+     for (i = 0; i < got; i++) {
+         fb_entry_t *e = &fbList[n++];
+@@ -379,12 +378,13 @@ static void fbScanVmc(const char *save)
+         snprintf(e->name, sizeof(e->name), "%s", list[i].name);
+         e->size = list[i].size;
+         e->kind = list[i].isDir ? FB_KIND_DIR : FB_KIND_FILE;
+-        if (list[i].isDir && !save[0] && ripps2VmcReadFile(fbVmc, e->name, "icon.sys", sys, sizeof(sys)) == (int)sizeof(sys) &&
+-            !memcmp(sys, "PS2D", 4)) {
++        const unsigned char *sys = list[i].iconSys;
++        if (list[i].isDir && !save[0] && !memcmp(sys, "PS2D", 4)) {
+             fbSjisToAscii(sys + 0xC0, 68, sys[6] | (sys[7] << 8), e->title, sizeof(e->title));
+             e->kind = FB_KIND_SAVE;
+         }
+     }
++    free(list);
+     qsort(fbList, n, sizeof(fb_entry_t), &fbCompare);
+     fbCount = n;
+ }
+diff --git a/src/ripps2saves.c b/src/ripps2saves.c
+index 653fe9a..80a422f 100644
+--- a/src/ripps2saves.c
++++ b/src/ripps2saves.c
+@@ -54,6 +54,7 @@
+ #define FAT_END  0xFFFFFFFFu
+ 
+ #define ENT_SIZE      512
++#define DIR_MAX       4096 // entries a folder may claim; a damaged card claims anything, and no loop trusts it
+ #define SAVE_FILES    64                 // files in one save folder
+ #define SAVE_MAX_SIZE (8 * 1024 * 1024)  // a whole card
+ #define PSU_ALIGN     1024
+@@ -317,6 +318,8 @@ static void r2VmcSetFat(r2_vmc_t *v, u32 c, u32 value)
+ // The n-th cluster of a chain, or FAT_END
+ static u32 r2VmcWalk(r2_vmc_t *v, u32 c, int n)
+ {
++    if (n > (int)v->allocEnd) // a chain cannot be longer than the card
++        return FAT_END;
+     while (n-- > 0 && c != FAT_END)
+         c = r2VmcNext(v, c);
+     return c;
+@@ -336,6 +339,11 @@ static int r2VmcEnt(r2_vmc_t *v, u32 dir, int index, r2_ent_t *e, int writing)
+     return r2VmcIo(v, v->alloc + c, v->cl, 1);
+ }
+ 
++static int r2DirLen(u32 length)
++{
++    return length > DIR_MAX ? DIR_MAX : (int)length;
++}
++
+ static int r2NameIs(const r2_ent_t *e, const char *name)
+ {
+     return !strncmp(e->name, name, 32) && strlen(name) <= 32;
+@@ -348,7 +356,7 @@ static int r2VmcFindSave(r2_vmc_t *v, const char *name, r2_ent_t *found)
+     int i;
+     if (!r2VmcEnt(v, v->root, 0, &dot, 0))
+         return -1;
+-    for (i = 2; i < (int)dot.length; i++)
++    for (i = 2; i < r2DirLen(dot.length); i++)
+         if (r2VmcEnt(v, v->root, i, &e, 0) && (e.mode & MC_EXISTS) && (e.mode & MC_DIR) && r2NameIs(&e, name)) {
+             if (found)
+                 *found = e;
+@@ -360,6 +368,8 @@ static int r2VmcFindSave(r2_vmc_t *v, const char *name, r2_ent_t *found)
+ static int r2VmcReadChain(r2_vmc_t *v, u32 c, u8 *out, u32 size)
+ {
+     u32 done = 0;
++    if (size > v->allocEnd * (u32)v->csize)
++        return 0; // bigger than the card: a damaged entry
+     while (done < size) {
+         if (c == FAT_END || !r2VmcIo(v, v->alloc + c, v->cl, 0))
+             return 0;
+@@ -401,7 +411,8 @@ static u32 r2VmcAllocChain(r2_vmc_t *v, int n, u32 *hint)
+ 
+ static void r2VmcFreeChain(r2_vmc_t *v, u32 c)
+ {
+-    while (c != FAT_END && c < v->allocEnd) {
++    u32 steps = 0;
++    while (c != FAT_END && c < v->allocEnd && steps++ < v->allocEnd) {
+         u32 next = r2VmcNext(v, c);
+         r2VmcSetFat(v, c, FAT_FREE);
+         c = next;
+@@ -424,7 +435,7 @@ static int r2LoadVmc(r2_save_t *s, const char *image, const char *name)
+     snprintf(s->name, sizeof(s->name), "%.32s", dir.name);
+     memcpy(s->created, dir.created, 8);
+     memcpy(s->modified, dir.modified, 8);
+-    for (i = 2; i < (int)dir.length && s->count < SAVE_FILES; i++) {
++    for (i = 2; i < r2DirLen(dir.length) && s->count < SAVE_FILES; i++) {
+         if (!r2VmcEnt(&v, dir.cluster, i, &e, 0)) {
+             r2VmcClose(&v);
+             return r2Fail("CANNOT READ THE SAVE");
+@@ -480,7 +491,7 @@ static int r2WriteVmc(const r2_save_t *s, const char *image)
+         return r2Fail("CANNOT READ THE CARD");
+     }
+     // a root slot: the first one a deleted save left, else one more on the end
+-    for (i = 2; i < (int)rootDot.length && slot < 0; i++)
++    for (i = 2; i < r2DirLen(rootDot.length) && slot < 0; i++)
+         if (r2VmcEnt(&v, v.root, i, &e, 0) && !(e.mode & MC_EXISTS))
+             slot = i;
+     per = v.csize / ENT_SIZE;
+@@ -599,6 +610,28 @@ int ripps2VmcProbe(const char *image)
+     return ro ? 2 : 1;
+ }
+ 
++// Up to size bytes of the file name in the folder whose entry is dir, the image already open: bytes read, or -1
++static int r2VmcReadIn(r2_vmc_t *v, const r2_ent_t *dir, const char *name, void *buf, int size)
++{
++    r2_ent_t e;
++    int i;
++    for (i = 2; i < r2DirLen(dir->length); i++)
++        if (r2VmcEnt(v, dir->cluster, i, &e, 0) && (e.mode & MC_EXISTS) && (e.mode & MC_FILE) && r2NameIs(&e, name)) {
++            u32 n = e.length < (u32)size ? e.length : (u32)size;
++            u32 c = e.cluster, done = 0;
++            while (done < n) { // only the clusters the bytes asked for
++                u32 k = n - done > (u32)v->csize ? (u32)v->csize : n - done;
++                if (c == FAT_END || !r2VmcIo(v, v->alloc + c, v->cl, 0))
++                    return -1;
++                memcpy((u8 *)buf + done, v->cl, k);
++                done += k;
++                c = r2VmcNext(v, c);
++            }
++            return n;
++        }
++    return -1;
++}
++
+ int ripps2VmcList(const char *image, const char *save, ripps2_vmc_ent_t *out, int max, unsigned int *freeKb)
+ {
+     r2_vmc_t v;
+@@ -623,7 +656,7 @@ int ripps2VmcList(const char *image, const char *save, ripps2_vmc_ent_t *out, in
+         }
+         cluster = dir.cluster;
+     }
+-    for (i = 0; i < (int)dir.length && n < max; i++) {
++    for (i = 0; i < r2DirLen(dir.length) && n < max; i++) {
+         if (!r2VmcEnt(&v, cluster, i, &e, 0))
+             break;
+         if (!(e.mode & MC_EXISTS) || !strcmp(e.name, ".") || !strcmp(e.name, ".."))
+@@ -631,6 +664,10 @@ int ripps2VmcList(const char *image, const char *save, ripps2_vmc_ent_t *out, in
+         snprintf(out[n].name, sizeof(out[n].name), "%.32s", e.name);
+         out[n].isDir = (e.mode & MC_DIR) != 0;
+         out[n].size = (e.mode & MC_DIR) ? 0 : e.length;
++        // a save at the card's top: its icon.sys head, for the title, while the image is open
++        memset(out[n].iconSys, 0, sizeof(out[n].iconSys));
++        if (out[n].isDir && (save == NULL || save[0] == '\0'))
++            r2VmcReadIn(&v, &e, "icon.sys", out[n].iconSys, sizeof(out[n].iconSys));
+         n++;
+     }
+     r2VmcClose(&v);
+@@ -647,7 +684,7 @@ int ripps2VmcReadFile(const char *image, const char *save, const char *file, voi
+     if (!r2VmcOpen(&v, image, 0))
+         return -1;
+     if (r2VmcFindSave(&v, save, &dir) >= 0)
+-        for (i = 2; i < (int)dir.length; i++)
++        for (i = 2; i < r2DirLen(dir.length); i++)
+             if (r2VmcEnt(&v, dir.cluster, i, &e, 0) && (e.mode & MC_EXISTS) && (e.mode & MC_FILE) && r2NameIs(&e, file)) {
+                 u32 n = e.length < (u32)size ? e.length : (u32)size;
+                 u8 *all = malloc(e.length ? e.length : 1);
+@@ -680,7 +717,7 @@ int ripps2VmcExtractFile(const char *image, const char *save, const char *file,
+     if (!r2VmcOpen(&v, image, 0))
+         return 0;
+     if (r2VmcFindSave(&v, save, &dir) >= 0)
+-        for (i = 2; i < (int)dir.length; i++)
++        for (i = 2; i < r2DirLen(dir.length); i++)
+             if (r2VmcEnt(&v, dir.cluster, i, &e, 0) && (e.mode & MC_EXISTS) && (e.mode & MC_FILE) && r2NameIs(&e, file)) {
+                 all = malloc(e.length ? e.length : 1);
+                 ok = all != NULL && r2VmcReadChain(&v, e.cluster, all, e.length);
+@@ -730,7 +767,7 @@ int ripps2VmcDeleteSave(const char *image, const char *save)
+         r2VmcClose(&v);
+         return r2Fail("NO SUCH SAVE ON THE CARD");
+     }
+-    for (i = 2; i < (int)dir.length; i++)
++    for (i = 2; i < r2DirLen(dir.length); i++)
+         if (r2VmcEnt(&v, dir.cluster, i, &e, 0) && (e.mode & MC_EXISTS) && (e.mode & MC_FILE) && e.length > 0)
+             r2VmcFreeChain(&v, e.cluster);
+     r2VmcFreeChain(&v, dir.cluster);
