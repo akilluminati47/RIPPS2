@@ -159,7 +159,7 @@ BADGES = {
     'Scan_1080i': '1080i', 'Scan_1080i2': '1080i', 'Scan_1080p': '1080p',
     'missing': '?',
 }
-PILLS = ('L1', 'R1', 'L2', 'R2', 'L3', 'R3')
+PILLS = ('L1', 'R1', 'L3', 'R3')
 
 
 def main():
@@ -170,6 +170,11 @@ def main():
     pill_px = fit_size(PILLS, PILL_W - 16)
     for n in PILLS:
         label_pill(n, n, pill_px)
+    # the L2 + R2 chord (Random): one wider pill, same height, stroke and label size
+    im, d = canvas(72, 32)
+    outline_box(d, 72, 9)
+    centered_text(d, 36, 16.5, 'L2+R2', pill_px)
+    save(im, 'L2R2')
     badge_px = fit_size(set(BADGES.values()), BADGE_W - 12)
     for name, text in BADGES.items():
         badge(name, text, badge_px)

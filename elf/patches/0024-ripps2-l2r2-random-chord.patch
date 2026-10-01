@@ -1,0 +1,126 @@
+diff --git a/Makefile b/Makefile
+index c375077..4fb36d5 100644
+--- a/Makefile
++++ b/Makefile
+@@ -164,7 +164,7 @@ PNG_ASSETS = load0 load1 load2 load3 load4 load5 load6 load7 usb usb_bd ilk_bd \
+ 	# unused icons - up down l2 r2
+ 
+ # RIPPS2: glass info panel and PS2 selector mark (gfx/ripps2_*.png, copied in by RIPPS2's build.sh)
+-PNG_ASSETS += ripps2_glass ripps2_mark R2
++PNG_ASSETS += ripps2_glass ripps2_mark L2R2
+ 
+ # The RA cover mark is embedded ONLY in the RA flavour: the default build has no
+ # RA_MARK enum member and no table row for it, so embedding the bitmap there would
+diff --git a/include/textures.h b/include/textures.h
+index 48c3641..4fd5762 100644
+--- a/include/textures.h
++++ b/include/textures.h
+@@ -122,7 +122,7 @@ enum INTERNAL_TEXTURE {
+     R1_ICON, // Settings peer-page navigation hint
+     RIPPS2_GLASS, // RIPPS2: glass info panel (theme name "ripps2_glass")
+     RIPPS2_MARK,  // RIPPS2: PS2 selector mark (theme name "ripps2_mark")
+-    R2_ICON,      // RIPPS2: the R2 "Random" hint
++    R2_ICON,      // RIPPS2: the L2+R2 "Random" hint (image L2R2)
+ #ifdef RETROACHIEVEMENTS
+     // RA mark over a tracked game's cover (theme override "ra_mark"). Appended last:
+     // texId is positional.
+diff --git a/src/menusys.c b/src/menusys.c
+index 6932b01..be46c07 100644
+--- a/src/menusys.c
++++ b/src/menusys.c
+@@ -1257,8 +1257,8 @@ static void menuFirstPage()
+     }
+ }
+ 
+-// RIPPS2: R2 jumps to a random game (never the one already selected, never a folder row), placed a
+-// third of the way down the page
++// RIPPS2: L2 + R2 jump to a random game (never the one already selected, never a folder row), placed
++// a third of the way down the page
+ static void menuRandomItem(void)
+ {
+     submenu_list_t *it, *cur = selected_item->item->current;
+@@ -1837,6 +1837,24 @@ void menuHandleInputMain()
+     item_list_t *support = selected_item != NULL && selected_item->item != NULL ? selected_item->item->userdata : NULL;
+     int viewPending = support != NULL && libViewPending(support->mode);
+ 
++    // RIPPS2: L2 + R2 together pick a random game, once per press (holding them never repeats it).
++    // Alone, L2 goes to the top of the list and R2 to the end, when released, so a chord can never
++    // set off either of them on the way in.
++    static int shoulderChord = 0; // this L2/R2 hold became a chord
++    int l2 = getKeyPressed(KEY_L2), r2 = getKeyPressed(KEY_R2);
++    if (l2 && r2) {
++        if (!shoulderChord && !viewPending)
++            menuRandomItem();
++        shoulderChord = 1;
++    } else {
++        if (getKeyOff(KEY_L2) && !shoulderChord)
++            menuFirstPage();
++        if (getKeyOff(KEY_R2) && !shoulderChord)
++            menuLastPage();
++        if (!l2 && !r2)
++            shoulderChord = 0;
++    }
++
+     if (getKeyOn(KEY_LEFT)) {
+         ripps2StepCategory(-1); // RIPPS2: Left/Right switch categories (Launch Disc / Memory Files)
+     } else if (getKeyOn(KEY_RIGHT)) {
+@@ -1868,11 +1886,6 @@ void menuHandleInputMain()
+         menuNavigateLeft(); // RIPPS2: L1/R1 switch drives, like the orb formations
+     } else if (getKeyOn(KEY_R1)) {
+         menuNavigateRight();
+-    } else if (getKeyOn(KEY_L2)) { // home
+-        menuFirstPage();
+-    } else if (getKeyOn(KEY_R2)) { // RIPPS2: a random game (was: end of the list)
+-        if (!viewPending)
+-            menuRandomItem();
+     } else if (getKeyOn(KEY_R3)) { // toggle favourite
+         if (!viewPending && selected_item->item->fav)
+             selected_item->item->fav(selected_item->item);
+diff --git a/src/opl.c b/src/opl.c
+index 2301091..cd12409 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -375,7 +375,7 @@ void moduleUpdateMenuInternal(opl_io_module_t *mod, int themeChanged, int langCh
+             }
+             menuAddHint(&mod->menuItem, hint, L3_ICON);
+         }
+-        menuAddHint(&mod->menuItem, _STR_RIPPS2_RANDOM, R2_ICON); // RIPPS2: R2 picks a random game
++        menuAddHint(&mod->menuItem, _STR_RIPPS2_RANDOM, R2_ICON); // RIPPS2: L2 + R2 pick a random game
+     }
+ 
+     menuHintsUnlock();
+diff --git a/src/textures.c b/src/textures.c
+index ce37efc..64a6e1a 100644
+--- a/src/textures.c
++++ b/src/textures.c
+@@ -111,7 +111,7 @@ extern void *PS2_png;
+ extern void *case_overlay_png;
+ extern void *ripps2_glass_png; // RIPPS2
+ extern void *ripps2_mark_png;  // RIPPS2
+-extern void *R2_png;           // RIPPS2: the R2 "Random" hint
++extern void *L2R2_png;         // RIPPS2: the L2+R2 "Random" hint
+ #ifdef RETROACHIEVEMENTS
+ extern void *ra_mark_png;
+ #endif
+@@ -278,7 +278,7 @@ static texture_t internalDefault[TEXTURES_COUNT] = {
+     {R1_ICON, "R1", &R1_png},
+     {RIPPS2_GLASS, "ripps2_glass", &ripps2_glass_png},
+     {RIPPS2_MARK, "ripps2_mark", &ripps2_mark_png},
+-    {R2_ICON, "R2", &R2_png},
++    {R2_ICON, "L2R2", &L2R2_png},
+ #ifdef RETROACHIEVEMENTS
+     // Positional: guarded by the same #ifdef as RA_MARK in enum INTERNAL_TEXTURE. Without
+     // this row TEXTURES_COUNT grows but the initialiser does not, leaving the last slot
+diff --git a/src/themes.c b/src/themes.c
+index 7cc3b27..ef1605d 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -3642,7 +3642,7 @@ static int thmLoad(const char *themePath)
+     // RIPPS2: the flying PS2 mark (category bar, art panel backdrop) is drawn by the shell itself,
+     // so load it even though no theme element names it. The art panel's glass is procedural now.
+     thmLoadResource(&newT->textures[RIPPS2_MARK], RIPPS2_MARK, themePath, GS_PSM_CT32, 1);
+-    thmLoadResource(&newT->textures[R2_ICON], R2_ICON, themePath, GS_PSM_CT32, newT->useDefault); // RIPPS2: R2 Random
++    thmLoadResource(&newT->textures[R2_ICON], R2_ICON, themePath, GS_PSM_CT32, newT->useDefault); // RIPPS2: L2+R2 Random
+ 
+     // Embedded attribute glyphs (#Format/#Media/Aspect/Rating/Scan/Vmode values): BUILT-IN theme
+     // ONLY. a1ae5e5e decoded these for every theme so badges could fall back to them on disk themes
