@@ -1,0 +1,39 @@
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index 88c9bb7..58994cb 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -349,12 +349,22 @@ static void fbScanDevices(void)
+     fbDevCacheAt = clock();
+ }
+ 
+-// A file named like a card image: .vmc / .ps2 / .mc2, or a .bin of a card's size (OPL's VMC folder)
+-static int fbIsCardImage(const char *name, u32 size)
++// A PS2 card image: a .vmc / .ps2 / .mc2, or a .bin of a card's size (OPL's VMC folder) that starts with
++// the card format's own words (so a PS1 game's .bin is not taken for one)
++static int fbIsCardImage(const char *path, const char *name, u32 size)
+ {
++    char magic[28];
++    int fd, ok;
+     if (fbHasSuffix(name, ".vmc") || fbHasSuffix(name, ".ps2") || fbHasSuffix(name, ".mc2"))
+         return 1;
+-    return fbHasSuffix(name, ".bin") && size >= 1024 * 1024 && (size % (512 * 1024) == 0 || size % (528 * 1024) == 0);
++    if (!fbHasSuffix(name, ".bin") || size < 1024 * 1024 || size > 70 * 1024 * 1024)
++        return 0;
++    fd = open(path, O_RDONLY);
++    if (fd < 0)
++        return 0;
++    ok = read(fd, magic, sizeof(magic)) == (int)sizeof(magic) && !memcmp(magic, "Sony PS2 Memory Card Format ", 28);
++    close(fd);
++    return ok;
+ }
+ 
+ static void fbScanVmc(const char *save)
+@@ -423,7 +433,7 @@ static void fbScanDir(void)
+                 e->kind = FB_KIND_ELF;
+             else if (fbHasSuffix(e->name, ".psu"))
+                 e->kind = FB_KIND_PSU;
+-            else if (fbIsCardImage(e->name, e->size))
++            else if (fbIsCardImage(child, e->name, e->size))
+                 e->kind = FB_KIND_VMC;
+         }
+     }
