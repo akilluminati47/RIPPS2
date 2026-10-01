@@ -1,0 +1,56 @@
+diff --git a/src/ripps2bg.c b/src/ripps2bg.c
+index d216b3c..767d870 100644
+--- a/src/ripps2bg.c
++++ b/src/ripps2bg.c
+@@ -947,6 +947,12 @@ static void drawGuides(int f, float t, float reveal, u64 col)
+ // ---- Tails: a short comet ribbon behind each orb, from its recent positions ----
+ #define TRAIL_N  12    // samples kept per orb
+ #define TRAIL_HZ 30.0f // sampled at a fixed rate, so tails look the same at 50 or 60 fps
++// RIPPS2: how far R2 has the orbs boosted, 0..1. The tails answer it: they reach further back (a
++// longer sample step), widen a little and glow brighter, so the speed reads in the comets.
++static float trailBoost = 0.0f;
++#define TRAIL_BOOST_REACH 0.8f  // +80% history at full boost
++#define TRAIL_BOOST_GLOW  0.6f  // +60% brightness
++#define TRAIL_BOOST_WIDTH 0.25f // +25% width
+ 
+ static v3 trail[MAX_ORBS][TRAIL_N];
+ static int trailHead = 0, trailValid = 0;
+@@ -956,17 +962,18 @@ static void drawTail(int i, p2 head, float r, float vis)
+ {
+     int k;
+     p2 prev = head;
+-    float prevW = r * 0.45f;
++    float width = r * 0.45f * (1.0f + TRAIL_BOOST_WIDTH * trailBoost), glowUp = 1.0f + TRAIL_BOOST_GLOW * trailBoost;
++    float prevW = width;
+     for (k = 0; k < TRAIL_N; k++) {
+         p2 p = project(trail[i][(trailHead - k + TRAIL_N) % TRAIL_N]);
+         if (!p.ok || !prev.ok)
+             break;
+         float dx = p.x - prev.x, dy = p.y - prev.y, len = sqrtf(dx * dx + dy * dy);
+         float fall = 1.0f - (float)(k + 1) / TRAIL_N;
+-        float w = r * 0.45f * fall;
++        float w = width * fall;
+         if (len > 0.5f) { // a still orb has no tail
+             float nx = -dy / len, ny = dx / len;
+-            int a0 = (int)(0x30 * powf(fall + 1.0f / TRAIL_N, 1.8f) * vis), a1 = (int)(0x30 * powf(fall, 1.8f) * vis);
++            int a0 = (int)(0x30 * glowUp * powf(fall + 1.0f / TRAIL_N, 1.8f) * vis), a1 = (int)(0x30 * glowUp * powf(fall, 1.8f) * vis);
+             u64 c0 = RGBA(0x6F, 0x9C, 0xFF, a0), c1 = RGBA(0x6F, 0x9C, 0xFF, a1);
+             rmDrawQuadGouraud(prev.x + nx * prevW, prev.y + ny * prevW, c0, prev.x - nx * prevW, prev.y - ny * prevW, c0,
+                               p.x + nx * w, p.y + ny * w, c1, p.x - nx * w, p.y - ny * w, c1);
+@@ -1016,6 +1023,7 @@ void ripps2DrawOrbs(void)
+     else
+         orbSpeed = fmaxf(1.0f, orbSpeed - (ORB_BOOST - 1.0f) * step / ORB_RAMP_DOWN_S);
+     orbClock += step * orbSpeed;
++    trailBoost = (orbSpeed - 1.0f) / (ORB_BOOST - 1.0f);
+     float ot = orbClock; // where the orbs are along their paths
+     pathsLevel = orbPathsHeld ? fminf(1.0f, pathsLevel + step / PATHS_IN_S) : fmaxf(0.0f, pathsLevel - step / PATHS_OUT_S);
+ 
+@@ -1105,7 +1113,7 @@ void ripps2DrawOrbs(void)
+     }
+ 
+     // tails first, so the orbs sit on their heads
+-    if (!trailValid || t - trailLastSample >= 1.0f / TRAIL_HZ) {
++    if (!trailValid || t - trailLastSample >= (1.0f + TRAIL_BOOST_REACH * trailBoost) / TRAIL_HZ) {
+         if (!trailValid) {
+             for (i = 0; i < MAX_ORBS; i++)
+                 for (k = 0; k < TRAIL_N; k++)
