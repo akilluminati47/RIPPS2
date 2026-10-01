@@ -1129,7 +1129,7 @@ index 0000000..9fc42c2
 +#include "include/textures.h"
 +#include "include/pad.h"
 +#include "include/sound.h"
-+#include "include/hdd.h"
++#include "include/hddsupport.h"
 +#include "include/ripps2.h"
 +
 +#define HM_MAX   128
@@ -1307,7 +1307,7 @@ new file mode 100644
 index 0000000..a79db20
 --- /dev/null
 +++ b/src/ripps2kbd.c
-@@ -0,0 +1,90 @@
+@@ -0,0 +1,91 @@
 +/*
 +  Copyright 2026, RIPPS2 contributors
 +  Licenced under Academic Free License version 3.0
@@ -1323,6 +1323,7 @@ index 0000000..a79db20
 +#include <libkbd.h>
 +
 +#include "include/opl.h"
++#include "include/ioman.h"
 +#include "include/system.h"
 +#include "include/extern_irx.h"
 +#include "include/ripps2.h"
