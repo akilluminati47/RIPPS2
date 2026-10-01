@@ -1,0 +1,171 @@
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index 5b4669d..1e49b8e 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -42,6 +42,9 @@
+ #include "include/iosupport.h"
+ #include "include/sound.h"
+ #include "include/ripps2.h"
++#include "include/bdmsupport.h"  // bdmSlotEverConnected: only probe slots that have held a drive
++#include "include/mmcesupport.h"
++#include "include/hddsupport.h"
+ 
+ #define FB_MAX      400 // entries in one folder
+ #define FB_NAME     128
+@@ -89,8 +92,17 @@ static int fbClipCount = 0, fbClipCut = 0;
+ 
+ // a paste or delete in progress
+ static volatile u32 fbDoneBytes = 0, fbTotalBytes = 0;
+-static volatile int fbDoneItems = 0, fbTotalItems = 0, fbFailed = 0, fbSkipped = 0;
++static volatile int fbDoneItems = 0, fbTotalItems = 0, fbFailed = 0, fbSkipped = 0, fbKept = 0;
+ static const char *fbOpLabel = "";
++static char fbFailWhat[40]; // the first thing that failed in this operation, e.g. "REMOVE icon.sys"
++
++static void fbNoteFail(const char *verb, const char *path)
++{
++    if (fbFailWhat[0])
++        return;
++    const char *name = strrchr(path, '/');
++    snprintf(fbFailWhat, sizeof(fbFailWhat), "%s %s", verb, name && name[1] ? name + 1 : path);
++}
+ static int fbOp = 0; // what the worker runs next
+ enum { FB_OP_SCAN = 0, FB_OP_PASTE, FB_OP_DELETE };
+ static char fbDeleteNames[FB_CLIP_MAX][FB_NAME];
+@@ -105,9 +117,12 @@ static int fbMenuOpen = 0, fbMenuSel = 0, fbMenuItems[FB_ACT_COUNT], fbMenuCount
+ static const char *fbDevices[] = {"mc0:/", "mc1:/", "mass0:/", "mass1:/", "mass2:/", "mass3:/", "mass4:/", "mass5:/", "mass6:/",
+                                   "mass7:/", "mmce0:/", "mmce1:/", "pfs0:/", NULL};
+ 
++static char fbToastDetail[40];
++
+ static void fbSetToast(const char *text)
+ {
+     snprintf(fbToast, sizeof(fbToast), "%s", text);
++    fbToastDetail[0] = '\0';
+     fbToastAt = clock();
+ }
+ 
+@@ -252,7 +267,14 @@ static void fbScanDevices(void)
+     char label[FB_TITLE];
+ 
+     for (i = 0; fbDevices[i] != NULL && n < FB_MAX; i++) {
+-        DIR *d = opendir(fbDevices[i]);
++        const char *dev = fbDevices[i];
++        if (!strncmp(dev, "mass", 4) && !bdmSlotEverConnected(BDM_MODE + (dev[4] - '0')))
++            continue;
++        if (!strncmp(dev, "mmce", 4) && mmceGetObject(1) == NULL)
++            continue;
++        if (!strncmp(dev, "pfs", 3) && hddGetObject(1) == NULL)
++            continue;
++        DIR *d = opendir(dev);
+         if (d == NULL)
+             continue;
+         closedir(d);
+@@ -391,22 +413,28 @@ static u32 fbTreeSize(const char *path, int isDir, int depth)
+ static int fbCopyFile(const char *src, const char *dst)
+ {
+     int in = open(src, O_RDONLY), out, r, ok = 1;
+-    if (in < 0)
++    if (in < 0) {
++        fbNoteFail("READ", src);
+         return 0;
++    }
+     out = open(dst, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+     if (out < 0) {
++        fbNoteFail("WRITE", dst);
+         close(in);
+         return 0;
+     }
+     while ((r = read(in, fbBuf, FB_BUF_SIZE)) > 0) {
+         if (write(out, fbBuf, r) != r) {
++            fbNoteFail("WRITE", dst);
+             ok = 0;
+             break;
+         }
+         fbDoneBytes += r;
+     }
+-    if (r < 0)
++    if (r < 0) {
++        fbNoteFail("READ", src);
+         ok = 0;
++    }
+     close(out);
+     close(in);
+     if (!ok)
+@@ -438,8 +466,12 @@ static int fbCopyTree(const char *src, const char *dst, int isDir, int depth)
+ 
+ static int fbDeleteTree(const char *path, int isDir, int depth)
+ {
+-    if (!isDir)
+-        return remove(path) == 0;
++    if (!isDir) {
++        if (remove(path) == 0)
++            return 1;
++        fbNoteFail("REMOVE", path);
++        return 0;
++    }
+     if (depth > 16)
+         return 0;
+     char dir[320], child[320];
+@@ -452,7 +484,12 @@ static int fbDeleteTree(const char *path, int isDir, int depth)
+             ok = 0;
+     }
+     free(kids);
+-    return rmdir(path) == 0 && ok;
++    if (!ok)
++        return 0;
++    if (rmdir(path) == 0)
++        return 1;
++    fbNoteFail("REMOVE", path);
++    return 0;
+ }
+ 
+ static int fbFolderHasIconSys(const char *folder)
+@@ -500,7 +537,7 @@ static void fbPasteWork(void)
+             fbSkipped++; // never over the top of something
+         } else if (fbCopyTree(src, dst, fbClipIsDir[i], 0)) {
+             if (fbClipCut && !fbDeleteTree(src, fbClipIsDir[i], 0))
+-                fbFailed++;
++                fbKept++; // copied; the original is still there
+         } else
+             fbFailed++;
+         fbDoneItems++;
+@@ -525,13 +562,19 @@ static void fbDeleteWork(void)
+ static void fbReport(const char *verb, int done)
+ {
+     char text[48];
+-    int ok = done - fbFailed - fbSkipped;
++    int ok = done - fbFailed - fbSkipped - fbKept;
+     int n = snprintf(text, sizeof(text), "%s %d", verb, ok < 0 ? 0 : ok);
+     if (fbSkipped > 0)
+         n += snprintf(text + n, sizeof(text) - n, ", %d SKIPPED", fbSkipped);
++    if (fbKept > 0)
++        n += snprintf(text + n, sizeof(text) - n, ", %d COPIED ONLY", fbKept);
+     if (fbFailed > 0)
+         snprintf(text + n, sizeof(text) - n, ", %d FAILED", fbFailed);
+     fbSetToast(text);
++    if (fbFailWhat[0]) // the first failure, named under it for longer
++        snprintf(fbToastDetail, sizeof(fbToastDetail), "%s", fbFailWhat);
++    else
++        fbToastDetail[0] = '\0';
+ }
+ 
+ static void fbWorker(void)
+@@ -558,7 +601,8 @@ static void fbRun(int op, const char *label)
+         return;
+     fbOp = op;
+     fbOpLabel = label;
+-    fbDoneItems = fbFailed = fbSkipped = 0;
++    fbDoneItems = fbFailed = fbSkipped = fbKept = 0;
++    fbFailWhat[0] = '\0';
+     fbDoneBytes = 0;
+     fbBusy = 1;
+     if (ioPutRequest(IO_CUSTOM_SIMPLEACTION, &fbWorker) != IO_OK)
+@@ -951,6 +995,8 @@ void ripps2RenderFiles(void)
+         buf[0] = '\0';
+     if (buf[0])
+         fntRenderString(uiFont, FB_RIGHT - fntCalcDimensions(uiFont, buf), 30, ALIGN_VCENTER, 0, 0, buf, FB_SOFT);
++    if (fbToastDetail[0] && fbToastAt != 0 && (float)(clock() - fbToastAt) / CLOCKS_PER_SEC < 6.0f) // what failed
++        fntRenderString(smallFont, FB_RIGHT - fntCalcDimensions(smallFont, fbToastDetail), 432, ALIGN_VCENTER, 0, 0, fbToastDetail, FB_SOFT);
+     rmDrawLine(FB_X, 46, FB_RIGHT, 46, FB_PRIM(0x4A, 0x72, 0xDC, 0x60));
+ 
+     if (fbBusy) {
