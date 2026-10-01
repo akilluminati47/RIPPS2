@@ -1,0 +1,85 @@
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index 903013b..3d44ce7 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -70,10 +70,15 @@ static int formationDirty = 0; // changed since the last save
+ // mark turns over once on the way like a flipped coin.
+ #define MARK_OMEGA 10.5f  // spring stiffness: about half a second to settle
+ #define MARK_ZETA  0.78f  // a touch under critical: it eases in with the faintest settle
+-#define FLIP_S     0.62f
+ static float markX = 320.0f, markV = 0.0f; // px and px/s along the bar
+ static int markReady = 0;
+-static clock_t markLast = 0, flipStart = 0;
++static clock_t markLast = 0;
++// the coin flip follows the distance flown, so the mark is edge-on halfway across; a new target
++// mid-flip finishes the turn on a short clock instead
++static int flipActive = 0;
++static float flipFromX, flipToX, flipE0;
++static clock_t flipFinishAt = 0;
++#define FLIP_FINISH_S 0.25f
+ static float markDrawX, markDrawY, markDrawW; // where the mark was drawn this frame, for the busy glow
+ static int markDrawFrame = -1;
+ 
+@@ -152,14 +157,22 @@ void ripps2RenderCategoryBar(void)
+     float speed = fabsf(markV);
+     float x = markX, y = (float)MARK_Y + (1.0f - enter) * 10.0f, w = (float)MARK_W * fmaxf(0.0f, easeOutBack(enter));
+     y += fminf(26.0f, speed * 0.017f); // the dive under the labels
+-    if (flipStart != 0) {
+-        float ft = (float)(now - flipStart) / (float)CLOCKS_PER_SEC / FLIP_S;
+-        if (ft >= 1.0f)
+-            flipStart = 0;
+-        else // turns over once: edge-on halfway, then the face again
+-            w *= fmaxf(0.06f, fabsf(cosf(3.14159265f * easeInOutCubic(ft))));
++    if (flipActive) {
++        float span = flipToX - flipFromX, e = span != 0.0f ? (markX - flipFromX) / span : 1.0f;
++        if (flipFinishAt == 0 && target != flipToX) { // turned elsewhere mid-flip: finish the turn on the clock
++            flipE0 = e < 0.0f ? 0.0f : (e > 1.0f ? 1.0f : e);
++            flipFinishAt = now != 0 ? now : 1;
++        }
++        if (flipFinishAt != 0)
++            e = flipE0 + (1.0f - flipE0) * fminf(1.0f, (float)(now - flipFinishAt) / (float)CLOCKS_PER_SEC / FLIP_FINISH_S);
++        if (e < 0.0f)
++            e = 0.0f;
++        if (e >= 0.995f || (markV == 0.0f && markX == target))
++            flipActive = 0;
++        else // turns over once: edge-on halfway across, then the face again
++            w *= fmaxf(0.06f, fabsf(cosf(3.14159265f * e)));
+     }
+-    if (flipStart == 0)
++    if (!flipActive)
+         w *= 1.0f + 0.22f * fminf(1.0f, speed / 900.0f); // stretches with its speed
+     rmDrawPixmap(mark, (int)x, (int)y, ALIGN_CENTER, (int)w, MARK_H, SCALING_RATIO, COLOR_TEX, 0);
+     markDrawX = x;
+@@ -194,12 +207,15 @@ void ripps2DrawBusy(int alpha)
+     }
+     rmSetBlendAdditive(1);
+     if (glow != NULL) { // the glow texture is the mark padded by a fifth: 1.25 x its width, 108/44 its height
+-        float s = 1.0f + 0.12f * b;
++        float s = 1.0f + 0.22f * b;
+         rmDrawPixmap(glow, (int)x, (int)y, ALIGN_CENTER, (int)(w * 1.25f * s), (int)(h * 108.0f / 44.0f * s), SCALING_RATIO,
+-                     GS_SETREG_RGBAQ(0x30, 0x58, 0x80, (int)(alpha * (0.25f + 0.55f * b)), 0x00), 0);
++                     GS_SETREG_RGBAQ(0x40, 0x70, 0x80, (int)(alpha * (0.40f + 0.60f * b)), 0x00), 0);
++        // and a tighter, hotter layer that pulses with it
++        rmDrawPixmap(glow, (int)x, (int)y, ALIGN_CENTER, (int)(w * 1.25f * 0.92f), (int)(h * 108.0f / 44.0f * 0.8f), SCALING_RATIO,
++                     GS_SETREG_RGBAQ(0x60, 0x78, 0x80, (int)(alpha * 0.45f * b), 0x00), 0);
+     }
+     // and the mark itself brightens a little with each breath
+-    rmDrawPixmap(mark, (int)x, (int)y, ALIGN_CENTER, (int)w, (int)h, SCALING_RATIO, GS_SETREG_RGBAQ(0x50, 0x68, 0x80, (int)(alpha * 0.35f * b), 0x00), 0);
++    rmDrawPixmap(mark, (int)x, (int)y, ALIGN_CENTER, (int)w, (int)h, SCALING_RATIO, GS_SETREG_RGBAQ(0x60, 0x70, 0x80, (int)(alpha * 0.55f * b), 0x00), 0);
+     rmSetBlendAdditive(0);
+ }
+ 
+@@ -386,9 +402,10 @@ void ripps2StepCategory(int dir)
+     int next = gRipps2Category + (dir < 0 ? -1 : 1);
+     if (next < 0 || next >= RIPPS2_CAT_COUNT) {
+         next = next < 0 ? RIPPS2_CAT_COUNT - 1 : 0;
+-        flipStart = clock();
+-        if (flipStart == 0)
+-            flipStart = 1;
++        flipActive = 1;
++        flipFromX = markX;
++        flipToX = (float)categoryX[next];
++        flipFinishAt = 0;
+     }
+     ripps2SetCategory(next);
+ }
