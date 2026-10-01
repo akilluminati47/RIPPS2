@@ -1,7 +1,10 @@
 """Rasterizes the PS2 mark from the PlayStation 2 logo SVG the user supplied into
 elf/theme/gfx/ripps2_ps2logo.png, the mark the PS2 games filter shows (L3) above the word GAMES.
 
-    python make_ps2_logo.py "<PlayStation_2_logo.svg>" [width]
+    python make_ps2_logo.py "<PlayStation_2_logo.svg>" [width] [lift]
+
+lift (default 0.4) blends the gradient toward white so the navy top of the mark still reads on
+RIPPS2's dark sky; 0 keeps the SVG's own colours.
 
 Only the three gradient polygons that draw the mark are used (group g3, classes cls-1..cls-3); the
 wordmark under it and the TM beside it are left out. Each polygon is filled with its own vertical
@@ -37,6 +40,7 @@ def gradient_at(stops, f):
 def main():
     src = sys.argv[1]
     width = int(sys.argv[2]) if len(sys.argv) > 2 else 384
+    lift = float(sys.argv[3]) if len(sys.argv) > 3 else 0.4
     root = ET.parse(src).getroot()
     style = ''.join(s.text or '' for s in root.iter(NS + 'style'))
     cls_grad = dict(re.findall(r'\.(cls-\d)\s*\{\s*fill:\s*url\(#([\w-]+)\)', style))
@@ -44,7 +48,8 @@ def main():
     for g in root.iter(NS + 'linearGradient'):
         y1 = float(g.get('y1', '0'))
         y2 = float(g.get('y2', '0'))
-        stops = [(float(s.get('offset')), hex_rgb(s.get('stop-color'))) for s in g.iter(NS + 'stop')]
+        stops = [(float(s.get('offset')), tuple(int(round(c + (255 - c) * lift)) for c in hex_rgb(s.get('stop-color'))))
+                 for s in g.iter(NS + 'stop')]
         grads[g.get('id')] = (y1, y2, stops)
 
     shapes = []

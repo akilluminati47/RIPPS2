@@ -1,0 +1,77 @@
+diff --git a/src/opl.c b/src/opl.c
+index e872cc4..6005973 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -5130,12 +5130,15 @@ static void setDefaults(void)
+     gXSensitivity = 1;
+     gYSensitivity = 1;
+ 
+-    gBDMStartMode = START_MODE_MANUAL; // RIPPS2: drives start on request, so boot stays instant
+-    gHDDStartMode = START_MODE_DISABLED;
++    // RIPPS2: every page starts on request, so boot stays instant and All Games opens on START
++    // DEVICE, which starts them all. The network stays Off (see gNetworkProtocol below): the first
++    // protocol up owns the adapter until a restart, and a new install has no server to reach.
++    gBDMStartMode = START_MODE_MANUAL;
++    gHDDStartMode = START_MODE_MANUAL;
+     gETHStartMode = START_MODE_DISABLED;
+-    gAPPStartMode = START_MODE_DISABLED;
+-    gMMCEStartMode = START_MODE_DISABLED;
+-    gFAVStartMode = START_MODE_AUTO; // RIPPS2: Favorites ready from the first boot
++    gAPPStartMode = START_MODE_MANUAL;
++    gMMCEStartMode = START_MODE_MANUAL;
++    gFAVStartMode = START_MODE_MANUAL; // Favorites ready from the first boot
+ 
+     gMMCESlot = 2; // Default to first Auto slot
+     gMMCEIGRSlot = 3;
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index 7b84cd6..9adbe22 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -162,18 +162,23 @@ void ripps2ShowViewWord(const char *word, int logo, const char *caption)
+         viewWordStart = 1;
+ }
+ 
+-// A soft band of colour: three columns by two rows, clear at every outer edge
+-static void viewWordBand(float cx, float cy, float halfW, float halfH, int r, int g, int b, int a)
++// A soft panel of colour: solid over halfW x halfH around (cx, cy), fading to clear over `fade` px
++// on every side (a 3 x 3 grid of gradient quads)
++static int bandLit(int k, int l)
++{
++    return (k == 1 || k == 2) && (l == 1 || l == 2);
++}
++
++static void viewWordBand(float cx, float cy, float halfW, float halfH, float fade, int r, int g, int b, int a)
+ {
+     u64 lit = WORD_RGBA(r, g, b, a), clear = WORD_RGBA(r, g, b, 0);
+-    float x0 = cx - halfW - 70.0f, x1 = cx - halfW, x2 = cx + halfW, x3 = cx + halfW + 70.0f;
+-    float y0 = cy - halfH, y1 = cy, y2 = cy + halfH;
+-    rmDrawQuadGouraud(x0, y0, clear, x1, y0, clear, x0, y1, clear, x1, y1, lit);
+-    rmDrawQuadGouraud(x1, y0, clear, x2, y0, clear, x1, y1, lit, x2, y1, lit);
+-    rmDrawQuadGouraud(x2, y0, clear, x3, y0, clear, x2, y1, lit, x3, y1, clear);
+-    rmDrawQuadGouraud(x0, y1, clear, x1, y1, lit, x0, y2, clear, x1, y2, clear);
+-    rmDrawQuadGouraud(x1, y1, lit, x2, y1, lit, x1, y2, clear, x2, y2, clear);
+-    rmDrawQuadGouraud(x2, y1, lit, x3, y1, clear, x2, y2, clear, x3, y2, clear);
++    float xs[4] = {cx - halfW - fade, cx - halfW, cx + halfW, cx + halfW + fade};
++    float ys[4] = {cy - halfH - fade, cy - halfH, cy + halfH, cy + halfH + fade};
++    int i, j;
++    for (j = 0; j < 3; j++)
++        for (i = 0; i < 3; i++)
++            rmDrawQuadGouraud(xs[i], ys[j], bandLit(i, j) ? lit : clear, xs[i + 1], ys[j], bandLit(i + 1, j) ? lit : clear,
++                              xs[i], ys[j + 1], bandLit(i, j + 1) ? lit : clear, xs[i + 1], ys[j + 1], bandLit(i + 1, j + 1) ? lit : clear);
+ }
+ 
+ void ripps2DrawViewWord(void)
+@@ -228,10 +233,10 @@ void ripps2DrawViewWord(void)
+ 
+     // the backdrop: dark under it all (word and caption), a little light behind the mark
+     int bandA = (int)(fminf(1.0f, lead * 2.0f) * keep * 0x80);
+-    float midY = (WORD_Y - halfH + captionY + 10.0f) / 2.0f;
+-    viewWordBand(320.0f, midY, halfW + 40.0f, (captionY + 10.0f - (WORD_Y - halfH)) / 2.0f + 26.0f, 0x01, 0x02, 0x0A, bandA / 2);
++    float top = WORD_Y - halfH, bottom = captionY + 12.0f;
++    viewWordBand(320.0f, (top + bottom) / 2.0f, halfW + 36.0f, (bottom - top) / 2.0f + 14.0f, 56.0f, 0x01, 0x02, 0x0A, bandA * 3 / 4);
+     rmSetBlendAdditive(1);
+-    viewWordBand(320.0f, (float)WORD_Y, halfW, halfH + 14.0f, 0x30, 0x58, 0xB0, bandA / 4);
++    viewWordBand(320.0f, (float)WORD_Y, halfW * 0.8f, halfH * 0.6f, 40.0f, 0x30, 0x58, 0xB0, bandA / 5);
+     rmSetBlendAdditive(0);
+ 
+     if (logo != NULL) {
