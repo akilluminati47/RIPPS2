@@ -1,0 +1,361 @@
+diff --git a/Makefile b/Makefile
+index 1e39df2..00b7ab9 100644
+--- a/Makefile
++++ b/Makefile
+@@ -133,7 +133,7 @@ ifneq ($(GIT_TAG),latest)
+ endif
+ endif
+ 
+-FRONTEND_OBJS = ripps2.o ripps2ui.o ripps2bg.o ripps2files.o ripps2edit.o ripps2hdd.o ripps2kbd.o ripps2saves.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o mixsupport.o metadb.o \
++FRONTEND_OBJS = ripps2.o ripps2ui.o ripps2bg.o ripps2files.o ripps2edit.o ripps2hdd.o ripps2kbd.o ripps2saves.o ripps2about.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o mixsupport.o metadb.o \
+ 		dia.o ioman.o texcache.o themes.o supportbase.o bdmsupport.o netsupport.o ethsupport.o httpcatalog.o httpsupport.o udpfssupport.o hddsupport.o zso.o lz4.o launchdiag.o \
+ 		appsupport.o mmcesupport.o artindex.o vcdsupport.o cuesupport.o libview.o retrogem.o folderbrowse.o gui.o guigame.o vmc_groups.o textures.o opl.o atlas.o nbns.o httpclient.o gsm.o cheatman.o sound.o ps2cnf.o tar.o
+ 
+diff --git a/include/ripps2.h b/include/ripps2.h
+index b2a3a1f..daa4a2e 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -77,6 +77,7 @@ int ripps2EditFile(const char *path);                              // 1 when it
+ int ripps2EditMetadata(config_set_t *config, const char *gameName); // 1 when SAVE was chosen (values set, not written)
+ 
+ void ripps2HddManager(void); // ripps2hdd.c
++void ripps2ShowAbout(const char *version, const char *build); // ripps2about.c: the scrolling credits
+ 
+ // RIPPS2 saves (ripps2saves.c): PSU files and PS2 virtual memory card images, for the file browser
+ enum { RIPPS2_SAVE_FOLDER = 0, RIPPS2_SAVE_VMC, RIPPS2_SAVE_PSU };
+diff --git a/src/gui.c b/src/gui.c
+index 8503a61..e06acd1 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -349,11 +349,10 @@ void guiEndFrame(void)
+ 
+ void guiShowAbout()
+ {
+-    char OPLVersion[40];
++    char OPLVersion[64];
+     char OPLBuildDetails[40];
+ 
+-    snprintf(OPLVersion, sizeof(OPLVersion), "Open PS2 Loader %s", OPL_VERSION);
+-    diaSetLabel(diaAbout, ABOUT_TITLE, OPLVersion);
++    snprintf(OPLVersion, sizeof(OPLVersion), "Pre-alpha, on RiptOPL %s", OPL_VERSION);
+ 
+     snprintf(OPLBuildDetails, sizeof(OPLBuildDetails), "GSM %s"
+                                                        " - UDMA+"
+@@ -374,9 +373,8 @@ void guiShowAbout()
+              IGS_VERSION
+ #endif
+     );
+-    diaSetLabel(diaAbout, ABOUT_BUILD_DETAILS, OPLBuildDetails);
+-
+-    diaExecuteDialog(diaAbout, -1, 1, NULL);
++    // RIPPS2: a credits column that scrolls (RiptOPL's About is a fixed dialog with no room left)
++    ripps2ShowAbout(OPLVersion, OPLBuildDetails);
+ }
+ 
+ void guiCheckNotifications(int checkTheme, int checkLang)
+diff --git a/src/ripps2about.c b/src/ripps2about.c
+new file mode 100644
+index 0000000..c585082
+--- /dev/null
++++ b/src/ripps2about.c
+@@ -0,0 +1,230 @@
++/*
++  Copyright 2026, RIPPS2 contributors
++  Licenced under Academic Free License version 3.0
++  Review OpenUsbLd README & LICENSE files for further details.
++
++  RIPPS2 About (Storage > Menu > About): who made what, as a column of credits that drifts up through
++  the glass on its own. The right stick (or Up / Down) scrolls it by hand, and the drift waits a few
++  seconds before it carries on. RIPPS2's own credits and everything RIPPS2 brought in come first; the
++  RiptOPL and Open PS2 Loader credits RIPPS2 inherited follow, as they stood in RiptOPL's About.
++*/
++
++#include <stdio.h>
++#include <string.h>
++#include <time.h>
++
++#include "include/opl.h"
++#include "include/gui.h"
++#include "include/renderman.h"
++#include "include/fntsys.h"
++#include "include/themes.h"
++#include "include/textures.h"
++#include "include/pad.h"
++#include "include/sound.h"
++#include "include/ripps2.h"
++
++#define AB_TOP     54  // the column shows between these
++#define AB_BOTTOM  424
++#define AB_FADE    28  // rows fade out over this many px at each edge
++#define AB_SPEED   16.0f // px a second, on its own
++#define AB_WAIT    4.0f  // seconds the drift waits after a hand scroll
++#define AB_HEAD_H  30
++#define AB_LINE_H  20
++#define AB_GAP     16
++
++#define AB_LIT  0x80
++#define AB_TEXT 0x67
++
++// A credit row: H = a heading, T = a line of names, S = a quieter note, G = space
++typedef struct
++{
++    char kind;
++    const char *text;
++} ab_row_t;
++
++static char abVersion[64], abBuild[64];
++
++static const ab_row_t abRows[] = {
++    {'H', "RIPPS2"},
++    {'S', "A teardown and rebuild of RiptOPL, the Open PS2 Loader fork,"},
++    {'S', "with its own look, launchers, file browser and save tools."},
++    {'T', abVersion},
++    {'G', NULL},
++    {'H', "MADE BY"},
++    {'T', "akilluminati47: design, direction and testing"},
++    {'S', "Built with Claude (Anthropic)"},
++    {'G', NULL},
++    {'H', "TESTERS"},
++    {'T', "akilluminati47 - ripto - nuno6573 - zackcage6 - FifthFox"},
++    {'S', "Feedback makes RIPPS2. Thank you."},
++    {'G', NULL},
++    {'H', "LAUNCH DISC"},
++    {'T', "ESR by ffgriever"},
++    {'S', "started from your own copy (APPS, BOOT or ESR folders)"},
++    {'T', "DVD video: your console's player, or krHACKen's RGB player"},
++    {'S', "from your memory card's DVD player update folder"},
++    {'G', NULL},
++    {'H', "MEMORY FILES"},
++    {'T', "wLaunchELF by the ps2homebrew team"},
++    {'S', "the file manager RIPPS2's browser and settings grid follow"},
++    {'T', "wLaunchELF R3Z by NathanNeurotic"},
++    {'S', "behaviour reference"},
++    {'T', "Apollo Save Tool by bucanero"},
++    {'S', "the save tool reference: PSU export and import, card images"},
++    {'T', "ps2sdk by the ps2dev team"},
++    {'S', "mcman's card file system, the USB keyboard driver"},
++    {'T', "mymc by Ross Ridge, mymcplus by Florian Maerkl"},
++    {'S', "what RIPPS2's card image writes are checked against"},
++    {'G', NULL},
++    {'H', "LOOK AND TYPE"},
++    {'T', "Planet N Compact by Iconian Fonts"},
++    {'T', "RIPPS2 Sleek and Sleek Bold, drawn for RIPPS2"},
++    {'S', "PS1 and PS2 marks drawn from public SVGs; trademarks of Sony"},
++    {'G', NULL},
++    {'G', NULL},
++    {'H', "BUILT ON RIPTOPL"},
++    {'T', "RiptOPL by NathanNeurotic"},
++    {'S', "and the Open PS2 Loader team, whose credits follow"},
++    {'G', NULL},
++    {'H', "OPEN PS2 LOADER DEVELOPERS"},
++    {'T', "BatRastard - bbsan2k - belek666 - crazyc"},
++    {'T', "dlanor - doctorxyz - hominem.te.esse - ifcaro"},
++    {'T', "izdubar - jimmikaelkael - KrahJohlito - kr_ps2"},
++    {'T', "Maximus32 - misfire - Polo35 - reprep"},
++    {'T', "saildot4k - SP193 - volca - darkladark (LUNA)"},
++#ifdef RETROACHIEVEMENTS
++    {'T', "hacan359 - oMrRexD"},
++#endif
++    {'T', "techwritescode (PSUManager)"},
++    {'S', "... and the anonymous ..."},
++    {'G', NULL},
++    {'H', "QUALITY ASSURANCE"},
++    {'T', "algol - Berion - Blade1984 - El_Patas - EP"},
++    {'T', "gledson999 - jolek - lee4 - LocalH - RandQalan"},
++    {'T', "ShaolinAssassin - yoshi314 - zero35 - zackcage6"},
++    {'G', NULL},
++    {'H', "NETWORK UPDATE"},
++    {'T', "icyson55"},
++    {'G', NULL},
++    {'H', "FINANCIAL SUPPORT"},
++    {'T', "Akilluminati47"},
++    {'G', NULL},
++    {'H', "BUILD DETAILS"},
++    {'T', abBuild},
++    {'G', NULL},
++    {'H', "SUPPORT"},
++    {'T', "psx-place.com"},
++    {'T', "github.com/akilluminati47/RIPPS2"},
++};
++#define AB_COUNT ((int)(sizeof(abRows) / sizeof(abRows[0])))
++
++static int abRowH(char kind)
++{
++    return kind == 'H' ? AB_HEAD_H : kind == 'G' ? AB_GAP : AB_LINE_H;
++}
++
++static int abHeight(void)
++{
++    int i, h = 0;
++    for (i = 0; i < AB_COUNT; i++)
++        h += abRowH(abRows[i].kind);
++    return h;
++}
++
++static void abDraw(float scroll)
++{
++    int i, y = AB_TOP + (AB_BOTTOM - AB_TOP) / 3 - (int)scroll; // the first heading starts a third of the way down
++    for (i = 0; i < AB_COUNT; i++) {
++        const ab_row_t *r = &abRows[i];
++        int h = abRowH(r->kind), mid = y + h / 2;
++        y += h;
++        if (r->kind == 'G' || mid < AB_TOP - 10 || mid > AB_BOTTOM + 10)
++            continue;
++        // fade in from the bottom edge, out at the top
++        float a = 1.0f;
++        if (mid < AB_TOP + AB_FADE)
++            a = (float)(mid - AB_TOP) / AB_FADE;
++        else if (mid > AB_BOTTOM - AB_FADE)
++            a = (float)(AB_BOTTOM - mid) / AB_FADE;
++        if (a <= 0.0f)
++            continue;
++        if (a > 1.0f)
++            a = 1.0f;
++        int alpha = (int)(0x80 * a);
++        if (r->kind == 'H') {
++            fntRenderString(gTheme->fonts[4], 320, mid + 3, ALIGN_CENTER, 0, 0, r->text, GS_SETREG_RGBA(AB_LIT, AB_LIT, AB_LIT, alpha));
++            int w = fntCalcDimensions(gTheme->fonts[4], r->text) / 2 + 18;
++            rmDrawLine(320 - w - 40, mid + 3, 320 - w, mid + 3, GS_SETREG_RGBAQ(0x4A, 0x72, 0xDC, alpha / 2, 0));
++            rmDrawLine(320 + w, mid + 3, 320 + w + 40, mid + 3, GS_SETREG_RGBAQ(0x4A, 0x72, 0xDC, alpha / 2, 0));
++        } else if (r->kind == 'T')
++            fntRenderString(gTheme->fonts[5], 320, mid, ALIGN_CENTER, 0, 0, r->text, GS_SETREG_RGBA(AB_TEXT, AB_TEXT + 4, AB_TEXT + 0x13, alpha));
++        else
++            fntRenderString(gTheme->fonts[10], 320, mid, ALIGN_CENTER, 0, 0, r->text, GS_SETREG_RGBA(0x4C, 0x52, 0x64, alpha));
++    }
++}
++
++void ripps2ShowAbout(const char *version, const char *build)
++{
++    float scroll = 0.0f, waited = AB_WAIT, end;
++    clock_t last = clock();
++    int closeKey = gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE;
++
++    snprintf(abVersion, sizeof(abVersion), "%s", version);
++    snprintf(abBuild, sizeof(abBuild), "%s", build);
++    end = (float)abHeight() + (AB_BOTTOM - AB_TOP) / 3.0f; // scrolled this far, the last row has left the top
++
++    while (1) {
++        clock_t now = clock();
++        float dt = (float)(now - last) / CLOCKS_PER_SEC;
++        int sx, sy;
++        last = now;
++        if (dt > 0.1f)
++            dt = 0.1f;
++
++        readPads();
++        padGetRightStick(&sx, &sy);
++        float hand = 0.0f;
++        if (sy > 24 || sy < -24)
++            hand = (float)sy / 127.0f * 360.0f; // stick down scrolls down the credits
++        if (getKey(KEY_DOWN))
++            hand = 240.0f;
++        else if (getKey(KEY_UP))
++            hand = -240.0f;
++        if (hand != 0.0f) {
++            scroll += hand * dt;
++            waited = 0.0f;
++        } else {
++            waited += dt;
++            if (waited >= AB_WAIT)
++                scroll += AB_SPEED * dt;
++        }
++        if (scroll < -(AB_BOTTOM - AB_TOP) / 3.0f)
++            scroll = -(AB_BOTTOM - AB_TOP) / 3.0f;
++        if (scroll > end) // round again from below
++            scroll = -(float)(AB_BOTTOM - AB_TOP) * 2.0f / 3.0f;
++
++        rmStartFrame();
++        guiDrawBGPlasma();
++        fntRenderString(gTheme->fonts[4], 30, 30, ALIGN_VCENTER, 0, 0, "ABOUT", GS_SETREG_RGBA(0x80, 0x80, 0x80, 0x80));
++        fntRenderString(gTheme->fonts[4], 610 - fntCalcDimensions(gTheme->fonts[4], "RIPPS2"), 30, ALIGN_VCENTER, 0, 0, "RIPPS2", GS_SETREG_RGBA(0x67, 0x6C, 0x7A, 0x80));
++        rmDrawLine(30, 46, 610, 46, GS_SETREG_RGBAQ(0x4A, 0x72, 0xDC, 0x60, 0));
++        abDraw(scroll);
++        // the hints
++        int hx = 44;
++        GSTEXTURE *t = thmGetTexture(closeKey == KEY_CROSS ? CROSS_ICON : CIRCLE_ICON);
++        if (t != NULL) {
++            rmDrawPixmap(t, hx, 438, ALIGN_NONE, 20, 20, SCALING_RATIO, GS_SETREG_RGBA(0x80, 0x80, 0x80, 0x80), 0);
++            hx += 24;
++        }
++        fntRenderString(gTheme->fonts[4], hx, 448, ALIGN_VCENTER, 0, 0, "BACK", GS_SETREG_RGBA(0x67, 0x6C, 0x7A, 0x80));
++        hx += fntCalcDimensions(gTheme->fonts[4], "BACK") + 18;
++        fntRenderString(gTheme->fonts[4], hx, 448, ALIGN_VCENTER, 0, 0, "RIGHT STICK OR UP / DOWN: SCROLL", GS_SETREG_RGBA(0x4C, 0x52, 0x64, 0x80));
++        rmEndFrame();
++
++        if (getKeyOn(closeKey) || getKeyOn(KEY_START)) {
++            sfxPlay(SFX_CANCEL);
++            break;
++        }
++    }
++    readPads();
++}
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index c205fe0..88c9bb7 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -1174,6 +1174,8 @@ static void fbAction(int act)
+ 
+ // ---- SETTINGS: Start opens a grid of tiles over the tree, like wLaunchELF's device page ----
+ static void fbHint(int icon, const char *text, int *x, int y); // drawn with the tree's hints below
++static void fbHintLayout(void);
++static int fbHintX = 34, fbHintGap = 18; // where every hint row starts, and its gap (fbHintLayout)
+ enum { FB_TILE_BROWSER = 0, FB_TILE_EDITOR, FB_TILE_HDD, FB_TILE_EXPLOIT, FB_TILE_POWER, FB_TILE_EXIT, FB_TILE_COUNT };
+ static const char *const fbTileLine1[FB_TILE_COUNT] = {"FILE", "TEXT", "HDD", "MC EXPLOIT", "POWER", "EXIT"};
+ static const char *const fbTileLine2[FB_TILE_COUNT] = {"BROWSER", "EDITOR", "MANAGER", "INSTALLER", "OFF", "BROWSER"};
+@@ -1441,7 +1443,8 @@ static int fbDrawGrid(void)
+         fntRenderString(uiFont, (int)cx, (int)(cy + hh * 0.48f), ALIGN_CENTER, 0, 0, fbTileLine1[i], tc);
+         fntRenderString(uiFont, (int)cx, (int)(cy + hh * 0.48f) + 17, ALIGN_CENTER, 0, 0, fbTileLine2[i], tc);
+     }
+-    int hx = 44, hy = 448;
++    fbHintLayout();
++    int hx = fbHintX, hy = 448;
+     fbHint(gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON, "SELECT", &hx, hy);
+     fbHint(gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON, "BACK", &hx, hy);
+     return 1;
+@@ -1584,20 +1587,29 @@ static void fbHint(int icon, const char *text, int *x, int y)
+         *x += 24;
+     }
+     fntRenderString(gTheme->fonts[4], *x, y, ALIGN_VCENTER, 0, 0, text, FB_SOFT);
+-    *x += fntCalcDimensions(gTheme->fonts[4], text) + 18;
++    *x += fntCalcDimensions(gTheme->fonts[4], text) + fbHintGap;
+ }
+ 
+-// A row of hints that always fits the panel: the gaps close up before the last one runs off the edge
++// The hint rows all start where the widest one (inside a folder) starts when it is centred, so the first
++// glyph sits in the same place on every page of the browser; that row's gaps close up if it would not fit
+ #define FB_HINT_RIGHT 612
+-static void fbHintRow(const int *icons, const char *const *texts, int n, int x, int y)
++static void fbHintLayout(void)
+ {
+-    int i, w = 0, gap = 18;
++    static const char *const wide[] = {"OPEN", "BACK", "MARK", "ACTIONS", "REFRESH", "SETTINGS"};
++    int i, n = 6, w = 0, gap = 18, room = FB_HINT_RIGHT - (640 - FB_HINT_RIGHT);
+     for (i = 0; i < n; i++)
+-        w += 24 + fntCalcDimensions(gTheme->fonts[4], texts[i]);
+-    if (n > 1 && x + w + gap * (n - 1) > FB_HINT_RIGHT)
+-        gap = (FB_HINT_RIGHT - x - w) / (n - 1);
++        w += 24 + fntCalcDimensions(gTheme->fonts[4], wide[i]);
++    if (w + gap * (n - 1) > room)
++        gap = (room - w) / (n - 1);
+     if (gap < 6)
+         gap = 6;
++    fbHintGap = gap;
++    fbHintX = (640 - (w + gap * (n - 1))) / 2;
++}
++
++static void fbHintRow(const int *icons, const char *const *texts, int n, int x, int y)
++{
++    int i, gap = fbHintGap;
+     for (i = 0; i < n; i++) {
+         GSTEXTURE *t = thmGetTexture(icons[i]);
+         if (t != NULL)
+@@ -1711,7 +1723,8 @@ void ripps2RenderFiles(void)
+     if (fbGridOpen && fbDrawGrid())
+         return; // the grid draws its own hints
+     // the hints
+-    int hx = 34, hy = 448;
++    fbHintLayout();
++    int hx = fbHintX, hy = 448;
+     int selIcon = gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON, backIcon = gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON;
+     if (fbMenuOpen) {
+         fbHint(selIcon, "SELECT", &hx, hy);
