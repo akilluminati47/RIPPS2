@@ -1,0 +1,13 @@
+diff --git a/src/opl.c b/src/opl.c
+index 12c4806..b9e33ca 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -1356,6 +1356,8 @@ static void updateMenuFromGameList(opl_io_module_t *mdl)
+         // on its next drain, but it can no longer expose a row backed by the discarded view. Do not
+         // clear a transition staged after this rebuild began; its own queued pass still has to run.
+         libViewFinishPending(mdl->support->mode);
++        // RIPPS2: the L3 hint names the list it goes to next, so rebuild the hints for the new view
++        moduleUpdateMenuInternal(mdl, 0, 0);
+     }
+ }
+ 
