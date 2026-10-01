@@ -1,0 +1,49 @@
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index 77a5b7a..ac64666 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -30,6 +30,7 @@
+ #include <math.h>
+ #include <malloc.h>
+ #include <kernel.h>
++#include <errno.h>
+ #include <delaythread.h>
+ 
+ #include "include/opl.h"
+@@ -100,10 +101,13 @@ static char fbFailWhat[40]; // the first thing that failed in this operation, e.
+ 
+ static void fbNoteFail(const char *verb, const char *path)
+ {
++    int err = errno;
+     if (fbFailWhat[0])
+         return;
+     const char *name = strrchr(path, '/');
+-    snprintf(fbFailWhat, sizeof(fbFailWhat), "%s %s", verb, name && name[1] ? name + 1 : path);
++    if (name == NULL)
++        name = strrchr(path, ':');
++    snprintf(fbFailWhat, sizeof(fbFailWhat), "%s %s E%d", verb, name && name[1] ? name + 1 : path, err);
+ }
+ static int fbOp = 0; // what the worker runs next
+ enum { FB_OP_SCAN = 0, FB_OP_PASTE, FB_OP_DELETE };
+@@ -446,14 +450,19 @@ static int fbCopyFile(const char *src, const char *dst)
+         snprintf(cardPath, sizeof(cardPath), "%.4s%s", dst, dst + 5);
+         target = cardPath;
+     }
++    errno = 0;
+     out = open(target, O_WRONLY | O_CREAT, 0666);
+     if (out < 0) {
+-        fbNoteFail("WRITE", dst);
++        errno = -out > 0 && errno == 0 ? -out : errno;
++        fbNoteFail("CREATE", dst);
+         close(in);
+         return 0;
+     }
+     while ((r = read(in, fbBuf, FB_BUF_SIZE)) > 0) {
+-        if (write(out, fbBuf, r) != r) {
++        int w = write(out, fbBuf, r);
++        if (w != r) {
++            if (errno == 0)
++                errno = w < 0 ? -w : 999;
+             fbNoteFail("WRITE", dst);
+             ok = 0;
+             break;
