@@ -1,12 +1,31 @@
 # RIPPS2
 
-A PS2-inspired front end, starting life as a web theme. This first beta is the browser version: glowing data-tower pillars and flying light orbs behind a floating three-way menu. The same look is headed for a custom OPL theme bundled into a single `RIPPS2.elf` for real hardware.
+> ### Get RIPPS2 (build 55, pre-alpha)
+> 1. **[Download RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/download/v0.0.55-prealpha/RIPPS2.elf)** (one file, about 1.6 MB).
+> 2. Copy it to a USB stick or memory card, and launch it from FreeMcBoot, PS2BBL, wLaunchELF or whatever you already use to start homebrew. In PCSX2: **System > Start File** and pick `RIPPS2.elf`.
+> 3. Tell us how it went: [open an issue](https://github.com/akilluminati47/RIPPS2/issues) or find **#RIPPS2** on the developers' Discord, [discord.gg/ggkCDWqhE](https://discord.gg/ggkCDWqhE) (invite good for October 2026).
+>
+> [Watch the build 55 reel](media/ripps2-b55-reel.mp4) | [What's new in build 55](https://github.com/akilluminati47/RIPPS2/releases/tag/v0.0.55-prealpha) | [Every release](https://github.com/akilluminati47/RIPPS2/releases)
 
-**Live demo:** https://akilluminati47.github.io/RIPPS2/
+[![RIPPS2 build 55 reel](media/ripps2-b55-poster.png)](media/ripps2-b55-reel.mp4)
 
-> **Note:** this README still describes the web version. The PS2 ELF has moved on: **build 33** is out as a pre-pre-pre-alpha (runs in PCSX2, untested on real hardware, testers wanted). Everything about it is on the [build 33 release](https://github.com/akilluminati47/RIPPS2/releases/tag/v0.0.33-pppalpha). Build 22's [demo reel](media/ripps2-b22-demo.mp4) and short clips are in [media/](media/).
+RIPPS2 is a PS2 front end in a single `.elf`: a teardown and rebuild of [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader) (the Open PS2 Loader fork) with its own look, launchers, file browser and save tools. Glass towers stand behind your games and orbit formations behind your files, all drawn live by the PS2.
 
-## The menu
+- **LAUNCH DISC** boots PS2, PS1 and DVD video discs, and says which game is in the drive before you start it.
+- **STORAGE** is your game library: every drive in one list, with art, an info page whose art crossfades with the screenshots, and per-game settings.
+- **MEMORY FILES** is a built-in file browser: copy, move and delete across memory cards, USB and HDD; open OPL's VMC card images like folders; export and import PSU saves; edit text files; Start opens its settings.
+
+It is **pre-alpha**. It runs in PCSX2, and it is being tested now by akilluminati47, ripto, nuno6573, zackcage6 and FifthFox. Keep your usual loader close by, and tell us what breaks: feedback is what makes RIPPS2.
+
+Short clips of build 55: [info page](media/ripps2-b55-info.mp4), [orbs](media/ripps2-b55-orbs.mp4), [card images and PSU](media/ripps2-b55-cards.mp4), [browser settings](media/ripps2-b55-grid.mp4), [launch disc](media/ripps2-b55-disc.mp4). Build 22's [demo reel](media/ripps2-b22-demo.mp4) is still there too.
+
+## How it is built
+
+`elf/build.sh` takes RiptOPL at the commit named in `elf/RIPTOPL_REF`, applies the patch series in `elf/patches`, adds the RIPPS2 theme, fonts and art from `elf/theme`, and builds `RIPPS2.elf`. GitHub Actions runs it on every push ("Build RIPPS2.elf"); the ELF is the run's artifact.
+
+## The web version
+
+RIPPS2 started life as a web theme, and that version is still here: **live demo** at https://akilluminati47.github.io/RIPPS2/
 
 | Option | Opens |
 | --- | --- |
@@ -16,36 +35,30 @@ A PS2-inspired front end, starting life as a web theme. This first beta is the b
 
 The PS2 mark rides under the selected option and flies between them: a swoop to a neighbour, a deeper dive with a coin flip when going end to end. Labels follow the visitor's system language (18 languages, override with `?lang=fr` and similar). Anything the menu font cannot draw falls back to a clean sans as a whole word.
 
-## Pillars
+**Pillars:** glass data towers with glowing edges, seams, flickering cells and energy pulses, on a reflective floor. Towers rise out of the ground on load, then breathe and ripple; the pointer sends ripples and a click sets off a blast. Adapts resolution on slow devices, pauses off screen, respects reduced motion.
 
-- Glass data towers with glowing edges, seams, flickering cells and energy pulses, on a reflective floor
-- Towers rise out of the ground on load, then breathe and ripple
-- Light beams, drifting motes, bloom, grain and a subtle lens finish
-- Moving the pointer (or swiping) sends ripples; clicking sets off a big area blast
-- Adapts resolution on slow devices, pauses off screen, respects reduced motion
+**Orbs:** twelve formations (Browser Orbit, Borromean Rings, Torus Orbit, Icosahedron, Double Helix, Strange Attractor, Trefoil Knot, Mobius Strip, Klein Bottle, Golden Spiral, Lissajous and Seven-Point Star), each with as many orbs as it needs, splitting and merging between them. Faint outlines trace every shape (tap, `L`, or controller A). Switch with the arrows, the dots, a swipe, the arrow keys, or a controller's d-pad or bumpers.
 
-## Orbs
-
-- Twelve formations: Browser Orbit, Borromean Rings, Torus Orbit, Icosahedron, Double Helix, Strange Attractor (a live Lorenz system), Trefoil Knot, Möbius Strip, Klein Bottle, Golden Spiral, Lissajous and Seven-Point Star
-- Each formation uses as many orbs as it needs to read clearly, splitting and merging between formations
-- Faint outlines trace every shape; tap or click the scene (or press `L`, or controller A) to toggle them
-- Arrow bubbles lean toward the pointer, ripple on press and fill a progress ring while swiping
-- Switch with the arrows, the dots, a swipe, the arrow keys, or a controller's d-pad or bumpers
-
-## Run it locally
-
-ES modules need a web server (opening the file directly will not work):
+To run it locally, serve the folder (ES modules need a web server) and open http://localhost:8000:
 
 ```bash
 python -m http.server 8000
 ```
 
-Then open http://localhost:8000. Everything is bundled, so it works offline. Add `?t=12` to skip the pillars intro, or `orbs.html?f=3` to open a specific formation.
+Add `?t=12` to skip the pillars intro, or `orbs.html?f=3` to open a specific formation.
 
 ## Credits
 
-- [three.js](https://threejs.org) r160, MIT (see `vendor/LICENSE`)
-- [Albert Sans](https://github.com/usted/Albert-Sans), SIL Open Font License (see `vendor/fonts/OFL.txt`)
-- Planet N Compact by [Iconian Fonts](https://www.iconian.com) (`assets/master.ttf`)
+RIPPS2 is designed and directed by akilluminati47 and built with Claude (Anthropic). Testers: akilluminati47, ripto, nuno6573, zackcage6, FifthFox.
 
-Unofficial fan project. PlayStation, PS2 and the PS2 logo are trademarks of Sony Interactive Entertainment. This project is not affiliated with or endorsed by Sony.
+- [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader) by NathanNeurotic and the [Open PS2 Loader](https://github.com/ps2homebrew/Open-PS2-Loader) team (AFL-3.0), which RIPPS2 is built on. Their full credits are on RIPPS2's About page.
+- [ESR](https://gitlab.com/ffgriever/esr/) by ffgriever: Launch Disc starts your own copy for ESR discs.
+- [wLaunchELF](https://github.com/ps2homebrew/wLaunchELF) by the ps2homebrew team, and wLaunchELF R3Z by NathanNeurotic: the behaviour references for the Memory Files browser and its settings grid.
+- [Apollo Save Tool](https://github.com/bucanero/apollo-ps2) by bucanero: the reference for the save tools (PSU, card images). RIPPS2's own code, written from the formats.
+- [ps2sdk](https://github.com/ps2dev/ps2sdk) by the ps2dev team: the memory card file system (mcman) and the USB keyboard driver.
+- mymc by Ross Ridge and [mymcplus](https://github.com/thestr4ng3r/mymcplus) by Florian Maerkl: what RIPPS2's card image writes are checked against.
+- Planet N Compact by [Iconian Fonts](https://www.iconian.com) (`assets/master.ttf`). RIPPS2 Sleek and Sleek Bold are drawn for RIPPS2.
+- Web version: [three.js](https://threejs.org) r160, MIT (see `vendor/LICENSE`); [Albert Sans](https://github.com/usted/Albert-Sans), SIL Open Font License (see `vendor/fonts/OFL.txt`).
+- The reel's music is original, synthesised for it. Game art seen in testing came from the community OPL art database and is not part of RIPPS2.
+
+Unofficial fan project. PlayStation, PS1, PS2, the PlayStation logo and the PS2 logo are trademarks of Sony Interactive Entertainment. This project is not affiliated with or endorsed by Sony.
