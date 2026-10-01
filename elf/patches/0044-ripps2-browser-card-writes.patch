@@ -1,0 +1,35 @@
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index 5fb1c73..77a5b7a 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -438,7 +438,15 @@ static int fbCopyFile(const char *src, const char *dst)
+         fbNoteFail("READ", src);
+         return 0;
+     }
+-    out = open(dst, O_WRONLY | O_CREAT | O_TRUNC, 0666);
++    // a paste only ever makes new files (an existing target is skipped), so no O_TRUNC; and on a memory
++    // card the path goes in RiptOPL's own card form, "mc1:SAVE/FILE" (no slash after the colon)
++    char cardPath[320];
++    const char *target = dst;
++    if (fbIsMc(dst) && dst[4] == '/') {
++        snprintf(cardPath, sizeof(cardPath), "%.4s%s", dst, dst + 5);
++        target = cardPath;
++    }
++    out = open(target, O_WRONLY | O_CREAT, 0666);
+     if (out < 0) {
+         fbNoteFail("WRITE", dst);
+         close(in);
+@@ -469,7 +477,12 @@ static int fbCopyTree(const char *src, const char *dst, int isDir, int depth)
+         return fbCopyFile(src, dst);
+     if (depth > 16)
+         return 0;
+-    mkdir(dst, 0777); // an existing folder merges
++    if (fbIsMc(dst) && dst[4] == '/') { // RiptOPL's own card form, "mc1:SAVE"
++        char cardPath[320];
++        snprintf(cardPath, sizeof(cardPath), "%.4s%s", dst, dst + 5);
++        mkdir(cardPath, 0777); // an existing folder merges
++    } else
++        mkdir(dst, 0777);
+     char sdir[320], ddir[320], s[320], d[320];
+     int n, i, ok = 1;
+     snprintf(sdir, sizeof(sdir), "%s/", src);
