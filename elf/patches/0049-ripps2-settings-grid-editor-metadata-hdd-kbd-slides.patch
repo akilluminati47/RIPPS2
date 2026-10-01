@@ -1099,7 +1099,7 @@ new file mode 100644
 index 0000000..9fc42c2
 --- /dev/null
 +++ b/src/ripps2hdd.c
-@@ -0,0 +1,201 @@
+@@ -0,0 +1,202 @@
 +/*
 +  Copyright 2026, RIPPS2 contributors
 +  Licenced under Academic Free License version 3.0
@@ -1116,7 +1116,8 @@ index 0000000..9fc42c2
 +#include <stdio.h>
 +#include <stdlib.h>
 +#include <string.h>
-+#include <fileXio_rpc.h>
++#define NEWLIB_PORT_AWARE
++#include <fileXio_rpc.h> // fileXioDopen/Dread/Devctl/Remove on hdd0: (partition level, below newlib)
 +#include <hdd-ioctl.h>
 +
 +#include "include/opl.h"
