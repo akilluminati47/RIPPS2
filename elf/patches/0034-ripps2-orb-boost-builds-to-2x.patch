@@ -1,0 +1,71 @@
+diff --git a/include/ripps2.h b/include/ripps2.h
+index c0e2134..8ab2914 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -59,7 +59,7 @@ void ripps2DrawPanelMorph(int ax, int ay, int aw, int ah, int bx, int by, int bw
+ void ripps2DrawBackground(void); // orbs on Memory Files, pillars everywhere else
+ void ripps2DrawPillars(void);
+ void ripps2DrawOrbs(void);
+-void ripps2SetOrbInput(int showPaths, int boost); // Memory Files: L2 shows the paths, R2 speeds the orbs
++void ripps2SetOrbInput(int showPaths, int boost); // Memory Files: L2 shows the paths, R2 builds the orbs to 2x
+ 
+ // ---- Boot swoop and launch light-up (ripps2bg.c) ----
+ void ripps2DrawBootFrame(void);     // the swoop's first frame, for boot screens before the intro
+diff --git a/src/ripps2bg.c b/src/ripps2bg.c
+index 767d870..4fadb14 100644
+--- a/src/ripps2bg.c
++++ b/src/ripps2bg.c
+@@ -950,9 +950,9 @@ static void drawGuides(int f, float t, float reveal, u64 col)
+ // RIPPS2: how far R2 has the orbs boosted, 0..1. The tails answer it: they reach further back (a
+ // longer sample step), widen a little and glow brighter, so the speed reads in the comets.
+ static float trailBoost = 0.0f;
+-#define TRAIL_BOOST_REACH 0.8f  // +80% history at full boost
+-#define TRAIL_BOOST_GLOW  0.6f  // +60% brightness
+-#define TRAIL_BOOST_WIDTH 0.25f // +25% width
++#define TRAIL_BOOST_REACH 0.5f  // +50% history at full boost (on top of twice the speed)
++#define TRAIL_BOOST_GLOW  0.7f  // +70% brightness
++#define TRAIL_BOOST_WIDTH 0.3f  // +30% width
+ 
+ static v3 trail[MAX_ORBS][TRAIL_N];
+ static int trailHead = 0, trailValid = 0;
+@@ -988,15 +988,16 @@ static float morphStart = -10.0f, lastT = 0.0f;
+ static float guideStart = -1.0f;
+ static int morphing = 0;
+ 
+-// Memory Files on the triggers: R2 held eases the orbs up to 15% faster and they ease back when it
+-// is let go (their own clock, so nothing jumps); L2 held brings their paths up and lets them fade
+-// when released
+-#define ORB_BOOST         1.15f
+-#define ORB_RAMP_UP_S     0.6f
+-#define ORB_RAMP_DOWN_S   0.9f
++// Memory Files on the triggers: R2 held builds the orbs up, gently at first and then taking off,
++// to twice their speed after a few seconds; let go and they glide back down. They run on their own
++// clock, so nothing jumps, and a formation change mid-boost carries the speed into the next shape.
++// L2 held brings their paths up and lets them fade when released.
++#define ORB_BOOST_MAX     2.0f // 200%
++#define ORB_BUILD_S       4.0f // held this long to reach it
++#define ORB_GLIDE_S       2.5f // let go: this long to glide back to normal
+ #define PATHS_IN_S        0.2f
+ #define PATHS_OUT_S       0.4f
+-static float orbClock = 0.0f, orbSpeed = 1.0f, pathsLevel = 0.0f;
++static float orbClock = 0.0f, orbSpeed = 1.0f, orbBuild = 0.0f, pathsLevel = 0.0f;
+ static int orbBoostHeld = 0, orbPathsHeld = 0;
+ 
+ void ripps2SetOrbInput(int showPaths, int boost)
+@@ -1019,11 +1020,13 @@ void ripps2DrawOrbs(void)
+ 
+     float step = fminf(dt, 0.1f);
+     if (orbBoostHeld)
+-        orbSpeed = fminf(ORB_BOOST, orbSpeed + (ORB_BOOST - 1.0f) * step / ORB_RAMP_UP_S);
++        orbBuild = fminf(1.0f, orbBuild + step / ORB_BUILD_S);
+     else
+-        orbSpeed = fmaxf(1.0f, orbSpeed - (ORB_BOOST - 1.0f) * step / ORB_RAMP_DOWN_S);
++        orbBuild = fmaxf(0.0f, orbBuild - step / ORB_GLIDE_S);
++    float build = orbBuild * orbBuild * (3.0f - 2.0f * orbBuild); // eases in and settles at either end
++    orbSpeed = 1.0f + (ORB_BOOST_MAX - 1.0f) * build;
+     orbClock += step * orbSpeed;
+-    trailBoost = (orbSpeed - 1.0f) / (ORB_BOOST - 1.0f);
++    trailBoost = build;
+     float ot = orbClock; // where the orbs are along their paths
+     pathsLevel = orbPathsHeld ? fminf(1.0f, pathsLevel + step / PATHS_IN_S) : fmaxf(0.0f, pathsLevel - step / PATHS_OUT_S);
+ 

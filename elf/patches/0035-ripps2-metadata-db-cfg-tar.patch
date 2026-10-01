@@ -1,0 +1,312 @@
+diff --git a/Makefile b/Makefile
+index fbd92c3..a55dc3c 100644
+--- a/Makefile
++++ b/Makefile
+@@ -131,7 +131,7 @@ ifneq ($(GIT_TAG),latest)
+ endif
+ endif
+ 
+-FRONTEND_OBJS = ripps2.o ripps2ui.o ripps2bg.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o mixsupport.o \
++FRONTEND_OBJS = ripps2.o ripps2ui.o ripps2bg.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o mixsupport.o metadb.o \
+ 		dia.o ioman.o texcache.o themes.o supportbase.o bdmsupport.o netsupport.o ethsupport.o httpcatalog.o httpsupport.o udpfssupport.o hddsupport.o zso.o lz4.o launchdiag.o \
+ 		appsupport.o mmcesupport.o artindex.o vcdsupport.o cuesupport.o libview.o retrogem.o folderbrowse.o gui.o guigame.o vmc_groups.o textures.o opl.o atlas.o nbns.o httpclient.o gsm.o cheatman.o sound.o ps2cnf.o tar.o
+ 
+diff --git a/include/metadb.h b/include/metadb.h
+new file mode 100644
+index 0000000..79f64c5
+--- /dev/null
++++ b/include/metadb.h
+@@ -0,0 +1,17 @@
++#ifndef __METADB_H
++#define __METADB_H
++
++#include "include/config.h"
++
++// RIPPS2 metadata database: CFG/cfg.tar on the game's drive, one <GAMEID>.cfg per game (metadb.c)
++
++void metaDbInit(void);
++void metaDbInvalidate(void); // the drives changed: look for archives again
++
++// Fill in the keys the game's own CFG lacks, as runtime-only '#' keys (never saved)
++void metaDbMerge(config_set_t *config, const char *prefix, const char *sep, const char *gameKey);
++
++// A displayed attribute: the game's own value, else the database's
++int metaDbGetStr(config_set_t *config, const char *key, const char **value);
++
++#endif
+diff --git a/src/hddsupport.c b/src/hddsupport.c
+index 2433314..1839e6a 100644
+--- a/src/hddsupport.c
++++ b/src/hddsupport.c
+@@ -16,6 +16,7 @@
+ #include "include/extern_irx.h"
+ #include "include/cheatman.h"
+ #include "include/mmcesupport.h" // mmceSendGameID() cross-device game-id (#261)
++#include "include/metadb.h" // RIPPS2: the metadata database
+ #include "modules/iopcore/common/cdvd_config.h"
+ 
+ #define NEWLIB_PORT_AWARE
+@@ -2428,8 +2429,10 @@ static config_set_t *hddGetConfig(item_list_t *itemList, int id)
+     if (gHDDPrefix != NULL) {
+         snprintf(path, sizeof(path), "%sCFG/%s.cfg", gHDDPrefix, game->startup);
+         config = configAlloc(0, NULL, path);
+-        if (config != NULL)
++        if (config != NULL) {
+             configRead(config); // Does not matter if the config file exists or not.
++            metaDbMerge(config, gHDDPrefix, "/", game->startup); // RIPPS2: the metadata database
++        }
+     } else {
+         config = configAlloc(0, NULL, NULL); // metadata only; no unsafe/imaginary save destination
+     }
+diff --git a/src/metadb.c b/src/metadb.c
+new file mode 100644
+index 0000000..38c1414
+--- /dev/null
++++ b/src/metadb.c
+@@ -0,0 +1,157 @@
++/*
++  Copyright 2026, RIPPS2 contributors
++  Licenced under Academic Free License version 3.0
++  Review OpenUsbLd README & LICENSE files for further details.
++
++  RIPPS2 metadata database. A game's details (title, description, genre, developer, release, the
++  badge values) come from CFG/cfg.tar on the drive the game is on: one <GAMEID>.cfg per game in OPL's
++  key=value form, the archive layout wOPL already reads, so its packs work too. The game's own
++  CFG/<GAMEID>.cfg keeps its settings, and anything the user writes there wins: the database only
++  fills in keys that file does not have, as runtime-only '#' keys, so saving a game's settings never
++  copies database text into the user's file. '$' settings never come from the database.
++
++  Lookups come from the IO worker (browsing) and the GUI thread (a launch), so one semaphore guards the
++  CFG tar slot. Only '/'-separated drives are read (BDM, MMCE, the HDD data home, UDPFS, HTTP); the
++  SMB share's backslash paths would put the index sidecar in the wrong place.
++*/
++
++#include <stdio.h>
++#include <string.h>
++#include <kernel.h>
++
++#include "include/opl.h"
++#include "include/config.h"
++#include "include/tar.h"
++#include "include/metadb.h"
++
++#define META_ENTRY_MAX 4096 // one game's entry; a longer one is skipped
++#define META_MISS_MAX  16   // archive paths remembered as absent until the drives change
++#define META_PATH_MAX  128
++
++static int metaSemaId = -1;
++static char metaMiss[META_MISS_MAX][META_PATH_MAX];
++static int metaMissCount = 0;
++static char metaBuf[META_ENTRY_MAX + 1];
++
++void metaDbInit(void)
++{
++    ee_sema_t sema;
++
++    if (metaSemaId >= 0)
++        return;
++    sema.init_count = 1;
++    sema.max_count = 1;
++    sema.option = 0;
++    metaSemaId = CreateSema(&sema);
++}
++
++// The drives changed (hotplug, a Game Sources apply): look for archives again
++void metaDbInvalidate(void)
++{
++    if (metaSemaId < 0)
++        return;
++    WaitSema(metaSemaId);
++    tarInvalidate(TAR_KIND_CFG);
++    metaMissCount = 0;
++    SignalSema(metaSemaId);
++}
++
++static int metaKnownMissing(const char *path)
++{
++    int i;
++    for (i = 0; i < metaMissCount; i++)
++        if (strcmp(metaMiss[i], path) == 0)
++            return 1;
++    return 0;
++}
++
++static void metaMarkMissing(const char *path)
++{
++    if (metaMissCount < META_MISS_MAX)
++        snprintf(metaMiss[metaMissCount++], META_PATH_MAX, "%s", path);
++}
++
++static char *metaTrim(char *s)
++{
++    char *e;
++    while (*s == ' ' || *s == '\t')
++        s++;
++    e = s + strlen(s);
++    while (e > s && (e[-1] == ' ' || e[-1] == '\t' || e[-1] == '\r' || e[-1] == ';'))
++        *--e = '\0';
++    if (e - s >= 2 && s[0] == '"' && e[-1] == '"') { // a libconfig-style quoted value
++        e[-1] = '\0';
++        s++;
++    }
++    return s;
++}
++
++// Fill in what the game's CFG does not say from one entry's text
++static void metaApply(config_set_t *config, char *text)
++{
++    char *line = text, *next;
++    const char *have;
++
++    for (; line != NULL && *line; line = next) {
++        next = strchr(line, '\n');
++        if (next != NULL)
++            *next++ = '\0';
++        char *eq = strchr(line, '=');
++        if (eq == NULL)
++            continue;
++        *eq = '\0';
++        char *key = metaTrim(line), *val = metaTrim(eq + 1);
++        if (key[0] == '\0' || key[0] == '$' || key[0] == '#' || key[0] == '/' || val[0] == '\0')
++            continue; // settings, runtime keys and comments never come from the database
++        if (strlen(key) + 2 > CONFIG_KEY_NAME_LEN)
++            continue;
++        if (configGetStr(config, key, &have))
++            continue; // the user's own CFG says it: that wins
++        char runtimeKey[CONFIG_KEY_NAME_LEN];
++        snprintf(runtimeKey, sizeof(runtimeKey), "#%s", key);
++        configSetStr(config, runtimeKey, val); // '#': never written back
++    }
++}
++
++void metaDbMerge(config_set_t *config, const char *prefix, const char *sep, const char *gameKey)
++{
++    char path[256], name[24];
++    TarEntryBase *entry;
++
++    if (metaSemaId < 0 || config == NULL || prefix == NULL || sep == NULL || gameKey == NULL)
++        return;
++    if (strcmp(sep, "/") != 0 || gameKey[0] == '\0' || strlen(gameKey) > 15)
++        return; // archive entries are named for disc ids ("SLUS_203.70.cfg", at most 19 characters)
++    if (snprintf(path, sizeof(path), "%sCFG/cfg.tar", prefix) >= META_PATH_MAX)
++        return;
++    snprintf(name, sizeof(name), "%s.cfg", gameKey);
++
++    WaitSema(metaSemaId);
++    if (!metaKnownMissing(path)) {
++        // tarLoadFile keeps the last archive's index, so staying on one drive costs nothing; moving
++        // to another reads that drive's index sidecar
++        if (tarLoadFile(TAR_KIND_CFG, path) == 0) {
++            entry = tarFindExact(TAR_KIND_CFG, name);
++            if (entry != NULL && entry->rawSize > 0 && entry->rawSize <= META_ENTRY_MAX &&
++                tarRead(TAR_KIND_CFG, entry, metaBuf, entry->rawSize) == entry->rawSize) {
++                metaBuf[entry->rawSize] = '\0';
++                metaApply(config, metaBuf);
++            }
++        } else
++            metaMarkMissing(path);
++    }
++    SignalSema(metaSemaId);
++}
++
++// A theme attribute: the game's own value, else the database's
++int metaDbGetStr(config_set_t *config, const char *key, const char **value)
++{
++    char runtimeKey[CONFIG_KEY_NAME_LEN];
++
++    if (configGetStr(config, key, value))
++        return 1;
++    if (key == NULL || key[0] == '#' || strlen(key) + 2 > CONFIG_KEY_NAME_LEN)
++        return 0;
++    snprintf(runtimeKey, sizeof(runtimeKey), "#%s", key);
++    return configGetStr(config, runtimeKey, value);
++}
+diff --git a/src/opl.c b/src/opl.c
+index 6005973..8415092 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -40,6 +40,7 @@
+ #include "include/appsupport.h"
+ #include "include/favsupport.h"
+ #include "include/mixsupport.h" // RIPPS2: All Games
++#include "include/metadb.h"     // RIPPS2: the metadata database
+ #include "include/folderbrowse.h" // folderDepth -- favourites suppression inside subfolders
+ #include "include/mmcesupport.h"  // mmceLoadModules() -- MMCE boot branch of resolveBootDirToMass
+ #include "include/tar.h"          // tarInvalidate -- re-arm the .tar probe on a settings apply
+@@ -1607,6 +1608,7 @@ static void menuUpdateHook()
+         // measured art loads spanning 82 ms to 2922 ms with the decoded size held constant.
+         if (genChanged) {
+             cacheInvalidateFailMemo();
++            metaDbInvalidate();     // RIPPS2: a new drive may carry a metadata database
+             artIndexInvalidate();   // the listing is only as current as the device it was read from
+             vcdInvalidateGameIds(); // ...and neither is a PS1 disc id read off the old media
+         }
+@@ -4179,6 +4181,7 @@ void applyConfig(int themeID, int langID, int skipDeviceRefresh)
+     // so returning to List Mode does not re-probe USB 1.1 storage.
+     if (skipDeviceRefresh == 0) {
+         tarInvalidate(TAR_KIND_ART);
++        metaDbInvalidate(); // RIPPS2: look for metadata databases again
+         cacheInvalidateFailMemo();
+         artIndexInvalidate(); // a full settings apply is the user's own "I changed something, look again"
+     }
+@@ -5238,6 +5241,7 @@ static void init(void)
+     padInit(0);
+     int padStatus = 0;
+     configInit(gBootDir[0] ? gBootDir : NULL); // settings live in the boot dir (cwd), not a fixed MC default
++    metaDbInit(); // RIPPS2
+ 
+     rmInit();
+     lngInit();
+diff --git a/src/supportbase.c b/src/supportbase.c
+index 441c179..4e14542 100644
+--- a/src/supportbase.c
++++ b/src/supportbase.c
+@@ -27,6 +27,7 @@
+ #include "include/udpfssupport.h"
+ #include "include/hddsupport.h"
+ #include "include/mmcesupport.h"
++#include "include/metadb.h" // RIPPS2: the metadata database
+ 
+ #define NEWLIB_PORT_AWARE
+ #include <fileXio_rpc.h> // fileXioMount("iso:", ***), fileXioUmount("iso:")
+@@ -1168,6 +1169,10 @@ config_set_t *sbPopulateConfig(base_game_info_t *game, const char *prefix, const
+         }
+     }
+ 
++    // RIPPS2: what the game's CFG does not say comes from the drive's metadata database (CFG/cfg.tar),
++    // as runtime-only keys: the user's own values win and a settings save never copies the database
++    metaDbMerge(config, prefix, sep, cfgKey);
++
+     // Get game size if not already set (deferred off the scroll path; see sbConfigStatSize). A .VCD (PS1) has
+     // no meaningful ISO size and its file lives in POPS/, not CD/DVD/, so statting the CD/DVD path always
+     // misses, leaves sizeMB at 0, never caches, and re-probes the shared MMCE bus on every info entry (#120).
+diff --git a/src/themes.c b/src/themes.c
+index 2634b5d..fcdd012 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -14,6 +14,7 @@
+ #include "include/vcdsupport.h" // vcdDisplayName -- display-only VCD game-ID prefix hide
+ #include "include/libview.h"    // libViewActive / libListViewActive -- which list this page shows
+ #include "include/ripps2.h"     // RIPPS2: art panel layers
++#include "include/metadb.h"     // RIPPS2: attributes fall back to the metadata database
+ #ifdef RETROACHIEVEMENTS
+ #include "include/rabadge.h" // RA: mark over the cover
+ #endif
+@@ -478,7 +479,7 @@ static void drawAttributeText(struct menu_list *menu, struct submenu_list *item,
+             // force refresh
+             mutableText->currentConfigId = config->uid;
+             mutableText->currentValue = NULL;
+-            if (configGetStr(config, mutableText->value, (const char **)&mutableText->currentValue)) {
++            if (metaDbGetStr(config, mutableText->value, (const char **)&mutableText->currentValue)) {
+                 if ((mutableText->sizingMode == SIZING_WRAP) && mutableText->currentValue) {
+                     // Word-wrap a private copy, not the config's own stored string.
+                     // configGetStr() hands back a pointer straight into the config
+@@ -1813,7 +1814,7 @@ static void drawAttributeImage(struct menu_list *menu, struct submenu_list *item
+             attributeImage->currentUid = -1;
+             attributeImage->currentConfigId = config->uid;
+             attributeImage->currentValue = NULL;
+-            configGetStr(config, attributeImage->cache->suffix, (const char **)&attributeImage->currentValue);
++            metaDbGetStr(config, attributeImage->cache->suffix, (const char **)&attributeImage->currentValue);
+         }
+         if (attributeImage->currentValue) {
+             if (thmGetGuiValue() == 0 || thmGetGuiValue() == nThemes + 1) {
