@@ -37,7 +37,8 @@ cp -f "$HERE"/theme/gfx/*.png "$SRC/gfx/"
 cd "$SRC"
 sh .github/scripts/install_coherent_mmce.sh
 make clean
-make LOCALVERSION=RIPPS2 release
+# DIRTY= : the tree is RiptOPL plus our patches by design, so the version never says -dirty
+make LOCALVERSION=RIPPS2 DIRTY= release
 
 mkdir -p "$OUT"
 ELF="$(ls RIPTOPL-*.ELF | head -n1)"
