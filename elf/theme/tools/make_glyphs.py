@@ -118,6 +118,19 @@ def label_pill(name, text, px):
     save(im, name)
 
 
+# ---- the loading indicator (load0..load7): a thin glass ring with a bright arc sweeping round it,
+# RIPPS2's own rather than RiptOPL's orb-like spinner ----
+def loading_frames():
+    for k in range(8):
+        im, d = canvas(64, 64)
+        box = (12 * SS, 12 * SS, 52 * SS, 52 * SS)
+        d.ellipse(box, outline=(178, 198, 248, 90), width=round(2 * SS))
+        start = -90 + k * 45
+        d.arc(box, start - 70, start - 20, fill=(178, 198, 248, 120), width=round(3 * SS))  # the fading tail
+        d.arc(box, start - 20, start + 30, fill=TEXT, width=round(4 * SS))                    # the bright head
+        save(im, 'load%d' % k)
+
+
 def blank(name):
     # The drive name's prev/next arrows: the L1/R1 pills beside it already say that, so these
     # are drawn fully transparent (the MenuText element is their only user).
@@ -146,7 +159,7 @@ BADGES = {
     'Scan_1080i': '1080i', 'Scan_1080i2': '1080i', 'Scan_1080p': '1080p',
     'missing': '?',
 }
-PILLS = ('L1', 'R1', 'L3', 'R3')
+PILLS = ('L1', 'R1', 'L2', 'R2', 'L3', 'R3')
 
 
 def main():
@@ -162,7 +175,8 @@ def main():
         badge(name, text, badge_px)
     blank('left')
     blank('right')
-    print('wrote', 6 + len(PILLS) + len(BADGES) + 2, 'images to', OUT, '(pill labels %dpx, badge labels %dpx)' % (pill_px, badge_px))
+    loading_frames()
+    print('wrote', 6 + len(PILLS) + len(BADGES) + 2 + 8, 'images to', OUT, '(pill labels %dpx, badge labels %dpx)' % (pill_px, badge_px))
 
 
 if __name__ == '__main__':
