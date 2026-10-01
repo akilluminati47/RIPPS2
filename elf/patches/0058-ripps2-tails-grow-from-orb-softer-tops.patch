@@ -1,0 +1,35 @@
+diff --git a/src/ripps2bg.c b/src/ripps2bg.c
+index fa0ff4b..c9a2727 100644
+--- a/src/ripps2bg.c
++++ b/src/ripps2bg.c
+@@ -374,7 +374,7 @@ static void drawSide(const v3 *c, v3 n, float k, float heat, float phase, float
+     // glowing vertical edges and the rim at the top, brighter as the tower heats; seams every 2.4
+     // units up the face; now and then one window cell flickers on. Edges antialiased by the GS.
+     rmSetBlendAdditive(1);
+-    u64 edge = RGBA(0x40, 0x80, 0xFF, 0x30 + (int)(0x40 * hk)), rim = RGBA(0x7E, 0xC2, 0xFF, 0x50 + (int)(0x20 * hk));
++    u64 edge = RGBA(0x40, 0x80, 0xFF, 0x30 + (int)(0x40 * hk)), rim = RGBA(0x7E, 0xC2, 0xFF, 0x3C + (int)(0x24 * hk));
+     softLine(bl.x, bl.y, tl.x, tl.y, 1.4f, 1.3f, edge);
+     softLine(br.x, br.y, tr.x, tr.y, 1.4f, 1.3f, edge);
+     softLine(tl.x, tl.y, tr.x, tr.y, 1.6f, 1.4f, rim);
+@@ -508,7 +508,7 @@ void ripps2DrawPillars(void)
+                 float hk = fminf(1.0f, tw->heat * 0.5f);
+                 u64 cap = RGBA((int)lerpf(0x16, 0xA0, hk), (int)lerpf(0x30, 0xC8, hk), (int)lerpf(0x80, 0xFF, hk), 0x80);
+                 rmDrawQuadGouraud(q0.x, q0.y, cap, q1.x, q1.y, cap, q2.x, q2.y, cap, q3.x, q3.y, cap);
+-                u64 capRim = RGBA(0x7E, 0xC2, 0xFF, 0x28);
++                u64 capRim = RGBA(0x7E, 0xC2, 0xFF, 0x18);
+                 rmSetBlendAdditive(1);
+                 softLine(q0.x, q0.y, q1.x, q1.y, 1.2f, 1.2f, capRim);
+                 softLine(q1.x, q1.y, q3.x, q3.y, 1.2f, 1.2f, capRim);
+@@ -1060,6 +1060,12 @@ static void drawTail(int i, p2 head, float r, float vis)
+     for (k = 0; k < m - 1; k++) {
+         float f0 = 1.0f - (float)k / (m - 1), f1 = 1.0f - (float)(k + 1) / (m - 1); // 1 at the orb, 0 at the end
+         float rip0 = 1.0f + 0.12f * sinf(t * 9.0f - k * 0.55f), rip1 = 1.0f + 0.12f * sinf(t * 9.0f - (k + 1) * 0.55f);
++        // it grows out of the orb (whose own glow covers the join) instead of starting at full width
++        float in0 = fminf(1.0f, (1.0f - f0) / 0.14f), in1 = fminf(1.0f, (1.0f - f1) / 0.14f);
++        in0 = in0 * in0 * (3.0f - 2.0f * in0);
++        in1 = in1 * in1 * (3.0f - 2.0f * in1);
++        rip0 *= 0.25f + 0.75f * in0;
++        rip1 *= 0.25f + 0.75f * in1;
+         float g0 = width * 2.1f * powf(f0, 0.7f) * rip0, g1 = width * 2.1f * powf(f1, 0.7f) * rip1;
+         int ga0 = (int)(0x26 * glowUp * f0 * vis), ga1 = (int)(0x26 * glowUp * f1 * vis);
+         // the glow: blue, shading toward violet at the far end
