@@ -1,28 +1,22 @@
-"""Rasterizes the PS2 mark from the PlayStation 2 logo SVG the user supplied into
-elf/theme/gfx/ripps2_ps2logo.png, the mark the PS2 games filter shows (L3) above the word GAMES.
+"""The category bar's PS2 mark (gfx/ripps2_mark.png), from the PlayStation 2 logo SVG the user supplied.
 
-    python make_ps2_logo.py "<PlayStation_2_logo.svg>" [width] [lift] [out.png]
+    python make_category_mark.py "<PlayStation_2_logo.svg>" [width] [weight] [lift]
 
-The same SVG also makes the category bar's mark: width 96, written to gfx/ripps2_mark.png (the mark
-under the selected category, flying between them), then tools/make_mark_glow.py for its glow.
-
-lift (default 0.4) blends the gradient toward white so the navy top of the mark still reads on
-RIPPS2's dark sky; 0 keeps the SVG's own colours.
-
-Only the three gradient polygons that draw the mark are used (group g3, classes cls-1..cls-3); the
-wordmark under it and the TM beside it are left out. Each polygon is filled with its own vertical
-linear gradient (userSpaceOnUse, y1 at the bottom), drawn at 4x and downsampled.
+The SVG's mark is drawn in thin bands, which at bar size (about 96 px across) come out barely a pixel
+thick. So the three polygons are drawn large, their strokes thickened by `weight` (a fraction of the
+mark's width, default 0.011), filled with the SVG's own gradient lifted toward white by `lift`
+(default 0.35) so it reads on the dark sky, and only then reduced. Then run make_mark_glow.py.
 """
 import os
 import re
 import sys
 import xml.etree.ElementTree as ET
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFilter
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.normpath(os.path.join(HERE, '..', 'gfx', 'ripps2_ps2logo.png'))
-SS = 4
+OUT = os.path.normpath(os.path.join(HERE, '..', 'gfx', 'ripps2_mark.png'))
+SS = 12
 NS = '{http://www.w3.org/2000/svg}'
 
 
@@ -42,25 +36,23 @@ def gradient_at(stops, f):
 
 def main():
     src = sys.argv[1]
-    width = int(sys.argv[2]) if len(sys.argv) > 2 else 384
-    lift = float(sys.argv[3]) if len(sys.argv) > 3 else 0.4
-    out = sys.argv[4] if len(sys.argv) > 4 else OUT
+    width = int(sys.argv[2]) if len(sys.argv) > 2 else 96
+    weight = float(sys.argv[3]) if len(sys.argv) > 3 else 0.011
+    lift = float(sys.argv[4]) if len(sys.argv) > 4 else 0.35
+    out = sys.argv[5] if len(sys.argv) > 5 else OUT
     root = ET.parse(src).getroot()
     style = ''.join(s.text or '' for s in root.iter(NS + 'style'))
     cls_grad = dict(re.findall(r'\.(cls-\d)\s*\{\s*fill:\s*url\(#([\w-]+)\)', style))
     grads = {}
     for g in root.iter(NS + 'linearGradient'):
-        y1 = float(g.get('y1', '0'))
-        y2 = float(g.get('y2', '0'))
         stops = [(float(s.get('offset')), tuple(int(round(c + (255 - c) * lift)) for c in hex_rgb(s.get('stop-color'))))
                  for s in g.iter(NS + 'stop')]
-        grads[g.get('id')] = (y1, y2, stops)
-
+        grads[g.get('id')] = (float(g.get('y1', '0')), float(g.get('y2', '0')), stops)
     shapes = []
     for poly in root.iter(NS + 'polygon'):
         grad = cls_grad.get(poly.get('class'))
         if grad is None:
-            continue  # the TM mark has no gradient: left out
+            continue  # the TM beside the mark has no gradient: left out
         nums = [float(v) for v in re.findall(r'-?\d*\.?\d+', poly.get('points'))]
         shapes.append((grads[grad], list(zip(nums[0::2], nums[1::2]))))
 
@@ -68,23 +60,29 @@ def main():
     y0 = min(y for _, pts in shapes for _, y in pts)
     x1 = max(x for _, pts in shapes for x, _ in pts)
     y1 = max(y for _, pts in shapes for _, y in pts)
-    scale = (width - 2) / (x1 - x0)
-    height = int((y1 - y0) * scale) + 2
-    big = Image.new('RGBA', (width * SS, height * SS), (0, 0, 0, 0))
+    grow = weight * width  # px each stroke grows on each side, at final size
+    pad = grow + 1.0
+    scale = (width - 2 * pad) / (x1 - x0)
+    height = int(round((y1 - y0) * scale + 2 * pad))
+    W, H = width * SS, height * SS
+    big = Image.new('RGBA', (W, H), (0, 0, 0, 0))
     for (gy1, gy2, stops), pts in shapes:
-        mask = Image.new('L', big.size, 0)
-        ImageDraw.Draw(mask).polygon([((x - x0) * scale * SS + SS, (y - y0) * scale * SS + SS) for x, y in pts], fill=255)
-        fill = Image.new('RGBA', big.size)
+        mask = Image.new('L', (W, H), 0)
+        ImageDraw.Draw(mask).polygon([((x - x0) * scale * SS + pad * SS, (y - y0) * scale * SS + pad * SS) for x, y in pts], fill=255)
+        r = int(round(grow * SS))
+        if r > 0:
+            mask = mask.filter(ImageFilter.MaxFilter(2 * r + 1))  # thicker strokes, corners kept square
+        fill = Image.new('RGBA', (W, H))
         px = fill.load()
-        for row in range(big.size[1]):
-            y = (row - SS) / (scale * SS) + y0
+        for row in range(H):
+            y = (row / SS - pad) / scale + y0
             f = (y - gy1) / (gy2 - gy1) if gy2 != gy1 else 0.0
             c = gradient_at(stops, max(0.0, min(1.0, f))) + (255,)
-            for col in range(big.size[0]):
+            for col in range(W):
                 px[col, row] = c
         big.paste(fill, (0, 0), mask)
     img = big.resize((width, height), Image.LANCZOS)
-    img.save(out)
+    img.save(out, optimize=True)
     print('wrote %s %dx%d' % (out, width, height))
 
 

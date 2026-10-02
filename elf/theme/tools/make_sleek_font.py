@@ -97,13 +97,46 @@ DIGITS = {
     '0': [[(0, 0), (0, 6), (3.4, 6), (3.4, 0), (0, 0)], [(1.1, 2.2), (2.3, 3.8)]],
     '1': [[(0, 3.9), (1.6, 6), (1.6, 0)]],                                      # a long flag: never an I
     '2': [[(0, 6), (4, 6), (4, 3), (0, 3), (0, 0), (4, 0)]],                    # the logo's 2
-    '3': [[(0, 6), (4, 6), (4, 0), (0, 0)], [(1.2, 3), (4, 3)]],
+    '3': [[(0, 6), (4, 6), (1.8, 3.4), (4, 3.4), (4, 0), (0, 0)]],               # flat-topped: never a backwards E
     '4': [[(0, 6), (0, 2.4), (4, 2.4)], [(3, 6), (3, 0)]],
     '5': [[(4, 6), (0, 6), (0, 3.2), (3, 3.2), (4, 2.2), (4, 1), (3, 0), (0, 0)]],
     '6': [[(4, 6), (0, 6), (0, 0), (4, 0), (4, 3), (0, 3)]],
     '7': [[(0, 6), (4, 6), (4, 0)]],
     '8': [[(0, 0), (0, 6), (4, 6), (4, 0), (0, 0)], [(0, 3), (4, 3)]],
     '9': [[(4, 3), (0, 3), (0, 6), (4, 6), (4, 0), (0, 0)]],
+}
+
+
+# A true lowercase, for the case-true cut (ripps2_sleek_case.ttf: the on-screen keyboard and typed text,
+# where a and A must differ). x-height 4, ascenders at the cap height, descenders to -1.6 (inside the
+# font's descent). The l keeps a foot, so I, l and 1 are three different shapes.
+LOWER = {
+    'a': [[(0, 4), (3, 4), (3, 0), (0, 0), (0, 2), (3, 2)]],
+    'b': [[(0, 6), (0, 0), (3, 0), (3, 4), (0, 4)]],
+    'c': [[(3, 4), (0, 4), (0, 0), (3, 0)]],
+    'd': [[(3, 6), (3, 0), (0, 0), (0, 4), (3, 4)]],
+    'e': [[(0, 2), (3, 2), (3, 4), (0, 4), (0, 0), (3, 0)]],
+    'f': [[(2.6, 6), (1, 6), (1, 0)], [(0, 4), (2.4, 4)]],
+    'g': [[(3, 0), (0, 0), (0, 4), (3, 4), (3, -1.6), (0, -1.6)]],
+    'h': [[(0, 6), (0, 0)], [(0, 4), (3, 4), (3, 0)]],
+    'i': [[(0, 0), (0, 4)], [(0, 5.4), (0, 5.41)]],
+    'j': [[(1.2, 4), (1.2, -1.6), (0, -1.6)], [(1.2, 5.4), (1.2, 5.41)]],
+    'k': [[(0, 6), (0, 0)], [(0, 1.8), (0.9, 1.8)], [(3, 4), (0.9, 1.8), (3, 0)]],
+    'l': [[(0, 6), (0, 0), (1.2, 0)]],
+    'm': [[(0, 0), (0, 4), (4.4, 4), (4.4, 0)], [(2.2, 4), (2.2, 0)]],
+    'n': [[(0, 0), (0, 4), (3, 4), (3, 0)]],
+    'o': [[(0, 0), (0, 4), (3, 4), (3, 0), (0, 0)]],
+    'p': [[(0, -1.6), (0, 4), (3, 4), (3, 0), (0, 0)]],
+    'q': [[(3, -1.6), (3, 4), (0, 4), (0, 0), (3, 0)]],
+    'r': [[(0, 0), (0, 4), (2.6, 4), (2.6, 3.2)]],
+    's': [[(3, 4), (0, 4), (0, 2), (3, 2), (3, 0), (0, 0)]],
+    't': [[(1, 6), (1, 0), (2.6, 0)], [(0, 4), (2.6, 4)]],
+    'u': [[(0, 4), (0, 0), (3, 0), (3, 4)]],
+    'v': [[(0, 4), (1.5, 0), (3, 4)]],
+    'w': [[(0, 4), (0, 0), (4.4, 0), (4.4, 4)], [(2.2, 0), (2.2, 2.6)]],
+    'x': [[(0, 4), (3, 0)], [(0, 0), (3, 4)]],
+    'y': [[(0, 4), (0, 0.8), (3, 0.8)], [(3, 4), (3, -1.6), (0, -1.6)]],
+    'z': [[(0, 4), (3, 4), (0, 0), (3, 0)]],
 }
 
 
@@ -143,7 +176,7 @@ def draw_polylines(polys, stroke):
     return pen.glyph(), advance
 
 
-def build(s_variant, bold=False):
+def build(s_variant, bold=False, case=False):
     stroke = STROKE_BOLD if bold else STROKE
     order = ['.notdef', 'space']
     glyf, hmtx, cmap = {}, {}, {}
@@ -166,14 +199,21 @@ def build(s_variant, bold=False):
         glyf[name], hmtx[name] = glyph, (adv, 0)
         order.append(name)
         cmap[ord(ch)] = name
-        if ch.isalpha():
+        if ch.isalpha() and not case:
             cmap[ord(ch.lower())] = name  # all capitals, as in the logo
+    if case:  # the case-true cut: lowercase is lowercase
+        for ch, polys in LOWER.items():
+            name = 'g%04X' % ord(ch)
+            glyph, adv = draw_polylines(polys, stroke)
+            glyf[name], hmtx[name] = glyph, (adv, 0)
+            order.append(name)
+            cmap[ord(ch)] = name
 
     # accented Latin letters fall back to their base letter, so other languages stay readable
     for cp in range(0xC0, 0x250):
         base = unicodedata.normalize('NFD', chr(cp))[0]
         if cp not in cmap and base.upper() in defs and base.isalpha():
-            cmap[cp] = cmap[ord(base.upper())]
+            cmap[cp] = cmap[ord(base)] if case and base in LOWER else cmap[ord(base.upper())]
 
     fb = FontBuilder(UPM, isTTF=True)
     fb.setupGlyphOrder(order)
@@ -181,12 +221,12 @@ def build(s_variant, bold=False):
     fb.setupGlyf(glyf)
     fb.setupHorizontalMetrics(hmtx)
     fb.setupHorizontalHeader(ascent=ASC, descent=DESC, lineGap=9)
-    style = 'Bold' if bold else 'Regular'
+    style = ('Bold' if bold else 'Regular') + (' Case' if case else '')
     fb.setupNameTable({'familyName': 'RIPPS2 Sleek', 'styleName': style,
                        'uniqueFontIdentifier': 'RIPPS2 Sleek ' + style, 'fullName': 'RIPPS2 Sleek ' + style,
-                       'psName': 'RIPPS2Sleek-' + style, 'version': 'Version 1.1'})
+                       'psName': 'RIPPS2Sleek-' + style.replace(' ', ''), 'version': 'Version 1.2'})
     fb.setupOS2(sTypoAscender=750, sTypoDescender=-170, sTypoLineGap=0, usWinAscent=ASC, usWinDescent=-DESC,
-                sCapHeight=CAP, sxHeight=CAP)
+                sCapHeight=CAP, sxHeight=round(4 * U) if case else CAP)
     fb.setupPost()
     fb.setupMaxp()
     return fb.font
@@ -222,6 +262,10 @@ def main():
         print('wrote', path)
         if a.preview:
             preview(path, a.preview.replace('.png', '_' + w + '.png'))
+        if w == 'bold':  # and the case-true bold, for the keyboard and typed text
+            path = os.path.join(a.out_dir, 'ripps2_sleek_case.ttf')
+            build(a.s_variant, bold=True, case=True).save(path)
+            print('wrote', path)
 
 
 if __name__ == '__main__':

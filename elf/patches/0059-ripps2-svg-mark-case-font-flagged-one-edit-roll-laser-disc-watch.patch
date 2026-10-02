@@ -1,0 +1,507 @@
+diff --git a/Makefile b/Makefile
+index ff9c24a..0ea1262 100644
+--- a/Makefile
++++ b/Makefile
+@@ -189,7 +189,7 @@ AUDIO_OBJS =	boot.o cancel.o confirm.o cursor.o message.o transition.o bd_connec
+ # icon_sys.o + save_icn.o are the memory-card browser save icon for the settings folder.
+ # icon.sys names list.icn, copy.icn and del.icn; all three are the same artwork, so ONE blob is
+ # embedded and util.c writes it out under all three names (see saveIconName in src/util.c).
+-MISC_OBJS =	icon_sys.o save_icn.o icon_sys_A.o icon_sys_J.o icon_sys_C.o conf_theme_OPL.o theme_coverflow.o ripps2_font.o ripps2_sleek.o ripps2_sleekbold.o
++MISC_OBJS =	icon_sys.o save_icn.o icon_sys_A.o icon_sys_J.o icon_sys_C.o conf_theme_OPL.o theme_coverflow.o ripps2_font.o ripps2_sleek.o ripps2_sleekbold.o ripps2_sleekcase.o ripps2_one.o
+ 
+ TRANSLATIONS = Albanian Arabic Bulgarian Cebuano Croatian Czech Danish Dutch Filipino French \
+ 	Galician German Greek Hungarian Indonesian Italian Japanese Korean Laotian Persian Polish Portuguese \
+@@ -1123,6 +1123,14 @@ $(EE_ASM_DIR)ripps2_sleek.c: misc/ripps2_sleek.ttf | $(EE_ASM_DIR)
+ $(EE_ASM_DIR)ripps2_sleekbold.c: misc/ripps2_sleekbold.ttf | $(EE_ASM_DIR)
+ 	$(BIN2C) $< $@ $(*F)_raw
+ 
++# RIPPS2: Sleek Bold with a true lowercase (misc/ripps2_sleekcase.ttf), for the keyboard and typed text
++$(EE_ASM_DIR)ripps2_sleekcase.c: misc/ripps2_sleekcase.ttf | $(EE_ASM_DIR)
++	$(BIN2C) $< $@ $(*F)_raw
++
++# RIPPS2: a flagged 1 in the main font's weight (misc/ripps2_one.ttf); fntsys draws Planet N's 1 from it
++$(EE_ASM_DIR)ripps2_one.c: misc/ripps2_one.ttf | $(EE_ASM_DIR)
++	$(BIN2C) $< $@ $(*F)_raw
++
+ $(EE_ASM_DIR)boot.c: audio/boot.adp | $(EE_ASM_DIR)
+ 	$(BIN2C) $< $@ $(*F)_adp
+ 
+diff --git a/include/ripps2.h b/include/ripps2.h
+index 427ee5a..d25d418 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -33,6 +33,8 @@ void ripps2SetCategory(int cat);    // switch screens and fly the PS2 mark
+ void ripps2StepCategory(int dir);   // -1 / +1, clamped at the ends
+ void ripps2RenderCategoryBar(void); // the three labels plus the mark
+ void ripps2DrawBusy(int alpha);     // loading: the mark breathes (in place, or small in the corner)
++void ripps2DiscWatch(void);         // every frame: what is in the drive, asked lazily from boot
++int ripps2DiscQuiet(void);          // 1 while the disc watcher is all the IO worker is doing
+ void ripps2UiEnter(void);           // the menu's first frame: the bar fades in, the mark pops in
+ void ripps2ShowViewWord(const char *word, int logo, const char *caption); // L3: name the new list, large (a word, or a texture id)
+ void ripps2DrawViewWord(void);      // drawn over the Storage page while it plays
+diff --git a/include/themes.h b/include/themes.h
+index 3462abc..165eef2 100644
+--- a/include/themes.h
++++ b/include/themes.h
+@@ -1,5 +1,6 @@
+ #ifndef __THEMES_H
+ #define __THEMES_H
++#include <time.h> // RIPPS2: clock_t
+ 
+ #include "include/textures.h"
+ #include "include/texcache.h"
+@@ -67,6 +68,7 @@ typedef struct
+     u32 currentConfigId;
+     char *currentValue;
+     char *wrappedValue; // owned, word-wrapped copy of currentValue for SIZING_WRAP (issue #44)
++    clock_t rollStart;  // RIPPS2: when this game's text began showing (a long description rolls from it)
+ } mutable_text_t;
+ 
+ typedef struct
+@@ -228,6 +230,8 @@ extern theme_t *gTheme;
+ // RIPPS2: menus, settings, dialogs and message boxes draw in the theme's font4 (RIPPS2 Sleek in the
+ // built-in theme; a theme without font4 falls back to its default font, as every font slot does)
+ #define RIPPS2_UI_FONT (gTheme->fonts[4])
++// RIPPS2: Sleek Bold with a true lowercase (builtin:ripps2sleekcase, theme font15), for typed text
++#define RIPPS2_CASE_FONT (gTheme->fonts[15])
+ 
+ extern int gCoverflowCount, gCoverflowCenterScale, gCoverflowAnimSpeed, gCoverflowDimCovers;
+ void thmTriggerCoverflowAnim(int dir);
+diff --git a/src/dia.c b/src/dia.c
+index 7997377..c73fc85 100644
+--- a/src/dia.c
++++ b/src/dia.c
+@@ -72,7 +72,7 @@ static int diaKeybTextWidth(const char *text, int from, int to, char *scratch)
+ {
+     memcpy(scratch, text + from, to - from);
+     scratch[to - from] = '\0';
+-    return rmUnScaleX(fntCalcDimensions(RIPPS2_UI_FONT, scratch));
++    return rmUnScaleX(fntCalcDimensions(RIPPS2_CASE_FONT, scratch)); // RIPPS2: as the field draws it
+ }
+ 
+ // Next / previous character start, so scrolling never begins the field inside a UTF-8 sequence.
+@@ -239,7 +239,7 @@ int diaShowKeyb(char *text, int maxLen, int hide_text, const char *title)
+                     break;
+                 view = prev;
+             }
+-            fntRenderString(RIPPS2_UI_FONT, 50, 120, ALIGN_NONE, KEYB_TEXT_W, 20, shown + view, gTheme->textColor);
++            fntRenderString(RIPPS2_CASE_FONT, 50, 120, ALIGN_NONE, KEYB_TEXT_W, 20, shown + view, gTheme->textColor); // RIPPS2: true case
+ 
+             // Caret. Measured from the substring to its LEFT rather than assuming a character width,
+             // because the theme font is proportional. Full row height -- UI_SPACING_H is HALF a row,
+@@ -260,7 +260,7 @@ int diaShowKeyb(char *text, int maxLen, int hide_text, const char *title)
+                 c[0] = keyb[i + j * KEYB_WIDTH];
+ 
+                 x = 50 + i * 31;
+-                w = fntRenderString(RIPPS2_UI_FONT, x, 170 + 3 * UI_SPACING_H * j, ALIGN_NONE, 0, 0, c, gTheme->uiTextColor) - x;
++                w = fntRenderString(RIPPS2_CASE_FONT, x, 170 + 3 * UI_SPACING_H * j, ALIGN_NONE, 0, 0, c, gTheme->uiTextColor) - x; // a and A differ
+                 if ((i + j * KEYB_WIDTH) == selchar)
+                     diaDrawBoundingBox(x, 170 + 3 * UI_SPACING_H * j, w, UI_SPACING_H, 0);
+             }
+diff --git a/src/fntsys.c b/src/fntsys.c
+index 983c571..592c203 100644
+--- a/src/fntsys.c
++++ b/src/fntsys.c
+@@ -26,6 +26,10 @@ extern void *ripps2_sleek_raw;
+ extern int size_ripps2_sleek_raw;
+ extern void *ripps2_sleekbold_raw;
+ extern int size_ripps2_sleekbold_raw;
++extern void *ripps2_sleekcase_raw;
++extern int size_ripps2_sleekcase_raw;
++extern void *ripps2_one_raw;
++extern int size_ripps2_one_raw;
+ 
+ /// Maximal count of atlases per font
+ #define ATLAS_MAX    4
+@@ -75,6 +79,9 @@ typedef struct
+     /// Font face
+     FT_Face face;
+ 
++    /// RIPPS2: the face the main font's 1 is drawn from (Planet N's own 1 is its I); NULL elsewhere
++    FT_Face oneFace;
++
+     /// Nonzero if font is used
+     int isValid;
+ 
+@@ -232,6 +239,7 @@ static void fntDestroyCLUT()
+ static void fntInitSlot(font_t *font)
+ {
+     font->face = NULL;
++    font->oneFace = NULL;
+     font->glyphCache = NULL;
+     font->cacheMaxPageID = -1;
+     font->dataPtr = NULL;
+@@ -250,6 +258,10 @@ static void fntDeleteSlot(font_t *font)
+ 
+     FT_Done_Face(font->face);
+     font->face = NULL;
++    if (font->oneFace != NULL) {
++        FT_Done_Face(font->oneFace);
++        font->oneFace = NULL;
++    }
+ 
+     if (font->dataPtr) {
+         free(font->dataPtr);
+@@ -293,6 +305,10 @@ static void *fntReadData(char *path, int *bufferSize, int *owned)
+         *bufferSize = size_ripps2_sleekbold_raw;
+         return &ripps2_sleekbold_raw;
+     }
++    if (strcmp(path, "builtin:ripps2sleekcase") == 0) { // bold with a true lowercase: typed text
++        *bufferSize = size_ripps2_sleekcase_raw;
++        return &ripps2_sleekcase_raw;
++    }
+ 
+     buffer = readFile(path, -1, bufferSize);
+     if (!buffer) {
+@@ -318,6 +334,13 @@ static int fntLoadSlotLocked(font_t *font, void *buffer, int bufferSize, int own
+         return FNT_ERROR;
+     }
+ 
++    // RIPPS2: the main font (Planet N) draws its 1 as its I, so PS1 read as PSI: a flagged 1 of RIPPS2's
++    // own, in Planet N's weight, stands in for it. The font file itself is left as it is.
++    font->oneFace = NULL;
++    if (buffer == (void *)&ripps2_font_raw &&
++        FT_New_Memory_Face(font_library, (FT_Byte *)&ripps2_one_raw, size_ripps2_one_raw, 0, &font->oneFace) != 0)
++        font->oneFace = NULL;
++
+     font->isValid = 1;
+     font->fontSize = fontSize;
+     fntUpdateAspectRatioLocked();
+@@ -485,7 +508,8 @@ static fnt_glyph_cache_entry_t *fntCacheGlyph(font_t *font, uint32_t gid)
+         LOG("FNTSYS Face is NULL!\n");
+     }
+ 
+-    int error = FT_Load_Char(font->face, gid, FT_LOAD_RENDER);
++    FT_Face face = (gid == '1' && font->oneFace != NULL) ? font->oneFace : font->face; // RIPPS2: the flagged 1
++    int error = FT_Load_Char(face, gid, FT_LOAD_RENDER);
+     if (error) {
+         LOG("FNTSYS Error loading glyph - %d\n", error);
+         return NULL;
+@@ -495,7 +519,7 @@ static fnt_glyph_cache_entry_t *fntCacheGlyph(font_t *font, uint32_t gid)
+     if (!fntGlyphAtlasPlace(font, glyph))
+         return NULL;
+ 
+-    FT_GlyphSlot slot = font->face->glyph;
++    FT_GlyphSlot slot = face->glyph;
+     glyph->width = slot->bitmap.width;
+     glyph->height = slot->bitmap.rows;
+     glyph->shx = slot->advance.x;
+@@ -541,6 +565,8 @@ static void fntUpdateAspectRatioLocked(void)
+             fntCacheFlush(&fonts[i]);
+             // TODO: this seems correct, but the rest of the OPL UI (i.e. spacers) doesn't seem to be correctly scaled.
+             FT_Set_Char_Size(fonts[i].face, fonts[i].fontSize * 64, fonts[i].fontSize * 64, fDPI * ws, fDPI * hs);
++            if (fonts[i].oneFace != NULL) // RIPPS2: the stand-in 1 at the same size
++                FT_Set_Char_Size(fonts[i].oneFace, fonts[i].fontSize * 64, fonts[i].fontSize * 64, fDPI * ws, fDPI * hs);
+         }
+     }
+ }
+diff --git a/src/gui.c b/src/gui.c
+index 0e5b8c8..cac05af 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -4242,8 +4242,8 @@ static int endIntro = 0;           // Break intro loop and start 'Last Played Au
+ static int gIntroSplashActive = 0; // The intro is a splash, never a generic I/O-spinner screen.
+ static void guiDrawOverlays()
+ {
+-    // are there any pending operations?
+-    int pending = ioHasPendingRequests();
++    // are there any pending operations? (RIPPS2: the disc watcher's quiet look at the drive is not one)
++    int pending = ioHasPendingRequests() && !ripps2DiscQuiet();
+     static int busyAlpha = 0x00; // Fully transparant
+ 
+     if (!pending) {
+@@ -4539,6 +4539,7 @@ void guiMainLoop(void)
+ 
+         // handle inputs and render screen
+         guiShow();
++        ripps2DiscWatch(); // RIPPS2: the drive watched from boot, whatever the page
+ 
+         // Render overlaying gui thingies :)
+         guiDrawOverlays();
+diff --git a/src/ripps2about.c b/src/ripps2about.c
+index b7fc9a0..3f18cb3 100644
+--- a/src/ripps2about.c
++++ b/src/ripps2about.c
+@@ -55,7 +55,8 @@ static const ab_row_t abRows[] = {
+     {'S', "Built with Claude (Anthropic)"},
+     {'G', NULL},
+     {'H', "TESTERS"},
+-    {'T', "akilluminati47 - ripto - nuno6573 - zackcage6 - FifthFox"},
++    {'T', "akilluminati47 - ripto - nuno6573"},
++    {'T', "zackcage6 - FifthFox - Mr.sus.60"},
+     {'S', "Feedback makes RIPPS2. Thank you."},
+     {'G', NULL},
+     {'H', "LAUNCH DISC"},
+diff --git a/src/ripps2edit.c b/src/ripps2edit.c
+index ae30a45..d0a5578 100644
+--- a/src/ripps2edit.c
++++ b/src/ripps2edit.c
+@@ -248,7 +248,7 @@ static void edDrawFile(void)
+             edHighlight(y);
+         snprintf(num, sizeof(num), "%d", edView.top + i + 1);
+         fntRenderString(gTheme->fonts[5], ED_X + 30 - fntCalcDimensions(gTheme->fonts[5], num), y + 9, ALIGN_VCENTER, 0, 0, num, ED_DIM);
+-        fntRenderString(gTheme->fonts[8], ED_X + 42, y + 9, ALIGN_VCENTER, ED_RIGHT - ED_X - 46, 0, edLines[edView.top + i], cur ? ED_LIT : ED_SOFT);
++        fntRenderString(RIPPS2_CASE_FONT, ED_X + 42, y + 9, ALIGN_VCENTER, ED_RIGHT - ED_X - 46, 0, edLines[edView.top + i], cur ? ED_LIT : ED_SOFT);
+     }
+     int hx = 44;
+     edHint(gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON, "EDIT LINE", &hx, 448);
+@@ -413,7 +413,7 @@ static void mdDraw(void)
+         else
+             snprintf(shown, sizeof(shown), "%s", v[0] ? v : "-");
+         // bright: the user's own value; dim: what the metadata database says
+-        fntRenderString(gTheme->fonts[10], ED_X + 4, y + 22, ALIGN_VCENTER, ED_RIGHT - ED_X - 120, 0, shown, mdView.user[f][0] ? ED_LIT : ED_DIM);
++        fntRenderString(RIPPS2_CASE_FONT, ED_X + 4, y + 22, ALIGN_VCENTER, ED_RIGHT - ED_X - 120, 0, shown, mdView.user[f][0] ? ED_LIT : ED_DIM);
+         if (!mdView.user[f][0] && mdView.db[f][0])
+             fntRenderString(gTheme->fonts[5], ED_RIGHT - fntCalcDimensions(gTheme->fonts[5], "DATABASE"), y + 8, ALIGN_VCENTER, 0, 0, "DATABASE", ED_DIM);
+         else if (mdView.user[f][0])
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index 6bb2cb2..dc14ed8 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -131,8 +131,8 @@ static unsigned char fbDeleteIsDir[FB_CLIP_MAX];
+ static int fbDeleteCount = 0;
+ 
+ // the actions menu (Triangle)
+-enum { FB_ACT_COPY = 0, FB_ACT_CUT, FB_ACT_PASTE, FB_ACT_PASTE_PSU, FB_ACT_UNPACK, FB_ACT_DELETE, FB_ACT_RENAME, FB_ACT_NEWDIR, FB_ACT_MARKALL, FB_ACT_COUNT };
+-static const char *fbActName[FB_ACT_COUNT] = {"COPY", "CUT", "PASTE", "PASTE AS PSU", "UNPACK PSU HERE", "DELETE", "RENAME", "NEW FOLDER", "MARK ALL"};
++enum { FB_ACT_EDIT = 0, FB_ACT_COPY, FB_ACT_CUT, FB_ACT_PASTE, FB_ACT_PASTE_PSU, FB_ACT_UNPACK, FB_ACT_DELETE, FB_ACT_RENAME, FB_ACT_NEWDIR, FB_ACT_MARKALL, FB_ACT_COUNT };
++static const char *fbActName[FB_ACT_COUNT] = {"EDIT", "COPY", "CUT", "PASTE", "PASTE AS PSU", "UNPACK PSU HERE", "DELETE", "RENAME", "NEW FOLDER", "MARK ALL"};
+ static int fbMenuOpen = 0, fbMenuSel = 0, fbMenuItems[FB_ACT_COUNT], fbMenuCount = 0;
+ 
+ static const char *fbDevices[] = {"mc0:/", "mc1:/", "mass0:/", "mass1:/", "mass2:/", "mass3:/", "mass4:/", "mass5:/", "mass6:/",
+@@ -1090,6 +1090,8 @@ static void fbMenuBuild(void)
+     int inVmc = fbVmcPath(fbVmc, fbPath, save, sizeof(save)), vmcTop = inVmc && !save[0] && !fbVmcRO;
+     int canChange = !inVmc || vmcTop; // a card image takes whole saves at its top, and only without ECC
+     fbMenuCount = 0;
++    if (haveItem && !inVmc && fbList[fbCursor].kind == FB_KIND_FILE)
++        fbMenuItems[fbMenuCount++] = FB_ACT_EDIT; // first: the file under the cursor, in the text editor
+     if (haveItem) {
+         fbMenuItems[fbMenuCount++] = FB_ACT_COPY;
+         if (canChange)
+@@ -1119,6 +1121,14 @@ static void fbAction(int act)
+ 
+     fbMenuOpen = 0;
+     switch (act) {
++        case FB_ACT_EDIT:
++            snprintf(name, sizeof(name), "%s", fbList[fbCursor].name);
++            snprintf(ask, sizeof(ask), "%s does not look like a text file. Open it in the text editor anyway?", name);
++            if (fbIsText(name) || guiMsgBox(ask, 1, NULL)) {
++                sfxPlay(SFX_CONFIRM);
++                fbEdit(name);
++            }
++            break;
+         case FB_ACT_COPY:
+         case FB_ACT_CUT:
+             fbClipCount = fbSelection(fbClip, fbClipIsDir, FB_CLIP_MAX);
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index 3d44ce7..605be7d 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -41,9 +41,9 @@ static const char *categoryLabel[RIPPS2_CAT_COUNT] = {"LAUNCH DISC", "STORAGE",
+ static const int categoryX[RIPPS2_CAT_COUNT] = {128, 320, 512};
+ 
+ #define BAR_Y        30
+-#define MARK_Y       50
+-#define MARK_W       76
+-#define MARK_H       13
++#define MARK_Y       53 // the mark (gfx/ripps2_mark.png, from the PS2 SVG: tools/make_category_mark.py)
++#define MARK_W       96
++#define MARK_H       20
+ // Text and textures are modulated by the GS (0x80 = full), and the font atlas is white, so
+ // a text colour shows at twice its value: #7A8CBA on screen is 0x3D,0x46,0x5D here.
+ #define COLOR_LIT    GS_SETREG_RGBA(0x80, 0x80, 0x80, 0x80) // #FFFFFF
+@@ -198,10 +198,15 @@ void ripps2DrawBusy(int alpha)
+         w = markDrawW;
+         h = MARK_H;
+     } else {
+-        x = gTheme->loadingIcon ? gTheme->loadingIcon->posX : 590;
+-        y = gTheme->loadingIcon ? gTheme->loadingIcon->posY : 440;
+-        w = 54.0f;
+-        h = 54.0f * MARK_H / MARK_W;
++        // where the theme puts its loading icon, but never closer to the edges than this
++        x = gTheme->loadingIcon ? gTheme->loadingIcon->posX : 544;
++        y = gTheme->loadingIcon ? gTheme->loadingIcon->posY : 426;
++        w = MARK_W;
++        h = MARK_H;
++        if (x > 640 - 48 - w / 2)
++            x = 640 - 48 - w / 2;
++        if (y > 480 - 44 - h / 2)
++            y = 480 - 44 - h / 2;
+         rmDrawPixmap(mark, (int)x, (int)y, ALIGN_CENTER, (int)w, (int)h, SCALING_RATIO,
+                      GS_SETREG_RGBA(0x80, 0x80, 0x80, (int)(alpha * (0.55f + 0.45f * b))), 0);
+     }
+@@ -436,9 +441,14 @@ static void renderStartPrompt(const char *action, int y)
+ 
+ // ---- LAUNCH DISC ----
+ //
+-// What is in the drive, under START DISC: asked on the IO worker about once a second while the page is
+-// up (the drive's own disc type, which costs nothing), and only when that changes is the disc read for
+-// its ID, and the ID looked up in the metadata database for a title. Nothing here ever waits on the drive.
++// What is in the drive, under START LASER. Watched from boot, whatever page is up, so the line is
++// ready before Launch Disc is ever opened and leaving the page can never catch a read half done: a
++// few seconds after boot, then every 1.5 s, the drive is asked its disc type (cheap: nothing spins)
++// on the IO worker, and only while the worker has nothing else queued. Only when the type changes
++// (a disc there at boot, one put into an empty drive) is the disc read for its ID, once, and the ID
++// looked up in the metadata database for a title. Nothing on screen ever waits on the drive.
++#define DISC_FIRST_S 3.0f
++#define DISC_EVERY_S 1.5f
+ 
+ static volatile int discPollBusy = 0;
+ static clock_t discPolledAt = 0;
+@@ -521,17 +531,45 @@ static void discPollWorker(void)
+     discPollBusy = 0;
+ }
+ 
++// Every frame from the main loop, whatever the page
++void ripps2DiscWatch(void)
++{
++    static clock_t firstSeen = 0;
++    clock_t now = clock();
++    int t;
++
++    if (firstSeen == 0) {
++        firstSeen = now != 0 ? now : 1;
++        discPolledAt = now;
++    }
++    if (discPollBusy || (float)(now - firstSeen) / CLOCKS_PER_SEC < DISC_FIRST_S ||
++        (float)(now - discPolledAt) / CLOCKS_PER_SEC < DISC_EVERY_S)
++        return;
++    for (t = 1; t < IO_REQ_TYPE_COUNT; t++)
++        if (ioGetPending(t) > 0)
++            return; // lazy: the drive waits behind anything else the worker has to do
++    discPollBusy = 1;
++    discPolledAt = now;
++    if (ioPutRequest(IO_CUSTOM_SIMPLEACTION, &discPollWorker) != IO_OK)
++        discPollBusy = 0;
++}
++
++// The disc watcher's job is all the IO worker has: not worth the loading breath
++int ripps2DiscQuiet(void)
++{
++    int t, n = 0;
++    if (!discPollBusy)
++        return 0;
++    for (t = 1; t < IO_REQ_TYPE_COUNT; t++)
++        n += ioGetPending(t);
++    return n <= 1;
++}
++
+ void ripps2RenderLaunch(void)
+ {
+     ripps2DrawBackground();
+     ripps2RenderCategoryBar();
+-    renderStartPrompt("START DISC", 423);
+-    if (!discPollBusy && (float)(clock() - discPolledAt) / CLOCKS_PER_SEC > 1.0f) {
+-        discPollBusy = 1;
+-        discPolledAt = clock();
+-        if (ioPutRequest(IO_CUSTOM_SIMPLEACTION, &discPollWorker) != IO_OK)
+-            discPollBusy = 0;
+-    }
++    renderStartPrompt("START LASER", 423);
+     if (discLine[0])
+         fntRenderString(gTheme->fonts[3], 320, 450, ALIGN_CENTER, 0, 0, discLine, COLOR_SOFT);
+     else
+@@ -566,7 +604,7 @@ void ripps2RenderMemory(void)
+ 
+     ripps2DrawBackground();
+     ripps2RenderCategoryBar();
+-    // the same footnotes as LAUNCH DISC: the prompt where START DISC sits, the formation on the line of
++    // the same footnotes as LAUNCH DISC: the prompt where START LASER sits, the formation on the line of
+     // the disc note (small, between small L1 / R1), its count just under it
+     renderStartPrompt("START BROWSER", 423);
+ 
+diff --git a/src/themes.c b/src/themes.c
+index bc2636a..86b0fcc 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -629,6 +629,49 @@ static void initGameCountText(const char *themePath, config_set_t *themeConfig,
+ 
+ // AttributeText ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ 
++// RIPPS2: a wrapped text with more lines than its box shows (a long description) rolls slowly up
++// through the box: it holds at the top, rolls at a reading pace, holds at the end, then fades and
++// starts again. Lines feather in and out at the box's edges; another game starts it from the top.
++#define ROLL_HOLD_S 3.0f
++#define ROLL_PX_S   9.0f
++#define ROLL_END_S  2.5f
++#define ROLL_FADE_S 0.45f
++
++static void thmDrawWrapRoll(theme_element_t *elem, mutable_text_t *mt, int step, int lines)
++{
++    float span = (float)(lines * step - elem->height) + 2.0f; // how much taller the text is than the box
++    float roll = span / ROLL_PX_S, period = ROLL_HOLD_S + roll + ROLL_END_S + ROLL_FADE_S;
++    float t = fmodf((float)(clock() - mt->rollStart) / (float)CLOCKS_PER_SEC, period), offset, all;
++    const char *p = mt->currentValue;
++    char line[256];
++    int i, base = (int)((elem->color >> 24) & 0xFF);
++
++    if (span <= 0.0f)
++        span = 0.0f;
++    offset = t < ROLL_HOLD_S ? 0.0f : (t < ROLL_HOLD_S + roll ? (t - ROLL_HOLD_S) * ROLL_PX_S : span);
++    all = fminf(1.0f, t / ROLL_FADE_S);                          // in at the start of each pass
++    if (t > period - ROLL_FADE_S)
++        all = fminf(all, (period - t) / ROLL_FADE_S);           // out at its end
++    for (i = 0; *p && i < lines; i++) {
++        const char *e = strchr(p, '\n');
++        int n = e ? (int)(e - p) : (int)strlen(p);
++        float ly = elem->posY + i * step - offset, a = all;
++        if (ly > elem->posY - step && ly < elem->posY + elem->height) {
++            float above = ly - elem->posY, below = elem->posY + elem->height - (ly + step);
++            if (above < 0.0f)
++                a *= fmaxf(0.0f, 1.0f + above / step);
++            if (below < 0.0f)
++                a *= fmaxf(0.0f, 1.0f + below / step);
++            if (a > 0.01f) {
++                snprintf(line, sizeof(line), "%.*s", n < (int)sizeof(line) - 1 ? n : (int)sizeof(line) - 1, p);
++                fntRenderString(elem->font, elem->posX, (int)ly, elem->aligned, 0, 0, line,
++                                (elem->color & ~(0xFFULL << 24)) | ((u64)(int)(base * a) << 24));
++            }
++        }
++        p = e ? e + 1 : p + n;
++    }
++}
++
+ static void drawAttributeText(struct menu_list *menu, struct submenu_list *item, config_set_t *config, struct theme_element *elem)
+ {
+     // No current item (e.g. the last favourite was removed -> empty list): clear, don't redraw the
+@@ -641,6 +684,7 @@ static void drawAttributeText(struct menu_list *menu, struct submenu_list *item,
+             // force refresh
+             mutableText->currentConfigId = config->uid;
+             mutableText->currentValue = NULL;
++            mutableText->rollStart = clock(); // RIPPS2: a long description rolls from the top again
+             if (metaDbGetStr(config, mutableText->value, (const char **)&mutableText->currentValue)) {
+                 if ((mutableText->sizingMode == SIZING_WRAP) && mutableText->currentValue) {
+                     // Word-wrap a private copy, not the config's own stored string.
+@@ -673,20 +717,21 @@ static void drawAttributeText(struct menu_list *menu, struct submenu_list *item,
+                     if (mutableText->sizingMode == SIZING_WRAP && (elem->lineHeight > 0 || elem->vcenter)) {
+                         // RIPPS2: wrapped text may use its own line step and sit centred in the box
+                         int step = elem->lineHeight > 0 ? elem->lineHeight : MENU_ITEM_HEIGHT;
+-                        int y = elem->posY;
+-                        if (elem->vcenter) {
+-                            int lines = 1;
+-                            const char *c;
+-                            for (c = mutableText->currentValue; *c; c++)
+-                                if (*c == '\n')
+-                                    lines++;
++                        int y = elem->posY, lines = 1;
++                        const char *c;
++                        for (c = mutableText->currentValue; *c; c++)
++                            if (*c == '\n')
++                                lines++;
++                        if (lines * step > elem->height + step / 2) { // more than the box holds: it rolls
++                            thmDrawWrapRoll(elem, mutableText, step, lines);
++                        } else {
+                             int room = elem->height / step + 1; // the lines the box shows
+-                            if (lines < room)
++                            if (elem->vcenter && lines < room)
+                                 y += ((room - lines) * step) / 2;
++                            fntSetLineHeight(elem->lineHeight);
++                            fntRenderString(elem->font, elem->posX, y, elem->aligned, elem->width, elem->height - (y - elem->posY), mutableText->currentValue, elem->color);
++                            fntSetLineHeight(0);
+                         }
+-                        fntSetLineHeight(elem->lineHeight);
+-                        fntRenderString(elem->font, elem->posX, y, elem->aligned, elem->width, elem->height - (y - elem->posY), mutableText->currentValue, elem->color);
+-                        fntSetLineHeight(0);
+                     } else
+                         thmDrawElemText(elem, mutableText->sizingMode, mutableText->currentValue, 1);
+                 }
