@@ -1,0 +1,983 @@
+diff --git a/include/gui.h b/include/gui.h
+index 18f901b..89c3e4c 100644
+--- a/include/gui.h
++++ b/include/gui.h
+@@ -121,6 +121,7 @@ struct gui_update_t *guiOpCreate(gui_op_type_t type);
+ 
+ int guiShowKeyboard(char *value, int maxLength);
+ int guiMsgBox(const char *text, int addAccept, struct UIItem *ui);
++void guiMsgBoxStartOption(const char *label); // RIPPS2: the next guiMsgBox offers START (returns 2)
+ void guiMsgBoxSound(int sfx); // RIPPS2: the next message box plays this sound (SFX_ERROR, SFX_SAVE)
+ int guiPromptRebootIop(void);
+ // The user's Confirm / Cancel buttons (Select Button setting) and their icons. Every screen asks these
+diff --git a/include/ioman.h b/include/ioman.h
+index 8bc1683..8d98c6d 100644
+--- a/include/ioman.h
++++ b/include/ioman.h
+@@ -79,6 +79,8 @@ void ioNameAction(void *fn, const char *name);
+ int ioDescribeRunning(char *out, int size);
+ int ioDescribeWorker(char *out, int size);       // RIPPS2: the worker thread's state and the queue
+ int ioWorkerBusy(void);                          // RIPPS2: inside a job right now
++int ioWorkPending(void);                         // RIPPS2: anything queued or running (lock-free)
++void ioBoostWorker(int on);                      // RIPPS2: the worker above the GUI while the user waits
+ int ioPutRequestFront(int type, void *data);     // RIPPS2: right behind the running request
+ int ioDefuseRequest(int type, void *data);       // RIPPS2: a queued action that has not started, made a no-op
+ 
+diff --git a/include/sound.h b/include/sound.h
+index 209d12f..b522b63 100644
+--- a/include/sound.h
++++ b/include/sound.h
+@@ -1,6 +1,8 @@
+ #ifndef __SOUND_H
+ #define __SOUND_H
+ 
++#include <time.h> // clock_t (bgmDiscretionaryIoWait)
++
+ enum SFX {
+     SFX_BOOT = 0,
+     SFX_CANCEL,
+@@ -63,6 +65,8 @@ int isBgmPlaying(void);
+ // Discretionary storage users (art, cosmetic metadata) should not START a new read while the
+ // decoded BGM reserve is below its low-water mark. Always true when BGM is off/not yet primed.
+ int bgmDiscretionaryIoAllowed(void);
++int bgmDiscretionaryIoWait(clock_t since);
++int bgmReserveLow(void);                   // RIPPS2: the music decoder is behind (the GUI yields to it) // RIPPS2: the same gate, but a load that has waited a second goes ahead
+ void bgmMute(void);
+ void bgmUnMute(void);
+ 
+diff --git a/include/vcdsupport.h b/include/vcdsupport.h
+index c26efe9..666a4f9 100644
+--- a/include/vcdsupport.h
++++ b/include/vcdsupport.h
+@@ -75,6 +75,7 @@ int vcdResolvePopstarterMcElf(char *out, int outSize);
+ 
+ // Resolve POPSTARTER.ELF in the normal order: custom path -> game device -> memory card.
+ int vcdResolvePopstarter(const char *devPrefix, char *out, int outSize);
++int vcdResolvePopstarterFor(const char *devPrefix, const char *prefix, const char *name, char *out, int outSize); // RIPPS2: + the game's own XX.<name>.ELF
+ 
+ // Build the POPSTARTER argv[0] selector "<devPrefix>POPS/<prefix><name>.ELF" into out.
+ void vcdBuildSelector(const char *devPrefix, const char *prefix, const char *name, char *out, int outSize);
+diff --git a/lng_tmpl/_base.yml b/lng_tmpl/_base.yml
+index 1d89f3f..272b83b 100644
+--- a/lng_tmpl/_base.yml
++++ b/lng_tmpl/_base.yml
+@@ -82,9 +82,9 @@ gui_strings:
+ - label: CONFIRMATION_CANCEL_UPDATE
+   string: Cancel updating?
+ - label: HDD_NOT_CONNECTED_ERROR
+-  string: '%d: HardDisk Drive not detected.'
++  string: '%d: Hard drive not detected.'
+ - label: HDD_NOT_FORMATTED_ERROR
+-  string: '%d: HardDisk Drive not formatted.'
++  string: '%d: Hard drive not formatted.'
+ - comment: Generic network error message.
+   label: NETWORK_STARTUP_ERROR
+   string: '%d: Network startup error.'
+@@ -1139,9 +1139,9 @@ gui_strings:
+ - label: CONFIGURE
+   string: Configure
+ - label: HDD_UNAVAILABLE_ERROR
+-  string: '%d: HardDisk Drive unavailable.'
++  string: '%d: Hard drive unavailable.'
+ - label: HDD_PFS_UNAVAILABLE_ERROR
+-  string: '%d: HardDisk Drive PFS support unavailable.'
++  string: '%d: Hard drive PFS support unavailable.'
+ - label: POPS_LOADING_SETTINGS
+   string: Loading POPSTARTER settings...
+ - label: POPS_SMB_NOT_CONNECTED
+@@ -1400,4 +1400,4 @@ gui_strings:
+ - label: RIPPS2_MUSIC
+   string: Music
+ - label: HINT_RIPPS2_MUSIC
+-  string: "The music in the AUDIO folder beside RIPPS2: bgm files (Ogg Vorbis without tags, or 16-bit WAV, 44.1 or 48 kHz) in name order, a number setting it (bgm_01 Slideshow.ogg, bgm_02 Details.ogg). The first plays unless you pick another. A disk theme's own music, or a Default Theme Music path, plays instead when set."
++  string: "The music in the AUDIO folder beside RIPPS2: bgm files (Ogg Vorbis without tags, or 16-bit WAV, 44.1 or 48 kHz) in name order, a number setting it (bgm_01 Slideshow.ogg, bgm_02 Details.ogg). The first plays unless you pick another. A theme's own music (a theme loaded from a drive), or a Default Theme Music path, plays instead when set."
+diff --git a/src/bdmsupport.c b/src/bdmsupport.c
+index 8ccad17..0f62244 100644
+--- a/src/bdmsupport.c
++++ b/src/bdmsupport.c
+@@ -1793,7 +1793,7 @@ static void bdmLaunchVcd(item_list_t *itemList, const char *vcdName, config_set_
+         return;
+     }
+     bdmBuildPs1Prefix(vcdPrefix, sizeof(vcdPrefix), itemList->mode); // device root, NOT gBDMPrefix -- POPSTARTER reads <root>/POPS only
+-    if (!vcdResolvePopstarter(vcdPrefix, vcdElf, sizeof(vcdElf))) {
++    if (!vcdResolvePopstarterFor(vcdPrefix, VCD_PREFIX_MASS, vcdName, vcdElf, sizeof(vcdElf))) { // RIPPS2: + the game's own XX.<name>.ELF
+         guiMsgBox(_l(_STR_POPSTARTER_NOT_FOUND), 0, NULL);
+         return;
+     }
+diff --git a/src/gui.c b/src/gui.c
+index 99d45a3..09d3492 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -345,6 +345,15 @@ void guiEndFrame(void)
+     // Rotate priority 31 ready queue so peer threads (such as BGM I/O decode) get timeslices
+     // even during continuous frames or animations.
+     RotateThreadReadyQueue(31);
++
++    // RIPPS2: THE PRIORITY CHAIN. The GUI (31) sits above the IO worker (32: lists, saves, CFG), the art
++    // worker (72) and everything else that loads; they run while the GUI sleeps for its vsync. A frame
++    // that overruns never sleeps -- the vsync's wakeup is already pending -- so on a busy console they
++    // got nothing at all: lists slow to appear, art that never came, a save "ready but starved". When a
++    // frame did not sleep and something is waiting to load, give them a few milliseconds.
++    extern unsigned int rmLastSleepUs;
++    if (rmLastSleepUs < 1000 && (ioWorkPending() || cacheHasPendingArt() || bgmReserveLow()))
++        DelayThread(3000);
+ }
+ 
+ void guiShowAbout()
+@@ -4773,9 +4782,20 @@ void guiMsgBoxSound(int sfx)
+     msgBoxSound = sfx;
+ }
+ 
++// RIPPS2: the next guiMsgBox offers a third choice on START, with this label beside the glyph; the box
++// returns 2 when it is taken. One box only: guiMsgBox clears it.
++static const char *msgBoxStartLabel = NULL;
++
++void guiMsgBoxStartOption(const char *label)
++{
++    msgBoxStartLabel = label;
++}
++
+ int guiMsgBox(const char *text, int addAccept, struct UIItem *ui)
+ {
+     int terminate = 0;
++    const char *startLabel = msgBoxStartLabel; // RIPPS2
++    msgBoxStartLabel = NULL;
+     // Wrapped once up front, not per frame: the result depends only on `text` and the screen width.
+     char wrapped[512];
+ 
+@@ -4802,6 +4822,8 @@ int guiMsgBox(const char *text, int addAccept, struct UIItem *ui)
+             terminate = 1;
+         else if (getKeyOn(gSelectButton))
+             terminate = 2;
++        else if (startLabel != NULL && getKeyOn(KEY_START))
++            terminate = 3; // RIPPS2: the START choice
+ 
+         if (ui)
+             diaRenderUI(ui, screenHandler->inMenu, NULL, 0);
+@@ -4847,6 +4869,12 @@ int guiMsgBox(const char *text, int addAccept, struct UIItem *ui)
+             int first = addAccept ? 0 : 1;
+             int hx = guiAlignSubMenuHints(2 - first, hints + first, icons + first, RIPPS2_UI_FONT, 12, 2);
+             int hy = gTheme->usedHeight - 32;
++            if (startLabel != NULL) { // RIPPS2: START and its label, left of the others
++                GSTEXTURE *st = thmGetTexture(START_ICON);
++                int sw = st ? (st->Width * 20) / st->Height : 20;
++                hx -= rmWideScale(sw) + 2 + rmUnScaleX(fntCalcDimensions(RIPPS2_UI_FONT, startLabel)) + 12;
++                hx = guiDrawIconAndLiteralText(START_ICON, startLabel, RIPPS2_UI_FONT, hx, hy, gTheme->textColor) + 12;
++            }
+             if (addAccept)
+                 hx = guiDrawIconAndText(icons[0], hints[0], RIPPS2_UI_FONT, hx, hy, gTheme->textColor) + 12;
+             guiDrawIconAndText(icons[1], hints[1], RIPPS2_UI_FONT, hx, hy, gTheme->textColor);
+@@ -4858,7 +4886,7 @@ int guiMsgBox(const char *text, int addAccept, struct UIItem *ui)
+     if (terminate == 1) {
+         sfxPlay(SFX_CANCEL);
+     }
+-    if (terminate == 2) {
++    if (terminate >= 2) { // RIPPS2: 3 is the START choice
+         sfxPlay(SFX_CONFIRM);
+     }
+ 
+@@ -4969,6 +4997,7 @@ void guiHandleDeferedIO(int *ptr, const char *message, int type, void *data, int
+         *ptr = 0;
+         return;
+     }
++    ioBoostWorker(1); // RIPPS2: the user is waiting on this one: the worker runs above the GUI until it is done
+ 
+     // Bound the wait when the caller asks (timeoutMs > 0). A deferred IO that never completes -- a
+     // failing HDD/card that wedges the single IOP fileXio channel mid-write -- would otherwise spin
+@@ -4995,6 +5024,7 @@ void guiHandleDeferedIO(int *ptr, const char *message, int type, void *data, int
+             !ioWorkerBusy() && ioDescribeWorker(gLastDeferredBlocker, sizeof(gLastDeferredBlocker)) &&
+             ioDefuseRequest(type, data)) { // described first: once defused, the queue shows a no-op
+             gLastDeferredInline = 1;
++            LOG("guiHandleDeferedIO: worker did not start it in 2 s (%s); running it here\n", gLastDeferredBlocker);
+             guiRenderTextScreen(message);
+             ((io_simpleaction_t)data)();
+             *ptr = 0;
+@@ -5012,6 +5042,7 @@ void guiHandleDeferedIO(int *ptr, const char *message, int type, void *data, int
+         }
+         guiRenderTextScreen(message);
+     }
++    ioBoostWorker(0);
+ }
+ 
+ void guiGameHandleDeferedIO(int *ptr, struct UIItem *ui, int type, void *data)
+diff --git a/src/ioman.c b/src/ioman.c
+index 22ac67b..69230e5 100644
+--- a/src/ioman.c
++++ b/src/ioman.c
+@@ -229,6 +229,25 @@ int ioWorkerBusy(void)
+     return gRunType != 0;
+ }
+ 
++// RIPPS2: anything queued or running, read without the queue's locks (a pointer read is atomic; a
++// stale answer costs one frame's yield or skips one). For the GUI's frame-end yield.
++int ioWorkPending(void)
++{
++    return gReqList != NULL || gRunType != 0;
++}
++
++// RIPPS2: while the user waits on a request (a settings save, a launch's last-played save) the worker
++// runs ABOVE the GUI, so it starts the moment it is ready instead of whenever the GUI next sleeps --
++// which, on a frame that overruns its vsync, was never ("WORKER READY BUT STARVED", build 66 on a
++// console). Its blocking device reads still hand the CPU straight back.
++#define IO_WORKER_PRIO       32
++#define IO_WORKER_BOOST_PRIO 30
++void ioBoostWorker(int on)
++{
++    if (gIOThreadId > 0)
++        ChangeThreadPriority(gIOThreadId, on ? IO_WORKER_BOOST_PRIO : IO_WORKER_PRIO);
++}
++
+ // RIPPS2: the worker thread itself, for a deferred IO it never picked up: asleep (a wakeup that went
+ // missing), parked on one of the queue's locks, ready but starved, or gone; and the queue behind it
+ int ioDescribeWorker(char *out, int size)
+@@ -406,7 +425,7 @@ void ioInit(void)
+     // wait. Blocking device I/O is unaffected -- a thread blocked in the IOP RPC consumes nothing at
+     // either priority. What changes is only who wins when both are runnable, and that should always
+     // be the one holding the user's input.
+-    gIOThread.initial_priority = 32;
++    gIOThread.initial_priority = IO_WORKER_PRIO;
+ 
+     isIORunning = 1;
+     gIOThreadId = CreateThread(&gIOThread);
+diff --git a/src/menusys.c b/src/menusys.c
+index d04df81..db622fe 100644
+--- a/src/menusys.c
++++ b/src/menusys.c
+@@ -327,7 +327,8 @@ static void _menuResolveInfoSize()
+ 
+         // #Size is cosmetic/discretionary IO. Wait for BGM reserve, but stop waiting on a target that
+         // has already been superseded or a selection the user left; the next loop takes the newest.
+-        while (!bgmDiscretionaryIoAllowed()) {
++        clock_t waitFrom = clock(); // RIPPS2: the reserve wait ends after a second (bgmDiscretionaryIoWait)
++        while (!bgmDiscretionaryIoWait(waitFrom)) {
+             int stillWanted;
+             DelayThread(10 * 1000);
+             WaitSema(menuSemaId);
+diff --git a/src/mixsupport.c b/src/mixsupport.c
+index f96c618..3fa320a 100644
+--- a/src/mixsupport.c
++++ b/src/mixsupport.c
+@@ -12,6 +12,12 @@
+ 
+   Threading follows favsupport.c: the record array is rebuilt on the IO worker (after the submenu
+   that aliases its names has been cleared), and the GUI-thread readers below only scan it.
++
++  The ART worker is the exception: it reads the array from its own thread, and an IO worker that
++  wakes from a device read preempts it anywhere. A rebuild freeing the records under a cover lookup
++  crashed the console when the user moved while All Games loaded (build 66 on hardware). mixSema
++  guards the swap and the art worker's scan; the scan copies what it needs and lets go before it
++  touches a device.
+ */
+ 
+ #include <stdio.h>
+@@ -35,6 +41,8 @@
+ #include "include/favsupport.h"
+ #include "include/mixsupport.h"
+ 
++#include <kernel.h>
++
+ typedef struct
+ {
+     item_list_t *owner; // the source list
+@@ -50,6 +58,27 @@ static mix_rec_t *mixArray = NULL;
+ static int mixCount = 0;
+ static int mixForceUpdate = 1; // the first deferred pass builds the list
+ static item_list_t mixItemList;
++static int mixSema = -1;
++
++static void mixLock(void)
++{
++    if (mixSema < 0) {
++        ee_sema_t s;
++        s.init_count = 1;
++        s.max_count = 1;
++        s.option = 0;
++        s.attr = 0;
++        mixSema = CreateSema(&s);
++    }
++    if (mixSema >= 0)
++        WaitSema(mixSema);
++}
++
++static void mixUnlock(void)
++{
++    if (mixSema >= 0)
++        SignalSema(mixSema);
++}
+ 
+ // Where a title found twice is kept from: the internal drive first, then the BDM slots, then the
+ // card and the network
+@@ -85,12 +114,14 @@ static void mixFreeRecords(mix_rec_t *arr, int count)
+ 
+ static void mixFreeArray(void)
+ {
++    mixLock();
+     mix_rec_t *arr = mixArray;
+     int count = mixCount;
+ 
+-    // readers see an empty list before anything is freed
++    // readers see an empty list before anything is freed, and the art worker is not inside it
+     mixArray = NULL;
+     mixCount = 0;
++    mixUnlock();
+     mixFreeRecords(arr, count);
+ }
+ 
+@@ -249,9 +280,11 @@ static int mixUpdateItemList(item_list_t *itemList)
+         }
+         b.arr[kept++] = *r;
+     }
++    mixLock();
+     mixArray = b.arr; // published whole, after it is complete
+     mixCount = kept;
+-    return mixCount;
++    mixUnlock();
++    return kept;
+ }
+ 
+ static int mixGetItemCount(item_list_t *itemList) { return mixCount; }
+@@ -364,60 +397,80 @@ static void mixLaunchItem(item_list_t *itemList, int id, config_set_t *configSet
+ // favGetImage does.
+ static int mixGetImage(item_list_t *itemList, char *folder, int isRelative, char *value, char *suffix, GSTEXTURE *resultTex, short psm)
+ {
+-    int i;
++    // Runs on the ART worker. Every source to ask is copied out under mixSema first (owners in the
++    // order they would have been asked); the device reads happen after it is released, so a rebuild
++    // never waits on a cover and never frees a record this scan is reading.
++    item_list_t asks[MIX_SOURCE_COUNT + 1];
++    int askPs1[MIX_SOURCE_COUNT + 1];
++    int n = 0, i, k;
+ 
+-    if (mixArray == NULL || value == NULL)
++    if (value == NULL)
+         return -1;
+-    for (i = 0; i < mixCount; i++) {
++    mixLock();
++    for (i = 0; i < mixCount && n < MIX_SOURCE_COUNT; i++) {
+         item_list_t ownerView, *o = mixOwnerView(i, &ownerView);
+         if (o == NULL || o->itemGetImage == NULL)
+             continue;
+-        if (mixKindIsPs1(mixArray[i].kind)) {
++        int ps1 = mixKindIsPs1(mixArray[i].kind);
++        if (ps1) {
+             if (strcmp(mixArray[i].text, value) != 0) {
+                 char key[VCD_ID_MAX];
+                 if (!vcdExtractGameId(mixArray[i].text, key, sizeof(key)) || strcmp(key, value) != 0)
+                     continue;
+             }
+-            return o->itemGetImage(o, folder, isRelative, value, suffix, resultTex, psm);
+-        }
+-        if (strcmp(mixArray[i].startup, value) == 0) {
+-            int r = o->itemGetImage(o, folder, isRelative, value, suffix, resultTex, psm);
+-            if (isRelative || r != -1)
+-                return r;
+-        }
++        } else if (strcmp(mixArray[i].startup, value) != 0)
++            continue;
++        asks[n] = *o;
++        askPs1[n++] = ps1;
++        if (ps1)
++            break; // a PS1 row answers for itself, as before
+     }
+-    if (!isRelative) {
+-        for (i = 0; i < mixCount; i++) {
++    int matched = n;
++    if (!isRelative) { // theme images: any source may serve them
++        for (i = 0; i < mixCount && n < MIX_SOURCE_COUNT + 1; i++) {
+             item_list_t ownerView, *o = mixOwnerView(i, &ownerView);
+             if (o == NULL || o->itemGetImage == NULL)
+                 continue;
+-            int r = o->itemGetImage(o, folder, isRelative, value, suffix, resultTex, psm);
+-            if (r != -1)
+-                return r;
++            for (k = 0; k < n && asks[k].mode != o->mode; k++)
++                ;
++            if (k < n)
++                continue; // that source is asked already
++            asks[n] = *o;
++            askPs1[n++] = 0;
+         }
+     }
++    mixUnlock();
++
++    for (k = 0; k < n; k++) {
++        int r = asks[k].itemGetImage(&asks[k], folder, isRelative, value, suffix, resultTex, psm);
++        if (k < matched && askPs1[k])
++            return r;
++        if ((k < matched && isRelative) || r != -1)
++            return r;
++    }
+     return -1;
+ }
+ 
+ int mixGetArtMode(const char *value)
+ {
+-    int i;
++    int i, mode = -1;
+ 
+-    if (mixArray == NULL || value == NULL)
++    if (value == NULL)
+         return -1;
+-    for (i = 0; i < mixCount; i++) {
++    mixLock();
++    for (i = 0; i < mixCount && mode < 0; i++) {
+         if (mixKindIsPs1(mixArray[i].kind)) {
+             if (strcmp(mixArray[i].text, value) != 0) {
+                 char key[VCD_ID_MAX];
+                 if (!vcdExtractGameId(mixArray[i].text, key, sizeof(key)) || strcmp(key, value) != 0)
+                     continue;
+             }
+-            return mixArray[i].mode;
+-        }
+-        if (strcmp(mixArray[i].startup, value) == 0)
+-            return mixArray[i].mode;
++            mode = mixArray[i].mode;
++        } else if (strcmp(mixArray[i].startup, value) == 0)
++            mode = mixArray[i].mode;
+     }
+-    return -1;
++    mixUnlock();
++    return mode;
+ }
+ 
+ // No renaming or deleting from here (the menu never offers them: both callbacks are NULL)
+diff --git a/src/opl.c b/src/opl.c
+index 009e588..aa2c047 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -1532,6 +1532,7 @@ void menuDeferredUpdate(void *data)
+ // cutting MX4SIO bus contention, while a real device change still refreshes immediately
+ // (BdmGeneration bypass below). clock() = microseconds.
+ #define MENU_BG_RESCAN_MIN_INTERVAL_TICKS  (2 * CLOCKS_PER_SEC)
++#define MENU_BG_REMOVAL_NET_TICKS          (10 * CLOCKS_PER_SEC) // RIPPS2: see menuUpdateHook
+ /*
+   Idle time required before STEADY-STATE background probes may run at all, in frames (~1 s NTSC).
+ 
+@@ -1579,12 +1580,14 @@ static void menuUpdateHook()
+     // tap (#271). Event-driven work (the genChanged hotplug bypass below) keeps the short gate.
+     int longIdle = (guiInactiveFrames >= MENU_BG_RESCAN_MIN_INACTIVE_FRAMES);
+ 
+-    // RIPPS2: Storage is home and keeps its steady probes; on Launch Disc or Memory Files they run a
+-    // fifth as often, and not at all while a side tab is busy (a CD playing, the browser in a drive),
+-    // so the bus is theirs. A real plug or unplug (genChanged below) always gets through.
++    // RIPPS2: lists load once and stay. They rescan when something really changed -- a drive plugged
++    // in or out (genChanged below), Start Device, a Game Sources apply, a rename or delete, SELECT --
++    // and on boot. The only timed probe left is the removal net for drives that ARE connected (a pull
++    // is not always reported as an event), every ten seconds, on Storage only: on Launch Disc and
++    // Memory Files the bus belongs to the CD player and the file browser. Steady 2 s probes queued
++    // behind the art and the list loads on hardware (build 66: "loading takes way too long").
+     int sideTab = gRipps2Category != RIPPS2_CAT_STORAGE;
+-    int sideBusy = ripps2CdIsOpen() || (gRipps2Category == RIPPS2_CAT_MEMORY && ripps2FilesBusy());
+-    clock_t rescanEvery = sideBusy ? 0 : MENU_BG_RESCAN_MIN_INTERVAL_TICKS * (sideTab ? 5 : 1);
++    clock_t rescanEvery = sideTab ? 0 : MENU_BG_REMOVAL_NET_TICKS;
+ 
+     // schedule updates of all the list handlers
+     // Periodic background rescans. Both steady-state rescans enqueue standard requests and are
+@@ -4361,10 +4364,8 @@ int saveConfig(int types, int showUI)
+                 snprintf(notification, sizeof(notification), _l(_STR_SETTINGS_HDD_FALLBACK), displayHome);
+             else
+                 snprintf(notification, sizeof(notification), _l(_STR_SETTINGS_SAVED), displayHome);
+-            if (gLastDeferredInline) { // RIPPS2: saved, but not by the worker: say what it was doing
+-                size_t n = strlen(notification);
+-                snprintf(notification + n, sizeof(notification) - n, " (SAVED DIRECTLY: %s)", gLastDeferredBlocker);
+-            }
++            if (gLastDeferredInline) // RIPPS2: saved, but not by the worker (the log says what it was doing)
++                LOG("settings saved directly: %s\n", gLastDeferredBlocker);
+ 
+             guiMsgBoxSound(SFX_SAVE); // RIPPS2
+             guiMsgBox(notification, 0, NULL);
+diff --git a/src/renderman.c b/src/renderman.c
+index 7be1a79..b294e01 100644
+--- a/src/renderman.c
++++ b/src/renderman.c
+@@ -7,6 +7,7 @@
+ #include <stdio.h>
+ #include <math.h>
+ #include <kernel.h>
++#include <time.h> // RIPPS2: clock() for rmLastSleepUs
+ 
+ #include "include/opl.h"
+ #include "include/renderman.h"
+@@ -22,6 +23,10 @@ static int order;
+ static short int vmode = -1;
+ static u8 hires = 0;
+ static u8 guiWakeupCount;
++// RIPPS2: microseconds the last frame spent asleep waiting for its vsync. Near zero means the frame
++// overran: the vsync's wakeup was already pending, so SleepThread returned at once and every thread
++// below the GUI got no CPU this frame (see guiEndFrame).
++unsigned int rmLastSleepUs = 0;
+ static int vsync_id = -1;
+ 
+ #define NUM_RM_VMODES 16
+@@ -143,7 +148,9 @@ void rmEndFrame(void)
+         gsKit_finish();
+ 
+         if (!gsGlobal->FirstFrame) {
++            clock_t sleepFrom = clock();
+             SleepThread();
++            rmLastSleepUs = (unsigned int)(clock() - sleepFrom);
+             guiWakeupCount = 0;
+ 
+             if (gsGlobal->DoubleBuffering == GS_SETTING_ON) {
+diff --git a/src/ripps2boot.c b/src/ripps2boot.c
+index 05286da..3cbd938 100644
+--- a/src/ripps2boot.c
++++ b/src/ripps2boot.c
+@@ -21,6 +21,7 @@
+ #include <stdlib.h>
+ #include <fcntl.h>
+ #include <unistd.h>
++#include <sys/stat.h>
+ 
+ #include "include/opl.h"
+ #include "include/gui.h"
+@@ -33,17 +34,57 @@
+ #define BL_KEPT   "#RIPPS2# "
+ 
+ // Where PS2BBL and PS2BBL Extended look for their config (the Extended README's search order, the
+-// device-boot and memory card places a console can reach without mounting an HDD partition)
++// device-boot and memory card places a console can reach without mounting an HDD partition).
++// RIPPS2 build 68: first of all its CWD, CONFIG.INI beside the loader itself -- for a memory card
++// install that is the console's system-update folder, B?EXEC-SYSTEM (A USA, E Europe, I Japan,
++// C China) -- which PS2BBL reads BEFORE SYS-CONF. A card set up that way was invisible to BOOT LOCK
++// (build 66 on hardware: "it thinks I don't use it").
+ static const char *blConfigs[] = {
++    "mc0:/BAEXEC-SYSTEM/CONFIG.INI",
++    "mc1:/BAEXEC-SYSTEM/CONFIG.INI",
++    "mc0:/BEEXEC-SYSTEM/CONFIG.INI",
++    "mc1:/BEEXEC-SYSTEM/CONFIG.INI",
++    "mc0:/BIEXEC-SYSTEM/CONFIG.INI",
++    "mc1:/BIEXEC-SYSTEM/CONFIG.INI",
++    "mc0:/BCEXEC-SYSTEM/CONFIG.INI",
++    "mc1:/BCEXEC-SYSTEM/CONFIG.INI",
+     "mc0:/SYS-CONF/PS2BBL.INI",
+     "mc1:/SYS-CONF/PS2BBL.INI",
+     "mc0:/BOOT/CONFIG.INI",
+     "mc1:/BOOT/CONFIG.INI",
++    "mc0:/PS2BBL/CONFIG.INI",
++    "mc1:/PS2BBL/CONFIG.INI",
+     "mass0:/PS2BBL/CONFIG.INI",
+     "mmce0:/PS2BBL/CONFIG.INI",
+     "mmce1:/PS2BBL/CONFIG.INI",
+     NULL};
+ 
++// A boot loader installed as the console's system update, by folder (the file inside is a signed
++// KELF: what it is cannot be read, only that one is there)
++static const char *blSysFolders[] = {"BAEXEC-SYSTEM", "BEEXEC-SYSTEM", "BIEXEC-SYSTEM", "BCEXEC-SYSTEM", NULL};
++
++// The first card with a system update installed ("mc0:/BAEXEC-SYSTEM" in out), or 0
++static int blFindSystemUpdate(char *out, int size)
++{
++    static const char *const names[] = {"osdmain.elf", "osd110.elf", "osd120.elf", "osd130.elf", "osd140.elf",
++                                        "osd150.elf", "osd160.elf", "osd170.elf", "osd180.elf", "osd190.elf", NULL};
++    int port, f, n;
++    char path[96];
++
++    for (port = 0; port < 2; port++)
++        for (f = 0; blSysFolders[f] != NULL; f++)
++            for (n = 0; names[n] != NULL; n++) {
++                snprintf(path, sizeof(path), "mc%d:/%s/%s", port, blSysFolders[f], names[n]);
++                int fd = open(path, O_RDONLY); // stat() on mc says yes for missing paths: open to be sure
++                if (fd >= 0) {
++                    close(fd);
++                    snprintf(out, size, "mc%d:/%s", port, blSysFolders[f]);
++                    return 1;
++                }
++            }
++    return 0;
++}
++
+ static char blText[BL_MAX + 1], blOut[BL_MAX + 512];
+ static char blFound[96];
+ 
+@@ -243,8 +284,39 @@ void ripps2BootLockApply(int on)
+             snprintf(where + strlen(where), sizeof(where) - strlen(where), "%s%s", where[0] ? ", " : "", blConfigs[i]);
+     }
+ 
++    if (!changed && !failed && on) {
++        // No config anywhere -- but a boot loader may still be installed: PS2BBL runs on its built-in
++        // defaults when it finds no file. If the card has one, offer to give it the config it reads.
++        char sys[64], conf[64];
++        if (blFindSystemUpdate(sys, sizeof(sys))) {
++            snprintf(msg, sizeof(msg), "A boot loader is installed on this console (%s), with no PS2BBL config RIPPS2 can find. If it is PS2BBL or PS2BBL Extended, BOOT LOCK can give it one that starts RIPPS2 first (%.3s:/SYS-CONF/PS2BBL.INI). Create it?", sys, sys);
++            guiMsgBoxSound(SFX_MESSAGE);
++            if (guiMsgBox(msg, 1, NULL) == 1) {
++                int n = snprintf(blOut, sizeof(blOut),
++                                 "# PS2BBL config, created by RIPPS2's BOOT LOCK\r\n"
++                                 "KEY_READ_WAIT_TIME = 500\r\nLOGO_DISPLAY = 0\r\nOSDHISTORY_READ = 0\r\nEJECT_TRAY = 0\r\n\r\n"
++                                 "%s: RIPPS2 starts first. Turn BOOT LOCK off in RIPPS2 to bring back the lines marked #RIPPS2#.\r\n"
++                                 "NAME_AUTO = RIPPS2\r\nLK_AUTO_E1 = %s\r\nLK_AUTO_E2 = $OSDSYS\r\n\r\n"
++                                 "NAME_START = DISC\r\nLK_START_E1 = cdrom\r\n"
++                                 "NAME_TRIANGLE = BROWSER\r\nLK_TRIANGLE_E1 = $OSDSYS\r\n",
++                                 BL_MARKER, ripps2);
++                snprintf(conf, sizeof(conf), "%.3s:/SYS-CONF", sys);
++                mkdir(conf, 0777);
++                strcat(conf, "/PS2BBL.INI");
++                if (n > 0 && n < (int)sizeof(blOut) && blWrite(conf, blOut, n) == 0) {
++                    snprintf(msg, sizeof(msg), "BOOT LOCK is on. The boot loader on %s now starts RIPPS2 at power on (%s). Hold TRIANGLE while the console starts for the browser, START for a disc.", sys, conf);
++                    guiMsgBoxSound(SFX_SAVE);
++                } else {
++                    snprintf(msg, sizeof(msg), "BOOT LOCK could not write %s. Check that the memory card is not full or write protected, then try again.", conf);
++                    guiMsgBoxSound(SFX_ERROR);
++                }
++                guiMsgBox(msg, 0, NULL);
++            }
++            return;
++        }
++    }
+     if (!changed && !failed)
+-        snprintf(msg, sizeof(msg), "BOOT LOCK works through PS2BBL (PlayStation 2 Basic BootLoader), and RIPPS2 found no PS2BBL config on this console (mc0:/SYS-CONF/PS2BBL.INI or PS2BBL/CONFIG.INI on a drive). Install PS2BBL or PS2BBL Extended first.");
++        snprintf(msg, sizeof(msg), "BOOT LOCK works through PS2BBL (PlayStation 2 Basic BootLoader), and RIPPS2 found no PS2BBL on this console: no config (SYS-CONF/PS2BBL.INI, CONFIG.INI beside it, PS2BBL/CONFIG.INI on a drive) and no boot loader installed on a memory card. Install PS2BBL or PS2BBL Extended first.");
+     else if (failed && !changed)
+         snprintf(msg, sizeof(msg), "BOOT LOCK could not write the PS2BBL config. Check that the memory card or drive is not write protected, then try again.");
+     else if (on)
+diff --git a/src/ripps2cd.c b/src/ripps2cd.c
+index 5d8ba6e..c8a3b84 100644
+--- a/src/ripps2cd.c
++++ b/src/ripps2cd.c
+@@ -514,13 +514,20 @@ static void cdCopy(int track)
+     }
+     if (!oplGetRipps2Dir(dir, sizeof(dir) - 8)) {
+         guiMsgBoxSound(SFX_ERROR);
+-        guiMsgBox("RIPPS2 cannot tell which drive it was started from, so it does not know where MUSIC is.", 0, NULL);
++        guiMsgBox("RIPPS2 cannot tell which drive it was started from, so it does not know where the AUDIO folder is.", 0, NULL);
+         return;
+     }
+     if (!strncmp(dir, "mc", 2)) {
++        // An MMCE (SD2PSX, MemCard Pro 2) can be a card with room for music, and it may well appear
++        // as mc0:/mc1: here: START is the way past, behind a second, plain warning. An MMCE's own
++        // storage (mmce0:/mmce1:) never gets here: it is not "mc".
+         guiMsgBoxSound(SFX_ERROR);
+-        guiMsgBox("The AUDIO folder sits beside RIPPS2, here on a memory card, and a CD track takes about 10 MB a minute. Start RIPPS2 from a USB drive or the HDD to copy tracks.", 0, NULL);
+-        return;
++        guiMsgBoxStartOption("MMCE: COPY ANYWAY");
++        if (guiMsgBox("The AUDIO folder sits beside RIPPS2, here on a memory card, and a CD track takes about 10 MB per minute of storage. Start RIPPS2 from a USB drive or the HDD to copy tracks.", 0, NULL) != 2)
++            return;
++        guiMsgBoxSound(SFX_ERROR);
++        if (guiMsgBox("Only for an MMCE (SD2PSX, MemCard Pro 2) with room to spare. A standard 8 MB MagicGate memory card CANNOT hold an average music track: the copy fills the card and fails. Copy to this card anyway?", 1, NULL) != 1)
++            return;
+     }
+     snprintf(name, sizeof(name), "CD Track %02d", track);
+     if (!guiShowKeyboard(name, sizeof(name)) || name[0] == '\0')
+@@ -534,7 +541,7 @@ static void cdCopy(int track)
+     snprintf(path, sizeof(path), "%s/bgm %s.wav", dir, name); // music in AUDIO is bgm*: the picker lists it
+     if ((f = fopen(path, "wb")) == NULL) {
+         guiMsgBoxSound(SFX_ERROR);
+-        guiMsgBox("The copy could not be started: MUSIC could not be written. Check the drive is not full or write protected.", 0, NULL);
++        guiMsgBox("The copy could not be started: the AUDIO folder could not be written to. Check the drive is not full or write protected.", 0, NULL);
+         return;
+     }
+     cdWavHeader(head, 0);
+diff --git a/src/ripps2hdd.c b/src/ripps2hdd.c
+index b362832..57f2c7d 100644
+--- a/src/ripps2hdd.c
++++ b/src/ripps2hdd.c
+@@ -111,11 +111,11 @@ void ripps2HddManager(void)
+     char line[96], total[24], freeTxt[24], toast[64] = "";
+ 
+     if (status < 0) {
+-        guiMsgBox("No internal hard disk is ready. Start the drives first (START DRIVES), or check the HDD is connected.", 0, NULL);
++        guiMsgBox("No internal hard drive is ready. Start the drives first (START DRIVES), or check the HDD is connected.", 0, NULL);
+         return;
+     }
+     if (status == 1) {
+-        guiMsgBox("The internal hard disk is not APA formatted. Format it with a dedicated HDD tool first.", 0, NULL);
++        guiMsgBox("The internal hard drive is not APA formatted. Format it with a dedicated HDD tool first.", 0, NULL);
+         return;
+     }
+     hmScan();
+diff --git a/src/sound.c b/src/sound.c
+index 9fc79bf..04bf10a 100644
+--- a/src/sound.c
++++ b/src/sound.c
+@@ -644,8 +644,14 @@ void bgmBootTick(void)
+ #define BGM_RING_BUFFER_COUNT      192 // 768 KB buffer (~4.35s): extra headroom for long device/list bursts (#364)
+ #define BGM_RING_BUFFER_SIZE       4096
+ #define BGM_STOP_WAIT_SLICES       16
+-#define BGM_IO_LOW_WATER_CHUNKS    48 // ~1.1 s: stop STARTING discretionary device reads
+-#define BGM_IO_RESUME_WATER_CHUNKS 80 // ~1.8 s: hysteresis before artwork/cosmetic IO resumes
++// RIPPS2: the reserve art, info pages and disc IDs wait for. It was 1.1 s / 1.8 s, and on a console
++// whose frames run long the decoder could hover under 1.8 s for as long as the music played -- every
++// cover, every info page's details and every PS1 disc ID waited the whole time (build 66 on hardware:
++// "no art or CFG" on a USB stick, the first build with music on every tab). Lower marks, and
++// bgmDiscretionaryIoWait below never lets a load wait more than a second.
++#define BGM_IO_LOW_WATER_CHUNKS    32 // ~0.74 s: stop STARTING discretionary device reads
++#define BGM_IO_RESUME_WATER_CHUNKS 48 // ~1.1 s: hysteresis before artwork/cosmetic IO resumes
++#define BGM_IO_WAIT_MAX            CLOCKS_PER_SEC // a load that has waited this long goes ahead
+ // EE priorities are strict (lower number wins): playback=30, Vorbis I/O/decode=31. Playback is
+ // tiny and normally asleep between audsrv room polls; decode now outranks the background I/O worker (32) while
+ // sharing the GUI/pad tier (31), whose vsync wait yields naturally. This prevents a long runnable
+@@ -716,6 +722,22 @@ int bgmDiscretionaryIoAllowed(void)
+     return !bgmIoThrottle;
+ }
+ 
++// RIPPS2: the decoder is behind (a pure read, unlike the gate above, which steps its hysteresis)
++int bgmReserveLow(void)
++{
++    return bgmIsPlaying && gEnableBGM && bgmBufferedChunks < BGM_IO_RESUME_WATER_CHUNKS;
++}
++
++// RIPPS2: the gate as a wait that always ends. since = when this load started waiting. A load held
++// back for BGM_IO_WAIT_MAX goes ahead anyway: one cover or one CFG read is a fraction of the reserve,
++// and art that never arrives is worse than a music hiccup that, with the marks above, should not come.
++int bgmDiscretionaryIoWait(clock_t since)
++{
++    if (bgmDiscretionaryIoAllowed())
++        return 1;
++    return (clock() - since) >= BGM_IO_WAIT_MAX;
++}
++
+ static u8 bgmThreadStack[BGM_THREAD_STACK_SIZE] __attribute__((aligned(16)));
+ static u8 bgmIoThreadStack[BGM_THREAD_STACK_SIZE] __attribute__((aligned(16)));
+ 
+diff --git a/src/texcache.c b/src/texcache.c
+index 2d94158..f14a9ec 100644
+--- a/src/texcache.c
++++ b/src/texcache.c
+@@ -1041,7 +1041,8 @@ static void cacheArtWorkerThread(void *arg)
+             // flight, but while BGM's decoded reserve is critical do not START the next PNG open.
+             // The request remains owned by this worker and cacheLoadImage re-checks stale/abort state
+             // after the wait, so scrolling can still make this work evaporate before it touches disk.
+-            while (!gArtTerminate && !req->abortRequested && !bgmDiscretionaryIoAllowed())
++            clock_t waitFrom = clock(); // RIPPS2: the reserve wait ends after a second (bgmDiscretionaryIoWait)
++            while (!gArtTerminate && !req->abortRequested && !bgmDiscretionaryIoWait(waitFrom))
+                 DelayThread(10 * 1000);
+ 
+             cacheLoadImage(req);
+diff --git a/src/themes.c b/src/themes.c
+index d0f1940..ef675fa 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -1372,8 +1372,69 @@ static struct
+     int cur;                       // the slide on show (0 = none)
+     clock_t start;                 // when it began showing
+     int first;                     // the slide on show is the show's first: it fades in from nothing
++    int bgPending;                 // RIPPS2: slide 1 (the background) is still loading this frame
+ } slideShow;
+ 
++// RIPPS2: THE INFO PAGE APPEARS AS ONE. Its art -- the background slideshow, the logo, the disc and
++// the cover -- used to pop in piece by piece as each read finished. Now every piece reports each frame
++// whether it is still loading; nothing is drawn until none is (or 0.8 s has passed, so a slow device
++// never leaves the page bare), and then all of it, placeholders included, fades in from that same
++// moment. The report is read one frame late: the elements draw in painter's order, so the first ones
++// cannot know about the last.
++#define INFO_GROUP_WAIT_S 0.8f
++static struct
++{
++    void *item;
++    unsigned int frame;
++    int pendingThis, pendingLast;
++    int released;
++    clock_t start, release;
++} infoGroup;
++
++static void infoGroupFrame(void *item)
++{
++    if (infoGroup.item != item || guiFrameId - infoGroup.frame > 2) {
++        infoGroup.item = item;
++        infoGroup.frame = guiFrameId;
++        infoGroup.pendingThis = 0;
++        infoGroup.pendingLast = 1; // nothing has reported yet
++        infoGroup.released = 0;
++        infoGroup.start = clock();
++    } else if (infoGroup.frame != guiFrameId) {
++        infoGroup.pendingLast = infoGroup.pendingThis;
++        infoGroup.pendingThis = 0;
++        infoGroup.frame = guiFrameId;
++    }
++    if (!infoGroup.released && (infoGroup.pendingLast == 0 ||
++                                (float)(clock() - infoGroup.start) / (float)CLOCKS_PER_SEC >= INFO_GROUP_WAIT_S)) {
++        infoGroup.released = 1;
++        infoGroup.release = clock();
++    }
++}
++
++static float infoGroupAlpha(void)
++{
++    if (!infoGroup.released)
++        return 0.0f;
++    float f = (float)(clock() - infoGroup.release) / (float)CLOCKS_PER_SEC / 0.35f; // ART_FADE_S
++    if (f >= 1.0f)
++        return 1.0f;
++    return f * f * (3.0f - 2.0f * f);
++}
++
++// An art read still out for this element: no texture yet, and not answered "absent" (-2)
++static int infoArtPending(image_cache_t *cache, struct submenu_item *item)
++{
++    if (!gEnableArt || cache == NULL || item == NULL || item->cache_id == NULL || gTheme == NULL ||
++        cache->userId < 0 || cache->userId >= gTheme->gameCacheCount)
++        return 0;
++    if (cache->suffix != NULL && strcmp(cache->suffix, "BG") == 0 && !gEnableBGArt)
++        return 0;
++    if (!gEnableDiscArt && isDiscArtCache(cache))
++        return 0;
++    return item->cache_id[cache->userId] != -2;
++}
++
+ // RIPPS2: art fades in when it arrives (a game's art loads a moment after the game is picked) instead
+ // of popping in: each image element remembers which game and texture it last drew, and a new one
+ // eases up from nothing over ART_FADE_S. The slideshow's first slide fades in the same way; after
+@@ -1455,6 +1516,7 @@ static void slideUpdate(struct menu_list *menu, struct submenu_list *item, struc
+     slideShow.frame = guiFrameId;
+     slideShow.item = item;
+     slideShow.family = drawElem->family;
++    slideShow.bgPending = 0;
+     memset(slideShow.tex, 0, sizeof(slideShow.tex));
+ 
+     for (e = drawElem->family->first; e != NULL; e = e->next) {
+@@ -1466,7 +1528,8 @@ static void slideUpdate(struct menu_list *menu, struct submenu_list *item, struc
+         if (t != NULL && t->Mem != NULL) {
+             slideShow.tex[e->slide] = t;
+             have++;
+-        }
++        } else if (e->slide == 1)
++            slideShow.bgPending = infoArtPending(img->cache, &item->item);
+     }
+     if (!have) {
+         slideShow.cur = 0;
+@@ -1512,6 +1575,8 @@ static float slideWeight(int s)
+     return 0.0f;
+ }
+ 
++static int thmElemIsInfo(theme_element_t *elem);
++
+ static void drawGameImage(struct menu_list *menu, struct submenu_list *item, config_set_t *config, struct theme_element *elem)
+ {
+     if (item) {
+@@ -1532,9 +1597,18 @@ static void drawGameImage(struct menu_list *menu, struct submenu_list *item, con
+         // RIPPS2: a slideshow slide draws only its share of the show, and only with its own art
+         float slideW = 1.0f;
+         int isSlide = drawElem->slide > 0 && drawElem->family != NULL;
++        int onInfo = thmElemIsInfo(drawElem) && !item->item.isFolder && drawElem->type != ELEM_TYPE_BACKGROUND; // the info page's art appears as one (the pillars behind it are not art)
++        if (onInfo)
++            infoGroupFrame(item);
+         if (isSlide) {
+             slideUpdate(menu, item, drawElem);
++            if (onInfo && drawElem->slide == 1 && slideShow.bgPending)
++                infoGroup.pendingThis++;
+             slideW = slideWeight(drawElem->slide);
++            if (onInfo) {
++                float g = infoGroupAlpha();
++                slideW = (slideShow.first && drawElem->slide == slideShow.cur) ? g : slideW * g;
++            }
+             if (slideW <= 0.0f)
+                 return;
+         }
+@@ -1610,6 +1684,9 @@ static void drawGameImage(struct menu_list *menu, struct submenu_list *item, con
+             texture = getGameImageTextureEx(gameImage->cache, menu->item->userdata, &item->item, 1);
+         }
+ 
++        if (onInfo && !isSlide && (!texture || !texture->Mem) && infoArtPending(gameImage->cache, &item->item))
++            infoGroup.pendingThis++;
++
+         if (!texture || !texture->Mem) {
+             // Keep the configured/default cover visible when art is absent. This is also the
+             // placeholder path for Favorites, so all list views keep the same no-art affordance.
+@@ -1622,8 +1699,14 @@ static void drawGameImage(struct menu_list *menu, struct submenu_list *item, con
+             }
+         }
+ 
++        // RIPPS2: on the info page every piece, placeholder or art, comes in with the group
++        if (onInfo && !isSlide) {
++            slideW = infoGroupAlpha();
++            if (slideW <= 0.0f)
++                return;
++        }
+         // RIPPS2: art fades in as it arrives (the slideshow fades its own); a placeholder never fades
+-        if (!isSlide && (gameImage->defaultTexture == NULL || texture != &gameImage->defaultTexture->source)) {
++        else if (!isSlide && (gameImage->defaultTexture == NULL || texture != &gameImage->defaultTexture->source)) {
+             float in = artFadeIn(drawElem, item, texture);
+             if (in < 1.0f && drawElem->type == ELEM_TYPE_BACKGROUND)
+                 ripps2DrawBackground(); // the pillars show until it is all there
+diff --git a/src/vcdsupport.c b/src/vcdsupport.c
+index 15441c6..23ca939 100644
+--- a/src/vcdsupport.c
++++ b/src/vcdsupport.c
+@@ -273,6 +273,7 @@ typedef struct vcd_id_memo
+     char *dir;               // directory this VCD was scanned from -- the ONLY correct path source
+     unsigned char state;     // vcd_id_state_t
+     unsigned char retries;   // count of failed read attempts before transitioning to ABSENT
++    unsigned char defers;    // RIPPS2: times put off for art or music; after two it is read anyway
+     unsigned int retryFrame; // guiFrameId when deferred retry is next permitted
+     char name[];             // flexible: VCD basenames run long, most are far short of the cap
+ } vcd_id_memo_t;
+@@ -307,6 +308,7 @@ void vcdNoteScanDir(const char *name, const char *dirPath)
+             m->dir = strdup(dirPath);
+             m->state = VCD_ID_UNREQUESTED;
+             m->retries = 0;
++            m->defers = 0;
+             m->retryFrame = 0;
+             m->id[0] = '\0';
+         }
+@@ -324,6 +326,7 @@ void vcdNoteScanDir(const char *name, const char *dirPath)
+     m->id[0] = '\0';
+     m->state = VCD_ID_UNREQUESTED;
+     m->retries = 0;
++    m->defers = 0;
+     m->retryFrame = 0;
+     m->dir = strdup(dirPath);
+     m->next = gVcdIdMemo;
+@@ -516,9 +519,13 @@ static void vcdResolveQueuedDisplayId(void)
+     // Async is not enough by itself: a device read can still starve the same USB/PFS channel
+     // used by artwork and BGM. If either pipeline is busy, transition to DEFERRED with a throttled
+     // retry frame (~1.5 s backoff) so the GUI thread does not flood the IO queue at 60 Hz.
+-    if (cacheHasPendingArt() || !bgmDiscretionaryIoAllowed()) {
++    // RIPPS2: but never forever. A PS1 row's art is keyed by this ID, so while covers kept loading (or
++    // the music's reserve stayed low) the ID never came, and neither did that row's art. Twice put off,
++    // then read.
++    if ((cacheHasPendingArt() || !bgmDiscretionaryIoAllowed()) && (m == NULL || m->defers < 2)) {
+         if (m != NULL && m->state == VCD_ID_QUEUED) {
+             m->state = VCD_ID_DEFERRED;
++            m->defers++;
+             m->retryFrame = guiFrameId + 90;
+         }
+         return;
+@@ -864,11 +871,47 @@ int vcdResolvePopstarter(const char *devPrefix, char *out, int outSize)
+             close(fd);
+             return 1;
+         }
++        // RIPPS2: and where people keep it beside an app launcher (wLaunchELF, OPL's APPS page,
++        // POPSLoader set-ups): the device's APPS folder, its own folder, the device root
++        static const char *const more[] = {"APPS%cPOPSTARTER.ELF", "APPS%cPOPSTARTER%cPOPSTARTER.ELF",
++                                           "POPSTARTER%cPOPSTARTER.ELF", "POPSTARTER.ELF"};
++        char sep = vcdSep(devPrefix), rel[64];
++        int i;
++        for (i = 0; i < (int)(sizeof(more) / sizeof(more[0])); i++) {
++            snprintf(rel, sizeof(rel), more[i], sep, sep);
++            snprintf(out, outSize, "%s%s", devPrefix, rel);
++            fd = open(out, O_RDONLY);
++            if (fd >= 0) {
++                close(fd);
++                return 1;
++            }
++        }
+     }
+ 
+     return vcdResolvePopstarterMcElf(out, outSize);
+ }
+ 
++// RIPPS2: the resolver above, then the game's OWN launcher: the classic set-up gives every game a
++// copy of POPSTARTER named after it (POPS/XX.<name>.ELF beside <name>.VCD), and finds nothing else.
++// That copy IS POPSTARTER, and RIPPS2 hands POPSTARTER exactly that name as its selector anyway, so
++// it launches the game as it always has. prefix is "XX." (or "SB." on SMB).
++int vcdResolvePopstarterFor(const char *devPrefix, const char *prefix, const char *name, char *out, int outSize)
++{
++    if (vcdResolvePopstarter(devPrefix, out, outSize))
++        return 1;
++    if (devPrefix == NULL || devPrefix[0] == '\0' || name == NULL || name[0] == '\0')
++        return 0;
++    snprintf(out, outSize, "%s%s%c%s%s.ELF", devPrefix, POPS_FOLDER, vcdSep(devPrefix), prefix ? prefix : "XX.", name);
++    int fd = open(out, O_RDONLY);
++    if (fd >= 0) {
++        close(fd);
++        LOG("POPSTARTER: using the game's own launcher %s\n", out);
++        return 1;
++    }
++    out[0] = '\0';
++    return 0;
++}
++
+ void vcdBuildSelector(const char *devPrefix, const char *prefix, const char *name, char *out, int outSize)
+ {
+     if (out == NULL || outSize <= 0)
