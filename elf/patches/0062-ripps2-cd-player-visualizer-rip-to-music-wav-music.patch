@@ -1,0 +1,1098 @@
+diff --git a/Makefile b/Makefile
+index bf89a16..0c137a6 100644
+--- a/Makefile
++++ b/Makefile
+@@ -133,7 +133,7 @@ ifneq ($(GIT_TAG),latest)
+ endif
+ endif
+ 
+-FRONTEND_OBJS = ripps2.o ripps2ui.o ripps2boot.o ripps2bg.o ripps2files.o ripps2edit.o ripps2hdd.o ripps2kbd.o ripps2saves.o ripps2about.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o mixsupport.o metadb.o \
++FRONTEND_OBJS = ripps2.o ripps2ui.o ripps2boot.o ripps2cd.o ripps2bg.o ripps2files.o ripps2edit.o ripps2hdd.o ripps2kbd.o ripps2saves.o ripps2about.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o mixsupport.o metadb.o \
+ 		dia.o ioman.o texcache.o themes.o supportbase.o bdmsupport.o netsupport.o ethsupport.o httpcatalog.o httpsupport.o udpfssupport.o hddsupport.o zso.o lz4.o launchdiag.o \
+ 		appsupport.o mmcesupport.o artindex.o vcdsupport.o cuesupport.o libview.o retrogem.o folderbrowse.o gui.o guigame.o vmc_groups.o textures.o opl.o atlas.o nbns.o httpclient.o gsm.o cheatman.o sound.o ps2cnf.o tar.o
+ 
+diff --git a/include/ripps2.h b/include/ripps2.h
+index 845291b..f49693a 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -12,6 +12,13 @@ int ripps2LaunchDvdPlayer(void);
+ // the browser does. Never returns on success; < 0 when the disc has nothing to boot.
+ int ripps2LaunchPs1Disc(void);
+ 
++// ---- CD player (ripps2cd.c): an audio CD on LAUNCH DISC ----
++int ripps2CdIsOpen(void);
++void ripps2CdStart(void); // START LASER on an audio CD: reads its TOC and plays from the first song
++void ripps2CdRender(void);
++void ripps2CdInput(void);
++void ripps2PillarMusic(int on); // ripps2bg.c: the towers settle and light up to what is playing
++
+ // ---- BOOT LOCK (ripps2boot.c): PS2BBL starts RIPPS2 at power on ----
+ int ripps2BootLockState(void);              // 1 when a PS2BBL config on the console has RIPPS2's lock in it
+ void ripps2BootLockApply(int on);           // writes it into (or out of) every PS2BBL config found; says how it went
+diff --git a/include/sound.h b/include/sound.h
+index a0ddad6..d01746f 100644
+--- a/include/sound.h
++++ b/include/sound.h
+@@ -29,6 +29,12 @@ enum SFX {
+ int bgmMusicList(char (*names)[RIPPS2_MUSIC_NAME], int max); // MUSIC/*.ogg beside RIPPS2, in name order
+ void bgmMusicTitle(const char *file, char *out, int size);   // "01 Slideshow.ogg" -> "Slideshow"
+ 
++// RIPPS2: raw PCM through the music stream (the CD player): read returns bytes, 0 at the end
++int bgmStartPcm(int (*read)(char *buf, int size), int rate, int channels);
++void bgmStopPcm(void);
++unsigned int bgmPlayedBytes(void); // bytes handed to audsrv since the stream started
++void bgmGetLevels(float *out3);    // low / mid / high of what is playing (the towers dance to it)
++
+ void audioInit(void);
+ void audioEnd(void);
+ void audioSetVolume(void);
+diff --git a/src/ripps2about.c b/src/ripps2about.c
+index 7d7e27d..27e6b2c 100644
+--- a/src/ripps2about.c
++++ b/src/ripps2about.c
+@@ -65,6 +65,10 @@ static const ab_row_t abRows[] = {
+     {'T', "DVD video: your console's player, or krHACKen's RGB player"},
+     {'S', "from your memory card's DVD player update folder"},
+     {'G', NULL},
++    {'H', "CD PLAYER"},
++    {'T', "ps2sdk's libcdvd and audsrv"},
++    {'S', "the disc's sound read straight off it, the towers lit by it"},
++    {'G', NULL},
+     {'H', "BOOT LOCK"},
+     {'T', "PS2BBL by El Isra (israpps)"},
+     {'S', "the PlayStation 2 Basic BootLoader: BOOT LOCK starts RIPPS2 with it"},
+diff --git a/src/ripps2bg.c b/src/ripps2bg.c
+index 356e8db..995b4f4 100644
+--- a/src/ripps2bg.c
++++ b/src/ripps2bg.c
+@@ -415,6 +415,40 @@ static void drawBeam(float x, float z, float y0, float w, float b)
+     rmSetBlendAdditive(0);
+ }
+ 
++// ---- the CD player: the towers settle and light up to the music ----
++// Bass lights the middle of the field, the mids a ring round it, the highs the edge. Each band is
++// taken against its own loudest of the last few seconds, so a quiet disc moves the towers as much as
++// a loud one; it rises fast and falls slowly, and the loudest moments send up the launch's beams.
++static int musicOn = 0;
++static float musicMix = 0.0f, musicLast = -1.0f;
++static float musicLevel[3], musicPeak[3] = {0.02f, 0.02f, 0.02f};
++
++void ripps2PillarMusic(int on)
++{
++    musicOn = on;
++}
++
++static void musicUpdate(float t)
++{
++    float dt = musicLast < 0.0f ? 0.016f : fminf(0.1f, fmaxf(0.0f, t - musicLast)), lv[3];
++    int b;
++
++    musicLast = t;
++    musicMix = clamp01(musicMix + (musicOn ? dt : -dt) / 1.2f);
++    if (musicMix <= 0.0f) {
++        musicLevel[0] = musicLevel[1] = musicLevel[2] = 0.0f;
++        return;
++    }
++    bgmGetLevels(lv);
++    for (b = 0; b < 3; b++) {
++        musicPeak[b] = fmaxf(fmaxf(lv[b], 0.004f), musicPeak[b] * expf(-dt / 4.0f));
++        float target = clamp01(lv[b] / musicPeak[b]);
++        target *= target;
++        float k = 1.0f - expf(-dt / (target > musicLevel[b] ? 0.03f : 0.22f));
++        musicLevel[b] += (target - musicLevel[b]) * k;
++    }
++}
++
+ void ripps2DrawPillars(void)
+ {
+     int i, j, k;
+@@ -429,6 +463,9 @@ void ripps2DrawPillars(void)
+     float intro = easeInOutCubicf(clamp01(t / INTRO_S));
+     float push = L >= 0.0f ? easeInOutCubicf(clamp01(L / 1.8f)) : 0.0f;
+     float glowAll = L >= 0.0f ? easeInOutCubicf(clamp01(L / 1.5f)) : 0.0f;
++    musicUpdate(t);
++    if (musicMix > 0.0f) // the bass breathes through the sky and the floor
++        glowAll = fmaxf(glowAll, musicMix * musicLevel[0] * 0.3f);
+ 
+     drawSky(RGBA(0x01, 0x02, 0x09 + (int)(0x10 * glowAll), 0x80),
+             RGBA(0x0B + (int)(0x12 * glowAll), 0x19 + (int)(0x24 * glowAll), 0x4C + (int)(0x44 * glowAll), 0x80),
+@@ -475,7 +512,14 @@ void ripps2DrawPillars(void)
+             heat = fminf(2.4f, heat + glowAll * 0.8f);
+         }
+         tw->heat = heat;
+-        tw->h = fmaxf(0.05f, (tw->base * breathe * MAX_HEIGHT + swell * 1.4f + heat * 3.2f) * rise);
++        float h = (tw->base * breathe * MAX_HEIGHT + swell * 1.4f + heat * 3.2f) * rise;
++        if (musicMix > 0.0f) {
++            float wl = clamp01(1.0f - tw->d * 2.2f), wh = clamp01((tw->d - 0.45f) * 2.0f), wm = clamp01(1.0f - wl - wh);
++            float e = (wl * musicLevel[0] + wm * musicLevel[1] + wh * musicLevel[2]) * (0.7f + 0.3f * tw->base);
++            tw->heat = fmaxf(tw->heat, e * 1.9f * musicMix);
++            h = lerpf(h, (tw->base * MAX_HEIGHT * 0.32f + e * 8.5f) * rise, musicMix); // settled, then lifted by the music
++        }
++        tw->h = fmaxf(0.05f, h);
+         v3 c = {tw->x, tw->h * 0.5f, tw->z};
+         tw->depth = vdot(vsub(c, camEye), camF);
+     }
+@@ -520,6 +564,8 @@ void ripps2DrawPillars(void)
+         }
+         if (beamIn > 0.0f)
+             drawBeam(tw->x, tw->z, h, tw->w * 0.34f, fminf(1.0f, tw->heat * 0.6f) * beamIn);
++        else if (musicMix > 0.0f && tw->heat > 1.0f) // the loudest moments light the beams
++            drawBeam(tw->x, tw->z, h, tw->w * 0.34f, fminf(1.0f, (tw->heat - 1.0f) * 1.4f) * musicMix);
+     }
+ 
+     drawMotes(t, 1);
+diff --git a/src/ripps2cd.c b/src/ripps2cd.c
+new file mode 100644
+index 0000000..898d6de
+--- /dev/null
++++ b/src/ripps2cd.c
+@@ -0,0 +1,569 @@
++/*
++  Copyright 2026, RIPPS2 contributors
++  Licenced under Academic Free License version 3.0
++  Review OpenUsbLd README & LICENSE files for further details.
++
++  RIPPS2 CD player: LAUNCH DISC with an audio CD in the drive, START LASER. The disc plays through
++  the music stream (sound.c bgmStartPcm) while the towers settle and light up to it, from a glass
++  panel inlaid on the page, the category bar still on top. A track copies into MUSIC/ beside RIPPS2
++  as a .wav, named on the keyboard, and Audio settings > Music then offers it for the menu music.
++
++    Cross       play / pause            Up / Down    pick a track
++    Square      stop                    Left / Right the track before / after
++    L1 / R1     back / on 10 seconds    Triangle     copy the picked track to MUSIC
++    Circle      close the player (the menu music comes back)
++
++  The stream reads CDDA sectors (2352 bytes, 16-bit stereo at 44.1 kHz) straight off the disc, 16 at
++  a time, on the music's own IO thread; the panel shows what is heard, from what the stream has
++  handed to audsrv, not what has been read ahead. A disc's tracks play on into each other, as a CD
++  player's do, up to the lead-out or the first data track.
++*/
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <fcntl.h>
++#include <unistd.h>
++#include <sys/stat.h>
++#include <time.h>
++#include <kernel.h>
++#include <libcdvd.h>
++
++#include "include/opl.h"
++#include "include/gui.h"
++#include "include/renderman.h"
++#include "include/fntsys.h"
++#include "include/themes.h"
++#include "include/textures.h"
++#include "include/pad.h"
++#include "include/sound.h"
++#include "include/ripps2.h"
++
++#define CD_TRACKS_MAX 99
++#define CD_SECTOR     2352
++#define CD_READ       16  // sectors a read: 0.21 s of sound
++#define CD_PREGAP     150 // the 2 s every MSF in the TOC counts from
++#define CD_SKIP       750 // 10 s of sectors
++#define CD_ROWS       5
++
++#define CD_X 60 // the panel
++#define CD_Y 262
++#define CD_W 520
++#define CD_H 156
++
++#define CD_LIT  GS_SETREG_RGBA(0x80, 0x80, 0x80, 0x80)
++#define CD_SOFT GS_SETREG_RGBA(0x67, 0x6C, 0x7A, 0x80)
++#define CD_DIM  GS_SETREG_RGBA(0x4C, 0x52, 0x64, 0x80)
++#define CD_BLUE GS_SETREG_RGBA(0x5C, 0x98, 0xFF, 0x80)
++#define CD_PRIM(r, g, b, a) GS_SETREG_RGBAQ((r), (g), (b), (a), 0x00)
++
++enum { CD_STOPPED = 0, CD_PLAYING, CD_PAUSED };
++
++static int cdOpen = 0, cdCount = 0, cdSel = 1, cdTop = 1, cdState = CD_STOPPED;
++static u32 cdStart[CD_TRACKS_MAX + 2];        // each track's first sector; [cdCount + 1] is the lead-out
++static unsigned char cdAudio[CD_TRACKS_MAX + 2]; // an audio track (not data)
++static u32 cdFrom = 0, cdHeld = 0;            // where the stream began; where a pause holds
++static clock_t cdTrayAt = 0;
++static char cdNote[96];
++static clock_t cdNoteAt = 0;
++
++// the stream, read on the music's IO thread
++static volatile u32 cdLsn = 0, cdEnd = 0;
++static u8 cdBuf[CD_READ * CD_SECTOR] __attribute__((aligned(64)));
++static int cdBufPos = 0, cdBufLen = 0;
++
++static void cdSay(const char *text)
++{
++    snprintf(cdNote, sizeof(cdNote), "%s", text);
++    cdNoteAt = clock();
++}
++
++static int cdBcd(u8 b)
++{
++    return (b >> 4) * 10 + (b & 0x0F);
++}
++
++static u32 cdMsf(const u8 *m)
++{
++    int s = (cdBcd(m[0]) * 60 + cdBcd(m[1])) * 75 + cdBcd(m[2]) - CD_PREGAP;
++    return s < 0 ? 0 : (u32)s;
++}
++
++// The TOC: 10-byte entries, each naming its point (a track number in BCD, or A0 / A1 / A2 for the
++// first track, the last and the lead-out) and where it starts (PMIN PSEC PFRAME). Scanning every
++// entry for its point reads the drive's raw TOC and the emulators' layouts alike.
++static int cdReadToc(void)
++{
++    static u8 toc[1024] __attribute__((aligned(64)));
++    unsigned char seen[CD_TRACKS_MAX + 2];
++    u32 leadOut = 0;
++    int o, t, last = 0;
++
++    cdCount = 0;
++    memset(seen, 0, sizeof(seen));
++    memset(cdAudio, 0, sizeof(cdAudio));
++    sceCdMmode(SCECdMmodeCd);
++    sceCdDiskReady(0);
++    memset(toc, 0, sizeof(toc));
++    if (!sceCdGetToc(toc))
++        return 0;
++    for (o = 0; o + 10 <= (int)sizeof(toc); o += 10) {
++        const u8 *e = toc + o;
++        u8 point = e[2];
++        if (point == 0xA2)
++            leadOut = cdMsf(e + 7);
++        else if (point != 0 && (point >> 4) <= 9 && (point & 0x0F) <= 9) {
++            t = cdBcd(point);
++            if (t >= 1 && t <= CD_TRACKS_MAX && !seen[t]) {
++                seen[t] = 1;
++                cdStart[t] = cdMsf(e + 7);
++                cdAudio[t] = !(e[0] & 0x40); // the control bits mark a data track
++                if (t > last)
++                    last = t;
++            }
++        }
++    }
++    for (t = 1; t <= last; t++)
++        if (!seen[t])
++            return 0;
++    if (last == 0 || leadOut <= cdStart[last])
++        return 0;
++    cdStart[last + 1] = leadOut;
++    cdCount = last;
++    return 1;
++}
++
++static int cdTrackAt(u32 lsn)
++{
++    int t;
++    for (t = cdCount; t > 1 && cdStart[t] > lsn; t--)
++        ;
++    return t;
++}
++
++// Where play from lsn runs out: the lead-out, or the first data track after it
++static u32 cdAudioEnd(u32 lsn)
++{
++    int t;
++    for (t = cdTrackAt(lsn) + 1; t <= cdCount; t++)
++        if (!cdAudio[t])
++            return cdStart[t];
++    return cdStart[cdCount + 1];
++}
++
++static int cdStreamRead(char *buf, int size)
++{
++    sceCdRMode m;
++    int done = 0;
++
++    m.trycount = 3;
++    m.spindlctrl = SCECdSpinNom;
++    m.datapattern = SCECdSecS2352;
++    m.pad = 0;
++    while (done < size) {
++        if (cdBufPos >= cdBufLen) {
++            u32 n;
++            if (cdLsn >= cdEnd)
++                return done; // the disc's audio is over: 0 ends the stream
++            n = cdEnd - cdLsn;
++            if (n > CD_READ)
++                n = CD_READ;
++            SifWriteBackDCache(cdBuf, n * CD_SECTOR); // nothing stale in the cache over what the read brings
++            if (!sceCdReadCDDA(cdLsn, n, cdBuf, &m))
++                return done > 0 ? done : -1;
++            sceCdSync(0);
++            if (sceCdGetError() != SCECdErNO)
++                memset(cdBuf, 0, n * CD_SECTOR); // a scratch: silence over it, and on
++            cdLsn += n;
++            cdBufPos = 0;
++            cdBufLen = n * CD_SECTOR;
++        }
++        int k = size - done;
++        if (k > cdBufLen - cdBufPos)
++            k = cdBufLen - cdBufPos;
++        memcpy(buf + done, cdBuf + cdBufPos, k);
++        done += k;
++        cdBufPos += k;
++    }
++    return done;
++}
++
++// The sector being heard
++static u32 cdNow(void)
++{
++    if (cdState == CD_PLAYING)
++        return cdFrom + bgmPlayedBytes() / CD_SECTOR;
++    if (cdState == CD_PAUSED)
++        return cdHeld;
++    return cdStart[cdSel];
++}
++
++static void cdPlayFrom(u32 lsn)
++{
++    int t = cdTrackAt(lsn);
++    if (!cdAudio[t]) {
++        cdSay("THAT TRACK IS DATA, NOT SOUND");
++        return;
++    }
++    cdFrom = cdLsn = lsn;
++    cdEnd = cdAudioEnd(lsn);
++    cdBufPos = cdBufLen = 0;
++    if (bgmStartPcm(&cdStreamRead, 44100, 2) == 0) {
++        cdState = CD_PLAYING;
++        cdSel = t;
++        ripps2PillarMusic(1);
++    } else {
++        cdState = CD_STOPPED;
++        cdSay("THE DISC COULD NOT BE READ");
++    }
++}
++
++static void cdHalt(int state)
++{
++    cdHeld = cdNow();
++    bgmStopPcm();
++    cdState = state;
++    if (state == CD_STOPPED) {
++        sceCdStop();
++        sceCdSync(0);
++    } else
++        sceCdPause();
++    ripps2PillarMusic(0);
++}
++
++int ripps2CdIsOpen(void)
++{
++    return cdOpen;
++}
++
++void ripps2CdStart(void)
++{
++    int t;
++    if (isBgmPlaying())
++        bgmStop(); // the menu music makes way; it comes back when the player closes
++    if (!cdReadToc()) {
++        if (gEnableBGM)
++            bgmStart();
++        guiMsgBoxSound(SFX_ERROR);
++        guiMsgBox("This audio CD's table of contents could not be read. Clean the disc, close the tray again and try once more.", 0, NULL);
++        return;
++    }
++    cdOpen = 1;
++    cdState = CD_STOPPED;
++    cdTrayAt = clock();
++    cdNote[0] = '\0';
++    for (t = 1; t <= cdCount && !cdAudio[t]; t++)
++        ;
++    cdSel = cdTop = t <= cdCount ? t : 1;
++    cdPlayFrom(cdStart[cdSel]); // START LASER plays: the disc starts from its first song
++}
++
++static void cdClose(void)
++{
++    if (cdState != CD_STOPPED)
++        cdHalt(CD_STOPPED);
++    bgmStopPcm();
++    ripps2PillarMusic(0);
++    cdOpen = 0;
++    if (gEnableBGM && !isBgmPlaying())
++        bgmStart(); // the menu music again
++}
++
++// ---- copy a track to MUSIC/ as a .wav ----
++
++static void cdPut32(u8 *p, u32 v)
++{
++    p[0] = v;
++    p[1] = v >> 8;
++    p[2] = v >> 16;
++    p[3] = v >> 24;
++}
++
++static void cdWavHeader(u8 *h, u32 bytes)
++{
++    memcpy(h, "RIFF", 4);
++    cdPut32(h + 4, 36 + bytes);
++    memcpy(h + 8, "WAVEfmt ", 8);
++    cdPut32(h + 16, 16);
++    h[20] = 1; h[21] = 0;                   // PCM
++    h[22] = 2; h[23] = 0;                   // stereo
++    cdPut32(h + 24, 44100);
++    cdPut32(h + 28, 44100 * 4);
++    h[32] = 4; h[33] = 0;                   // bytes a frame
++    h[34] = 16; h[35] = 0;                  // bits
++    memcpy(h + 36, "data", 4);
++    cdPut32(h + 40, bytes);
++}
++
++static void cdCopyFrame(const char *what, float p)
++{
++    char buf[32];
++    int cancel = gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON;
++    rmStartFrame();
++    ripps2DrawBackground();
++    ripps2RenderCategoryBar();
++    ripps2DrawPanelGlass(CD_X, CD_Y, CD_W, CD_H, 0);
++    fntRenderString(gTheme->fonts[4], 320, CD_Y + 44, ALIGN_CENTER, 0, 0, what, CD_LIT);
++    rmDrawRect(170, CD_Y + 70, 300, 6, CD_PRIM(0x03, 0x08, 0x22, 0x80));
++    rmDrawRect(170, CD_Y + 70, (int)(300 * (p > 1.0f ? 1.0f : p)), 6, CD_PRIM(0x4A, 0x8C, 0xF0, 0x80));
++    snprintf(buf, sizeof(buf), "%d%%", (int)(p * 100.0f));
++    fntRenderString(gTheme->fonts[5], 320, CD_Y + 96, ALIGN_CENTER, 0, 0, buf, CD_SOFT);
++    GSTEXTURE *t = thmGetTexture(cancel);
++    if (t != NULL)
++        rmDrawPixmap(t, 274, 438, ALIGN_NONE, 20, 20, SCALING_RATIO, CD_LIT, 0);
++    fntRenderString(gTheme->fonts[4], 298, 448, ALIGN_VCENTER, 0, 0, "CANCEL", CD_SOFT);
++    rmEndFrame();
++}
++
++static void cdCopy(int track)
++{
++    char dir[256], name[48], path[320], what[80];
++    u8 head[44];
++    sceCdRMode m;
++    FILE *f;
++    u32 lsn, end, bytes = 0;
++    int cancelKey = gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE, ok = 1;
++
++    if (!cdAudio[track]) {
++        cdSay("THAT TRACK IS DATA, NOT SOUND");
++        return;
++    }
++    if (!oplGetRipps2Dir(dir, sizeof(dir) - 8)) {
++        guiMsgBoxSound(SFX_ERROR);
++        guiMsgBox("RIPPS2 cannot tell which drive it was started from, so it does not know where MUSIC is.", 0, NULL);
++        return;
++    }
++    if (!strncmp(dir, "mc", 2)) {
++        guiMsgBoxSound(SFX_ERROR);
++        guiMsgBox("MUSIC sits beside RIPPS2, here on a memory card, and a CD track takes about 10 MB a minute. Start RIPPS2 from a USB drive or the HDD to copy tracks.", 0, NULL);
++        return;
++    }
++    snprintf(name, sizeof(name), "CD Track %02d", track);
++    if (!guiShowKeyboard(name, sizeof(name)) || name[0] == '\0')
++        return;
++    if (cdState != CD_STOPPED)
++        cdHalt(CD_STOPPED);
++
++    strcat(dir, "MUSIC");
++    mkdir(dir, 0777);
++    snprintf(path, sizeof(path), "%s/%s.wav", dir, name);
++    if ((f = fopen(path, "wb")) == NULL) {
++        guiMsgBoxSound(SFX_ERROR);
++        guiMsgBox("The copy could not be started: MUSIC could not be written. Check the drive is not full or write protected.", 0, NULL);
++        return;
++    }
++    cdWavHeader(head, 0);
++    fwrite(head, 1, sizeof(head), f);
++
++    m.trycount = 5;
++    m.spindlctrl = SCECdSpinNom;
++    m.datapattern = SCECdSecS2352;
++    m.pad = 0;
++    snprintf(what, sizeof(what), "COPYING TRACK %02d TO MUSIC", track);
++    sceCdMmode(SCECdMmodeCd);
++    sceCdDiskReady(0);
++    end = cdStart[track + 1];
++    for (lsn = cdStart[track]; lsn < end && ok;) {
++        u32 n = end - lsn > CD_READ ? CD_READ : end - lsn;
++        SifWriteBackDCache(cdBuf, n * CD_SECTOR);
++        if (!sceCdReadCDDA(lsn, n, cdBuf, &m)) {
++            ok = 0;
++            break;
++        }
++        sceCdSync(0);
++        if (sceCdGetError() != SCECdErNO)
++            memset(cdBuf, 0, n * CD_SECTOR);
++        if (fwrite(cdBuf, 1, n * CD_SECTOR, f) != n * CD_SECTOR) {
++            ok = 0;
++            break;
++        }
++        bytes += n * CD_SECTOR;
++        lsn += n;
++        cdCopyFrame(what, (float)(lsn - cdStart[track]) / (float)(end - cdStart[track]));
++        readPads();
++        if (getKeyOn(cancelKey))
++            ok = -1;
++    }
++    if (ok == 1) {
++        cdWavHeader(head, bytes);
++        if (fseek(f, 0, SEEK_SET) != 0 || fwrite(head, 1, sizeof(head), f) != sizeof(head))
++            ok = 0;
++    }
++    fclose(f);
++    sceCdStop();
++    sceCdSync(0);
++    if (ok != 1) {
++        remove(path);
++        if (ok == 0) {
++            guiMsgBoxSound(SFX_ERROR);
++            guiMsgBox("The copy stopped: the disc could not be read or the drive could not take more. Nothing was kept.", 0, NULL);
++        } else
++            cdSay("COPY CANCELLED");
++        return;
++    }
++    snprintf(what, sizeof(what), "Copied to MUSIC as %s.wav. Pick it in Settings > Audio Settings > Music.", name);
++    guiMsgBoxSound(SFX_SAVE);
++    guiMsgBox(what, 0, NULL);
++}
++
++// ---- the panel ----
++
++static void cdTime(u32 sectors, char *out, int size)
++{
++    u32 s = sectors / 75;
++    snprintf(out, size, "%u:%02u", s / 60, s % 60);
++}
++
++static void cdHints(void)
++{
++    static const char *const texts[] = {"PLAY", "STOP", "SEEK", "TRACK", "COPY TO MUSIC", "CLOSE"};
++    int icons[6] = {gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON, SQUARE_ICON, R1_ICON, RIGHT_ICON, TRIANGLE_ICON,
++                    gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON};
++    int i, w = 0, gap = 16, x;
++    for (i = 0; i < 6; i++)
++        w += 24 + fntCalcDimensions(gTheme->fonts[4], texts[i]);
++    if (w + gap * 5 > 600)
++        gap = (600 - w) / 5;
++    x = (640 - (w + gap * 5)) / 2;
++    for (i = 0; i < 6; i++) {
++        GSTEXTURE *t = thmGetTexture(icons[i]);
++        if (t != NULL)
++            rmDrawPixmap(t, x, 438, ALIGN_NONE, 20, 20, SCALING_RATIO, CD_LIT, 0);
++        x += 24;
++        fntRenderString(gTheme->fonts[4], x, 448, ALIGN_VCENTER, 0, 0, texts[i], CD_SOFT);
++        x += fntCalcDimensions(gTheme->fonts[4], texts[i]) + gap;
++    }
++}
++
++void ripps2CdRender(void)
++{
++    char buf[64], len[16];
++    int i, rowFont = gTheme->fonts[8], uiFont = gTheme->fonts[4], small = gTheme->fonts[5];
++    u32 now;
++
++    // the stream ran out at the end of the disc
++    if (cdState == CD_PLAYING && !isBgmPlaying()) {
++        bgmStopPcm();
++        cdState = CD_STOPPED;
++        ripps2PillarMusic(0);
++        for (cdSel = 1; cdSel < cdCount && !cdAudio[cdSel]; cdSel++)
++            ;
++    }
++    // the tray: an open tray closes the player (the disc watcher reads what goes in next)
++    if ((float)(clock() - cdTrayAt) / CLOCKS_PER_SEC > 0.5f) {
++        int st = sceCdStatus();
++        cdTrayAt = clock();
++        if (st >= 0 && (st & 0x01)) {
++            cdClose();
++            return;
++        }
++    }
++
++    now = cdNow();
++    int playing = cdTrackAt(now);
++    static int lastPlaying = 0;
++    if (cdState == CD_PLAYING && playing != lastPlaying)
++        cdSel = playing; // the pick follows the music on to each new track
++    lastPlaying = cdState == CD_PLAYING ? playing : 0;
++
++    ripps2DrawPanelGlass(CD_X, CD_Y, CD_W, CD_H, 0);
++    fntRenderString(uiFont, CD_X + 18, CD_Y + 18, ALIGN_VCENTER, 0, 0, "AUDIO CD", CD_LIT);
++    snprintf(buf, sizeof(buf), "%d TRACKS", cdCount);
++    fntRenderString(small, CD_X + 18 + fntCalcDimensions(uiFont, "AUDIO CD") + 12, CD_Y + 18, ALIGN_VCENTER, 0, 0, buf, CD_DIM);
++    rmDrawLine(CD_X + 14, CD_Y + 32, CD_X + CD_W - 14, CD_Y + 32, CD_PRIM(0x4A, 0x72, 0xDC, 0x60));
++
++    // the tracks, a page of them round the pick
++    if (cdSel < cdTop)
++        cdTop = cdSel;
++    if (cdSel >= cdTop + CD_ROWS)
++        cdTop = cdSel - CD_ROWS + 1;
++    for (i = 0; i < CD_ROWS && cdTop + i <= cdCount; i++) {
++        int t = cdTop + i, y = CD_Y + 50 + i * 21;
++        if (t == cdSel)
++            rmDrawRect(CD_X + 12, y - 10, 236, 20, CD_PRIM(0x2A, 0x4C, 0xA0, 0x40));
++        cdTime(cdStart[t + 1] - cdStart[t], len, sizeof(len));
++        snprintf(buf, sizeof(buf), "%02d", t);
++        u64 col = (cdState != CD_STOPPED && t == playing) ? CD_BLUE : (t == cdSel ? CD_LIT : CD_SOFT);
++        fntRenderString(rowFont, CD_X + 22, y, ALIGN_VCENTER, 0, 0, buf, col);
++        fntRenderString(rowFont, CD_X + 58, y, ALIGN_VCENTER, 0, 0, cdAudio[t] ? "TRACK" : "DATA", cdAudio[t] ? col : CD_DIM);
++        fntRenderString(rowFont, CD_X + 240 - fntCalcDimensions(rowFont, len), y, ALIGN_VCENTER, 0, 0, len, col);
++    }
++
++    // what is playing
++    int rx = CD_X + 276, track = cdState == CD_STOPPED ? cdSel : playing;
++    u32 at = now > cdStart[track] ? now - cdStart[track] : 0, length = cdStart[track + 1] - cdStart[track];
++    snprintf(buf, sizeof(buf), "TRACK %02d", track);
++    fntRenderString(gTheme->fonts[11], rx, CD_Y + 58, ALIGN_VCENTER, 0, 0, buf, CD_LIT);
++    cdTime(at, buf, sizeof(buf));
++    cdTime(length, len, sizeof(len));
++    strcat(buf, " / ");
++    strcat(buf, len);
++    fntRenderString(uiFont, rx, CD_Y + 86, ALIGN_VCENTER, 0, 0, buf, CD_SOFT);
++    rmDrawRect(rx, CD_Y + 102, 216, 4, CD_PRIM(0x03, 0x08, 0x22, 0x80));
++    if (length > 0)
++        rmDrawRect(rx, CD_Y + 102, (int)(216.0f * (at > length ? 1.0f : (float)at / (float)length)), 4, CD_PRIM(0x4A, 0x8C, 0xF0, 0x80));
++    const char *state = cdState == CD_PLAYING ? "PLAYING" : cdState == CD_PAUSED ? "PAUSED" : "STOPPED";
++    if (cdNoteAt != 0 && (float)(clock() - cdNoteAt) / CLOCKS_PER_SEC < 3.0f)
++        state = cdNote;
++    fntRenderString(small, rx, CD_Y + 124, ALIGN_VCENTER, 0, 0, state, cdState == CD_PLAYING ? CD_BLUE : CD_SOFT);
++
++    cdHints();
++}
++
++void ripps2CdInput(void)
++{
++    int confirm = gSelectButton == KEY_CIRCLE ? KEY_CIRCLE : KEY_CROSS, back = gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE;
++    u32 now = cdNow();
++    int t = cdTrackAt(now);
++
++    if (getKeyOn(back)) {
++        sfxPlay(SFX_CANCEL);
++        cdClose();
++    } else if (getKeyOn(confirm) || getKeyOn(KEY_START)) {
++        // the track playing pauses; a paused one goes on; any other picked track plays from its start
++        sfxPlay(SFX_CONFIRM);
++        if (cdState == CD_PLAYING && cdSel == t)
++            cdHalt(CD_PAUSED);
++        else if (cdState == CD_PAUSED && cdTrackAt(cdHeld) == cdSel)
++            cdPlayFrom(cdHeld);
++        else
++            cdPlayFrom(cdStart[cdSel]);
++    } else if (getKeyOn(KEY_SQUARE)) {
++        sfxPlay(SFX_CANCEL);
++        if (cdState != CD_STOPPED)
++            cdHalt(CD_STOPPED);
++    } else if (getKey(KEY_UP)) { // pick only: Cross plays the pick
++        if (cdSel > 1) {
++            sfxPlay(SFX_CURSOR);
++            cdSel--;
++        }
++    } else if (getKey(KEY_DOWN)) {
++        if (cdSel < cdCount) {
++            sfxPlay(SFX_CURSOR);
++            cdSel++;
++        }
++    } else if (getKeyOn(KEY_LEFT)) {
++        // back to the start of this track, or to the one before when it has only just begun
++        int to = (cdState != CD_STOPPED && now - cdStart[t] > 3 * 75) ? t : (t > 1 ? t - 1 : 1);
++        sfxPlay(SFX_CURSOR);
++        cdSel = to;
++        if (cdState != CD_STOPPED)
++            cdPlayFrom(cdStart[to]);
++    } else if (getKeyOn(KEY_RIGHT)) {
++        if (t < cdCount) {
++            sfxPlay(SFX_CURSOR);
++            cdSel = t + 1;
++            if (cdState != CD_STOPPED)
++                cdPlayFrom(cdStart[cdSel]);
++        }
++    } else if (getKeyOn(KEY_L1) || getKeyOn(KEY_R1)) {
++        if (cdState == CD_PLAYING) {
++            u32 to = getKeyOn(KEY_R1) ? now + CD_SKIP : (now > cdStart[t] + CD_SKIP ? now - CD_SKIP : cdStart[t]);
++            if (to < cdStart[cdCount + 1] - CD_READ)
++                cdPlayFrom(to);
++        }
++    } else if (getKeyOn(KEY_TRIANGLE)) {
++        sfxPlay(SFX_CONFIRM);
++        cdCopy(cdSel);
++    }
++}
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index f18784b..0287056 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -534,7 +534,7 @@ static void discPollWorker(void)
+                 close(fd);
+             break;
+         case SCECdCDDA:
+-            snprintf(line, sizeof(line), "AUDIO CD");
++            snprintf(line, sizeof(line), "AUDIO CD: START LASER PLAYS IT");
+             break;
+         default:
+             snprintf(line, sizeof(line), "A DISC RIPPS2 CANNOT START");
+@@ -575,6 +575,8 @@ void ripps2DiscWatch(void)
+         discArrived = 0;
+         sfxPlay(SFX_DISC);
+     }
++    if (ripps2CdIsOpen())
++        return; // the CD player has the drive (it watches the tray itself)
+     if (discPollBusy)
+         return;
+     if (discRetry) { // the drive was still detecting: once more, a little later
+@@ -620,6 +622,10 @@ void ripps2RenderLaunch(void)
+ {
+     ripps2DrawBackground();
+     ripps2RenderCategoryBar();
++    if (ripps2CdIsOpen()) { // RIPPS2: an audio CD playing, in its panel
++        ripps2CdRender();
++        return;
++    }
+     renderStartPrompt("START LASER", 423);
+     if (discLine[0])
+         fntRenderString(gTheme->fonts[3], 320, 450, ALIGN_CENTER, 0, 0, discLine, COLOR_SOFT);
+@@ -629,6 +635,10 @@ void ripps2RenderLaunch(void)
+ 
+ void ripps2HandleInputLaunch(void)
+ {
++    if (ripps2CdIsOpen()) {
++        ripps2CdInput();
++        return;
++    }
+     if (getKeyOn(KEY_RIGHT)) {
+         ripps2StepCategory(1);
+     } else if (getKeyOn(KEY_LEFT)) {
+@@ -638,6 +648,11 @@ void ripps2HandleInputLaunch(void)
+         int wait;
+         for (wait = 0; discPollBusy && wait < 60; wait++) // the drive is the launch's alone
+             DelayThread(50 * 1000);
++        if (sceCdGetDiskType() == SCECdCDDA) { // RIPPS2: an audio CD plays, here on the page
++            ripps2CdStart();
++            readPads();
++            return;
++        }
+         // success never returns; a cancelled wait is not an error
+         int r = sysLaunchDisc(&guiRenderProbeFrame);
+         if (r < 0 && r != SYS_DISC_CANCELLED) {
+diff --git a/src/sound.c b/src/sound.c
+index e3f938d..75c2de4 100644
+--- a/src/sound.c
++++ b/src/sound.c
+@@ -9,6 +9,7 @@
+ #include <vorbis/vorbisfile.h>
+ #include <delaythread.h>
+ #include <time.h>
++#include <math.h>
+ #include <stdlib.h>
+ #include <strings.h>
+ #include <dirent.h>
+@@ -624,6 +625,120 @@ static u8 bgmIoThreadStack[BGM_THREAD_STACK_SIZE] __attribute__((aligned(16)));
+ 
+ static OggVorbis_File *vorbisFile;
+ 
++// RIPPS2: a raw PCM source in place of Ogg Vorbis (the CD player, MUSIC .wav tracks). One call hands
++// the stream 16-bit samples; 0 ends it (what is queued plays out, then the music stops), < 0 is an
++// error. bgmPcmExternal is the CD player's, set through bgmStartPcm; a .wav track's is the file reader.
++static int (*bgmPcmRead)(char *buf, int size) = NULL;
++static int (*bgmPcmExternal)(char *buf, int size) = NULL;
++static int bgmPcmRate = 44100, bgmPcmChannels = 2;
++static volatile int bgmPcmEnded = 0;
++static volatile unsigned int bgmPlayed = 0; // bytes handed to audsrv since the stream started
++static volatile float bgmLevels[3];         // low, mid, high of the chunk handed over last (the towers)
++static float bgmLp1 = 0.0f, bgmLp2 = 0.0f;
++
++// Three bands of what audsrv is being handed (so they keep time with what is heard, not with the
++// read-ahead): one-pole low passes near 150 Hz and 2 kHz split each sample into low, mid and high
++static void bgmMeasure(const short *s, int bytes)
++{
++    int i, frames = bytes / (2 * bgmPcmChannels);
++    float lo = 0.0f, mid = 0.0f, hi = 0.0f;
++    if (frames <= 0 || bgmPcmRate <= 0)
++        return;
++    float k1 = 6.2832f * 150.0f / (float)bgmPcmRate, k2 = 6.2832f * 2000.0f / (float)bgmPcmRate;
++    for (i = 0; i < frames; i++) {
++        float x = bgmPcmChannels == 2 ? (s[2 * i] + s[2 * i + 1]) * (0.5f / 32768.0f) : s[i] * (1.0f / 32768.0f);
++        bgmLp1 += k1 * (x - bgmLp1);
++        bgmLp2 += k2 * (x - bgmLp2);
++        float l = bgmLp1, m = bgmLp2 - bgmLp1, h = x - bgmLp2;
++        lo += l * l;
++        mid += m * m;
++        hi += h * h;
++    }
++    bgmLevels[0] = sqrtf(lo / frames);
++    bgmLevels[1] = sqrtf(mid / frames);
++    bgmLevels[2] = sqrtf(hi / frames);
++}
++
++void bgmGetLevels(float *out3)
++{
++    out3[0] = bgmLevels[0];
++    out3[1] = bgmLevels[1];
++    out3[2] = bgmLevels[2];
++}
++
++unsigned int bgmPlayedBytes(void)
++{
++    return bgmPlayed;
++}
++
++// A MUSIC .wav track (16-bit PCM, mono or stereo): read straight off the file, round and round
++static FILE *wavFile = NULL;
++static long wavData = 0, wavSize = 0, wavPos = 0;
++
++static int wavRead(char *buf, int size)
++{
++    int frame = 2 * bgmPcmChannels, n;
++    if (wavSize - wavPos < frame) { // the end: from the top again
++        if (fseek(wavFile, wavData, SEEK_SET) != 0)
++            return -1;
++        wavPos = 0;
++    }
++    if (size > wavSize - wavPos)
++        size = (int)(wavSize - wavPos);
++    size -= size % frame;
++    n = (int)fread(buf, 1, size, wavFile);
++    n -= n % frame;
++    if (n <= 0)
++        return -1;
++    wavPos += n;
++    return n;
++}
++
++static void wavClose(void)
++{
++    if (wavFile != NULL)
++        fclose(wavFile);
++    wavFile = NULL;
++}
++
++static int wavOpen(const char *path)
++{
++    unsigned char h[12], ck[8], fmt[16];
++    int haveFmt = 0;
++
++    wavClose();
++    if ((wavFile = fopen(path, "rb")) == NULL)
++        return 0;
++    if (fread(h, 1, 12, wavFile) != 12 || memcmp(h, "RIFF", 4) || memcmp(h + 8, "WAVE", 4))
++        goto bad;
++    while (fread(ck, 1, 8, wavFile) == 8) {
++        long len = ck[4] | (ck[5] << 8) | (ck[6] << 16) | ((long)ck[7] << 24);
++        if (!memcmp(ck, "fmt ", 4) && len >= 16) {
++            if (fread(fmt, 1, 16, wavFile) != 16)
++                goto bad;
++            int tag = fmt[0] | (fmt[1] << 8), bits = fmt[14] | (fmt[15] << 8);
++            bgmPcmChannels = fmt[2] | (fmt[3] << 8);
++            bgmPcmRate = fmt[4] | (fmt[5] << 8) | (fmt[6] << 16) | (fmt[7] << 24);
++            if (tag != 1 || bits != 16 || bgmPcmChannels < 1 || bgmPcmChannels > 2)
++                goto bad;
++            haveFmt = 1;
++            if (len > 16 && fseek(wavFile, len - 16 + (len & 1), SEEK_CUR) != 0)
++                goto bad;
++        } else if (!memcmp(ck, "data", 4) && haveFmt) {
++            wavData = ftell(wavFile);
++            wavSize = len;
++            wavPos = 0;
++            bgmPcmRead = wavRead;
++            return 1;
++        } else if (fseek(wavFile, len + (len & 1), SEEK_CUR) != 0)
++            goto bad;
++    }
++bad:
++    LOG("BGM: not a 16-bit PCM .wav: %s\n", path);
++    wavClose();
++    return 0;
++}
++
+ // PCM bytes the stream plays per millisecond, set by bgmStart from its format.
+ static int bgmBytesPerMs = 0;
+ // Most room bgmQueueChunk waits for before queueing: one chunk, or less when the audsrv ring is small.
+@@ -710,9 +825,13 @@ static void bgmThread(void *arg)
+         if (terminateFlag)
+             break;
+ 
++        if (bgmBufferedChunks <= 0 && !bgmIoThreadRunning)
++            break; // RIPPS2: a PCM source ran out and everything it gave has played
+         bgmAdjustBufferedChunks(-1);
++        bgmMeasure((const short *)bgmBuffer[rdPtr], BGM_RING_BUFFER_SIZE); // RIPPS2: the towers' levels
+         if (!bgmQueueChunk(bgmBuffer[rdPtr]))
+             break;
++        bgmPlayed += BGM_RING_BUFFER_SIZE;
+         rdPtr = (rdPtr + 1) % BGM_RING_BUFFER_COUNT;
+ 
+         SignalSema(inSema);
+@@ -745,13 +864,29 @@ static void bgmIoThread(void *arg)
+     do {
+         WaitSema(inSema);
+ 
+-        if (terminateFlag || !gEnableBGM)
++        if (terminateFlag || (!gEnableBGM && bgmPcmExternal == NULL)) // RIPPS2: a CD plays with the music off
+             break;
+ 
+         decodeTotal = BGM_RING_BUFFER_SIZE;
+         int bufferPtr = 0;
+         gBgmInRead = 1;
+         do {
++            if (bgmPcmRead != NULL) { // RIPPS2: raw PCM (a CD, a .wav)
++                int got = bgmPcmRead(bgmBuffer[wrPtr] + bufferPtr, decodeTotal);
++                if (got > 0) {
++                    bufferPtr += got;
++                    decodeTotal -= got;
++                } else if (got == 0) { // the source ended: the rest of this chunk is silence
++                    memset(bgmBuffer[wrPtr] + bufferPtr, 0, decodeTotal);
++                    decodeTotal = 0;
++                    bgmPcmEnded = 1;
++                } else {
++                    LOG("BGM: the PCM source failed.\n");
++                    terminateFlag = 1;
++                    break;
++                }
++                continue;
++            }
+             int ret = ov_read(vorbisFile, bgmBuffer[wrPtr] + bufferPtr, decodeTotal, 0, 2, 1, &bitStream);
+             if (ret > 0) {
+                 bufferPtr += ret;
+@@ -783,10 +918,11 @@ static void bgmIoThread(void *arg)
+         wrPtr = (wrPtr + 1) % BGM_RING_BUFFER_COUNT;
+         bgmAdjustBufferedChunks(1);
+         SignalSema(outSema);
+-    } while (!terminateFlag && gEnableBGM);
++    } while (!terminateFlag && (gEnableBGM || bgmPcmExternal != NULL) && !bgmPcmEnded);
+ 
+     bgmIoThreadRunning = 0;
+-    terminateFlag = 1;
++    if (!bgmPcmEnded) // RIPPS2: an ended PCM source lets what it queued play out first
++        terminateFlag = 1;
+     SignalSema(outSema);
+ }
+ 
+@@ -965,7 +1101,8 @@ int bgmMusicList(char (*names)[RIPPS2_MUSIC_NAME], int max)
+         return 0;
+     while ((e = readdir(d)) != NULL && n < max) {
+         int len = strlen(e->d_name);
+-        if (e->d_name[0] != '.' && len > 4 && len < RIPPS2_MUSIC_NAME && !strcasecmp(e->d_name + len - 4, ".ogg"))
++        if (e->d_name[0] != '.' && len > 4 && len < RIPPS2_MUSIC_NAME &&
++            (!strcasecmp(e->d_name + len - 4, ".ogg") || !strcasecmp(e->d_name + len - 4, ".wav")))
+             snprintf(names[n++], RIPPS2_MUSIC_NAME, "%s", e->d_name);
+     }
+     closedir(d);
+@@ -1005,6 +1142,11 @@ static int bgmMusicPath(char *out, int size)
+ 
+ static int bgmLoad(void)
+ {
++    if (bgmPcmExternal != NULL) { // RIPPS2: the CD player
++        bgmPcmRead = bgmPcmExternal;
++        return 0;
++    }
++
+     char bgmPath[256];
+     int themeID;
+ 
+@@ -1029,7 +1171,14 @@ static int bgmLoad(void)
+     }
+ 
+     if (thmPath == NULL && bgmMusicPath(bgmPath, sizeof(bgmPath))) { // RIPPS2: the MUSIC folder's pick
+-        if (bgmTryLoadPath(bgmPath, "RIPPS2 music"))
++        size_t n = strlen(bgmPath);
++        if (n > 4 && !strcasecmp(bgmPath + n - 4, ".wav")) {
++            if (wavOpen(bgmPath)) { // the vorbis state is not needed for it
++                free(vorbisFile);
++                vorbisFile = NULL;
++                return 0;
++            }
++        } else if (bgmTryLoadPath(bgmPath, "RIPPS2 music"))
+             return 0;
+     }
+ 
+@@ -1134,6 +1283,9 @@ static void bgmDeinit(void)
+         free(vorbisFile);
+         vorbisFile = NULL;
+     }
++    wavClose(); // RIPPS2
++    bgmPcmRead = NULL;
++    bgmPcmEnded = 0;
+ }
+ 
+ static void bgmShutdownDelayCallback(s32 alarm_id, u16 time, void *common)
+@@ -1157,19 +1309,32 @@ void bgmStart(void)
+             return;
+         }
+ 
+-        vorbis_info *vi = ov_info(vorbisFile, -1);
+-        ov_pcm_seek(vorbisFile, 0);
++        long rate;
++        int channels;
++        if (bgmPcmRead != NULL) { // RIPPS2: raw PCM says its own format
++            rate = bgmPcmRate;
++            channels = bgmPcmChannels;
++        } else {
++            vorbis_info *vi = ov_info(vorbisFile, -1);
++            ov_pcm_seek(vorbisFile, 0);
++            rate = vi->rate;
++            channels = vi->channels;
++            bgmPcmChannels = channels; // the towers' measure reads it
++            bgmPcmRate = (int)rate;
++        }
++        bgmPlayed = 0;
++        bgmLp1 = bgmLp2 = 0.0f;
+ 
+-        audsrvFmt.channels = vi->channels;
+-        audsrvFmt.freq = vi->rate;
++        audsrvFmt.channels = channels;
++        audsrvFmt.freq = rate;
+         audsrvFmt.bits = 16;
+-        bgmBytesPerMs = (int)((vi->rate * vi->channels * 2) / 1000);
++        bgmBytesPerMs = (int)((rate * channels * 2) / 1000);
+ 
+         if (audsrv_set_format(&audsrvFmt) != AUDSRV_ERR_NOERROR) {
+             // No audsrv upsampler for this rate (16 kHz, say): its ring would never drain. The blocking
+             // wait this code used to have hung on that first chunk, holding audsrv, and the menu froze on
+             // its first sound effect. Play no music instead.
+-            LOG("BGM: audsrv cannot play %ld Hz, %d ch -- no music\n", vi->rate, vi->channels);
++            LOG("BGM: audsrv cannot play %ld Hz, %d ch -- no music\n", rate, channels);
+             bgmDeinit();
+             return;
+         }
+@@ -1184,8 +1349,8 @@ void bgmStart(void)
+             bgmRoomTarget = room;
+         if (bgmRoomTarget < BGM_ROOM_TARGET_MIN)
+             bgmRoomTarget = BGM_RING_BUFFER_SIZE;
+-        LOG("BGM: %ld Hz, %d ch, audsrv ring %d bytes, queue up to %d at a time\n", vi->rate, vi->channels, ring, bgmRoomTarget);
+-        audsrv_set_volume(gBGMVolume);
++        LOG("BGM: %ld Hz, %d ch, audsrv ring %d bytes, queue up to %d at a time\n", rate, channels, ring, bgmRoomTarget);
++        audsrv_set_volume(bgmPcmExternal != NULL ? MAX_VOLUME : gBGMVolume); // RIPPS2: a CD plays at full
+ 
+         bgmIsPlaying = 1;
+ 
+@@ -1204,6 +1369,33 @@ void bgmStart(void)
+     }
+ }
+ 
++// RIPPS2: the CD player's stream. Whatever music was playing stops; bgmStopPcm ends it again, and the
++// menu music starts over once the player is closed (bgmBootTick's job is done by then, so the caller
++// restarts it).
++int bgmStartPcm(int (*read)(char *buf, int size), int rate, int channels)
++{
++    if (!audio_initialized)
++        return -1;
++    if (isBgmPlaying() || bgmPcmExternal != NULL) // a CD stream that ran out still has its threads to free
++        bgmStop();
++    bgmPcmExternal = read;
++    bgmPcmRate = rate;
++    bgmPcmChannels = channels;
++    bgmStart();
++    if (!isBgmPlaying()) {
++        bgmPcmExternal = NULL;
++        return -1;
++    }
++    return 0;
++}
++
++void bgmStopPcm(void)
++{
++    if (isBgmPlaying() || bgmPcmExternal != NULL)
++        bgmStop();
++    bgmPcmExternal = NULL;
++}
++
+ void bgmQuiesce(void)
+ {
+     if (!audio_initialized)
