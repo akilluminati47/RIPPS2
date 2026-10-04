@@ -75,7 +75,7 @@ index 7d7e27d..27e6b2c 100644
      {'T', "PS2BBL by El Isra (israpps)"},
      {'S', "the PlayStation 2 Basic BootLoader: BOOT LOCK starts RIPPS2 with it"},
 diff --git a/src/ripps2bg.c b/src/ripps2bg.c
-index 356e8db..7284dc1 100644
+index 356e8db..2c6e7ba 100644
 --- a/src/ripps2bg.c
 +++ b/src/ripps2bg.c
 @@ -415,6 +415,40 @@ static void drawBeam(float x, float z, float y0, float w, float b)
@@ -129,7 +129,18 @@ index 356e8db..7284dc1 100644
  
      drawSky(RGBA(0x01, 0x02, 0x09 + (int)(0x10 * glowAll), 0x80),
              RGBA(0x0B + (int)(0x12 * glowAll), 0x19 + (int)(0x24 * glowAll), 0x4C + (int)(0x44 * glowAll), 0x80),
-@@ -475,7 +512,14 @@ void ripps2DrawPillars(void)
+@@ -441,6 +478,10 @@ void ripps2DrawPillars(void)
+     float radius = lerpf(12.0f, 32.0f, intro) - 12.0f * push;
+     float camY = lerpf(1.6f, 8.0f, intro) + 4.0f * push;
+     float lookY = lerpf(9.0f, 11.8f, intro) + 4.2f * push;
++    if (musicMix > 0.0f) { // the CD player: the camera rises and looks down, so the field sits above its panel
++        camY += 3.0f * musicMix;
++        lookY -= 6.0f * musicMix;
++    }
+     v3 eye = {cosf(a) * radius, camY, sinf(a) * radius};
+     if (L >= 0.0f) {
+         float kick = expf(-L * 3.5f);
+@@ -475,7 +516,14 @@ void ripps2DrawPillars(void)
              heat = fminf(2.4f, heat + glowAll * 0.8f);
          }
          tw->heat = heat;
@@ -145,7 +156,7 @@ index 356e8db..7284dc1 100644
          v3 c = {tw->x, tw->h * 0.5f, tw->z};
          tw->depth = vdot(vsub(c, camEye), camF);
      }
-@@ -520,6 +564,8 @@ void ripps2DrawPillars(void)
+@@ -520,6 +568,8 @@ void ripps2DrawPillars(void)
          }
          if (beamIn > 0.0f)
              drawBeam(tw->x, tw->z, h, tw->w * 0.34f, fminf(1.0f, tw->heat * 0.6f) * beamIn);
@@ -156,10 +167,10 @@ index 356e8db..7284dc1 100644
      drawMotes(t, 1);
 diff --git a/src/ripps2cd.c b/src/ripps2cd.c
 new file mode 100644
-index 0000000..5f0d856
+index 0000000..80c17e6
 --- /dev/null
 +++ b/src/ripps2cd.c
-@@ -0,0 +1,594 @@
+@@ -0,0 +1,624 @@
 +/*
 +  Copyright 2026, RIPPS2 contributors
 +  Licenced under Academic Free License version 3.0
@@ -188,6 +199,7 @@ index 0000000..5f0d856
 +#include <unistd.h>
 +#include <sys/stat.h>
 +#include <time.h>
++#include <math.h>
 +#include <kernel.h>
 +#include <libcdvd.h>
 +
@@ -330,6 +342,33 @@ index 0000000..5f0d856
 +    return cdStart[cdCount + 1];
 +}
 +
++#ifdef RIPPS2_CD_TEST
++// PCSX2 hands back silence for a disc image's CDDA reads, so a test build plays the test CD's own sound
++// in its place (scratchpad testcd: a kick and bass, then hi-hats, then a swelling chord), letting the
++// stream, the panel and the towers be seen and heard in the emulator
++static void cdTestSound(u32 lsn, u32 n)
++{
++    static unsigned int noise = 7;
++    short *s = (short *)cdBuf;
++    int track = cdTrackAt(lsn);
++    u32 i, frames = n * (CD_SECTOR / 4), first = (lsn - cdStart[track]) * (CD_SECTOR / 4);
++
++    for (i = 0; i < frames; i++) {
++        float t = (float)(first + i) / 44100.0f, x;
++        if (track == 1) {
++            float b = fmodf(t, 0.5f);
++            x = 0.8f * sinf(6.2832f * (50.0f + 120.0f * expf(-b * 30.0f)) * b) * expf(-b * 9.0f) + 0.35f * sinf(6.2832f * 55.0f * t);
++        } else if (track == 2) {
++            noise = noise * 1664525u + 1013904223u;
++            x = 0.35f * ((float)(noise >> 9) / 4194304.0f - 1.0f) * expf(-fmodf(t + 0.25f, 0.5f) * 40.0f);
++        } else
++            x = 0.15f * (sinf(6.2832f * 261.6f * t) + sinf(6.2832f * 329.6f * t) + sinf(6.2832f * 392.0f * t) + sinf(6.2832f * 523.3f * t)) *
++                (0.5f + 0.5f * sinf(6.2832f * 0.25f * t));
++        s[2 * i] = s[2 * i + 1] = (short)(x * 30000.0f);
++    }
++}
++#endif
++
 +static int cdStreamRead(char *buf, int size)
 +{
 +    sceCdRMode m;
@@ -347,8 +386,7 @@ index 0000000..5f0d856
 +            n = cdEnd - cdLsn;
 +            if (n > CD_READ)
 +                n = CD_READ;
-+            SifWriteBackDCache(cdBuf, n * CD_SECTOR); // nothing stale in the cache over what the read brings
-+            if (!sceCdReadCDDA(cdLsn, n, cdBuf, &m)) {
++            if (!sceCdReadCDDA(cdLsn, n, cdBuf, &m)) { // libcdvd writes the cache back over cdBuf itself
 +                LOG("RIPPS2 CD: read of %u sectors at %u refused\n", (unsigned)n, (unsigned)cdLsn);
 +                return done > 0 ? done : -1;
 +            }
@@ -359,6 +397,10 @@ index 0000000..5f0d856
 +            if (err != SCECdErNO || cdLsn == cdFrom)
 +                LOG("RIPPS2 CD: %u sectors at %u, error %d, first samples %d %d\n", (unsigned)n, (unsigned)cdLsn, err,
 +                    ((short *)cdBuf)[0], ((short *)cdBuf)[1000]);
++#ifdef RIPPS2_CD_TEST
++            if (((short *)cdBuf)[1000] == 0 && ((short *)cdBuf)[3001] == 0)
++                cdTestSound(cdLsn, n);
++#endif
 +            cdLsn += n;
 +            cdBufPos = 0;
 +            cdBufLen = n * CD_SECTOR;
@@ -550,7 +592,6 @@ index 0000000..5f0d856
 +    end = cdStart[track + 1];
 +    for (lsn = cdStart[track]; lsn < end && ok;) {
 +        u32 n = end - lsn > CD_READ ? CD_READ : end - lsn;
-+        SifWriteBackDCache(cdBuf, n * CD_SECTOR);
 +        if (!sceCdReadCDDA(lsn, n, cdBuf, &m)) {
 +            ok = 0;
 +            break;
