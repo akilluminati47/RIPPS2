@@ -75,7 +75,7 @@ index 7d7e27d..27e6b2c 100644
      {'T', "PS2BBL by El Isra (israpps)"},
      {'S', "the PlayStation 2 Basic BootLoader: BOOT LOCK starts RIPPS2 with it"},
 diff --git a/src/ripps2bg.c b/src/ripps2bg.c
-index 356e8db..995b4f4 100644
+index 356e8db..7284dc1 100644
 --- a/src/ripps2bg.c
 +++ b/src/ripps2bg.c
 @@ -415,6 +415,40 @@ static void drawBeam(float x, float z, float y0, float w, float b)
@@ -139,7 +139,7 @@ index 356e8db..995b4f4 100644
 +            float wl = clamp01(1.0f - tw->d * 2.2f), wh = clamp01((tw->d - 0.45f) * 2.0f), wm = clamp01(1.0f - wl - wh);
 +            float e = (wl * musicLevel[0] + wm * musicLevel[1] + wh * musicLevel[2]) * (0.7f + 0.3f * tw->base);
 +            tw->heat = fmaxf(tw->heat, e * 1.9f * musicMix);
-+            h = lerpf(h, (tw->base * MAX_HEIGHT * 0.32f + e * 8.5f) * rise, musicMix); // settled, then lifted by the music
++            h = lerpf(h, (tw->base * MAX_HEIGHT * 0.5f + e * 10.0f) * rise, musicMix); // settled, then lifted by the music
 +        }
 +        tw->h = fmaxf(0.05f, h);
          v3 c = {tw->x, tw->h * 0.5f, tw->z};
@@ -156,10 +156,10 @@ index 356e8db..995b4f4 100644
      drawMotes(t, 1);
 diff --git a/src/ripps2cd.c b/src/ripps2cd.c
 new file mode 100644
-index 0000000..6c628ee
+index 0000000..5f0d856
 --- /dev/null
 +++ b/src/ripps2cd.c
-@@ -0,0 +1,584 @@
+@@ -0,0 +1,594 @@
 +/*
 +  Copyright 2026, RIPPS2 contributors
 +  Licenced under Academic Free License version 3.0
@@ -200,18 +200,20 @@ index 0000000..6c628ee
 +#include "include/pad.h"
 +#include "include/sound.h"
 +#include "include/ripps2.h"
++#include "include/ioman.h" // LOG
 +
 +#define CD_TRACKS_MAX 99
 +#define CD_SECTOR     2352
 +#define CD_READ       16  // sectors a read: 0.21 s of sound
 +#define CD_PREGAP     150 // the 2 s every MSF in the TOC counts from
 +#define CD_SKIP       750 // 10 s of sectors
-+#define CD_ROWS       5
++#define CD_ROWS       4
++#define CD_ROW_H      19
 +
-+#define CD_X 60 // the panel
-+#define CD_Y 262
++#define CD_X 60 // the panel: low on the page, so the towers above it have the screen
++#define CD_Y 316
 +#define CD_W 520
-+#define CD_H 156
++#define CD_H 118
 +
 +#define CD_LIT  GS_SETREG_RGBA(0x80, 0x80, 0x80, 0x80)
 +#define CD_SOFT GS_SETREG_RGBA(0x67, 0x6C, 0x7A, 0x80)
@@ -346,11 +348,17 @@ index 0000000..6c628ee
 +            if (n > CD_READ)
 +                n = CD_READ;
 +            SifWriteBackDCache(cdBuf, n * CD_SECTOR); // nothing stale in the cache over what the read brings
-+            if (!sceCdReadCDDA(cdLsn, n, cdBuf, &m))
++            if (!sceCdReadCDDA(cdLsn, n, cdBuf, &m)) {
++                LOG("RIPPS2 CD: read of %u sectors at %u refused\n", (unsigned)n, (unsigned)cdLsn);
 +                return done > 0 ? done : -1;
++            }
 +            sceCdSync(0);
-+            if (sceCdGetError() != SCECdErNO)
-+                memset(cdBuf, 0, n * CD_SECTOR); // a scratch: silence over it, and on
++            // the drive's error code can outlast the read that set it, so a reported error keeps the
++            // data (the drive's retries already had their go at a scratch) and only goes in the log
++            int err = sceCdGetError();
++            if (err != SCECdErNO || cdLsn == cdFrom)
++                LOG("RIPPS2 CD: %u sectors at %u, error %d, first samples %d %d\n", (unsigned)n, (unsigned)cdLsn, err,
++                    ((short *)cdBuf)[0], ((short *)cdBuf)[1000]);
 +            cdLsn += n;
 +            cdBufPos = 0;
 +            cdBufLen = n * CD_SECTOR;
@@ -480,11 +488,11 @@ index 0000000..6c628ee
 +    ripps2DrawBackground();
 +    ripps2RenderCategoryBar();
 +    ripps2DrawPanelGlass(CD_X, CD_Y, CD_W, CD_H, 0);
-+    fntRenderString(gTheme->fonts[4], 320, CD_Y + 44, ALIGN_CENTER, 0, 0, what, CD_LIT);
-+    rmDrawRect(170, CD_Y + 70, 300, 6, CD_PRIM(0x03, 0x08, 0x22, 0x80));
-+    rmDrawRect(170, CD_Y + 70, (int)(300 * (p > 1.0f ? 1.0f : p)), 6, CD_PRIM(0x4A, 0x8C, 0xF0, 0x80));
++    fntRenderString(gTheme->fonts[4], 320, CD_Y + 36, ALIGN_CENTER, 0, 0, what, CD_LIT);
++    rmDrawRect(170, CD_Y + 60, 300, 6, CD_PRIM(0x03, 0x08, 0x22, 0x80));
++    rmDrawRect(170, CD_Y + 60, (int)(300 * (p > 1.0f ? 1.0f : p)), 6, CD_PRIM(0x4A, 0x8C, 0xF0, 0x80));
 +    snprintf(buf, sizeof(buf), "%d%%", (int)(p * 100.0f));
-+    fntRenderString(gTheme->fonts[5], 320, CD_Y + 96, ALIGN_CENTER, 0, 0, buf, CD_SOFT);
++    fntRenderString(gTheme->fonts[5], 320, CD_Y + 84, ALIGN_CENTER, 0, 0, buf, CD_SOFT);
 +    GSTEXTURE *t = thmGetTexture(cancel);
 +    if (t != NULL)
 +        rmDrawPixmap(t, 274, 438, ALIGN_NONE, 20, 20, SCALING_RATIO, CD_LIT, 0);
@@ -548,8 +556,6 @@ index 0000000..6c628ee
 +            break;
 +        }
 +        sceCdSync(0);
-+        if (sceCdGetError() != SCECdErNO)
-+            memset(cdBuf, 0, n * CD_SECTOR);
 +        if (fwrite(cdBuf, 1, n * CD_SECTOR, f) != n * CD_SECTOR) {
 +            ok = 0;
 +            break;
@@ -603,8 +609,12 @@ index 0000000..6c628ee
 +        gap = (600 - w) / 5;
 +    x = (640 - (w + gap * 5)) / 2;
 +    for (i = 0; i < 6; i++) {
-+        GSTEXTURE *t = thmGetTexture(icons[i]);
-+        if (t != NULL)
++        GSTEXTURE *t = icons[i] == RIGHT_ICON ? NULL : thmGetTexture(icons[i]);
++        if (icons[i] == RIGHT_ICON) { // Left / Right: two arrowheads, the theme having no image for them
++            u64 c = CD_PRIM(0x80, 0x80, 0x80, 0x80);
++            rmDrawQuadGouraud(x + 1, 448, c, x + 8, 441, c, x + 1, 448, c, x + 8, 455, c);
++            rmDrawQuadGouraud(x + 19, 448, c, x + 12, 441, c, x + 19, 448, c, x + 12, 455, c);
++        } else if (t != NULL)
 +            rmDrawPixmap(t, x, 438, ALIGN_NONE, 20, 20, SCALING_RATIO, CD_LIT, 0);
 +        x += 24;
 +        fntRenderString(gTheme->fonts[4], x, 448, ALIGN_VCENTER, 0, 0, texts[i], CD_SOFT);
@@ -655,9 +665,9 @@ index 0000000..6c628ee
 +    if (cdSel >= cdTop + CD_ROWS)
 +        cdTop = cdSel - CD_ROWS + 1;
 +    for (i = 0; i < CD_ROWS && cdTop + i <= cdCount; i++) {
-+        int t = cdTop + i, y = CD_Y + 50 + i * 21;
++        int t = cdTop + i, y = CD_Y + 48 + i * CD_ROW_H;
 +        if (t == cdSel)
-+            rmDrawRect(CD_X + 12, y - 10, 236, 20, CD_PRIM(0x2A, 0x4C, 0xA0, 0x40));
++            rmDrawRect(CD_X + 12, y - 9, 236, 18, CD_PRIM(0x2A, 0x4C, 0xA0, 0x40));
 +        cdTime(cdStart[t + 1] - cdStart[t], len, sizeof(len));
 +        snprintf(buf, sizeof(buf), "%02d", t);
 +        u64 col = (cdState != CD_STOPPED && t == playing) ? CD_BLUE : (t == cdSel ? CD_LIT : CD_SOFT);
@@ -670,19 +680,19 @@ index 0000000..6c628ee
 +    int rx = CD_X + 276, track = cdState == CD_STOPPED ? cdSel : playing;
 +    u32 at = now > cdStart[track] ? now - cdStart[track] : 0, length = cdStart[track + 1] - cdStart[track];
 +    snprintf(buf, sizeof(buf), "TRACK %02d", track);
-+    fntRenderString(gTheme->fonts[11], rx, CD_Y + 58, ALIGN_VCENTER, 0, 0, buf, CD_LIT);
++    fntRenderString(gTheme->fonts[11], rx, CD_Y + 52, ALIGN_VCENTER, 0, 0, buf, CD_LIT);
 +    cdTime(at, buf, sizeof(buf));
 +    cdTime(length, len, sizeof(len));
 +    strcat(buf, " / ");
 +    strcat(buf, len);
-+    fntRenderString(uiFont, rx, CD_Y + 86, ALIGN_VCENTER, 0, 0, buf, CD_SOFT);
-+    rmDrawRect(rx, CD_Y + 102, 216, 4, CD_PRIM(0x03, 0x08, 0x22, 0x80));
++    fntRenderString(uiFont, rx, CD_Y + 76, ALIGN_VCENTER, 0, 0, buf, CD_SOFT);
++    rmDrawRect(rx, CD_Y + 90, 216, 4, CD_PRIM(0x03, 0x08, 0x22, 0x80));
 +    if (length > 0)
-+        rmDrawRect(rx, CD_Y + 102, (int)(216.0f * (at > length ? 1.0f : (float)at / (float)length)), 4, CD_PRIM(0x4A, 0x8C, 0xF0, 0x80));
++        rmDrawRect(rx, CD_Y + 90, (int)(216.0f * (at > length ? 1.0f : (float)at / (float)length)), 4, CD_PRIM(0x4A, 0x8C, 0xF0, 0x80));
 +    const char *state = cdState == CD_PLAYING ? "PLAYING" : cdState == CD_PAUSED ? "PAUSED" : "STOPPED";
 +    if (cdNoteAt != 0 && (float)(clock() - cdNoteAt) / CLOCKS_PER_SEC < 3.0f)
 +        state = cdNote;
-+    fntRenderString(small, rx, CD_Y + 124, ALIGN_VCENTER, 0, 0, state, cdState == CD_PLAYING ? CD_BLUE : CD_SOFT);
++    fntRenderString(small, rx, CD_Y + 106, ALIGN_VCENTER, 0, 0, state, cdState == CD_PLAYING ? CD_BLUE : CD_SOFT);
 +
 +    cdHints();
 +}
