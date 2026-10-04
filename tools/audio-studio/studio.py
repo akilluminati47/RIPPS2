@@ -270,7 +270,7 @@ class Studio:
         self.entries, self.sel, self.top = [], 0, 0
         self.list_dir()
         self.cache = {}           # path -> stereo float (original)
-        self.ps2 = {}             # key -> adp bytes (the PS2 version)
+        self.ps2 = {}             # key -> adp bytes (the PS2 version, small)
         self.popup = None
         self.toast = ('Browse to a sound or a song. Enter converts it for RIPPS2.', time.time())
         self.jobs = queue.Queue()
@@ -377,6 +377,8 @@ class Studio:
 
         def done(res):
             self.cache[key] = res
+            while len(self.cache) > 4:            # the oldest goes first
+                self.cache.pop(next(iter(self.cache)))
             then(res)
         self.submit(label, fn, done)
 
@@ -793,7 +795,7 @@ class Studio:
         tx = info.x + 16
         self.text('THE AUDIO FOLDER', 20, SOFT, (tx, info.y + 12))
         col = WARN if sfx > SFX_BUDGET else WHITE
-        self.text('Sounds: %s of %s sound RAM' % (human(sfx), human(SFX_BUDGET)), 22, col, (tx, info.y + 44))
+        self.text('Sounds: %s of %s sound RAM' % (human(sfx), human(SFX_BUDGET)), 20, col, (tx, info.y + 46))
         pygame.draw.rect(self.screen, FAINT, (tx, info.y + 76, info.w - 32, 5))
         pygame.draw.rect(self.screen, WARN if sfx > SFX_BUDGET else CYAN,
                          (tx, info.y + 76, int((info.w - 32) * min(1, sfx / SFX_BUDGET)), 5))
@@ -801,6 +803,7 @@ class Studio:
         lines = ['PC: output/AUDIO, beside this app.',
                  'PS2: the AUDIO folder goes beside RIPPS2.ELF.',
                  'Copy it to a USB stick, then into place with RIPPS2\'s Memory Files.',
+                 ('All %d sounds made.' % len(EVENTS)) if not missing else
                  '%d of %d sounds made. The rest play RIPPS2\'s own.' % (len(EVENTS) - len(missing), len(EVENTS))]
         self.para(lines, tx, info.y + 98, info.w - 32, gap=10)
         self.hints([('square', 'PLAY'), ('triangle', 'DELETE'), ('start', 'OPEN FOLDER'), ('l1', 'TABS')])
