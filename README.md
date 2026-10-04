@@ -1,23 +1,27 @@
 # RIPPS2
 
-> ### Get RIPPS2 (build 55, pre-alpha)
-> 1. **[Download RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/download/v0.0.55-prealpha/RIPPS2.elf)** (one file, about 1.6 MB).
+> ### Get RIPPS2 (build 66, alpha)
+> 1. **[Download RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/download/v0.0.66-alpha/RIPPS2.elf)** (one file, about 1.7 MB).
 > 2. Copy it to a USB stick or memory card, and launch it from FreeMcBoot, PS2BBL, wLaunchELF or whatever you already use to start homebrew. In PCSX2: **System > Start File** and pick `RIPPS2.elf`.
 > 3. Tell us how it went: [open an issue](https://github.com/akilluminati47/RIPPS2/issues) or find **#RIPPS2** on the developers' Discord, [discord.gg/ggkCDWqhE](https://discord.gg/ggkCDWqhE) (invite good for October 2026).
 >
-> [Watch the build 55 reel](media/ripps2-b55-reel.mp4) | [What's new in build 55](https://github.com/akilluminati47/RIPPS2/releases/tag/v0.0.55-prealpha) | [Every release](https://github.com/akilluminati47/RIPPS2/releases)
+> [What's new in build 66](https://github.com/akilluminati47/RIPPS2/releases/tag/v0.0.66-alpha) | [Changelog](CHANGELOG.md) | [Watch the build 55 reel](media/ripps2-b55-reel.mp4) | [Every release](https://github.com/akilluminati47/RIPPS2/releases)
 
 [![RIPPS2 build 55 reel](media/ripps2-b55-poster.png)](media/ripps2-b55-reel.mp4)
 
 RIPPS2 is a PS2 front end in a single `.elf`: a teardown and rebuild of [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader) (the Open PS2 Loader fork) with its own look, launchers, file browser and save tools. Glass towers stand behind your games and orbit formations behind your files, all drawn live by the PS2.
 
-- **LAUNCH DISC** boots PS2, PS1 and DVD video discs, and says which game is in the drive before you start it.
+- **LAUNCH DISC** boots PS2, PS1 and DVD video discs, says which game is in the drive before you start it, and plays audio CDs with the towers turned into a spectrum analyser.
 - **STORAGE** is your game library: every drive in one list, with art, an info page whose art crossfades with the screenshots, and per-game settings.
 - **MEMORY FILES** is a built-in file browser: copy, move and delete across memory cards, USB and HDD; open OPL's VMC card images like folders; export and import PSU saves; edit text files; Start opens its settings.
 
-It is **pre-alpha**. It runs in PCSX2, and it is being tested now by akilluminati47, ripto, nuno6573, zackcage6 and FifthFox. Keep your usual loader close by, and tell us what breaks: feedback is what makes RIPPS2.
+It is **alpha**. It runs in PCSX2, and it is being tested now by akilluminati47, ripto, nuno6573, zackcage6, FifthFox and Mr.sus.60. Keep your usual loader close by, and tell us what breaks: feedback is what makes RIPPS2.
 
 Short clips of build 55: [info page](media/ripps2-b55-info.mp4), [orbs](media/ripps2-b55-orbs.mp4), [card images and PSU](media/ripps2-b55-cards.mp4), [browser settings](media/ripps2-b55-grid.mp4), [launch disc](media/ripps2-b55-disc.mp4). Build 22's [demo reel](media/ripps2-b22-demo.mp4) is still there too.
+
+## Your own sounds and music
+
+Put an `AUDIO` folder beside `RIPPS2.elf`. It takes sound effects as `.adp` files named for their events (RiptOPL's `boot`, `cancel`, `confirm`, `cursor`, `message`, `transition`, `bd_connect`, `bd_disconnect`, and RIPPS2's `page_in`, `page_out`, `error`, `save`, `launch`, `disc`, `random`), and music as `bgm_01 Title.ogg`, `bgm_02 Title.ogg` and so on (Ogg Vorbis without tags, or 16-bit WAV). Settings > Audio Settings > Music picks the track. `elf/theme/tools/make_adp.py` turns any audio file into an `.adp`, and `make_sound_pack.py` builds a whole folder from sounds you have. RIPPS2 ships no one else's sounds or music.
 
 ## How it is built
 
@@ -49,10 +53,11 @@ Add `?t=12` to skip the pillars intro, or `orbs.html?f=3` to open a specific for
 
 ## Credits
 
-RIPPS2 is designed and directed by akilluminati47 and built with Claude (Anthropic). Testers: akilluminati47, ripto, nuno6573, zackcage6, FifthFox.
+RIPPS2 is designed and directed by akilluminati47 and built with Claude (Anthropic). Testers: akilluminati47, ripto, nuno6573, zackcage6, FifthFox, Mr.sus.60.
 
 - [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader) by NathanNeurotic and the [Open PS2 Loader](https://github.com/ps2homebrew/Open-PS2-Loader) team (AFL-3.0), which RIPPS2 is built on. Their full credits are on RIPPS2's About page.
 - [ESR](https://gitlab.com/ffgriever/esr/) by ffgriever: Launch Disc starts your own copy for ESR discs.
+- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) by El Isra (israpps) and [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) by saildot4k: BOOT LOCK edits their config so the console starts RIPPS2. Neither is bundled.
 - [wLaunchELF](https://github.com/ps2homebrew/wLaunchELF) by the ps2homebrew team, and wLaunchELF R3Z by NathanNeurotic: the behaviour references for the Memory Files browser and its settings grid.
 - [Apollo Save Tool](https://github.com/bucanero/apollo-ps2) by bucanero: the reference for the save tools (PSU, card images). RIPPS2's own code, written from the formats.
 - [ps2sdk](https://github.com/ps2dev/ps2sdk) by the ps2dev team: the memory card file system (mcman) and the USB keyboard driver.

@@ -18,6 +18,19 @@ index 514cbf2..1d89f3f 100644
  - label: HINT_RIPPS2_MUSIC
 -  string: "The tracks in the MUSIC folder beside RIPPS2 (Ogg Vorbis, 44.1 or 48 kHz), in file name order: a number in front sets it (01 Slideshow.ogg, 02 Details.ogg). The first plays unless you pick another. A disk theme's own music, or a Default Theme Music path, plays instead when set."
 +  string: "The music in the AUDIO folder beside RIPPS2: bgm files (Ogg Vorbis without tags, or 16-bit WAV, 44.1 or 48 kHz) in name order, a number setting it (bgm_01 Slideshow.ogg, bgm_02 Details.ogg). The first plays unless you pick another. A disk theme's own music, or a Default Theme Music path, plays instead when set."
+diff --git a/src/gui.c b/src/gui.c
+index ee05828..4b9e068 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -352,7 +352,7 @@ void guiShowAbout()
+     char OPLVersion[64];
+     char OPLBuildDetails[40];
+ 
+-    snprintf(OPLVersion, sizeof(OPLVersion), "Pre-alpha, on RiptOPL %s", OPL_VERSION);
++    snprintf(OPLVersion, sizeof(OPLVersion), "On RiptOPL %s", OPL_VERSION); // RIPPS2: the stage is on the build line
+     char *dirty = strstr(OPLVersion, "-dirty"); // RIPPS2 builds from a patched tree; not worth showing
+     if (dirty != NULL)
+         memmove(dirty, dirty + 6, strlen(dirty + 6) + 1);
 diff --git a/src/ripps2about.c b/src/ripps2about.c
 index 27e6b2c..07bfcf2 100644
 --- a/src/ripps2about.c
