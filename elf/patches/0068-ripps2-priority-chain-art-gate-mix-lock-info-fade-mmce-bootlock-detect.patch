@@ -105,10 +105,18 @@ index 8ccad17..0f62244 100644
          return;
      }
 diff --git a/src/gui.c b/src/gui.c
-index 99d45a3..09d3492 100644
+index 99d45a3..bcd7021 100644
 --- a/src/gui.c
 +++ b/src/gui.c
-@@ -345,6 +345,15 @@ void guiEndFrame(void)
+@@ -4,6 +4,7 @@
+  Review OpenUsbLd README & LICENSE files for further details.
+  */
+ 
++#include <delaythread.h> // RIPPS2: DelayThread (the frame-end yield)
+ #include "include/opl.h"
+ #include "include/gui.h"
+ #include "include/diag.h" // gLastDeferredTimedOut -- a bounded wait that expired means the handler never ran
+@@ -345,6 +346,15 @@ void guiEndFrame(void)
      // Rotate priority 31 ready queue so peer threads (such as BGM I/O decode) get timeslices
      // even during continuous frames or animations.
      RotateThreadReadyQueue(31);
@@ -124,7 +132,7 @@ index 99d45a3..09d3492 100644
  }
  
  void guiShowAbout()
-@@ -4773,9 +4782,20 @@ void guiMsgBoxSound(int sfx)
+@@ -4773,9 +4783,20 @@ void guiMsgBoxSound(int sfx)
      msgBoxSound = sfx;
  }
  
@@ -145,7 +153,7 @@ index 99d45a3..09d3492 100644
      // Wrapped once up front, not per frame: the result depends only on `text` and the screen width.
      char wrapped[512];
  
-@@ -4802,6 +4822,8 @@ int guiMsgBox(const char *text, int addAccept, struct UIItem *ui)
+@@ -4802,6 +4823,8 @@ int guiMsgBox(const char *text, int addAccept, struct UIItem *ui)
              terminate = 1;
          else if (getKeyOn(gSelectButton))
              terminate = 2;
@@ -154,7 +162,7 @@ index 99d45a3..09d3492 100644
  
          if (ui)
              diaRenderUI(ui, screenHandler->inMenu, NULL, 0);
-@@ -4847,6 +4869,12 @@ int guiMsgBox(const char *text, int addAccept, struct UIItem *ui)
+@@ -4847,6 +4870,12 @@ int guiMsgBox(const char *text, int addAccept, struct UIItem *ui)
              int first = addAccept ? 0 : 1;
              int hx = guiAlignSubMenuHints(2 - first, hints + first, icons + first, RIPPS2_UI_FONT, 12, 2);
              int hy = gTheme->usedHeight - 32;
@@ -167,7 +175,7 @@ index 99d45a3..09d3492 100644
              if (addAccept)
                  hx = guiDrawIconAndText(icons[0], hints[0], RIPPS2_UI_FONT, hx, hy, gTheme->textColor) + 12;
              guiDrawIconAndText(icons[1], hints[1], RIPPS2_UI_FONT, hx, hy, gTheme->textColor);
-@@ -4858,7 +4886,7 @@ int guiMsgBox(const char *text, int addAccept, struct UIItem *ui)
+@@ -4858,7 +4887,7 @@ int guiMsgBox(const char *text, int addAccept, struct UIItem *ui)
      if (terminate == 1) {
          sfxPlay(SFX_CANCEL);
      }
@@ -176,7 +184,7 @@ index 99d45a3..09d3492 100644
          sfxPlay(SFX_CONFIRM);
      }
  
-@@ -4969,6 +4997,7 @@ void guiHandleDeferedIO(int *ptr, const char *message, int type, void *data, int
+@@ -4969,6 +4998,7 @@ void guiHandleDeferedIO(int *ptr, const char *message, int type, void *data, int
          *ptr = 0;
          return;
      }
@@ -184,7 +192,7 @@ index 99d45a3..09d3492 100644
  
      // Bound the wait when the caller asks (timeoutMs > 0). A deferred IO that never completes -- a
      // failing HDD/card that wedges the single IOP fileXio channel mid-write -- would otherwise spin
-@@ -4995,6 +5024,7 @@ void guiHandleDeferedIO(int *ptr, const char *message, int type, void *data, int
+@@ -4995,6 +5025,7 @@ void guiHandleDeferedIO(int *ptr, const char *message, int type, void *data, int
              !ioWorkerBusy() && ioDescribeWorker(gLastDeferredBlocker, sizeof(gLastDeferredBlocker)) &&
              ioDefuseRequest(type, data)) { // described first: once defused, the queue shows a no-op
              gLastDeferredInline = 1;
@@ -192,7 +200,7 @@ index 99d45a3..09d3492 100644
              guiRenderTextScreen(message);
              ((io_simpleaction_t)data)();
              *ptr = 0;
-@@ -5012,6 +5042,7 @@ void guiHandleDeferedIO(int *ptr, const char *message, int type, void *data, int
+@@ -5012,6 +5043,7 @@ void guiHandleDeferedIO(int *ptr, const char *message, int type, void *data, int
          }
          guiRenderTextScreen(message);
      }
