@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index bf89a16..0c137a6 100644
+index bf89a16..29bb684 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -133,7 +133,7 @@ ifneq ($(GIT_TAG),latest)
@@ -11,6 +11,19 @@ index bf89a16..0c137a6 100644
  		dia.o ioman.o texcache.o themes.o supportbase.o bdmsupport.o netsupport.o ethsupport.o httpcatalog.o httpsupport.o udpfssupport.o hddsupport.o zso.o lz4.o launchdiag.o \
  		appsupport.o mmcesupport.o artindex.o vcdsupport.o cuesupport.o libview.o retrogem.o folderbrowse.o gui.o guigame.o vmc_groups.o textures.o opl.o atlas.o nbns.o httpclient.o gsm.o cheatman.o sound.o ps2cnf.o tar.o
  
+@@ -304,6 +304,12 @@ ifeq ($(OPLDIAG),1)
+   EE_CFLAGS += -D__OPLDIAG
+ endif
+ 
++# RIPPS2: a test build whose CD player takes a disc image's tracks for audio (PCSX2 reports every
++# track of an image as data, so its audio CD path cannot be reached otherwise). Never for a release.
++ifeq ($(RIPPS2_CD_TEST),1)
++  EE_CFLAGS += -DRIPPS2_CD_TEST
++endif
++
+ ifeq ($(DEBUG),1)
+   EE_CFLAGS += -D__DEBUG -g
+   ifeq ($(DECI2_DEBUG),1)
 diff --git a/include/ripps2.h b/include/ripps2.h
 index 845291b..f49693a 100644
 --- a/include/ripps2.h
@@ -143,10 +156,10 @@ index 356e8db..995b4f4 100644
      drawMotes(t, 1);
 diff --git a/src/ripps2cd.c b/src/ripps2cd.c
 new file mode 100644
-index 0000000..898d6de
+index 0000000..667b543
 --- /dev/null
 +++ b/src/ripps2cd.c
-@@ -0,0 +1,569 @@
+@@ -0,0 +1,572 @@
 +/*
 +  Copyright 2026, RIPPS2 contributors
 +  Licenced under Academic Free License version 3.0
@@ -267,6 +280,9 @@ index 0000000..898d6de
 +                seen[t] = 1;
 +                cdStart[t] = cdMsf(e + 7);
 +                cdAudio[t] = !(e[0] & 0x40); // the control bits mark a data track
++#ifdef RIPPS2_CD_TEST
++                cdAudio[t] = 1; // a test build: PCSX2 calls every image track data
++#endif
 +                if (t > last)
 +                    last = t;
 +            }
@@ -717,7 +733,7 @@ index 0000000..898d6de
 +    }
 +}
 diff --git a/src/ripps2ui.c b/src/ripps2ui.c
-index f18784b..0287056 100644
+index f18784b..ce075fe 100644
 --- a/src/ripps2ui.c
 +++ b/src/ripps2ui.c
 @@ -534,7 +534,7 @@ static void discPollWorker(void)
@@ -760,11 +776,16 @@ index f18784b..0287056 100644
      if (getKeyOn(KEY_RIGHT)) {
          ripps2StepCategory(1);
      } else if (getKeyOn(KEY_LEFT)) {
-@@ -638,6 +648,11 @@ void ripps2HandleInputLaunch(void)
+@@ -638,6 +648,16 @@ void ripps2HandleInputLaunch(void)
          int wait;
          for (wait = 0; discPollBusy && wait < 60; wait++) // the drive is the launch's alone
              DelayThread(50 * 1000);
-+        if (sceCdGetDiskType() == SCECdCDDA) { // RIPPS2: an audio CD plays, here on the page
++        int dt = sceCdGetDiskType();
++#ifdef RIPPS2_CD_TEST
++        if (dt != SCECdNODISC && (dt < SCECdPSCD || dt > SCECdPS2DVD) && dt != SCECdDVDV)
++            dt = SCECdCDDA; // a test build: any other CD image goes to the player
++#endif
++        if (dt == SCECdCDDA) { // RIPPS2: an audio CD plays, here on the page
 +            ripps2CdStart();
 +            readPads();
 +            return;

@@ -10,6 +10,10 @@ on:
         description: "Debug build: LOG output over EE SIO (PCSX2 shows it in its EE console log)"
         type: boolean
         default: false
+      flags:
+        description: "Extra make flags for a test build (e.g. RIPPS2_CD_TEST=1)"
+        type: string
+        default: ""
 
 concurrency:
   group: build-elf-${{ github.ref }}
@@ -35,12 +39,12 @@ jobs:
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           sh elf/build.sh
         env:
-          RIPPS2_MAKE_FLAGS: ${{ inputs.debug && 'DEBUG=1 EESIO_DEBUG=1' || '' }}
+          RIPPS2_MAKE_FLAGS: ${{ inputs.debug && 'DEBUG=1 EESIO_DEBUG=1' || '' }} ${{ inputs.flags }}
 
       - name: Upload RIPPS2.elf
         uses: actions/upload-artifact@v6
         with:
-          name: RIPPS2-elf${{ inputs.debug && '-debug' || '' }}
+          name: RIPPS2-elf${{ inputs.debug && '-debug' || '' }}${{ inputs.flags && '-test' || '' }}
           path: out/RIPPS2.elf
           if-no-files-found: error
           retention-days: 30
