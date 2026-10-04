@@ -43,10 +43,10 @@ index 845291b..f49693a 100644
  int ripps2BootLockState(void);              // 1 when a PS2BBL config on the console has RIPPS2's lock in it
  void ripps2BootLockApply(int on);           // writes it into (or out of) every PS2BBL config found; says how it went
 diff --git a/include/sound.h b/include/sound.h
-index a0ddad6..d01746f 100644
+index a0ddad6..baea533 100644
 --- a/include/sound.h
 +++ b/include/sound.h
-@@ -29,6 +29,12 @@ enum SFX {
+@@ -29,6 +29,14 @@ enum SFX {
  int bgmMusicList(char (*names)[RIPPS2_MUSIC_NAME], int max); // MUSIC/*.ogg beside RIPPS2, in name order
  void bgmMusicTitle(const char *file, char *out, int size);   // "01 Slideshow.ogg" -> "Slideshow"
  
@@ -54,7 +54,9 @@ index a0ddad6..d01746f 100644
 +int bgmStartPcm(int (*read)(char *buf, int size), int rate, int channels);
 +void bgmStopPcm(void);
 +unsigned int bgmPlayedBytes(void); // bytes handed to audsrv since the stream started
-+void bgmGetLevels(float *out3);    // low / mid / high of what is playing (the towers dance to it)
++#define BGM_SPECTRUM_BANDS 16
++void bgmSpectrumEnable(int on);          // the towers want the spectrum of what plays
++unsigned int bgmGetSpectrum(float *db);  // the latest bands, 45 Hz to 16 kHz, in dB; a count that moves on with each
 +
  void audioInit(void);
  void audioEnd(void);
@@ -75,88 +77,197 @@ index 7d7e27d..27e6b2c 100644
      {'T', "PS2BBL by El Isra (israpps)"},
      {'S', "the PlayStation 2 Basic BootLoader: BOOT LOCK starts RIPPS2 with it"},
 diff --git a/src/ripps2bg.c b/src/ripps2bg.c
-index 356e8db..2c6e7ba 100644
+index 356e8db..5b9f563 100644
 --- a/src/ripps2bg.c
 +++ b/src/ripps2bg.c
-@@ -415,6 +415,40 @@ static void drawBeam(float x, float z, float y0, float w, float b)
+@@ -13,6 +13,7 @@
+ #include <math.h>
+ #include <time.h>
+ #include <stdio.h>
++#include <string.h>
+ 
+ #include "include/opl.h"
+ #include "include/renderman.h"
+@@ -415,6 +416,116 @@ static void drawBeam(float x, float z, float y0, float w, float b)
      rmSetBlendAdditive(0);
  }
  
-+// ---- the CD player: the towers settle and light up to the music ----
-+// Bass lights the middle of the field, the mids a ring round it, the highs the edge. Each band is
-+// taken against its own loudest of the last few seconds, so a quiet disc moves the towers as much as
-+// a loud one; it rises fast and falls slowly, and the loudest moments send up the launch's beams.
++// ---- the CD player: a spectrum analyser in towers ----
++// Across the screen, low notes on the left to high on the right (sound.c's bands, 45 Hz to 16 kHz);
++// into the screen, time: the front row is now and each row behind it a moment older, so the music
++// rolls away across the field. Each band is taken against its own recent quietest and loudest,
++// blended with all the bands' range together, so a loud, compressed master still moves and the
++// overall shape of the sound (heavy bass, bright cymbals) still shows. A hit (a sudden rise across
++// the bands: a kick, a snare) rolls a ring of light back from the front, and the loudest bands send
++// up the launch's beams.
++#define MUS_BANDS  BGM_SPECTRUM_BANDS
++#define MUS_ROWS   20     // history rows over the field's depth
++#define MUS_ROW_S  0.055f // a row every 55 ms: about a second of music on the field
++#define MUS_PULSES 4
++#define MUS_FIELD  12.5f  // the field's half width
++
 +static int musicOn = 0;
-+static float musicMix = 0.0f, musicLast = -1.0f;
-+static float musicLevel[3], musicPeak[3] = {0.02f, 0.02f, 0.02f};
++static float musicMix = 0.0f, musicLast = -1.0f, musicBass = 0.0f;
++static float musNow[MUS_BANDS], musTarget[MUS_BANDS], musCeil[MUS_BANDS], musFloor[MUS_BANDS], musAllCeil = 0.0f;
++static float musRows[MUS_ROWS][MUS_BANDS], musRowT = 0.0f;
++static int musRowHead = 0, musPrimed = 0, musPulseNext = 0;
++static float musPulseT[MUS_PULSES] = {-10.0f, -10.0f, -10.0f, -10.0f}, musPulseA[MUS_PULSES];
++static float musFluxAvg = 0.0f, musLastHit = -10.0f;
++static unsigned int musSeq = 0;
 +
 +void ripps2PillarMusic(int on)
 +{
 +    musicOn = on;
++    if (on)
++        bgmSpectrumEnable(1);
 +}
 +
 +static void musicUpdate(float t)
 +{
-+    float dt = musicLast < 0.0f ? 0.016f : fminf(0.1f, fmaxf(0.0f, t - musicLast)), lv[3];
++    float dt = musicLast < 0.0f ? 0.016f : fminf(0.1f, fmaxf(0.0f, t - musicLast)), db[MUS_BANDS];
 +    int b;
++    unsigned int seq;
 +
 +    musicLast = t;
 +    musicMix = clamp01(musicMix + (musicOn ? dt : -dt) / 1.2f);
 +    if (musicMix <= 0.0f) {
-+        musicLevel[0] = musicLevel[1] = musicLevel[2] = 0.0f;
++        if (!musicOn)
++            bgmSpectrumEnable(0);
++        memset(musNow, 0, sizeof(musNow));
++        memset(musRows, 0, sizeof(musRows));
++        musicBass = 0.0f;
++        musPrimed = 0;
 +        return;
 +    }
-+    bgmGetLevels(lv);
-+    for (b = 0; b < 3; b++) {
-+        musicPeak[b] = fmaxf(fmaxf(lv[b], 0.004f), musicPeak[b] * expf(-dt / 4.0f));
-+        float target = clamp01(lv[b] / musicPeak[b]);
-+        target *= target;
-+        float k = 1.0f - expf(-dt / (target > musicLevel[b] ? 0.03f : 0.22f));
-+        musicLevel[b] += (target - musicLevel[b]) * k;
++    seq = bgmGetSpectrum(db);
++    if (seq != musSeq) {
++        float loudest = -200.0f, flux = 0.0f;
++        musSeq = seq;
++        for (b = 0; b < MUS_BANDS; b++)
++            loudest = fmaxf(loudest, db[b]);
++        if (!musPrimed) {
++            for (b = 0; b < MUS_BANDS; b++) {
++                musCeil[b] = db[b];
++                musFloor[b] = db[b] - 24.0f;
++            }
++            musAllCeil = loudest;
++            musPrimed = 1;
++        }
++        for (b = 0; b < MUS_BANDS; b++) {
++            float d = fmaxf(db[b], musCeil[b] - 60.0f); // silence does not drag the floor away
++            // the ceiling jumps to a new peak and sinks 4 dB a second; the floor drops to a new low and
++            // climbs 2 dB a second; never closer together than 15 dB
++            musCeil[b] = d > musCeil[b] ? d : musCeil[b] - 4.0f * dt;
++            musFloor[b] = d < musFloor[b] ? d : musFloor[b] + 2.0f * dt;
++            if (musFloor[b] > musCeil[b] - 15.0f)
++                musFloor[b] = musCeil[b] - 15.0f;
++            float own = clamp01((d - musFloor[b]) / (musCeil[b] - musFloor[b]));
++            float all = clamp01((d - (musAllCeil - 36.0f)) / 36.0f);
++            float v = 0.6f * own + 0.4f * all;
++            v = v * v * (3.0f - 2.0f * v); // a little more contrast in the middle
++            flux += fmaxf(0.0f, v - musTarget[b]) * (b < 4 ? 1.6f : 1.0f); // the kick counts a little more
++            musTarget[b] = v;
++        }
++        musAllCeil = loudest > musAllCeil ? loudest : musAllCeil - 3.0f * dt;
++        if (flux > musFluxAvg * 1.8f + 0.35f && t - musLastHit > 0.14f) { // a hit
++            musPulseT[musPulseNext] = t;
++            musPulseA[musPulseNext] = clamp01(flux * 0.5f);
++            musPulseNext = (musPulseNext + 1) % MUS_PULSES;
++            musLastHit = t;
++        }
++        musFluxAvg += (flux - musFluxAvg) * 0.08f;
 +    }
++    // the bars rise fast and fall slower, as an analyser's do
++    for (b = 0; b < MUS_BANDS; b++) {
++        float k = 1.0f - expf(-dt / (musTarget[b] > musNow[b] ? 0.025f : 0.16f));
++        musNow[b] += (musTarget[b] - musNow[b]) * k;
++    }
++    musRowT += dt;
++    while (musRowT >= MUS_ROW_S) { // the history rolls back a row
++        musRowT -= MUS_ROW_S;
++        musRowHead = (musRowHead + 1) % MUS_ROWS;
++        memcpy(musRows[musRowHead], musNow, sizeof(musNow));
++    }
++    musicBass = (musNow[0] + musNow[1] + musNow[2] + musNow[3]) * 0.25f;
++}
++
++// The analyser at band position fb (0 .. MUS_BANDS - 1) and history row r (0 = now)
++static float musicAt(float fb, float r)
++{
++    int b0 = (int)fb, r0 = (int)r, b1 = b0 + 1 < MUS_BANDS ? b0 + 1 : b0, r1 = r0 + 1 < MUS_ROWS ? r0 + 1 : r0;
++    float fbf = fb - b0, rf = r - r0;
++    const float *a = r0 == 0 ? musNow : musRows[(musRowHead - r0 + 1 + MUS_ROWS * 2) % MUS_ROWS];
++    const float *c = r1 == 0 ? musNow : musRows[(musRowHead - r1 + 1 + MUS_ROWS * 2) % MUS_ROWS];
++    float va = a[b0] + (a[b1] - a[b0]) * fbf, vc = c[b0] + (c[b1] - c[b0]) * fbf;
++    return va + (vc - va) * rf;
 +}
 +
  void ripps2DrawPillars(void)
  {
      int i, j, k;
-@@ -429,6 +463,9 @@ void ripps2DrawPillars(void)
+@@ -429,6 +540,9 @@ void ripps2DrawPillars(void)
      float intro = easeInOutCubicf(clamp01(t / INTRO_S));
      float push = L >= 0.0f ? easeInOutCubicf(clamp01(L / 1.8f)) : 0.0f;
      float glowAll = L >= 0.0f ? easeInOutCubicf(clamp01(L / 1.5f)) : 0.0f;
 +    musicUpdate(t);
 +    if (musicMix > 0.0f) // the bass breathes through the sky and the floor
-+        glowAll = fmaxf(glowAll, musicMix * musicLevel[0] * 0.3f);
++        glowAll = fmaxf(glowAll, musicMix * musicBass * 0.3f);
  
      drawSky(RGBA(0x01, 0x02, 0x09 + (int)(0x10 * glowAll), 0x80),
              RGBA(0x0B + (int)(0x12 * glowAll), 0x19 + (int)(0x24 * glowAll), 0x4C + (int)(0x44 * glowAll), 0x80),
-@@ -441,6 +478,10 @@ void ripps2DrawPillars(void)
+@@ -441,6 +555,11 @@ void ripps2DrawPillars(void)
      float radius = lerpf(12.0f, 32.0f, intro) - 12.0f * push;
      float camY = lerpf(1.6f, 8.0f, intro) + 4.0f * push;
      float lookY = lerpf(9.0f, 11.8f, intro) + 4.2f * push;
-+    if (musicMix > 0.0f) { // the CD player: the camera rises and looks down, so the field sits above its panel
-+        camY += 3.0f * musicMix;
-+        lookY -= 6.0f * musicMix;
++    if (musicMix > 0.0f) { // the CD player: the camera rises and looks down over the analyser, above its panel
++        camY += 4.5f * musicMix;
++        lookY -= 6.5f * musicMix;
++        radius -= 2.5f * musicMix;
 +    }
      v3 eye = {cosf(a) * radius, camY, sinf(a) * radius};
      if (L >= 0.0f) {
          float kick = expf(-L * 3.5f);
-@@ -475,7 +516,14 @@ void ripps2DrawPillars(void)
+@@ -449,6 +568,11 @@ void ripps2DrawPillars(void)
+     }
+     v3 target = {0.0f, lookY, 0.0f};
+     camLook(eye, target, 40.0f);
++    float fwdX = -eye.x, fwdZ = -eye.z, fwdLen = sqrtf(fwdX * fwdX + fwdZ * fwdZ);
++    if (fwdLen > 0.001f) { // along the ground, from the camera's side of the field to the far side
++        fwdX /= fwdLen;
++        fwdZ /= fwdLen;
++    }
+ 
+     drawStars(t, a, glowAll);
+     rmSetBlendAdditive(1);
+@@ -475,7 +599,26 @@ void ripps2DrawPillars(void)
              heat = fminf(2.4f, heat + glowAll * 0.8f);
          }
          tw->heat = heat;
 -        tw->h = fmaxf(0.05f, (tw->base * breathe * MAX_HEIGHT + swell * 1.4f + heat * 3.2f) * rise);
 +        float h = (tw->base * breathe * MAX_HEIGHT + swell * 1.4f + heat * 3.2f) * rise;
 +        if (musicMix > 0.0f) {
-+            float wl = clamp01(1.0f - tw->d * 2.2f), wh = clamp01((tw->d - 0.45f) * 2.0f), wm = clamp01(1.0f - wl - wh);
-+            float e = (wl * musicLevel[0] + wm * musicLevel[1] + wh * musicLevel[2]) * (0.7f + 0.3f * tw->base);
-+            tw->heat = fmaxf(tw->heat, e * 1.9f * musicMix);
-+            h = lerpf(h, (tw->base * MAX_HEIGHT * 0.5f + e * 10.0f) * rise, musicMix); // settled, then lifted by the music
++            // where the tower stands on screen picks its band, how far back its moment
++            float u = (tw->x * camR.x + tw->z * camR.z) / MUS_FIELD, w = (tw->x * fwdX + tw->z * fwdZ) / MUS_FIELD;
++            float age = clamp01(w * 0.5f + 0.5f);
++            float v = musicAt(clamp01(u * 0.5f + 0.5f) * (MUS_BANDS - 1), age * (MUS_ROWS - 1));
++            float mh = (0.6f + v * 11.5f) * (1.0f - 0.25f * age) * (0.9f + 0.2f * tw->base);
++            float mheat = v * 1.5f * (1.0f - 0.55f * age);
++            for (k = 0; k < MUS_PULSES; k++) { // the hits' rings, rolling back from the front edge
++                float s = t - musPulseT[k];
++                if (s < 0.0f || s > 1.2f)
++                    continue;
++                float px = tw->x + fwdX * MUS_FIELD, pz = tw->z + fwdZ * MUS_FIELD;
++                float q = (sqrtf(px * px + pz * pz) - s * 22.0f) / 2.6f;
++                mheat += expf(-q * q) * musPulseA[k] * powf(1.0f - s / 1.2f, 1.5f) * 1.4f;
++            }
++            tw->heat = fmaxf(tw->heat, mheat * musicMix);
++            h = lerpf(h, mh * rise, musicMix);
 +        }
 +        tw->h = fmaxf(0.05f, h);
          v3 c = {tw->x, tw->h * 0.5f, tw->z};
          tw->depth = vdot(vsub(c, camEye), camF);
      }
-@@ -520,6 +568,8 @@ void ripps2DrawPillars(void)
+@@ -520,6 +663,8 @@ void ripps2DrawPillars(void)
          }
          if (beamIn > 0.0f)
              drawBeam(tw->x, tw->z, h, tw->w * 0.34f, fminf(1.0f, tw->heat * 0.6f) * beamIn);
@@ -858,7 +969,7 @@ index f18784b..ce075fe 100644
          int r = sysLaunchDisc(&guiRenderProbeFrame);
          if (r < 0 && r != SYS_DISC_CANCELLED) {
 diff --git a/src/sound.c b/src/sound.c
-index e3f938d..75c2de4 100644
+index e3f938d..4eb04fb 100644
 --- a/src/sound.c
 +++ b/src/sound.c
 @@ -9,6 +9,7 @@
@@ -869,7 +980,7 @@ index e3f938d..75c2de4 100644
  #include <stdlib.h>
  #include <strings.h>
  #include <dirent.h>
-@@ -624,6 +625,120 @@ static u8 bgmIoThreadStack[BGM_THREAD_STACK_SIZE] __attribute__((aligned(16)));
+@@ -624,6 +625,185 @@ static u8 bgmIoThreadStack[BGM_THREAD_STACK_SIZE] __attribute__((aligned(16)));
  
  static OggVorbis_File *vorbisFile;
  
@@ -881,37 +992,102 @@ index e3f938d..75c2de4 100644
 +static int bgmPcmRate = 44100, bgmPcmChannels = 2;
 +static volatile int bgmPcmEnded = 0;
 +static volatile unsigned int bgmPlayed = 0; // bytes handed to audsrv since the stream started
-+static volatile float bgmLevels[3];         // low, mid, high of the chunk handed over last (the towers)
-+static float bgmLp1 = 0.0f, bgmLp2 = 0.0f;
 +
-+// Three bands of what audsrv is being handed (so they keep time with what is heard, not with the
-+// read-ahead): one-pole low passes near 150 Hz and 2 kHz split each sample into low, mid and high
-+static void bgmMeasure(const short *s, int bytes)
++// The spectrum of what audsrv is being handed (so it keeps time with what is heard, not with the
++// read-ahead), for the towers, and only while they want it: a 1024-point FFT of each chunk, Hann
++// windowed, summed into BGM_SPECTRUM_BANDS bands spaced evenly in octaves from 45 Hz to 16 kHz (each
++// at least one bin apart). Each band is divided by its share of pink noise, so music, which falls
++// about like pink noise does, reads level across the bands; a further 1 dB an octave above 1 kHz
++// makes up for the extra fall of most masters' top end.
++#define SPEC_N 1024
++static volatile int bgmSpecOn = 0;
++static volatile unsigned int bgmSpecSeq = 0;
++static volatile float bgmSpecDb[BGM_SPECTRUM_BANDS];
++static float specRe[SPEC_N], specIm[SPEC_N], specWin[SPEC_N], specCos[SPEC_N / 2], specSin[SPEC_N / 2];
++static short specRev[SPEC_N], specLo[BGM_SPECTRUM_BANDS], specHi[BGM_SPECTRUM_BANDS];
++static float specNorm[BGM_SPECTRUM_BANDS];
++static int specRate = 0;
++
++static void specInit(int rate)
 +{
-+    int i, frames = bytes / (2 * bgmPcmChannels);
-+    float lo = 0.0f, mid = 0.0f, hi = 0.0f;
-+    if (frames <= 0 || bgmPcmRate <= 0)
-+        return;
-+    float k1 = 6.2832f * 150.0f / (float)bgmPcmRate, k2 = 6.2832f * 2000.0f / (float)bgmPcmRate;
-+    for (i = 0; i < frames; i++) {
-+        float x = bgmPcmChannels == 2 ? (s[2 * i] + s[2 * i + 1]) * (0.5f / 32768.0f) : s[i] * (1.0f / 32768.0f);
-+        bgmLp1 += k1 * (x - bgmLp1);
-+        bgmLp2 += k2 * (x - bgmLp2);
-+        float l = bgmLp1, m = bgmLp2 - bgmLp1, h = x - bgmLp2;
-+        lo += l * l;
-+        mid += m * m;
-+        hi += h * h;
++    int i, j, b, prev = 0;
++    for (i = 0; i < SPEC_N; i++) {
++        int r = 0;
++        for (j = 0; j < 10; j++)
++            r |= ((i >> j) & 1) << (9 - j);
++        specRev[i] = r;
++        specWin[i] = 0.5f - 0.5f * cosf(6.2831853f * i / (SPEC_N - 1));
 +    }
-+    bgmLevels[0] = sqrtf(lo / frames);
-+    bgmLevels[1] = sqrtf(mid / frames);
-+    bgmLevels[2] = sqrtf(hi / frames);
++    for (i = 0; i < SPEC_N / 2; i++) {
++        specCos[i] = cosf(6.2831853f * i / SPEC_N);
++        specSin[i] = -sinf(6.2831853f * i / SPEC_N);
++    }
++    for (b = 0; b < BGM_SPECTRUM_BANDS; b++) {
++        float f0 = 45.0f * powf(16000.0f / 45.0f, (float)b / BGM_SPECTRUM_BANDS);
++        float f1 = 45.0f * powf(16000.0f / 45.0f, (float)(b + 1) / BGM_SPECTRUM_BANDS);
++        int k0 = (int)(f0 * SPEC_N / rate + 0.5f), k1 = (int)(f1 * SPEC_N / rate + 0.5f);
++        if (k0 <= prev)
++            k0 = prev + (b > 0 ? 0 : 1);
++        if (k0 < 1)
++            k0 = 1;
++        if (k1 <= k0)
++            k1 = k0 + 1;
++        if (k1 > SPEC_N / 2)
++            k1 = SPEC_N / 2;
++        specLo[b] = k0;
++        specHi[b] = k1;
++        prev = k1;
++        float fc = sqrtf(f0 * f1), lift = fc > 1000.0f ? 1.0f * log2f(fc / 1000.0f) : 0.0f;
++        specNorm[b] = lift - 10.0f * log10f(logf((k1 - 0.5f) / (k0 - 0.5f))); // its pink share, and the top-end lift
++    }
++    specRate = rate;
 +}
 +
-+void bgmGetLevels(float *out3)
++static void bgmSpectrum(const short *s, int bytes)
 +{
-+    out3[0] = bgmLevels[0];
-+    out3[1] = bgmLevels[1];
-+    out3[2] = bgmLevels[2];
++    int frames = bytes / (2 * bgmPcmChannels), i, k, b, len;
++    if (!bgmSpecOn || frames < SPEC_N || bgmPcmRate <= 0)
++        return;
++    if (specRate != bgmPcmRate)
++        specInit(bgmPcmRate);
++    for (i = 0; i < SPEC_N; i++) {
++        float x = bgmPcmChannels == 2 ? (s[2 * i] + s[2 * i + 1]) * (0.5f / 32768.0f) : s[i] * (1.0f / 32768.0f);
++        specRe[specRev[i]] = x * specWin[i];
++        specIm[specRev[i]] = 0.0f;
++    }
++    for (len = 2; len <= SPEC_N; len <<= 1) {
++        int half = len >> 1, step = SPEC_N / len;
++        for (i = 0; i < SPEC_N; i += len)
++            for (k = 0; k < half; k++) {
++                float wr = specCos[k * step], wi = specSin[k * step];
++                int a = i + k, c = a + half;
++                float tr = specRe[c] * wr - specIm[c] * wi, ti = specRe[c] * wi + specIm[c] * wr;
++                specRe[c] = specRe[a] - tr;
++                specIm[c] = specIm[a] - ti;
++                specRe[a] += tr;
++                specIm[a] += ti;
++            }
++    }
++    for (b = 0; b < BGM_SPECTRUM_BANDS; b++) {
++        float p = 0.0f;
++        for (k = specLo[b]; k < specHi[b]; k++)
++            p += specRe[k] * specRe[k] + specIm[k] * specIm[k];
++        bgmSpecDb[b] = 10.0f * log10f(p + 1e-9f) + specNorm[b];
++    }
++    bgmSpecSeq++;
++}
++
++void bgmSpectrumEnable(int on)
++{
++    bgmSpecOn = on;
++}
++
++unsigned int bgmGetSpectrum(float *db)
++{
++    int b;
++    for (b = 0; b < BGM_SPECTRUM_BANDS; b++)
++        db[b] = bgmSpecDb[b];
++    return bgmSpecSeq;
 +}
 +
 +unsigned int bgmPlayedBytes(void)
@@ -990,21 +1166,21 @@ index e3f938d..75c2de4 100644
  // PCM bytes the stream plays per millisecond, set by bgmStart from its format.
  static int bgmBytesPerMs = 0;
  // Most room bgmQueueChunk waits for before queueing: one chunk, or less when the audsrv ring is small.
-@@ -710,9 +825,13 @@ static void bgmThread(void *arg)
+@@ -710,9 +890,13 @@ static void bgmThread(void *arg)
          if (terminateFlag)
              break;
  
 +        if (bgmBufferedChunks <= 0 && !bgmIoThreadRunning)
 +            break; // RIPPS2: a PCM source ran out and everything it gave has played
          bgmAdjustBufferedChunks(-1);
-+        bgmMeasure((const short *)bgmBuffer[rdPtr], BGM_RING_BUFFER_SIZE); // RIPPS2: the towers' levels
++        bgmSpectrum((const short *)bgmBuffer[rdPtr], BGM_RING_BUFFER_SIZE); // RIPPS2: the towers' spectrum
          if (!bgmQueueChunk(bgmBuffer[rdPtr]))
              break;
 +        bgmPlayed += BGM_RING_BUFFER_SIZE;
          rdPtr = (rdPtr + 1) % BGM_RING_BUFFER_COUNT;
  
          SignalSema(inSema);
-@@ -745,13 +864,29 @@ static void bgmIoThread(void *arg)
+@@ -745,13 +929,29 @@ static void bgmIoThread(void *arg)
      do {
          WaitSema(inSema);
  
@@ -1035,7 +1211,7 @@ index e3f938d..75c2de4 100644
              int ret = ov_read(vorbisFile, bgmBuffer[wrPtr] + bufferPtr, decodeTotal, 0, 2, 1, &bitStream);
              if (ret > 0) {
                  bufferPtr += ret;
-@@ -783,10 +918,11 @@ static void bgmIoThread(void *arg)
+@@ -783,10 +983,11 @@ static void bgmIoThread(void *arg)
          wrPtr = (wrPtr + 1) % BGM_RING_BUFFER_COUNT;
          bgmAdjustBufferedChunks(1);
          SignalSema(outSema);
@@ -1049,7 +1225,7 @@ index e3f938d..75c2de4 100644
      SignalSema(outSema);
  }
  
-@@ -965,7 +1101,8 @@ int bgmMusicList(char (*names)[RIPPS2_MUSIC_NAME], int max)
+@@ -965,7 +1166,8 @@ int bgmMusicList(char (*names)[RIPPS2_MUSIC_NAME], int max)
          return 0;
      while ((e = readdir(d)) != NULL && n < max) {
          int len = strlen(e->d_name);
@@ -1059,7 +1235,7 @@ index e3f938d..75c2de4 100644
              snprintf(names[n++], RIPPS2_MUSIC_NAME, "%s", e->d_name);
      }
      closedir(d);
-@@ -1005,6 +1142,11 @@ static int bgmMusicPath(char *out, int size)
+@@ -1005,6 +1207,11 @@ static int bgmMusicPath(char *out, int size)
  
  static int bgmLoad(void)
  {
@@ -1071,7 +1247,7 @@ index e3f938d..75c2de4 100644
      char bgmPath[256];
      int themeID;
  
-@@ -1029,7 +1171,14 @@ static int bgmLoad(void)
+@@ -1029,7 +1236,14 @@ static int bgmLoad(void)
      }
  
      if (thmPath == NULL && bgmMusicPath(bgmPath, sizeof(bgmPath))) { // RIPPS2: the MUSIC folder's pick
@@ -1087,7 +1263,7 @@ index e3f938d..75c2de4 100644
              return 0;
      }
  
-@@ -1134,6 +1283,9 @@ static void bgmDeinit(void)
+@@ -1134,6 +1348,9 @@ static void bgmDeinit(void)
          free(vorbisFile);
          vorbisFile = NULL;
      }
@@ -1097,7 +1273,7 @@ index e3f938d..75c2de4 100644
  }
  
  static void bgmShutdownDelayCallback(s32 alarm_id, u16 time, void *common)
-@@ -1157,19 +1309,32 @@ void bgmStart(void)
+@@ -1157,19 +1374,31 @@ void bgmStart(void)
              return;
          }
  
@@ -1117,7 +1293,6 @@ index e3f938d..75c2de4 100644
 +            bgmPcmRate = (int)rate;
 +        }
 +        bgmPlayed = 0;
-+        bgmLp1 = bgmLp2 = 0.0f;
  
 -        audsrvFmt.channels = vi->channels;
 -        audsrvFmt.freq = vi->rate;
@@ -1136,7 +1311,7 @@ index e3f938d..75c2de4 100644
              bgmDeinit();
              return;
          }
-@@ -1184,8 +1349,8 @@ void bgmStart(void)
+@@ -1184,8 +1413,8 @@ void bgmStart(void)
              bgmRoomTarget = room;
          if (bgmRoomTarget < BGM_ROOM_TARGET_MIN)
              bgmRoomTarget = BGM_RING_BUFFER_SIZE;
@@ -1147,7 +1322,7 @@ index e3f938d..75c2de4 100644
  
          bgmIsPlaying = 1;
  
-@@ -1204,6 +1369,33 @@ void bgmStart(void)
+@@ -1204,6 +1433,33 @@ void bgmStart(void)
      }
  }
  
