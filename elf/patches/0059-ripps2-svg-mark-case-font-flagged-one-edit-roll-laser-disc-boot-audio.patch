@@ -39,6 +39,31 @@ index 427ee5a..d25d418 100644
  void ripps2UiEnter(void);           // the menu's first frame: the bar fades in, the mark pops in
  void ripps2ShowViewWord(const char *word, int logo, const char *caption); // L3: name the new list, large (a word, or a texture id)
  void ripps2DrawViewWord(void);      // drawn over the Storage page while it plays
+diff --git a/include/sound.h b/include/sound.h
+index 444f71d..4a588e5 100644
+--- a/include/sound.h
++++ b/include/sound.h
+@@ -28,6 +28,8 @@ void sfxGetPlayDiag(unsigned int *lastMs, unsigned int *maxMs);
+ void sfxGetDropDiag(unsigned int *staleDrops, unsigned int *fullDrops);
+ 
+ void bgmStart(void);
++void sfxPlayBoot(void); // RIPPS2: the IO worker, once the sounds are loaded: the boot sound, played out
++void bgmBootTick(void); // RIPPS2: every GUI frame: starts the music once the boot sound has ended
+ void bgmStop(void);
+ // Signal the BGM threads to stop WITHOUT waiting for them. For deinit, so the decoder stops reading
+ // the device before that device is torn down, without putting a blocking join at the top of the
+diff --git a/include/system.h b/include/system.h
+index 9c445a5..a80930c 100644
+--- a/include/system.h
++++ b/include/system.h
+@@ -23,6 +23,7 @@ void sysExecExit(void);
+ #define SYS_DISC_PS1       (-6) // RIPPS2: a PlayStation disc -- LAUNCH DISC hands it to the PS1 driver
+ int sysLaunchDisc(int (*progress)(void));
+ int sysGetDiscBootPath(char *path, int pathSize, int (*progress)(void));
++int sysParseBoot2(const char *cnf, char *out, int outSize); // RIPPS2: SYSTEM.CNF's BOOT2 path, 0 on success
+ 
+ #define NEUTRINO_PATH     "mc0:NEUTRINO/neutrino.elf"
+ #define NEUTRINO_ALT_PATH "mc1:NEUTRINO/neutrino.elf"
 diff --git a/include/themes.h b/include/themes.h
 index 3462abc..165eef2 100644
 --- a/include/themes.h
@@ -99,7 +124,7 @@ index 7997377..c73fc85 100644
                      diaDrawBoundingBox(x, 170 + 3 * UI_SPACING_H * j, w, UI_SPACING_H, 0);
              }
 diff --git a/src/fntsys.c b/src/fntsys.c
-index 983c571..592c203 100644
+index 983c571..f87188c 100644
 --- a/src/fntsys.c
 +++ b/src/fntsys.c
 @@ -26,6 +26,10 @@ extern void *ripps2_sleek_raw;
@@ -167,7 +192,20 @@ index 983c571..592c203 100644
      font->isValid = 1;
      font->fontSize = fontSize;
      fntUpdateAspectRatioLocked();
-@@ -485,7 +508,8 @@ static fnt_glyph_cache_entry_t *fntCacheGlyph(font_t *font, uint32_t gid)
+@@ -425,9 +448,10 @@ static atlas_t *fntNewAtlas()
+     return atl;
+ }
+ 
+-static int fntGlyphAtlasPlace(font_t *font, fnt_glyph_cache_entry_t *glyph)
++static int fntGlyphAtlasPlace(font_t *font, fnt_glyph_cache_entry_t *glyph, FT_GlyphSlot slot)
+ {
+-    FT_GlyphSlot slot = font->face->glyph;
++    // RIPPS2: the slot of the face the glyph was rendered in (the stand-in 1 comes from another face;
++    // reading the main face's slot here placed whatever letter it drew last, under the 1's size)
+ 
+     // LOG("FNTSYS GlyphAtlasPlace: Placing the glyph... %d x %d\n", slot->bitmap.width, slot->bitmap.rows);
+ 
+@@ -485,17 +509,18 @@ static fnt_glyph_cache_entry_t *fntCacheGlyph(font_t *font, uint32_t gid)
          LOG("FNTSYS Face is NULL!\n");
      }
  
@@ -177,16 +215,19 @@ index 983c571..592c203 100644
      if (error) {
          LOG("FNTSYS Error loading glyph - %d\n", error);
          return NULL;
-@@ -495,7 +519,7 @@ static fnt_glyph_cache_entry_t *fntCacheGlyph(font_t *font, uint32_t gid)
-     if (!fntGlyphAtlasPlace(font, glyph))
+     }
+ 
+     // find atlas placement for the glyph
+-    if (!fntGlyphAtlasPlace(font, glyph))
++    FT_GlyphSlot slot = face->glyph;
++    if (!fntGlyphAtlasPlace(font, glyph, slot))
          return NULL;
  
 -    FT_GlyphSlot slot = font->face->glyph;
-+    FT_GlyphSlot slot = face->glyph;
      glyph->width = slot->bitmap.width;
      glyph->height = slot->bitmap.rows;
      glyph->shx = slot->advance.x;
-@@ -541,6 +565,8 @@ static void fntUpdateAspectRatioLocked(void)
+@@ -541,6 +566,8 @@ static void fntUpdateAspectRatioLocked(void)
              fntCacheFlush(&fonts[i]);
              // TODO: this seems correct, but the rest of the OPL UI (i.e. spacers) doesn't seem to be correctly scaled.
              FT_Set_Char_Size(fonts[i].face, fonts[i].fontSize * 64, fonts[i].fontSize * 64, fDPI * ws, fDPI * hs);
@@ -196,7 +237,7 @@ index 983c571..592c203 100644
      }
  }
 diff --git a/src/gui.c b/src/gui.c
-index 0e5b8c8..cac05af 100644
+index 0e5b8c8..fb23987 100644
 --- a/src/gui.c
 +++ b/src/gui.c
 @@ -4242,8 +4242,8 @@ static int endIntro = 0;           // Break intro loop and start 'Last Played Au
@@ -210,14 +251,45 @@ index 0e5b8c8..cac05af 100644
      static int busyAlpha = 0x00; // Fully transparant
  
      if (!pending) {
-@@ -4539,6 +4539,7 @@ void guiMainLoop(void)
+@@ -4511,6 +4511,7 @@ void guiIntroLoop(void)
+         guiDrawOverlays();
+ 
+         guiHandleDeferredOps();
++        bgmBootTick(); // RIPPS2: the music comes in under the intro, after the boot sound
+ 
+         guiEndFrame();
+ 
+@@ -4528,8 +4529,7 @@ void guiMainLoop(void)
+     if (gOPLPart[0] != '\0')
+         showPartPopup = 1;
+ 
+-    if (gEnableBGM)
+-        bgmStart();
++    // RIPPS2: the music is started by bgmBootTick (below, and in the intro) once the boot sound ends
+ 
+     while (!gTerminate) {
+         guiStartFrame();
+@@ -4539,6 +4539,8 @@ void guiMainLoop(void)
  
          // handle inputs and render screen
          guiShow();
-+        ripps2DiscWatch(); // RIPPS2: the drive watched from boot, whatever the page
++        ripps2DiscWatch(); // RIPPS2: the drive read at boot and after the tray closes
++        bgmBootTick();
  
          // Render overlaying gui thingies :)
          guiDrawOverlays();
+diff --git a/src/opl.c b/src/opl.c
+index 2b65e88..fdfcd0a 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -5122,6 +5122,7 @@ static void deferredAudioInit(void)
+         LOG("sfxInit: failed to initialize - %d.\n", ret);
+     else
+         LOG("sfxInit: %d samples loaded.\n", ret);
++    sfxPlayBoot(); // RIPPS2: over the intro's swoop; the music follows it (bgmBootTick)
+ }
+ 
+ // ----------------------------------------------------------
 diff --git a/src/ripps2about.c b/src/ripps2about.c
 index b7fc9a0..3f18cb3 100644
 --- a/src/ripps2about.c
@@ -294,7 +366,7 @@ index 6bb2cb2..dc14ed8 100644
          case FB_ACT_CUT:
              fbClipCount = fbSelection(fbClip, fbClipIsDir, FB_CLIP_MAX);
 diff --git a/src/ripps2ui.c b/src/ripps2ui.c
-index 3d44ce7..605be7d 100644
+index 3d44ce7..84e7b11 100644
 --- a/src/ripps2ui.c
 +++ b/src/ripps2ui.c
 @@ -41,9 +41,9 @@ static const char *categoryLabel[RIPPS2_CAT_COUNT] = {"LAUNCH DISC", "STORAGE",
@@ -330,49 +402,173 @@ index 3d44ce7..605be7d 100644
          rmDrawPixmap(mark, (int)x, (int)y, ALIGN_CENTER, (int)w, (int)h, SCALING_RATIO,
                       GS_SETREG_RGBA(0x80, 0x80, 0x80, (int)(alpha * (0.55f + 0.45f * b))), 0);
      }
-@@ -436,9 +441,14 @@ static void renderStartPrompt(const char *action, int y)
+@@ -436,13 +441,24 @@ static void renderStartPrompt(const char *action, int y)
  
  // ---- LAUNCH DISC ----
  //
 -// What is in the drive, under START DISC: asked on the IO worker about once a second while the page is
 -// up (the drive's own disc type, which costs nothing), and only when that changes is the disc read for
 -// its ID, and the ID looked up in the metadata database for a title. Nothing here ever waits on the drive.
-+// What is in the drive, under START LASER. Watched from boot, whatever page is up, so the line is
-+// ready before Launch Disc is ever opened and leaving the page can never catch a read half done: a
-+// few seconds after boot, then every 1.5 s, the drive is asked its disc type (cheap: nothing spins)
-+// on the IO worker, and only while the worker has nothing else queued. Only when the type changes
-+// (a disc there at boot, one put into an empty drive) is the disc read for its ID, once, and the ID
-+// looked up in the metadata database for a title. Nothing on screen ever waits on the drive.
-+#define DISC_FIRST_S 3.0f
-+#define DISC_EVERY_S 1.5f
++// What is in the drive, under START LASER. Read when it changes, not asked over and over: once a few
++// seconds after boot, and once after the tray closes (the tray's own status bit is the only thing
++// looked at in between: no disc access). Each read is one short job on the IO worker, queued only
++// while the worker has nothing else to do, so a settings save or a game launch never waits behind it:
++// the disc type, and for a PS2 disc its SYSTEM.CNF for the ID, looked up in the metadata database for
++// a title. A drive still spinning up is simply asked again a moment later, never waited on, and no
++// tray command is ever sent.
++#define DISC_BOOT_S   5.0f  // after the main loop starts
++#define DISC_TRAY_S   0.8f  // how often the tray bit is looked at
++#define DISC_SETTLE_S 2.5f  // after the tray closes, before the read
++#define DISC_RETRY_S  1.2f  // a drive still detecting: again after this
++#define DISC_RETRIES  8
++#define DISC_SHELL_OPEN 0x01 // sceCdStatus: the tray is open (SCECdStatShellOpen)
  
  static volatile int discPollBusy = 0;
- static clock_t discPolledAt = 0;
-@@ -521,17 +531,45 @@ static void discPollWorker(void)
+-static clock_t discPolledAt = 0;
+-static int discLastType = -1;
++static volatile int discRetry = 0;  // set by the worker: the drive was still detecting
++static clock_t discReadAt = 0;      // when the next read is due (0 = none)
++static int discRetries = 0;
+ static char discLine[80] = ""; // "" = the drive is empty: say what to insert
+ 
+ // A PS2 disc's title from the metadata database (OPL's home first, then the first USB drive)
+@@ -464,13 +480,10 @@ static void discTitle(const char *id, char *out, int size)
+ 
+ static void discPollWorker(void)
+ {
+-    char line[80] = "", path[64], id[16], title[48];
+-    int type = sceCdGetDiskType(), fd, i;
++    char line[80] = "", cnf[512], path[64], id[16], title[48];
++    int type = sceCdGetDiskType(), fd, n, i;
+ 
+-    if (type == discLastType) {
+-        discPollBusy = 0;
+-        return;
+-    }
++    discRetry = 0;
+     switch (type) {
+         case SCECdNODISC:
+             break;
+@@ -479,7 +492,7 @@ static void discPollWorker(void)
+         case SCECdDETCTDVDS:
+         case SCECdDETCTDVDD:
+             snprintf(line, sizeof(line), "READING THE DISC");
+-            type = -1; // ask again until it settles
++            discRetry = 1; // the GUI asks again shortly; nothing waits here
+             break;
+         case SCECdPSCD:
+         case SCECdPSCDDA:
+@@ -489,17 +502,27 @@ static void discPollWorker(void)
+         case SCECdPS2CDDA:
+         case SCECdPS2DVD:
+             snprintf(line, sizeof(line), "PS2 GAME");
+-            if (sysGetDiscBootPath(path, sizeof(path), NULL) == 0) {
+-                const char *s = strrchr(path, '\\');
+-                s = s ? s + 1 : path;
+-                for (i = 0; s[i] && s[i] != ';' && i < (int)sizeof(id) - 1; i++)
+-                    id[i] = s[i];
+-                id[i] = '\0';
+-                discTitle(id, title, sizeof(title));
+-                if (title[0])
+-                    snprintf(line, sizeof(line), "PS2 GAME   %s   %s", id, title);
+-                else
+-                    snprintf(line, sizeof(line), "PS2 GAME   %s", id);
++            fd = open("cdrom0:\\SYSTEM.CNF;1", O_RDONLY);
++            if (fd >= 0) {
++                n = read(fd, cnf, sizeof(cnf) - 1);
++                close(fd);
++                if (n > 0) {
++                    cnf[n] = '\0';
++                    if (sysParseBoot2(cnf, path, sizeof(path)) == 0) {
++                        const char *s = strrchr(path, '\\');
++                        s = s ? s + 1 : path;
++                        if (strchr(s, ':') != NULL)
++                            s = strchr(s, ':') + 1;
++                        for (i = 0; s[i] && s[i] != ';' && i < (int)sizeof(id) - 1; i++)
++                            id[i] = s[i];
++                        id[i] = '\0';
++                        discTitle(id, title, sizeof(title));
++                        if (title[0])
++                            snprintf(line, sizeof(line), "PS2 GAME   %s   %s", id, title);
++                        else
++                            snprintf(line, sizeof(line), "PS2 GAME   %s", id);
++                    }
++                }
+             }
+             break;
+         case SCECdDVDV:
+@@ -510,28 +533,84 @@ static void discPollWorker(void)
+                 close(fd);
+             break;
+         case SCECdCDDA:
+-            snprintf(line, sizeof(line), "AUDIO CD: NOT ONE RIPPS2 STARTS");
++            snprintf(line, sizeof(line), "AUDIO CD");
+             break;
+         default:
+             snprintf(line, sizeof(line), "A DISC RIPPS2 CANNOT START");
+             break;
+     }
+     snprintf(discLine, sizeof(discLine), "%s", line);
+-    discLastType = type;
      discPollBusy = 0;
  }
  
+-void ripps2RenderLaunch(void)
++static int discIoIdle(void)
+ {
+-    ripps2DrawBackground();
+-    ripps2RenderCategoryBar();
+-    renderStartPrompt("START DISC", 423);
+-    if (!discPollBusy && (float)(clock() - discPolledAt) / CLOCKS_PER_SEC > 1.0f) {
++    int t;
++    for (t = 1; t < IO_REQ_TYPE_COUNT; t++)
++        if (ioGetPending(t) > 0)
++            return 0;
++    return 1;
++}
++
 +// Every frame from the main loop, whatever the page
 +void ripps2DiscWatch(void)
 +{
-+    static clock_t firstSeen = 0;
++    static clock_t trayAt = 0;
++    static int trayOpen = -1;
 +    clock_t now = clock();
-+    int t;
 +
-+    if (firstSeen == 0) {
-+        firstSeen = now != 0 ? now : 1;
-+        discPolledAt = now;
++    if (now == 0)
++        now = 1;
++    if (discReadAt == 0 && trayOpen < 0) { // the first frame: the boot read, a little later
++        discReadAt = now + (clock_t)(DISC_BOOT_S * CLOCKS_PER_SEC);
++        trayOpen = 0;
++        trayAt = now;
 +    }
-+    if (discPollBusy || (float)(now - firstSeen) / CLOCKS_PER_SEC < DISC_FIRST_S ||
-+        (float)(now - discPolledAt) / CLOCKS_PER_SEC < DISC_EVERY_S)
++    if (discPollBusy)
 +        return;
-+    for (t = 1; t < IO_REQ_TYPE_COUNT; t++)
-+        if (ioGetPending(t) > 0)
-+            return; // lazy: the drive waits behind anything else the worker has to do
-+    discPollBusy = 1;
-+    discPolledAt = now;
-+    if (ioPutRequest(IO_CUSTOM_SIMPLEACTION, &discPollWorker) != IO_OK)
-+        discPollBusy = 0;
++    if (discRetry) { // the drive was still detecting: once more, a little later
++        discRetry = 0;
++        if (++discRetries <= DISC_RETRIES)
++            discReadAt = now + (clock_t)(DISC_RETRY_S * CLOCKS_PER_SEC);
++    }
++    // the tray: its status bit only, and only while the worker is idle (no disc access)
++    if ((float)(now - trayAt) / CLOCKS_PER_SEC >= DISC_TRAY_S && discIoIdle()) {
++        int st = sceCdStatus(), isOpen = st >= 0 && (st & DISC_SHELL_OPEN) != 0;
++        trayAt = now;
++        if (isOpen && trayOpen != 1) {
++            snprintf(discLine, sizeof(discLine), "TRAY OPEN");
++            discReadAt = 0;
++        } else if (!isOpen && trayOpen == 1) { // closed again: read what went in, once it settles
++            snprintf(discLine, sizeof(discLine), "READING THE DISC");
++            discReadAt = now + (clock_t)(DISC_SETTLE_S * CLOCKS_PER_SEC);
++            discRetries = 0;
++        }
++        trayOpen = isOpen;
++    }
++    if (discReadAt != 0 && (long)(now - discReadAt) >= 0 && discIoIdle()) {
++        discReadAt = 0;
+         discPollBusy = 1;
+-        discPolledAt = clock();
+         if (ioPutRequest(IO_CUSTOM_SIMPLEACTION, &discPollWorker) != IO_OK)
+             discPollBusy = 0;
+     }
 +}
 +
 +// The disc watcher's job is all the IO worker has: not worth the loading breath
@@ -386,22 +582,24 @@ index 3d44ce7..605be7d 100644
 +    return n <= 1;
 +}
 +
- void ripps2RenderLaunch(void)
- {
-     ripps2DrawBackground();
-     ripps2RenderCategoryBar();
--    renderStartPrompt("START DISC", 423);
--    if (!discPollBusy && (float)(clock() - discPolledAt) / CLOCKS_PER_SEC > 1.0f) {
--        discPollBusy = 1;
--        discPolledAt = clock();
--        if (ioPutRequest(IO_CUSTOM_SIMPLEACTION, &discPollWorker) != IO_OK)
--            discPollBusy = 0;
--    }
++void ripps2RenderLaunch(void)
++{
++    ripps2DrawBackground();
++    ripps2RenderCategoryBar();
 +    renderStartPrompt("START LASER", 423);
      if (discLine[0])
          fntRenderString(gTheme->fonts[3], 320, 450, ALIGN_CENTER, 0, 0, discLine, COLOR_SOFT);
      else
-@@ -566,7 +604,7 @@ void ripps2RenderMemory(void)
+@@ -553,7 +632,7 @@ void ripps2HandleInputLaunch(void)
+         int r = sysLaunchDisc(&guiRenderProbeFrame);
+         if (r < 0 && r != SYS_DISC_CANCELLED)
+             guiMsgBox("No disc RIPPS2 can start is in the drive. Insert a PS1 or PS2 game, a DVD video or an ESR disc, then press Start.", 0, NULL);
+-        discLastType = -1; // look again
++        discReadAt = clock() + 1; // look again
+         readPads();
+     }
+ }
+@@ -566,7 +645,7 @@ void ripps2RenderMemory(void)
  
      ripps2DrawBackground();
      ripps2RenderCategoryBar();
@@ -409,6 +607,75 @@ index 3d44ce7..605be7d 100644
 +    // the same footnotes as LAUNCH DISC: the prompt where START LASER sits, the formation on the line of
      // the disc note (small, between small L1 / R1), its count just under it
      renderStartPrompt("START BROWSER", 423);
+ 
+diff --git a/src/sound.c b/src/sound.c
+index a3e33ec..5fde7d6 100644
+--- a/src/sound.c
++++ b/src/sound.c
+@@ -8,6 +8,7 @@
+ #include <timer.h>
+ #include <vorbis/vorbisfile.h>
+ #include <delaythread.h>
++#include <time.h>
+ 
+ #include "include/sound.h"
+ #include "include/opl.h"
+@@ -454,6 +455,43 @@ void sfxPlay(int id)
+     }
+ }
+ 
++// RIPPS2: the boot sound, played out. It sounds on channel 0, which nothing else uses (the cursor
++// ticks and the one-shots rotate through channels of their own and cut off only each other), so no
++// press during the intro can stop it. The menu music waits for it to end, then starts from the IO
++// worker, so the intro and the menu keep moving while the music buffers; with the boot sound off,
++// the music starts as soon as the sounds are loaded.
++static volatile int bootAudioReady = 0;
++static clock_t bootAudioEnds = 0;
++
++void sfxPlayBoot(void)
++{
++    clock_t now = clock();
++
++    bootAudioEnds = now;
++    if (audio_initialized && gEnableSFX && gEnableBootSND && sfx_files[SFX_BOOT].duration_ms > 0) {
++        audsrv_adpcm_set_volume_and_pan(0, gBootSndVolume, 0);
++        audsrv_ch_play_adpcm(0, &sfx[SFX_BOOT]);
++        bootAudioEnds = now + (clock_t)sfx_files[SFX_BOOT].duration_ms * (CLOCKS_PER_SEC / 1000);
++    }
++    bootAudioReady = 1;
++}
++
++static void bgmBootStart(void)
++{
++    if (gEnableBGM && !isBgmPlaying())
++        bgmStart();
++}
++
++void bgmBootTick(void)
++{
++    static int queued = 0;
++
++    if (queued || !bootAudioReady || (long)(clock() - bootAudioEnds) < 0)
++        return;
++    queued = 1;
++    ioPutRequest(IO_CUSTOM_SIMPLEACTION, &bgmBootStart);
++}
++
+ /*--    Theme Background Music    -------------------------------------------------------------------------------------------
+ ---------------------------------------------------------------------------------------------------------------------------*/
+ 
+diff --git a/src/system.c b/src/system.c
+index 21e912c..cb81348 100644
+--- a/src/system.c
++++ b/src/system.c
+@@ -467,7 +467,7 @@ void sysExecExit(void)
+ // case-insensitively, require the '=' on the SAME line right after the key (a naive strchr
+ // could walk across a newline on a malformed file and grab the wrong line's value), and keep
+ // scanning past substring hits so a "BOOT2" inside another value can't shadow the real key.
+-static int sysParseBoot2(const char *cnf, char *out, int outSize)
++int sysParseBoot2(const char *cnf, char *out, int outSize)
+ {
+     const char *p = cnf;
  
 diff --git a/src/themes.c b/src/themes.c
 index bc2636a..86b0fcc 100644
