@@ -35,6 +35,10 @@ cp -f "$HERE/theme/fonts/ripps2_one.ttf" "$SRC/misc/ripps2_one.ttf"
 # The Memory Files ELF, compiled in and launched from RAM (patch 0004)
 # Built-in textures: glass info panel and PS2 selector mark (patch 0006)
 cp -f "$HERE"/theme/gfx/*.png "$SRC/gfx/"
+# BIBLE (patch 0069): PS2BBL 1.2.0 by El Isra, signed and unchanged, carried as data (GPL-3; see
+# elf/bible/README.md for its licence and source)
+cp -f "$HERE/bible/SYSTEM.XLF" "$SRC/misc/bible_system.xlf"
+cp -f "$HERE/bible/MX4SIO/SYSTEM.XLF" "$SRC/misc/bible_mx4sio_system.xlf"
 # The build number shown in About: the number of the last patch (build N is patch N)
 LAST="$(ls "$HERE"/patches/0*.patch | tail -n1)"
 NUM="$(basename "$LAST" | cut -c1-4 | sed 's/^0*//')"

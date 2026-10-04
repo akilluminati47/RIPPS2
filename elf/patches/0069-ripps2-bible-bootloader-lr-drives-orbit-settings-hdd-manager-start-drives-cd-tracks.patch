@@ -1,0 +1,2708 @@
+diff --git a/Makefile b/Makefile
+index 2512d6d..b831e05 100644
+--- a/Makefile
++++ b/Makefile
+@@ -145,7 +145,7 @@ IOP_OBJS =	iomanx.o filexio.o ps2fs.o usbd.o usbhdfsd.o bdmevent.o \
+ 		httpclient-iop.o netman.o ps2ips.o \
+ 		bdm_mcemu.o mmce_mcemu.o hdd_mcemu.o smb_mcemu.o \
+ 		iremsndpatch.o apemodpatch.o f2techioppatch.o cleareffects.o resetspu.o \
+-		libsd.o audsrv.o ps2kbd.o
++		libsd.o audsrv.o ps2kbd.o secrman.o secrsif.o
+ 
+ EECORE_OBJS = ee_core.o ioprp.o util.o \
+ 		udnl.o imgdrv.o eesync.o \
+@@ -189,7 +189,7 @@ AUDIO_OBJS =	boot.o cancel.o confirm.o cursor.o message.o transition.o bd_connec
+ # icon_sys.o + save_icn.o are the memory-card browser save icon for the settings folder.
+ # icon.sys names list.icn, copy.icn and del.icn; all three are the same artwork, so ONE blob is
+ # embedded and util.c writes it out under all three names (see saveIconName in src/util.c).
+-MISC_OBJS =	icon_sys.o save_icn.o icon_sys_A.o icon_sys_J.o icon_sys_C.o conf_theme_OPL.o theme_coverflow.o ripps2_font.o ripps2_sleek.o ripps2_sleekbold.o ripps2_sleekcase.o ripps2_one.o
++MISC_OBJS =	icon_sys.o save_icn.o icon_sys_A.o icon_sys_J.o icon_sys_C.o bible_xlf.o bible_mx4sio_xlf.o conf_theme_OPL.o theme_coverflow.o ripps2_font.o ripps2_sleek.o ripps2_sleekbold.o ripps2_sleekcase.o ripps2_one.o
+ 
+ TRANSLATIONS = Albanian Arabic Bulgarian Cebuano Croatian Czech Danish Dutch Filipino French \
+ 	Galician German Greek Hungarian Indonesian Italian Japanese Korean Laotian Persian Polish Portuguese \
+@@ -220,7 +220,7 @@ MMCE_ASSETS_DIR = $(PS2SDK)/iop/irx
+ MAPFILE = opl.map
+ EE_LDFLAGS += -Wl,-Map,$(MAPFILE)
+ 
+-EE_LIBS = -L$(PS2SDK)/ports/lib -L$(GSKIT)/lib -L./lib -lgskit -ldmakit -lpoweroff -lfileXio -lpatches -lpng -lz -lmc -lfreetype -lvux -lcdvd -lnetman -lps2ips -laudsrv -lvorbisfile -lvorbis -logg -lpadx -lelf-loader-nocolour -lkbd
++EE_LIBS = -L$(PS2SDK)/ports/lib -L$(GSKIT)/lib -L./lib -lgskit -ldmakit -lpoweroff -lfileXio -liopreboot -lpatches -lpng -lz -lmc -lfreetype -lvux -lcdvd -lnetman -lps2ips -laudsrv -lvorbisfile -lvorbis -logg -lpadx -lelf-loader-nocolour -lkbd -lsecr
+ EE_INCS += -I$(PS2SDK)/ports/include -I$(PS2SDK)/ports/include/freetype2 -I$(GSKIT)/include -I$(GSKIT)/ee/dma/include -I$(GSKIT)/ee/gs/include -Imodules/iopcore/common -Imodules/network/common -Imodules/hdd/common -Iinclude
+ BIN2C = $(PS2SDK)/bin/bin2c
+ 
+@@ -1097,6 +1097,13 @@ $(EE_ASM_DIR)mcman.c: $(PS2SDK)/iop/irx/mcman.irx | $(EE_ASM_DIR)
+ $(EE_ASM_DIR)mcserv.c: $(PS2SDK)/iop/irx/mcserv.irx | $(EE_ASM_DIR)
+ 	$(BIN2C) $< $@ $(*F)_irx
+ 
++# RIPPS2 (BIBLE): ps2sdk's SECRMAN, which can bind a KELF to a memory card, and its RPC server
++$(EE_ASM_DIR)secrman.c: $(PS2SDK)/iop/irx/secrman.irx | $(EE_ASM_DIR)
++	$(BIN2C) $< $@ $(*F)_irx
++
++$(EE_ASM_DIR)secrsif.c: $(PS2SDK)/iop/irx/secrsif.irx | $(EE_ASM_DIR)
++	$(BIN2C) $< $@ $(*F)_irx
++
+ $(EE_ASM_DIR)poeveticanew.c: thirdparty/PoeVeticaNew.ttf | $(EE_ASM_DIR)
+ 	$(BIN2C) $< $@ $(*F)_raw
+ 
+@@ -1116,6 +1123,14 @@ $(EE_ASM_DIR)icon_sys_J.c: misc/icon_J.sys | $(EE_ASM_DIR)
+ $(EE_ASM_DIR)icon_sys_C.c: misc/icon_C.sys | $(EE_ASM_DIR)
+ 	$(BIN2C) $< $@ $(*F)
+ 
++# RIPPS2 (BIBLE): PS2BBL 1.2.0 by El Isra, signed, unchanged (GPL-3; carried as data, see the RIPPS2
++# repo's elf/bible for its licence and source). build.sh puts them in misc/.
++$(EE_ASM_DIR)bible_xlf.c: misc/bible_system.xlf | $(EE_ASM_DIR)
++	$(BIN2C) $< $@ bible_xlf
++
++$(EE_ASM_DIR)bible_mx4sio_xlf.c: misc/bible_mx4sio_system.xlf | $(EE_ASM_DIR)
++	$(BIN2C) $< $@ bible_mx4sio_xlf
++
+ $(EE_ASM_DIR)conf_theme_OPL.c: misc/conf_theme_OPL.cfg | $(EE_ASM_DIR)
+ 	$(BIN2C) $< $@ $(*F)_cfg
+ 
+diff --git a/include/bdmsupport.h b/include/bdmsupport.h
+index 9b9018f..5bb6fd0 100644
+--- a/include/bdmsupport.h
++++ b/include/bdmsupport.h
+@@ -83,6 +83,7 @@ int bdmHDDIsPresent(u32 timeoutMs);
+ // roots as real filesystems, but every consumer of this path (POPSTARTER, the BDMA equip, the boot-dir
+ // resolver, the Neutrino pickers) must stay on massN:.
+ int bdmGetDeviceRootByType(int bdmType, char *root, int rootLen);
++int bdmSlotDeviceType(int slot); // RIPPS2: BDM_TYPE_* of what is mounted at mass<slot>:, -2 when nothing is
+ // Fill `slots` with the massN: slot index of EVERY mounted device whose driver matches bdmType (root =
+ // "mass<i>:/"), up to maxSlots; returns the count. The BDMA equip searches all same-type slots so a
+ // source family with two same-type devices is covered when the files sit on the second.
+diff --git a/include/dialogs.h b/include/dialogs.h
+index eed7f05..76cc8af 100644
+--- a/include/dialogs.h
++++ b/include/dialogs.h
+@@ -301,6 +301,7 @@ enum UI_ITEMS {
+     ADV_STORAGE_BUTTON,
+     CFG_HDDOPLPART,
+     GENERAL_GSM_DEFAULTS_BUTTON,
++    RIPPS2_BIBLE_BUTTON, // RIPPS2: BOOT LOADER > MANAGE (BIBLE)
+     LAUNCH_GSM_DEFAULTS_BUTTON,
+ 
+ #ifdef PADEMU
+diff --git a/include/ripps2.h b/include/ripps2.h
+index 8198adc..3613b0c 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -16,6 +16,7 @@ int ripps2LaunchPs1Disc(void);
+ int ripps2CdIsOpen(void);
+ int ripps2FilesBusy(void); // ripps2files.c: the browser has a drive open or an operation running
+ void ripps2CdStart(void); // START LASER on an audio CD: reads its TOC and plays from the first song
++int ripps2CdAudioTracks(void); // the CD in the drive's sound tracks (its TOC read); 0 when none
+ void ripps2CdRender(void);
+ void ripps2CdInput(void);
+ void ripps2PillarMusic(int on); // ripps2bg.c: the towers settle and light up to what is playing
+@@ -24,6 +25,8 @@ void ripps2PillarMusic(int on); // ripps2bg.c: the towers settle and light up to
+ int ripps2BootLockState(void);              // 1 when a PS2BBL config on the console has RIPPS2's lock in it
+ void ripps2BootLockApply(int on);           // writes it into (or out of) every PS2BBL config found; says how it went
+ int ripps2BootLockIgrPath(char *out, int size); // RIPPS2's path in the IGR Path's own form; 0 when the IGR cannot reach it
++void ripps2BibleManage(void);               // BOOT LOADER > MANAGE: what each card starts; BIBLE (PS2BBL 1.2.0) to install or repair
++int ripps2RebootIopWith(const void *ioprp, int size); // opl.c: the IOP rebooted from an IOPRP image, the menu taken down and back
+ int ripps2GetBootPath(char *out, int size); // opl.c: the path RIPPS2 was started from; 0 when unknown
+ int ripps2GetBootBdmType(void);             // opl.c: BDM_TYPE_* of the drive RIPPS2 was started from
+ 
+@@ -36,7 +39,16 @@ enum {
+ };
+ 
+ extern int gRipps2Category;  // current category; boots on Storage
+-extern int gRipps2Formation; // Memory Files orb formation, switched with L1/R1; saved in the settings
++extern int gRipps2Formation; // Memory Files orb formation, switched with Left/Right; saved in the settings
++// Memory Files ORBITS (the settings grid), saved in the settings and read by the orbs every frame
++extern int gRipps2OrbOff;    // formations left out of Left/Right and the cycle (bit n = formation n)
++extern int gRipps2OrbCycle;  // the orbs move on to the next formation by themselves: 0 off, 1 30 s, 2 1 min, 3 3 min
++extern int gRipps2OrbSpeed;  // 0 slow, 1 normal, 2 fast
++extern int gRipps2OrbPaths;  // the path lines: 0 while L2 is held, 1 faint all the time, 2 all the time
++extern int gRipps2OrbHeight; // 0 centred, 1 low, 2 high
++int ripps2FormationCount(void);
++const char *ripps2FormationName(int f);
++int ripps2FormationStep(int from, int dir); // the next formation that is not left out
+ void ripps2SaveSettingsInBackground(void); // opl.c: a quiet settings save on the io worker
+ 
+ // Random Game (Interface settings): L2 + R2 together jump to a random game; Boot also opens each
+diff --git a/include/system.h b/include/system.h
+index a80930c..537c0e7 100644
+--- a/include/system.h
++++ b/include/system.h
+@@ -12,6 +12,7 @@ int sysGetDiscID(char *discID);
+ void sysInitDev9(void);
+ void sysShutdownDev9(void);
+ void sysReset(int modload_mask);
++void sysSetRebootImage(const void *ioprp, int size); // RIPPS2: the next sysReset boots the IOP from this IOPRP image (NULL: the ROM's own)
+ void sysExecExit(void);
+ // Boot the physical PS2 disc in the drive; <0 (stays in OPL) on failure. `progress` is called once
+ // per poll while waiting on the drive -- pass guiRenderProbeFrame from the GUI thread so the menu
+diff --git a/lng_tmpl/_base.yml b/lng_tmpl/_base.yml
+index 272b83b..b97d7c1 100644
+--- a/lng_tmpl/_base.yml
++++ b/lng_tmpl/_base.yml
+@@ -804,7 +804,7 @@ gui_strings:
+ - label: HINT_POPSTARTER_DEVICE
+   string: Device holding POPS/POPSTARTER.ELF for PS1 VCD launches. Default = boot device (cwd) then the VCD's own device. Game's Device = the VCD's device only. Custom reveals a free-text path.
+ - label: HINT_POPSTARTER_PATH
+-  string: "Where is POPSTARTER.ELF located? <not set> = Game Device -> mc0/mc1. A custom full path is tried first. Examples: mass0:/POPS/POPSTARTER.ELF | ata:/POPS/POPSTARTER.ELF | mmce0:/POPS/POPSTARTER.ELF | mc0:/POPS/POPSTARTER.ELF | pfs0:/POPS/POPSTARTER.ELF"
++  string: "Where is POPSTARTER.ELF located? An empty path fills in with one RIPPS2 finds on a drive (POPS, APPS or the drive's top); type over it to use another. <not set> = Game Device -> mc0/mc1. A full path is tried first. Examples: usb:/POPS/POPSTARTER.ELF | ata:/POPS/POPSTARTER.ELF | mmce:/POPS/POPSTARTER.ELF | mc:/POPS/POPSTARTER.ELF | pfs0:/POPS/POPSTARTER.ELF"
+ - label: HINT_POPSTARTER_RETROGEM_GAMEID
+   string: Render optical barcode for Pixel FX / RetroGEM / PS2Digital on PS1 VCD launch
+ - label: HINT_POPS_IMPORT
+@@ -1396,7 +1396,13 @@ gui_strings:
+ - label: RIPPS2_BOOT_LOCK
+   string: Boot Lock
+ - label: HINT_RIPPS2_BOOT_LOCK
+-  string: "Starts RIPPS2 when the console powers on, through PS2BBL (El Isra's PlayStation 2 Basic BootLoader, or saildot4k's PS2BBL Extended), which must already be installed. On puts RIPPS2 first in PS2BBL's config and fills an empty IGR Path with RIPPS2's path; off puts back what PS2BBL started before. Hold a PS2BBL hotkey at power on to reach anything else."
++  string: "Starts RIPPS2 when the console powers on, through PS2BBL (El Isra's PlayStation 2 Basic BootLoader, or saildot4k's PS2BBL Extended). On puts RIPPS2 first in PS2BBL's config and fills an empty IGR Path with RIPPS2's path; off puts back what PS2BBL started before. No PS2BBL, or FMCB starting first? Boot Loader installs BIBLE. Hold a PS2BBL hotkey at power on to reach anything else."
++- label: RIPPS2_BOOT_LOADER
++  string: Boot Loader
++- label: HINT_RIPPS2_BOOT_LOADER
++  string: "Shows what each memory card starts at power on (PS2BBL, FMCB, OSDMenu), and installs or repairs BIBLE: PS2BBL 1.2.0 by El Isra, bound to the card you choose, starting RIPPS2 at once with Boot Lock on. What the card started before is kept in a backup folder."
++- label: RIPPS2_MANAGE
++  string: Manage
+ - label: RIPPS2_MUSIC
+   string: Music
+ - label: HINT_RIPPS2_MUSIC
+diff --git a/src/bdmsupport.c b/src/bdmsupport.c
+index 0f62244..1df589b 100644
+--- a/src/bdmsupport.c
++++ b/src/bdmsupport.c
+@@ -984,6 +984,24 @@ void bdmLogConfigWriteResult(const bdm_config_diag_snapshot_t *snap, int result)
+ #endif
+ }
+ 
++// RIPPS2 build 69: what is mounted at mass<slot>: (BDM_TYPE_*), or -2 when nothing is. The file
++// browser names drives by it (USB, MX4SIO, iLink, exFAT HDD) instead of calling every one "mass".
++int bdmSlotDeviceType(int slot)
++{
++    char path[16], driver[32];
++    int devIndex = -1;
++
++    snprintf(path, sizeof(path), "mass%d:/", slot);
++    if (bdmReadDeviceIdentity(path, driver, sizeof(driver), &devIndex) < 0 && driver[0] == '\0') {
++        int dir = fileXioDopen(path);
++        if (dir < 0)
++            return -2;
++        fileXioDclose(dir);
++        return BDM_TYPE_UNKNOWN;
++    }
++    return bdmDetermineDeviceType(driver);
++}
++
+ // Has this BDM slot EVER had a device on it? bdmUpdateDeviceData's connect pass is the only thing
+ // that fills bdmPrefix, so an empty prefix means no device has ever been seen in this slot this
+ // session. The menu hook uses it to stop paying a full fileXioDopen round-trip per empty slot on
+diff --git a/src/dialogs.c b/src/dialogs.c
+index e8d2769..7fe7d25 100644
+--- a/src/dialogs.c
++++ b/src/dialogs.c
+@@ -325,6 +325,11 @@ struct UIItem diaConfig[] = {
+     {UI_BOOL, CFG_RIPPS2_BOOTLOCK, 1, 1, _STR_HINT_RIPPS2_BOOT_LOCK, 0, 0, {.intvalue = {0, 0}}},
+     {UI_BREAK},
+ 
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_BOOT_LOADER}}},
++    {UI_SPACER},
++    {UI_BUTTON, RIPPS2_BIBLE_BUTTON, 1, 1, _STR_HINT_RIPPS2_BOOT_LOADER, 0, 0, {.label = {NULL, _STR_RIPPS2_MANAGE}}},
++    {UI_BREAK},
++
+     {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_EXITTO}}},
+     {UI_SPACER},
+     {UI_STRING, CFG_EXITTO, 1, 1, _STR_HINT_EXITPATH, 0, 0, {.stringvalue = {"", "", &guiExitPathHandler}}},
+diff --git a/src/gui.c b/src/gui.c
+index bcd7021..87b8a02 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -685,6 +685,11 @@ reshow_config:
+         guiGameShowGSConfig(1);
+         goto reshow_config;
+     }
++    if (ret == RIPPS2_BIBLE_BUTTON) { // RIPPS2: BIBLE may have turned the lock on
++        ripps2BibleManage();
++        guiBootLockBegin(diaConfig);
++        goto reshow_config;
++    }
+     if (ret) {
+         diaGetInt(diaConfig, UICFG_LANG, &langID);
+         snprintf(gExitPath, sizeof(gExitPath), "%s", exitPathEdit);
+@@ -1604,6 +1609,48 @@ int guiNeutrinoPathHandler(char *text, int maxLen)
+     return 1;
+ }
+ 
++// RIPPS2 build 69: a POPSTARTER.ELF RIPPS2 can see on a drive, written the way the path setting
++// keeps it across boots (usb:/, mx4sio:/, ilink:/, ata:/ by family, not massN: by mount order; mc:/
++// either card; mmce:/ either slot; pfs0:/ the HDD's OPL home). Looked for where people keep it: POPS/,
++// APPS/, APPS/POPSTARTER/, POPSTARTER/ and the drive's top (vcdResolvePopstarter's own list).
++static int guiPopstarterDetect(char *out, int size)
++{
++    static const char *const family[] = {"usb", "ilink", "mx4sio", "ata"}; // BDM_TYPE_USB .. BDM_TYPE_ATA
++    char found[256], prefix[10];
++    int slot, t, n;
++
++    for (slot = 0; slot < 8; slot++) {
++        if (!bdmSlotEverConnected(BDM_MODE + slot) || (t = bdmSlotDeviceType(slot)) < BDM_TYPE_USB || t > BDM_TYPE_ATA)
++            continue;
++        snprintf(prefix, sizeof(prefix), "mass%d:", slot);
++        n = strlen(prefix);
++        if (vcdResolvePopstarter(prefix, found, sizeof(found)) && !strncmp(found, prefix, n))
++            return snprintf(out, size, "%s:%s%s", family[t], found[n] == '/' ? "" : "/", found + n) < size;
++    }
++    for (slot = 0; slot < 2 && mmceGetObject(1) != NULL; slot++) {
++        snprintf(prefix, sizeof(prefix), "mmce%d:", slot);
++        n = strlen(prefix);
++        if (vcdResolvePopstarter(prefix, found, sizeof(found)) && !strncmp(found, prefix, n))
++            return snprintf(out, size, "mmce:%s%s", found[n] == '/' ? "" : "/", found + n) < size;
++    }
++    if (gHDDPrefix != NULL && vcdResolvePopstarter("pfs0:", found, sizeof(found)) && !strncmp(found, "pfs0:", 5))
++        return snprintf(out, size, "%s", found) < size;
++    if (vcdResolvePopstarterMcElf(found, sizeof(found)) && !strncmp(found, "mc", 2) && found[3] == ':')
++        return snprintf(out, size, "mc:%s", found + 4) < size;
++    return 0;
++}
++
++// An empty POPSTARTER path fills in with the one found (it is saved only with the page, like a typed
++// one); a path the user typed is never replaced
++static void guiPopstarterAutofill(struct UIItem *ui)
++{
++    if (popstarterPathEdit[0] != '\0' || !guiPopstarterDetect(popstarterPathEdit, sizeof(popstarterPathEdit))) {
++        return;
++    }
++    LOG("POPSTARTER: path filled in from %s\n", popstarterPathEdit);
++    diaSetString(ui, CFG_POPSTARTER_PATH, popstarterPathEdit);
++}
++
+ int guiPopstarterPathHandler(char *text, int maxLen)
+ {
+     if (!guiShowKeyboard(popstarterPathEdit, sizeof(popstarterPathEdit)))
+@@ -2791,6 +2838,11 @@ reshow_general:
+             guiSettingsSavePending = 1;
+         goto reshow_general;
+     }
++    if (result == RIPPS2_BIBLE_BUTTON) { // RIPPS2: BIBLE may have turned the lock on
++        ripps2BibleManage();
++        guiBootLockBegin(ui);
++        goto reshow_general;
++    }
+ 
+     if (result != UIID_BTN_CANCEL && result != -1 && !guiSettingsLeftUntouched(ui, result, exitPathEdit, gExitPath)) {
+         diaGetInt(ui, UICFG_LANG, &langID);
+@@ -3195,6 +3247,7 @@ static int guiSettingsShowPopstarter(void)
+     guiSetGameViewPicker(ui);
+ 
+     guiCorePathBegin(ui, CFG_POPSTARTER_PATH, popstarterPathEdit, sizeof(popstarterPathEdit), gPopstarterPath);
++    guiPopstarterAutofill(ui); // RIPPS2 build 69
+     diaSetInt(ui, CFG_POPSTARTER_RETROGEM_GAMEID, gPopstarterRetroGemGameID);
+     guiSetBdmaSettings(ui);
+     guiSettingsBeginDialog(ui);
+@@ -4798,7 +4851,7 @@ int guiMsgBox(const char *text, int addAccept, struct UIItem *ui)
+     const char *startLabel = msgBoxStartLabel; // RIPPS2
+     msgBoxStartLabel = NULL;
+     // Wrapped once up front, not per frame: the result depends only on `text` and the screen width.
+-    char wrapped[512];
++    char wrapped[1024]; // RIPPS2: 512 cut the longer screens (BIBLE's) short
+ 
+     // Same pre-GUI guard as guiWarning: autolaunch (miniInit) never runs rmInit/thmInit/guiInit or
+     // starts the pads, so a launch-path error box would draw through a NULL gsGlobal/gTheme and then
+diff --git a/src/menusys.c b/src/menusys.c
+index db622fe..e3a9fa9 100644
+--- a/src/menusys.c
++++ b/src/menusys.c
+@@ -1877,10 +1877,14 @@ void menuHandleInputMain()
+         menuRandomItem(1);
+     }
+ 
+-    if (getKeyOn(KEY_LEFT)) {
+-        ripps2StepCategory(-1); // RIPPS2: Left/Right switch categories (Launch Disc / Memory Files)
+-    } else if (getKeyOn(KEY_RIGHT)) {
++    if (getKeyOn(KEY_L1)) {
++        ripps2StepCategory(-1); // RIPPS2 build 69: L1/R1 switch categories (Launch Disc / Memory Files)
++    } else if (getKeyOn(KEY_R1)) {
+         ripps2StepCategory(1);
++    } else if (getKeyOn(KEY_LEFT)) {
++        menuNavigateLeft(); // RIPPS2 build 69: Left/Right switch drives, like the orb formations (FifthFox)
++    } else if (getKeyOn(KEY_RIGHT)) {
++        menuNavigateRight();
+     } else if (getKey(KEY_UP)) {
+         menuNavigateUp();
+     } else if (getKey(KEY_DOWN)) {
+@@ -1904,10 +1908,6 @@ void menuHandleInputMain()
+     } else if (getKeyOn(KEY_SELECT)) {
+         if (!viewPending)
+             selected_item->item->refresh(selected_item->item);
+-    } else if (getKeyOn(KEY_L1)) {
+-        menuNavigateLeft(); // RIPPS2: L1/R1 switch drives, like the orb formations
+-    } else if (getKeyOn(KEY_R1)) {
+-        menuNavigateRight();
+     } else if (getKeyOn(KEY_R3)) { // toggle favourite
+         if (!viewPending && selected_item->item->fav)
+             selected_item->item->fav(selected_item->item);
+@@ -1965,22 +1965,23 @@ void menuHandleInputInfo()
+         menuPrevV();
+     } else if (getKey(KEY_DOWN)) {
+         menuNextV();
+-    } else if (getKeyOn(KEY_L1)) {
+-        // RIPPS2: L1/R1 switch drives; leaving the info page lands on that drive's game list
++    } else if (getKeyOn(KEY_LEFT)) {
++        // RIPPS2 build 69: Left/Right switch drives here too; leaving the info page lands on that
++        // drive's game list
+         menuNavigateLeft();
+         guiSwitchScreen(GUI_SCREEN_MAIN);
+-    } else if (getKeyOn(KEY_R1)) {
++    } else if (getKeyOn(KEY_RIGHT)) {
+         menuNavigateRight();
+         guiSwitchScreen(GUI_SCREEN_MAIN);
++    } else if (getKeyOn(KEY_L1)) {
++        ripps2StepCategory(-1); // RIPPS2 build 69: L1/R1 switch categories, from the info page as well
++    } else if (getKeyOn(KEY_R1)) {
++        ripps2StepCategory(1);
+     } else if (getKeyOn(KEY_CIRCLE)) {
+         if (gSelectButton == KEY_CROSS)
+             guiSwitchScreen(GUI_SCREEN_MAIN);
+         else
+             selected_item->item->execCircle(selected_item->item);
+-    } else if (getKey(KEY_LEFT)) {
+-        menuPrevV(); // RIPPS2: no category bar on the info page, so Left/Right step games like Up/Down
+-    } else if (getKey(KEY_RIGHT)) {
+-        menuNextV();
+     }
+ 
+     item_list_t *support = selected_item != NULL && selected_item->item != NULL ? selected_item->item->userdata : NULL;
+diff --git a/src/opl.c b/src/opl.c
+index aa2c047..cc43fde 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -3239,6 +3239,17 @@ static void _loadConfig()
+                 gRipps2Formation = value; // RIPPS2: the Memory Files formation last left on
+             if (configGetInt(configOPL, "ripps2_random", &value) && value >= RIPPS2_RANDOM_OFF && value <= RIPPS2_RANDOM_BOOT)
+                 gRipps2Random = value; // RIPPS2: Random Game
++            // RIPPS2 build 69: Memory Files ORBITS
++            if (configGetInt(configOPL, "ripps2_orb_off", &value) && value >= 0 && value < (1 << 12) - 1)
++                gRipps2OrbOff = value;
++            if (configGetInt(configOPL, "ripps2_orb_cycle", &value) && value >= 0 && value <= 3)
++                gRipps2OrbCycle = value;
++            if (configGetInt(configOPL, "ripps2_orb_speed", &value) && value >= 0 && value <= 2)
++                gRipps2OrbSpeed = value;
++            if (configGetInt(configOPL, "ripps2_orb_paths", &value) && value >= 0 && value <= 2)
++                gRipps2OrbPaths = value;
++            if (configGetInt(configOPL, "ripps2_orb_height", &value) && value >= 0 && value <= 2)
++                gRipps2OrbHeight = value;
+             configGetColor(configOPL, CONFIG_OPL_BGCOLOR, gDefaultBgColor);
+             configGetColor(configOPL, CONFIG_OPL_TEXTCOLOR, gDefaultTextColor);
+             configGetColor(configOPL, CONFIG_OPL_UI_TEXTCOLOR, gDefaultUITextColor);
+@@ -3921,6 +3932,11 @@ static void _saveConfig()
+         configSetInt(configOPL, CONFIG_OPL_SCROLLING, gScrollSpeed);
+         configSetInt(configOPL, "ripps2_formation", gRipps2Formation); // RIPPS2
+         configSetInt(configOPL, "ripps2_random", gRipps2Random);       // RIPPS2
++        configSetInt(configOPL, "ripps2_orb_off", gRipps2OrbOff);      // RIPPS2 build 69: ORBITS
++        configSetInt(configOPL, "ripps2_orb_cycle", gRipps2OrbCycle);
++        configSetInt(configOPL, "ripps2_orb_speed", gRipps2OrbSpeed);
++        configSetInt(configOPL, "ripps2_orb_paths", gRipps2OrbPaths);
++        configSetInt(configOPL, "ripps2_orb_height", gRipps2OrbHeight);
+         configSetStr(configOPL, CONFIG_OPL_THEME, thmGetValue());
+         configSetStr(configOPL, CONFIG_OPL_LANGUAGE, lngGetValue());
+         configSetColor(configOPL, CONFIG_OPL_BGCOLOR, gDefaultBgColor);
+@@ -4590,6 +4606,51 @@ void handleLwnbdSrv()
+     }
+ }
+ 
++// RIPPS2 (BIBLE, ripps2boot.c): reboot the IOP from an IOPRP image, with the menu taken down around
++// it and brought back after, the way the NBD server does it: drives, pads, music and sounds return
++// as they were. 1 = done; 0 = the menu was busy (art or a request would not drain) and nothing changed.
++int ripps2RebootIopWith(const void *ioprp, int size)
++{
++    int ret = 0, tries = 0;
++
++    if (!cacheAbortMmceImageLoadsTimed(LWNBD_ART_DRAIN_TICKS) || !cacheCancelPendingImageLoadsTimed(LWNBD_ART_DRAIN_TICKS))
++        return 0;
++    ioBlockOpsTimed(1, LWNBD_IO_DRAIN_TICKS);
++    if (ioHasPendingRequests()) {
++        ioBlockOps(0);
++        return 0;
++    }
++
++    audioEnd();
++    guiExecDeferredOps();
++    deinitAllSupport(NO_EXCEPTION, IO_MODE_SELECTED_ALL);
++    clearErrorMessage();
++    unloadPads();
++
++    sysSetRebootImage(ioprp, size);
++    reset();
++    sysSetRebootImage(NULL, 0);
++
++    LOG_INIT();
++    LOG_ENABLE();
++    padInit(0);
++    while (!ret && tries++ < 100) {
++        ret = startPads();
++        if (!ret)
++            delay(50);
++    }
++    if (!ret)
++        LOG("ripps2RebootIopWith: pads did not start after the IOP reboot (%d tries)\n", tries);
++
++    ioBlockOps(0);
++    initAllSupport(1);
++    audioInit();
++    sfxInit(0);
++    if (gEnableBGM)
++        bgmStart();
++    return 1;
++}
++
+ // ----------------------------------------------------------
+ // --------------------- Init/Deinit ------------------------
+ // ----------------------------------------------------------
+diff --git a/src/ripps2about.c b/src/ripps2about.c
+index 3d4af35..9bcdba8 100644
+--- a/src/ripps2about.c
++++ b/src/ripps2about.c
+@@ -71,11 +71,15 @@ static const ab_row_t abRows[] = {
+     {'T', "ps2sdk's libcdvd and audsrv"},
+     {'S', "the disc's sound read straight off it, the towers lit by it"},
+     {'G', NULL},
+-    {'H', "BOOT LOCK"},
++    {'H', "BOOT LOCK AND BIBLE"},
+     {'T', "PS2BBL by El Isra (israpps)"},
+     {'S', "the PlayStation 2 Basic BootLoader: BOOT LOCK starts RIPPS2 with it"},
++    {'S', "BIBLE is PS2BBL 1.2.0, El Isra's signed build, unchanged (GPL-3)"},
++    {'S', "source: github.com/israpps/PlayStation2-Basic-BootLoader"},
+     {'T', "PS2BBL Extended by saildot4k"},
+-    {'S', "BOOT LOCK edits their config; neither is bundled"},
++    {'S', "BOOT LOCK edits its config too"},
++    {'T', "ps2sdk's SECRMAN, from the FMCB installer by SP193"},
++    {'S', "binds BIBLE to your card; the console does the crypto, no keys"},
+     {'G', NULL},
+     {'H', "MEMORY FILES"},
+     {'T', "wLaunchELF by the ps2homebrew team"},
+diff --git a/src/ripps2bg.c b/src/ripps2bg.c
+index 6fcc8cd..17d7d36 100644
+--- a/src/ripps2bg.c
++++ b/src/ripps2bg.c
+@@ -1290,7 +1290,8 @@ void ripps2DrawOrbs(void)
+     else
+         orbBuild = fmaxf(0.0f, orbBuild - step / ORB_GLIDE_S);
+     float build = orbBuild * orbBuild * (3.0f - 2.0f * orbBuild); // eases in and settles at either end
+-    orbSpeed = 1.0f + (ORB_BOOST_MAX - 1.0f) * build;
++    static const float speedBase[3] = {0.55f, 1.0f, 1.6f}; // ORBITS: slow, normal, fast
++    orbSpeed = speedBase[gRipps2OrbSpeed % 3] * (1.0f + (ORB_BOOST_MAX - 1.0f) * build);
+     orbClock += step * orbSpeed;
+     trailBoost = build;
+     float ot = orbClock; // where the orbs are along their paths
+@@ -1299,6 +1300,19 @@ void ripps2DrawOrbs(void)
+     lorenzStep(fminf(dt, 0.05f) * orbSpeed);
+     spinUpdate(fminf(dt, 0.1f));
+ 
++    // ORBITS' cycle: the next formation that is not left out, every so often (the clock restarts on
++    // any change, by hand or by the cycle, and when the page opens)
++    static const float cycleS[4] = {0.0f, 30.0f, 60.0f, 180.0f};
++    static float cycleFrom = 0.0f;
++    static int cycleFormation = -1;
++    if (gRipps2Formation != cycleFormation || dt > 0.25f) {
++        cycleFormation = gRipps2Formation;
++        cycleFrom = t;
++    } else if (gRipps2OrbCycle > 0 && !morphing && t - cycleFrom >= cycleS[gRipps2OrbCycle & 3]) {
++        gRipps2Formation = cycleFormation = ripps2FormationStep(gRipps2Formation, 1);
++        cycleFrom = t;
++    }
++
+     int f = gRipps2Formation % FORMATIONS;
+     if (shownFormation < 0)
+         shownFormation = prevFormation = f;
+@@ -1323,7 +1337,11 @@ void ripps2DrawOrbs(void)
+ 
+     float sway = sinf(t * 0.07f) * 0.3f;
+     v3 eye = {sinf(sway) * 15.0f, 1.5f + sinf(t * 0.13f) * 0.8f, cosf(sway) * 15.0f};
+-    v3 target = {0.0f, -0.7f, 0.0f};
++    // ORBITS' height: the camera looks a little higher (the formation sits lower) or lower
++    static const float lift[3] = {0.0f, 0.9f, -0.9f};
++    static const int hazeY[3] = {0, 34, -34};
++    int hgt = gRipps2OrbHeight % 3;
++    v3 target = {0.0f, -0.7f + lift[hgt], 0.0f};
+     camLook(eye, target, 42.0f);
+ 
+     // the Storage sky's stars and drifting motes, behind the formation
+@@ -1332,7 +1350,7 @@ void ripps2DrawOrbs(void)
+     drawMotes(t, 1);
+ 
+     rmSetBlendAdditive(1);
+-    glow(320, 230, 260, 0x12, 0x35, 0x7F, 0x30); // soft haze behind the formation
++    glow(320, 230 + hazeY[hgt], 260, 0x12, 0x35, 0x7F, 0x30); // soft haze behind the formation
+ 
+     // outline: draw on, flash, hold, fade (never mid-morph)
+     if (!morphing) {
+@@ -1349,7 +1367,8 @@ void ripps2DrawOrbs(void)
+                 reveal = clamp01(age / GUIDE_REVEAL_S);
+             }
+         }
+-        int held = (int)(0x40 * pathsLevel); // L2: the whole path, steady
++        static const float pathFloor[3] = {0.0f, 0.4f, 1.0f}; // ORBITS' path lines: with L2, faint, always
++        int held = (int)(0x40 * fmaxf(pathsLevel, pathFloor[gRipps2OrbPaths % 3])); // L2: the whole path, steady
+         if (held > a) {
+             a = held;
+             reveal = 1.0f;
+diff --git a/src/ripps2boot.c b/src/ripps2boot.c
+index 3cbd938..adc9772 100644
+--- a/src/ripps2boot.c
++++ b/src/ripps2boot.c
+@@ -4,9 +4,8 @@
+   Review OpenUsbLd README & LICENSE files for further details.
+ 
+   BOOT LOCK (Settings > General & System): the console starts straight into RIPPS2, through PS2BBL,
+-  the PlayStation 2 Basic BootLoader by El Isra (israpps), or saildot4k's PS2BBL Extended. RIPPS2
+-  carries no part of either. It edits the boot loader's own config file, the one PS2BBL already
+-  reads at power on:
++  the PlayStation 2 Basic BootLoader by El Isra (israpps), or saildot4k's PS2BBL Extended. It edits
++  the boot loader's own config file, the one PS2BBL already reads at power on:
+ 
+     on   RIPPS2 becomes the first automatic entry (LK_AUTO_E1, named RIPPS2). The lines it takes the
+          place of stay in the file, commented out with a #RIPPS2# prefix under a marker line.
+@@ -14,32 +13,72 @@
+ 
+   A hotkey held at power on still reaches every other PS2BBL entry, so the lock shuts nothing out.
+   The first time a config is changed, its original is kept beside it as <name>.RIPPS2-BACKUP.
++
++  BIBLE (BOOT LOADER > MANAGE, build 69): RIPPS2's way to put PS2BBL on a console that has none, or
++  has something else (FMCB, OSDMenu) starting first. It is PS2BBL 1.2.0 itself, El Isra's signed
++  release, unchanged (GPL-3; carried as data, see elf/bible in the RIPPS2 repo for its licence and
++  source), installed the way a system update is: bound to one memory card by the console's own
++  MechaCon, through ps2sdk's open SECRMAN (no keys anywhere: the console does the crypto), in the
++  folder and under the name this console's ROM looks for. Whatever started from that folder before
++  is moved aside first, never deleted, and PS2BBL can still start it (CIRCLE at power on). Its config
++  waits 0 ms for a button and starts RIPPS2 with the lock on.
++
++  What a card runs is told by its system update's icon.sys title (KELFBinder's PS2BBL installs say
++  PS2BBL(USA) and so on; BIBLE says BIBLE) and by the loaders' own files (FMCB's SYS-CONF/FREEMCB.CNF,
++  OSDMenu's SYS-CONF/OSDMENU.CNF). Only PS2BBL reads a PS2BBL config: build 68 wrote one for an FMCB
++  card, which FMCB never reads; those files carry its header and are removed here.
+ */
+ 
+ #include <stdio.h>
+ #include <string.h>
+ #include <stdlib.h>
++#include <ctype.h>
+ #include <fcntl.h>
+ #include <unistd.h>
++#include <dirent.h>
++#include <malloc.h>
+ #include <sys/stat.h>
++#include <libmc.h>
++#include <libsecr.h>
++#include <strings.h>
++#include <delaythread.h>
+ 
+ #include "include/opl.h"
+ #include "include/gui.h"
+ #include "include/ripps2.h"
+ #include "include/bdmsupport.h"
++#include "include/ioman.h"
++#include "include/system.h"
+ #include "include/sound.h"
+ 
+ #define BL_MAX    32768 // a PS2BBL config is a few KB
+ #define BL_MARKER "#RIPPS2 BOOT LOCK"
+ #define BL_KEPT   "#RIPPS2# "
++#define BL_STRAY  "# PS2BBL config, created by RIPPS2's BOOT LOCK" // build 68's file for a loader that is not PS2BBL
++
++// ps2sdk's SECRMAN (it can bind a KELF to a card; the console's own cannot) and its RPC server, and
++// PS2BBL 1.2.0 signed: the standard build, and the one that also starts from MX4SIO (massX:)
++extern unsigned char secrman_irx[];
++extern unsigned int size_secrman_irx;
++extern unsigned char secrsif_irx[];
++extern unsigned int size_secrsif_irx;
++extern unsigned char bible_xlf[];
++extern unsigned int size_bible_xlf;
++extern unsigned char bible_mx4sio_xlf[];
++extern unsigned int size_bible_mx4sio_xlf;
++// the browser icon RIPPS2 gives its settings folder (util.c): BIBLE's folders wear it too
++extern unsigned char icon_sys[];
++extern unsigned int size_icon_sys;
++extern unsigned char save_icn[];
++extern unsigned int size_save_icn;
+ 
+-// Where PS2BBL and PS2BBL Extended look for their config (the Extended README's search order, the
+-// device-boot and memory card places a console can reach without mounting an HDD partition).
+-// RIPPS2 build 68: first of all its CWD, CONFIG.INI beside the loader itself -- for a memory card
+-// install that is the console's system-update folder, B?EXEC-SYSTEM (A USA, E Europe, I Japan,
+-// C China) -- which PS2BBL reads BEFORE SYS-CONF. A card set up that way was invisible to BOOT LOCK
+-// (build 66 on hardware: "it thinks I don't use it").
++int ripps2RebootIopWith(const void *ioprp, int size); // opl.c
++
++// Where PS2BBL and PS2BBL Extended look for their config: beside the loader (its CWD, the
++// system-update folder), PS2BBL/CONFIG.INI on either card or a drive, Extended's SYS-CONF/PS2BBL.INI
+ static const char *blConfigs[] = {
++    "mc0:/PS2BBL/CONFIG.INI",
++    "mc1:/PS2BBL/CONFIG.INI",
+     "mc0:/BAEXEC-SYSTEM/CONFIG.INI",
+     "mc1:/BAEXEC-SYSTEM/CONFIG.INI",
+     "mc0:/BEEXEC-SYSTEM/CONFIG.INI",
+@@ -52,41 +91,295 @@ static const char *blConfigs[] = {
+     "mc1:/SYS-CONF/PS2BBL.INI",
+     "mc0:/BOOT/CONFIG.INI",
+     "mc1:/BOOT/CONFIG.INI",
+-    "mc0:/PS2BBL/CONFIG.INI",
+-    "mc1:/PS2BBL/CONFIG.INI",
+     "mass0:/PS2BBL/CONFIG.INI",
+     "mmce0:/PS2BBL/CONFIG.INI",
+     "mmce1:/PS2BBL/CONFIG.INI",
+     NULL};
+ 
+-// A boot loader installed as the console's system update, by folder (the file inside is a signed
+-// KELF: what it is cannot be read, only that one is there)
++// The console's system-update folders (A USA and Asia, E Europe, I Japan, C China)
+ static const char *blSysFolders[] = {"BAEXEC-SYSTEM", "BEEXEC-SYSTEM", "BIEXEC-SYSTEM", "BCEXEC-SYSTEM", NULL};
+ 
+-// The first card with a system update installed ("mc0:/BAEXEC-SYSTEM" in out), or 0
+-static int blFindSystemUpdate(char *out, int size)
++// ---- what each memory card starts ----
++
++enum { BL_NONE = 0, BL_PS2BBL, BL_FMCB, BL_OSDMENU, BL_OTHER };
++static const char *const blKindName[] = {"no boot loader", "PS2BBL", "FMCB (Free McBoot)", "OSDMenu", "a boot loader RIPPS2 does not know"};
++
++typedef struct
+ {
+-    static const char *const names[] = {"osdmain.elf", "osd110.elf", "osd120.elf", "osd130.elf", "osd140.elf",
+-                                        "osd150.elf", "osd160.elf", "osd170.elf", "osd180.elf", "osd190.elf", NULL};
+-    int port, f, n;
+-    char path[96];
++    int present;     // a formatted PS2 memory card is in the slot
++    int freeKb;      // its free space
++    int kind;        // BL_*: what its system update is
++    int bible;       // ...and it is BIBLE
++    int boots;       // this console starts it at power on (its own folder and file name are there)
++    char folder[16]; // the B?EXEC-SYSTEM folder holding it ("" when none)
++    char title[48];  // its icon.sys title, in ASCII
++} blCard_t;
+ 
+-    for (port = 0; port < 2; port++)
++static blCard_t blCards[2];
++static char blSysFolder[16], blSysFile[16]; // this console's own system update: folder and file name
++
++static char blText[BL_MAX + 1], blOut[BL_MAX + 512];
++
++// This console's system-update folder and file name, from ROMVER ("0170AE...": ROM version, region),
++// the names its browser looks for at power on. 0 when the region is one RIPPS2 cannot place.
++static int blConsoleUpdate(void)
++{
++    char ver[16];
++    int fd = open("rom0:ROMVER", O_RDONLY), n, rom;
++    char letter;
++    const char *file = "osdmain.elf";
++
++    blSysFolder[0] = blSysFile[0] = '\0';
++    if (fd < 0)
++        return 0;
++    n = read(fd, ver, sizeof(ver) - 1);
++    close(fd);
++    if (n < 5)
++        return 0;
++    rom = (ver[0] - '0') * 1000 + (ver[1] - '0') * 100 + (ver[2] - '0') * 10 + (ver[3] - '0');
++    switch (ver[4]) {
++        case 'J': // the first Japanese ROMs each have a name of their own
++            letter = 'I';
++            file = rom == 100 ? "osdsys.elf" : rom == 101 ? "osd110.elf" : rom == 120 ? "osd130.elf" : "osdmain.elf";
++            break;
++        case 'A':
++        case 'H':
++            letter = 'A';
++            file = rom == 110 ? "osd120.elf" : rom == 120 ? "osd130.elf" : "osdmain.elf";
++            break;
++        case 'E':
++        case 'R':
++            letter = 'E';
++            file = rom == 120 ? "osd130.elf" : "osdmain.elf";
++            break;
++        case 'C':
++            letter = 'C';
++            break;
++        default:
++            return 0;
++    }
++    snprintf(blSysFolder, sizeof(blSysFolder), "B%cEXEC-SYSTEM", letter);
++    snprintf(blSysFile, sizeof(blSysFile), "%s", file);
++    return 1;
++}
++
++static int blFileExists(const char *path)
++{
++    int fd = open(path, O_RDONLY); // stat() on mc says yes for missing paths: open to be sure
++    if (fd < 0)
++        return 0;
++    close(fd);
++    return 1;
++}
++
++static int blDirExists(const char *path)
++{
++    DIR *d = opendir(path);
++    if (d == NULL)
++        return 0;
++    closedir(d);
++    return 1;
++}
++
++// Case-blind "has"
++static int blHas(const char *hay, const char *needle)
++{
++    int n = strlen(needle), i, j;
++    for (i = 0; hay[i]; i++) {
++        for (j = 0; j < n && hay[i + j] && toupper((unsigned char)hay[i + j]) == toupper((unsigned char)needle[j]); j++)
++            ;
++        if (j == n)
++            return 1;
++    }
++    return 0;
++}
++
++// An icon.sys title (Shift-JIS, often full-width) in plain ASCII, for matching
++static void blTitleAscii(const unsigned char *s, int n, char *out, int size)
++{
++    int i = 0, o = 0;
++    while (i < n && s[i] && o < size - 1) {
++        unsigned int c = s[i];
++        if (c < 0x80) {
++            out[o++] = c;
++            i++;
++            continue;
++        }
++        if (i + 1 >= n)
++            break;
++        c = (c << 8) | s[i + 1];
++        i += 2;
++        if (c == 0x8140)
++            out[o++] = ' ';
++        else if (c >= 0x824F && c <= 0x8258)
++            out[o++] = '0' + (c - 0x824F);
++        else if (c >= 0x8260 && c <= 0x8279)
++            out[o++] = 'A' + (c - 0x8260);
++        else if (c >= 0x8281 && c <= 0x829A)
++            out[o++] = 'a' + (c - 0x8281);
++        else if (c == 0x8169 || c == 0x816A)
++            out[o++] = c == 0x8169 ? '(' : ')';
++        else if (c == 0x817C || c == 0x815B)
++            out[o++] = '-';
++        else
++            out[o++] = '.';
++    }
++    out[o] = '\0';
++}
++
++// A file build 68 wrote for a boot loader that never reads it
++static int blIsStray(const char *path)
++{
++    char head[64];
++    int fd = open(path, O_RDONLY), n;
++    if (fd < 0)
++        return 0;
++    n = read(fd, head, sizeof(head) - 1);
++    close(fd);
++    if (n <= 0)
++        return 0;
++    head[n] = '\0';
++    return !strncmp(head, BL_STRAY, strlen(BL_STRAY));
++}
++
++// Free space and presence: a formatted PS2 card in the slot
++static int blCardInfo(int port, int *freeKb)
++{
++    int type = 0, freeC = 0, format = 0, res = -10;
++    mcGetInfo(port, 0, &type, &freeC, &format);
++    mcSync(0, NULL, &res);
++    if (freeKb != NULL)
++        *freeKb = freeC;
++    return res >= -1 && type == sceMcTypePS2 && format == MC_FORMATTED;
++}
++
++// The system update in one card's folder: its file name in file (any osd*.elf), or 0
++static int blFindUpdateIn(int port, const char *folder, char *file, int size)
++{
++    char path[48];
++    struct dirent *e;
++    DIR *d;
++    int found = 0;
++
++    snprintf(path, sizeof(path), "mc%d:/%s", port, folder);
++    if ((d = opendir(path)) == NULL)
++        return 0;
++    while ((e = readdir(d)) != NULL) {
++        int l = strlen(e->d_name);
++        if (l > 4 && !strncasecmp(e->d_name, "osd", 3) && !strcasecmp(e->d_name + l - 4, ".elf")) {
++            snprintf(file, size, "%s", e->d_name);
++            found = 1;
++            if (!strcasecmp(e->d_name, blSysFile)) // the one this console starts, if it is there
++                break;
++        }
++    }
++    closedir(d);
++    return found;
++}
++
++static void blScanCard(int port)
++{
++    blCard_t *c = &blCards[port];
++    char file[32], path[64];
++    unsigned char head[0xC0 + 68];
++    int f, fd, n;
++
++    memset(c, 0, sizeof(*c));
++    if (!blCardInfo(port, &c->freeKb))
++        return;
++    c->present = 1;
++
++    // this console's own folder first: that is the one that counts at power on
++    if (blSysFolder[0] && blFindUpdateIn(port, blSysFolder, file, sizeof(file))) {
++        snprintf(c->folder, sizeof(c->folder), "%s", blSysFolder);
++        c->boots = !strcasecmp(file, blSysFile);
++    } else
+         for (f = 0; blSysFolders[f] != NULL; f++)
+-            for (n = 0; names[n] != NULL; n++) {
+-                snprintf(path, sizeof(path), "mc%d:/%s/%s", port, blSysFolders[f], names[n]);
+-                int fd = open(path, O_RDONLY); // stat() on mc says yes for missing paths: open to be sure
+-                if (fd >= 0) {
+-                    close(fd);
+-                    snprintf(out, size, "mc%d:/%s", port, blSysFolders[f]);
+-                    return 1;
+-                }
++            if (blFindUpdateIn(port, blSysFolders[f], file, sizeof(file))) {
++                snprintf(c->folder, sizeof(c->folder), "%s", blSysFolders[f]);
++                break;
+             }
+-    return 0;
++    if (!c->folder[0])
++        return; // nothing installed: BL_NONE
++
++    snprintf(path, sizeof(path), "mc%d:/%s/icon.sys", port, c->folder);
++    if ((fd = open(path, O_RDONLY)) >= 0) {
++        n = read(fd, head, sizeof(head));
++        close(fd);
++        if (n == (int)sizeof(head) && !memcmp(head, "PS2D", 4))
++            blTitleAscii(head + 0xC0, 68, c->title, sizeof(c->title));
++    }
++
++    c->bible = blHas(c->title, "BIBLE");
++    if (c->bible || blHas(c->title, "PS2BBL"))
++        c->kind = BL_PS2BBL;
++    else if (blHas(c->title, "OSDMENU"))
++        c->kind = BL_OSDMENU;
++    else if (blHas(c->title, "FMCB") || blHas(c->title, "MCBOOT") || blHas(c->title, "MC BOOT"))
++        c->kind = BL_FMCB;
++    else { // the title does not say: the loaders' own files on the card
++        snprintf(path, sizeof(path), "mc%d:/SYS-CONF/OSDMENU.CNF", port);
++        if (blFileExists(path)) {
++            c->kind = BL_OSDMENU;
++            return;
++        }
++        snprintf(path, sizeof(path), "mc%d:/SYS-CONF/FREEMCB.CNF", port);
++        if (blFileExists(path)) {
++            c->kind = BL_FMCB;
++            return;
++        }
++        snprintf(path, sizeof(path), "mc%d:/PS2BBL/CONFIG.INI", port);
++        if (blFileExists(path)) {
++            c->kind = BL_PS2BBL;
++            return;
++        }
++        snprintf(path, sizeof(path), "mc%d:/SYS-CONF/PS2BBL.INI", port);
++        c->kind = blFileExists(path) && !blIsStray(path) ? BL_PS2BBL : BL_OTHER;
++    }
+ }
+ 
+-static char blText[BL_MAX + 1], blOut[BL_MAX + 512];
+-static char blFound[96];
++// Both cards; the slot whose loader the console starts at power on (slot 1 before slot 2), or -1
++static int blScan(void)
++{
++    int port, waited = 0;
++
++    while (ioWorkPending() && waited++ < 100) // let a settings save or art read finish with the cards first
++        DelayThread(10000);
++    blConsoleUpdate();
++    for (port = 0; port < 2; port++)
++        blScanCard(port);
++    for (port = 0; port < 2; port++)
++        if (blCards[port].boots)
++            return port;
++    return -1;
++}
++
++// What a card holds, for the lists and messages: "FMCB (Free McBoot), starts at power on"
++static void blCardWhat(int port, int boot, char *out, int size)
++{
++    const blCard_t *c = &blCards[port];
++    if (!c->present) {
++        snprintf(out, size, "no memory card");
++        return;
++    }
++    snprintf(out, size, "%s%s", c->bible ? "BIBLE (PS2BBL)" : blKindName[c->kind],
++             port == boot ? ", starts at power on" : c->kind != BL_NONE && !c->boots ? ", for another console model" : "");
++}
++
++// Removes the configs build 68 wrote for loaders that never read them; how many went
++static int blCleanStrays(void)
++{
++    char path[48];
++    int port, removed = 0;
++    for (port = 0; port < 2; port++) {
++        snprintf(path, sizeof(path), "mc%d:/SYS-CONF/PS2BBL.INI", port);
++        if (blIsStray(path) && remove(path) == 0)
++            removed++;
++    }
++    return removed;
++}
++
++// ---- a PS2BBL config, edited ----
+ 
+ // The whole file, or -1. Only a file with PS2BBL launch keys in it counts as a PS2BBL config.
+ static int blRead(const char *path)
+@@ -99,6 +392,8 @@ static int blRead(const char *path)
+     if (n <= 0 || n >= BL_MAX)
+         return -1;
+     blText[n] = '\0';
++    if (!strncmp(blText, BL_STRAY, strlen(BL_STRAY)))
++        return -1; // build 68's file for a loader that is not PS2BBL: not a config
+     return strstr(blText, "LK_") != NULL ? n : -1;
+ }
+ 
+@@ -199,21 +494,34 @@ static int blLocked(const char *text, const char *ripps2)
+     return o;
+ }
+ 
+-// RIPPS2's own path as PS2BBL writes it (mc?:/, usb:/, ata:/, mx4sio:/, mmce?:/ or an HDD path)
+-static int blRipps2Path(char *out, int size)
++// PS2BBL Extended's device names in a config (usb:, ata:, mx4sio:, mmce?:) or its own file; else it
++// is PS2BBL 1.2.0's, whose only drive name is mass: (USB, and massX: in its MX4SIO build)
++static int blIsExtended(const char *path, const char *text)
++{
++    return strstr(path, "SYS-CONF/PS2BBL.INI") != NULL || strstr(text, "usb:/") || strstr(text, "ata:/") ||
++           strstr(text, "mx4sio:/") || strstr(text, "mmce") || strstr(text, "ilink:/") || strstr(text, "NAME_");
++}
++
++// A path RIPPS2 runs from (mc0:/..., massN:/... of BDM type bdmType, mmceN:/..., hdd0:...) as a PS2BBL
++// config writes it; 0 when that PS2BBL cannot reach it
++static int blPathFor(int extended, const char *boot, int bdmType, char *out, int size)
+ {
+-    char boot[256];
+     const char *rest;
+ 
+-    if (!ripps2GetBootPath(boot, sizeof(boot)))
+-        return 0;
+     if ((!strncmp(boot, "mc0:", 4) || !strncmp(boot, "mc1:", 4)) && boot[4] == '/')
+         return snprintf(out, size, "mc?:%s", boot + 4) < size;
+     if (!strncmp(boot, "mmce0:", 6) || !strncmp(boot, "mmce1:", 6))
+-        return snprintf(out, size, "mmce?:%s", boot + 6) < size;
++        return extended && snprintf(out, size, "mmce?:%s", boot + 6) < size;
+     if (!strncmp(boot, "mass", 4) && (rest = strchr(boot, ':')) != NULL) {
+-        int t = ripps2GetBootBdmType();
+-        const char *dev = t == BDM_TYPE_USB ? "usb" : t == BDM_TYPE_ATA ? "ata" : t == BDM_TYPE_SDC ? "mx4sio" : "mass";
++        const char *dev;
++        if (extended)
++            dev = bdmType == BDM_TYPE_USB ? "usb" : bdmType == BDM_TYPE_ATA ? "ata" : bdmType == BDM_TYPE_SDC ? "mx4sio" : "mass";
++        else if (bdmType == BDM_TYPE_USB)
++            dev = "mass";
++        else if (bdmType == BDM_TYPE_SDC)
++            dev = "massX"; // PS2BBL 1.2.0's MX4SIO build finds the card itself
++        else
++            return 0;
+         return snprintf(out, size, "%s:%s%s", dev, rest[1] == '/' ? "" : "/", rest + 1) < size;
+     }
+     if (!strncmp(boot, "hdd0:", 5))
+@@ -221,6 +529,14 @@ static int blRipps2Path(char *out, int size)
+     return 0;
+ }
+ 
++static int blRipps2Path(int extended, char *out, int size)
++{
++    char boot[256];
++    if (!ripps2GetBootPath(boot, sizeof(boot)))
++        return 0;
++    return blPathFor(extended, boot, ripps2GetBootBdmType(), out, size);
++}
++
+ int ripps2BootLockIgrPath(char *out, int size)
+ {
+     char boot[256];
+@@ -236,39 +552,47 @@ int ripps2BootLockIgrPath(char *out, int size)
+     return 0; // the IGR cannot reach MMCE or the HDD (see the IGR Path hint)
+ }
+ 
++// 1 when the lock is in a PS2BBL config AND what the console starts at power on is PS2BBL (or no card
++// says otherwise: PS2BBL may start from the HDD). A lock in the config of a card FMCB starts past is
++// no lock at all, so it shows off, and turning it on says why and offers BIBLE.
+ int ripps2BootLockState(void)
+ {
+-    int i;
+-    blFound[0] = '\0';
+-    for (i = 0; blConfigs[i] != NULL; i++) {
+-        if (blRead(blConfigs[i]) < 0)
+-            continue;
+-        if (!blFound[0])
+-            snprintf(blFound, sizeof(blFound), "%s", blConfigs[i]);
+-        if (strstr(blText, BL_MARKER) != NULL)
++    int i, boot = blScan();
++    if (boot >= 0 && blCards[boot].kind != BL_PS2BBL)
++        return 0;
++    for (i = 0; blConfigs[i] != NULL; i++)
++        if (blRead(blConfigs[i]) >= 0 && strstr(blText, BL_MARKER) != NULL)
+             return 1;
+-    }
+     return 0;
+ }
+ 
+-void ripps2BootLockApply(int on)
++// The path BIBLE's install chose for RIPPS2 (PS2BBL 1.2.0's form), which every config then takes:
++// PS2BBL reads a drive's config and slot 2's before slot 1's, so all of them must say the same
++static const char *blChosenPath = NULL;
++
++// The lock in (or out of) every PS2BBL config there is. Counts what changed, what could not be
++// written, and the configs that cannot reach RIPPS2 where it is; where lists the ones changed.
++static void blApplyAll(int on, int *changed, int *failed, int *unreachable, char *where, int whereSize)
+ {
+-    char ripps2[256], backup[128], msg[400], where[200] = "";
+-    int i, changed = 0, failed = 0, len;
++    char ripps2[256], backup[128];
++    int i, len;
+ 
+-    if (on && !blRipps2Path(ripps2, sizeof(ripps2))) {
+-        guiMsgBoxSound(SFX_ERROR);
+-        guiMsgBox("BOOT LOCK needs RIPPS2 on a memory card, a USB or exFAT drive, MMCE or the HDD, where PS2BBL can start it. This copy was started from somewhere PS2BBL cannot reach.", 0, NULL);
+-        return;
+-    }
++    *changed = *failed = *unreachable = 0;
++    where[0] = '\0';
+     for (i = 0; blConfigs[i] != NULL; i++) {
+         if (blRead(blConfigs[i]) < 0)
+             continue;
++        if (on) {
++            int extended = blIsExtended(blConfigs[i], blText);
++            if (blChosenPath != NULL && (!extended || !strncmp(blChosenPath, "mc?:", 4))) // a memory card path reads the same in both
++                snprintf(ripps2, sizeof(ripps2), "%s", blChosenPath);
++            else if (!blRipps2Path(extended, ripps2, sizeof(ripps2))) {
++                (*unreachable)++;
++                continue;
++            }
++        }
+         snprintf(backup, sizeof(backup), "%s.RIPPS2-BACKUP", blConfigs[i]);
+-        int fd = open(backup, O_RDONLY);
+-        if (fd >= 0)
+-            close(fd);
+-        else if (strstr(blText, BL_MARKER) == NULL) // the config as it was before RIPPS2 ever touched it
++        if (!blFileExists(backup) && strstr(blText, BL_MARKER) == NULL) // the config as it was before RIPPS2 ever touched it
+             blWrite(backup, blText, strlen(blText));
+         len = blUnlocked(blText);
+         if (on) {
+@@ -276,53 +600,540 @@ void ripps2BootLockApply(int on)
+             len = blLocked(blText, ripps2);
+         }
+         if (len < 0 || blWrite(blConfigs[i], blOut, len) != 0) {
+-            failed++;
++            (*failed)++;
+             continue;
+         }
+-        changed++;
+-        if (strlen(where) + strlen(blConfigs[i]) + 3 < sizeof(where))
+-            snprintf(where + strlen(where), sizeof(where) - strlen(where), "%s%s", where[0] ? ", " : "", blConfigs[i]);
+-    }
+-
+-    if (!changed && !failed && on) {
+-        // No config anywhere -- but a boot loader may still be installed: PS2BBL runs on its built-in
+-        // defaults when it finds no file. If the card has one, offer to give it the config it reads.
+-        char sys[64], conf[64];
+-        if (blFindSystemUpdate(sys, sizeof(sys))) {
+-            snprintf(msg, sizeof(msg), "A boot loader is installed on this console (%s), with no PS2BBL config RIPPS2 can find. If it is PS2BBL or PS2BBL Extended, BOOT LOCK can give it one that starts RIPPS2 first (%.3s:/SYS-CONF/PS2BBL.INI). Create it?", sys, sys);
+-            guiMsgBoxSound(SFX_MESSAGE);
+-            if (guiMsgBox(msg, 1, NULL) == 1) {
+-                int n = snprintf(blOut, sizeof(blOut),
+-                                 "# PS2BBL config, created by RIPPS2's BOOT LOCK\r\n"
+-                                 "KEY_READ_WAIT_TIME = 500\r\nLOGO_DISPLAY = 0\r\nOSDHISTORY_READ = 0\r\nEJECT_TRAY = 0\r\n\r\n"
+-                                 "%s: RIPPS2 starts first. Turn BOOT LOCK off in RIPPS2 to bring back the lines marked #RIPPS2#.\r\n"
+-                                 "NAME_AUTO = RIPPS2\r\nLK_AUTO_E1 = %s\r\nLK_AUTO_E2 = $OSDSYS\r\n\r\n"
+-                                 "NAME_START = DISC\r\nLK_START_E1 = cdrom\r\n"
+-                                 "NAME_TRIANGLE = BROWSER\r\nLK_TRIANGLE_E1 = $OSDSYS\r\n",
+-                                 BL_MARKER, ripps2);
+-                snprintf(conf, sizeof(conf), "%.3s:/SYS-CONF", sys);
+-                mkdir(conf, 0777);
+-                strcat(conf, "/PS2BBL.INI");
+-                if (n > 0 && n < (int)sizeof(blOut) && blWrite(conf, blOut, n) == 0) {
+-                    snprintf(msg, sizeof(msg), "BOOT LOCK is on. The boot loader on %s now starts RIPPS2 at power on (%s). Hold TRIANGLE while the console starts for the browser, START for a disc.", sys, conf);
+-                    guiMsgBoxSound(SFX_SAVE);
+-                } else {
+-                    snprintf(msg, sizeof(msg), "BOOT LOCK could not write %s. Check that the memory card is not full or write protected, then try again.", conf);
+-                    guiMsgBoxSound(SFX_ERROR);
+-                }
+-                guiMsgBox(msg, 0, NULL);
+-            }
+-            return;
+-        }
++        (*changed)++;
++        if ((int)(strlen(where) + strlen(blConfigs[i]) + 3) < whereSize)
++            snprintf(where + strlen(where), whereSize - strlen(where), "%s%s", where[0] ? ", " : "", blConfigs[i]);
++    }
++}
++
++static void blInstall(void);
++
++void ripps2BootLockApply(int on)
++{
++    char msg[700], where[200];
++    int changed, failed, unreachable, boot, removed;
++
++    boot = blScan();
++    removed = blCleanStrays();
++    blApplyAll(on, &changed, &failed, &unreachable, where, sizeof(where));
++
++    if (on && ((boot >= 0 && blCards[boot].kind != BL_PS2BBL) || (boot < 0 && !changed))) {
++        // What starts at power on is not PS2BBL, or there is no PS2BBL at all: a config cannot do it
++        int n;
++        if (boot >= 0) {
++            n = snprintf(msg, sizeof(msg), "Memory card %d starts %s at power on, and BOOT LOCK works only through PS2BBL.", boot + 1, blKindName[blCards[boot].kind]);
++        } else
++            n = snprintf(msg, sizeof(msg), "BOOT LOCK works through PS2BBL (PlayStation 2 Basic BootLoader), and there is none on a memory card here.");
++        if (changed && n < (int)sizeof(msg))
++            n += snprintf(msg + n, sizeof(msg) - n, " (The PS2BBL configs found were set: %s.)", where);
++        if (n < (int)sizeof(msg))
++            snprintf(msg + n, sizeof(msg) - n, " RIPPS2 can install BIBLE, PS2BBL 1.2.0 set up to start RIPPS2, on a memory card; what starts from it now is kept in a backup folder. Install BIBLE?");
++        guiMsgBoxSound(SFX_MESSAGE);
++        if (guiMsgBox(msg, 1, NULL) == 1)
++            blInstall();
++        return;
+     }
+-    if (!changed && !failed)
+-        snprintf(msg, sizeof(msg), "BOOT LOCK works through PS2BBL (PlayStation 2 Basic BootLoader), and RIPPS2 found no PS2BBL on this console: no config (SYS-CONF/PS2BBL.INI, CONFIG.INI beside it, PS2BBL/CONFIG.INI on a drive) and no boot loader installed on a memory card. Install PS2BBL or PS2BBL Extended first.");
++
++    if (!changed && !failed && !unreachable)
++        snprintf(msg, sizeof(msg), "BOOT LOCK found no PS2BBL config to change.");
++    else if (unreachable && !changed && !failed)
++        snprintf(msg, sizeof(msg), "PS2BBL 1.2.0 cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO). BOOT LOADER > MANAGE can copy RIPPS2 to a memory card or a USB drive for it.");
+     else if (failed && !changed)
+         snprintf(msg, sizeof(msg), "BOOT LOCK could not write the PS2BBL config. Check that the memory card or drive is not write protected, then try again.");
+     else if (on)
+-        snprintf(msg, sizeof(msg), "BOOT LOCK is on. PS2BBL now starts RIPPS2 at power on (%s). Hold a PS2BBL hotkey while the console starts to reach anything else.", where);
++        snprintf(msg, sizeof(msg), "BOOT LOCK is on. PS2BBL now starts RIPPS2 at power on (%s). Hold a PS2BBL hotkey while the console starts to reach anything else.%s", where,
++                 removed ? " A SYS-CONF/PS2BBL.INI build 68 wrote for a loader that never reads it was removed." : "");
+     else
+         snprintf(msg, sizeof(msg), "BOOT LOCK is off. PS2BBL starts what it started before (%s).", where);
+     guiMsgBoxSound(changed ? SFX_SAVE : SFX_ERROR);
+     guiMsgBox(msg, 0, NULL);
+ }
++
++// ---- BIBLE ----
++
++// An IOPRP image holding one module, which the IOP's boot then uses in place of the ROM's module of
++// that name. Its directory: RESET (empty), ROMDIR (the directory itself), EXTINFO, the module (4 bytes
++// of extended info), a blank end entry; then EXTINFO's record (0xFFFF, 0, type 2: what the ROM's
++// loader needs to take the module), then the module, each part padded to 16 bytes.
++static void *blMakeIoprp(const char *name, const void *module, int moduleSize, int *outSize)
++{
++    unsigned char *img;
++    int size = 5 * 16 + 16 + ((moduleSize + 15) & ~15), o = 0;
++
++    if ((img = memalign(64, size)) == NULL)
++        return NULL;
++    memset(img, 0, size);
++#define BL_ENTRY(n, ext, sz)                               \
++    do {                                                   \
++        strncpy((char *)img + o, (n), 10);                 \
++        img[o + 10] = (ext) & 0xFF;                        \
++        img[o + 11] = ((ext) >> 8) & 0xFF;                 \
++        img[o + 12] = (sz) & 0xFF;                         \
++        img[o + 13] = ((sz) >> 8) & 0xFF;                  \
++        img[o + 14] = ((sz) >> 16) & 0xFF;                 \
++        img[o + 15] = ((unsigned int)(sz) >> 24) & 0xFF;   \
++        o += 16;                                           \
++    } while (0)
++    BL_ENTRY("RESET", 0, 0);
++    BL_ENTRY("ROMDIR", 0, 5 * 16);
++    BL_ENTRY("EXTINFO", 0, 4);
++    BL_ENTRY(name, 4, moduleSize);
++    o += 16; // the blank end entry
++#undef BL_ENTRY
++    img[o] = 0xFF;
++    img[o + 1] = 0xFF;
++    img[o + 2] = 0;
++    img[o + 3] = 2;
++    o += 16;
++    memcpy(img + o, module, moduleSize);
++    *outSize = size;
++    return img;
++}
++
++// icon.sys for a BIBLE folder: RIPPS2's own, titled (two lines: first, second) and naming one icon file
++static void blIconSys(unsigned char *sys, const char *first, const char *second)
++{
++    int l1 = strlen(first);
++    memcpy(sys, icon_sys, size_icon_sys);
++    sys[6] = l1 & 0xFF; // the second line starts here
++    sys[7] = (l1 >> 8) & 0xFF;
++    memset(sys + 0xC0, 0, 68);
++    snprintf((char *)sys + 0xC0, 68, "%s%s", first, second);
++    memset(sys + 0x104, 0, 64 * 3);
++    strcpy((char *)sys + 0x104, "bible.icn");
++    strcpy((char *)sys + 0x144, "bible.icn");
++    strcpy((char *)sys + 0x184, "bible.icn");
++}
++
++static int blWriteIcons(const char *dir, const char *first, const char *second)
++{
++    unsigned char sys[1024];
++    char path[96];
++    if (size_icon_sys > sizeof(sys))
++        return 0;
++    blIconSys(sys, first, second);
++    snprintf(path, sizeof(path), "%s/icon.sys", dir);
++    if (blWrite(path, (const char *)sys, size_icon_sys) != 0)
++        return 0;
++    snprintf(path, sizeof(path), "%s/bible.icn", dir);
++    return blWrite(path, (const char *)save_icn, size_save_icn) == 0;
++}
++
++// A whole file onto another, with progress on screen; 1 when it all landed
++static int blCopy(const char *from, const char *to, const char *what)
++{
++    char status[128];
++    int in = open(from, O_RDONLY), out, total, done = 0, n, ok = 1;
++    unsigned char *buf;
++
++    if (in < 0)
++        return 0;
++    total = lseek(in, 0, SEEK_END);
++    lseek(in, 0, SEEK_SET);
++    if (total <= 0 || (buf = memalign(64, 65536)) == NULL) {
++        close(in);
++        return 0;
++    }
++    if ((out = open(to, O_WRONLY | O_CREAT | O_TRUNC, 0666)) < 0) {
++        free(buf);
++        close(in);
++        return 0;
++    }
++    while (ok && done < total) {
++        snprintf(status, sizeof(status), "BIBLE: copying RIPPS2 to %s (%d%%)", what, done * 100 / total);
++        guiRenderTextScreen(status);
++        n = read(in, buf, total - done < 65536 ? total - done : 65536);
++        if (n <= 0 || write(out, buf, n) != n)
++            ok = 0;
++        else
++            done += n;
++    }
++    close(out);
++    close(in);
++    free(buf);
++    if (!ok)
++        remove(to);
++    return ok;
++}
++
++// The backup folder's name for what was in folder: RIPPS2-OLD-BAEXEC, then -2, -3 if taken
++static void blBackupName(int port, const char *folder, char *out, int size)
++{
++    char path[48];
++    int i;
++    for (i = 1; i < 10; i++) {
++        if (i == 1)
++            snprintf(out, size, "RIPPS2-OLD-%.6s", folder);
++        else
++            snprintf(out, size, "RIPPS2-OLD-%.6s-%d", folder, i);
++        snprintf(path, sizeof(path), "mc%d:/%s", port, out);
++        if (!blDirExists(path))
++            return;
++    }
++}
++
++static int blMcRename(int port, const char *from, const char *to)
++{
++    char path[48];
++    int res = -1;
++    snprintf(path, sizeof(path), "/%s", from);
++    if (mcRename(port, 0, path, to) != 0)
++        return 0;
++    mcSync(0, NULL, &res);
++    return res == 0;
++}
++
++// Where RIPPS2 can start from at power on: as it is now, or a copy BIBLE makes first
++typedef struct
++{
++    char label[64];
++    char path[160];   // as BIBLE's config writes it
++    char copyTo[160]; // "" = no copy; else where RIPPS2 is copied to first
++    char copyWhat[24];
++    int mx4sio;       // the path needs PS2BBL's MX4SIO build
++    int cardKb;       // memory card space the copy takes (on the target card), 0 when elsewhere
++    int cardPort;
++} blWhere_t;
++
++// The BIBLE config, unlocked (BOOT LOCK then puts RIPPS2 first): the browser by default, a button
++// held at power on for the rest
++static int blBibleConfig(const char *alt, const char *backupKelf)
++{
++    int n = snprintf(blText, sizeof(blText),
++                     "# BIBLE: PS2BBL 1.2.0 by El Isra (GPL-3, github.com/israpps/PlayStation2-Basic-BootLoader), set up by RIPPS2\r\n"
++                     "# Hold at power on: TRIANGLE the browser, START or CROSS a disc, R1 wLaunchELF, CIRCLE what started here before\r\n"
++                     "KEY_READ_WAIT_TIME = 0\r\nSKIP_PS2LOGO = 0\r\nOSDHISTORY_READ = 1\r\nLOGO_DISPLAY = 0\r\nEJECT_TRAY = 0\r\n\r\n"
++                     "LK_AUTO_E1 = $OSDSYS\r\n%s%s%s"
++                     "LK_AUTO_E3 = $OSDSYS\r\n\r\n"
++                     "LK_TRIANGLE_E1 = $OSDSYS\r\n"
++                     "LK_START_E1 = $CDVD\r\nLK_CROSS_E1 = $CDVD\r\n"
++                     "LK_R1_E1 = mc?:/BOOT/ULE.ELF\r\nLK_R1_E2 = mc?:/APPS/ULE.ELF\r\nLK_R1_E3 = mass:/BOOT/ULE.ELF\r\n"
++                     "%s%s%s",
++                     alt[0] ? "LK_AUTO_E2 = " : "", alt, alt[0] ? "\r\n" : "",
++                     backupKelf[0] ? "LK_CIRCLE_E1 = $RUNKELF:" : "", backupKelf, backupKelf[0] ? "\r\n" : "");
++    return n > 0 && n < (int)sizeof(blText) ? n : -1;
++}
++
++static void blInstallOn(int port, const blWhere_t *w, const char *alt)
++{
++    char msg[700], dir[48], path[96], backup[32] = "", backupKelf[64] = "", conf[48];
++    const unsigned char *kelf = w->mx4sio ? bible_mx4sio_xlf : bible_xlf;
++    int kelfSize = w->mx4sio ? (int)size_bible_mx4sio_xlf : (int)size_bible_xlf;
++    unsigned char *buf, *check;
++    void *img;
++    int imgSize, fd, ok, keptConfig = 0, len;
++    blCard_t *c = &blCards[port];
++    sceMcTblGetDir info;
++
++    // RIPPS2 first, while every drive is up
++    if (w->copyTo[0]) {
++        char parent[160], *slash;
++        snprintf(parent, sizeof(parent), "%s", w->copyTo);
++        if ((slash = strrchr(parent, '/')) != NULL) {
++            *slash = '\0';
++            mkdir(parent, 0777);
++            if (!strncmp(parent, "mc", 2)) {
++                snprintf(path, sizeof(path), "%s/icon.sys", parent);
++                if (!blFileExists(path))
++                    blWriteIcons(parent, "RIPPS2 ", "for BIBLE");
++            }
++        }
++        char boot[256];
++        if (!ripps2GetBootPath(boot, sizeof(boot)) || !blCopy(boot, w->copyTo, w->copyWhat)) {
++            guiMsgBoxSound(SFX_ERROR);
++            snprintf(msg, sizeof(msg), "BIBLE could not copy RIPPS2 to %s. Check the space and that it is not write protected. Nothing else was changed.", w->copyTo);
++            guiMsgBox(msg, 0, NULL);
++            return;
++        }
++    }
++
++    // the IOP again, with ps2sdk's SECRMAN in the ROM's place: the console binds a KELF through it
++    guiRenderTextScreen("BIBLE: restarting the I/O processor with the security module");
++    if ((img = blMakeIoprp("SECRMAN", secrman_irx, size_secrman_irx, &imgSize)) == NULL) {
++        guiMsgBoxSound(SFX_ERROR);
++        guiMsgBox("BIBLE ran out of memory before it started. Nothing was changed.", 0, NULL);
++        return;
++    }
++    ok = ripps2RebootIopWith(img, imgSize);
++    free(img);
++    if (!ok) {
++        guiMsgBoxSound(SFX_ERROR);
++        guiMsgBox("RIPPS2 was busy reading a drive and could not restart the I/O processor. Nothing was changed: try again in a moment.", 0, NULL);
++        return;
++    }
++    guiRenderTextScreen("BIBLE: binding PS2BBL to the memory card");
++    if (sysLoadModuleBuffer(secrsif_irx, size_secrsif_irx, 0, NULL) != 0) {
++        guiMsgBoxSound(SFX_ERROR);
++        guiMsgBox("The security module would not start on this console. Nothing on the memory card was changed.", 0, NULL);
++        return;
++    }
++    SecrInit();
++    {
++        // the drives come back on the IO worker after the restart: let that settle before the card
++        int waited = 0;
++        while (ioWorkPending() && waited++ < 250)
++            DelayThread(20000);
++    }
++    blCardInfo(port, NULL); // the card, authenticated again after the restart
++
++    if ((buf = memalign(64, kelfSize + 4096)) == NULL) {
++        guiMsgBoxSound(SFX_ERROR);
++        guiMsgBox("BIBLE ran out of memory. Nothing on the memory card was changed.", 0, NULL);
++        return;
++    }
++    memcpy(buf, kelf, kelfSize);
++    if (SecrDownloadFile(2 + port, 0, buf) == NULL) {
++        free(buf);
++        guiMsgBoxSound(SFX_ERROR);
++        snprintf(msg, sizeof(msg), "The console would not bind BIBLE to memory card %d (its MagicGate step failed). Nothing on the card was changed. A card that is not a genuine or MagicGate-compatible one cannot hold a system update.", port + 1);
++        guiMsgBox(msg, 0, NULL);
++        return;
++    }
++
++    // what starts from the folder now moves aside, whole (BIBLE itself is simply written over)
++    snprintf(dir, sizeof(dir), "mc%d:/%s", port, blSysFolder);
++    if (blDirExists(dir) && !(c->bible && !strcmp(c->folder, blSysFolder))) {
++        blBackupName(port, blSysFolder, backup, sizeof(backup));
++        if (!blMcRename(port, blSysFolder, backup) || blDirExists(dir)) {
++            free(buf);
++            guiMsgBoxSound(SFX_ERROR);
++            snprintf(msg, sizeof(msg), "BIBLE could not move %s aside to keep it, so it stopped there. Nothing on the card was changed.", dir);
++            guiMsgBox(msg, 0, NULL);
++            return;
++        }
++        if (blFindUpdateIn(port, backup, path, sizeof(path)))
++            snprintf(backupKelf, sizeof(backupKelf), "mc?:/%s/%s", backup, path);
++    }
++
++    // BIBLE: the bound file, read back to be sure, its icon, and the folder marked as a system one
++    mkdir(dir, 0777);
++    snprintf(path, sizeof(path), "%s/%s", dir, blSysFile);
++    ok = blWrite(path, (const char *)buf, kelfSize) == 0;
++    if (ok && (check = malloc(kelfSize)) != NULL) {
++        fd = open(path, O_RDONLY);
++        ok = fd >= 0 && read(fd, check, kelfSize) == kelfSize && !memcmp(check, buf, kelfSize);
++        if (fd >= 0)
++            close(fd);
++        free(check);
++    }
++    free(buf);
++    if (ok)
++        ok = blWriteIcons(dir, "BIBLE ", "PS2BBL");
++    if (!ok) { // put back what was there
++        remove(path);
++        snprintf(path, sizeof(path), "%s/icon.sys", dir);
++        remove(path);
++        snprintf(path, sizeof(path), "%s/bible.icn", dir);
++        remove(path);
++        if (backup[0]) {
++            rmdir(dir);
++            blMcRename(port, backup, blSysFolder);
++        }
++        guiMsgBoxSound(SFX_ERROR);
++        snprintf(msg, sizeof(msg), "BIBLE could not be written to memory card %d, so the card was put back as it was. Check its free space, then try again.", port + 1);
++        guiMsgBox(msg, 0, NULL);
++        return;
++    }
++    memset(&info, 0, sizeof(info));
++    info.AttrFile = sceMcFileAttrReadable | sceMcFileAttrWriteable | sceMcFileAttrExecutable | sceMcFileAttrDupProhibit |
++                    sceMcFileAttrSubdir | sceMcFile0400;
++    snprintf(path, sizeof(path), "/%s", blSysFolder);
++    if (mcSetFileInfo(port, 0, path, &info, sceMcFileInfoAttr) == 0)
++        mcSync(0, NULL, &fd);
++
++    // its config: one the card already has stays (a PS2BBL owner's own); else BIBLE's
++    snprintf(dir, sizeof(dir), "mc%d:/PS2BBL", port);
++    snprintf(conf, sizeof(conf), "%s/CONFIG.INI", dir);
++    if (blRead(conf) >= 0)
++        keptConfig = 1;
++    else {
++        mkdir(dir, 0777);
++        snprintf(path, sizeof(path), "%s/icon.sys", dir);
++        if (!blFileExists(path))
++            blWriteIcons(dir, "BIBLE ", "config");
++        if ((len = blBibleConfig(alt, backupKelf)) < 0 || blWrite(conf, blText, len) != 0) {
++            guiMsgBoxSound(SFX_ERROR);
++            snprintf(msg, sizeof(msg), "BIBLE is on memory card %d, but its config (%s) could not be written, so it starts the browser. Free some space and run MANAGE again to finish.", port + 1, conf);
++            guiMsgBox(msg, 0, NULL);
++            return;
++        }
++    }
++
++    // BOOT LOCK on, with the chosen path, in this config and every other one PS2BBL might read
++    // first (a drive's and slot 2's come before slot 1's)
++    {
++        char where[200];
++        int changed, failed, unreachable;
++        blChosenPath = w->path;
++        blApplyAll(1, &changed, &failed, &unreachable, where, sizeof(where));
++        blChosenPath = NULL;
++    }
++
++    guiMsgBoxSound(SFX_SAVE);
++    {
++        int n = snprintf(msg, sizeof(msg), "BIBLE is installed on memory card %d (mc%d:/%s/%s) and BOOT LOCK is on: at power on the console starts RIPPS2 from %s, at once.",
++                         port + 1, port, blSysFolder, blSysFile, w->path);
++        if (n < (int)sizeof(msg) && backup[0])
++            n += snprintf(msg + n, sizeof(msg) - n, " What was there before is kept in mc%d:/%s%s.", port, backup, backupKelf[0] ? " (hold CIRCLE at power on to start it)" : "");
++        if (n < (int)sizeof(msg) && keptConfig)
++            n += snprintf(msg + n, sizeof(msg) - n, " Your own PS2BBL config was kept (%s), BOOT LOCK set in it: its buttons are as you set them.", conf);
++        else if (n < (int)sizeof(msg))
++            n += snprintf(msg + n, sizeof(msg) - n, " Hold TRIANGLE for the browser, START for a disc. Config: %s.", conf);
++    }
++    guiMsgBox(msg, 0, NULL);
++}
++
++// The steps: which card, where RIPPS2 starts from, then one screen saying everything that will be
++// written, taken only with START
++static void blInstall(void)
++{
++    char items[2][64], what[64], boot[256], msg[900], alt[160] = "";
++    const char *list[6];
++    int ports[2], n = 0, i, port, pick, bootPort, current = -1;
++    blWhere_t where[5];
++    int count = 0, elfKb = 0, fd;
++
++    bootPort = blScan();
++    if (!blSysFolder[0]) {
++        guiMsgBoxSound(SFX_ERROR);
++        guiMsgBox("RIPPS2 cannot tell this console's region from its ROM, so it does not know which system-update folder it reads. BIBLE was not installed.", 0, NULL);
++        return;
++    }
++    for (port = 0; port < 2; port++)
++        if (blCards[port].present) {
++            blCardWhat(port, bootPort, what, sizeof(what));
++            snprintf(items[n], sizeof(items[n]), "MEMORY CARD %d  (%s)", port + 1, what);
++            list[n] = items[n];
++            ports[n++] = port;
++        }
++    if (n == 0) {
++        guiMsgBoxSound(SFX_ERROR);
++        guiMsgBox("There is no formatted PS2 memory card in either slot. BIBLE lives on a memory card: insert one, then try again.", 0, NULL);
++        return;
++    }
++    if ((pick = ripps2PickList(list, n)) < 0)
++        return;
++    port = ports[pick];
++
++    // where RIPPS2 starts from: as it is now when PS2BBL 1.2.0 reaches it, or a copy
++    memset(where, 0, sizeof(where));
++    if (ripps2GetBootPath(boot, sizeof(boot)) && (fd = open(boot, O_RDONLY)) >= 0) {
++        elfKb = (lseek(fd, 0, SEEK_END) + 1023) / 1024;
++        close(fd);
++    } else
++        boot[0] = '\0';
++    // (an HDD path is not one: BIBLE is the memory card build of PS2BBL, which has no HDD driver)
++    if (boot[0] && strncmp(boot, "hdd", 3) && blPathFor(0, boot, ripps2GetBootBdmType(), where[count].path, sizeof(where[count].path)) &&
++        !(ripps2GetBootBdmType() == BDM_TYPE_SDC && port != 0)) {
++        snprintf(where[count].label, sizeof(where[count].label), "WHERE IT IS NOW (%.40s)", where[count].path);
++        where[count].mx4sio = !strncmp(where[count].path, "massX:", 6);
++        current = count++;
++    }
++    if (boot[0] && elfKb > 0) {
++        const char *name = strrchr(boot, '/');
++        name = name ? name + 1 : strchr(boot, ':') + 1;
++        for (i = 0; i < 2; i++) {
++            if (!blCards[i].present || !strncmp(boot, i ? "mc1:" : "mc0:", 4))
++                continue;
++            snprintf(where[count].label, sizeof(where[count].label), "A COPY ON MEMORY CARD %d", i + 1);
++            snprintf(where[count].path, sizeof(where[count].path), "mc?:/RIPPS2/%s", name);
++            snprintf(where[count].copyTo, sizeof(where[count].copyTo), "mc%d:/RIPPS2/%s", i, name);
++            snprintf(where[count].copyWhat, sizeof(where[count].copyWhat), "memory card %d", i + 1);
++            where[count].cardKb = elfKb + 16;
++            where[count].cardPort = i;
++            count++;
++        }
++        char root[16];
++        if (bdmGetDeviceRootByType(BDM_TYPE_USB, root, sizeof(root)) &&
++            !(ripps2GetBootBdmType() == BDM_TYPE_USB && !strncmp(boot, "mass", 4))) {
++            snprintf(where[count].label, sizeof(where[count].label), "A COPY ON THE USB DRIVE");
++            snprintf(where[count].path, sizeof(where[count].path), "mass:/RIPPS2/%s", name);
++            snprintf(where[count].copyTo, sizeof(where[count].copyTo), "%sRIPPS2/%s", root, name);
++            snprintf(where[count].copyWhat, sizeof(where[count].copyWhat), "the USB drive");
++            count++;
++        }
++        if (port == 0 && bdmGetDeviceRootByType(BDM_TYPE_SDC, root, sizeof(root)) &&
++            !(ripps2GetBootBdmType() == BDM_TYPE_SDC && !strncmp(boot, "mass", 4))) {
++            snprintf(where[count].label, sizeof(where[count].label), "A COPY ON MX4SIO");
++            snprintf(where[count].path, sizeof(where[count].path), "massX:/RIPPS2/%s", name);
++            snprintf(where[count].copyTo, sizeof(where[count].copyTo), "%sRIPPS2/%s", root, name);
++            snprintf(where[count].copyWhat, sizeof(where[count].copyWhat), "MX4SIO");
++            where[count].mx4sio = 1;
++            count++;
++        }
++    }
++    if (count == 0) {
++        guiMsgBoxSound(SFX_ERROR);
++        guiMsgBox("PS2BBL starts programs from a memory card, a USB drive or MX4SIO, and RIPPS2 could not read itself to copy there. Start RIPPS2 from one of those, then try again.", 0, NULL);
++        return;
++    }
++    for (i = 0; i < count; i++)
++        list[i] = where[i].label;
++    if ((pick = ripps2PickList(list, count)) < 0)
++        return;
++    if (pick != current && current >= 0)
++        snprintf(alt, sizeof(alt), "%s", where[current].path); // the copy first, the original after it
++
++    // room on the card: BIBLE, two icons, a config, and a copy of RIPPS2 if it goes there too
++    {
++        int kelfKb = ((where[pick].mx4sio ? size_bible_mx4sio_xlf : size_bible_xlf) + 1023) / 1024;
++        int need = kelfKb + 2 * ((size_save_icn + 1023) / 1024 + 2) + 4 + (where[pick].cardKb && where[pick].cardPort == port ? where[pick].cardKb : 0);
++        if (blCards[port].freeKb < need) {
++            guiMsgBoxSound(SFX_ERROR);
++            snprintf(msg, sizeof(msg), "Memory card %d has %d KB free, and BIBLE needs %d KB there. Free some space, then try again.", port + 1, blCards[port].freeKb, need);
++            guiMsgBox(msg, 0, NULL);
++            return;
++        }
++        if (where[pick].cardKb && where[pick].cardPort != port && blCards[where[pick].cardPort].freeKb < where[pick].cardKb) {
++            guiMsgBoxSound(SFX_ERROR);
++            snprintf(msg, sizeof(msg), "Memory card %d has %d KB free, and the copy of RIPPS2 needs %d KB. Free some space or choose another place.", where[pick].cardPort + 1, blCards[where[pick].cardPort].freeKb, where[pick].cardKb);
++            guiMsgBox(msg, 0, NULL);
++            return;
++        }
++    }
++
++    // everything, said once, and only START goes ahead
++    {
++        const blCard_t *c = &blCards[port];
++        int o = snprintf(msg, sizeof(msg), "INSTALL BIBLE ON MEMORY CARD %d\n", port + 1);
++        char sysDir[48];
++        snprintf(sysDir, sizeof(sysDir), "mc%d:/%s", port, blSysFolder);
++        if (blDirExists(sysDir) && !(c->bible && !strcmp(c->folder, blSysFolder)))
++            o += snprintf(msg + o, sizeof(msg) - o, "- %s (%s) moves to a backup folder first, whole.\n", sysDir, blKindName[c->kind]);
++        if (where[pick].copyTo[0] && o < (int)sizeof(msg))
++            o += snprintf(msg + o, sizeof(msg) - o, "- RIPPS2 is copied to %s.\n", where[pick].copyTo);
++        if (o < (int)sizeof(msg))
++            o += snprintf(msg + o, sizeof(msg) - o, "- PS2BBL 1.2.0 is bound to this card by the console and written as %s/%s.\n- Its config, mc%d:/PS2BBL/CONFIG.INI, starts RIPPS2 from %s, BOOT LOCK on.\n"
++                                                    "The I/O processor restarts for this; music and drives come back after. Keep the card in and the console on until it says done.",
++                          sysDir, blSysFile, port, where[pick].path);
++    }
++    guiMsgBoxSound(SFX_MESSAGE);
++    guiMsgBoxStartOption("INSTALL BIBLE");
++    if (guiMsgBox(msg, 0, NULL) != 2)
++        return;
++    blInstallOn(port, &where[pick], alt);
++}
++
++// BOOT LOADER > MANAGE: what each card starts, and BIBLE to install or repair
++void ripps2BibleManage(void)
++{
++    char msg[900], what[2][64];
++    int boot, removed, port;
++
++    guiRenderTextScreen("Reading the memory cards");
++    boot = blScan();
++    removed = blCleanStrays();
++    for (port = 0; port < 2; port++)
++        blCardWhat(port, boot, what[port], sizeof(what[port]));
++    snprintf(msg, sizeof(msg),
++             "MEMORY CARD 1: %s\nMEMORY CARD 2: %s\n%s\n"
++             "BIBLE is PS2BBL 1.2.0 by El Isra, set up by RIPPS2: no wait at power on, RIPPS2 first, and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Install or repair it on a memory card?",
++             what[0], what[1],
++             removed ? "(Removed a SYS-CONF/PS2BBL.INI build 68 wrote for a loader that never reads it.)\n" : "");
++    guiMsgBoxSound(SFX_MESSAGE);
++    if (guiMsgBox(msg, 1, NULL) == 1)
++        blInstall();
++}
+diff --git a/src/ripps2cd.c b/src/ripps2cd.c
+index c8a3b84..fcf8a8d 100644
+--- a/src/ripps2cd.c
++++ b/src/ripps2cd.c
+@@ -204,6 +204,22 @@ static int cdReadToc(void)
+     return 0;
+ }
+ 
++// RIPPS2 build 69: how many sound tracks the CD in the drive has (0: none, or no TOC). The disc
++// watcher asks it of a CD the drive does not call an audio CD -- an enhanced CD (CD-Extra, sound plus
++// a data session), a mixed-mode disc, a burned one some drives will not type -- so START LASER plays
++// those too (FifthFox, build 66: "CD music playback did not work").
++int ripps2CdAudioTracks(void)
++{
++    int t, n = 0;
++    if (cdOpen)
++        return 0;
++    if (!cdReadToc())
++        return 0;
++    for (t = 1; t <= cdCount; t++)
++        n += cdAudio[t] ? 1 : 0;
++    return n;
++}
++
+ static int cdTrackAt(u32 lsn)
+ {
+     int t;
+@@ -252,13 +268,15 @@ static int cdReadSectors(u32 lsn, u32 n, u8 *buf, sceCdRMode *m)
+ #endif
+ }
+ 
++static int cdSlow = 0; // this play reads at 2x: the drive refused its own speed
++
+ static int cdStreamRead(char *buf, int size)
+ {
+     sceCdRMode m;
+     int done = 0;
+ 
+     m.trycount = 3;
+-    m.spindlctrl = SCECdSpinNom;
++    m.spindlctrl = cdSlow ? SCECdSpinX2 : SCECdSpinNom;
+     m.datapattern = SCECdSecS2352;
+     m.pad = 0;
+     while (done < size) {
+@@ -270,8 +288,15 @@ static int cdStreamRead(char *buf, int size)
+             if (n > CD_READ)
+                 n = CD_READ;
+             if (!cdReadSectors(cdLsn, n, cdBuf, &m)) {
+-                LOG("RIPPS2 CD: read of %u sectors at %u refused\n", (unsigned)n, (unsigned)cdLsn);
+-                return done > 0 ? done : -1;
++                // build 69: a drive that will not read the sound at its own speed often will at 2x (a
++                // worn or burned disc): once more there, and stay there for the rest of this play
++                LOG("RIPPS2 CD: read of %u sectors at %u refused%s\n", (unsigned)n, (unsigned)cdLsn, cdSlow ? "" : ", again at 2x");
++                if (cdSlow)
++                    return done > 0 ? done : -1;
++                cdSlow = 1;
++                m.spindlctrl = SCECdSpinX2;
++                if (!cdReadSectors(cdLsn, n, cdBuf, &m))
++                    return done > 0 ? done : -1;
+             }
+             // the drive's error code can outlast the read that set it, so a reported error keeps the
+             // data (the drive's retries already had their go at a scratch) and only goes in the log
+@@ -315,6 +340,7 @@ static void cdPlayFrom(u32 lsn)
+     cdFrom = cdLsn = lsn;
+     cdEnd = cdAudioEnd(lsn);
+     cdBufPos = cdBufLen = 0;
++    cdSlow = 0;
+     if (bgmStartPcm(&cdStreamRead, 44100, 2) == 0) {
+         cdState = CD_PLAYING;
+         cdSel = t;
+diff --git a/src/ripps2edit.c b/src/ripps2edit.c
+index d0a5578..c2d3faa 100644
+--- a/src/ripps2edit.c
++++ b/src/ripps2edit.c
+@@ -91,7 +91,16 @@ static int edMenu(const char *const *items, int count)
+             rmDrawRect(0, 0, 640, 480, ED_PRIM(0x00, 0x02, 0x0A, 0x50));
+         } else
+             guiDrawBGPlasma();
++        // as wide as its longest item (build 69: BIBLE's card list ran off the box), centred once it
++        // outgrows the small box at the right
+         int w = 220, h = count * 24 + 20, x = 400, y = 120;
++        for (i = 0; i < count; i++) {
++            int iw = fntCalcDimensions(gTheme->fonts[4], items[i]) + 32;
++            if (iw > w)
++                w = iw > 600 ? 600 : iw;
++        }
++        if (w > 220)
++            x = (640 - w) / 2;
+         rmDrawRect(x, y, w, h, ED_PRIM(0x03, 0x08, 0x22, 0x70));
+         rmDrawLine(x, y, x + w, y, ED_PRIM(0x4A, 0x72, 0xDC, 0x80));
+         rmDrawLine(x, y + h, x + w, y + h, ED_PRIM(0x4A, 0x72, 0xDC, 0x80));
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index 5096401..a2c718d 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -36,6 +36,8 @@
+ #include <kernel.h>
+ #include <errno.h>
+ #include <delaythread.h>
++#define NEWLIB_PORT_AWARE
++#include <fileXio_rpc.h> // fileXioDevctl: the MMCE ping (START DRIVES)
+ 
+ #include "include/opl.h"
+ #include "include/gui.h"
+@@ -52,6 +54,8 @@
+ #include "include/bdmsupport.h"  // bdmSlotEverConnected: only probe slots that have held a drive
+ #include "include/mmcesupport.h"
+ #include "include/hddsupport.h"
++#include "include/lang.h" // _STR_HDD_NOT_CONNECTED_ERROR
++#include "include/cuesupport.h" // EMBER_ELF_NAME
+ 
+ #define FB_MAX      400 // entries in one folder
+ #define FB_NAME     128
+@@ -86,6 +90,9 @@ static char fbKeepName[FB_NAME]; // after a rescan, put the cursor back on this
+ static volatile int fbBusy = 0;
+ static int fbStarted = 0;          // the drives were started from here: look again in a moment
+ static clock_t fbRescanAt = 0;
++static volatile int fbDrivesUp = 0; // START DRIVES has loaded every drive's driver (whatever Storage's start modes)
++static volatile int fbDrivesDone = 0; // ...and has just finished: read the drive list again
++static int fbMmceSlot[2] = {0, 0};      // START DRIVES found an MMCE in that slot (its ping answered)
+ 
+ // what happened last, shown top right for a moment
+ static char fbToast[48];
+@@ -170,19 +177,34 @@ static int fbVmcPath(const char *image, const char *path, char *save, int size)
+     return 1;
+ }
+ 
+-static const char *fbDeviceLabel(const char *dev, char *buf, int size)
++// A drive's name. A BDM drive (massN:) by what it is (build 69, FifthFox: "every BDM device is MASS"),
++// numbered only when there is more than one of its kind (nth of count)
++static const char *fbDeviceLabel(const char *dev, char *buf, int size, int bdmType, int nth, int count)
+ {
+     if (!strncmp(dev, "mc", 2))
+         snprintf(buf, size, "MEMORY CARD %c", dev[2] == '0' ? '1' : '2');
+-    else if (!strncmp(dev, "mass", 4))
+-        snprintf(buf, size, "USB / BDM DRIVE %c", dev[4]);
+-    else if (!strncmp(dev, "mmce", 4))
++    else if (!strncmp(dev, "mass", 4)) {
++        const char *kind = bdmType == BDM_TYPE_USB ? "USB DRIVE" : bdmType == BDM_TYPE_SDC ? "MX4SIO" : bdmType == BDM_TYPE_ILINK ? "iLINK DRIVE" :
++                           bdmType == BDM_TYPE_ATA ? "HDD (exFAT)" : bdmType == BDM_TYPE_UDPBD ? "UDPBD (NETWORK)" : "DRIVE";
++        if (count > 1)
++            snprintf(buf, size, "%s %d", kind, nth);
++        else
++            snprintf(buf, size, "%s", kind);
++    } else if (!strncmp(dev, "mmce", 4))
+         snprintf(buf, size, "MMCE %c", dev[4] == '0' ? '1' : '2');
++    else if (!strncmp(dev, "hdd0:", 5))
++        snprintf(buf, size, "HDD (APA PARTITIONS)");
+     else
+         snprintf(buf, size, "HDD (OPL HOME)");
+     return buf;
+ }
+ 
++// An internal APA hard drive the HDD MANAGER can open
++static int fbIsApaEntry(const fb_entry_t *e)
++{
++    return e != NULL && e->kind == FB_KIND_DEVICE && (!strcmp(e->name, "pfs0:/") || !strcmp(e->name, "hdd0:"));
++}
++
+ // ---- reading ----
+ 
+ // Shift-JIS from an icon.sys title to plain ASCII: full-width letters, digits and common punctuation
+@@ -304,7 +326,7 @@ static clock_t fbDevCacheAt = 0;
+ 
+ static void fbScanDevices(void)
+ {
+-    int i, n = 0, haveMass = 0;
++    int i, n = 0, haveMass = 0, havePfs = 0, slotType[10], typeCount[8], typeSeen[8];
+     char label[FB_TITLE];
+ 
+     if (!fbDevForce && fbDevCacheAt != 0) {
+@@ -314,13 +336,30 @@ static void fbScanDevices(void)
+     }
+     fbDevForce = 0;
+ 
++    // what each BDM slot holds first, so drives of one kind can be numbered
++    memset(typeCount, 0, sizeof(typeCount));
++    memset(typeSeen, 0, sizeof(typeSeen));
++    for (i = 0; i < 10; i++) {
++        slotType[i] = -2;
++        if (i < 8 && (fbDrivesUp || bdmSlotEverConnected(BDM_MODE + i))) {
++            slotType[i] = bdmSlotDeviceType(i);
++            if (slotType[i] >= -1)
++                typeCount[slotType[i] + 1]++;
++        }
++    }
++
+     for (i = 0; fbDevices[i] != NULL && n < FB_MAX; i++) {
+         const char *dev = fbDevices[i];
+-        if (!strncmp(dev, "mass", 4) && !bdmSlotEverConnected(BDM_MODE + (dev[4] - '0')))
+-            continue;
+-        if (!strncmp(dev, "mmce", 4) && mmceGetObject(1) == NULL)
++        int slot = -1;
++        if (!strncmp(dev, "mass", 4)) {
++            slot = dev[4] - '0';
++            if (slotType[slot] < -1)
++                continue; // nothing mounted there
++        }
++        // MMCE and the HDD's OPL home: when Storage started them, or START DRIVES did here
++        if (!strncmp(dev, "mmce", 4) && mmceGetObject(1) == NULL && !fbMmceSlot[dev[4] == '1'])
+             continue;
+-        if (!strncmp(dev, "pfs", 3) && hddGetObject(1) == NULL)
++        if (!strncmp(dev, "pfs", 3) && hddGetObject(1) == NULL && !fbDrivesUp)
+             continue;
+         DIR *d = opendir(dev);
+         if (d == NULL)
+@@ -329,16 +368,31 @@ static void fbScanDevices(void)
+         fb_entry_t *e = &fbList[n++];
+         memset(e, 0, sizeof(*e));
+         snprintf(e->name, sizeof(e->name), "%s", fbDevices[i]);
+-        snprintf(e->title, sizeof(e->title), "%s", fbDeviceLabel(fbDevices[i], label, sizeof(label)));
++        if (slot >= 0) {
++            int k = slotType[slot] + 1;
++            fbDeviceLabel(dev, label, sizeof(label), slotType[slot], ++typeSeen[k], typeCount[k]);
++        } else
++            fbDeviceLabel(dev, label, sizeof(label), -1, 0, 0);
++        snprintf(e->title, sizeof(e->title), "%s", label);
+         e->kind = FB_KIND_DEVICE;
+-        if (!strncmp(fbDevices[i], "mass", 4))
++        if (slot >= 0)
+             haveMass = 1;
++        if (!strncmp(dev, "pfs", 3))
++            havePfs = 1;
++    }
++    // an APA hard drive with no OPL home to open still has partitions: the HDD MANAGER's way in
++    if (!havePfs && n < FB_MAX && (hddGetObject(1) != NULL || fbDrivesUp) && hddCheck() == 0) {
++        fb_entry_t *e = &fbList[n++];
++        memset(e, 0, sizeof(*e));
++        snprintf(e->name, sizeof(e->name), "hdd0:");
++        snprintf(e->title, sizeof(e->title), "%s", fbDeviceLabel("hdd0:", label, sizeof(label), -1, 0, 0));
++        e->kind = FB_KIND_DEVICE;
+     }
+-    if (!haveMass && n < FB_MAX) { // USB and HDD start on request: offer it here
++    if (!fbDrivesUp && n < FB_MAX) { // the drives start on request, whatever Storage's start modes: offer it here
+         fb_entry_t *e = &fbList[n++];
+         memset(e, 0, sizeof(*e));
+         snprintf(e->name, sizeof(e->name), "START DRIVES");
+-        snprintf(e->title, sizeof(e->title), "%s", fbStarted ? "STARTING..." : "USB, HDD, MMCE");
++        snprintf(e->title, sizeof(e->title), "%s", fbStarted ? "STARTING..." : haveMass ? "MORE DRIVES" : "USB, HDD, MMCE, AND MORE");
+         e->kind = FB_KIND_START;
+     }
+     fbCount = n;
+@@ -975,6 +1029,17 @@ static void fbRunElf(const fb_entry_t *e)
+         return;
+     }
+     argv[0] = elfPath;
++    // build 69 (FifthFox: "Ember does not run from Launcher"): Ember cannot start a drive of its own,
++    // it inherits the IOP it is handed (sysLaunchEmber). The reset below left it blind; it goes the
++    // way the PS1 pages start it, the IOP and its drives kept, its own path as argv[0]
++    const char *base = strrchr(elfPath, '/');
++    if (!strcasecmp(base != NULL ? base + 1 : elfPath, EMBER_ELF_NAME)) {
++        ripps2PlayLaunchSequence();
++        deinit(UNMOUNT_EXCEPTION, IO_MODE_SELECTED_ALL_SPARE);
++        sysLaunchEmber(elfPath, NULL);
++        ripps2LaunchAborted();
++        return;
++    }
+     ripps2PlayLaunchSequence();
+     deinit(UNMOUNT_EXCEPTION, IO_MODE_SELECTED_ALL_SPARE); // keep the drive the ELF is on
+     sysLoadELFApp(elfPath, NULL, 1, argv, 1, 0);
+@@ -1002,6 +1067,56 @@ static void fbEdit(const char *name)
+     fbRun(FB_OP_SCAN, "READING");
+ }
+ 
++// START DRIVES (build 69): every drive's driver, whatever Storage's start modes say -- Off and Manual
++// included -- on the IO worker, so the browser keeps moving. No game list is started: the drivers
++// only. Storage looks exactly as it did when the browser closes (an Off drive's tab stays hidden, a
++// Manual one still waits for its Start).
++//   USB, the internal hard drive (exFAT or APA) and MMCE: always; each answers "nothing here" at
++//   once on a console without one.
++//   iLink and MX4SIO: only when switched on in Game Sources. The iLink driver hangs the whole IOP on
++//   a console with no iLink controller (slim models; PCSX2 too, where this was found), and MX4SIO
++//   shares slot 2 and the controllers' bus. MX4SIO also stays out while a memory card is in slot 2.
++static void fbStartDrivesWork(void)
++{
++    DIR *d;
++    int r;
++    // the BDM core with each transport (bdmEnsureTypedSource), as a typed custom path brings one up
++    r = bdmEnsureTypedSource(BDM_TYPE_USB, 2500);
++    LOG("START DRIVES: USB %d\n", r);
++    if (gEnableILK) {
++        r = bdmEnsureTypedSource(BDM_TYPE_ILINK, 1500);
++        LOG("START DRIVES: iLink %d\n", r);
++    }
++    if (!gEnableMX4SIO)
++        ;
++    else if ((d = opendir("mc1:/")) != NULL) {
++        closedir(d);
++        LOG("START DRIVES: a memory card is in slot 2, MX4SIO left out\n");
++    } else {
++        r = bdmEnsureTypedSource(BDM_TYPE_SDC, 2500);
++        LOG("START DRIVES: MX4SIO %d\n", r);
++    }
++    if (hddLoadModulesReady()) {
++        r = bdmEnsureTypedSource(BDM_TYPE_ATA, 2500); // an exFAT internal drive
++        LOG("START DRIVES: ATA %d\n", r);
++        hddInspectSupportHome(); // an APA one: its OPL home, mounted (nothing created)
++        LOG("START DRIVES: APA home %s\n", gHDDPrefix != NULL ? gHDDPrefix : "(none)");
++    } else {
++        // a look, not a failure: the "hard drive not detected" box the driver load raises is not shown
++        clearErrorMessageIf(_STR_HDD_NOT_CONNECTED_ERROR);
++        LOG("START DRIVES: no internal hard drive\n");
++    }
++    // MMCE: the driver, then a ping per slot. A plain memory card does not answer it, and the list
++    // never opens mmceN:/ on a slot that did not (MMCE commands to a plain card only time out)
++    mmceLoadModules();
++    fbMmceSlot[0] = fileXioDevctl("mmce0:/", 0x1, NULL, 0, NULL, 0) != -1;
++    fbMmceSlot[1] = fileXioDevctl("mmce1:/", 0x1, NULL, 0, NULL, 0) != -1;
++    LOG("START DRIVES: MMCE slot 1 %d, slot 2 %d\n", fbMmceSlot[0], fbMmceSlot[1]);
++    DelayThread(1000 * 1000); // a USB stick enumerates a moment after its driver: let it, before the list is read
++    fbDrivesUp = 1;
++    fbDrivesDone = 1;
++}
++
+ static void fbOpen(void)
+ {
+     if (fbCount == 0)
+@@ -1011,15 +1126,23 @@ static void fbOpen(void)
+ 
+     switch (e->kind) {
+         case FB_KIND_START:
++            if (fbStarted)
++                break;
+             sfxPlay(SFX_CONFIRM);
+-            ripps2StartSources();
+             fbStarted = 1;
+             fbDevForce = 1;
+-            fbRescanAt = clock() + 3 * CLOCKS_PER_SEC; // the drives attach in the background
+-            fbRun(FB_OP_SCAN, "STARTING DRIVES");
++            fbRescanAt = 0; // the list is read again when every driver is up (fbDrivesDone)
++            fbDrivesDone = 0;
++            if (ioPutRequest(IO_CUSTOM_SIMPLEACTION, &fbStartDrivesWork) != IO_OK)
++                fbStarted = 0;
++            snprintf(e->title, sizeof(e->title), "STARTING..."); // at once; the worker reads the list again
+             break;
+         case FB_KIND_DEVICE:
+             sfxPlay(SFX_CONFIRM);
++            if (!strcmp(e->name, "hdd0:")) { // partitions, not files: the HDD MANAGER
++                ripps2HddManager();
++                break;
++            }
+             fbOpenPath(e->name, NULL);
+             break;
+         case FB_KIND_DIR:
+@@ -1196,9 +1319,10 @@ static void fbAction(int act)
+ static void fbHint(int icon, const char *text, int *x, int y); // drawn with the tree's hints below
+ static void fbHintLayout(void);
+ static int fbHintX = 34, fbHintGap = 18; // where every hint row starts, and its gap (fbHintLayout)
+-enum { FB_TILE_BROWSER = 0, FB_TILE_EDITOR, FB_TILE_HDD, FB_TILE_EXPLOIT, FB_TILE_POWER, FB_TILE_EXIT, FB_TILE_COUNT };
+-static const char *const fbTileLine1[FB_TILE_COUNT] = {"FILE", "TEXT", "HDD", "MC EXPLOIT", "POWER", "EXIT"};
+-static const char *const fbTileLine2[FB_TILE_COUNT] = {"BROWSER", "EDITOR", "MANAGER", "INSTALLER", "OFF", "BROWSER"};
++// build 69: ORBITS took HDD MANAGER's tile (the HDD MANAGER is Square on an internal APA drive now)
++enum { FB_TILE_BROWSER = 0, FB_TILE_EDITOR, FB_TILE_ORBITS, FB_TILE_EXPLOIT, FB_TILE_POWER, FB_TILE_EXIT, FB_TILE_COUNT };
++static const char *const fbTileLine1[FB_TILE_COUNT] = {"FILE", "TEXT", "ORBIT", "MC EXPLOIT", "POWER", "EXIT"};
++static const char *const fbTileLine2[FB_TILE_COUNT] = {"BROWSER", "EDITOR", "SETTINGS", "INSTALLER", "OFF", "BROWSER"};
+ #define FB_TILE_W   172
+ #define FB_TILE_H   150
+ #define FB_TILE_GAP 14
+@@ -1276,6 +1400,114 @@ static void fbRunInstaller(void)
+     ripps2LaunchAborted();
+ }
+ 
++// ---- ORBIT SETTINGS: over the orbs themselves, every change seen as it is made ----
++#define OB_X     34
++#define OB_W     292
++#define OB_Y     58
++#define OB_ROW_H 22
++
++static void fbOrbitsPage(void)
++{
++    static const char *const rowName[4] = {"CYCLE", "SPEED", "PATH LINES", "HEIGHT"};
++    static const char *const values[4][4] = {{"OFF", "30 S", "1 MIN", "3 MIN"}, {"SLOW", "NORMAL", "FAST", NULL}, {"WITH L2", "FAINT", "ALWAYS", NULL}, {"CENTRE", "LOW", "HIGH", NULL}};
++    static const int valueCount[4] = {4, 3, 3, 3};
++    int *setting[4] = {&gRipps2OrbCycle, &gRipps2OrbSpeed, &gRipps2OrbPaths, &gRipps2OrbHeight};
++    int formations = ripps2FormationCount(), rows = 4 + formations, sel = 0, changed = 0, i;
++    int openKey = gSelectButton == KEY_CIRCLE ? KEY_CIRCLE : KEY_CROSS, backKey = gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE;
++    char toast[48] = "";
++    clock_t toastAt = 0;
++
++    readPads();
++    while (1) {
++        readPads();
++        ripps2SetOrbInput(getKeyPressed(KEY_L2), getKeyPressed(KEY_R2)); // the triggers still play with them
++
++        rmStartFrame();
++        ripps2DrawOrbs();
++        rmDrawRect(OB_X - 14, 14, OB_W + 28, 452, FB_PRIM(0x02, 0x06, 0x1C, 0x5C));
++        rmDrawLine(OB_X - 14 + OB_W + 28, 14, OB_X - 14 + OB_W + 28, 466, FB_PRIM(0x4A, 0x72, 0xDC, 0x60));
++        fntRenderString(gTheme->fonts[4], OB_X, 34, ALIGN_VCENTER, 0, 0, "ORBIT SETTINGS", FB_LIT);
++        rmDrawLine(OB_X, 48, OB_X + OB_W, 48, FB_PRIM(0x4A, 0x72, 0xDC, 0x60));
++        for (i = 0; i < rows; i++) {
++            int y = OB_Y + i * OB_ROW_H + (i >= 4 ? 20 : 0), cur = i == sel;
++            if (i == 4)
++                fntRenderString(gTheme->fonts[5], OB_X, y - 9, ALIGN_VCENTER, 0, 0, "FORMATIONS IN USE", FB_DIM);
++            if (cur) {
++                rmDrawRect(OB_X - 6, y - 1, OB_W + 12, OB_ROW_H - 2, FB_PRIM(0x1E, 0x3C, 0x96, 0x58));
++                rmDrawRect(OB_X - 6, y - 1, 3, OB_ROW_H - 2, FB_PRIM(0x6A, 0x9A, 0xFF, 0x80));
++            }
++            if (i < 4) {
++                const char *v = values[i][*setting[i] % valueCount[i]];
++                fntRenderString(gTheme->fonts[8], OB_X + 6, y + 10, ALIGN_VCENTER, 0, 0, rowName[i], cur ? FB_LIT : FB_SOFT);
++                int vw = fntCalcDimensions(gTheme->fonts[5], v), vx = OB_X + OB_W - vw - (cur ? 14 : 0);
++                fntRenderString(gTheme->fonts[5], vx, y + 10, ALIGN_VCENTER, 0, 0, v, cur ? FB_LIT : FB_DIM);
++                if (cur) { // Left / Right change it
++                    u64 c = FB_PRIM(0x9C, 0xB8, 0xFF, 0x80);
++                    rmDrawQuadGouraud(vx - 12, y + 10, c, vx - 6, y + 5, c, vx - 12, y + 10, c, vx - 6, y + 15, c);
++                    rmDrawQuadGouraud(OB_X + OB_W - 2, y + 10, c, OB_X + OB_W - 8, y + 5, c, OB_X + OB_W - 2, y + 10, c, OB_X + OB_W - 8, y + 15, c);
++                }
++            } else {
++                int f = i - 4, on = !(gRipps2OrbOff & (1 << f));
++                rmDrawRect(OB_X + 6, y + 5, 10, 10, FB_PRIM(0x4A, 0x72, 0xDC, 0x80));
++                rmDrawRect(OB_X + 7, y + 6, 8, 8, on ? FB_PRIM(0x9C, 0xB8, 0xFF, 0x80) : FB_PRIM(0x03, 0x08, 0x22, 0x80));
++                fntRenderString(gTheme->fonts[8], OB_X + 26, y + 10, ALIGN_VCENTER, 0, 0, ripps2FormationName(f),
++                                cur ? FB_LIT : on ? FB_SOFT : FB_DIM);
++                if (f == gRipps2Formation)
++                    fntRenderString(gTheme->fonts[5], OB_X + OB_W - fntCalcDimensions(gTheme->fonts[5], "SHOWING"), y + 10, ALIGN_VCENTER, 0, 0, "SHOWING", FB_DIM);
++            }
++        }
++        if (toast[0] && clock() - toastAt < 2 * CLOCKS_PER_SEC)
++            fntRenderString(gTheme->fonts[5], OB_X, 432, ALIGN_VCENTER, 0, 0, toast, FB_SOFT);
++        {
++            int hx = OB_X, hy = 448;
++            if (sel < 4)
++                fbHint(gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON, "CHANGE", &hx, hy);
++            else
++                fbHint(gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON, "IN / OUT", &hx, hy);
++            fbHint(gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON, "DONE", &hx, hy);
++        }
++        rmEndFrame();
++
++        if (getKey(KEY_UP) && sel > 0) {
++            sel--;
++            sfxPlay(SFX_CURSOR);
++        } else if (getKey(KEY_DOWN) && sel < rows - 1) {
++            sel++;
++            sfxPlay(SFX_CURSOR);
++        } else if (sel < 4 && (getKeyOn(KEY_LEFT) || getKeyOn(KEY_RIGHT) || getKeyOn(openKey))) {
++            int dir = getKeyOn(KEY_LEFT) ? -1 : 1;
++            *setting[sel] = (*setting[sel] + dir + valueCount[sel]) % valueCount[sel];
++            changed = 1;
++            sfxPlay(SFX_CURSOR);
++        } else if (sel >= 4 && getKeyOn(openKey)) {
++            int f = sel - 4, off = gRipps2OrbOff ^ (1 << f);
++            if (off == (1 << formations) - 1) { // the last one in stays in
++                sfxPlay(SFX_ERROR);
++                snprintf(toast, sizeof(toast), "ONE FORMATION STAYS IN");
++                toastAt = clock();
++            } else {
++                gRipps2OrbOff = off;
++                if ((off & (1 << gRipps2Formation)))
++                    gRipps2Formation = ripps2FormationStep(gRipps2Formation, 1); // the one showing went out
++                changed = 1;
++                sfxPlay(SFX_CONFIRM);
++            }
++        } else if (getKeyOn(backKey) || getKeyOn(KEY_START) || getKeyOn(KEY_TRIANGLE)) {
++            sfxPlay(SFX_CANCEL);
++            break;
++        }
++        // on a formation's row, the orbs take that formation (when it is in), so the choice is seen
++        if (sel >= 4 && !(gRipps2OrbOff & (1 << (sel - 4))) && gRipps2Formation != sel - 4) {
++            gRipps2Formation = sel - 4;
++            changed = 1;
++        }
++    }
++    ripps2SetOrbInput(0, 0);
++    if (changed)
++        ripps2SaveSettingsInBackground();
++    readPads();
++}
++
+ static void fbTile(int t)
+ {
+     char name[FB_NAME];
+@@ -1298,9 +1530,9 @@ static void fbTile(int t)
+             } else
+                 guiMsgBox("Open a folder first, then pick a text file to edit, or make a new one there.", 0, NULL);
+             break;
+-        case FB_TILE_HDD:
++        case FB_TILE_ORBITS:
+             sfxPlay(SFX_CONFIRM);
+-            ripps2HddManager();
++            fbOrbitsPage();
+             break;
+         case FB_TILE_EXPLOIT:
+             sfxPlay(SFX_CONFIRM);
+@@ -1543,6 +1775,9 @@ void ripps2HandleInputFiles(void)
+             if (fbCursor < fbCount - 1)
+                 fbCursor++;
+             sfxPlay(SFX_CURSOR);
++        } else if (!fbPath[0] && fbCount > 0 && fbIsApaEntry(&fbList[fbCursor])) {
++            sfxPlay(SFX_CONFIRM); // build 69: the HDD MANAGER, on the drive it manages
++            ripps2HddManager();
+         }
+     } else if (getKeyOn(KEY_SELECT)) { // read the folder (or the drives) again
+         sfxPlay(SFX_CONFIRM);
+@@ -1667,9 +1902,13 @@ void ripps2RenderFiles(void)
+     ripps2DrawBackground();
+     ripps2DrawPagePanel();
+ 
+-    if (!fbBusy && fbRescanAt != 0 && clock() >= fbRescanAt && fbPath[0] == '\0') {
++    if (!fbBusy && fbPath[0] == '\0' && ((fbRescanAt != 0 && clock() >= fbRescanAt && !fbStarted) || fbDrivesDone)) {
++        if (fbDrivesDone) { // every driver is up: the last look
++            fbDrivesDone = 0;
++            fbStarted = 0;
++            fbSetToast("DRIVES STARTED");
++        }
+         fbRescanAt = 0; // drives started from here have had time to attach
+-        fbStarted = 0;
+         fbDevForce = 1;
+         fbRun(FB_OP_SCAN, "READING");
+     }
+@@ -1781,6 +2020,9 @@ void ripps2RenderFiles(void)
+             texts[n++] = "MARK";
+             icons[n] = TRIANGLE_ICON;
+             texts[n++] = "ACTIONS";
++        } else if (fbIsApaEntry(e)) {
++            icons[n] = SQUARE_ICON;
++            texts[n++] = "HDD MANAGER";
+         }
+         icons[n] = SELECT_ICON;
+         texts[n++] = "REFRESH";
+diff --git a/src/ripps2hdd.c b/src/ripps2hdd.c
+index 57f2c7d..4998b21 100644
+--- a/src/ripps2hdd.c
++++ b/src/ripps2hdd.c
+@@ -3,12 +3,17 @@
+   Licenced under Academic Free License version 3.0
+   Review OpenUsbLd README & LICENSE files for further details.
+ 
+-  RIPPS2 HDD manager (Memory Files settings): the internal APA hard disk's partitions in the RIPPS2
+-  glass, the way wLaunchELF's HDD manager lists them (ps2homebrew/wLaunchELF, AFL-2.0, was the
+-  reference): each partition's name, kind and size, and the disk's total and free space. A user
+-  partition can be removed, after two confirmations; the system partitions (__ names) never can.
+-  Creating and formatting partitions are left to the dedicated tools for now: RiptOPL's HDD driver
++  RIPPS2 HDD manager (Square on an internal APA drive in the file browser): the hard drive's
++  partitions in the RIPPS2 glass, the way wLaunchELF's HDD manager lists them (ps2homebrew/wLaunchELF,
++  AFL-2.0, was the reference): each partition's name, kind and size, and the drive's total and free
++  space. Creating and formatting partitions are left to the dedicated tools: RiptOPL's HDD driver
+   refuses partition creates on purpose.
++
++  Build 69 (it lagged so badly it could not be used): the drive's total and free space were asked of
++  the IOP on every frame, and the free count walks the whole partition table. They are read once per
++  scan now. Removing a partition is gated twice -- what it is and what goes with it, then a last
++  screen that only START gets past -- and some never can be removed: the system's (__ names), the
++  one RIPPS2 keeps its settings on, and the one RIPPS2 was started from.
+ */
+ 
+ #include <stdio.h>
+@@ -51,6 +56,7 @@ typedef struct
+ 
+ static hm_part_t hmParts[HM_MAX];
+ static int hmCount = 0;
++static u32 hmTotalS = 0, hmFreeS = 0; // read with the list, never per frame
+ 
+ static const char *hmTypeName(unsigned int type)
+ {
+@@ -75,23 +81,62 @@ static void hmMb(u32 sectors, char *out, int size)
+         snprintf(out, size, "%u MB", mb);
+ }
+ 
++// One frame saying what is happening (the scan and a removal take a moment on a big drive)
++static void hmStatus(const char *text)
++{
++    rmStartFrame();
++    guiDrawBGPlasma();
++    fntRenderString(gTheme->fonts[4], HM_X, 30, ALIGN_VCENTER, 0, 0, "HDD MANAGER", HM_LIT);
++    rmDrawLine(HM_X, 46, HM_RIGHT, 46, HM_PRIM(0x4A, 0x72, 0xDC, 0x60));
++    fntRenderString(gTheme->fonts[4], 320, 240, ALIGN_CENTER, 0, 0, text, HM_SOFT);
++    rmEndFrame();
++}
++
+ static int hmScan(void)
+ {
+     iox_dirent_t de;
+-    int fd = fileXioDopen("hdd0:");
++    int fd;
++
++    hmStatus("READING THE PARTITIONS");
+     hmCount = 0;
+-    if (fd < 0)
+-        return fd;
+-    while (hmCount < HM_MAX && fileXioDread(fd, &de) > 0) {
+-        if (de.stat.mode == APA_TYPE_FREE)
+-            continue;
+-        hm_part_t *p = &hmParts[hmCount++];
+-        snprintf(p->name, sizeof(p->name), "%s", de.name);
+-        p->type = de.stat.mode;
+-        p->sectors = de.stat.size;
++    fd = fileXioDopen("hdd0:");
++    if (fd >= 0) {
++        while (hmCount < HM_MAX && fileXioDread(fd, &de) > 0) {
++            if (de.stat.mode == APA_TYPE_FREE)
++                continue;
++            hm_part_t *p = &hmParts[hmCount++];
++            snprintf(p->name, sizeof(p->name), "%s", de.name);
++            p->type = de.stat.mode;
++            p->sectors = de.stat.size;
++        }
++        fileXioDclose(fd);
+     }
+-    fileXioDclose(fd);
+-    return 0;
++    hmTotalS = (u32)fileXioDevctl("hdd0:", HDIOC_TOTALSECTOR, NULL, 0, NULL, 0);
++    hmFreeS = (u32)fileXioDevctl("hdd0:", HDIOC_FREESECTOR, NULL, 0, NULL, 0);
++    readPads(); // what was pressed while it read is not a command
++    return fd < 0 ? fd : 0;
++}
++
++// Why a partition cannot be removed here, or NULL when it can
++static const char *hmKept(const hm_part_t *p)
++{
++    char boot[256];
++    int n = strlen(p->name);
++
++    if (p->name[0] == '_' && p->name[1] == '_')
++        return "SYSTEM PARTITIONS STAY";
++    // RIPPS2's settings home (gOPLPart is "hdd0:+OPL" or "hdd0:__common")
++    if (gOPLPart[0] && !strcmp(gOPLPart + (strncmp(gOPLPart, "hdd0:", 5) ? 0 : 5), p->name))
++        return "RIPPS2 KEEPS ITS SETTINGS THERE";
++    // the partition RIPPS2 was started from ("hdd0:+NAME:pfs:/..." or "hdd0:/+NAME:pfs:...")
++    if (ripps2GetBootPath(boot, sizeof(boot)) && !strncmp(boot, "hdd0:", 5)) {
++        const char *b = boot + 5;
++        if (*b == '/')
++            b++;
++        if (!strncmp(b, p->name, n) && b[n] == ':')
++            return "RIPPS2 WAS STARTED FROM IT";
++    }
++    return NULL;
+ }
+ 
+ static void hmHint(int icon, const char *text, int *x, int y)
+@@ -110,7 +155,8 @@ void ripps2HddManager(void)
+     int status = hddCheck(), cursor = 0, top = 0, i;
+     char line[96], total[24], freeTxt[24], toast[64] = "";
+ 
+-    if (status < 0) {
++    // HDIOC_STATUS: 0 ready, 1 not APA formatted, 2 not usable, 3 not connected; < 0 no driver
++    if (status < 0 || status >= 2) {
+         guiMsgBox("No internal hard drive is ready. Start the drives first (START DRIVES), or check the HDD is connected.", 0, NULL);
+         return;
+     }
+@@ -131,10 +177,8 @@ void ripps2HddManager(void)
+         if (cursor >= top + HM_ROWS)
+             top = cursor - HM_ROWS + 1;
+ 
+-        u32 totalS = (u32)fileXioDevctl("hdd0:", HDIOC_TOTALSECTOR, NULL, 0, NULL, 0);
+-        u32 freeS = (u32)fileXioDevctl("hdd0:", HDIOC_FREESECTOR, NULL, 0, NULL, 0);
+-        hmMb(totalS, total, sizeof(total));
+-        hmMb(freeS, freeTxt, sizeof(freeTxt));
++        hmMb(hmTotalS, total, sizeof(total));
++        hmMb(hmFreeS, freeTxt, sizeof(freeTxt));
+ 
+         rmStartFrame();
+         guiDrawBGPlasma();
+@@ -142,28 +186,31 @@ void ripps2HddManager(void)
+         snprintf(line, sizeof(line), "%d PARTITIONS   %s FREE OF %s", hmCount, freeTxt, total);
+         fntRenderString(gTheme->fonts[4], HM_RIGHT - fntCalcDimensions(gTheme->fonts[4], line), 30, ALIGN_VCENTER, 0, 0, line, HM_SOFT);
+         rmDrawLine(HM_X, 46, HM_RIGHT, 46, HM_PRIM(0x4A, 0x72, 0xDC, 0x60));
+-        // the disk as a bar: used against free
+-        if (totalS > 0) {
+-            int w = HM_RIGHT - HM_X, used = (int)((float)w * (float)(totalS - freeS) / (float)totalS);
++        // the drive as a bar: used against free
++        if (hmTotalS > 0) {
++            int w = HM_RIGHT - HM_X, used = (int)((float)w * (float)(hmTotalS - hmFreeS) / (float)hmTotalS);
+             rmDrawRect(HM_X, 56, w, 8, HM_PRIM(0x03, 0x08, 0x22, 0x80));
+             rmDrawRect(HM_X, 56, used, 8, HM_PRIM(0x4A, 0x8C, 0xF0, 0x80));
+         }
+         for (i = 0; i < HM_ROWS && top + i < hmCount; i++) {
+             hm_part_t *p = &hmParts[top + i];
+-            int y = HM_Y + i * HM_ROW_H, cur = top + i == cursor, sys = p->name[0] == '_' && p->name[1] == '_';
++            int y = HM_Y + i * HM_ROW_H, cur = top + i == cursor, kept = hmKept(p) != NULL;
+             if (cur) {
+                 rmDrawRect(HM_X - 6, y - 1, HM_RIGHT - HM_X + 12, HM_ROW_H - 2, HM_PRIM(0x1E, 0x3C, 0x96, 0x58));
+                 rmDrawRect(HM_X - 6, y - 1, 3, HM_ROW_H - 2, HM_PRIM(0x6A, 0x9A, 0xFF, 0x80));
+             }
+-            fntRenderString(gTheme->fonts[8], HM_X + 6, y + 9, ALIGN_VCENTER, 330, 0, p->name, cur ? HM_LIT : (sys ? HM_DIM : HM_SOFT));
+-            fntRenderString(gTheme->fonts[5], 390, y + 9, ALIGN_VCENTER, 0, 0, sys ? "SYSTEM" : hmTypeName(p->type), HM_DIM);
++            fntRenderString(gTheme->fonts[8], HM_X + 6, y + 9, ALIGN_VCENTER, 330, 0, p->name, cur ? HM_LIT : (kept ? HM_DIM : HM_SOFT));
++            fntRenderString(gTheme->fonts[5], 390, y + 9, ALIGN_VCENTER, 0, 0, p->name[0] == '_' && p->name[1] == '_' ? "SYSTEM" : hmTypeName(p->type), HM_DIM);
+             hmMb(p->sectors, line, sizeof(line));
+             fntRenderString(gTheme->fonts[5], HM_RIGHT - fntCalcDimensions(gTheme->fonts[5], line), y + 9, ALIGN_VCENTER, 0, 0, line, HM_DIM);
+         }
++        if (hmCount == 0)
++            fntRenderString(gTheme->fonts[4], 320, 200, ALIGN_CENTER, 0, 0, "NO PARTITIONS READ", HM_DIM);
+         if (toast[0])
+             fntRenderString(gTheme->fonts[5], HM_RIGHT - fntCalcDimensions(gTheme->fonts[5], toast), 432, ALIGN_VCENTER, 0, 0, toast, HM_SOFT);
+         int hx = 44;
+-        hmHint(TRIANGLE_ICON, "REMOVE", &hx, 448);
++        if (hmCount > 0 && hmKept(&hmParts[cursor]) == NULL)
++            hmHint(TRIANGLE_ICON, "REMOVE", &hx, 448);
+         hmHint(SELECT_ICON, "REFRESH", &hx, 448);
+         hmHint(gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON, "BACK", &hx, 448);
+         rmEndFrame();
+@@ -174,24 +221,44 @@ void ripps2HddManager(void)
+         } else if (getKey(KEY_DOWN) && cursor < hmCount - 1) {
+             cursor++;
+             sfxPlay(SFX_CURSOR);
++        } else if (getKeyOn(KEY_L1) && cursor > 0) {
++            cursor = cursor > HM_ROWS ? cursor - HM_ROWS : 0;
++            sfxPlay(SFX_CURSOR);
++        } else if (getKeyOn(KEY_R1) && cursor < hmCount - 1) {
++            cursor = cursor + HM_ROWS < hmCount ? cursor + HM_ROWS : hmCount - 1;
++            sfxPlay(SFX_CURSOR);
+         } else if (getKeyOn(KEY_SELECT)) {
+             sfxPlay(SFX_CONFIRM);
+             hmScan();
+             toast[0] = '\0';
+         } else if (getKeyOn(KEY_TRIANGLE) && hmCount > 0) {
+             hm_part_t *p = &hmParts[cursor];
+-            if (p->name[0] == '_' && p->name[1] == '_') {
+-                sfxPlay(SFX_CANCEL);
+-                snprintf(toast, sizeof(toast), "SYSTEM PARTITIONS STAY");
++            const char *why = hmKept(p);
++            if (why != NULL) {
++                sfxPlay(SFX_ERROR);
++                snprintf(toast, sizeof(toast), "%s", why);
+             } else {
+-                char ask[96], path[48];
+-                snprintf(ask, sizeof(ask), "Remove partition %s and everything on it?", p->name);
+-                if (guiMsgBox(ask, 1, NULL) && guiMsgBox("This cannot be undone. Remove it?", 1, NULL)) {
+-                    snprintf(path, sizeof(path), "hdd0:%s", p->name);
+-                    int r = fileXioRemove(path);
+-                    snprintf(toast, sizeof(toast), r >= 0 ? "REMOVED %s" : "COULD NOT REMOVE %s", p->name);
+-                    hmScan();
+-                }
++                char ask[300], size[24], name[33], path[48];
++                snprintf(name, sizeof(name), "%s", p->name); // the list is read again below: keep the name
++                hmMb(p->sectors, size, sizeof(size));
++                snprintf(ask, sizeof(ask), "Remove the partition %s (%s, %s)? Everything on it goes with it: its games, saves and programs.", name,
++                         hmTypeName(p->type), size);
++                guiMsgBoxSound(SFX_MESSAGE);
++                if (guiMsgBox(ask, 1, NULL) == 1) {
++                    snprintf(ask, sizeof(ask), "Last check. %s will be removed for good, and nothing can bring it back. Press START to remove it.", name);
++                    guiMsgBoxSound(SFX_ERROR);
++                    guiMsgBoxStartOption("REMOVE FOR GOOD");
++                    if (guiMsgBox(ask, 0, NULL) == 2) {
++                        snprintf(path, sizeof(path), "hdd0:%s", name);
++                        hmStatus("REMOVING");
++                        int r = fileXioRemove(path);
++                        hmScan();
++                        snprintf(toast, sizeof(toast), r >= 0 ? "REMOVED %s" : "COULD NOT REMOVE %s", name);
++                        sfxPlay(r >= 0 ? SFX_SAVE : SFX_ERROR);
++                    } else
++                        snprintf(toast, sizeof(toast), "KEPT %s", name);
++                } else
++                    snprintf(toast, sizeof(toast), "KEPT %s", name);
+             }
+         } else if (getKeyOn(gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE)) {
+             sfxPlay(SFX_CANCEL);
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index 916f81d..695d889 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -4,8 +4,9 @@
+   Storage is RiptOPL's own games list and info page; the other two categories are screens of
+   their own. The category bar is drawn on all of them, with the PS2 mark flying to the chosen
+   category: a swoop to a neighbour, a deeper dive with a coin flip when going end to end.
+-  Left/Right switch categories everywhere; L1/R1 stay local to the page (drives on Storage,
+-  formations on Memory Files). Start runs the page's action.
++  L1/R1 switch categories everywhere; Left/Right stay local to the page (drives on Storage,
++  formations on Memory Files; build 69 swapped them, after FifthFox's report). Start runs the
++  page's action.
+ 
+   Coordinates are theme space (640 wide, gTheme->usedHeight tall), like the theme's elements.
+ */
+@@ -58,6 +59,28 @@ static const char *formationName[] = {
+ #define FORMATION_COUNT ((int)(sizeof(formationName) / sizeof(formationName[0])))
+ int gRipps2Formation = 0;
+ int gRipps2Random = RIPPS2_RANDOM_ON;
++int gRipps2OrbOff = 0, gRipps2OrbCycle = 0, gRipps2OrbSpeed = 1, gRipps2OrbPaths = 0, gRipps2OrbHeight = 0;
++
++int ripps2FormationCount(void)
++{
++    return FORMATION_COUNT;
++}
++
++const char *ripps2FormationName(int f)
++{
++    return formationName[(f % FORMATION_COUNT + FORMATION_COUNT) % FORMATION_COUNT];
++}
++
++int ripps2FormationStep(int from, int dir)
++{
++    int i, f = from;
++    for (i = 0; i < FORMATION_COUNT; i++) {
++        f = (f + dir + FORMATION_COUNT) % FORMATION_COUNT;
++        if (!(gRipps2OrbOff & (1 << f)))
++            return f;
++    }
++    return from; // every other one is left out
++}
+ static int formationDirty = 0; // changed since the last save
+ 
+ // ---- The flying PS2 mark ----
+@@ -479,12 +502,15 @@ static void discTitle(const char *id, char *out, int size)
+     }
+ }
+ 
++static volatile int discSound = 0; // the disc is no audio CD to the drive, but has sound tracks
++
+ static void discPollWorker(void)
+ {
+     char line[80] = "", cnf[512], path[64], id[16], title[48];
+     int type = sceCdGetDiskType(), fd, n, i;
+ 
+     discRetry = 0;
++    discSound = 0;
+     switch (type) {
+         case SCECdNODISC:
+             break;
+@@ -540,7 +566,13 @@ static void discPollWorker(void)
+ #ifdef RIPPS2_CD_TEST
+             snprintf(line, sizeof(line), "AUDIO CD: START LASER PLAYS IT (CDTEST FILES)"); // PCSX2 types no image as one
+ #else
+-            snprintf(line, sizeof(line), "A DISC RIPPS2 CANNOT START");
++            // build 69: a CD the drive does not call an audio CD may still carry sound (CD-Extra,
++            // mixed mode, a burned disc): its table of contents says
++            if (type != SCECdDVDVR && (n = ripps2CdAudioTracks()) > 0) {
++                discSound = 1;
++                snprintf(line, sizeof(line), "CD WITH %d SOUND TRACK%s: START LASER PLAYS %s", n, n == 1 ? "" : "S", n == 1 ? "IT" : "THEM");
++            } else
++                snprintf(line, sizeof(line), "A DISC RIPPS2 CANNOT START");
+ #endif
+             break;
+     }
+@@ -644,9 +676,9 @@ void ripps2HandleInputLaunch(void)
+         ripps2CdInput();
+         return;
+     }
+-    if (getKeyOn(KEY_RIGHT)) {
++    if (getKeyOn(KEY_R1)) {
+         ripps2StepCategory(1);
+-    } else if (getKeyOn(KEY_LEFT)) {
++    } else if (getKeyOn(KEY_L1)) {
+         ripps2StepCategory(-1); // round to Memory Files
+     } else if (getKeyOn(KEY_START)) {
+         sfxPlay(SFX_CONFIRM);
+@@ -654,6 +686,13 @@ void ripps2HandleInputLaunch(void)
+         for (wait = 0; discPollBusy && wait < 60; wait++) // the drive is the launch's alone
+             DelayThread(50 * 1000);
+         int dt = sceCdGetDiskType();
++        // build 69: a disc still being identified (slow drives, burned discs) gets a few seconds
++        for (wait = 0; dt >= SCECdDETCT && dt <= SCECdDETCTDVDD && wait < 30; wait++) {
++            DelayThread(100 * 1000);
++            dt = sceCdGetDiskType();
++        }
++        if (dt != SCECdCDDA && discSound && dt != SCECdNODISC && (dt < SCECdPSCD || dt > SCECdPS2DVD) && dt != SCECdDVDV)
++            dt = SCECdCDDA; // sound tracks on a CD the drive types otherwise: the player takes it
+ #ifdef RIPPS2_CD_TEST
+         if (dt != SCECdNODISC && (dt < SCECdPSCD || dt > SCECdPS2DVD) && dt != SCECdDVDV)
+             dt = SCECdCDDA; // a test build: any other CD image goes to the player
+@@ -675,26 +714,53 @@ void ripps2HandleInputLaunch(void)
+ }
+ 
+ // ---- MEMORY FILES ----
++// The formation's name, between Left / Right, shows for a while after it changes (or the page opens)
++// and then fades away, leaving the orbs alone on screen
++#define FORMATION_NAME_HOLD (CLOCKS_PER_SEC * 5 / 2)
++#define FORMATION_NAME_FADE (CLOCKS_PER_SEC * 7 / 10)
++static clock_t formationShownAt = 0, memoryLastFrame = 0;
++
++static void formationNameShow(void)
++{
++    formationShownAt = clock();
++}
++
+ void ripps2RenderMemory(void)
+ {
+     char count[16];
+-    GSTEXTURE *l1 = thmGetTexture(L1_ICON), *r1 = thmGetTexture(R1_ICON);
++    GSTEXTURE *lt = thmGetTexture(LEFT_ICON), *rt = thmGetTexture(RIGHT_ICON);
++    clock_t now = clock();
++    int a;
+ 
+     ripps2DrawBackground();
+     ripps2RenderCategoryBar();
+     // the same footnotes as LAUNCH DISC: the prompt where START LASER sits, the formation on the line of
+-    // the disc note (small, between small L1 / R1), its count just under it
++    // the disc note (small, between small Left / Right), its count just under it
+     renderStartPrompt("START BROWSER", 423);
+ 
++    static int named = -1;
++    if (now - memoryLastFrame > CLOCKS_PER_SEC / 2 || named != gRipps2Formation) // back on the page, or the cycle moved on
++        formationNameShow();
++    named = gRipps2Formation;
++    memoryLastFrame = now;
++    if (now - formationShownAt < FORMATION_NAME_HOLD)
++        a = 0x80;
++    else if (now - formationShownAt < FORMATION_NAME_HOLD + FORMATION_NAME_FADE)
++        a = 0x80 - (int)(0x80 * (now - formationShownAt - FORMATION_NAME_HOLD) / FORMATION_NAME_FADE);
++    else
++        return;
++    a = a * a / 0x80; // eased: the fade lets go gently at the end
++
+     const char *name = formationName[gRipps2Formation];
+-    int half = fntCalcDimensions(gTheme->fonts[3], name) / 2, gw = l1 ? glyphWidth(l1) * 3 / 4 : 0;
+-    fntRenderString(gTheme->fonts[3], 320, 450, ALIGN_CENTER, 0, 0, name, COLOR_SOFT);
+-    if (l1)
+-        rmDrawPixmap(l1, 320 - half - 10 - gw / 2, 450, ALIGN_CENTER, gw, GLYPH_H * 3 / 4, SCALING_RATIO, COLOR_TEX, 0);
+-    if (r1)
+-        rmDrawPixmap(r1, 320 + half + 10 + gw / 2, 450, ALIGN_CENTER, gw, GLYPH_H * 3 / 4, SCALING_RATIO, COLOR_TEX, 0);
++    int half = fntCalcDimensions(gTheme->fonts[3], name) / 2, g = GLYPH_H * 3 / 4;
++    u64 soft = GS_SETREG_RGBA(0x67, 0x6C, 0x7A, a), dim = GS_SETREG_RGBA(0x37, 0x3B, 0x4A, a), tex = GS_SETREG_RGBA(0x80, 0x80, 0x80, a);
++    fntRenderString(gTheme->fonts[3], 320, 450, ALIGN_CENTER, 0, 0, name, soft);
++    if (lt)
++        rmDrawPixmap(lt, 320 - half - 10 - g / 2, 450, ALIGN_CENTER, g, g, SCALING_RATIO, tex, 0);
++    if (rt)
++        rmDrawPixmap(rt, 320 + half + 10 + g / 2, 450, ALIGN_CENTER, g, g, SCALING_RATIO, tex, 0);
+     snprintf(count, sizeof(count), "%02d / %02d", gRipps2Formation + 1, FORMATION_COUNT);
+-    fntRenderString(gTheme->fonts[3], 320, 467, ALIGN_CENTER, 0, 0, count, COLOR_DIM);
++    fntRenderString(gTheme->fonts[3], 320, 467, ALIGN_CENTER, 0, 0, count, dim);
+ }
+ 
+ void ripps2HandleInputMemory(void)
+@@ -702,17 +768,19 @@ void ripps2HandleInputMemory(void)
+     // the triggers play with the orbs: L2 held shows their paths, R2 held speeds them up
+     ripps2SetOrbInput(getKeyPressed(KEY_L2), getKeyPressed(KEY_R2));
+ 
+-    if (getKeyOn(KEY_LEFT)) {
++    if (getKeyOn(KEY_L1)) {
+         ripps2StepCategory(-1);
+-    } else if (getKeyOn(KEY_RIGHT)) {
++    } else if (getKeyOn(KEY_R1)) {
+         ripps2StepCategory(1); // round to Launch Disc
+-    } else if (getKeyOn(KEY_L1)) {
+-        gRipps2Formation = (gRipps2Formation + FORMATION_COUNT - 1) % FORMATION_COUNT;
++    } else if (getKeyOn(KEY_LEFT)) {
++        gRipps2Formation = ripps2FormationStep(gRipps2Formation, -1);
+         formationDirty = 1;
++        formationNameShow();
+         sfxPlay(SFX_CURSOR);
+-    } else if (getKeyOn(KEY_R1)) {
+-        gRipps2Formation = (gRipps2Formation + 1) % FORMATION_COUNT;
++    } else if (getKeyOn(KEY_RIGHT)) {
++        gRipps2Formation = ripps2FormationStep(gRipps2Formation, 1);
+         formationDirty = 1;
++        formationNameShow();
+         sfxPlay(SFX_CURSOR);
+     } else if (getKeyOn(KEY_START)) {
+         // RIPPS2 23c: Start opens the browser built in here; the orbs keep moving behind it
+diff --git a/src/system.c b/src/system.c
+index cb81348..7a56c28 100644
+--- a/src/system.c
++++ b/src/system.c
+@@ -4,9 +4,7 @@
+   Review OpenUsbLd README & LICENSE files for further details.
+ */
+ 
+-#ifdef __DECI2_DEBUG
+-#include <iopcontrol_special.h>
+-#endif
++#include <iopcontrol_special.h> // RIPPS2: SifIopRebootBuffer for BIBLE's SECRMAN reboot (was DECI2 builds only)
+ 
+ #include <delaythread.h> // DelayThread for the bounded disc re-detect polls in sysLaunchDisc
+ #include <time.h>        // clock()/CLOCKS_PER_SEC -- the disc waits are budgeted by wall clock
+@@ -218,6 +216,17 @@ void sysShutdownDev9(void)
+     }
+ }
+ 
++// RIPPS2 (BIBLE): an IOPRP image the next reset boots the IOP from, in place of the ROM's modules of
++// the same names. ripps2boot.c hands it SECRMAN this way, for one reset only.
++static const void *sysRebootImage = NULL;
++static int sysRebootImageSize = 0;
++
++void sysSetRebootImage(const void *ioprp, int size)
++{
++    sysRebootImage = ioprp;
++    sysRebootImageSize = size;
++}
++
+ void sysReset(int modload_mask)
+ {
+     static int sInitialBoot = 1;
+@@ -248,8 +257,12 @@ void sysReset(int modload_mask)
+     while (!SifIopRebootBuffer(&deci2_img, size_deci2_img))
+         ;
+ #else
+-    while (!SifIopReset("", 0))
+-        ;
++    if (sysRebootImage != NULL) {
++        while (!SifIopRebootBuffer(sysRebootImage, sysRebootImageSize))
++            ;
++    } else
++        while (!SifIopReset("", 0))
++            ;
+ #endif
+ #endif
+ 
+diff --git a/src/themes.c b/src/themes.c
+index ef675fa..35f440c 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -2551,24 +2551,40 @@ static int findMenuPrev(struct menu_list *menu)
+ static void drawMenuText(struct menu_list *menu, struct submenu_list *item, config_set_t *config, struct theme_element *elem)
+ {
+     GSTEXTURE *leftIconTex = NULL, *rightIconTex = NULL;
++    const char *text = menuItemGetText(menu->item);
+     if (findMenuPrev(menu) != 0)
+         leftIconTex = thmGetTexture(LEFT_ICON);
+     if (findMenuNext(menu) != 0)
+         rightIconTex = thmGetTexture(RIGHT_ICON);
+ 
+-    if (elem->aligned) {
++    // RIPPS2 build 69: Left / Right switch drives, and their glyphs beside the drive's name step
++    // aside while its list is being read, coming back when it settles
++    static int glyphAlpha = 0x80;
++    item_list_t *support = menu->item->userdata;
++    int updating = (ioHasPendingRequests() && !ripps2DiscQuiet()) || (support != NULL && libViewPending(support->mode));
++    if (updating)
++        glyphAlpha = glyphAlpha > 0x10 ? glyphAlpha - 0x10 : 0;
++    else
++        glyphAlpha = glyphAlpha < 0x78 ? glyphAlpha + 0x08 : 0x80;
++    u64 glyphCol = GS_SETREG_RGBA(0x80, 0x80, 0x80, glyphAlpha);
++
++    if (glyphAlpha == 0) {
++        // nothing beside the name
++    } else if (elem->aligned) {
+         int offset = elem->width >> 1;
+         if (leftIconTex && leftIconTex->Mem)
+-            rmDrawPixmap(leftIconTex, elem->posX - offset, elem->posY, elem->aligned, 20, 20, elem->scaled, gDefaultCol, 0);
++            rmDrawPixmap(leftIconTex, elem->posX - offset, elem->posY, elem->aligned, 20, 20, elem->scaled, glyphCol, 0);
+         if (rightIconTex && rightIconTex->Mem)
+-            rmDrawPixmap(rightIconTex, elem->posX + offset, elem->posY, elem->aligned, 20, 20, elem->scaled, gDefaultCol, 0);
++            rmDrawPixmap(rightIconTex, elem->posX + offset, elem->posY, elem->aligned, 20, 20, elem->scaled, glyphCol, 0);
+     } else {
++        // RIPPS2: either side of the name itself (the theme's width is the whole row's)
++        int textW = rmUnScaleX(fntCalcDimensions(elem->font, text));
+         if (leftIconTex && leftIconTex->Mem)
+-            rmDrawPixmap(leftIconTex, elem->posX - leftIconTex->Width, elem->posY, elem->aligned, 20, 20, elem->scaled, gDefaultCol, 0);
++            rmDrawPixmap(leftIconTex, elem->posX - 24, elem->posY - 2, elem->aligned, 18, 18, elem->scaled, glyphCol, 0);
+         if (rightIconTex && rightIconTex->Mem)
+-            rmDrawPixmap(rightIconTex, elem->posX + elem->width, elem->posY, elem->aligned, 20, 20, elem->scaled, gDefaultCol, 0);
++            rmDrawPixmap(rightIconTex, elem->posX + textW + 6, elem->posY - 2, elem->aligned, 18, 18, elem->scaled, glyphCol, 0);
+     }
+-    fntRenderString(elem->font, elem->posX, elem->posY, elem->aligned, 0, 0, menuItemGetText(menu->item), elem->color);
++    fntRenderString(elem->font, elem->posX, elem->posY, elem->aligned, 0, 0, text, elem->color);
+ }
+ 
+ static void drawBDMIndex(struct menu_list *menu, struct submenu_list *item, config_set_t *config, struct theme_element *elem)

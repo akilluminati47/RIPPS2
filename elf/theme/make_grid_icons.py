@@ -1,4 +1,4 @@
-"""RIPPS2 settings grid icons: six line-art icons and their glows in one atlas (ripps2_grid_icons.png).
+"""RIPPS2 settings grid icons: seven line-art icons and their glows in one atlas (ripps2_grid_icons.png).
 
 Row 0: the icons, anti-aliased white strokes on transparency (tinted at draw time).
 Row 1: the same icons blurred into a soft glow, drawn additively under the active tile's icon.
@@ -135,7 +135,25 @@ def exitb(d):  # leave the browser: a door standing open, an arrow out through i
     poly(d, [(22, 36), (10, 48), (22, 60)], closed=False)
 
 
-ICONS = [browser, editor, hdd, exploit, power, exitb]
+def orbits(d):  # the orbit settings: two tilted rings round a core, an orb riding each
+    cx, cy = 48, 48
+    for tilt, (rx, ry), at in ((-28, (36, 13), 200), (28, (36, 13), 330)):
+        t = math.radians(tilt)
+        pts = []
+        for k in range(0, 360, 6):
+            a = math.radians(k)
+            x, y = rx * math.cos(a), ry * math.sin(a)
+            pts.append((cx + x * math.cos(t) - y * math.sin(t), cy + x * math.sin(t) + y * math.cos(t)))
+        poly(d, pts, w=W * 0.8)
+        a = math.radians(at)
+        x, y = rx * math.cos(a), ry * math.sin(a)
+        circle(d, cx + x * math.cos(t) - y * math.sin(t), cy + x * math.sin(t) + y * math.cos(t), 4.6, fill=True)
+    circle(d, cx, cy, 6.0, fill=True)
+
+
+# Row order is the settings grid's tile order (ripps2files.c FB_TILE_*); the HDD drawing stays at the
+# end for the HDD MANAGER, now a Square action on a hard drive (build 69)
+ICONS = [browser, editor, orbits, exploit, power, exitb, hdd]
 
 atlas = Image.new('RGBA', (CELL * len(ICONS), CELL * 2), (255, 255, 255, 0))
 for i, fn in enumerate(ICONS):
