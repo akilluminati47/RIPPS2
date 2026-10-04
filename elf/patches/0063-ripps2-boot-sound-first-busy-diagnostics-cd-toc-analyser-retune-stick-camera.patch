@@ -251,7 +251,7 @@ index 0c0ab85..c6c4fc5 100644
  
  // ----------------------------------------------------------
 diff --git a/src/ripps2bg.c b/src/ripps2bg.c
-index 8fda2ea..f7a9bd5 100644
+index 8fda2ea..8f28477 100644
 --- a/src/ripps2bg.c
 +++ b/src/ripps2bg.c
 @@ -419,20 +419,30 @@ static void drawBeam(float x, float z, float y0, float w, float b)
@@ -291,7 +291,7 @@ index 8fda2ea..f7a9bd5 100644
  static float musRows[MUS_ROWS][MUS_BANDS], musRowT = 0.0f;
  static int musRowHead = 0, musPrimed = 0, musPulseNext = 0;
  static float musPulseT[MUS_PULSES] = {-10.0f, -10.0f, -10.0f, -10.0f}, musPulseA[MUS_PULSES];
-@@ -470,25 +480,18 @@ static void musicUpdate(float t)
+@@ -470,30 +480,23 @@ static void musicUpdate(float t)
          for (b = 0; b < MUS_BANDS; b++)
              loudest = fmaxf(loudest, db[b]);
          if (!musPrimed) {
@@ -325,6 +325,12 @@ index 8fda2ea..f7a9bd5 100644
              flux += fmaxf(0.0f, v - musTarget[b]) * (b < 4 ? 1.6f : 1.0f); // the kick counts a little more
              musTarget[b] = v;
          }
+         musAllCeil = loudest > musAllCeil ? loudest : musAllCeil - 3.0f * dt;
+-        if (flux > musFluxAvg * 1.8f + 0.35f && t - musLastHit > 0.14f) { // a hit
++        if (flux > musFluxAvg * 2.2f + 0.45f && t - musLastHit > 0.2f) { // a hit: well clear of the running average
+             musPulseT[musPulseNext] = t;
+             musPulseA[musPulseNext] = clamp01(flux * 0.5f);
+             musPulseNext = (musPulseNext + 1) % MUS_PULSES;
 @@ -513,6 +516,15 @@ static void musicUpdate(float t)
          memcpy(musRows[musRowHead], musNow, sizeof(musNow));
      }
@@ -352,6 +358,26 @@ index 8fda2ea..f7a9bd5 100644
      float camY = lerpf(1.6f, 8.0f, intro) + 4.0f * push;
      float lookY = lerpf(9.0f, 11.8f, intro) + 4.2f * push;
      if (musicMix > 0.0f) { // the CD player: the camera rises and looks down over the analyser, above its panel
+@@ -613,7 +625,7 @@ void ripps2DrawPillars(void)
+                     continue;
+                 float px = tw->x + fwdX * MUS_FIELD, pz = tw->z + fwdZ * MUS_FIELD;
+                 float q = (sqrtf(px * px + pz * pz) - s * 22.0f) / 2.6f;
+-                mheat += expf(-q * q) * musPulseA[k] * powf(1.0f - s / 1.2f, 1.5f) * 1.4f;
++                mheat += expf(-q * q) * musPulseA[k] * powf(1.0f - s / 1.2f, 1.5f) * 0.75f;
+             }
+             tw->heat = fmaxf(tw->heat, mheat * musicMix);
+             h = lerpf(h, mh * rise, musicMix);
+@@ -663,8 +675,8 @@ void ripps2DrawPillars(void)
+         }
+         if (beamIn > 0.0f)
+             drawBeam(tw->x, tw->z, h, tw->w * 0.34f, fminf(1.0f, tw->heat * 0.6f) * beamIn);
+-        else if (musicMix > 0.0f && tw->heat > 1.1f) // the hits and the loudest bands light the beams
+-            drawBeam(tw->x, tw->z, h, tw->w * 0.34f, fminf(1.0f, (tw->heat - 1.1f) * 1.6f) * musicMix * 0.8f);
++        else if (musicMix > 0.0f && tw->heat > 1.25f) // the strongest hits on the loudest bands light the beams
++            drawBeam(tw->x, tw->z, h, tw->w * 0.34f, fminf(0.7f, (tw->heat - 1.25f) * 1.6f) * musicMix);
+     }
+ 
+     drawMotes(t, 1);
 diff --git a/src/ripps2cd.c b/src/ripps2cd.c
 index f8b1ec5..1688f73 100644
 --- a/src/ripps2cd.c
