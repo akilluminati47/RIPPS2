@@ -1,0 +1,767 @@
+diff --git a/Makefile b/Makefile
+index 0ea1262..bf89a16 100644
+--- a/Makefile
++++ b/Makefile
+@@ -133,7 +133,7 @@ ifneq ($(GIT_TAG),latest)
+ endif
+ endif
+ 
+-FRONTEND_OBJS = ripps2.o ripps2ui.o ripps2bg.o ripps2files.o ripps2edit.o ripps2hdd.o ripps2kbd.o ripps2saves.o ripps2about.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o mixsupport.o metadb.o \
++FRONTEND_OBJS = ripps2.o ripps2ui.o ripps2boot.o ripps2bg.o ripps2files.o ripps2edit.o ripps2hdd.o ripps2kbd.o ripps2saves.o ripps2about.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o mixsupport.o metadb.o \
+ 		dia.o ioman.o texcache.o themes.o supportbase.o bdmsupport.o netsupport.o ethsupport.o httpcatalog.o httpsupport.o udpfssupport.o hddsupport.o zso.o lz4.o launchdiag.o \
+ 		appsupport.o mmcesupport.o artindex.o vcdsupport.o cuesupport.o libview.o retrogem.o folderbrowse.o gui.o guigame.o vmc_groups.o textures.o opl.o atlas.o nbns.o httpclient.o gsm.o cheatman.o sound.o ps2cnf.o tar.o
+ 
+diff --git a/include/dialogs.h b/include/dialogs.h
+index 38b2d82..4eb8645 100644
+--- a/include/dialogs.h
++++ b/include/dialogs.h
+@@ -34,6 +34,7 @@ enum UI_ITEMS {
+     UICFG_GAMEVIEW,
+     UICFG_APPSVIEW,
+     UICFG_RIPPS2_RANDOM, // RIPPS2: Random Game (Off / On / Boot)
++    CFG_RIPPS2_BOOTLOCK, // RIPPS2: BOOT LOCK (PS2BBL starts RIPPS2 at power on)
+ 
+     CFG_DEBUG,
+     CFG_PS2LOGO,
+diff --git a/include/ripps2.h b/include/ripps2.h
+index d25d418..845291b 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -12,6 +12,13 @@ int ripps2LaunchDvdPlayer(void);
+ // the browser does. Never returns on success; < 0 when the disc has nothing to boot.
+ int ripps2LaunchPs1Disc(void);
+ 
++// ---- BOOT LOCK (ripps2boot.c): PS2BBL starts RIPPS2 at power on ----
++int ripps2BootLockState(void);              // 1 when a PS2BBL config on the console has RIPPS2's lock in it
++void ripps2BootLockApply(int on);           // writes it into (or out of) every PS2BBL config found; says how it went
++int ripps2BootLockIgrPath(char *out, int size); // RIPPS2's path in the IGR Path's own form; 0 when the IGR cannot reach it
++int ripps2GetBootPath(char *out, int size); // opl.c: the path RIPPS2 was started from; 0 when unknown
++int ripps2GetBootBdmType(void);             // opl.c: BDM_TYPE_* of the drive RIPPS2 was started from
++
+ // ---- Front end shell (ripps2ui.c): LAUNCH DISC | STORAGE | MEMORY FILES ----
+ enum {
+     RIPPS2_CAT_LAUNCH = 0,
+@@ -33,7 +40,7 @@ void ripps2SetCategory(int cat);    // switch screens and fly the PS2 mark
+ void ripps2StepCategory(int dir);   // -1 / +1, clamped at the ends
+ void ripps2RenderCategoryBar(void); // the three labels plus the mark
+ void ripps2DrawBusy(int alpha);     // loading: the mark breathes (in place, or small in the corner)
+-void ripps2DiscWatch(void);         // every frame: what is in the drive, asked lazily from boot
++void ripps2DiscWatch(void);         // every frame: the drive read after boot and after the tray closes
+ int ripps2DiscQuiet(void);          // 1 while the disc watcher is all the IO worker is doing
+ void ripps2UiEnter(void);           // the menu's first frame: the bar fades in, the mark pops in
+ void ripps2ShowViewWord(const char *word, int logo, const char *caption); // L3: name the new list, large (a word, or a texture id)
+diff --git a/lng_tmpl/_base.yml b/lng_tmpl/_base.yml
+index 7517784..1b6000f 100644
+--- a/lng_tmpl/_base.yml
++++ b/lng_tmpl/_base.yml
+@@ -1388,8 +1388,12 @@ gui_strings:
+ - label: RIPPS2_RANDOM_GAME
+   string: Random Game
+ - label: HINT_RIPPS2_RANDOM_GAME
+-  string: "L2 and R2 together jump to a random game in the list. Boot also opens each game list on a random game at startup, ahead of the last played one, for a new look at your library each time."
++  string: "L2 and R2 together jump to a random game, in the list or on a game's info page. Boot also opens each game list on a random game at startup, ahead of the last played one, for a new look at your library each time."
+ - label: RIPPS2_ALL_GAMES
+   string: All Games
+ - label: RIPPS2_SET_METADATA
+   string: Set Metadata
++- label: RIPPS2_BOOT_LOCK
++  string: Boot Lock
++- label: HINT_RIPPS2_BOOT_LOCK
++  string: "Starts RIPPS2 when the console powers on, through PS2BBL (El Isra's PlayStation 2 Basic BootLoader, or saildot4k's PS2BBL Extended), which must already be installed. On puts RIPPS2 first in PS2BBL's config and fills an empty IGR Path with RIPPS2's path; off puts back what PS2BBL started before. Hold a PS2BBL hotkey at power on to reach anything else."
+diff --git a/src/dialogs.c b/src/dialogs.c
+index 4409ec6..80e9b95 100644
+--- a/src/dialogs.c
++++ b/src/dialogs.c
+@@ -320,6 +320,11 @@ struct UIItem diaConfig[] = {
+     {UI_ENUM, UICFG_LANG, 1, 1, -1, 0, 0, {.intvalue = {0, 0}}},
+     {UI_BREAK},
+ 
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_BOOT_LOCK}}},
++    {UI_SPACER},
++    {UI_BOOL, CFG_RIPPS2_BOOTLOCK, 1, 1, _STR_HINT_RIPPS2_BOOT_LOCK, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BREAK},
++
+     {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_EXITTO}}},
+     {UI_SPACER},
+     {UI_STRING, CFG_EXITTO, 1, 1, _STR_HINT_EXITPATH, 0, 0, {.stringvalue = {"", "", &guiExitPathHandler}}},
+diff --git a/src/gui.c b/src/gui.c
+index fb23987..7c266b8 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -533,6 +533,8 @@ void guiShowRANotices(void)
+ }
+ #endif
+ 
++static void guiBootLockAutofill(struct UIItem *ui);
++
+ static int guiUpdater(int modified)
+ {
+     int showAutoStartLast;
+@@ -541,6 +543,7 @@ static int guiUpdater(int modified)
+         diaGetInt(diaConfig, CFG_LASTPLAYED, &showAutoStartLast);
+         diaSetVisible(diaConfig, CFG_LBL_AUTOSTARTLAST, showAutoStartLast);
+         diaSetVisible(diaConfig, CFG_AUTOSTARTLAST, showAutoStartLast);
++        guiBootLockAutofill(diaConfig); // RIPPS2
+     }
+     return 0;
+ }
+@@ -602,6 +605,33 @@ static void guiExitPathBegin(struct UIItem *ui)
+     diaSetShowDefaultWhenEmpty(ui, CFG_EXITTO, 1);
+ }
+ 
++// RIPPS2: BOOT LOCK (ripps2boot.c). Turning it on fills an empty IGR Path with RIPPS2's own path; a
++// path typed in is left alone (clear it and turn the lock on again to have RIPPS2's filled in).
++static int bootLockWas = 0, bootLockShown = 0;
++
++static void guiBootLockBegin(struct UIItem *ui)
++{
++    bootLockWas = bootLockShown = ripps2BootLockState();
++    diaSetInt(ui, CFG_RIPPS2_BOOTLOCK, bootLockWas);
++}
++
++static void guiBootLockAutofill(struct UIItem *ui)
++{
++    int lock = 0;
++    diaGetInt(ui, CFG_RIPPS2_BOOTLOCK, &lock);
++    if (lock && !bootLockShown && exitPathEdit[0] == '\0' && ripps2BootLockIgrPath(exitPathEdit, sizeof(exitPathEdit)))
++        diaSetString(ui, CFG_EXITTO, exitPathEdit);
++    bootLockShown = lock;
++}
++
++static void guiBootLockEnd(struct UIItem *ui)
++{
++    int lock = 0;
++    diaGetInt(ui, CFG_RIPPS2_BOOTLOCK, &lock);
++    if (lock != bootLockWas)
++        ripps2BootLockApply(lock);
++}
++
+ int guiExitPathHandler(char *text, int maxLen)
+ {
+     if (!guiShowKeyboard(exitPathEdit, sizeof(exitPathEdit)))
+@@ -621,6 +651,7 @@ void guiShowConfig()
+     // Exit To auto-resolves a built-in default when blank, so show a dim "Default" placeholder
+     // rather than "<not set>" -- the empty value (and thus the fallback) is kept.
+     guiExitPathBegin(diaConfig);
++    guiBootLockBegin(diaConfig); // RIPPS2
+     // Custom Settings Path: blank = the normal boot-dir/discovery home, so it gets the same dim
+     // "Default" placeholder treatment rather than "<not set>".
+     diaSetShowDefaultWhenEmpty(diaConfig, CFG_CUSTOMCFGPATH, 1);
+@@ -651,6 +682,7 @@ reshow_config:
+         diaGetInt(diaConfig, CFG_LASTPLAYED, &gRememberLastPlayed);
+         diaGetInt(diaConfig, CFG_FOLDERNAV, &gEnableFolderNav);
+         diaGetInt(diaConfig, CFG_AUTOSTARTLAST, &gAutoStartLastPlayed);
++        guiBootLockEnd(diaConfig); // RIPPS2
+ 
+         DisableCron = 1; // Disable Auto Start Last Played counter (we don't want to call it right after enable it on GUI)
+ 
+@@ -2663,6 +2695,7 @@ static int guiSettingsGeneralUpdater(int modified)
+         diaGetInt(guiSettingsActiveDialog, CFG_LASTPLAYED, &showAutoStartLast);
+         diaSetVisible(guiSettingsActiveDialog, CFG_LBL_AUTOSTARTLAST, showAutoStartLast);
+         diaSetVisible(guiSettingsActiveDialog, CFG_AUTOSTARTLAST, showAutoStartLast);
++        guiBootLockAutofill(guiSettingsActiveDialog);
+     }
+     return 0;
+ }
+@@ -2688,6 +2721,7 @@ static int guiSettingsShowGeneral(void)
+     diaSetInt(ui, UICFG_LANG, lngGetGuiValue());
+ 
+     guiExitPathBegin(ui);
++    guiBootLockBegin(ui); // RIPPS2
+     diaSetShowDefaultWhenEmpty(ui, CFG_CUSTOMCFGPATH, 1);
+     diaSetString(ui, CFG_CUSTOMCFGPATH, gCustomSettingsPath);
+     diaSetInt(ui, CFG_LASTPLAYED, gRememberLastPlayed);
+@@ -2720,6 +2754,7 @@ reshow_general:
+         diaGetInt(ui, CFG_DEBUG, &gEnableDebug);
+         guiSaveParentalLockValue(ui);
+         guiSaveAdvancedSettings(ui);
++        guiBootLockEnd(ui); // RIPPS2: written to PS2BBL's config now, not with Save Changes
+ 
+         DisableCron = 1;
+         applyConfig(-1, langID, 0);
+@@ -4756,9 +4791,18 @@ int guiMsgBox(const char *text, int addAccept, struct UIItem *ui)
+                 ls = eol ? eol + 1 : NULL;
+             }
+         }
+-        guiDrawIconAndText(gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON, _STR_BACK, RIPPS2_UI_FONT, 500, 417, gTheme->textColor);
+-        if (addAccept)
+-            guiDrawIconAndText(gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON, _STR_ACCEPT, RIPPS2_UI_FONT, 70, 417, gTheme->textColor);
++        // RIPPS2: the hints sit where every other screen's do, right-aligned on the same footer line,
++        // so BACK lines up with the settings pages' (was fixed at x 500, short of their right edge)
++        {
++            int hints[2] = {_STR_ACCEPT, _STR_BACK};
++            int icons[2] = {guiConfirmIcon(), guiCancelIcon()};
++            int first = addAccept ? 0 : 1;
++            int hx = guiAlignSubMenuHints(2 - first, hints + first, icons + first, RIPPS2_UI_FONT, 12, 2);
++            int hy = gTheme->usedHeight - 32;
++            if (addAccept)
++                hx = guiDrawIconAndText(icons[0], hints[0], RIPPS2_UI_FONT, hx, hy, gTheme->textColor) + 12;
++            guiDrawIconAndText(icons[1], hints[1], RIPPS2_UI_FONT, hx, hy, gTheme->textColor);
++        }
+ 
+         guiEndFrame();
+     }
+diff --git a/src/menusys.c b/src/menusys.c
+index e384678..a49374f 100644
+--- a/src/menusys.c
++++ b/src/menusys.c
+@@ -1837,14 +1837,11 @@ static void menuNavigateDown()
+         menuNextV();
+ }
+ 
+-void menuHandleInputMain()
++// RIPPS2: L2 + R2 together pick a random game, once per press (holding them never repeats it).
++// Alone, L2 goes to the top of the list and R2 to the end, when released, so a chord can never
++// set off either of them on the way in. The game list and its info page both read them.
++static void menuShoulderKeys(int viewPending)
+ {
+-    item_list_t *support = selected_item != NULL && selected_item->item != NULL ? selected_item->item->userdata : NULL;
+-    int viewPending = support != NULL && libViewPending(support->mode);
+-
+-    // RIPPS2: L2 + R2 together pick a random game, once per press (holding them never repeats it).
+-    // Alone, L2 goes to the top of the list and R2 to the end, when released, so a chord can never
+-    // set off either of them on the way in.
+     static int shoulderChord = 0; // this L2/R2 hold became a chord
+     int l2 = getKeyPressed(KEY_L2), r2 = getKeyPressed(KEY_R2);
+     if (l2 && r2) {
+@@ -1859,6 +1856,14 @@ void menuHandleInputMain()
+         if (!l2 && !r2)
+             shoulderChord = 0;
+     }
++}
++
++void menuHandleInputMain()
++{
++    item_list_t *support = selected_item != NULL && selected_item->item != NULL ? selected_item->item->userdata : NULL;
++    int viewPending = support != NULL && libViewPending(support->mode);
++
++    menuShoulderKeys(viewPending);
+ 
+     // RIPPS2: Random Game "Boot": each game list opens on a random game, once per session, once the
+     // list has settled (after its rebuild, so it lands after the last played game is restored)
+@@ -1974,11 +1979,10 @@ void menuHandleInputInfo()
+         menuPrevV(); // RIPPS2: no category bar on the info page, so Left/Right step games like Up/Down
+     } else if (getKey(KEY_RIGHT)) {
+         menuNextV();
+-    } else if (getKeyOn(KEY_L2)) {
+-        menuFirstPage();
+-    } else if (getKeyOn(KEY_R2)) {
+-        menuLastPage();
+     }
++
++    item_list_t *support = selected_item != NULL && selected_item->item != NULL ? selected_item->item->userdata : NULL;
++    menuShoulderKeys(support != NULL && libViewPending(support->mode)); // RIPPS2: random game here too
+ }
+ 
+ void menuRenderGameMenu()
+diff --git a/src/opl.c b/src/opl.c
+index fdfcd0a..a6b99df 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -5538,6 +5538,22 @@ static void setBootDir(const char *bootPath)
+     }
+ }
+ 
++// RIPPS2: where RIPPS2 was started from (BOOT LOCK and the IGR Path take it)
++int ripps2GetBootPath(char *out, int size)
++{
++    size_t n = strlen(gBootDir);
++    if (n == 0 || gBootElfName[0] == '\0') {
++        out[0] = '\0';
++        return 0;
++    }
++    return snprintf(out, size, "%s%s%s", gBootDir, gBootDir[n - 1] == ':' ? "" : "/", gBootElfName) < size;
++}
++
++int ripps2GetBootBdmType(void)
++{
++    return gBootDirBdmType;
++}
++
+ int main(int argc, char *argv[])
+ {
+ #ifdef __DECI2_DEBUG
+diff --git a/src/ripps2.c b/src/ripps2.c
+index 3af2d0b..cc847c4 100644
+--- a/src/ripps2.c
++++ b/src/ripps2.c
+@@ -128,26 +128,81 @@ static int r2FindEsr(char *out, int size)
+     return 0;
+ }
+ 
++// RIPPS2 cannot see a player hang once it has handed the console over, so a DVD video is checked
++// first. It must have its VIDEO_TS.IFO (a disc without one is not a DVD video any player can play),
++// and the IFO's region mask (byte 0x23: bit n set = not for region n + 1) should allow the console's
++// region, which ROMVER's fifth character names. Consoles of one ROM region ship in more than one DVD
++// region (an E console is region 2, or 4 in Australia), so every region a ROM region covers counts.
++static int r2ConsoleDvdRegions(void)
++{
++    char ver[16];
++    int fd = open("rom0:ROMVER", O_RDONLY), n;
++    if (fd < 0)
++        return 0;
++    n = read(fd, ver, sizeof(ver) - 1);
++    close(fd);
++    if (n < 5)
++        return 0;
++    switch (ver[4]) {
++        case 'A': return (1 << 0) | (1 << 3); // the Americas: 1, 4
++        case 'J': return 1 << 1;              // Japan: 2
++        case 'E': return (1 << 1) | (1 << 3); // Europe, Oceania: 2, 4
++        case 'H': return 1 << 2;              // Asia: 3
++        case 'R': return 1 << 4;              // Russia: 5
++        case 'C': return 1 << 5;              // China: 6
++    }
++    return 0; // unknown: do not guess
++}
++
++// 1 when the DVD video in the drive should play; else says why not and returns 0
++static int r2DvdPlayable(void)
++{
++    unsigned char ifo[0x24];
++    char msg[200];
++    int fd = open("cdrom0:\\VIDEO_TS\\VIDEO_TS.IFO;1", O_RDONLY), n = -1, regions, disc, r;
++
++    if (fd >= 0) {
++        n = read(fd, ifo, sizeof(ifo));
++        close(fd);
++    }
++    if (n < (int)sizeof(ifo) || memcmp(ifo, "DVDVIDEO-VMG", 12) != 0) {
++        guiMsgBox("This disc is not compatible: it reads as DVD video but has no DVD video on it (no VIDEO_TS), so a DVD player cannot play it.", 0, NULL);
++        return 0;
++    }
++    regions = r2ConsoleDvdRegions();
++    disc = ~ifo[0x23] & 0xFF; // the regions the disc plays in
++    if (regions != 0 && disc != 0 && (disc & regions) == 0) {
++        for (r = 0; r < 8 && !(disc & (1 << r)); r++)
++            ;
++        snprintf(msg, sizeof(msg), "This disc is not compatible: it is a region %d DVD, and this console plays another region's DVDs. Start it anyway?", r + 1);
++        return guiMsgBox(msg, 1, NULL);
++    }
++    return 1;
++}
++
+ int ripps2LaunchDvdVideo(void)
+ {
+     static char esrPath[160];
+     char *argv[1];
+ 
+-    if (r2FindEsr(esrPath, sizeof(esrPath))) {
+-        sceCdDiskReady(0);
+-        int esr = r2FileExists("cdrom0:\\SYSTEM.CNF;1"); // the game's own files sit beside the video ones
+-        if (!esr)
+-            esr = guiMsgBox("This disc reads as DVD video. Start it with ESR, for an ESR-patched PS2 game? Choose No for the DVD player.", 1, NULL);
+-        if (esr) {
+-            LOG("RIPPS2 ESR: booting %s\n", esrPath);
+-            argv[0] = esrPath;
+-            ripps2PlayLaunchSequence();
+-            deinit(UNMOUNT_EXCEPTION, IO_MODE_SELECTED_ALL_SPARE); // keep the drive ESR is on
+-            sysLoadELFApp(esrPath, NULL, 1, argv, 1, 0);
+-            ripps2LaunchAborted();
+-            return -1; // reached only when the handoff failed
++    sceCdDiskReady(0);
++    // an ESR-patched PS2 game: its own SYSTEM.CNF sits beside the video files, and ESR starts it
++    if (r2FileExists("cdrom0:\\SYSTEM.CNF;1")) {
++        if (!r2FindEsr(esrPath, sizeof(esrPath))) {
++            guiMsgBox("This is an ESR-patched PS2 game. Put ESR (esr*.elf) in APPS, BOOT or ESR on a memory card or USB drive to start it.", 0, NULL);
++            return SYS_DISC_CANCELLED;
+         }
++        LOG("RIPPS2 ESR: booting %s\n", esrPath);
++        argv[0] = esrPath;
++        ripps2PlayLaunchSequence();
++        deinit(UNMOUNT_EXCEPTION, IO_MODE_SELECTED_ALL_SPARE); // keep the drive ESR is on
++        sysLoadELFApp(esrPath, NULL, 1, argv, 1, 0);
++        ripps2LaunchAborted();
++        return -1; // reached only when the handoff failed
+     }
++    // a DVD video: straight to the player, once it is one the player can play
++    if (!r2DvdPlayable())
++        return SYS_DISC_CANCELLED; // said why; back to Launch Disc
+     return ripps2LaunchDvdPlayer();
+ }
+ 
+diff --git a/src/ripps2about.c b/src/ripps2about.c
+index 3f18cb3..7d7e27d 100644
+--- a/src/ripps2about.c
++++ b/src/ripps2about.c
+@@ -65,6 +65,12 @@ static const ab_row_t abRows[] = {
+     {'T', "DVD video: your console's player, or krHACKen's RGB player"},
+     {'S', "from your memory card's DVD player update folder"},
+     {'G', NULL},
++    {'H', "BOOT LOCK"},
++    {'T', "PS2BBL by El Isra (israpps)"},
++    {'S', "the PlayStation 2 Basic BootLoader: BOOT LOCK starts RIPPS2 with it"},
++    {'T', "PS2BBL Extended by saildot4k"},
++    {'S', "BOOT LOCK edits their config; neither is bundled"},
++    {'G', NULL},
+     {'H', "MEMORY FILES"},
+     {'T', "wLaunchELF by the ps2homebrew team"},
+     {'S', "the file manager RIPPS2's browser and settings grid follow"},
+diff --git a/src/ripps2boot.c b/src/ripps2boot.c
+new file mode 100644
+index 0000000..d9afa3c
+--- /dev/null
++++ b/src/ripps2boot.c
+@@ -0,0 +1,253 @@
++/*
++  Copyright 2026, RIPPS2 contributors
++  Licenced under Academic Free License version 3.0
++  Review OpenUsbLd README & LICENSE files for further details.
++
++  BOOT LOCK (Settings > General & System): the console starts straight into RIPPS2, through PS2BBL,
++  the PlayStation 2 Basic BootLoader by El Isra (israpps), or saildot4k's PS2BBL Extended. RIPPS2
++  carries no part of either. It edits the boot loader's own config file, the one PS2BBL already
++  reads at power on:
++
++    on   RIPPS2 becomes the first automatic entry (LK_AUTO_E1, named RIPPS2). The lines it takes the
++         place of stay in the file, commented out with a #RIPPS2# prefix under a marker line.
++    off  the marker and RIPPS2's lines go, and the #RIPPS2# lines come back exactly as they were.
++
++  A hotkey held at power on still reaches every other PS2BBL entry, so the lock shuts nothing out.
++  The first time a config is changed, its original is kept beside it as <name>.RIPPS2-BACKUP.
++*/
++
++#include <stdio.h>
++#include <string.h>
++#include <stdlib.h>
++#include <fcntl.h>
++#include <unistd.h>
++
++#include "include/opl.h"
++#include "include/gui.h"
++#include "include/ripps2.h"
++#include "include/bdmsupport.h"
++
++#define BL_MAX    32768 // a PS2BBL config is a few KB
++#define BL_MARKER "#RIPPS2 BOOT LOCK"
++#define BL_KEPT   "#RIPPS2# "
++
++// Where PS2BBL and PS2BBL Extended look for their config (the Extended README's search order, the
++// device-boot and memory card places a console can reach without mounting an HDD partition)
++static const char *blConfigs[] = {
++    "mc0:/SYS-CONF/PS2BBL.INI",
++    "mc1:/SYS-CONF/PS2BBL.INI",
++    "mc0:/BOOT/CONFIG.INI",
++    "mc1:/BOOT/CONFIG.INI",
++    "mass0:/PS2BBL/CONFIG.INI",
++    "mmce0:/PS2BBL/CONFIG.INI",
++    "mmce1:/PS2BBL/CONFIG.INI",
++    NULL};
++
++static char blText[BL_MAX + 1], blOut[BL_MAX + 512];
++static char blFound[96];
++
++// The whole file, or -1. Only a file with PS2BBL launch keys in it counts as a PS2BBL config.
++static int blRead(const char *path)
++{
++    int fd = open(path, O_RDONLY), n;
++    if (fd < 0)
++        return -1;
++    n = read(fd, blText, BL_MAX);
++    close(fd);
++    if (n <= 0 || n >= BL_MAX)
++        return -1;
++    blText[n] = '\0';
++    return strstr(blText, "LK_") != NULL ? n : -1;
++}
++
++static int blWrite(const char *path, const char *text, int len)
++{
++    int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0666), n;
++    if (fd < 0)
++        return -1;
++    n = write(fd, text, len);
++    close(fd);
++    return n == len ? 0 : -1;
++}
++
++// The line's key: what stands before '=', trimmed ("" for a comment or a blank line)
++static void blKey(const char *line, int len, char *key, int size)
++{
++    int i = 0, n = 0;
++    while (i < len && (line[i] == ' ' || line[i] == '\t'))
++        i++;
++    if (i < len && line[i] == '#') {
++        key[0] = '\0';
++        return;
++    }
++    while (i < len && line[i] != '=' && line[i] != ' ' && line[i] != '\t' && n < size - 1)
++        key[n++] = line[i++];
++    key[n] = '\0';
++}
++
++static int blTaken(const char *key)
++{
++    return !strcmp(key, "LK_AUTO_E1") || !strcmp(key, "ARG_AUTO_E1") || !strcmp(key, "NAME_AUTO");
++}
++
++// Builds the file without the lock (as it was before it) into blOut; its length
++static int blUnlocked(const char *text)
++{
++    const char *p = text;
++    int o = 0, skip = 0;
++    while (*p) {
++        const char *e = strchr(p, '\n');
++        int len = e ? (int)(e - p) + 1 : (int)strlen(p);
++        char key[32];
++        blKey(p, len, key, sizeof(key));
++        if (!strncmp(p, BL_MARKER, strlen(BL_MARKER)))
++            skip = 2; // the marker and RIPPS2's NAME_AUTO and LK_AUTO_E1 after it
++        else if (skip > 0 && (!strcmp(key, "NAME_AUTO") || !strcmp(key, "LK_AUTO_E1")))
++            skip--;
++        else {
++            skip = 0;
++            if (!strncmp(p, BL_KEPT, strlen(BL_KEPT))) { // a kept line comes back
++                p += strlen(BL_KEPT);
++                len -= strlen(BL_KEPT);
++            }
++            memcpy(blOut + o, p, len);
++            o += len;
++        }
++        p += len;
++    }
++    blOut[o] = '\0';
++    return o;
++}
++
++// Builds the locked file from an unlocked one into blOut; its length
++static int blLocked(const char *text, const char *ripps2)
++{
++    const char *p = text, *eol = strstr(text, "\r\n") ? "\r\n" : "\n";
++    int o = 0, placed = 0;
++    char ours[320];
++    int oursLen = snprintf(ours, sizeof(ours), "%s: RIPPS2 starts first. Turn BOOT LOCK off in RIPPS2 to bring back the lines marked #RIPPS2#.%s"
++                                               "NAME_AUTO = RIPPS2%sLK_AUTO_E1 = %s%s",
++                           BL_MARKER, eol, eol, ripps2, eol);
++    while (*p) {
++        const char *e = strchr(p, '\n');
++        int len = e ? (int)(e - p) + 1 : (int)strlen(p);
++        char key[32];
++        blKey(p, len, key, sizeof(key));
++        if (blTaken(key)) {
++            if (!placed) { // RIPPS2's lines go where the automatic entry was
++                memcpy(blOut + o, ours, oursLen);
++                o += oursLen;
++                placed = 1;
++            }
++            o += sprintf(blOut + o, "%s", BL_KEPT);
++        }
++        if (o + len >= (int)sizeof(blOut) - (int)sizeof(ours))
++            return -1;
++        memcpy(blOut + o, p, len);
++        o += len;
++        p += len;
++    }
++    if (!placed) { // no automatic entry at all: RIPPS2's goes at the end
++        if (o > 0 && blOut[o - 1] != '\n')
++            o += sprintf(blOut + o, "%s", eol);
++        memcpy(blOut + o, ours, oursLen);
++        o += oursLen;
++    }
++    blOut[o] = '\0';
++    return o;
++}
++
++// RIPPS2's own path as PS2BBL writes it (mc?:/, usb:/, ata:/, mx4sio:/, mmce?:/ or an HDD path)
++static int blRipps2Path(char *out, int size)
++{
++    char boot[256];
++    const char *rest;
++
++    if (!ripps2GetBootPath(boot, sizeof(boot)))
++        return 0;
++    if ((!strncmp(boot, "mc0:", 4) || !strncmp(boot, "mc1:", 4)) && boot[4] == '/')
++        return snprintf(out, size, "mc?:%s", boot + 4) < size;
++    if (!strncmp(boot, "mmce0:", 6) || !strncmp(boot, "mmce1:", 6))
++        return snprintf(out, size, "mmce?:%s", boot + 6) < size;
++    if (!strncmp(boot, "mass", 4) && (rest = strchr(boot, ':')) != NULL) {
++        int t = ripps2GetBootBdmType();
++        const char *dev = t == BDM_TYPE_USB ? "usb" : t == BDM_TYPE_ATA ? "ata" : t == BDM_TYPE_SDC ? "mx4sio" : "mass";
++        return snprintf(out, size, "%s:%s%s", dev, rest[1] == '/' ? "" : "/", rest + 1) < size;
++    }
++    if (!strncmp(boot, "hdd0:", 5))
++        return snprintf(out, size, "%s", boot) < size;
++    return 0;
++}
++
++int ripps2BootLockIgrPath(char *out, int size)
++{
++    char boot[256];
++    const char *rest;
++
++    out[0] = '\0';
++    if (!ripps2GetBootPath(boot, sizeof(boot)))
++        return 0;
++    if ((!strncmp(boot, "mc0:", 4) || !strncmp(boot, "mc1:", 4)) && boot[4] == '/')
++        return snprintf(out, size, "%s", boot) < size;
++    if (!strncmp(boot, "mass", 4) && (rest = strchr(boot, ':')) != NULL) // the IGR path's own form
++        return snprintf(out, size, "mass:%s%s", rest[1] == '/' ? "" : "/", rest + 1) < size;
++    return 0; // the IGR cannot reach MMCE or the HDD (see the IGR Path hint)
++}
++
++int ripps2BootLockState(void)
++{
++    int i;
++    blFound[0] = '\0';
++    for (i = 0; blConfigs[i] != NULL; i++) {
++        if (blRead(blConfigs[i]) < 0)
++            continue;
++        if (!blFound[0])
++            snprintf(blFound, sizeof(blFound), "%s", blConfigs[i]);
++        if (strstr(blText, BL_MARKER) != NULL)
++            return 1;
++    }
++    return 0;
++}
++
++void ripps2BootLockApply(int on)
++{
++    char ripps2[256], backup[128], msg[400], where[200] = "";
++    int i, changed = 0, failed = 0, len;
++
++    if (on && !blRipps2Path(ripps2, sizeof(ripps2))) {
++        guiMsgBox("BOOT LOCK needs RIPPS2 on a memory card, a USB or exFAT drive, MMCE or the HDD, where PS2BBL can start it. This copy was started from somewhere PS2BBL cannot reach.", 0, NULL);
++        return;
++    }
++    for (i = 0; blConfigs[i] != NULL; i++) {
++        if (blRead(blConfigs[i]) < 0)
++            continue;
++        snprintf(backup, sizeof(backup), "%s.RIPPS2-BACKUP", blConfigs[i]);
++        int fd = open(backup, O_RDONLY);
++        if (fd >= 0)
++            close(fd);
++        else if (strstr(blText, BL_MARKER) == NULL) // the config as it was before RIPPS2 ever touched it
++            blWrite(backup, blText, strlen(blText));
++        len = blUnlocked(blText);
++        if (on) {
++            memcpy(blText, blOut, len + 1);
++            len = blLocked(blText, ripps2);
++        }
++        if (len < 0 || blWrite(blConfigs[i], blOut, len) != 0) {
++            failed++;
++            continue;
++        }
++        changed++;
++        if (strlen(where) + strlen(blConfigs[i]) + 3 < sizeof(where))
++            snprintf(where + strlen(where), sizeof(where) - strlen(where), "%s%s", where[0] ? ", " : "", blConfigs[i]);
++    }
++
++    if (!changed && !failed)
++        snprintf(msg, sizeof(msg), "BOOT LOCK works through PS2BBL (PlayStation 2 Basic BootLoader), and RIPPS2 found no PS2BBL config on this console (mc0:/SYS-CONF/PS2BBL.INI or PS2BBL/CONFIG.INI on a drive). Install PS2BBL or PS2BBL Extended first.");
++    else if (failed && !changed)
++        snprintf(msg, sizeof(msg), "BOOT LOCK could not write the PS2BBL config. Check that the memory card or drive is not write protected, then try again.");
++    else if (on)
++        snprintf(msg, sizeof(msg), "BOOT LOCK is on. PS2BBL now starts RIPPS2 at power on (%s). Hold a PS2BBL hotkey while the console starts to reach anything else.", where);
++    else
++        snprintf(msg, sizeof(msg), "BOOT LOCK is off. PS2BBL starts what it started before (%s).", where);
++    guiMsgBox(msg, 0, NULL);
++}
+diff --git a/src/themes.c b/src/themes.c
+index 86b0fcc..d0f1940 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -1371,8 +1371,59 @@ static struct
+     GSTEXTURE *tex[SLIDE_MAX + 1]; // each slide's art this frame, by slide number (NULL = none yet)
+     int cur;                       // the slide on show (0 = none)
+     clock_t start;                 // when it began showing
++    int first;                     // the slide on show is the show's first: it fades in from nothing
+ } slideShow;
+ 
++// RIPPS2: art fades in when it arrives (a game's art loads a moment after the game is picked) instead
++// of popping in: each image element remembers which game and texture it last drew, and a new one
++// eases up from nothing over ART_FADE_S. The slideshow's first slide fades in the same way; after
++// that the slides crossfade on their own.
++#define ART_FADE_S 0.35f
++#define ART_FADES  8
++
++static struct
++{
++    void *elem, *item;
++    GSTEXTURE *tex;
++    clock_t since;
++    int frame;
++} artFades[ART_FADES];
++
++static float artEase(float f)
++{
++    if (f <= 0.0f)
++        return 0.0f;
++    if (f >= 1.0f)
++        return 1.0f;
++    return f * f * (3.0f - 2.0f * f);
++}
++
++static float artFadeIn(void *elem, void *item, GSTEXTURE *tex)
++{
++    int i, slot = -1, oldest = 0;
++    for (i = 0; i < ART_FADES; i++) {
++        if (artFades[i].elem == elem) {
++            slot = i;
++            break;
++        }
++        if (artFades[i].frame < artFades[oldest].frame)
++            oldest = i;
++    }
++    if (slot < 0) {
++        slot = oldest;
++        artFades[slot].elem = elem;
++        artFades[slot].tex = NULL;
++    }
++    // another game or other art, or the element was off screen a while: ease in again
++    if (artFades[slot].tex != tex || artFades[slot].item != item || guiFrameId - artFades[slot].frame > 2) {
++        artFades[slot].tex = tex;
++        artFades[slot].item = item;
++        artFades[slot].since = clock();
++    }
++    artFades[slot].frame = guiFrameId;
++    return artEase((float)(clock() - artFades[slot].since) / (float)CLOCKS_PER_SEC / ART_FADE_S);
++}
++
+ static int slideNext(int cur)
+ {
+     int i, s;
+@@ -1425,11 +1476,13 @@ static void slideUpdate(struct menu_list *menu, struct submenu_list *item, struc
+     if (slideShow.cur == 0 || slideShow.tex[slideShow.cur] == NULL) {
+         for (s = 1; s <= SLIDE_MAX && slideShow.tex[s] == NULL; s++)
+             ;
++        slideShow.first = slideShow.cur == 0; // the show's first art: fade it in
+         slideShow.cur = s;
+         slideShow.start = clock();
+     } else if (slideElapsed() >= SLIDE_HOLD_S + SLIDE_FADE_S) {
+         slideShow.cur = slideNext(slideShow.cur);
+         slideShow.start = clock();
++        slideShow.first = 0;
+     }
+ }
+ 
+@@ -1441,8 +1494,11 @@ static float slideWeight(int s)
+ 
+     if (cur == 0 || slideShow.tex[s] == NULL)
+         return 0.0f;
+-    if (t < SLIDE_HOLD_S || next == cur)
+-        return s == cur ? 1.0f : 0.0f;
++    if (t < SLIDE_HOLD_S || next == cur) {
++        if (s != cur)
++            return 0.0f;
++        return slideShow.first ? artEase(t / ART_FADE_S) : 1.0f; // RIPPS2: the first slide fades in
++    }
+     f = (t - SLIDE_HOLD_S) / SLIDE_FADE_S;
+     if (f > 1.0f)
+         f = 1.0f;
+@@ -1566,6 +1622,16 @@ static void drawGameImage(struct menu_list *menu, struct submenu_list *item, con
+             }
+         }
+ 
++        // RIPPS2: art fades in as it arrives (the slideshow fades its own); a placeholder never fades
++        if (!isSlide && (gameImage->defaultTexture == NULL || texture != &gameImage->defaultTexture->source)) {
++            float in = artFadeIn(drawElem, item, texture);
++            if (in < 1.0f && drawElem->type == ELEM_TYPE_BACKGROUND)
++                ripps2DrawBackground(); // the pillars show until it is all there
++            slideW *= in;
++            if (slideW <= 0.0f)
++                return;
++        }
++
+         // RIPPS2: a GameImage honours <name>_reflection / _reflection_offset the way Coverflow does,
+         // so a single cover (the info page's) gets the same mirrored, fading reflection and case art,
+         // and <name>_alpha lets what is behind it show through (the Storage viewport's art).
