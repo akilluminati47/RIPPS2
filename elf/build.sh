@@ -35,6 +35,11 @@ cp -f "$HERE/theme/fonts/ripps2_one.ttf" "$SRC/misc/ripps2_one.ttf"
 # The Memory Files ELF, compiled in and launched from RAM (patch 0004)
 # Built-in textures: glass info panel and PS2 selector mark (patch 0006)
 cp -f "$HERE"/theme/gfx/*.png "$SRC/gfx/"
+# A private sound pack baked into this build only (never set by the public workflow: RIPPS2 carries
+# no one else's sounds). A folder of <event>.adp files, from elf/theme/tools/make_sound_pack.py.
+if [ -n "${RIPPS2_SOUND_PACK:-}" ]; then
+  python3 "$HERE/theme/tools/bake_sound_pack.py" "$RIPPS2_SOUND_PACK" "$SRC/src/ripps2sfxpack.c"
+fi
 
 cd "$SRC"
 sh .github/scripts/install_coherent_mmce.sh

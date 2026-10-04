@@ -1,0 +1,63 @@
+diff --git a/Makefile b/Makefile
+index 29bb684..225edca 100644
+--- a/Makefile
++++ b/Makefile
+@@ -133,7 +133,7 @@ ifneq ($(GIT_TAG),latest)
+ endif
+ endif
+ 
+-FRONTEND_OBJS = ripps2.o ripps2ui.o ripps2boot.o ripps2cd.o ripps2bg.o ripps2files.o ripps2edit.o ripps2hdd.o ripps2kbd.o ripps2saves.o ripps2about.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o mixsupport.o metadb.o \
++FRONTEND_OBJS = ripps2.o ripps2ui.o ripps2boot.o ripps2cd.o ripps2sfxpack.o ripps2bg.o ripps2files.o ripps2edit.o ripps2hdd.o ripps2kbd.o ripps2saves.o ripps2about.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o mixsupport.o metadb.o \
+ 		dia.o ioman.o texcache.o themes.o supportbase.o bdmsupport.o netsupport.o ethsupport.o httpcatalog.o httpsupport.o udpfssupport.o hddsupport.o zso.o lz4.o launchdiag.o \
+ 		appsupport.o mmcesupport.o artindex.o vcdsupport.o cuesupport.o libview.o retrogem.o folderbrowse.o gui.o guigame.o vmc_groups.o textures.o opl.o atlas.o nbns.o httpclient.o gsm.o cheatman.o sound.o ps2cnf.o tar.o
+ 
+diff --git a/src/ripps2sfxpack.c b/src/ripps2sfxpack.c
+new file mode 100644
+index 0000000..7cb127b
+--- /dev/null
++++ b/src/ripps2sfxpack.c
+@@ -0,0 +1,15 @@
++/*
++  Copyright 2026, RIPPS2 contributors
++  Licenced under Academic Free License version 3.0
++  Review OpenUsbLd README & LICENSE files for further details.
++
++  RIPPS2: a sound pack compiled into the ELF, one entry per sound event (sound.h's enum SFX). The
++  public build leaves it empty and RIPPS2 plays its built-in sounds; elf/build.sh rewrites this file
++  from a private pack when RIPPS2_SOUND_PACK names one (elf/theme/tools/bake_sound_pack.py). A SOUND
++  folder beside the ELF still overrides whatever is compiled in.
++*/
++
++#include "include/sound.h"
++
++const unsigned char *const ripps2SfxPack[SFX_COUNT] = {0};
++const int ripps2SfxPackSize[SFX_COUNT] = {0};
+diff --git a/src/sound.c b/src/sound.c
+index 3f06343..dcae70b 100644
+--- a/src/sound.c
++++ b/src/sound.c
+@@ -82,6 +82,9 @@ static struct sfxEffect sfx_files[SFX_COUNT] = {
+ 
+ #define SFX_BUILTIN_COUNT 8 // boot .. bd_disconnect are compiled in
+ 
++extern const unsigned char *const ripps2SfxPack[SFX_COUNT]; // RIPPS2: ripps2sfxpack.c
++extern const int ripps2SfxPackSize[SFX_COUNT];
++
+ // RIPPS2: what an event plays when it has no sound of its own (-1: nothing)
+ static const signed char sfxFallback[SFX_COUNT] = {
+     -1, -1, -1, -1, -1, -1, -1, -1,
+@@ -218,6 +221,14 @@ static void sfxInitDefaults(void)
+         sfx_files[i].size = 0;
+         sfx_files[i].duration_ms = 0;
+     }
++    // RIPPS2: a sound pack compiled in (ripps2sfxpack.c, empty in the public build) takes each
++    // event it has; a SOUND folder beside the ELF still overrides it in sfxInit
++    for (i = 0; i < SFX_COUNT; i++) {
++        if (ripps2SfxPack[i] != NULL && ripps2SfxPackSize[i] > 16) {
++            sfx_files[i].buffer = (void *)ripps2SfxPack[i];
++            sfx_files[i].size = ripps2SfxPackSize[i];
++        }
++    }
+ 
+     sfx_files[SFX_BOOT].buffer = boot_adp;
+     sfx_files[SFX_BOOT].size = size_boot_adp;
