@@ -167,10 +167,10 @@ index 356e8db..2c6e7ba 100644
      drawMotes(t, 1);
 diff --git a/src/ripps2cd.c b/src/ripps2cd.c
 new file mode 100644
-index 0000000..80c17e6
+index 0000000..15931c5
 --- /dev/null
 +++ b/src/ripps2cd.c
-@@ -0,0 +1,624 @@
+@@ -0,0 +1,625 @@
 +/*
 +  Copyright 2026, RIPPS2 contributors
 +  Licenced under Academic Free License version 3.0
@@ -625,9 +625,10 @@ index 0000000..80c17e6
 +            cdSay("COPY CANCELLED");
 +        return;
 +    }
-+    snprintf(what, sizeof(what), "Copied to MUSIC as %s.wav. Pick it in Settings > Audio Settings > Music.", name);
++    char done[200];
++    snprintf(done, sizeof(done), "Copied to MUSIC as %s.wav. Pick it in Settings > Audio Settings > Music.", name);
 +    guiMsgBoxSound(SFX_SAVE);
-+    guiMsgBox(what, 0, NULL);
++    guiMsgBox(done, 0, NULL);
 +}
 +
 +// ---- the panel ----
