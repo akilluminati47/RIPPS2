@@ -15,7 +15,7 @@ RIPPS2 is a PS2 front end in a single `.elf`: a teardown and rebuild of [RiptOPL
 - **STORAGE** is your game library: every drive in one list, with art, an info page whose art crossfades with the screenshots, and per-game settings.
 - **MEMORY FILES** is a built-in file browser: copy, move and delete across memory cards, USB and HDD; open OPL's VMC card images like folders; export and import PSU saves; edit text files; Start opens its settings.
 
-It is **alpha**. It runs in PCSX2, and it is being tested now by akilluminati47, ripto, nuno6573, zackcage6, FifthFox and Mr.sus.60. Keep your usual loader close by, and tell us what breaks: feedback is what makes RIPPS2.
+It is **alpha**. It runs in PCSX2, and it is being tested now by ripto, nuno6573, zackcage6, eliminator1403, FifthFox and Mr.sus.60. Keep your usual loader close by, and tell us what breaks: feedback is what makes RIPPS2.
 
 Short clips of build 55: [info page](media/ripps2-b55-info.mp4), [orbs](media/ripps2-b55-orbs.mp4), [card images and PSU](media/ripps2-b55-cards.mp4), [browser settings](media/ripps2-b55-grid.mp4), [launch disc](media/ripps2-b55-disc.mp4). Build 22's [demo reel](media/ripps2-b22-demo.mp4) is still there too.
 
@@ -53,7 +53,7 @@ Add `?t=12` to skip the pillars intro, or `orbs.html?f=3` to open a specific for
 
 ## Credits
 
-RIPPS2 is designed and directed by akilluminati47 and built with Claude (Anthropic). Testers: akilluminati47, ripto, nuno6573, zackcage6, FifthFox, Mr.sus.60.
+RIPPS2 is designed and directed by akilluminati47 and built with Claude (Anthropic). Testers: ripto, nuno6573, zackcage6, eliminator1403, FifthFox, Mr.sus.60.
 
 - [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader) by NathanNeurotic and the [Open PS2 Loader](https://github.com/ps2homebrew/Open-PS2-Loader) team (AFL-3.0), which RIPPS2 is built on. Their full credits are on RIPPS2's About page.
 - [ESR](https://gitlab.com/ffgriever/esr/) by ffgriever: Launch Disc starts your own copy for ESR discs.

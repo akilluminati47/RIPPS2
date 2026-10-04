@@ -1,0 +1,15 @@
+diff --git a/src/ripps2about.c b/src/ripps2about.c
+index 07bfcf2..3d4af35 100644
+--- a/src/ripps2about.c
++++ b/src/ripps2about.c
+@@ -57,8 +57,8 @@ static const ab_row_t abRows[] = {
+     {'S', "Built with Claude (Anthropic)"},
+     {'G', NULL},
+     {'H', "TESTERS"},
+-    {'T', "akilluminati47 - ripto - nuno6573"},
+-    {'T', "zackcage6 - FifthFox - Mr.sus.60"},
++    {'T', "ripto - nuno6573 - zackcage6"},
++    {'T', "eliminator1403 - FifthFox - Mr.sus.60"},
+     {'S', "Feedback makes RIPPS2. Thank you."},
+     {'G', NULL},
+     {'H', "LAUNCH DISC"},
