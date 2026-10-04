@@ -97,7 +97,7 @@ index 728aa83..277dd60 100644
          }
          guiRenderTextScreen(message);
 diff --git a/src/ioman.c b/src/ioman.c
-index 6469fc9..5461525 100644
+index 6469fc9..7298d29 100644
 --- a/src/ioman.c
 +++ b/src/ioman.c
 @@ -223,6 +223,55 @@ int ioDescribeRunning(char *out, int size)
@@ -156,7 +156,21 @@ index 6469fc9..5461525 100644
  static void ioWorkerThread(void *arg)
  {
      while (!gIOTerminate) {
-@@ -405,6 +454,70 @@ int ioPutRequest(int type, void *data)
+@@ -240,6 +289,13 @@ static void ioWorkerThread(void *arg)
+                 break;
+ 
+             struct io_request_t *req = gReqList;
++#ifdef RIPPS2_IO_STALL_TEST
++            // a test build: the worker sits idle for 10 s in front of a settings save without starting
++            // it, as it did on the consoles where saves stalled, to prove the save runs anyway
++            for (int k = 0; k < gIoNameCount; k++)
++                if (gIoNames[k].fn == req->data && !strcmp(gIoNames[k].name, "SETTINGS SAVE"))
++                    DelayThread(10 * 1000 * 1000);
++#endif
+             gReqRunning = req;
+             gRunSince = clock();
+             gRunData = req->data;
+@@ -405,6 +461,66 @@ int ioPutRequest(int type, void *data)
      return result;
  }
  
@@ -195,10 +209,6 @@ index 6469fc9..5461525 100644
 +        gIoTotal[type]++;
 +    }
 +    SignalSema(gEndSemaId);
-+#ifdef RIPPS2_IO_STALL_TEST
-+    if (type == IO_CUSTOM_SIMPLEACTION)
-+        return IO_OK; // a test build: the worker is never told, as on the consoles where it stalled
-+#endif
 +    WakeupThread(gIOThreadId);
 +    return IO_OK;
 +}
@@ -227,7 +237,7 @@ index 6469fc9..5461525 100644
  int ioPutRequestUnlessWaiting(int type, void *data)
  {
      int result = IO_OK, found = 0;
-@@ -453,6 +566,8 @@ int ioRemoveRequests(int type)
+@@ -453,6 +569,8 @@ int ioRemoveRequests(int type)
              if (req == gReqEnd)
                  gReqEnd = last;
  
