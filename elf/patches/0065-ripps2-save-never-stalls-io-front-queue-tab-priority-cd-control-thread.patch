@@ -1,0 +1,485 @@
+diff --git a/include/diag.h b/include/diag.h
+index 3a3c112..7687c5d 100644
+--- a/include/diag.h
++++ b/include/diag.h
+@@ -5,5 +5,6 @@
+ extern volatile int gLastSaveErrno;
+ extern volatile int gLastDeferredTimedOut;
+ extern char gLastDeferredBlocker[64]; // RIPPS2: what the IO worker was running when the wait gave up
++extern int gLastDeferredInline;       // RIPPS2: the deferred IO ran on the GUI thread (the worker would not)
+ 
+ #endif
+diff --git a/include/ioman.h b/include/ioman.h
+index 2688779..8bc1683 100644
+--- a/include/ioman.h
++++ b/include/ioman.h
+@@ -77,6 +77,10 @@ int ioBlockOpsTimed(int block, int timeoutTicks);
+ // RIPPS2: name a simple action for ioDescribeRunning; describe what the worker runs now ("" when idle)
+ void ioNameAction(void *fn, const char *name);
+ int ioDescribeRunning(char *out, int size);
++int ioDescribeWorker(char *out, int size);       // RIPPS2: the worker thread's state and the queue
++int ioWorkerBusy(void);                          // RIPPS2: inside a job right now
++int ioPutRequestFront(int type, void *data);     // RIPPS2: right behind the running request
++int ioDefuseRequest(int type, void *data);       // RIPPS2: a queued action that has not started, made a no-op
+ 
+ #ifdef __DEBUG
+ #define PREINIT_LOG(...) printf(__VA_ARGS__)
+diff --git a/include/ripps2.h b/include/ripps2.h
+index f49693a..8198adc 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -14,6 +14,7 @@ int ripps2LaunchPs1Disc(void);
+ 
+ // ---- CD player (ripps2cd.c): an audio CD on LAUNCH DISC ----
+ int ripps2CdIsOpen(void);
++int ripps2FilesBusy(void); // ripps2files.c: the browser has a drive open or an operation running
+ void ripps2CdStart(void); // START LASER on an audio CD: reads its TOC and plays from the first song
+ void ripps2CdRender(void);
+ void ripps2CdInput(void);
+diff --git a/src/gui.c b/src/gui.c
+index 728aa83..277dd60 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -4965,7 +4965,7 @@ void guiHandleDeferedIO(int *ptr, const char *message, int type, void *data, int
+     // A rejected request never runs, so nothing will ever clear *ptr -- without this the loop below
+     // would spin forever on a queue-full/failed put. Clear it here so the caller falls into its
+     // normal failure path instead of hanging.
+-    if (ioPutRequest(type, data) != IO_OK) {
++    if (ioPutRequestFront(type, data) != IO_OK) { // RIPPS2: ahead of everything already queued
+         *ptr = 0;
+         return;
+     }
+@@ -4985,14 +4985,29 @@ void guiHandleDeferedIO(int *ptr, const char *message, int type, void *data, int
+     clock_t startTick = clock();
+     clock_t limitTicks = (clock_t)timeoutMs * (CLOCKS_PER_SEC / 1000);
+     gLastDeferredTimedOut = 0;
++    gLastDeferredInline = 0;
++    gLastDeferredBlocker[0] = '\0';
+     while (*ptr) {
++        // RIPPS2: the worker idle and this still not started after two seconds: the worker is not going
++        // to pick it up (asleep, or parked on a lock), so it runs here instead, once the queued copy is
++        // made a no-op so it can never run twice. What the worker was doing goes with the result.
++        if (type == IO_CUSTOM_SIMPLEACTION && timeoutMs > 0 && (clock() - startTick) >= 2 * CLOCKS_PER_SEC &&
++            !ioWorkerBusy() && ioDefuseRequest(type, data)) {
++            ioDescribeWorker(gLastDeferredBlocker, sizeof(gLastDeferredBlocker));
++            gLastDeferredInline = 1;
++            guiRenderTextScreen(message);
++            ((io_simpleaction_t)data)();
++            *ptr = 0;
++            break;
++        }
+         if (timeoutMs > 0 && (clock() - startTick) >= limitTicks) {
+             LOG("guiHandleDeferedIO: deferred IO unfinished after %d ms; storage stuck, abandoning wait\n", timeoutMs);
+             *ptr = 0;
+             // The handler never ran. Callers must not report a device error against their target
+             // path on the strength of this -- nothing touched it.
+             gLastDeferredTimedOut = 1;
+-            ioDescribeRunning(gLastDeferredBlocker, sizeof(gLastDeferredBlocker)); // RIPPS2: what it waited behind
++            if (!ioDescribeRunning(gLastDeferredBlocker, sizeof(gLastDeferredBlocker))) // RIPPS2: what it waited behind
++                ioDescribeWorker(gLastDeferredBlocker, sizeof(gLastDeferredBlocker));
+             break;
+         }
+         guiRenderTextScreen(message);
+diff --git a/src/ioman.c b/src/ioman.c
+index 6469fc9..8170985 100644
+--- a/src/ioman.c
++++ b/src/ioman.c
+@@ -223,6 +223,55 @@ int ioDescribeRunning(char *out, int size)
+     return 1;
+ }
+ 
++// RIPPS2: is the worker inside a job right now
++int ioWorkerBusy(void)
++{
++    return gRunType != 0;
++}
++
++// RIPPS2: the worker thread itself, for a deferred IO it never picked up: asleep (a wakeup that went
++// missing), parked on one of the queue's locks, ready but starved, or gone; and the queue behind it
++int ioDescribeWorker(char *out, int size)
++{
++    ee_thread_status_t st;
++    struct io_request_t *r = gReqList;
++    int queued = 0, firstType = 0, i;
++    void *firstData = NULL;
++    const char *state = "UNKNOWN", *first = "";
++    char lock[16];
++
++    if (r != NULL) {
++        firstType = r->type;
++        firstData = r->data;
++    }
++    for (; r != NULL && queued < 999; r = r->next)
++        queued++;
++    if (ReferThreadStatus(gIOThreadId, &st) < 0 || (st.status & THS_DORMANT))
++        state = "GONE";
++    else if (st.status & THS_RUN)
++        state = "RUNNING";
++    else if (st.status & THS_READY)
++        state = "READY BUT STARVED";
++    else if ((st.status & THS_WAIT) && st.waitType == TSW_SLEEP)
++        state = "ASLEEP";
++    else if ((st.status & THS_WAIT) && st.waitType == TSW_SEMA) {
++        snprintf(lock, sizeof(lock), "LOCK %s", (s32)st.waitId == gProcSemaId ? "P" : (s32)st.waitId == gEndSemaId ? "E" : "X");
++        state = lock;
++    }
++    if (firstType == IO_MENU_UPDATE_DEFFERED)
++        first = "GAME LIST UPDATE";
++    else if (firstType == IO_CACHE_LOAD_ART)
++        first = "COVER ART";
++    else if (firstType != 0) {
++        first = "TASK";
++        for (i = 0; i < gIoNameCount; i++)
++            if (gIoNames[i].fn == firstData)
++                first = gIoNames[i].name;
++    }
++    snprintf(out, size, "WORKER %s, %d QUEUED%s%s", state, queued, queued ? ", FIRST " : "", first);
++    return 1;
++}
++
+ static void ioWorkerThread(void *arg)
+ {
+     while (!gIOTerminate) {
+@@ -405,6 +454,66 @@ int ioPutRequest(int type, void *data)
+     return result;
+ }
+ 
++// RIPPS2: a request the user is waiting on (a settings save, a launch's last-played save) goes to
++// the front: right behind the one running, ahead of cover art, list updates and the like
++int ioPutRequestFront(int type, void *data)
++{
++    struct io_request_t *req;
++
++    if (isIOBlocked)
++        return IO_ERR_IO_BLOCKED;
++    if (!ioGetHandler(type))
++        return IO_ERR_INVALID_HANDLER;
++
++    WaitSema(gEndSemaId);
++    if (gReqList == NULL) {
++        int result = ioAppendLocked(type, data);
++        SignalSema(gEndSemaId);
++        if (result == IO_OK)
++            WakeupThread(gIOThreadId);
++        return result;
++    }
++    req = (struct io_request_t *)malloc(sizeof(struct io_request_t));
++    if (!req) {
++        SignalSema(gEndSemaId);
++        return IO_ERR_TOO_MANY_REQUESTS;
++    }
++    req->type = type;
++    req->data = data;
++    req->next = gReqList->next; // the head may be running: never move it
++    gReqList->next = req;
++    if (gReqEnd == gReqList)
++        gReqEnd = req;
++    if (type > 0 && type < IO_REQ_TYPE_COUNT) {
++        gIoPending[type]++;
++        gIoTotal[type]++;
++    }
++    SignalSema(gEndSemaId);
++    WakeupThread(gIOThreadId);
++    return IO_OK;
++}
++
++static void ioNoAction(void)
++{
++}
++
++// RIPPS2: a queued simple action that has not started becomes a no-op, so its caller can run it
++// itself without it ever running twice. 0 when it is running or already gone.
++int ioDefuseRequest(int type, void *data)
++{
++    struct io_request_t *r;
++    int found = 0;
++
++    WaitSema(gEndSemaId);
++    for (r = gReqList; r != NULL && !found; r = r->next)
++        if (r != gReqRunning && r->type == type && r->data == data) {
++            r->data = (void *)&ioNoAction;
++            found = 1;
++        }
++    SignalSema(gEndSemaId);
++    return found;
++}
++
+ int ioPutRequestUnlessWaiting(int type, void *data)
+ {
+     int result = IO_OK, found = 0;
+@@ -453,6 +562,8 @@ int ioRemoveRequests(int type)
+             if (req == gReqEnd)
+                 gReqEnd = last;
+ 
++            if (req->type > 0 && req->type < IO_REQ_TYPE_COUNT && gIoPending[req->type] > 0)
++                gIoPending[req->type]--; // RIPPS2: a removed request no longer counts as pending
+             count++;
+             free(req);
+ 
+diff --git a/src/opl.c b/src/opl.c
+index c6c4fc5..009e588 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -218,6 +218,7 @@ volatile int gLastSaveErrno = 0;
+ // error the caller would otherwise report against the target path is meaningless.
+ volatile int gLastDeferredTimedOut = 0;
+ char gLastDeferredBlocker[64] = "";
++int gLastDeferredInline = 0;
+ int gEnableMX4SIO;
+ int gEnableBdmHDD;
+ int gEnableUDPBD;
+@@ -1578,10 +1579,17 @@ static void menuUpdateHook()
+     // tap (#271). Event-driven work (the genChanged hotplug bypass below) keeps the short gate.
+     int longIdle = (guiInactiveFrames >= MENU_BG_RESCAN_MIN_INACTIVE_FRAMES);
+ 
++    // RIPPS2: Storage is home and keeps its steady probes; on Launch Disc or Memory Files they run a
++    // fifth as often, and not at all while a side tab is busy (a CD playing, the browser in a drive),
++    // so the bus is theirs. A real plug or unplug (genChanged below) always gets through.
++    int sideTab = gRipps2Category != RIPPS2_CAT_STORAGE;
++    int sideBusy = ripps2CdIsOpen() || (gRipps2Category == RIPPS2_CAT_MEMORY && ripps2FilesBusy());
++    clock_t rescanEvery = sideBusy ? 0 : MENU_BG_RESCAN_MIN_INTERVAL_TICKS * (sideTab ? 5 : 1);
++
+     // schedule updates of all the list handlers
+     // Periodic background rescans. Both steady-state rescans enqueue standard requests and are
+     // rendered with the unified busy overlay.
+-    if (gAutoRefresh && longIdle) {
++    if (gAutoRefresh && longIdle && !sideTab) {
+         for (i = 0; i < MODE_COUNT; i++) {
+             if ((list_support[i].support && list_support[i].support->enabled) && ((list_support[i].support->updateDelay > 0) && (frameCounter % list_support[i].support->updateDelay == 0)))
+                 ioPutRequest(IO_MENU_UPDATE_DEFFERED, &list_support[i].support->mode);
+@@ -1643,7 +1651,7 @@ static void menuUpdateHook()
+                     (frameCounter % (MENU_GENERAL_UPDATE_DELAY * BDM_EMPTY_SLOT_PROBE_RATIO)) != 0)
+                     continue;
+ 
+-                if (genChanged || (longIdle && (now - lastBgRescan[mode]) >= MENU_BG_RESCAN_MIN_INTERVAL_TICKS)) {
++                if (genChanged || (longIdle && rescanEvery > 0 && (now - lastBgRescan[mode]) >= rescanEvery)) {
+                     // Stamp the throttle only on an accepted request, so a rejected one retries on
+                     // the next tick instead of being silently skipped for a full interval.
+                     int accepted = (ioPutRequest(IO_MENU_UPDATE_DEFFERED, &list_support[i].support->mode) == IO_OK);
+@@ -4353,6 +4361,10 @@ int saveConfig(int types, int showUI)
+                 snprintf(notification, sizeof(notification), _l(_STR_SETTINGS_HDD_FALLBACK), displayHome);
+             else
+                 snprintf(notification, sizeof(notification), _l(_STR_SETTINGS_SAVED), displayHome);
++            if (gLastDeferredInline) { // RIPPS2: saved, but not by the worker: say what it was doing
++                size_t n = strlen(notification);
++                snprintf(notification + n, sizeof(notification) - n, " (SAVED DIRECTLY: %s)", gLastDeferredBlocker);
++            }
+ 
+             guiMsgBoxSound(SFX_SAVE); // RIPPS2
+             guiMsgBox(notification, 0, NULL);
+diff --git a/src/ripps2bg.c b/src/ripps2bg.c
+index 8f28477..6fcc8cd 100644
+--- a/src/ripps2bg.c
++++ b/src/ripps2bg.c
+@@ -448,6 +448,7 @@ static int musRowHead = 0, musPrimed = 0, musPulseNext = 0;
+ static float musPulseT[MUS_PULSES] = {-10.0f, -10.0f, -10.0f, -10.0f}, musPulseA[MUS_PULSES];
+ static float musFluxAvg = 0.0f, musLastHit = -10.0f;
+ static unsigned int musSeq = 0;
++static float musSeqAt = -1.0f; // when the last spectrum came in
+ 
+ void ripps2PillarMusic(int on)
+ {
+@@ -474,9 +475,16 @@ static void musicUpdate(float t)
+         return;
+     }
+     seq = bgmGetSpectrum(db);
++    if (seq == musSeq && t - musSeqAt > 0.12f) {
++        // nothing new for a moment (the stream starting, stopping, or between tracks): the bars relax
++        // toward the floor instead of holding the last moment still
++        for (b = 0; b < MUS_BANDS; b++)
++            musTarget[b] *= expf(-dt / 0.3f);
++    }
+     if (seq != musSeq) {
+         float loudest = -200.0f, flux = 0.0f;
+         musSeq = seq;
++        musSeqAt = t;
+         for (b = 0; b < MUS_BANDS; b++)
+             loudest = fmaxf(loudest, db[b]);
+         if (!musPrimed) {
+diff --git a/src/ripps2cd.c b/src/ripps2cd.c
+index 1688f73..269c28d 100644
+--- a/src/ripps2cd.c
++++ b/src/ripps2cd.c
+@@ -338,6 +338,76 @@ static void cdHalt(int state)
+     ripps2PillarMusic(0);
+ }
+ 
++// ---- the stream's controls run on a thread of their own ----
++// Starting the stream buffers half a second of the disc, and stopping it waits for the music's
++// threads; on the menu thread both froze the towers mid-step between a press and the music. Now the
++// panel keeps drawing (the towers relax while no new sound arrives) and takes the next press once the
++// last one is done.
++enum { CD_CMD_NONE = 0, CD_CMD_PLAY, CD_CMD_PAUSE, CD_CMD_STOP };
++static volatile int cdCmd = CD_CMD_NONE, cdCmdBusy = 0;
++static volatile u32 cdCmdLsn = 0;
++static int cdCtlSema = -1;
++static u8 cdCtlStack[0x4000] __attribute__((aligned(16)));
++
++static void cdCtlThread(void *arg)
++{
++    (void)arg;
++    for (;;) {
++        WaitSema(cdCtlSema);
++        int c = cdCmd;
++        cdCmd = CD_CMD_NONE;
++        if (c == CD_CMD_PLAY)
++            cdPlayFrom(cdCmdLsn);
++        else if (c == CD_CMD_PAUSE)
++            cdHalt(CD_PAUSED);
++        else if (c == CD_CMD_STOP)
++            cdHalt(CD_STOPPED);
++        cdCmdBusy = 0;
++    }
++}
++
++static void cdPost(int cmd, u32 lsn)
++{
++    if (cdCmdBusy)
++        return;
++    if (cdCtlSema < 0) {
++        ee_sema_t sema;
++        ee_thread_t t;
++        sema.init_count = 0;
++        sema.max_count = 1;
++        sema.option = 0;
++        sema.attr = 0;
++        cdCtlSema = CreateSema(&sema);
++        t.func = &cdCtlThread;
++        t.stack = cdCtlStack;
++        t.stack_size = sizeof(cdCtlStack);
++        t.gp_reg = &_gp;
++        t.initial_priority = 0x30; // below the menu: it works while a frame waits for vsync
++        t.attr = 0;
++        t.option = 0;
++        int id = CreateThread(&t);
++        if (cdCtlSema < 0 || id < 0) { // no thread: do it here, as before
++            if (cmd == CD_CMD_PLAY)
++                cdPlayFrom(lsn);
++            else
++                cdHalt(cmd == CD_CMD_PAUSE ? CD_PAUSED : CD_STOPPED);
++            return;
++        }
++        StartThread(id, NULL);
++    }
++    cdCmdBusy = 1;
++    cdCmdLsn = lsn;
++    cdCmd = cmd;
++    SignalSema(cdCtlSema);
++}
++
++static void cdIdleWait(void) // a press still being carried out, before the player is closed or copies
++{
++    int i;
++    for (i = 0; cdCmdBusy && i < 400; i++)
++        DelayThread(10 * 1000);
++}
++
+ int ripps2CdIsOpen(void)
+ {
+     return cdOpen;
+@@ -368,11 +438,12 @@ void ripps2CdStart(void)
+     for (t = 1; t <= cdCount && !cdAudio[t]; t++)
+         ;
+     cdSel = cdTop = t <= cdCount ? t : 1;
+-    cdPlayFrom(cdStart[cdSel]); // START LASER plays: the disc starts from its first song
++    cdPost(CD_CMD_PLAY, cdStart[cdSel]); // START LASER plays: the disc starts from its first song
+ }
+ 
+ static void cdClose(void)
+ {
++    cdIdleWait();
+     if (cdState != CD_STOPPED)
+         cdHalt(CD_STOPPED);
+     bgmStopPcm();
+@@ -454,6 +525,7 @@ static void cdCopy(int track)
+     snprintf(name, sizeof(name), "CD Track %02d", track);
+     if (!guiShowKeyboard(name, sizeof(name)) || name[0] == '\0')
+         return;
++    cdIdleWait();
+     if (cdState != CD_STOPPED)
+         cdHalt(CD_STOPPED);
+ 
+@@ -556,7 +628,7 @@ void ripps2CdRender(void)
+     u32 now;
+ 
+     // the stream ran out at the end of the disc
+-    if (cdState == CD_PLAYING && !isBgmPlaying()) {
++    if (!cdCmdBusy && cdState == CD_PLAYING && !isBgmPlaying()) {
+         bgmStopPcm();
+         cdState = CD_STOPPED;
+         ripps2PillarMusic(0);
+@@ -620,7 +692,7 @@ void ripps2CdRender(void)
+     rmDrawRect(rx, CD_Y + 90, 216, 4, CD_PRIM(0x03, 0x08, 0x22, 0x80));
+     if (length > 0)
+         rmDrawRect(rx, CD_Y + 90, (int)(216.0f * (at > length ? 1.0f : (float)at / (float)length)), 4, CD_PRIM(0x4A, 0x8C, 0xF0, 0x80));
+-    const char *state = cdState == CD_PLAYING ? "PLAYING" : cdState == CD_PAUSED ? "PAUSED" : "STOPPED";
++    const char *state = cdCmdBusy ? "..." : cdState == CD_PLAYING ? "PLAYING" : cdState == CD_PAUSED ? "PAUSED" : "STOPPED";
+     if (cdNoteAt != 0 && (float)(clock() - cdNoteAt) / CLOCKS_PER_SEC < 3.0f)
+         state = cdNote;
+     fntRenderString(small, rx, CD_Y + 106, ALIGN_VCENTER, 0, 0, state, cdState == CD_PLAYING ? CD_BLUE : CD_SOFT);
+@@ -637,19 +709,21 @@ void ripps2CdInput(void)
+     if (getKeyOn(back)) {
+         sfxPlay(SFX_CANCEL);
+         cdClose();
++    } else if (cdCmdBusy) {
++        return; // the last press is still being carried out
+     } else if (getKeyOn(confirm) || getKeyOn(KEY_START)) {
+         // the track playing pauses; a paused one goes on; any other picked track plays from its start
+         sfxPlay(SFX_CONFIRM);
+         if (cdState == CD_PLAYING && cdSel == t)
+-            cdHalt(CD_PAUSED);
++            cdPost(CD_CMD_PAUSE, 0);
+         else if (cdState == CD_PAUSED && cdTrackAt(cdHeld) == cdSel)
+-            cdPlayFrom(cdHeld);
++            cdPost(CD_CMD_PLAY, cdHeld);
+         else
+-            cdPlayFrom(cdStart[cdSel]);
++            cdPost(CD_CMD_PLAY, cdStart[cdSel]);
+     } else if (getKeyOn(KEY_SQUARE)) {
+         sfxPlay(SFX_CANCEL);
+         if (cdState != CD_STOPPED)
+-            cdHalt(CD_STOPPED);
++            cdPost(CD_CMD_STOP, 0);
+     } else if (getKey(KEY_UP)) { // pick only: Cross plays the pick
+         if (cdSel > 1) {
+             sfxPlay(SFX_CURSOR);
+@@ -666,19 +740,19 @@ void ripps2CdInput(void)
+         sfxPlay(SFX_CURSOR);
+         cdSel = to;
+         if (cdState != CD_STOPPED)
+-            cdPlayFrom(cdStart[to]);
++            cdPost(CD_CMD_PLAY, cdStart[to]);
+     } else if (getKeyOn(KEY_RIGHT)) {
+         if (t < cdCount) {
+             sfxPlay(SFX_CURSOR);
+             cdSel = t + 1;
+             if (cdState != CD_STOPPED)
+-                cdPlayFrom(cdStart[cdSel]);
++                cdPost(CD_CMD_PLAY, cdStart[cdSel]);
+         }
+     } else if (getKeyOn(KEY_L1) || getKeyOn(KEY_R1)) {
+         if (cdState == CD_PLAYING) {
+             u32 to = getKeyOn(KEY_R1) ? now + CD_SKIP : (now > cdStart[t] + CD_SKIP ? now - CD_SKIP : cdStart[t]);
+             if (to < cdStart[cdCount + 1] - CD_READ)
+-                cdPlayFrom(to);
++                cdPost(CD_CMD_PLAY, to);
+         }
+     } else if (getKeyOn(KEY_TRIANGLE)) {
+         sfxPlay(SFX_CONFIRM);
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index dc14ed8..5096401 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -1653,6 +1653,12 @@ static void fbHintRow(const int *icons, const char *const *texts, int n, int x,
+     }
+ }
+ 
++// RIPPS2: the browser has a drive open or an operation running (Storage's probes hold off)
++int ripps2FilesBusy(void)
++{
++    return fbBusy || fbPath[0] != '\0';
++}
++
+ void ripps2RenderFiles(void)
+ {
+     int i, rowFont = gTheme->fonts[8], smallFont = gTheme->fonts[5], uiFont = gTheme->fonts[4];
