@@ -603,14 +603,16 @@ class Studio:
             pygame.draw.rect(self.screen, c, (x - 12, y - 8, 24, 16), 1, border_radius=4)
             self.text(kind.upper(), 16, c, (x, y + 1), 'center')
 
-    def hints(self, items):
-        """The hint row at the bottom, as RIPPS2 draws it; each is clickable."""
-        x = 40
+    def hints(self, items, y=H - 30, x=40, center=None):
+        """A hint row (the bottom one by default), as RIPPS2 draws it; each hint is clickable."""
+        if center is not None:
+            w = sum(26 + self.f[20].size(label)[0] + 30 for _k, label in items) - 30
+            x = center - w // 2
         self.hint_rects = []
         for kind, label in items:
-            self.glyph(kind, (x + 10, H - 30))
-            r = self.text(label, 20, WHITE, (x + 26, H - 30), 'midleft')
-            self.hint_rects.append((pygame.Rect(x - 4, H - 46, r.right - x + 12, 32), kind))
+            self.glyph(kind, (x + 10, y))
+            r = self.text(label, 20, WHITE, (x + 26, y), 'midleft')
+            self.hint_rects.append((pygame.Rect(x - 4, y - 16, r.right - x + 12, 32), kind))
             x = r.right + 30
 
     def draw_tabs(self):
@@ -796,12 +798,12 @@ class Studio:
         pygame.draw.rect(self.screen, WARN if sfx > SFX_BUDGET else CYAN,
                          (tx, info.y + 76, int((info.w - 32) * min(1, sfx / SFX_BUDGET)), 5))
         missing = [EVENT[e][1] for e, *_ in EVENTS if e not in have]
-        lines = ['Every sound is loaded into the PS2\'s sound RAM at once (the music streams, so it does not count). Sounds you leave out play RIPPS2\'s own, which take room too. Missing: ' + (', '.join(missing) if missing else 'none') + '.',
-                 '',
-                 'Copy this AUDIO folder to a USB stick, then in RIPPS2\'s Memory Files copy it beside RIPPS2.ELF.',
-                 'Settings > Audio Settings > Music picks the track.']
-        self.para(lines, tx, info.y + 98, info.w - 32)
-        self.hints([('cross', 'PLAY'), ('triangle', 'DELETE'), ('start', 'OPEN FOLDER'), ('l1', 'TABS')])
+        lines = ['PC: output/AUDIO, beside this app.',
+                 'PS2: the AUDIO folder goes beside RIPPS2.ELF.',
+                 'Copy it to a USB stick, then into place with RIPPS2\'s Memory Files.',
+                 '%d of %d sounds made. The rest play RIPPS2\'s own.' % (len(EVENTS) - len(missing), len(EVENTS))]
+        self.para(lines, tx, info.y + 98, info.w - 32, gap=10)
+        self.hints([('square', 'PLAY'), ('triangle', 'DELETE'), ('start', 'OPEN FOLDER'), ('l1', 'TABS')])
 
     def screen_bios(self):
         if not self.bios:
@@ -841,10 +843,22 @@ class Studio:
 
     def screen_popup(self):
         pu = self.popup
-        r = pygame.Rect(W / 2 - 330, 110, 660, 470)
         s = pygame.Surface((W, H), pygame.SRCALPHA)
         s.fill((0, 0, 0, 120))
         self.screen.blit(s, (0, 0))
+        hide = pygame.Surface((W, 64), pygame.SRCALPHA)
+        hide.fill((3, 7, 22, 215))
+        self.screen.blit(hide, (0, H - 64))
+        if pu['kind'] == 'delete':
+            r = pygame.Rect(W / 2 - 300, 230, 600, 200)
+            self.panel(r, 240)
+            self.text('DELETE THIS FILE?', 24, WHITE, (r.centerx, r.y + 22), 'midtop')
+            self.text(pu['path'].name, 24, CYAN, (r.centerx, r.y + 64), 'midtop', maxw=r.w - 40)
+            self.text('It is removed from output/AUDIO for good.', 20, SOFT, (r.centerx, r.y + 106), 'midtop')
+            self.pop_vis = []
+            self.hints([('cross', 'DELETE'), ('circle', 'KEEP IT')], y=r.bottom - 32, center=r.centerx)
+            return
+        r = pygame.Rect(W / 2 - 330, 110, 660, 470)
         self.panel(r, 235)
         if pu['kind'] == 'assign':
             name = pu['src'][1].name if pu['src'][0] == 'file' else self.bios_label(pu['src'][1])
@@ -866,6 +880,8 @@ class Studio:
     def move(self, d):
         if self.popup:
             pu = self.popup
+            if pu['kind'] == 'delete':
+                return
             n = len(pu['rows']) if pu['kind'] == 'assign' else len(pu['plan'])
             pu['sel'] = max(0, min(n - 1, pu['sel'] + d))
             pu['top'] = min(max(pu['top'], pu['sel'] - 10), pu['sel'])
@@ -895,7 +911,14 @@ class Studio:
                 self.popup = None
             elif b == 'cross':
                 self.popup = None
-                if pu['kind'] == 'assign':
+                if pu['kind'] == 'delete':
+                    if self.player.playing:
+                        self.player.stop()
+                    pu['path'].unlink(missing_ok=True)
+                    self.cache.pop(('file', pu['path']), None)
+                    self.say('Deleted ' + pu['path'].name)
+                    self.out_sel = max(0, min(self.out_sel, len(self.outputs()) - 1))
+                elif pu['kind'] == 'assign':
                     self.convert(pu['src'], pu['rows'][pu['sel']][0])
                 else:
                     self.run_plan(pu['plan'])
@@ -929,16 +952,14 @@ class Studio:
                     open_folder(OUT_DIR)
                 return
             p, ev, _s = outs[min(self.out_sel, len(outs) - 1)]
-            if b == 'cross':
+            if b in ('cross', 'square'):
                 if self.player.playing:
                     self.player.stop()
                 else:
+                    self.cache.pop(('file', p), None)       # a file made again plays its new version
                     self.play_original(('file', p), p.name)
-                    self.cache.pop(('file', p), None)
             elif b == 'triangle':
-                p.unlink(missing_ok=True)
-                self.say('Deleted ' + p.name)
-                self.out_sel = max(0, self.out_sel - 1)
+                self.popup = dict(kind='delete', path=p)
             elif b == 'start':
                 open_folder(OUT_DIR)
         else:

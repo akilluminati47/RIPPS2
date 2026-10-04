@@ -34,9 +34,8 @@ def main():
     tone_wav(work / 'cursor.wav', 0.3)
     tone_wav(work / 'My Song.wav', 31.0, 220.0)
     tone_wav(work / 'click 2.wav', 0.2, 1200.0)
-    out = studio.OUT_DIR
-    if out.exists():
-        shutil.rmtree(out)
+    out = work / 'output' / 'AUDIO'          # never the real output folder
+    studio.OUT_DIR = out
     app = studio.Studio()
     app.vis, app.out_vis, app.pop_vis = [], [], []
     app.cwd = work
@@ -95,6 +94,18 @@ def main():
     # 3. the AUDIO FOLDER tab lists them; Tab moves there
     key(pygame.K_TAB); run(2)
     assert app.tab == 1 and len(app.outputs()) == len(files)
+    # 3b. Square plays here too; Triangle asks first: Circle keeps the file, Cross deletes it
+    app.out_sel = [p.name for p, e, s in app.outputs()].index('cursor.adp')
+    key(pygame.K_SPACE); run(3); settle()
+    assert app.player.sound is not None and app.player.label == 'cursor.adp', 'Square should play on AUDIO FOLDER'
+    key(pygame.K_p); run(2)
+    assert app.popup and app.popup['kind'] == 'delete'
+    pygame.image.save(app.screen, str(work / 'delete_modal.png'))
+    key(pygame.K_ESCAPE); run(2)
+    assert app.popup is None and (out / 'cursor.adp').exists(), 'Circle must keep the file'
+    key(pygame.K_p); run(2); key(pygame.K_RETURN); run(2)
+    assert not (out / 'cursor.adp').exists(), 'Cross must delete it'
+    print('delete modal: kept on Circle, deleted on Cross')
     # 4. your BIOS
     if len(sys.argv) > 1:
         key(pygame.K_TAB, pygame.KMOD_SHIFT); run(2)
