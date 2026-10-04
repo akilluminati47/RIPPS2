@@ -1,3 +1,16 @@
+diff --git a/src/gui.c b/src/gui.c
+index 4b9e068..99d45a3 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -2438,7 +2438,7 @@ static void guiMusicBegin(void)
+             musicShown = i;
+     }
+     if (musicCount == 0)
+-        musicEnum[0] = "None in MUSIC";
++        musicEnum[0] = "None in AUDIO";
+     musicEnum[musicCount > 0 ? musicCount : 1] = NULL;
+     diaSetEnum(diaAudioConfig, UICFG_RIPPS2_MUSIC, musicEnum);
+     diaSetInt(diaAudioConfig, UICFG_RIPPS2_MUSIC, musicShown);
 diff --git a/src/ripps2about.c b/src/ripps2about.c
 index 07bfcf2..3d4af35 100644
 --- a/src/ripps2about.c
