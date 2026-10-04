@@ -33,7 +33,7 @@ index 0000000..7cb127b
 +const unsigned char *const ripps2SfxPack[SFX_COUNT] = {0};
 +const int ripps2SfxPackSize[SFX_COUNT] = {0};
 diff --git a/src/sound.c b/src/sound.c
-index 3f06343..dcae70b 100644
+index 3f06343..d5df46b 100644
 --- a/src/sound.c
 +++ b/src/sound.c
 @@ -82,6 +82,9 @@ static struct sfxEffect sfx_files[SFX_COUNT] = {
@@ -46,18 +46,28 @@ index 3f06343..dcae70b 100644
  // RIPPS2: what an event plays when it has no sound of its own (-1: nothing)
  static const signed char sfxFallback[SFX_COUNT] = {
      -1, -1, -1, -1, -1, -1, -1, -1,
-@@ -218,6 +221,14 @@ static void sfxInitDefaults(void)
+@@ -218,7 +221,6 @@ static void sfxInitDefaults(void)
          sfx_files[i].size = 0;
          sfx_files[i].duration_ms = 0;
      }
-+    // RIPPS2: a sound pack compiled in (ripps2sfxpack.c, empty in the public build) takes each
-+    // event it has; a SOUND folder beside the ELF still overrides it in sfxInit
+-
+     sfx_files[SFX_BOOT].buffer = boot_adp;
+     sfx_files[SFX_BOOT].size = size_boot_adp;
+     sfx_files[SFX_CANCEL].buffer = cancel_adp;
+@@ -235,6 +237,16 @@ static void sfxInitDefaults(void)
+     sfx_files[SFX_BD_CONNECT].size = size_bd_connect_adp;
+     sfx_files[SFX_BD_DISCONNECT].buffer = bd_disconnect_adp;
+     sfx_files[SFX_BD_DISCONNECT].size = size_bd_disconnect_adp;
++
++    // RIPPS2: a sound pack compiled in (ripps2sfxpack.c, empty in the public build) takes each event
++    // it has, the built-in ones included, so it comes after them; a SOUND folder beside the ELF still
++    // overrides it in sfxInit
 +    for (i = 0; i < SFX_COUNT; i++) {
 +        if (ripps2SfxPack[i] != NULL && ripps2SfxPackSize[i] > 16) {
 +            sfx_files[i].buffer = (void *)ripps2SfxPack[i];
 +            sfx_files[i].size = ripps2SfxPackSize[i];
 +        }
 +    }
+ }
  
-     sfx_files[SFX_BOOT].buffer = boot_adp;
-     sfx_files[SFX_BOOT].size = size_boot_adp;
+ // Returns 0 (AUDSRV_ERR_NOERROR) if the sound was loaded successfully.
