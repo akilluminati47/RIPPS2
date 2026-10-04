@@ -53,7 +53,7 @@ index f49693a..8198adc 100644
  void ripps2CdRender(void);
  void ripps2CdInput(void);
 diff --git a/src/gui.c b/src/gui.c
-index 728aa83..277dd60 100644
+index 728aa83..ee05828 100644
 --- a/src/gui.c
 +++ b/src/gui.c
 @@ -4965,7 +4965,7 @@ void guiHandleDeferedIO(int *ptr, const char *message, int type, void *data, int
@@ -76,8 +76,8 @@ index 728aa83..277dd60 100644
 +        // to pick it up (asleep, or parked on a lock), so it runs here instead, once the queued copy is
 +        // made a no-op so it can never run twice. What the worker was doing goes with the result.
 +        if (type == IO_CUSTOM_SIMPLEACTION && timeoutMs > 0 && (clock() - startTick) >= 2 * CLOCKS_PER_SEC &&
-+            !ioWorkerBusy() && ioDefuseRequest(type, data)) {
-+            ioDescribeWorker(gLastDeferredBlocker, sizeof(gLastDeferredBlocker));
++            !ioWorkerBusy() && ioDescribeWorker(gLastDeferredBlocker, sizeof(gLastDeferredBlocker)) &&
++            ioDefuseRequest(type, data)) { // described first: once defused, the queue shows a no-op
 +            gLastDeferredInline = 1;
 +            guiRenderTextScreen(message);
 +            ((io_simpleaction_t)data)();
@@ -97,10 +97,10 @@ index 728aa83..277dd60 100644
          }
          guiRenderTextScreen(message);
 diff --git a/src/ioman.c b/src/ioman.c
-index 6469fc9..7298d29 100644
+index 6469fc9..22ac67b 100644
 --- a/src/ioman.c
 +++ b/src/ioman.c
-@@ -223,6 +223,55 @@ int ioDescribeRunning(char *out, int size)
+@@ -223,6 +223,58 @@ int ioDescribeRunning(char *out, int size)
      return 1;
  }
  
@@ -136,8 +136,11 @@ index 6469fc9..7298d29 100644
 +    else if ((st.status & THS_WAIT) && st.waitType == TSW_SLEEP)
 +        state = "ASLEEP";
 +    else if ((st.status & THS_WAIT) && st.waitType == TSW_SEMA) {
-+        snprintf(lock, sizeof(lock), "LOCK %s", (s32)st.waitId == gProcSemaId ? "P" : (s32)st.waitId == gEndSemaId ? "E" : "X");
-+        state = lock;
++        if ((s32)st.waitId == gProcSemaId || (s32)st.waitId == gEndSemaId) {
++            snprintf(lock, sizeof(lock), "ON LOCK %s", (s32)st.waitId == gProcSemaId ? "P" : "E");
++            state = lock;
++        } else
++            state = "WAITING"; // inside a delay, or on some other semaphore
 +    }
 +    if (firstType == IO_MENU_UPDATE_DEFFERED)
 +        first = "GAME LIST UPDATE";
@@ -156,7 +159,7 @@ index 6469fc9..7298d29 100644
  static void ioWorkerThread(void *arg)
  {
      while (!gIOTerminate) {
-@@ -240,6 +289,13 @@ static void ioWorkerThread(void *arg)
+@@ -240,6 +292,13 @@ static void ioWorkerThread(void *arg)
                  break;
  
              struct io_request_t *req = gReqList;
@@ -170,7 +173,7 @@ index 6469fc9..7298d29 100644
              gReqRunning = req;
              gRunSince = clock();
              gRunData = req->data;
-@@ -405,6 +461,66 @@ int ioPutRequest(int type, void *data)
+@@ -405,6 +464,66 @@ int ioPutRequest(int type, void *data)
      return result;
  }
  
@@ -237,7 +240,7 @@ index 6469fc9..7298d29 100644
  int ioPutRequestUnlessWaiting(int type, void *data)
  {
      int result = IO_OK, found = 0;
-@@ -453,6 +569,8 @@ int ioRemoveRequests(int type)
+@@ -453,6 +572,8 @@ int ioRemoveRequests(int type)
              if (req == gReqEnd)
                  gReqEnd = last;
  
