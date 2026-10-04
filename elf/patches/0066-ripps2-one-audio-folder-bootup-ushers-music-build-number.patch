@@ -1,0 +1,266 @@
+diff --git a/include/ripps2_build.h b/include/ripps2_build.h
+new file mode 100644
+index 0000000..19194c8
+--- /dev/null
++++ b/include/ripps2_build.h
+@@ -0,0 +1,4 @@
++// RIPPS2: the build number and stage, shown in About. elf/build.sh rewrites this file with the number
++// of the last patch in the series; built any other way it says 0.
++#define RIPPS2_BUILD 0
++#define RIPPS2_STAGE "ALPHA"
+diff --git a/lng_tmpl/_base.yml b/lng_tmpl/_base.yml
+index 514cbf2..1d89f3f 100644
+--- a/lng_tmpl/_base.yml
++++ b/lng_tmpl/_base.yml
+@@ -1400,4 +1400,4 @@ gui_strings:
+ - label: RIPPS2_MUSIC
+   string: Music
+ - label: HINT_RIPPS2_MUSIC
+-  string: "The tracks in the MUSIC folder beside RIPPS2 (Ogg Vorbis, 44.1 or 48 kHz), in file name order: a number in front sets it (01 Slideshow.ogg, 02 Details.ogg). The first plays unless you pick another. A disk theme's own music, or a Default Theme Music path, plays instead when set."
++  string: "The music in the AUDIO folder beside RIPPS2: bgm files (Ogg Vorbis without tags, or 16-bit WAV, 44.1 or 48 kHz) in name order, a number setting it (bgm_01 Slideshow.ogg, bgm_02 Details.ogg). The first plays unless you pick another. A disk theme's own music, or a Default Theme Music path, plays instead when set."
+diff --git a/src/ripps2about.c b/src/ripps2about.c
+index 27e6b2c..07bfcf2 100644
+--- a/src/ripps2about.c
++++ b/src/ripps2about.c
+@@ -22,6 +22,7 @@
+ #include "include/pad.h"
+ #include "include/sound.h"
+ #include "include/ripps2.h"
++#include "include/ripps2_build.h"
+ 
+ #define AB_TOP     54  // the column shows between these
+ #define AB_BOTTOM  424
+@@ -42,10 +43,11 @@ typedef struct
+     const char *text;
+ } ab_row_t;
+ 
+-static char abVersion[64], abBuild[64];
++static char abVersion[64], abBuild[64], abRelease[48];
+ 
+ static const ab_row_t abRows[] = {
+     {'H', "RIPPS2"},
++    {'T', abRelease},
+     {'S', "A teardown and rebuild of RiptOPL, the Open PS2 Loader fork,"},
+     {'S', "with its own look, launchers, file browser and save tools."},
+     {'T', abVersion},
+@@ -181,6 +183,8 @@ void ripps2ShowAbout(const char *version, const char *build)
+     int closeKey = gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE;
+ 
+     snprintf(abVersion, sizeof(abVersion), "%s", version);
++    if (RIPPS2_BUILD > 0)
++        snprintf(abRelease, sizeof(abRelease), "BUILD %d (%s)", RIPPS2_BUILD, RIPPS2_STAGE);
+     snprintf(abBuild, sizeof(abBuild), "%s", build);
+     end = (float)abHeight() + (AB_BOTTOM - AB_TOP) / 3.0f; // scrolled this far, the last row has left the top
+ 
+diff --git a/src/ripps2cd.c b/src/ripps2cd.c
+index 269c28d..5d8ba6e 100644
+--- a/src/ripps2cd.c
++++ b/src/ripps2cd.c
+@@ -519,7 +519,7 @@ static void cdCopy(int track)
+     }
+     if (!strncmp(dir, "mc", 2)) {
+         guiMsgBoxSound(SFX_ERROR);
+-        guiMsgBox("MUSIC sits beside RIPPS2, here on a memory card, and a CD track takes about 10 MB a minute. Start RIPPS2 from a USB drive or the HDD to copy tracks.", 0, NULL);
++        guiMsgBox("The AUDIO folder sits beside RIPPS2, here on a memory card, and a CD track takes about 10 MB a minute. Start RIPPS2 from a USB drive or the HDD to copy tracks.", 0, NULL);
+         return;
+     }
+     snprintf(name, sizeof(name), "CD Track %02d", track);
+@@ -529,9 +529,9 @@ static void cdCopy(int track)
+     if (cdState != CD_STOPPED)
+         cdHalt(CD_STOPPED);
+ 
+-    strcat(dir, "MUSIC");
++    strcat(dir, "AUDIO");
+     mkdir(dir, 0777);
+-    snprintf(path, sizeof(path), "%s/%s.wav", dir, name);
++    snprintf(path, sizeof(path), "%s/bgm %s.wav", dir, name); // music in AUDIO is bgm*: the picker lists it
+     if ((f = fopen(path, "wb")) == NULL) {
+         guiMsgBoxSound(SFX_ERROR);
+         guiMsgBox("The copy could not be started: MUSIC could not be written. Check the drive is not full or write protected.", 0, NULL);
+@@ -544,7 +544,7 @@ static void cdCopy(int track)
+     m.spindlctrl = SCECdSpinNom;
+     m.datapattern = SCECdSecS2352;
+     m.pad = 0;
+-    snprintf(what, sizeof(what), "COPYING TRACK %02d TO MUSIC", track);
++    snprintf(what, sizeof(what), "COPYING TRACK %02d TO AUDIO", track);
+     sceCdMmode(SCECdMmodeCd);
+     sceCdDiskReady(0);
+     end = cdStart[track + 1];
+@@ -583,7 +583,7 @@ static void cdCopy(int track)
+         return;
+     }
+     char done[200];
+-    snprintf(done, sizeof(done), "Copied to MUSIC as %s.wav. Pick it in Settings > Audio Settings > Music.", name);
++    snprintf(done, sizeof(done), "Copied to AUDIO as bgm %s.wav. Pick it in Settings > Audio Settings > Music.", name);
+     guiMsgBoxSound(SFX_SAVE);
+     guiMsgBox(done, 0, NULL);
+ }
+@@ -598,7 +598,7 @@ static void cdTime(u32 sectors, char *out, int size)
+ 
+ static void cdHints(void)
+ {
+-    static const char *const texts[] = {"PLAY", "STOP", "SEEK", "TRACK", "COPY TO MUSIC", "CLOSE"};
++    static const char *const texts[] = {"PLAY", "STOP", "SEEK", "TRACK", "COPY TO AUDIO", "CLOSE"};
+     int icons[6] = {gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON, SQUARE_ICON, R1_ICON, RIGHT_ICON, TRIANGLE_ICON,
+                     gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON};
+     int i, w = 0, gap = 16, x;
+diff --git a/src/sound.c b/src/sound.c
+index d5df46b..9fc79bf 100644
+--- a/src/sound.c
++++ b/src/sound.c
+@@ -311,9 +311,16 @@ int sfxInit(int bootSnd)
+             closedir(dir);
+         }
+     } else if (oplGetRipps2Dir(sound_path, sizeof(sound_path) - 6)) {
+-        // RIPPS2: a sound pack beside RIPPS2 (SOUND/<event>.adp) for the built-in themes
+-        strcat(sound_path, "SOUND");
++        // RIPPS2: the AUDIO folder beside RIPPS2 (<event>.adp, RiptOPL's names and RIPPS2's) for the
++        // built-in themes; a SOUND folder (builds 61 to 65) still counts
++        size_t base = strlen(sound_path);
++        strcat(sound_path, "AUDIO");
+         DIR *dir = opendir(sound_path);
++        if (dir == NULL) {
++            sound_path[base] = '\0';
++            strcat(sound_path, "SOUND");
++            dir = opendir(sound_path);
++        }
+         if (dir != NULL) {
+             thmSfxEnabled = 1;
+             closedir(dir);
+@@ -533,6 +540,7 @@ void sfxPlay(int id)
+ static volatile int bootAudioReady = 0;   // the sounds are loaded: the music may start
+ static volatile int bgmFadeIn = 0;        // the boot music starts silent and rises
+ static clock_t bgmFadeAt = 0;
++static clock_t bootSoundEnds = 0;         // when the boot sound has played out
+ #define BGM_FADE_S 2.0f
+ 
+ static int sfxRead(const char *full_path, struct sfxEffect *sfx);
+@@ -554,8 +562,13 @@ void sfxBootStart(void)
+     sfxInitDefaults();
+     audioSetVolume();
+     if (thmGetFilePath(thmGetGuiValue()) == NULL && oplGetRipps2Dir(path, sizeof(path) - 16)) {
+-        strcat(path, "SOUND/boot.adp");
+-        sfxRead(path, &sfx_files[SFX_BOOT]); // the built-in one stays when there is none
++        size_t base = strlen(path);
++        strcat(path, "AUDIO/boot.adp");
++        if (sfxRead(path, &sfx_files[SFX_BOOT]) != 0) { // the built-in (or baked) one stays when there is none
++            path[base] = '\0';
++            strcat(path, "SOUND/boot.adp");
++            sfxRead(path, &sfx_files[SFX_BOOT]);
++        }
+     }
+     if (sfxLoad(&sfx_files[SFX_BOOT], &sfx[SFX_BOOT]) != 0)
+         return;
+@@ -564,6 +577,7 @@ void sfxBootStart(void)
+     if (gEnableSFX && gEnableBootSND) {
+         audsrv_adpcm_set_volume_and_pan(0, gBootSndVolume, 0);
+         audsrv_ch_play_adpcm(0, &sfx[SFX_BOOT]);
++        bootSoundEnds = clock() + (clock_t)sfx_files[SFX_BOOT].duration_ms * (CLOCKS_PER_SEC / 1000);
+     }
+ }
+ 
+@@ -595,7 +609,9 @@ void bgmBootTick(void)
+     static clock_t lastStep = 0;
+ 
+     if (!started) {
+-        if (!bootAudioReady)
++        // once the sounds are in, and not before the boot sound's last two seconds: it ushers the
++        // music in rather than playing under it
++        if (!bootAudioReady || (long)(clock() + 2 * CLOCKS_PER_SEC - bootSoundEnds) < 0)
+             return;
+         started = 1;
+         ee_thread_t t;
+@@ -1232,41 +1248,65 @@ static int bgmMusicCmp(const void *a, const void *b)
+     return strcasecmp((const char *)a, (const char *)b);
+ }
+ 
+-int bgmMusicList(char (*names)[RIPPS2_MUSIC_NAME], int max)
++// One AUDIO folder beside RIPPS2 holds the sound pack and the music, named as RiptOPL names them:
++// <event>.adp for the sounds and bgm*.ogg / bgm*.wav for the music, which plays in name order (a
++// number sets it: bgm_01 Slideshow.ogg, bgm_02 Details.ogg; a plain bgm.ogg works too). Each entry is
++// the track's path under RIPPS2's folder. A MUSIC folder (builds 61 to 65) still counts.
++static int bgmMusicScan(const char *dir, const char *sub, int bgmOnly, char (*names)[RIPPS2_MUSIC_NAME], int n, int max)
+ {
+-    char dir[256];
++    char path[256];
+     DIR *d;
+     struct dirent *e;
+-    int n = 0;
+ 
+-    if (!oplGetRipps2Dir(dir, sizeof(dir) - 6))
+-        return 0;
+-    strcat(dir, "MUSIC");
+-    if ((d = opendir(dir)) == NULL)
+-        return 0;
++    snprintf(path, sizeof(path), "%s%s", dir, sub);
++    if ((d = opendir(path)) == NULL)
++        return n;
+     while ((e = readdir(d)) != NULL && n < max) {
+         int len = strlen(e->d_name);
+-        if (e->d_name[0] != '.' && len > 4 && len < RIPPS2_MUSIC_NAME &&
+-            (!strcasecmp(e->d_name + len - 4, ".ogg") || !strcasecmp(e->d_name + len - 4, ".wav")))
+-            snprintf(names[n++], RIPPS2_MUSIC_NAME, "%s", e->d_name);
++        if (e->d_name[0] == '.' || len <= 4 || len + (int)strlen(sub) + 2 > RIPPS2_MUSIC_NAME)
++            continue;
++        if (strcasecmp(e->d_name + len - 4, ".ogg") && strcasecmp(e->d_name + len - 4, ".wav"))
++            continue;
++        if (bgmOnly && strncasecmp(e->d_name, "bgm", 3))
++            continue;
++        snprintf(names[n++], RIPPS2_MUSIC_NAME, "%s/%s", sub, e->d_name);
+     }
+     closedir(d);
++    return n;
++}
++
++int bgmMusicList(char (*names)[RIPPS2_MUSIC_NAME], int max)
++{
++    char dir[256];
++    int n;
++
++    if (!oplGetRipps2Dir(dir, sizeof(dir) - 8))
++        return 0;
++    n = bgmMusicScan(dir, "AUDIO", 1, names, 0, max);
++    n = bgmMusicScan(dir, "MUSIC", 0, names, n, max);
+     qsort(names, n, RIPPS2_MUSIC_NAME, bgmMusicCmp);
+     return n;
+ }
+ 
++// "AUDIO/bgm_01 Slideshow.ogg" -> "Slideshow"; "AUDIO/bgm.ogg" -> "BGM"
+ void bgmMusicTitle(const char *file, char *out, int size)
+ {
+-    const char *s = file;
+-    char *dot;
++    char name[RIPPS2_MUSIC_NAME], *dot;
++    const char *s = strrchr(file, '/');
++
++    snprintf(name, sizeof(name), "%s", s ? s + 1 : file);
++    if ((dot = strrchr(name, '.')) != NULL && dot != name)
++        *dot = '\0';
++    s = name;
++    if (!strncasecmp(s, "bgm", 3))
++        s += 3;
++    while (*s == ' ' || *s == '.' || *s == '-' || *s == '_')
++        s++;
+     while (*s >= '0' && *s <= '9')
+         s++;
+-    if (s != file)
+-        while (*s == ' ' || *s == '.' || *s == '-' || *s == '_')
+-            s++;
+-    snprintf(out, size, "%s", *s ? s : file);
+-    if ((dot = strrchr(out, '.')) != NULL && dot != out)
+-        *dot = '\0';
++    while (*s == ' ' || *s == '.' || *s == '-' || *s == '_')
++        s++;
++    snprintf(out, size, "%s", *s ? s : "BGM");
+ }
+ 
+ static int bgmMusicPath(char *out, int size)
+@@ -1282,7 +1322,7 @@ static int bgmMusicPath(char *out, int size)
+             pick = i;
+             break;
+         }
+-    return snprintf(out, size, "%sMUSIC/%s", dir, names[pick]) < size;
++    return snprintf(out, size, "%s%s", dir, names[pick]) < size;
+ }
+ 
+ static int bgmLoad(void)

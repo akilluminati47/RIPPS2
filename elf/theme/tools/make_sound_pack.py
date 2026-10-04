@@ -1,11 +1,11 @@
-"""Builds a RIPPS2 sound pack (the SOUND folder that sits beside RIPPS2.ELF) from sounds you have
+"""Builds a RIPPS2 sound pack (the AUDIO folder that sits beside RIPPS2.ELF) from sounds you have
 downloaded yourself, using the map below. RIPPS2 ships none of these sounds; this only converts
 your own copies (elf/theme/tools/make_adp.py does the conversion, so ffmpeg must be on the PATH).
 
     python elf/theme/tools/make_sound_pack.py --bios <folder> --system <folder> --ps3 <folder> --out SOUND
 
 --bios holds the PS2 BIOS system sounds (SCPH-10000) named by track: 07.flac, 10.flac ...
---system holds the PS2 system music, for the launch: "04. Game Boot.flac" (any name with "Game Boot").
+--system holds the PS2 system music: "01. Bootup.flac" for the boot and "04. Game Boot.flac" for the launch.
 --ps3 holds the PS3 system sounds, for the error: "10 - SND System Ng.flac" (any name with "System Ng").
 Any audio ffmpeg reads will do (flac, mp3, wav).
 
@@ -23,7 +23,7 @@ import make_adp  # noqa: E402
 
 # event file: (album, track)
 MAP = {
-    'boot.adp': ('bios', '07'),           # the boot, as the towers rise
+    'boot.adp': ('system', 'Bootup'),     # the boot, as the towers rise: the PS2's own bootup
     'page_in.adp': ('bios', '10'),        # into an info page or the settings
     'page_out.adp': ('bios', '11'),       # back out to the list
     'cursor.adp': ('bios', '12'),         # every move (and L2 + R2's random pick)
@@ -56,7 +56,7 @@ def main():
     ap.add_argument('--bios', help='folder of the BIOS system sounds (01.mp3 ... 17.mp3)')
     ap.add_argument('--system', help='folder of the PS2 system music ("04. Game Boot.flac")')
     ap.add_argument('--ps3', help='folder of the PS3 system sounds ("10 - SND System Ng.flac")')
-    ap.add_argument('--out', default='SOUND')
+    ap.add_argument('--out', default='AUDIO')
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
     folders = {'bios': a.bios, 'system': a.system, 'ps3': a.ps3}
@@ -71,7 +71,7 @@ def main():
         open(os.path.join(a.out, event), 'wb').write(data)
         print('%-18s <- %s  (%.2f s)' % (event, os.path.basename(src), len(samples) / make_adp.RATE))
         made += 1
-    print('%d sounds in %s: copy the folder beside RIPPS2.ELF as SOUND' % (made, a.out))
+    print('%d sounds in %s: copy the folder beside RIPPS2.ELF as AUDIO' % (made, a.out))
 
 
 if __name__ == '__main__':

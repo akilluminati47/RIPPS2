@@ -35,6 +35,10 @@ cp -f "$HERE/theme/fonts/ripps2_one.ttf" "$SRC/misc/ripps2_one.ttf"
 # The Memory Files ELF, compiled in and launched from RAM (patch 0004)
 # Built-in textures: glass info panel and PS2 selector mark (patch 0006)
 cp -f "$HERE"/theme/gfx/*.png "$SRC/gfx/"
+# The build number shown in About: the number of the last patch (build N is patch N)
+LAST="$(ls "$HERE"/patches/0*.patch | tail -n1)"
+NUM="$(basename "$LAST" | cut -c1-4 | sed 's/^0*//')"
+printf '#define RIPPS2_BUILD %s\n#define RIPPS2_STAGE "%s"\n' "$NUM" "${RIPPS2_STAGE:-ALPHA}" > "$SRC/include/ripps2_build.h"
 # A private sound pack baked into this build only (never set by the public workflow: RIPPS2 carries
 # no one else's sounds). A folder of <event>.adp files, from elf/theme/tools/make_sound_pack.py.
 if [ -n "${RIPPS2_SOUND_PACK:-}" ]; then
