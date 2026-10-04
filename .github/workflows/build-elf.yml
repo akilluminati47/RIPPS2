@@ -5,6 +5,11 @@ on:
     branches: [main]
     paths: ["elf/**", "assets/master.ttf", ".github/workflows/build-elf.yml"]
   workflow_dispatch:
+    inputs:
+      debug:
+        description: "Debug build: LOG output over EE SIO (PCSX2 shows it in its EE console log)"
+        type: boolean
+        default: false
 
 concurrency:
   group: build-elf-${{ github.ref }}
@@ -29,11 +34,13 @@ jobs:
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           sh elf/build.sh
+        env:
+          RIPPS2_MAKE_FLAGS: ${{ inputs.debug && 'DEBUG=1 EESIO_DEBUG=1' || '' }}
 
       - name: Upload RIPPS2.elf
         uses: actions/upload-artifact@v6
         with:
-          name: RIPPS2-elf
+          name: RIPPS2-elf${{ inputs.debug && '-debug' || '' }}
           path: out/RIPPS2.elf
           if-no-files-found: error
           retention-days: 30

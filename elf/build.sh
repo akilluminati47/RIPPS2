@@ -40,7 +40,8 @@ cd "$SRC"
 sh .github/scripts/install_coherent_mmce.sh
 make clean
 # DIRTY= : the tree is RiptOPL plus our patches by design, so the version never says -dirty
-make LOCALVERSION=RIPPS2 DIRTY= release
+# RIPPS2_MAKE_FLAGS: extra make flags, e.g. DEBUG=1 EESIO_DEBUG=1 for a build that logs over EE SIO
+make LOCALVERSION=RIPPS2 DIRTY= ${RIPPS2_MAKE_FLAGS:-} release
 
 mkdir -p "$OUT"
 ELF="$(ls RIPTOPL-*.ELF | head -n1)"
