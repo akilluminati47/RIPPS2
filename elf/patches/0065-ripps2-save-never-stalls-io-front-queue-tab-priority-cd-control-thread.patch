@@ -1,3 +1,19 @@
+diff --git a/Makefile b/Makefile
+index 225edca..2512d6d 100644
+--- a/Makefile
++++ b/Makefile
+@@ -309,6 +309,11 @@ endif
+ ifeq ($(RIPPS2_CD_TEST),1)
+   EE_CFLAGS += -DRIPPS2_CD_TEST
+ endif
++# RIPPS2: a test build whose IO worker is not woken for a deferred save (the stall seen on consoles),
++# to prove the save still runs. Never for a release.
++ifeq ($(RIPPS2_IO_STALL_TEST),1)
++  EE_CFLAGS += -DRIPPS2_IO_STALL_TEST
++endif
+ 
+ ifeq ($(DEBUG),1)
+   EE_CFLAGS += -D__DEBUG -g
 diff --git a/include/diag.h b/include/diag.h
 index 3a3c112..7687c5d 100644
 --- a/include/diag.h
@@ -81,7 +97,7 @@ index 728aa83..277dd60 100644
          }
          guiRenderTextScreen(message);
 diff --git a/src/ioman.c b/src/ioman.c
-index 6469fc9..8170985 100644
+index 6469fc9..5461525 100644
 --- a/src/ioman.c
 +++ b/src/ioman.c
 @@ -223,6 +223,55 @@ int ioDescribeRunning(char *out, int size)
@@ -140,7 +156,7 @@ index 6469fc9..8170985 100644
  static void ioWorkerThread(void *arg)
  {
      while (!gIOTerminate) {
-@@ -405,6 +454,66 @@ int ioPutRequest(int type, void *data)
+@@ -405,6 +454,70 @@ int ioPutRequest(int type, void *data)
      return result;
  }
  
@@ -179,6 +195,10 @@ index 6469fc9..8170985 100644
 +        gIoTotal[type]++;
 +    }
 +    SignalSema(gEndSemaId);
++#ifdef RIPPS2_IO_STALL_TEST
++    if (type == IO_CUSTOM_SIMPLEACTION)
++        return IO_OK; // a test build: the worker is never told, as on the consoles where it stalled
++#endif
 +    WakeupThread(gIOThreadId);
 +    return IO_OK;
 +}
@@ -207,7 +227,7 @@ index 6469fc9..8170985 100644
  int ioPutRequestUnlessWaiting(int type, void *data)
  {
      int result = IO_OK, found = 0;
-@@ -453,6 +562,8 @@ int ioRemoveRequests(int type)
+@@ -453,6 +566,8 @@ int ioRemoveRequests(int type)
              if (req == gReqEnd)
                  gReqEnd = last;
  
