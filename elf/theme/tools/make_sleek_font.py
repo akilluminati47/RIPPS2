@@ -159,18 +159,61 @@ def stroke_rect(p, q, half):
 
 
 def draw_polylines(polys, stroke):
+    """One clean outline per glyph. Each polyline is stroked as a whole (mitred corners, flat ends); a
+    free end gets a square cap, an end that runs into another stroke stays flat inside it (no nub, as
+    the R's leg once poked through its bowl); everything is unioned into one outline, so joins carry no
+    overlapping edges to smear when antialiased small; and the glyph is cut to its own box, the
+    stroke's half width past its grid extremes, so a diagonal's end or a sharp corner never spills
+    past the baseline, the cap line or the glyph's sides."""
+    from shapely.geometry import LinearRing, LineString, Point, Polygon, box
+    from shapely.geometry.polygon import orient
+    from shapely.ops import unary_union
+
     pen = TTGlyphPen(None)
     xs = [x for poly in polys for x, _ in poly]
+    ys = [y for poly in polys for _, y in poly]
     width_units = max(xs) - min(xs) if xs else 0
-    ox = SB + stroke / 2 - min(xs) * U
     half = stroke / 2
-    for poly in polys:
-        pts = [(ox + x * U, y * U) for x, y in poly]
-        for p, q in zip(pts, pts[1:]):
-            corners = stroke_rect(p, q, half)
-            pen.moveTo((round(corners[0][0]), round(corners[0][1])))
-            for c in corners[1:]:
-                pen.lineTo((round(c[0]), round(c[1])))
+    ox = SB + half - min(xs) * U
+    lines = [[(ox + x * U, y * U) for x, y in poly] for poly in polys]
+
+    def body(pts):
+        if len(pts) > 3 and pts[0] == pts[-1]:
+            return Polygon(LinearRing(pts[:-1]).buffer(half, join_style='mitre', mitre_limit=5.0))
+        return LineString(pts).buffer(half, cap_style='flat', join_style='mitre', mitre_limit=5.0)
+
+    def cap(end, before):
+        (ex, ey), (bx, by) = end, before
+        dx, dy = ex - bx, ey - by
+        n = math.hypot(dx, dy) or 1.0
+        ux, uy = dx / n, dy / n
+        return LineString([(ex - ux * 0.01, ey - uy * 0.01), (ex + ux * half, ey + uy * half)]).buffer(half, cap_style='flat')
+
+    bodies = [body(pts) for pts in lines]
+    shapes = list(bodies)
+    for i, pts in enumerate(lines):
+        if len(pts) > 3 and pts[0] == pts[-1]:
+            continue  # a closed ring has no ends
+        others = unary_union([b for j, b in enumerate(bodies) if j != i]) if len(bodies) > 1 else None
+        for end, before in ((pts[0], pts[1]), (pts[-1], pts[-2])):
+            joined = others is not None and others.buffer(-0.5).contains(Point(end))
+            if not joined:
+                shapes.append(cap(end, before))
+    shape = unary_union(shapes).intersection(
+        box(ox + min(xs) * U - half, min(ys) * U - half, ox + max(xs) * U + half, max(ys) * U + half))
+    shape = shape.simplify(0.5)
+    for poly in getattr(shape, 'geoms', [shape]):
+        if poly.is_empty or poly.geom_type != 'Polygon':
+            continue
+        poly = orient(poly, sign=-1.0)  # TrueType: outer contours clockwise, holes anticlockwise
+        for ring in [poly.exterior] + list(poly.interiors):
+            pts = [(round(x), round(y)) for x, y in ring.coords[:-1]]
+            pts = [p for k, p in enumerate(pts) if p != pts[k - 1]]
+            if len(pts) < 3:
+                continue
+            pen.moveTo(pts[0])
+            for p in pts[1:]:
+                pen.lineTo(p)
             pen.closePath()
     advance = round(width_units * U + stroke + 2 * SB)
     return pen.glyph(), advance

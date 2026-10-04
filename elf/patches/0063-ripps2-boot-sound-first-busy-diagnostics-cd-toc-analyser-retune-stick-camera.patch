@@ -1,0 +1,672 @@
+diff --git a/include/diag.h b/include/diag.h
+index a1b6957..3a3c112 100644
+--- a/include/diag.h
++++ b/include/diag.h
+@@ -4,5 +4,6 @@
+ // Captured at the settings-write failure site for the later user-facing error.
+ extern volatile int gLastSaveErrno;
+ extern volatile int gLastDeferredTimedOut;
++extern char gLastDeferredBlocker[64]; // RIPPS2: what the IO worker was running when the wait gave up
+ 
+ #endif
+diff --git a/include/ioman.h b/include/ioman.h
+index 4f0d5ff..2688779 100644
+--- a/include/ioman.h
++++ b/include/ioman.h
+@@ -74,6 +74,10 @@ int ioBlockOps(int block);
+ */
+ int ioBlockOpsTimed(int block, int timeoutTicks);
+ 
++// RIPPS2: name a simple action for ioDescribeRunning; describe what the worker runs now ("" when idle)
++void ioNameAction(void *fn, const char *name);
++int ioDescribeRunning(char *out, int size);
++
+ #ifdef __DEBUG
+ #define PREINIT_LOG(...) printf(__VA_ARGS__)
+ #define LOG(...)         ioPrintf(__VA_ARGS__)
+diff --git a/include/sound.h b/include/sound.h
+index baea533..209d12f 100644
+--- a/include/sound.h
++++ b/include/sound.h
+@@ -19,7 +19,7 @@ enum SFX {
+     SFX_SAVE,     // save.adp: settings or a file saved (message)
+     SFX_LAUNCH,   // launch.adp: a game or disc starting, as the pillars light up (silent)
+     SFX_DISC,     // disc.adp: a disc read after the tray closes (silent)
+-    SFX_RANDOM,   // random.adp: L2 + R2 picked a random game (transition)
++    SFX_RANDOM,   // random.adp: L2 + R2 picked a random game (cursor)
+ 
+     SFX_COUNT
+ };
+@@ -51,8 +51,9 @@ void sfxGetPlayDiag(unsigned int *lastMs, unsigned int *maxMs);
+ void sfxGetDropDiag(unsigned int *staleDrops, unsigned int *fullDrops);
+ 
+ void bgmStart(void);
+-void sfxPlayBoot(void); // RIPPS2: the IO worker, once the sounds are loaded: the boot sound, played out
+-void bgmBootTick(void); // RIPPS2: every GUI frame: starts the music once the boot sound has ended
++void sfxBootStart(void);        // RIPPS2: the main thread, as the towers rise: audio up, the boot sound playing
++void sfxBootSoundsLoaded(void); // RIPPS2: the IO worker, every sound loaded: the music may start
++void bgmBootTick(void);         // RIPPS2: every GUI frame: starts the music once the sounds are in, then fades it in
+ void bgmStop(void);
+ // Signal the BGM threads to stop WITHOUT waiting for them. For deinit, so the decoder stops reading
+ // the device before that device is torn down, without putting a blocking join at the top of the
+diff --git a/src/gui.c b/src/gui.c
+index 17723a9..728aa83 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -4585,7 +4585,7 @@ void guiIntroLoop(void)
+         guiDrawOverlays();
+ 
+         guiHandleDeferredOps();
+-        bgmBootTick(); // RIPPS2: the music comes in under the intro, after the boot sound
++        bgmBootTick(); // RIPPS2: the music comes in under the intro once the sounds are loaded
+ 
+         guiEndFrame();
+ 
+@@ -4603,7 +4603,7 @@ void guiMainLoop(void)
+     if (gOPLPart[0] != '\0')
+         showPartPopup = 1;
+ 
+-    // RIPPS2: the music is started by bgmBootTick (below, and in the intro) once the boot sound ends
++    // RIPPS2: the music is started by bgmBootTick (below, and in the intro) once the sounds are loaded
+ 
+     while (!gTerminate) {
+         guiStartFrame();
+@@ -4992,6 +4992,7 @@ void guiHandleDeferedIO(int *ptr, const char *message, int type, void *data, int
+             // The handler never ran. Callers must not report a device error against their target
+             // path on the strength of this -- nothing touched it.
+             gLastDeferredTimedOut = 1;
++            ioDescribeRunning(gLastDeferredBlocker, sizeof(gLastDeferredBlocker)); // RIPPS2: what it waited behind
+             break;
+         }
+         guiRenderTextScreen(message);
+diff --git a/src/ioman.c b/src/ioman.c
+index ec50b52..6469fc9 100644
+--- a/src/ioman.c
++++ b/src/ioman.c
+@@ -4,6 +4,7 @@
+ #include <kernel.h>
+ #include <delaythread.h> // DelayThread -- ioInit waits for a previous worker to leave
+ #include <string.h>
++#include <time.h> // RIPPS2: clock() for ioDescribeRunning
+ #include <malloc.h>
+ #include <stdio.h>
+ #include <unistd.h>
+@@ -170,6 +171,58 @@ static void ioProcessRequest(struct io_request_t *req)
+         hlr(data);
+ }
+ 
++// RIPPS2: what the worker is running, kept as plain values (no pointer into a request that may be
++// freed), so a deferred IO that waited too long can say what it waited behind
++static volatile int gRunType = 0;
++static void *volatile gRunData = NULL;
++static volatile clock_t gRunSince = 0;
++#define IO_NAMES_MAX 24
++static struct
++{
++    void *fn;
++    const char *name;
++} gIoNames[IO_NAMES_MAX];
++static int gIoNameCount = 0;
++
++void ioNameAction(void *fn, const char *name)
++{
++    int i;
++    for (i = 0; i < gIoNameCount; i++)
++        if (gIoNames[i].fn == fn)
++            return;
++    if (gIoNameCount < IO_NAMES_MAX) {
++        gIoNames[gIoNameCount].fn = fn;
++        gIoNames[gIoNameCount].name = name;
++        gIoNameCount++;
++    }
++}
++
++int ioDescribeRunning(char *out, int size)
++{
++    int type = gRunType, i, n;
++    void *data = gRunData;
++    const char *name = NULL;
++    clock_t since = gRunSince;
++
++    out[0] = '\0';
++    if (type == 0)
++        return 0;
++    if (type == IO_MENU_UPDATE_DEFFERED)
++        name = "GAME LIST UPDATE";
++    else if (type == IO_CACHE_LOAD_ART)
++        name = "COVER ART";
++    else
++        for (i = 0; i < gIoNameCount; i++)
++            if (gIoNames[i].fn == data)
++                name = gIoNames[i].name;
++    n = (int)((clock() - since) / CLOCKS_PER_SEC);
++    if (name != NULL)
++        snprintf(out, size, "%s, %d S", name, n);
++    else
++        snprintf(out, size, "TASK %08X, %d S", (unsigned int)data, n);
++    return 1;
++}
++
+ static void ioWorkerThread(void *arg)
+ {
+     while (!gIOTerminate) {
+@@ -188,7 +241,11 @@ static void ioWorkerThread(void *arg)
+ 
+             struct io_request_t *req = gReqList;
+             gReqRunning = req;
++            gRunSince = clock();
++            gRunData = req->data;
++            gRunType = req->type;
+             ioProcessRequest(req);
++            gRunType = 0;
+ 
+             // lock the queue tip as well now
+             WaitSema(gEndSemaId);
+diff --git a/src/menusys.c b/src/menusys.c
+index f1e7fee..d04df81 100644
+--- a/src/menusys.c
++++ b/src/menusys.c
+@@ -603,6 +603,7 @@ config_set_t *gameMenuLoadConfig(struct UIItem *ui)
+ 
+ int menuSaveConfig()
+ {
++    ioNameAction((void *)&_menuSaveConfig, "GAME SETTINGS SAVE"); // RIPPS2
+     actionStatus = 1;
+     menuSaveResult = 0;
+     guiHandleDeferedIO(&actionStatus, _l(_STR_SAVING_SETTINGS), IO_CUSTOM_SIMPLEACTION, &_menuSaveConfig, OPL_DEFERRED_IO_TIMEOUT_MS);
+diff --git a/src/opl.c b/src/opl.c
+index 0c0ab85..c6c4fc5 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -120,6 +120,7 @@ static void clearMenuGameList(opl_io_module_t *mdl);
+ static void moduleCleanup(opl_io_module_t *mod, int exception, int modeSelected);
+ static void reset(void);
+ static void deferredAudioInit(void);
++static void deferredInit(void);
+ 
+ // frame counter
+ static unsigned int frameCounter;
+@@ -216,6 +217,7 @@ volatile int gLastSaveErrno = 0;
+ // Set by guiHandleDeferedIO when it abandons a bounded wait: the request never ran, so any
+ // error the caller would otherwise report against the target path is meaningless.
+ volatile int gLastDeferredTimedOut = 0;
++char gLastDeferredBlocker[64] = "";
+ int gEnableMX4SIO;
+ int gEnableBdmHDD;
+ int gEnableUDPBD;
+@@ -4317,7 +4319,7 @@ void ripps2SaveSettingsInBackground(void)
+ 
+ int saveConfig(int types, int showUI)
+ {
+-    char notification[128];
++    char notification[256];
+     lscstatus = types;
+     lscret = 0;
+     // Reset before the attempt. gLastSaveErrno is only ever ASSIGNED at the three real failure sites
+@@ -4360,8 +4362,13 @@ int saveConfig(int types, int showUI)
+             // having executed -- the IO worker is single-threaded and shared with cover-art loads, so
+             // a queue full of slow art can starve the save past the bound. In that case nothing ever
+             // touched the config, so reporting a write error against the config path is a lie.
+-            if (gLastDeferredTimedOut)
+-                snprintf(notification, sizeof(notification), "%s", _l(_STR_ERR_DEVICE_BUSY_TIMEOUT));
++            if (gLastDeferredTimedOut) {
++                // RIPPS2: and what it waited behind, so a tester's report says where the time went
++                if (gLastDeferredBlocker[0])
++                    snprintf(notification, sizeof(notification), "%s (BUSY WITH: %s)", _l(_STR_ERR_DEVICE_BUSY_TIMEOUT), gLastDeferredBlocker);
++                else
++                    snprintf(notification, sizeof(notification), "%s", _l(_STR_ERR_DEVICE_BUSY_TIMEOUT));
++            }
+             else {
+                 const char *failedPath = gLastSaveTarget[0] != '\0' ? gLastSaveTarget : configGetDir();
+                 snprintf(notification, sizeof(notification), _l(_STR_ERROR_SAVING_SETTINGS_TO), failedPath, gLastSaveErrno);
+@@ -5036,6 +5043,12 @@ static void init(void)
+     thmInit();
+     guiInit();
+     ioInit();
++    // RIPPS2: the IO worker's jobs by name, for a "device busy" that says what it waited behind
++    ioNameAction((void *)&_saveConfig, "SETTINGS SAVE");
++    ioNameAction((void *)&_loadConfig, "SETTINGS LOAD");
++    ioNameAction((void *)&ripps2SaveSettingsWorker, "QUIET SETTINGS SAVE");
++    ioNameAction((void *)&deferredInit, "STARTUP");
++    ioNameAction((void *)&deferredAudioInit, "SOUND LOAD");
+     menuInit();
+ 
+     startPads();
+@@ -5077,6 +5090,8 @@ static void init(void)
+     guiRenderGreetingScreen();
+     gBootInProgress = 0;
+ 
++    sfxBootStart(); // RIPPS2: the boot sound, as the towers start to rise (the settings are loaded now)
++
+ 
+     // queue deffered init of sound effects, which will take place after the preceding initialization steps within the queue are complete.
+     ioPutRequest(IO_CUSTOM_SIMPLEACTION, &deferredAudioInit);
+@@ -5155,7 +5170,7 @@ static void deferredAudioInit(void)
+         LOG("sfxInit: failed to initialize - %d.\n", ret);
+     else
+         LOG("sfxInit: %d samples loaded.\n", ret);
+-    sfxPlayBoot(); // RIPPS2: over the intro's swoop; the music follows it (bgmBootTick)
++    sfxBootSoundsLoaded(); // RIPPS2: the music may start (bgmBootTick)
+ }
+ 
+ // ----------------------------------------------------------
+diff --git a/src/ripps2bg.c b/src/ripps2bg.c
+index 8fda2ea..f7a9bd5 100644
+--- a/src/ripps2bg.c
++++ b/src/ripps2bg.c
+@@ -419,20 +419,30 @@ static void drawBeam(float x, float z, float y0, float w, float b)
+ // ---- the CD player: a spectrum analyser in towers ----
+ // Across the screen, low notes on the left to high on the right (sound.c's bands, 45 Hz to 16 kHz);
+ // into the screen, time: the front row is now and each row behind it a moment older, so the music
+-// rolls away across the field. Each band is taken against its own recent quietest and loudest,
+-// blended with all the bands' range together, so a loud, compressed master still moves and the
+-// overall shape of the sound (heavy bass, bright cymbals) still shows. A hit (a sudden rise across
+-// the bands: a kick, a snare) rolls a ring of light back from the front, and the loudest bands send
+-// up the launch's beams.
++// rolls away across the field. Each band is taken against its own average of the last second or so
++// (steady loudness stands mid-height, a hit shoots up, a dip drops away), blended with all the bands'
++// range together, so a loud, compressed master moves instead of standing tall and the overall shape
++// of the sound (heavy bass, bright cymbals) still shows. Measured on mastered music, the towers
++// average about 0.4 of their height and pass 0.8 only on the hits. A hit (a sudden rise across the
++// bands: a kick, a snare) rolls a ring of light back from the front, and the loudest bands send up
++// the launch's beams. The right stick turns the view round the field, slowly and steadily so the
++// spectrum keeps up as the towers pass under it, and pushes it in or out.
+ #define MUS_BANDS  BGM_SPECTRUM_BANDS
+ #define MUS_ROWS   20     // history rows over the field's depth
+ #define MUS_ROW_S  0.055f // a row every 55 ms: about a second of music on the field
+ #define MUS_PULSES 4
+ #define MUS_FIELD  12.5f  // the field's half width
++#define MUS_AVG_S  1.2f   // each band's own average follows over this long
++#define MUS_BELOW  4.0f   // dB: the average sits this far up the scale
++#define MUS_SPAN   14.0f  // dB: from the bottom of the scale to the top
++#define MUS_TURN   0.35f  // rad/s at full right stick: slow and steady
++#define MUS_TURN_EASE 0.35f
++#define MUS_ZOOM   7.0f   // units/s at full right stick
+ 
+ static int musicOn = 0;
+ static float musicMix = 0.0f, musicLast = -1.0f, musicBass = 0.0f;
+-static float musNow[MUS_BANDS], musTarget[MUS_BANDS], musCeil[MUS_BANDS], musFloor[MUS_BANDS], musAllCeil = 0.0f;
++static float musNow[MUS_BANDS], musTarget[MUS_BANDS], musAvg[MUS_BANDS], musAllCeil = 0.0f;
++static float musYaw = 0.0f, musYawVel = 0.0f, musZoom = 0.0f; // the right stick's view
+ static float musRows[MUS_ROWS][MUS_BANDS], musRowT = 0.0f;
+ static int musRowHead = 0, musPrimed = 0, musPulseNext = 0;
+ static float musPulseT[MUS_PULSES] = {-10.0f, -10.0f, -10.0f, -10.0f}, musPulseA[MUS_PULSES];
+@@ -470,25 +480,18 @@ static void musicUpdate(float t)
+         for (b = 0; b < MUS_BANDS; b++)
+             loudest = fmaxf(loudest, db[b]);
+         if (!musPrimed) {
+-            for (b = 0; b < MUS_BANDS; b++) {
+-                musCeil[b] = db[b];
+-                musFloor[b] = db[b] - 24.0f;
+-            }
++            for (b = 0; b < MUS_BANDS; b++)
++                musAvg[b] = db[b];
+             musAllCeil = loudest;
+             musPrimed = 1;
+         }
++        float ka = 1.0f - expf(-dt / MUS_AVG_S);
+         for (b = 0; b < MUS_BANDS; b++) {
+-            float d = fmaxf(db[b], musCeil[b] - 60.0f); // silence does not drag the floor away
+-            // the ceiling jumps to a new peak and sinks 4 dB a second; the floor drops to a new low and
+-            // climbs 2 dB a second; never closer together than 15 dB
+-            musCeil[b] = d > musCeil[b] ? d : musCeil[b] - 4.0f * dt;
+-            musFloor[b] = d < musFloor[b] ? d : musFloor[b] + 2.0f * dt;
+-            if (musFloor[b] > musCeil[b] - 15.0f)
+-                musFloor[b] = musCeil[b] - 15.0f;
+-            float own = clamp01((d - musFloor[b]) / (musCeil[b] - musFloor[b]));
+-            float all = clamp01((d - (musAllCeil - 36.0f)) / 36.0f);
+-            float v = 0.6f * own + 0.4f * all;
+-            v = v * v * (3.0f - 2.0f * v); // a little more contrast in the middle
++            float d = fmaxf(db[b], musAvg[b] - 40.0f); // silence does not drag the average away
++            musAvg[b] += (d - musAvg[b]) * ka;
++            float own = clamp01((d - musAvg[b] + MUS_BELOW) / MUS_SPAN);
++            float all = clamp01((d - (musAllCeil - 30.0f)) / 30.0f) * 0.8f;
++            float v = powf(0.65f * own + 0.35f * all, 1.3f);
+             flux += fmaxf(0.0f, v - musTarget[b]) * (b < 4 ? 1.6f : 1.0f); // the kick counts a little more
+             musTarget[b] = v;
+         }
+@@ -513,6 +516,15 @@ static void musicUpdate(float t)
+         memcpy(musRows[musRowHead], musNow, sizeof(musNow));
+     }
+     musicBass = (musNow[0] + musNow[1] + musNow[2] + musNow[3]) * 0.25f;
++
++    int sx = 0, sy = 0;
++    if (musicOn)
++        padGetRightStick(&sx, &sy);
++    float want = (sx > 24 || sx < -24) ? (float)sx / 127.0f * MUS_TURN : 0.0f;
++    musYawVel += (want - musYawVel) * (1.0f - expf(-dt / MUS_TURN_EASE));
++    musYaw += musYawVel * dt;
++    if (sy > 24 || sy < -24) // stick down draws back, up pushes in
++        musZoom = fminf(9.0f, fmaxf(-7.0f, musZoom + (float)sy / 127.0f * MUS_ZOOM * dt));
+ }
+ 
+ // The analyser at band position fb (0 .. MUS_BANDS - 1) and history row r (0 = now)
+@@ -551,8 +563,8 @@ void ripps2DrawPillars(void)
+     // Camera: the boot swoop eases into the idle Storage view,
+     // then drifts slowly round; a launch pushes in and tilts up the beams, with a short shake
+     // (idle: radius 32, height 8, looking at 11.8: the field closer and sitting lower on screen)
+-    float a = t * 0.03f + 0.7f;
+-    float radius = lerpf(12.0f, 32.0f, intro) - 12.0f * push;
++    float a = t * 0.03f + 0.7f + musYaw; // musYaw: where the right stick turned the CD player's view
++    float radius = lerpf(12.0f, 32.0f, intro) - 12.0f * push + musZoom * musicMix;
+     float camY = lerpf(1.6f, 8.0f, intro) + 4.0f * push;
+     float lookY = lerpf(9.0f, 11.8f, intro) + 4.2f * push;
+     if (musicMix > 0.0f) { // the CD player: the camera rises and looks down over the analyser, above its panel
+diff --git a/src/ripps2cd.c b/src/ripps2cd.c
+index f8b1ec5..1688f73 100644
+--- a/src/ripps2cd.c
++++ b/src/ripps2cd.c
+@@ -28,6 +28,7 @@
+ #include <time.h>
+ #include <math.h>
+ #include <kernel.h>
++#include <delaythread.h>
+ #include <libcdvd.h>
+ 
+ #include "include/opl.h"
+@@ -138,32 +139,26 @@ static int cdTestToc(void)
+ #endif
+ 
+ // The TOC: 10-byte entries, each naming its point (a track number in BCD, or A0 / A1 / A2 for the
+-// first track, the last and the lead-out) and where it starts (PMIN PSEC PFRAME). Scanning every
+-// entry for its point reads the drive's raw TOC and the emulators' layouts alike.
+-static int cdReadToc(void)
++// first track, the last and the lead-out) and where it starts (PMIN PSEC PFRAME), the drive's raw
++// layout (audsrv's own CD player reads track 1 at byte 37 and the last track's number at byte 17,
++// the same entries). Every entry is scanned for its point, so a repeated or reordered entry and an
++// emulator's layout read alike. What sceCdGetToc returns is not trusted (the console's own drivers
++// do not all say 1 for a good read, and audsrv ignores it too): the entries are checked instead. Its
++// buffer is 2064 bytes, as libcdvd copies that much whenever the drive does not call the disc a CD.
++// A TOC that names no lead-out leaves the last track open-ended: it plays until the reads stop.
++static u8 cdToc[2064] __attribute__((aligned(64)));
++static int cdLeadKnown = 1;
++
++static int cdParseToc(void)
+ {
+-    static u8 toc[1024] __attribute__((aligned(64)));
+     unsigned char seen[CD_TRACKS_MAX + 2];
+     u32 leadOut = 0;
+     int o, t, last = 0;
+ 
+-    cdCount = 0;
+     memset(seen, 0, sizeof(seen));
+     memset(cdAudio, 0, sizeof(cdAudio));
+-#ifdef RIPPS2_CD_TEST
+-    (void)toc;
+-    (void)leadOut;
+-    (void)o;
+-    (void)last;
+-    return cdTestToc();
+-#endif
+-    sceCdMmode(SCECdMmodeCd);
+-    sceCdDiskReady(0);
+-    memset(toc, 0, sizeof(toc));
+-    if (!sceCdGetToc(toc))
+-        memset(toc, 0, sizeof(toc));
+-    for (o = 0; o + 10 <= (int)sizeof(toc); o += 10) {
+-        const u8 *e = toc + o;
++    for (o = 0; o + 10 <= 1024; o += 10) {
++        const u8 *e = cdToc + o;
+         u8 point = e[2];
+         if (point == 0xA2)
+             leadOut = cdMsf(e + 7);
+@@ -178,16 +173,37 @@ static int cdReadToc(void)
+             }
+         }
+     }
++    if (last == 0)
++        return 0;
+     for (t = 1; t <= last; t++)
+-        if (!seen[t])
++        if (!seen[t] || (t > 1 && cdStart[t] <= cdStart[t - 1]))
+             return 0;
+-    if (last == 0 || leadOut <= cdStart[last])
+-        return 0;
+-    cdStart[last + 1] = leadOut;
++    cdLeadKnown = leadOut > cdStart[last];
++    cdStart[last + 1] = cdLeadKnown ? leadOut : cdStart[last] + 75 * 60 * 30;
+     cdCount = last;
+     return 1;
+ }
+ 
++static int cdReadToc(void)
++{
++    int tries;
++
++    cdCount = 0;
++#ifdef RIPPS2_CD_TEST
++    return cdTestToc();
++#endif
++    sceCdMmode(SCECdMmodeCd);
++    for (tries = 0; tries < 3; tries++) { // a drive still spinning up gets a moment
++        sceCdDiskReady(0);
++        memset(cdToc, 0, sizeof(cdToc));
++        sceCdGetToc(cdToc);
++        if (cdParseToc())
++            return 1;
++        DelayThread(300 * 1000);
++    }
++    return 0;
++}
++
+ static int cdTrackAt(u32 lsn)
+ {
+     int t;
+@@ -260,6 +276,8 @@ static int cdStreamRead(char *buf, int size)
+             // the drive's error code can outlast the read that set it, so a reported error keeps the
+             // data (the drive's retries already had their go at a scratch) and only goes in the log
+             int err = sceCdGetError();
++            if (err != SCECdErNO && !cdLeadKnown && cdTrackAt(cdLsn) == cdCount)
++                return done; // past the end of an open-ended last track: the disc is over
+             if (err != SCECdErNO || cdLsn == cdFrom)
+                 LOG("RIPPS2 CD: %u sectors at %u, error %d, first samples %d %d\n", (unsigned)n, (unsigned)cdLsn, err,
+                     ((short *)cdBuf)[0], ((short *)cdBuf)[1000]);
+@@ -333,8 +351,14 @@ void ripps2CdStart(void)
+     if (!cdReadToc()) {
+         if (gEnableBGM)
+             bgmStart();
++        // what the drive gave, so a report says why (the first entries, and the disc type)
++        char msg[320];
++        int i, n = snprintf(msg, sizeof(msg), "This audio CD's table of contents could not be read. Clean the disc, close the tray again and try once more. (TYPE %02X, TOC", sceCdGetDiskType());
++        for (i = 0; i < 40 && n < (int)sizeof(msg) - 4; i++)
++            n += snprintf(msg + n, sizeof(msg) - n, " %02X", cdToc[i]);
++        snprintf(msg + n, sizeof(msg) - n, ")");
+         guiMsgBoxSound(SFX_ERROR);
+-        guiMsgBox("This audio CD's table of contents could not be read. Clean the disc, close the tray again and try once more.", 0, NULL);
++        guiMsgBox(msg, 0, NULL);
+         return;
+     }
+     cdOpen = 1;
+@@ -572,6 +596,8 @@ void ripps2CdRender(void)
+         if (t == cdSel)
+             rmDrawRect(CD_X + 12, y - 9, 236, 18, CD_PRIM(0x2A, 0x4C, 0xA0, 0x40));
+         cdTime(cdStart[t + 1] - cdStart[t], len, sizeof(len));
++        if (t == cdCount && !cdLeadKnown)
++            snprintf(len, sizeof(len), "--:--"); // the TOC named no lead-out
+         snprintf(buf, sizeof(buf), "%02d", t);
+         u64 col = (cdState != CD_STOPPED && t == playing) ? CD_BLUE : (t == cdSel ? CD_LIT : CD_SOFT);
+         fntRenderString(rowFont, CD_X + 22, y, ALIGN_VCENTER, 0, 0, buf, col);
+@@ -586,6 +612,8 @@ void ripps2CdRender(void)
+     fntRenderString(gTheme->fonts[11], rx, CD_Y + 52, ALIGN_VCENTER, 0, 0, buf, CD_LIT);
+     cdTime(at, buf, sizeof(buf));
+     cdTime(length, len, sizeof(len));
++    if (track == cdCount && !cdLeadKnown)
++        snprintf(len, sizeof(len), "--:--");
+     strcat(buf, " / ");
+     strcat(buf, len);
+     fntRenderString(uiFont, rx, CD_Y + 76, ALIGN_VCENTER, 0, 0, buf, CD_SOFT);
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index 06bb10b..916f81d 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -571,6 +571,7 @@ void ripps2DiscWatch(void)
+     if (now == 0)
+         now = 1;
+     if (discReadAt == 0 && trayOpen < 0) { // the first frame: the boot read, a little later
++        ioNameAction((void *)&discPollWorker, "DISC READ");
+         discReadAt = now + (clock_t)(DISC_BOOT_S * CLOCKS_PER_SEC);
+         trayOpen = 0;
+         trayAt = now;
+diff --git a/src/sound.c b/src/sound.c
+index 4eb04fb..3f06343 100644
+--- a/src/sound.c
++++ b/src/sound.c
+@@ -91,9 +91,10 @@ static const signed char sfxFallback[SFX_COUNT] = {
+     SFX_MESSAGE,    // save
+     -1,             // launch: the confirm press already sounded
+     -1,             // disc
+-    SFX_TRANSITION, // random
++    SFX_CURSOR,     // random: the cursor's tick, as the pick jumps
+ };
+ static unsigned char sfxReady[SFX_COUNT]; // loaded into audsrv
++static int sfxBootEarly = 0;              // RIPPS2: the boot sound is loaded and may still be playing (sfxBootStart)
+ 
+ static struct audsrv_adpcm_t sfx[SFX_COUNT];
+ static int audio_initialized = 0;
+@@ -275,7 +276,11 @@ int sfxInit(int bootSnd)
+         return -1;
+     }
+ 
+-    audsrv_adpcm_init();
++    if (sfxBootEarly) { // RIPPS2: the boot sound is loaded and may still be playing: leave audsrv's ADPCM be
++        sfxBootEarly = 0;
++        bootSnd = 0;
++    } else
++        audsrv_adpcm_init();
+     cursorChannelIndex = 0;
+     sfxInitDefaults();
+     audioSetVolume();
+@@ -505,41 +510,104 @@ void sfxPlay(int id)
+     }
+ }
+ 
+-// RIPPS2: the boot sound, played out. It sounds on channel 0, which nothing else uses (the cursor
+-// ticks and the one-shots rotate through channels of their own and cut off only each other), so no
+-// press during the intro can stop it. The menu music waits for it to end, then starts from the IO
+-// worker, so the intro and the menu keep moving while the music buffers; with the boot sound off,
+-// the music starts as soon as the sounds are loaded.
+-static volatile int bootAudioReady = 0;
+-static clock_t bootAudioEnds = 0;
+-
+-void sfxPlayBoot(void)
++// RIPPS2: the boot sound opens the show and the music follows it in. sfxBootStart runs on the main
++// thread at the end of the boot's config load, the moment the towers start to rise: audio comes up
++// there (audsrv is loaded with the IOP modules long before), the boot sound alone is loaded (a sound
++// pack's own beside RIPPS2, else the built-in one) and plays at once on channel 0, which nothing else
++// uses, so no press can cut it off. The rest of the sounds load later on the IO worker, which then
++// leaves audsrv's ADPCM as it is (starting it over would cut the boot sound off). Once they are in,
++// the music starts from a thread of its own (never the IO worker, which a settings save or a launch
++// waits on) and fades in over two seconds under whatever is left of the boot sound.
++static volatile int bootAudioReady = 0;   // the sounds are loaded: the music may start
++static volatile int bgmFadeIn = 0;        // the boot music starts silent and rises
++static clock_t bgmFadeAt = 0;
++#define BGM_FADE_S 2.0f
++
++static int sfxRead(const char *full_path, struct sfxEffect *sfx);
++static int sfxLoad(struct sfxEffect *sfxData, audsrv_adpcm_t *sfx);
++static void sfxInitDefaults(void);
++
++void sfxBootStart(void)
+ {
+-    clock_t now = clock();
++    char path[256];
++    static int done = 0;
+ 
+-    bootAudioEnds = now;
+-    if (audio_initialized && gEnableSFX && gEnableBootSND && sfx_files[SFX_BOOT].duration_ms > 0) {
++    if (done)
++        return;
++    done = 1;
++    audioInit();
++    if (!audio_initialized)
++        return;
++    audsrv_adpcm_init();
++    sfxInitDefaults();
++    audioSetVolume();
++    if (thmGetFilePath(thmGetGuiValue()) == NULL && oplGetRipps2Dir(path, sizeof(path) - 16)) {
++        strcat(path, "SOUND/boot.adp");
++        sfxRead(path, &sfx_files[SFX_BOOT]); // the built-in one stays when there is none
++    }
++    if (sfxLoad(&sfx_files[SFX_BOOT], &sfx[SFX_BOOT]) != 0)
++        return;
++    sfxReady[SFX_BOOT] = 1;
++    sfxBootEarly = 1;
++    if (gEnableSFX && gEnableBootSND) {
+         audsrv_adpcm_set_volume_and_pan(0, gBootSndVolume, 0);
+         audsrv_ch_play_adpcm(0, &sfx[SFX_BOOT]);
+-        bootAudioEnds = now + (clock_t)sfx_files[SFX_BOOT].duration_ms * (CLOCKS_PER_SEC / 1000);
+     }
++}
++
++// The IO worker, once every sound is loaded
++void sfxBootSoundsLoaded(void)
++{
+     bootAudioReady = 1;
+ }
+ 
+-static void bgmBootStart(void)
++static u8 bgmStarterStack[0x2000] __attribute__((aligned(16)));
++
++static void bgmStarterThread(void *arg)
+ {
+-    if (gEnableBGM && !isBgmPlaying())
++    (void)arg;
++    if (gEnableBGM && !isBgmPlaying()) {
++        bgmFadeIn = 1;
++        bgmFadeAt = clock();
+         bgmStart();
++        if (!isBgmPlaying())
++            bgmFadeIn = 0; // no music to fade in
++    }
++    ExitDeleteThread();
+ }
+ 
++// Every GUI frame, from the intro on: starts the music once the sounds are in, then raises it
+ void bgmBootTick(void)
+ {
+-    static int queued = 0;
++    static int started = 0;
++    static clock_t lastStep = 0;
+ 
+-    if (queued || !bootAudioReady || (long)(clock() - bootAudioEnds) < 0)
++    if (!started) {
++        if (!bootAudioReady)
++            return;
++        started = 1;
++        ee_thread_t t;
++        t.func = &bgmStarterThread;
++        t.stack = bgmStarterStack;
++        t.stack_size = sizeof(bgmStarterStack);
++        t.gp_reg = &_gp;
++        t.initial_priority = 0x40; // below the menu: it runs while a frame waits for vsync
++        t.attr = 0;
++        t.option = 0;
++        int id = CreateThread(&t);
++        if (id >= 0)
++            StartThread(id, NULL);
+         return;
+-    queued = 1;
+-    ioPutRequest(IO_CUSTOM_SIMPLEACTION, &bgmBootStart);
++    }
++    if (bgmFadeIn && isBgmPlaying() && (float)(clock() - lastStep) / CLOCKS_PER_SEC >= 0.1f) {
++        float f = (float)(clock() - bgmFadeAt) / CLOCKS_PER_SEC / BGM_FADE_S;
++        lastStep = clock();
++        if (f >= 1.0f) {
++            f = 1.0f;
++            bgmFadeIn = 0;
++        }
++        audsrv_set_volume((int)(gBGMVolume * f * f));
++    }
+ }
+ 
+ /*--    Theme Background Music    -------------------------------------------------------------------------------------------
+@@ -1414,7 +1482,8 @@ void bgmStart(void)
+         if (bgmRoomTarget < BGM_ROOM_TARGET_MIN)
+             bgmRoomTarget = BGM_RING_BUFFER_SIZE;
+         LOG("BGM: %ld Hz, %d ch, audsrv ring %d bytes, queue up to %d at a time\n", rate, channels, ring, bgmRoomTarget);
+-        audsrv_set_volume(bgmPcmExternal != NULL ? MAX_VOLUME : gBGMVolume); // RIPPS2: a CD plays at full
++        // RIPPS2: a CD plays at full; the boot music starts silent and bgmBootTick raises it
++        audsrv_set_volume(bgmPcmExternal != NULL ? MAX_VOLUME : (bgmFadeIn ? 0 : gBGMVolume));
+ 
+         bgmIsPlaying = 1;
+ 
