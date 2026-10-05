@@ -473,10 +473,10 @@ index b9e0da3..c179f1e 100644
      {'S', "carried unmodified: github.com/Gageformer/Ember/releases"},
 diff --git a/src/ripps2art.c b/src/ripps2art.c
 new file mode 100644
-index 0000000..535cd60
+index 0000000..e1ce17b
 --- /dev/null
 +++ b/src/ripps2art.c
-@@ -0,0 +1,505 @@
+@@ -0,0 +1,506 @@
 +/*
 +  RIPPS2 build 73: Cover Art Download (Settings > Network, after NBD Server).
 +
@@ -508,6 +508,7 @@ index 0000000..535cd60
 +#include <unistd.h>
 +#include <sys/stat.h>
 +#include <kernel.h>
++#include <delaythread.h>
 +#include <timer.h>
 +#include <libcdvd.h>
 +#include <ps2ips.h>
