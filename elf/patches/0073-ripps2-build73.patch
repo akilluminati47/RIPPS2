@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index b6ed6ec..715f162 100644
+index b6ed6ec..86b2f41 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -133,7 +133,7 @@ ifneq ($(GIT_TAG),latest)
@@ -11,6 +11,15 @@ index b6ed6ec..715f162 100644
  		dia.o ioman.o texcache.o themes.o supportbase.o bdmsupport.o netsupport.o ethsupport.o httpcatalog.o httpsupport.o udpfssupport.o hddsupport.o zso.o lz4.o launchdiag.o \
  		appsupport.o mmcesupport.o artindex.o vcdsupport.o cuesupport.o libview.o retrogem.o folderbrowse.o gui.o guigame.o vmc_groups.o textures.o opl.o atlas.o nbns.o httpclient.o gsm.o cheatman.o sound.o ps2cnf.o tar.o
  
+@@ -189,7 +189,7 @@ AUDIO_OBJS =	boot.o cancel.o confirm.o cursor.o message.o transition.o bd_connec
+ # icon_sys.o + save_icn.o are the memory-card browser save icon for the settings folder.
+ # icon.sys names list.icn, copy.icn and del.icn; all three are the same artwork, so ONE blob is
+ # embedded and util.c writes it out under all three names (see saveIconName in src/util.c).
+-MISC_OBJS =	icon_sys.o save_icn.o icon_sys_A.o icon_sys_J.o icon_sys_C.o bible_xlf.o bible_mx4sio_xlf.o conf_theme_OPL.o theme_coverflow.o ripps2_font.o ripps2_sleek.o ripps2_sleekbold.o ripps2_sleekcase.o ripps2_one.o ripflow.o ripflowbold.o ember_elf.o ember_licence.o
++MISC_OBJS =	icon_sys.o save_icn.o icon_sys_A.o icon_sys_J.o icon_sys_C.o bible_xlf.o bible_mx4sio_xlf.o bible_hdd_xlf.o conf_theme_OPL.o theme_coverflow.o ripps2_font.o ripps2_sleek.o ripps2_sleekbold.o ripps2_sleekcase.o ripps2_one.o ripflow.o ripflowbold.o ember_elf.o ember_licence.o popstarter_elf.o
+ 
+ TRANSLATIONS = Albanian Arabic Bulgarian Cebuano Croatian Czech Danish Dutch Filipino French \
+ 	Galician German Greek Hungarian Indonesian Italian Japanese Korean Laotian Persian Polish Portuguese \
 @@ -220,8 +220,8 @@ MMCE_ASSETS_DIR = $(PS2SDK)/iop/irx
  MAPFILE = opl.map
  EE_LDFLAGS += -Wl,-Map,$(MAPFILE)
@@ -22,6 +31,28 @@ index b6ed6ec..715f162 100644
  BIN2C = $(PS2SDK)/bin/bin2c
  
  # WARNING: Only extra spaces are allowed and ignored at the beginning of the conditional directives (ifeq, ifneq, ifdef, ifndef, else and endif)
+@@ -1132,6 +1132,10 @@ $(EE_ASM_DIR)icon_sys_C.c: misc/icon_C.sys | $(EE_ASM_DIR)
+ $(EE_ASM_DIR)bible_xlf.c: misc/bible_system.xlf | $(EE_ASM_DIR)
+ 	$(BIN2C) $< $@ bible_xlf
+ 
++# RIPPS2 build 73: PS2BBL 1.2.0's HDD build (HSYSTEM.XLF), copied in by RIPPS2's build.sh
++$(EE_ASM_DIR)bible_hdd_xlf.c: misc/bible_hdd_system.xlf | $(EE_ASM_DIR)
++	$(BIN2C) $< $@ bible_hdd_xlf
++
+ $(EE_ASM_DIR)bible_mx4sio_xlf.c: misc/bible_mx4sio_system.xlf | $(EE_ASM_DIR)
+ 	$(BIN2C) $< $@ bible_mx4sio_xlf
+ 
+@@ -1164,6 +1168,10 @@ $(EE_ASM_DIR)ember_elf.c: misc/ember_elf.gz | $(EE_ASM_DIR)
+ $(EE_ASM_DIR)ember_licence.c: misc/ember_licence.txt | $(EE_ASM_DIR)
+ 	$(BIN2C) $< $@ $(*F)_txt
+ 
++# RIPPS2 build 73: POPSTARTER (krHACKen), carried as released (it is packed already), copied in by build.sh
++$(EE_ASM_DIR)popstarter_elf.c: misc/popstarter_elf.bin | $(EE_ASM_DIR)
++	$(BIN2C) $< $@ $(*F)_bin
++
+ # RIPPS2 build 70: RIPFLOW's fonts (Roboto Condensed, Bold Condensed; copied in by RIPPS2's build.sh)
+ $(EE_ASM_DIR)ripflow.c: misc/ripflow.ttf | $(EE_ASM_DIR)
+ 	$(BIN2C) $< $@ $(*F)_raw
 diff --git a/include/dialogs.h b/include/dialogs.h
 index 067ba8d..2555aeb 100644
 --- a/include/dialogs.h
@@ -34,14 +65,27 @@ index 067ba8d..2555aeb 100644
      NETCFG_OK,
      // Section labels for the SMB-only block, so it can be hidden whole when the selected network
      // protocol is not SMB. Appended here to keep the NETCFG_*_0..N consecutive runs above intact.
+diff --git a/include/hddsupport.h b/include/hddsupport.h
+index d84c4e3..3e068ab 100644
+--- a/include/hddsupport.h
++++ b/include/hddsupport.h
+@@ -99,6 +99,7 @@ void hddFreePopsPartitionList(hdd_pops_list_t *list);
+ // Drop the once-per-session HDD VCD list cache so the next VCD-view update re-walks the partitions.
+ // Needed only when a SCAN-TIME filter changes (gVcdFirstDiscOnly); view flips reuse the built list.
+ void hddVcdInvalidateCache(void);
++void hddPartitionsChanged(void); // RIPPS2: after the HDD MANAGER removes a partition
+ 
+ void hddInit(item_list_t *itemList);
+ item_list_t *hddGetObject(int initOnly);
 diff --git a/include/ripps2.h b/include/ripps2.h
-index 851c6f2..e6075c9 100644
+index 851c6f2..1ece36a 100644
 --- a/include/ripps2.h
 +++ b/include/ripps2.h
-@@ -133,6 +133,7 @@ int ripps2EditMetadata(config_set_t *config, const char *gameName); // 1 when SA
+@@ -133,6 +133,8 @@ int ripps2EditMetadata(config_set_t *config, const char *gameName); // 1 when SA
  
  void ripps2HddManager(void); // ripps2hdd.c
  int ripps2EmberInstall(const char *elfPath); // ripps2ember.c (build 71): write the Ember RIPPS2 carries
++int ripps2PopstarterInstall(const char *elfPath); // ripps2ember.c (build 73): write the POPSTARTER RIPPS2 carries, when none is there
 +void ripps2ArtDownload(void); // ripps2art.c (build 73): covers for the games without one, over HTTPS
  void ripps2Achievements(void); // ripps2ra.c: SpiritofRA, the main menu's ACHIEVEMENTS page
  void ripps2ShowAbout(const char *version, const char *build); // ripps2about.c: the scrolling credits
@@ -422,6 +466,110 @@ index 70ab14e..39fa4a6 100644
  - label: RIPPS2_GLYPHS
    string: D-pad Glyphs
  - label: HINT_RIPPS2_GLYPHS
+diff --git a/modules/hdd/apa/ORIGIN.txt b/modules/hdd/apa/ORIGIN.txt
+index 7f2ab5b..b19b804 100644
+--- a/modules/hdd/apa/ORIGIN.txt
++++ b/modules/hdd/apa/ORIGIN.txt
+@@ -35,6 +35,10 @@ compiles the fence and fails if any of the policy below is lost):
+    refused code is kept after the early returns (or marked unused) for diffability. apa.c
+    apaGetNextHeader also logs a start != prev mismatch instead of rewriting the header mid-walk.
+    What remains is opening existing partitions and PFS I/O inside them.
++   RIPPS2 (build 73) narrows two of these instead of closing them: hddRemove takes a user partition's
++   delete (never a __ name; an open one is -EBUSY) for the HDD MANAGER, and HDIOC_WRITESECTOR /
++   HDIOC_SETOSDMBR take only the OSD boot area inside __mbr (sector 0x2000 to __mbr's end,
++   ripps2InOsdArea) for BIBLE on the HDD. Every write still goes through the table fence (item 1).
+ 5. hdd_fio.c: ioctl2Transfer's partition bounds check is overflow-safe (the SDK summed sector + size
+    in u32, so a wrapping request could address anywhere on the disk).
+ 6. hdd_fio.c: an on-disk sub-partition count above APA_MAXSUB is refused in apaOpen and bounded in
+diff --git a/modules/hdd/apa/src/hdd_fio.c b/modules/hdd/apa/src/hdd_fio.c
+index c31b9cd..d4114e5 100644
+--- a/modules/hdd/apa/src/hdd_fio.c
++++ b/modules/hdd/apa/src/hdd_fio.c
+@@ -98,7 +98,8 @@ static void fioGetStatFiller(apa_cache_t *clink1, iox_stat_t *stat);
+ static int ioctl2AddSub(hdd_file_slot_t *fileSlot, char *argp) __attribute__((unused));
+ static int ioctl2DeleteLastSub(hdd_file_slot_t *fileSlot) __attribute__((unused));
+ static int devctlSwapTemp(s32 device, char *argp) __attribute__((unused));
+-static int devctlSetOsdMBR(s32 device, hddSetOsdMBR_t *mbrInfo) __attribute__((unused));
++static int devctlSetOsdMBR(s32 device, hddSetOsdMBR_t *mbrInfo);
++static int ripps2InOsdArea(s32 device, u32 lba, u32 size);
+ 
+ static int fioPartitionSizeLookUp(char *str)
+ {
+@@ -625,8 +626,13 @@ int hddRemove(iomanX_iop_file_t *f, const char *name)
+ #endif
+     // RiptOPL: a game loader never deletes partitions. Deleting one rewrites the headers around it
+     // (and LBA 0 for the last one), and a torn or misdirected header write breaks the whole chain.
+-    APA_PRINTF(APA_DRV_NAME ": partition delete refused (disabled in this build)\n");
+-    return -EACCES;
++    // RIPPS2 (HDD MANAGER, two screens and START): a user's own partition may go. The system ones
++    // (__ names) never do, here as well as in apaRemove; an open one is -EBUSY; and every header
++    // write still passes the table fence, which takes LBA 0 only as a whole, valid __mbr header.
++    if (params.id[0] == '_' && params.id[1] == '_') {
++        APA_PRINTF(APA_DRV_NAME ": system partition delete refused\n");
++        return -EACCES;
++    }
+ 
+     WaitSema(fioSema);
+     rv = apaRemove(f->unit, params.id, params.fpwd);
+@@ -1065,6 +1071,25 @@ static int devctlSwapTemp(s32 device, char *argp)
+     return rv;
+ }
+ 
++// RIPPS2 build 73: the OSD boot area is __mbr from its sector 0x2000 to its end (where HDD-OSD, FHDB,
++// OSDMenu MBR and PS2BBL's HDD build all go). __mbr starts at LBA 0, so its length bounds the area.
++#define RIPPS2_OSD_AREA_START 0x2000
++static int ripps2InOsdArea(s32 device, u32 lba, u32 size)
++{
++    apa_cache_t *clink;
++    int rv, ok;
++    u32 length;
++
++    if (size == 0 || lba < RIPPS2_OSD_AREA_START || lba + size < lba)
++        return 0;
++    if (!(clink = apaCacheGetHeader(device, APA_SECTOR_MBR, APA_IO_MODE_READ, &rv)))
++        return 0;
++    length = clink->header->length;
++    ok = clink->header->start == 0 && strcmp(clink->header->id, "__mbr") == 0 && lba + size <= length;
++    apaCacheFree(clink);
++    return ok;
++}
++
+ static int devctlSetOsdMBR(s32 device, hddSetOsdMBR_t *mbrInfo)
+ {
+     int rv;
+@@ -1161,8 +1186,14 @@ int hddDevctl(iomanX_iop_file_t *f, const char *devname, int cmd, void *arg,
+             break;
+ 
+         // RiptOPL: rewrites the __mbr header itself (OSD installers); the loader never does it.
++        // RIPPS2 build 73 (BIBLE on the HDD): it does now, for a boot program that lies wholly in
++        // __mbr's own boot area (ripps2InOsdArea). The header write still passes the table fence.
+         case HDIOC_SETOSDMBR:
+-            rv = -EACCES;
++            if (!ripps2InOsdArea(f->unit, ((hddSetOsdMBR_t *)arg)->start, ((hddSetOsdMBR_t *)arg)->size)) {
++                rv = -EACCES;
++                break;
++            }
++            rv = devctlSetOsdMBR(f->unit, (hddSetOsdMBR_t *)arg);
+             break;
+ 
+         case HDIOC_GETSECTORERROR:
+@@ -1180,8 +1211,15 @@ int hddDevctl(iomanX_iop_file_t *f, const char *devname, int cmd, void *arg,
+ 
+         // RiptOPL: an absolute LBA straight from the EE. The loader writes nothing outside the PFS
+         // partitions it mounts, so raw sector writes are refused outright.
++        // RIPPS2 build 73: except inside __mbr's boot area, where a boot loader's program goes
++        // (sector 0x2000 of __mbr on, never its header or any other partition)
+         case HDIOC_WRITESECTOR:
+-            rv = -EACCES;
++            if (!ripps2InOsdArea(f->unit, ((hddAtaTransfer_t *)arg)->lba, ((hddAtaTransfer_t *)arg)->size)) {
++                rv = -EACCES;
++                break;
++            }
++            rv = blkIoDmaTransfer(f->unit, ((hddAtaTransfer_t *)arg)->data, ((hddAtaTransfer_t *)arg)->lba,
++                                  ((hddAtaTransfer_t *)arg)->size, BLKIO_DIR_WRITE);
+             break;
+ 
+         case HDIOC_SCEIDENTIFY:
 diff --git a/modules/network/ps2ips/ps2ips.c b/modules/network/ps2ips/ps2ips.c
 index b4c4031..e9be679 100644
 --- a/modules/network/ps2ips/ps2ips.c
@@ -514,11 +662,84 @@ index 1e42c0e..80150b9 100644
      if (result && !guiSettingsLeftUntouched(diaNetConfig, result, NULL, NULL)) {
          int netProtoVal2, netAccessVal2;
          diaGetInt(diaNetConfig, CFG_NETPROTOCOL, &netProtoVal2);
+diff --git a/src/hddsupport.c b/src/hddsupport.c
+index 7ce8afb..c266283 100644
+--- a/src/hddsupport.c
++++ b/src/hddsupport.c
+@@ -13,6 +13,7 @@
+ #include "include/ioman.h"
+ #include "include/texcache.h" // cache quiesce before the POPSTARTER launch remounts pfs0:
+ #include "include/system.h"
++#include "include/ripps2.h" // RIPPS2 build 73: ripps2PopstarterInstall
+ #include "include/extern_irx.h"
+ #include "include/cheatman.h"
+ #include "include/mmcesupport.h" // mmceSendGameID() cross-device game-id (#261)
+@@ -927,6 +928,14 @@ item_list_t *hddGetObject(int initOnly)
+ static unsigned char hddVcdListBuilt = 0;
+ static volatile unsigned int hddVcdCacheGen = 0;
+ 
++// RIPPS2: the HDD MANAGER removed a partition. Storage's next refresh reads the drive again (never
++// games.bin) and the PS1 list is rebuilt.
++void hddPartitionsChanged(void)
++{
++    hddForceUpdate = 1;
++    hddVcdInvalidateCache();
++}
++
+ void hddVcdInvalidateCache(void)
+ {
+     hddVcdCacheGen++;
+@@ -1842,6 +1851,23 @@ static int hddResolveHddPopstarter(char *elfOut, int elfLen)
+     return 0;
+ }
+ 
++// RIPPS2 build 73: no POPSTARTER of the user's own on __common or the cards, so the one RIPPS2 carries
++// goes where POPSTARTER's HDD set-up keeps it, __common/POPS. __common is mounted writable for the copy
++// and stays mounted for the ELF load, as hddResolveHddPopstarter leaves it on a find.
++static int hddInstallBundledPopstarter(char *elfOut, int elfLen)
++{
++    fileXioUmount(hddPrefix);
++    if (fileXioMount(hddPrefix, "hdd0:__common", FIO_MT_RDWR) == 0) {
++        if (ripps2PopstarterInstall("pfs0:/POPS/POPSTARTER.ELF")) {
++            (void)vcdInstallPopstarterMc("pfs0:/");
++            snprintf(elfOut, elfLen, "pfs0:/POPS/POPSTARTER.ELF");
++            return 1;
++        }
++    }
++    hddRestoreDataHome();
++    return 0;
++}
++
+ // A custom POPSTARTER.ELF may live somewhere other than the HDD game device, but moving the
+ // executable must not bypass the established POPSTARTER dependency install. Borrow the dedicated
+ // pfs1: scratch slot to copy any missing mc?:/POPSTARTER externals from __common/POPS without
+@@ -1996,7 +2022,7 @@ static void hddDoLaunchVcd(item_list_t *itemList, const char *name, const char *
+             // attempted BEFORE ioBlockOps(1), so go straight to the final MC tier here. Re-entering
+             // the generic custom resolver while IO is blocked can try to start another storage stack
+             // or queue BDM work during teardown preparation.
+-            if (!vcdResolvePopstarterMcElf(vcdElf, sizeof(vcdElf))) {
++            if (!vcdResolvePopstarterMcElf(vcdElf, sizeof(vcdElf)) && !hddInstallBundledPopstarter(vcdElf, sizeof(vcdElf))) {
+                 ioBlockOps(0);
+                 guiMsgBox(_l(_STR_POPSTARTER_NOT_FOUND), 0, NULL);
+                 return;
+diff --git a/src/mmcesupport.c b/src/mmcesupport.c
+index 78d6b6b..576427d 100644
+--- a/src/mmcesupport.c
++++ b/src/mmcesupport.c
+@@ -902,7 +902,7 @@ static void mmceLaunchVcd(item_list_t *itemList, const char *vcdName, config_set
+ 
+     mmceGetDeviceRoot(ps1Root, sizeof(ps1Root));
+ 
+-    if (!vcdResolvePopstarter(ps1Root, vcdElf, sizeof(vcdElf))) {
++    if (!vcdResolvePopstarterFor(ps1Root, VCD_PREFIX_MASS, vcdName, vcdElf, sizeof(vcdElf))) { // RIPPS2 build 73: + the game's own, + the one RIPPS2 carries
+         guiMsgBox(_l(_STR_POPSTARTER_NOT_FOUND), 0, NULL);
+         return;
+     }
 diff --git a/src/ripps2about.c b/src/ripps2about.c
-index b9e0da3..c179f1e 100644
+index b9e0da3..6b82388 100644
 --- a/src/ripps2about.c
 +++ b/src/ripps2about.c
-@@ -72,6 +72,12 @@ static const ab_row_t abRows[] = {
+@@ -72,11 +72,17 @@ static const ab_row_t abRows[] = {
      {'T', "ps2sdk's libcdvd and audsrv"},
      {'S', "the disc's sound read straight off it, the towers lit by it"},
      {'G', NULL},
@@ -531,6 +752,26 @@ index b9e0da3..c179f1e 100644
      {'H', "PS1 GAMES"},
      {'T', "Ember by Gageformer"},
      {'S', "carried unmodified: github.com/Gageformer/Ember/releases"},
+     {'T', "POPSTARTER by krHACKen"},
+-    {'S', "started from your own copy, found on your drives"},
++    {'S', "your own copy first; else the one RIPPS2 carries, unchanged"},
+     {'G', NULL},
+     {'H', "ACHIEVEMENTS: SPIRIT OF RA"},
+     {'T', "RetroAchievements on the console by hacan359 (yoba)"},
+@@ -87,10 +93,12 @@ static const ab_row_t abRows[] = {
+     {'H', "BOOT LOCK AND BIBLE"},
+     {'T', "PS2BBL by El Isra (israpps)"},
+     {'S', "the PlayStation 2 Basic BootLoader: BOOT LOCK starts RIPPS2 with it"},
+-    {'S', "BIBLE is PS2BBL 1.2.0, El Isra's signed build, unchanged (GPL-3)"},
++    {'S', "BIBLE is PS2BBL 1.2.0, El Isra's signed builds (card and HDD), unchanged (GPL-3)"},
+     {'S', "source: github.com/israpps/PlayStation2-Basic-BootLoader"},
+     {'T', "PS2BBL Extended by saildot4k"},
+     {'S', "BOOT LOCK edits its config too"},
++    {'T', "the HDD boot area install as FHDB and OSDMenu MBR do it"},
++    {'S', "SP193's FMCB installer and pcm720's OSDMenu, followed step by step"},
+     {'T', "ps2sdk's SECRMAN, from the FMCB installer by SP193"},
+     {'S', "binds BIBLE to your card; the console does the crypto, no keys"},
+     {'G', NULL},
 diff --git a/src/ripps2art.c b/src/ripps2art.c
 new file mode 100644
 index 0000000..2b102c8
@@ -1370,6 +1611,590 @@ index 0000000..2b102c8
 +                 artFailed ? "; failed: " : "", artFailed ? artLine2 : "");
 +    guiMsgBox(msg, 0, NULL);
 +}
+diff --git a/src/ripps2boot.c b/src/ripps2boot.c
+index adc9772..3be56c7 100644
+--- a/src/ripps2boot.c
++++ b/src/ripps2boot.c
+@@ -42,6 +42,11 @@
+ #include <libsecr.h>
+ #include <strings.h>
+ #include <delaythread.h>
++#include <libcdvd.h>
++#define NEWLIB_PORT_AWARE
++#include <fileXio_rpc.h> // BIBLE on the HDD (build 73): the boot area, below newlib
++#include <io_common.h>   // FIO_MT_RDWR
++#include <hdd-ioctl.h>
+ 
+ #include "include/opl.h"
+ #include "include/gui.h"
+@@ -50,6 +55,7 @@
+ #include "include/ioman.h"
+ #include "include/system.h"
+ #include "include/sound.h"
++#include "include/hddsupport.h" // hddCheck: BIBLE on the HDD (build 73)
+ 
+ #define BL_MAX    32768 // a PS2BBL config is a few KB
+ #define BL_MARKER "#RIPPS2 BOOT LOCK"
+@@ -66,6 +72,8 @@ extern unsigned char bible_xlf[];
+ extern unsigned int size_bible_xlf;
+ extern unsigned char bible_mx4sio_xlf[];
+ extern unsigned int size_bible_mx4sio_xlf;
++extern unsigned char bible_hdd_xlf[]; // build 73: PS2BBL 1.2.0's HDD build (HSYSTEM.XLF), as released
++extern unsigned int size_bible_hdd_xlf;
+ // the browser icon RIPPS2 gives its settings folder (util.c): BIBLE's folders wear it too
+ extern unsigned char icon_sys[];
+ extern unsigned int size_icon_sys;
+@@ -986,13 +994,294 @@ static void blInstallOn(int port, const blWhere_t *w, const char *alt)
+     guiMsgBox(msg, 0, NULL);
+ }
+ 
++// ---- BIBLE on the HDD (build 73) ----
++//
++// PS2BBL 1.2.0's HDD build (El Isra's HSYSTEM.XLF, signed for the HDD's boot area as FHDB's is) goes
++// in __mbr's boot area, the way FHDB, OSDMenu MBR and the HDD-OSD installers put theirs: sector 0x2000
++// of __mbr on, then the __mbr header pointed at it. RIPPS2's APA driver allows those two writes and no
++// others (modules/hdd/apa, ripps2InOsdArea); the partition table stays fenced. The boot program that
++// was there is read out first and kept in __sysconf/RIPPS2, and RESTORE puts it back. RIPPS2 itself is
++// copied to __sysconf too, so the HDD starts it with nothing else plugged in.
++
++#define BL_HDD_PART      "hdd0:__sysconf"
++#define BL_HDD_MNT       "pfs1:"
++#define BL_HDD_ELF       "hdd0:__sysconf:pfs:/RIPPS2/RIPPS2.ELF" // as PS2BBL's config reaches it
++#define BL_HDD_BACKUP    BL_HDD_MNT "/RIPPS2/MBR-BACKUP.KELF"
++#define BL_HDD_AREA      0x2000 // the boot area's first sector, inside __mbr
++#define BL_HDD_BLOCK     2      // sectors a write carries (fileXio's RPC buffer is small)
++#define BL_HDD_MAX_BACK  8192   // sectors of an old boot program kept (4 MB: any real one is far smaller)
++
++static int blHddUsable(void)
++{
++    return hddCheck() == 0 && fileXioDevctl("hdd0:", HDIOC_STATUS, NULL, 0, NULL, 0) == 0;
++}
++
++// sectors from the drive; 0 on success
++static int blHddRead(u32 lba, u32 count, unsigned char *out)
++{
++    unsigned char arg[sizeof(hddAtaTransfer_t)] __attribute__((aligned(64)));
++    while (count > 0) {
++        u32 n = count > 16 ? 16 : count;
++        ((hddAtaTransfer_t *)arg)->lba = lba;
++        ((hddAtaTransfer_t *)arg)->size = n;
++        if (fileXioDevctl("hdd0:", HDIOC_READSECTOR, arg, sizeof(arg), out, n * 512) < 0)
++            return -1;
++        lba += n;
++        count -= n;
++        out += n * 512;
++    }
++    return 0;
++}
++
++// The boot program as the __mbr header has it now: its first sector and its size in sectors
++static int blHddCurrent(u32 *start, u32 *size)
++{
++    unsigned char sec[512] __attribute__((aligned(64)));
++    if (blHddRead(0, 1, sec) != 0 || memcmp(sec + 0x10, "__mbr", 6) != 0)
++        return 0;
++    memcpy(start, sec + 0x130, 4); // apa_header_t mbr.osdStart / osdSize
++    memcpy(size, sec + 0x134, 4);
++    return 1;
++}
++
++// A boot program into the boot area, read back, then the header pointed at it; 0 on success
++static int blHddWriteBoot(const unsigned char *data, int size, const char *what)
++{
++    unsigned char buf[sizeof(hddAtaTransfer_t) + BL_HDD_BLOCK * 512] __attribute__((aligned(64)));
++    unsigned char check[BL_HDD_BLOCK * 512] __attribute__((aligned(64)));
++    char status[96];
++    iox_stat_t st;
++    hddSetOsdMBR_t mbr;
++    u32 start, sectors = (size + 511) / 512, i;
++
++    if (fileXioGetStat("hdd0:__mbr", &st) < 0)
++        return -1;
++    start = st.private_5 + BL_HDD_AREA;
++    for (i = 0; i < sectors; i += BL_HDD_BLOCK) {
++        u32 n = sectors - i > BL_HDD_BLOCK ? BL_HDD_BLOCK : sectors - i;
++        int bytes = size - (int)(i * 512);
++        if (bytes > (int)(n * 512))
++            bytes = n * 512;
++        if ((i & 31) == 0) {
++            snprintf(status, sizeof(status), "%s (%d%%)", what, (int)(i * 100 / sectors));
++            guiRenderTextScreen(status);
++        }
++        memset(((hddAtaTransfer_t *)buf)->data, 0, BL_HDD_BLOCK * 512);
++        memcpy(((hddAtaTransfer_t *)buf)->data, data + i * 512, bytes);
++        ((hddAtaTransfer_t *)buf)->lba = start + i;
++        ((hddAtaTransfer_t *)buf)->size = n;
++        if (fileXioDevctl("hdd0:", HDIOC_WRITESECTOR, buf, sizeof(hddAtaTransfer_t) + n * 512, NULL, 0) < 0)
++            return -2;
++        if (blHddRead(start + i, n, check) != 0 || memcmp(check, ((hddAtaTransfer_t *)buf)->data, n * 512) != 0)
++            return -3;
++    }
++    mbr.start = start;
++    mbr.size = sectors;
++    if (fileXioDevctl("hdd0:", HDIOC_SETOSDMBR, &mbr, sizeof(mbr), NULL, 0) < 0)
++        return -4;
++    return 0;
++}
++
++// The console's own setting that makes it start the HDD's boot program at power on (the HDDLOAD flag,
++// config block 1 of the MechaCon's): set when it is not, as the HDD installers do
++static int blHddBootOn(void)
++{
++    char cfg[15];
++    u32 res;
++    int tries, ret;
++
++    for (tries = 0; tries < 100 && (sceCdOpenConfig(0, 0, 1, &res) == 0 || (res & 0x9)); tries++)
++        DelayThread(10000);
++    if (tries >= 100)
++        return 0;
++    for (tries = 0; tries < 100 && ((ret = sceCdReadConfig(cfg, &res)) == 0 || (res & 0x9)); tries++)
++        DelayThread(10000);
++    sceCdCloseConfig(&res);
++    if (tries >= 100)
++        return 0;
++    if ((cfg[0] & 0x3) == 0x2)
++        return 1; // already on
++    cfg[0] = (cfg[0] & ~0x3) | 0x2;
++    for (tries = 0; tries < 100 && (sceCdOpenConfig(0, 1, 1, &res) == 0 || (res & 0x9)); tries++)
++        DelayThread(10000);
++    if (tries >= 100)
++        return 0;
++    for (tries = 0; tries < 100 && ((ret = sceCdWriteConfig(cfg, &res)) == 0 || (res & 0x9)); tries++)
++        DelayThread(10000);
++    sceCdCloseConfig(&res);
++    return tries < 100;
++}
++
++static int blHddMount(void)
++{
++    fileXioUmount(BL_HDD_MNT);
++    return fileXioMount(BL_HDD_MNT, BL_HDD_PART, FIO_MT_RDWR) == 0;
++}
++
++static void blHddInstall(void)
++{
++    char msg[900], boot[256], alt[160] = "";
++    unsigned char *old = NULL;
++    u32 oldStart = 0, oldSize = 0;
++    int ok, bootOn, kept = 0, keptConfig = 0, len, fd, r;
++
++    if (!ripps2GetBootPath(boot, sizeof(boot)))
++        boot[0] = '\0';
++    // RIPPS2 as it is now goes second, when PS2BBL's HDD build can reach it (a card or a USB drive)
++    if (boot[0] && strncmp(boot, "hdd", 3) && strncmp(boot, "pfs", 3))
++        blPathFor(0, boot, ripps2GetBootBdmType(), alt, sizeof(alt));
++    if (!strncmp(alt, "massX:", 6))
++        alt[0] = '\0'; // the HDD build has no MX4SIO driver
++
++    snprintf(msg, sizeof(msg),
++             "INSTALL BIBLE ON THE INTERNAL HDD\n"
++             "- RIPPS2 is copied to %s.\n"
++             "- The HDD's boot program now in __mbr is read out and kept in __sysconf/RIPPS2 (RESTORE puts it back).\n"
++             "- PS2BBL 1.2.0's HDD build is written in its place, and the console set to start it at power on.\n"
++             "- Its config, hdd0:__sysconf:pfs:/PS2BBL/CONFIG.INI, starts RIPPS2 first, BOOT LOCK on.\n"
++             "This needs a console that boots from its HDD (a fat PS2 with the network adapter). Keep it on until it says done.",
++             BL_HDD_ELF);
++    guiMsgBoxSound(SFX_MESSAGE);
++    guiMsgBoxStartOption("INSTALL BIBLE");
++    if (guiMsgBox(msg, 0, NULL) != 2)
++        return;
++
++    ioBlockOps(1);
++    if (!blHddMount()) {
++        ioBlockOps(0);
++        guiMsgBoxSound(SFX_ERROR);
++        guiMsgBox("RIPPS2 could not open the HDD's __sysconf partition, where BIBLE keeps its config. Nothing was changed.", 0, NULL);
++        return;
++    }
++    mkdir(BL_HDD_MNT "/RIPPS2", 0777);
++    mkdir(BL_HDD_MNT "/PS2BBL", 0777);
++
++    // 1. RIPPS2 onto the HDD (a copy that is already there is written over: it may be older)
++    if (!boot[0] || !blCopy(boot, BL_HDD_MNT "/RIPPS2/RIPPS2.ELF", "the HDD")) {
++        fileXioUmount(BL_HDD_MNT);
++        ioBlockOps(0);
++        guiMsgBoxSound(SFX_ERROR);
++        guiMsgBox("BIBLE could not copy RIPPS2 to the HDD's __sysconf partition. Check its free space. Nothing else was changed.", 0, NULL);
++        return;
++    }
++
++    // 2. what boots from the HDD now, kept (once: a repair never writes BIBLE over the first backup)
++    if ((fd = open(BL_HDD_BACKUP, O_RDONLY)) >= 0) {
++        close(fd);
++        kept = 1;
++    } else if (blHddCurrent(&oldStart, &oldSize) && oldSize > 0 && oldSize <= BL_HDD_MAX_BACK && oldStart >= BL_HDD_AREA) {
++        guiRenderTextScreen("BIBLE: keeping the HDD's boot program");
++        if ((old = memalign(64, oldSize * 512)) == NULL || blHddRead(oldStart, oldSize, old) != 0 ||
++            blWrite(BL_HDD_BACKUP, (const char *)old, oldSize * 512) != 0) {
++            free(old);
++            remove(BL_HDD_BACKUP);
++            fileXioUmount(BL_HDD_MNT);
++            ioBlockOps(0);
++            guiMsgBoxSound(SFX_ERROR);
++            guiMsgBox("BIBLE could not keep a copy of the HDD's boot program, so it stopped before changing it. RIPPS2 was copied to __sysconf; nothing else was changed.", 0, NULL);
++            return;
++        }
++        free(old);
++        kept = 1;
++    }
++
++    // 3. the config: one PS2BBL owners already have stays, BOOT LOCK set in it; else BIBLE's
++    len = 0;
++    if (blRead(BL_HDD_MNT "/PS2BBL/CONFIG.INI") >= 0) {
++        keptConfig = 1;
++        if ((len = blUnlocked(blText)) >= 0)
++            memcpy(blText, blOut, len + 1);
++    } else
++        len = blBibleConfig(alt, "");
++    if (len >= 0)
++        len = blLocked(blText, BL_HDD_ELF);
++    if (len < 0 || blWrite(BL_HDD_MNT "/PS2BBL/CONFIG.INI", blOut, len) != 0) {
++        fileXioUmount(BL_HDD_MNT);
++        ioBlockOps(0);
++        guiMsgBoxSound(SFX_ERROR);
++        guiMsgBox("BIBLE could not write its config to the HDD's __sysconf partition. The boot program was not changed.", 0, NULL);
++        return;
++    }
++    fileXioUmount(BL_HDD_MNT);
++
++    // 4. the boot program itself, then the console's setting
++    r = blHddWriteBoot(bible_hdd_xlf, (int)size_bible_hdd_xlf, "BIBLE: writing PS2BBL to the HDD's boot area");
++    bootOn = r == 0 && blHddBootOn();
++    ioBlockOps(0);
++    if (r != 0) {
++        guiMsgBoxSound(SFX_ERROR);
++        snprintf(msg, sizeof(msg), "BIBLE could not write the HDD's boot program (step %d). %s", -r,
++                 kept ? "The one that was there is kept in __sysconf/RIPPS2/MBR-BACKUP.KELF: BOOT LOADER > MANAGE > RESTORE puts it back." : "");
++        guiMsgBox(msg, 0, NULL);
++        return;
++    }
++    guiMsgBoxSound(bootOn ? SFX_SAVE : SFX_ERROR);
++    ok = snprintf(msg, sizeof(msg), "BIBLE is installed on the internal HDD and BOOT LOCK is on: at power on the console starts RIPPS2 from %s, at once.%s%s",
++                  BL_HDD_ELF, kept ? " The HDD's old boot program is kept (MANAGE > RESTORE)." : "",
++                  keptConfig ? " Your own PS2BBL config on the HDD was kept, BOOT LOCK set in it." : " Hold TRIANGLE at power on for the browser, START for a disc.");
++    if (!bootOn && ok < (int)sizeof(msg))
++        snprintf(msg + ok, sizeof(msg) - ok, " The console would not take the setting that starts its HDD at power on: set it with the HDD utility, or install again.");
++    guiMsgBox(msg, 0, NULL);
++}
++
++static void blHddRestore(void)
++{
++    unsigned char *data;
++    int fd, size, r;
++
++    guiMsgBoxSound(SFX_MESSAGE);
++    guiMsgBoxStartOption("RESTORE");
++    if (guiMsgBox("PUT BACK THE HDD'S OLD BOOT PROGRAM\nThe one BIBLE kept (__sysconf/RIPPS2/MBR-BACKUP.KELF) goes back in __mbr, in BIBLE's place. RIPPS2 and the PS2BBL config stay on __sysconf.", 0, NULL) != 2)
++        return;
++    ioBlockOps(1);
++    if (!blHddMount() || (fd = open(BL_HDD_BACKUP, O_RDONLY)) < 0) {
++        fileXioUmount(BL_HDD_MNT);
++        ioBlockOps(0);
++        guiMsgBoxSound(SFX_ERROR);
++        guiMsgBox("There is no kept boot program on this HDD. Nothing was changed.", 0, NULL);
++        return;
++    }
++    size = lseek(fd, 0, SEEK_END);
++    lseek(fd, 0, SEEK_SET);
++    data = size > 0 ? memalign(64, size) : NULL;
++    if (data == NULL || read(fd, data, size) != size) {
++        close(fd);
++        free(data);
++        fileXioUmount(BL_HDD_MNT);
++        ioBlockOps(0);
++        guiMsgBoxSound(SFX_ERROR);
++        guiMsgBox("RIPPS2 could not read the kept boot program. Nothing was changed.", 0, NULL);
++        return;
++    }
++    close(fd);
++    fileXioUmount(BL_HDD_MNT);
++    r = blHddWriteBoot(data, size, "BIBLE: putting the HDD's boot program back");
++    free(data);
++    ioBlockOps(0);
++    guiMsgBoxSound(r == 0 ? SFX_SAVE : SFX_ERROR);
++    guiMsgBox(r == 0 ? "The HDD's old boot program is back. BIBLE no longer starts from the HDD." : "RIPPS2 could not write the boot program back. Try again; the kept copy is untouched.", 0, NULL);
++}
++
++static int blHddHasBackup(void)
++{
++    int fd, has = 0;
++    ioBlockOps(1);
++    if (blHddMount() && (fd = open(BL_HDD_BACKUP, O_RDONLY)) >= 0) {
++        close(fd);
++        has = 1;
++    }
++    fileXioUmount(BL_HDD_MNT);
++    ioBlockOps(0);
++    return has;
++}
++
+ // The steps: which card, where RIPPS2 starts from, then one screen saying everything that will be
+ // written, taken only with START
+ static void blInstall(void)
+ {
+     char items[2][64], what[64], boot[256], msg[900], alt[160] = "";
+     const char *list[6];
+-    int ports[2], n = 0, i, port, pick, bootPort, current = -1;
++    int ports[4], n = 0, i, port, pick, bootPort, current = -1, hdd = blHddUsable();
+     blWhere_t where[5];
+     int count = 0, elfKb = 0, fd;
+ 
+@@ -1009,14 +1298,30 @@ static void blInstall(void)
+             list[n] = items[n];
+             ports[n++] = port;
+         }
++    if (hdd) { // build 73: the internal HDD too, and what it booted before BIBLE when that is kept
++        list[n] = "INTERNAL HDD  (its boot area)";
++        ports[n++] = 2;
++        if (blHddHasBackup()) {
++            list[n] = "RESTORE THE HDD'S OLD BOOT PROGRAM";
++            ports[n++] = 3;
++        }
++    }
+     if (n == 0) {
+         guiMsgBoxSound(SFX_ERROR);
+-        guiMsgBox("There is no formatted PS2 memory card in either slot. BIBLE lives on a memory card: insert one, then try again.", 0, NULL);
++        guiMsgBox("There is no formatted PS2 memory card in either slot, and no internal HDD. BIBLE lives on a memory card or the HDD: insert a card, then try again.", 0, NULL);
+         return;
+     }
+     if ((pick = ripps2PickList(list, n)) < 0)
+         return;
+     port = ports[pick];
++    if (port == 2) {
++        blHddInstall();
++        return;
++    }
++    if (port == 3) {
++        blHddRestore();
++        return;
++    }
+ 
+     // where RIPPS2 starts from: as it is now when PS2BBL 1.2.0 reaches it, or a copy
+     memset(where, 0, sizeof(where));
+@@ -1130,7 +1435,7 @@ void ripps2BibleManage(void)
+         blCardWhat(port, boot, what[port], sizeof(what[port]));
+     snprintf(msg, sizeof(msg),
+              "MEMORY CARD 1: %s\nMEMORY CARD 2: %s\n%s\n"
+-             "BIBLE is PS2BBL 1.2.0 by El Isra, set up by RIPPS2: no wait at power on, RIPPS2 first, and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Install or repair it on a memory card?",
++             "BIBLE is PS2BBL 1.2.0 by El Isra, set up by RIPPS2: no wait at power on, RIPPS2 first, and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Install or repair it on a memory card or the internal HDD?",
+              what[0], what[1],
+              removed ? "(Removed a SYS-CONF/PS2BBL.INI build 68 wrote for a loader that never reads it.)\n" : "");
+     guiMsgBoxSound(SFX_MESSAGE);
+diff --git a/src/ripps2ember.c b/src/ripps2ember.c
+index 1fe7ae4..10617ef 100644
+--- a/src/ripps2ember.c
++++ b/src/ripps2ember.c
+@@ -94,3 +94,62 @@ int ripps2EmberInstall(const char *elfPath)
+     LOG("EMBER: installed %s\n", elfPath);
+     return 1;
+ }
++
++/*
++  RIPPS2 build 73: POPSTARTER on board.
++
++  POPSTARTER (krHACKen's PS1 launcher) rides inside RIPPS2.ELF as released. A PS1 launch that finds no
++  POPSTARTER of the user's own (the path set in Settings, the drive's POPS, APPS and top folders, the
++  game's own XX.<name>.ELF, the memory cards) writes this copy to the drive's POPS folder and goes on.
++  A copy the user already has always wins: nothing here overwrites a file.
++*/
++
++extern void *popstarter_elf_bin; // misc/popstarter_elf.bin: elf/popstarter/POPSTARTER.ELF
++extern int size_popstarter_elf_bin;
++
++#define POPSTARTER_ELF_SIZE  167700
++#define POPSTARTER_ELF_CRC32 0x59ebabb9u
++
++int ripps2PopstarterInstall(const char *elfPath)
++{
++    char dir[256];
++    const char *slash = strrchr(elfPath, '/'), *bslash = strrchr(elfPath, '\\');
++    const char *sep = slash > bslash ? slash : bslash;
++    int fd, done = 0;
++
++    if (size_popstarter_elf_bin != POPSTARTER_ELF_SIZE ||
++        crc32(0L, (const unsigned char *)&popstarter_elf_bin, size_popstarter_elf_bin) != POPSTARTER_ELF_CRC32)
++        return 0;
++    if (sep == NULL || (int)(sep - elfPath) >= (int)sizeof(dir))
++        return 0;
++    fd = open(elfPath, O_RDONLY);
++    if (fd >= 0) { // one is there already: it is the user's, and it is used as it is
++        close(fd);
++        return 1;
++    }
++    snprintf(dir, sizeof(dir), "%.*s", (int)(sep - elfPath), elfPath);
++    mkdir(dir, 0777); // the POPS folder: there already when the drive has PS1 games
++
++    fd = open(elfPath, O_WRONLY | O_CREAT | O_TRUNC, 0666);
++    if (fd < 0) {
++        LOG("POPSTARTER: cannot write %s\n", elfPath);
++        return 0;
++    }
++    while (done < size_popstarter_elf_bin) {
++        int n = size_popstarter_elf_bin - done;
++        if (n > EMBER_CHUNK)
++            n = EMBER_CHUNK;
++        if (write(fd, (const unsigned char *)&popstarter_elf_bin + done, n) != n)
++            break;
++        done += n;
++        ripps2LaunchPump();
++    }
++    close(fd);
++    if (done != size_popstarter_elf_bin) {
++        LOG("POPSTARTER: install failed (%d of %d bytes)\n", done, size_popstarter_elf_bin);
++        remove(elfPath);
++        return 0;
++    }
++    LOG("POPSTARTER: installed %s\n", elfPath);
++    return 1;
++}
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index 09b57f6..78f5dba 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -74,7 +74,7 @@
+ #define FB_SOFT GS_SETREG_RGBA(0x67, 0x6C, 0x7A, 0x80)
+ #define FB_PRIM(r, g, b, a) GS_SETREG_RGBAQ((r), (g), (b), (a), 0x00)
+ 
+-enum { FB_KIND_DEVICE = 0, FB_KIND_START, FB_KIND_DIR, FB_KIND_SAVE, FB_KIND_FILE, FB_KIND_ELF, FB_KIND_VMC, FB_KIND_PSU };
++enum { FB_KIND_DEVICE = 0, FB_KIND_START, FB_KIND_DIR, FB_KIND_SAVE, FB_KIND_FILE, FB_KIND_ELF, FB_KIND_VMC, FB_KIND_PSU, FB_KIND_VCD };
+ 
+ typedef struct
+ {
+@@ -488,6 +488,8 @@ static void fbScanDir(void)
+                 e->kind = FB_KIND_ELF;
+             else if (fbHasSuffix(e->name, ".psu"))
+                 e->kind = FB_KIND_PSU;
++            else if (fbHasSuffix(e->name, ".vcd"))
++                e->kind = FB_KIND_VCD;
+             else if (fbIsCardImage(child, e->name, e->size))
+                 e->kind = FB_KIND_VMC;
+         }
+@@ -1069,6 +1071,36 @@ static void fbRunElf(const fb_entry_t *e)
+     ripps2LaunchAborted();
+ }
+ 
++// build 73: a PS1 game (.VCD) in a drive's POPS folder starts the way Storage starts it, through
++// POPSTARTER: the user's own copy where there is one, else the one RIPPS2 carries, written beside it
++static void fbRunVcd(const fb_entry_t *e)
++{
++    char name[FB_NAME], ask[200];
++    const char *colon = strchr(fbPath, ':');
++    opl_io_module_t *mod = NULL;
++    int n = (int)strlen(e->name) - 4;
++
++    if (colon == NULL || strcasecmp(colon + 1, "/POPS/") != 0) {
++        guiMsgBox("PS1 games start from the POPS folder at the top of a drive. Move this .VCD there and try again.", 0, NULL);
++        return;
++    }
++    if (!strncmp(fbPath, "mass", 4) && fbPath[4] >= '0' && fbPath[4] <= '7')
++        mod = oplGetModule(BDM_MODE + (fbPath[4] - '0'));
++    else if (!strncmp(fbPath, "mmce", 4))
++        mod = oplGetModule(MMCE_MODE);
++    if (mod == NULL || mod->support == NULL || mod->support->itemLaunchVcd == NULL) {
++        guiMsgBox("This drive's games are not started yet. Open it once in Storage, then start the game here or there.", 0, NULL);
++        return;
++    }
++    snprintf(name, sizeof(name), "%.*s", n, e->name);
++    snprintf(ask, sizeof(ask), "Play %s?", name);
++    if (!guiMsgBox(ask, 1, NULL))
++        return;
++    ripps2PlayLaunchSequence();
++    mod->support->itemLaunchVcd(mod->support, name, NULL);
++    ripps2LaunchAborted();
++}
++
+ // Files the text editor opens from the browser
+ static int fbIsText(const char *name)
+ {
+@@ -1178,6 +1210,10 @@ static void fbOpen(void)
+             sfxPlay(SFX_CONFIRM);
+             fbRunElf(e);
+             break;
++        case FB_KIND_VCD:
++            sfxPlay(SFX_CONFIRM);
++            fbRunVcd(e);
++            break;
+         case FB_KIND_VMC: {
+             char image[320];
+             fbJoin(image, sizeof(image), fbPath, e->name);
+@@ -1838,6 +1874,15 @@ static void fbGlyph(int kind, int x, int y, u64 col)
+             rmDrawRect(x + 1, y + 1, 12, 15, c);
+             rmDrawRect(x + 3, y + 3, 8, 5, FB_PRIM(0x03, 0x08, 0x22, 0x80));
+             break;
++        case FB_KIND_VCD: // a disc
++            rmDrawLine(x + 4, y + 2, x + 11, y + 2, c);
++            rmDrawLine(x + 11, y + 2, x + 14, y + 8, c);
++            rmDrawLine(x + 14, y + 8, x + 11, y + 14, c);
++            rmDrawLine(x + 11, y + 14, x + 4, y + 14, c);
++            rmDrawLine(x + 4, y + 14, x + 1, y + 8, c);
++            rmDrawLine(x + 1, y + 8, x + 4, y + 2, c);
++            rmDrawRect(x + 6, y + 7, 3, 3, c);
++            break;
+         case FB_KIND_ELF: // a play mark
+             rmDrawLine(x + 2, y + 2, x + 13, y + 8, c);
+             rmDrawLine(x + 13, y + 8, x + 2, y + 14, c);
+@@ -2031,7 +2076,7 @@ void ripps2RenderFiles(void)
+         int icons[6], n = 0;
+         const char *texts[6];
+         icons[n] = selIcon;
+-        texts[n++] = e != NULL && e->kind == FB_KIND_ELF ? "RUN" : "OPEN";
++        texts[n++] = e != NULL && e->kind == FB_KIND_ELF ? "RUN" : e != NULL && e->kind == FB_KIND_VCD ? "PLAY" : "OPEN";
+         icons[n] = backIcon;
+         texts[n++] = fbPath[0] ? "BACK" : "EXIT";
+         if (fbPath[0]) {
+diff --git a/src/ripps2hdd.c b/src/ripps2hdd.c
+index d8740d2..7199ce9 100644
+--- a/src/ripps2hdd.c
++++ b/src/ripps2hdd.c
+@@ -14,6 +14,9 @@
+   scan now. Removing a partition is gated twice -- what it is and what goes with it, then a last
+   screen that only START gets past -- and some never can be removed: the system's (__ names), the
+   one RIPPS2 keeps its settings on, and the one RIPPS2 was started from.
++
++  Build 73: removing works. RiptOPL's APA driver refused every partition delete, so it always said
++  COULD NOT REMOVE; RIPPS2's driver now takes a user partition's (modules/hdd/apa, hddRemove).
+ */
+ 
+ #include <stdio.h>
+@@ -22,6 +25,7 @@
+ #define NEWLIB_PORT_AWARE
+ #include <fileXio_rpc.h> // fileXioDopen/Dread/Devctl/Remove on hdd0: (partition level, below newlib)
+ #include <hdd-ioctl.h>
++#include <errno.h> // EBUSY: a partition still open
+ 
+ #include "include/opl.h"
+ #include "include/gui.h"
+@@ -33,6 +37,7 @@
+ #include "include/pad.h"
+ #include "include/sound.h"
+ #include "include/hddsupport.h"
++#include "include/ioman.h" // ioBlockOps: nothing reads the drive while a partition goes
+ #include "include/ripps2.h"
+ #include "include/ripps2tint.h" // RIPPSettings Color Theme: last, so every colour below goes through it
+ 
+@@ -251,9 +256,20 @@ void ripps2HddManager(void)
+                     if (guiMsgBox(ask, 0, NULL) == 2) {
+                         snprintf(path, sizeof(path), "hdd0:%s", name);
+                         hmStatus("REMOVING");
++                        // build 73: the driver lets a user's partition go now (it refused every one
++                        // before, so this always failed); nothing else reads the drive meanwhile
++                        ioBlockOps(1);
+                         int r = fileXioRemove(path);
++                        ioBlockOps(0);
++                        if (r >= 0)
++                            hddPartitionsChanged();
+                         hmScan();
+-                        snprintf(toast, sizeof(toast), r >= 0 ? "REMOVED %s" : "COULD NOT REMOVE %s", name);
++                        if (r >= 0)
++                            snprintf(toast, sizeof(toast), "REMOVED %s", name);
++                        else if (r == -EBUSY)
++                            snprintf(toast, sizeof(toast), "%s IS IN USE: TRY AGAIN", name);
++                        else
++                            snprintf(toast, sizeof(toast), "COULD NOT REMOVE %s (%d)", name, r);
+                         sfxPlay(r >= 0 ? SFX_SAVE : SFX_ERROR);
+                     } else
+                         snprintf(toast, sizeof(toast), "KEPT %s", name);
 diff --git a/src/textures.c b/src/textures.c
 index 9d09023..bd00401 100644
 --- a/src/textures.c
@@ -1405,3 +2230,29 @@ index 9d09023..bd00401 100644
  
      LOG("texDiscoverLoad(%s)\n", path);
  
+diff --git a/src/vcdsupport.c b/src/vcdsupport.c
+index 23ca939..034af70 100644
+--- a/src/vcdsupport.c
++++ b/src/vcdsupport.c
+@@ -30,6 +30,7 @@
+ #include "include/lang.h"        // _l + _STR_BDMA_ERR_* (same texts the Settings-screen equip shows)
+ #include "include/textures.h"    // texDiscoverLoad + ERR_BAD_FILE (VCD POPS cover fallback)
+ #include "include/vcdsupport.h"
++#include "include/ripps2.h" // RIPPS2 build 73: ripps2PopstarterInstall
+ #include "include/libview.h" // which list a page is showing (the L3 ring)
+ #include "include/retrogem.h"
+ 
+@@ -908,6 +909,13 @@ int vcdResolvePopstarterFor(const char *devPrefix, const char *prefix, const cha
+         LOG("POPSTARTER: using the game's own launcher %s\n", out);
+         return 1;
+     }
++    // RIPPS2 build 73: none of the user's own anywhere, so the one RIPPS2 carries goes in this drive's
++    // POPS folder, beside the games (SMB shares are left alone: nothing is written over the network)
++    if (strncmp(devPrefix, "smb", 3) != 0) {
++        snprintf(out, outSize, "%s%s%cPOPSTARTER.ELF", devPrefix, POPS_FOLDER, vcdSep(devPrefix));
++        if (ripps2PopstarterInstall(out))
++            return 1;
++    }
+     out[0] = '\0';
+     return 0;
+ }

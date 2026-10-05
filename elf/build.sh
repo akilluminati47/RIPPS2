@@ -46,6 +46,11 @@ cp -f "$HERE"/theme/gfx/*.png "$SRC/gfx/"
 # elf/bible/README.md for its licence and source)
 cp -f "$HERE/bible/SYSTEM.XLF" "$SRC/misc/bible_system.xlf"
 cp -f "$HERE/bible/MX4SIO/SYSTEM.XLF" "$SRC/misc/bible_mx4sio_system.xlf"
+# BIBLE on the HDD (build 73): PS2BBL 1.2.0's HDD build, HSYSTEM.XLF from the same release, unchanged
+cp -f "$HERE/bible/HSYSTEM.XLF" "$SRC/misc/bible_hdd_system.xlf"
+# POPSTARTER (build 73): krHACKen's PS1 launcher, carried as released (elf/popstarter/README.md); RIPPS2
+# writes it to a drive's POPS folder only when the user has no POPSTARTER of their own
+cp -f "$HERE/popstarter/POPSTARTER.ELF" "$SRC/misc/popstarter_elf.bin"
 # The build number shown in About: the number of the last patch (build N is patch N)
 LAST="$(ls "$HERE"/patches/0*.patch | tail -n1)"
 NUM="$(basename "$LAST" | cut -c1-4 | sed 's/^0*//')"
