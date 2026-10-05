@@ -1,5 +1,17 @@
 # RIPPS2 changelog
 
+## Build 75 (alpha), changes since build 74
+
+### 720p and 1080i, drawn in one pass
+- **HD is drawn the way 480p is**: one full frame, every animation at full detail, 60 fps. It used to be drawn three times over in bands from a small buffer (gsKit's "hires" mode), which is what crashed. Now RIPPS2 draws a 640-wide frame and the PS2's own video output stretches it to 1280 or 1920 wide, with all 720 lines kept (1080i: 540 per field, as before).
+- Nothing is simplified for HD, and the towers stay alive behind every prompt.
+
+### Booting from the HDD
+- **The boot sound starts right away**, before the HDD's drivers come up to read your settings. If you turned the boot sound off, RIPPS2 leaves a small `RIPPS2/QUIETBOOT` marker on memory card 1 so it stays quiet then too.
+
+### Neutrino (from RiptOPL)
+- **Show Launch Arguments** (Settings > Game Launching > Neutrino Defaults): see every argument Neutrino will get before a launch, and go back if it looks wrong.
+
 ## Build 74 (alpha), changes since build 73
 
 ### 720p and 1080i
