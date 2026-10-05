@@ -141,7 +141,7 @@ index 1df589b..d54a16f 100644
          return;
      }
 diff --git a/src/cuesupport.c b/src/cuesupport.c
-index a3f1444..daf6d10 100644
+index a3f1444..d51db38 100644
 --- a/src/cuesupport.c
 +++ b/src/cuesupport.c
 @@ -23,6 +23,7 @@
@@ -168,6 +168,28 @@ index a3f1444..daf6d10 100644
  int cueResolveEmberBios(const char *devPrefix, char *out, int outSize)
  {
      return cueResolveEmberFile(devPrefix, EMBER_BIOS_NAME, out, outSize);
+@@ -179,8 +189,10 @@ int cueScanDir(const char *devPrefix, cue_entry_t **outList)
+     // gamesDir is scratch for the probe here -- cueResolveEmber writes the ELF path into it and we
+     // discard that, then rebuild it as the games directory below. One buffer, not two, on a stack
+     // this platform keeps small.
+-    if (!cueResolveEmber(devPrefix, gamesDir, sizeof(gamesDir)))
+-        return 0;
++    // RIPPS2 build 71: RIPPS2 carries Ember and installs it at a game's first launch (cueEnsureEmber),
++    // so a drive's EMBER/games folder is listed without a core of its own. Without the core, a games
++    // folder that will not open is simply no library, never an unreadable device: the case above.
++    int haveCore = cueResolveEmber(devPrefix, gamesDir, sizeof(gamesDir));
+ 
+     cueBuildGamesDir(devPrefix, gamesDir, sizeof(gamesDir));
+     if (gamesDir[0] == '\0')
+@@ -189,6 +201,8 @@ int cueScanDir(const char *devPrefix, cue_entry_t **outList)
+     errno = 0; // clear BEFORE opendir so the NULL branch reads THIS call's errno, not a stale one
+     dir = opendir(gamesDir);
+     if (dir == NULL) {
++        if (!haveCore)
++            return 0; // build 71: no core and no folder that opens: nothing to list
+         // Absent-vs-contended split, identical in spirit to vcdScanOpenDir. A device with a POPS
+         // folder and no EMBER folder is the ordinary case and MUST report 0 ("readable, nothing
+         // here"), not a failure -- ps1FillGameList treats a failure from either half as a reason to
 diff --git a/src/dialogs.c b/src/dialogs.c
 index eaab620..c8dc052 100644
 --- a/src/dialogs.c
