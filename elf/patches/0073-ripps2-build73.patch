@@ -422,6 +422,49 @@ index 70ab14e..39fa4a6 100644
  - label: RIPPS2_GLYPHS
    string: D-pad Glyphs
  - label: HINT_RIPPS2_GLYPHS
+diff --git a/modules/network/ps2ips/ps2ips.c b/modules/network/ps2ips/ps2ips.c
+index b4c4031..ee16a7a 100644
+--- a/modules/network/ps2ips/ps2ips.c
++++ b/modules/network/ps2ips/ps2ips.c
+@@ -166,6 +166,26 @@ static void do_recv( void * rpcBuffer, int size )
+ 	s_offset = 64 - srest;
+ 	recvlen = MIN(BUFF_SIZE, recv_pkt->length);
+ 
++	/* RIPPS2 fix (build 73): the RA fix below cuts a tail longer than
++	   RESTS_EBUF_MAX after lwIP has already handed those bytes over, so
++	   they were lost from the TCP stream (TLS records then fail their
++	   MAC: the cover art download). Peek first and, when the tail would
++	   not fit, take only up to the last 64-byte boundary of the EE
++	   buffer; the rest stays queued in lwIP for the next call. A reply
++	   with no tail (every RA receive) is unchanged. */
++	if(recvlen > 64)
++	{
++		rlen = recv(recv_pkt->socket, lwip_buffer + s_offset, recvlen, recv_pkt->flags | MSG_PEEK);
++		if(rlen <= 0) goto recv_end;
++		if(rlen > 64)
++		{
++			erest = ((int)recv_pkt->ee_addr + rlen) & 0x3F;
++			if(erest > RESTS_EBUF_MAX)
++				rlen -= erest;
++		}
++		recvlen = rlen;
++	}
++
+ 	// Do actual TCP recv
+ 	rlen = recv(recv_pkt->socket, lwip_buffer + s_offset, recvlen, recv_pkt->flags);
+ 
+@@ -579,7 +599,10 @@ static void do_gethostbyname( void *rpcBuffer, int size )
+ 		resPtr->result = 0;
+ 		resPtr->hostent.h_addrtype = ret->h_addrtype;
+ 		resPtr->hostent.h_length = ret->h_length;
+-		memcpy(&resPtr->hostent.h_addr, &ret->h_addr_list[0], sizeof(resPtr->hostent.h_addr));
++		/* RIPPS2 fix (build 73): h_addr_list[0] points at the address;
++		   the stock code copied the pointer itself, so every lookup
++		   answered an IOP address (0x8001xxxx) instead of the host's. */
++		memcpy(&resPtr->hostent.h_addr, ret->h_addr_list[0], sizeof(resPtr->hostent.h_addr));
+ 	}else{
+ 		resPtr->result = -1;
+ 	}
 diff --git a/src/dialogs.c b/src/dialogs.c
 index edba718..cb28925 100644
 --- a/src/dialogs.c
@@ -487,10 +530,10 @@ index b9e0da3..c179f1e 100644
      {'S', "carried unmodified: github.com/Gageformer/Ember/releases"},
 diff --git a/src/ripps2art.c b/src/ripps2art.c
 new file mode 100644
-index 0000000..46a9bca
+index 0000000..f4a21fa
 --- /dev/null
 +++ b/src/ripps2art.c
-@@ -0,0 +1,521 @@
+@@ -0,0 +1,526 @@
 +/*
 +  RIPPS2 build 73: Cover Art Download (Settings > Network, after NBD Server).
 +
@@ -789,9 +832,14 @@ index 0000000..46a9bca
 +    int n = 0, k, ok = 0;
 +    artClose();
 +    he = gethostbyname(ART_HOST);
-+    if (he != NULL && he->h_addr_list != NULL)
-+        for (k = 0; he->h_addr_list[k] != NULL && n < 4; k++)
-+            memcpy(&addr[n++], he->h_addr_list[k], sizeof(addr[0]));
++    if (he != NULL && he->h_length == 4 && he->h_addr_list != NULL)
++        for (k = 0; he->h_addr_list[k] != NULL && n < 4; k++) {
++            unsigned int v;
++            memcpy(&v, he->h_addr_list[k], sizeof(v));
++            v = ntohl(v);
++            if ((v >> 24) != 0 && (v >> 24) != 127 && (v >> 24) < 224)
++                addr[n++] = htonl(v);
++        }
 +    for (k = 0; k < 4; k++)
 +        addr[n++] = artIp(fallback[(tries + k) & 3]);
 +    tries++;
@@ -802,7 +850,7 @@ index 0000000..46a9bca
 +        a.sin_port = htons(443);
 +        a.sin_addr.s_addr = addr[k];
 +        snprintf(artLine2, sizeof(artLine2), "%s %u.%u.%u.%u%s", k < n - 4 ? "DNS" : "fallback", h >> 24, (h >> 16) & 255,
-+                 (h >> 8) & 255, h & 255, he == NULL ? " (no DNS answer)" : "");
++                 (h >> 8) & 255, h & 255, n == 4 ? " (no DNS answer)" : "");
 +        artDraw();
 +        artSock = socket(AF_INET, SOCK_STREAM, 0);
 +        if (artSock < 0) {
