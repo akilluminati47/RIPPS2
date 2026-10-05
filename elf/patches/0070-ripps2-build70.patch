@@ -208,8 +208,30 @@ index ac1b1f9..4b258bd 100644
  #ifdef RETROACHIEVEMENTS
      // RA mark over a tracked game's cover (theme override "ra_mark"). Appended last:
      // texId is positional.
+diff --git a/include/themes.h b/include/themes.h
+index 165eef2..ef5568f 100644
+--- a/include/themes.h
++++ b/include/themes.h
+@@ -81,6 +81,9 @@ typedef struct
+     // Lists WITHOUT a decorator: lets drawItemsList warm the visible page's covers through
+     // the normal cache path instead of loading them one highlight at a time (#296).
+     struct theme_element *coverElem;
++    // RIPPS2 build 70: <name>_hidden=1 keeps the list for navigation and the art warming but draws no
++    // rows (RIPFLOW: covers only, no title under a highlight)
++    int hidden;
+ } items_list_t;
+ 
+ // Forward declaration: an element carries a back-pointer to the family it was parsed into (see
+@@ -240,6 +243,7 @@ int thmCoverflowIsAnimating(void);
+ void thmInit(void);
+ void thmReinit(const char *path);
+ void thmReloadScreenExtents(void);
++void thmDrawBackdrop(void); // RIPPS2 build 70: the theme's backdrop images (RIPFLOW's frame) on the other tabs
+ int thmAddElements(char *path, const char *separator, int forceRefresh);
+ const char *thmGetValue(void);
+ GSTEXTURE *thmGetTexture(unsigned int id);
 diff --git a/lng_tmpl/_base.yml b/lng_tmpl/_base.yml
-index b97d7c1..0a2f1e0 100644
+index b97d7c1..d52a704 100644
 --- a/lng_tmpl/_base.yml
 +++ b/lng_tmpl/_base.yml
 @@ -1403,6 +1403,38 @@ gui_strings:
@@ -231,7 +253,7 @@ index b97d7c1..0a2f1e0 100644
 +- label: RIPPS2_GLYPHS
 +  string: D-pad Glyphs
 +- label: HINT_RIPPS2_GLYPHS
-+  string: "The D-pad glyphs beside a drive's name in Storage and a formation's name in Memory Files. Hidden leaves plain names. Fade In brings them in when you press Left or Right (Up or Down on Coverflow); Fade Out shows them as a page opens. Either way they fade away again."
++  string: "The D-pad glyphs beside a drive's name in Storage and a formation's name in Memory Files. Hidden leaves plain names. Fade In brings them in when you press Left or Right (Up or Down on RIPFLOW); Fade Out shows them as a page opens. Either way they fade away again."
 +- label: RIPPS2_COLOR_THEME
 +  string: Color Theme
 +- label: HINT_RIPPS2_COLOR_THEME
@@ -247,10 +269,45 @@ index b97d7c1..0a2f1e0 100644
 +- label: RIPPS2_CATEGORY_ORDER
 +  string: Category Order
 +- label: HINT_RIPPS2_CATEGORY_ORDER
-+  string: "Swaps Memory Files with Launch Disc on the category bar, so Memory Files comes first. Made for the built-in Coverflow theme (Settings > Interface > Theme > <Coverflow>), where Left and Right run the carousel and Up and Down switch drives."
++  string: "Swaps Memory Files with Launch Disc on the category bar, so Memory Files comes first. Made for RIPFLOW, the built-in cover carousel theme (Settings > Interface > Theme > <RIPFLOW>), where Left and Right run the covers and Up and Down switch sources."
  - label: RIPPS2_MUSIC
    string: Music
  - label: HINT_RIPPS2_MUSIC
+diff --git a/misc/theme_coverflow.cfg b/misc/theme_coverflow.cfg
+index 65863ec..142a1f2 100644
+--- a/misc/theme_coverflow.cfg
++++ b/misc/theme_coverflow.cfg
+@@ -181,6 +181,7 @@ main14:
+ 	scaled=0
+ 	width=DIM_INF
+ 	height=DIM_INF
++# RIPPS2 build 70 (RIPFLOW): the list is kept for navigation but draws nothing: just the covers
+ main15:
+ 	type=ItemsList
+ 	x=POS_MID
+@@ -189,6 +190,7 @@ main15:
+ 	height=24
+ 	aligned=1
+ 	font=1
++	hidden=1
+ #main5:
+ #	type=ItemCover
+ #	default=cover
+@@ -227,6 +229,14 @@ main17:
+ 	y=-35
+ 	width=4
+ 	height=32
++# RIPPS2 build 70 (RIPFLOW): the source (ALL GAMES, HDD GAMES, ...) at the bottom centre; Up / Down
++# switch it, and RIPPSettings can put the D-pad's Up / Down either side
++main18:
++	type=MenuText
++	x=POS_MID
++	y=-30
++	aligned=1
++	color=#5C6478
+ # FR #49's console (#System: PS1/PS2) and disc (#Media: CD/DVD) glyphs are NOT drawn on this theme's
+ # main page. The ENGINE still supports them everywhere -- any theme that wants them just declares
+ # AttributeImage elements, exactly as these did, and the info page below still shows #Media/#Format.
 diff --git a/src/dia.c b/src/dia.c
 index c73fc85..6659e62 100644
 --- a/src/dia.c
@@ -339,7 +396,7 @@ index 7fe7d25..da619a1 100644
      {UI_HEADER, 0, 1, 1, -1, 0, 0, {.label = {NULL, _STR_COVERFLOW_SETTINGS}}},
      {UI_SPLITTER},
 diff --git a/src/gui.c b/src/gui.c
-index 87b8a02..1dee2cf 100644
+index 87b8a02..8e7ef6a 100644
 --- a/src/gui.c
 +++ b/src/gui.c
 @@ -520,7 +520,7 @@ static int guiRenderRANotices(int y, int yadd)
@@ -372,6 +429,15 @@ index 87b8a02..1dee2cf 100644
      if (result && !guiSettingsLeftUntouched(diaNetConfig, result, NULL, NULL)) {
          int netProtoVal2, netAccessVal2;
          diaGetInt(diaNetConfig, CFG_NETPROTOCOL, &netProtoVal2);
+@@ -2334,7 +2339,7 @@ void guiShowArtworkConfig(void)
+ void guiShowColorsConfig(void)
+ {
+     int themeID = thmGetGuiValue();
+-    int editable = (themeID == 0 || themeID == thmFindGuiID("<Coverflow>"));
++    int editable = (themeID == 0 || themeID == thmFindGuiID("<RIPFLOW>"));
+ 
+     if (editable) {
+         // Display the default theme's colours.
 @@ -2558,6 +2563,67 @@ int guiShowAudioConfig(void)
      return guiSettingsPageResult(result);
  }
@@ -1657,7 +1723,7 @@ index 0000000..8edb4af
 +    readPads();
 +}
 diff --git a/src/ripps2ui.c b/src/ripps2ui.c
-index 695d889..008d3cb 100644
+index 695d889..114306e 100644
 --- a/src/ripps2ui.c
 +++ b/src/ripps2ui.c
 @@ -35,6 +35,7 @@
@@ -1945,7 +2011,15 @@ index 695d889..008d3cb 100644
  }
  
  // ---- LAUNCH DISC ----
-@@ -679,7 +858,7 @@ void ripps2HandleInputLaunch(void)
+@@ -658,6 +837,7 @@ int ripps2DiscQuiet(void)
+ void ripps2RenderLaunch(void)
+ {
+     ripps2DrawBackground();
++    thmDrawBackdrop(); // RIPFLOW's frame stays on (build 70)
+     ripps2RenderCategoryBar();
+     if (ripps2CdIsOpen()) { // RIPPS2: an audio CD playing, in its panel
+         ripps2CdRender();
+@@ -679,7 +859,7 @@ void ripps2HandleInputLaunch(void)
      if (getKeyOn(KEY_R1)) {
          ripps2StepCategory(1);
      } else if (getKeyOn(KEY_L1)) {
@@ -1954,7 +2028,13 @@ index 695d889..008d3cb 100644
      } else if (getKeyOn(KEY_START)) {
          sfxPlay(SFX_CONFIRM);
          int wait;
-@@ -738,6 +917,7 @@ void ripps2RenderMemory(void)
+@@ -733,11 +913,13 @@ void ripps2RenderMemory(void)
+     int a;
+ 
+     ripps2DrawBackground();
++    thmDrawBackdrop(); // RIPFLOW's frame stays on (build 70)
+     ripps2RenderCategoryBar();
+     // the same footnotes as LAUNCH DISC: the prompt where START LASER sits, the formation on the line of
      // the disc note (small, between small Left / Right), its count just under it
      renderStartPrompt("START BROWSER", 423);
  
@@ -1962,7 +2042,7 @@ index 695d889..008d3cb 100644
      static int named = -1;
      if (now - memoryLastFrame > CLOCKS_PER_SEC / 2 || named != gRipps2Formation) // back on the page, or the cycle moved on
          formationNameShow();
-@@ -753,11 +933,12 @@ void ripps2RenderMemory(void)
+@@ -753,11 +935,12 @@ void ripps2RenderMemory(void)
  
      const char *name = formationName[gRipps2Formation];
      int half = fntCalcDimensions(gTheme->fonts[3], name) / 2, g = GLYPH_H * 3 / 4;
@@ -1978,7 +2058,7 @@ index 695d889..008d3cb 100644
          rmDrawPixmap(rt, 320 + half + 10 + g / 2, 450, ALIGN_CENTER, g, g, SCALING_RATIO, tex, 0);
      snprintf(count, sizeof(count), "%02d / %02d", gRipps2Formation + 1, FORMATION_COUNT);
      fntRenderString(gTheme->fonts[3], 320, 467, ALIGN_CENTER, 0, 0, count, dim);
-@@ -771,16 +952,18 @@ void ripps2HandleInputMemory(void)
+@@ -771,16 +954,18 @@ void ripps2HandleInputMemory(void)
      if (getKeyOn(KEY_L1)) {
          ripps2StepCategory(-1);
      } else if (getKeyOn(KEY_R1)) {
@@ -2041,10 +2121,30 @@ index e064547..9d09023 100644
      // Positional: guarded by the same #ifdef as RA_MARK in enum INTERNAL_TEXTURE. Without
      // this row TEXTURES_COUNT grows but the initialiser does not, leaving the last slot
 diff --git a/src/themes.c b/src/themes.c
-index 35f440c..38cfa6f 100644
+index 35f440c..aa1a7ff 100644
 --- a/src/themes.c
 +++ b/src/themes.c
-@@ -2552,10 +2552,11 @@ static void drawMenuText(struct menu_list *menu, struct submenu_list *item, conf
+@@ -1037,6 +1037,19 @@ static mutable_image_t *initMutableImage(const char *themePath, config_set_t *th
+ 
+ // StaticImage //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ 
++// RIPPS2 build 70: the theme's backdrop, the images that come straight after its Background (RIPFLOW's
++// console frame), drawn on Launch Disc and Memory Files as well, over their towers and orbs. The
++// RIPPS2 theme has none (its Background is followed by text), so it is unchanged.
++void thmDrawBackdrop(void)
++{
++    theme_element_t *elem = gTheme != NULL ? gTheme->mainElems.first : NULL;
++    if (elem != NULL && elem->type == ELEM_TYPE_BACKGROUND)
++        elem = elem->next;
++    for (; elem != NULL && elem->type == ELEM_TYPE_STATIC_IMAGE; elem = elem->next)
++        if (elem->drawElem != NULL && !elem->deviceFilter && !elem->deviceCoverage)
++            elem->drawElem(NULL, NULL, NULL, elem);
++}
++
+ static void drawStaticImage(struct menu_list *menu, struct submenu_list *item, config_set_t *config, struct theme_element *elem)
+ {
+     mutable_image_t *staticImage = (mutable_image_t *)elem->extended;
+@@ -2552,10 +2565,11 @@ static void drawMenuText(struct menu_list *menu, struct submenu_list *item, conf
  {
      GSTEXTURE *leftIconTex = NULL, *rightIconTex = NULL;
      const char *text = menuItemGetText(menu->item);
@@ -2058,7 +2158,7 @@ index 35f440c..38cfa6f 100644
  
      // RIPPS2 build 69: Left / Right switch drives, and their glyphs beside the drive's name step
      // aside while its list is being read, coming back when it settles
-@@ -2566,9 +2567,11 @@ static void drawMenuText(struct menu_list *menu, struct submenu_list *item, conf
+@@ -2566,16 +2580,19 @@ static void drawMenuText(struct menu_list *menu, struct submenu_list *item, conf
          glyphAlpha = glyphAlpha > 0x10 ? glyphAlpha - 0x10 : 0;
      else
          glyphAlpha = glyphAlpha < 0x78 ? glyphAlpha + 0x08 : 0x80;
@@ -2071,8 +2171,38 @@ index 35f440c..38cfa6f 100644
 +    if (shownAlpha <= 0) {
          // nothing beside the name
      } else if (elem->aligned) {
-         int offset = elem->width >> 1;
-@@ -2808,10 +2811,19 @@ static void drawItemText(struct menu_list *menu, struct submenu_list *item, conf
+-        int offset = elem->width >> 1;
++        // RIPPS2 build 70: either side of the centred name (RIPFLOW's source at the bottom centre)
++        int offset = rmUnScaleX(fntCalcDimensions(elem->font, text)) / 2 + 16;
+         if (leftIconTex && leftIconTex->Mem)
+-            rmDrawPixmap(leftIconTex, elem->posX - offset, elem->posY, elem->aligned, 20, 20, elem->scaled, glyphCol, 0);
++            rmDrawPixmap(leftIconTex, elem->posX - offset, elem->posY, elem->aligned, 18, 18, elem->scaled, glyphCol, 0);
+         if (rightIconTex && rightIconTex->Mem)
+-            rmDrawPixmap(rightIconTex, elem->posX + offset, elem->posY, elem->aligned, 20, 20, elem->scaled, glyphCol, 0);
++            rmDrawPixmap(rightIconTex, elem->posX + offset, elem->posY, elem->aligned, 18, 18, elem->scaled, glyphCol, 0);
+     } else {
+         // RIPPS2: either side of the name itself (the theme's width is the whole row's)
+         int textW = rmUnScaleX(fntCalcDimensions(elem->font, text));
+@@ -2694,7 +2711,7 @@ static void drawItemsList(struct menu_list *menu, struct submenu_list *item, con
+         int rowTop = posY;
+         // RIPPS2: +3 puts the capitals in the middle of the highlight bar (measured on screen)
+         posY = rowTop + (rowStep - MENU_ITEM_HEIGHT) / 2 + 3;
+-        while (ps && (others++ < itemsList->displayedItems)) {
++        while (ps && !itemsList->hidden && (others++ < itemsList->displayedItems)) {
+             if (ps == item) {
+                 color = gTheme->selTextColor;
+                 // RIPPS2: the highlighted row fills its whole row: a PS2-blue bar with a light leading edge
+@@ -2775,6 +2792,9 @@ static void initItemsList(const char *themePath, config_set_t *themeConfig, them
+ 
+     itemsList->decoratorImage = NULL;
+     itemsList->coverElem = NULL;
++    itemsList->hidden = 0;
++    snprintf(elemProp, sizeof(elemProp), "%s_hidden", name);
++    configGetInt(themeConfig, elemProp, &itemsList->hidden);
+     elem->extended = itemsList;
+     // elem->endElem = &endBasic; does the job
+ 
+@@ -2808,10 +2828,19 @@ static void drawItemText(struct menu_list *menu, struct submenu_list *item, conf
      }
  }
  
@@ -2092,7 +2222,7 @@ index 35f440c..38cfa6f 100644
  
      /* HELD ACROSS BOTH WALKS, not just the draw loop. guiAlignMenuHints() traverses the list too, so
         reading the head and then measuring it under one lock and drawing it under another would still
-@@ -2845,7 +2857,7 @@ static void drawHintText(struct menu_list *menu, struct submenu_list *item, conf
+@@ -2845,7 +2874,7 @@ static void drawHintText(struct menu_list *menu, struct submenu_list *item, conf
          int x = elem->aligned ? (screenWidth - (total + gap * (count - 1))) / 2 : elem->posX;
  
          for (; hint; hint = hint->next) {
@@ -2101,7 +2231,7 @@ index 35f440c..38cfa6f 100644
              x += gap;
          }
      }
-@@ -2861,15 +2873,19 @@ static void drawInfoHintText(struct menu_list *menu, struct submenu_list *item,
+@@ -2861,15 +2890,19 @@ static void drawInfoHintText(struct menu_list *menu, struct submenu_list *item,
      // <name>_show_run=0 hides Run for a theme that draws its own launch prompt. Back always stays: it
      // is the only way off this screen.
      int first = elem->showRun ? 0 : 1;
@@ -2123,3 +2253,32 @@ index 35f440c..38cfa6f 100644
  }
  
  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+@@ -4236,7 +4269,7 @@ static void thmRebuildGuiNames(void)
+     }
+ 
+     // built-in coverflow theme occupies the slot right after the disk themes
+-    guiThemesNames[nThemes + 1] = "<Coverflow>";
++    guiThemesNames[nThemes + 1] = "<RIPFLOW>"; // RIPPS2 build 70: the built-in coverflow theme is RIPFLOW
+     guiThemesNames[nThemes + 2] = NULL;
+ }
+ 
+@@ -4293,7 +4326,7 @@ void thmReinit(const char *path)
+         snprintf(activeName, sizeof(activeName), "%s", themes[guiThemeID - 1].name);
+         activeOnDevice = strncmp(themes[guiThemeID - 1].filePath, path, strlen(path)) == 0;
+     } else if (guiThemeID == nThemes + 1) {
+-        snprintf(activeName, sizeof(activeName), "<Coverflow>"); // built-in; its id (nThemes+1) shifts as themes are removed
++        snprintf(activeName, sizeof(activeName), "<RIPFLOW>"); // built-in; its id (nThemes+1) shifts as themes are removed
+     }
+ 
+     // One guiLock section across the removal loop AND the rebuild: the frees below invalidate
+@@ -4389,8 +4422,8 @@ int thmGetGuiValue(void)
+ int thmFindGuiID(const char *theme)
+ {
+     if (theme) {
+-        if (strcasecmp(theme, "<Coverflow>") == 0)
+-            return nThemes + 1; // built-in coverflow theme
++        if (strcasecmp(theme, "<RIPFLOW>") == 0 || strcasecmp(theme, "<Coverflow>") == 0)
++            return nThemes + 1; // built-in coverflow theme (RIPPS2 build 70: RIPFLOW; <Coverflow> in older settings)
+         int i = 0;
+         for (; i < nThemes; i++) {
+             if (strcasecmp(themes[i].name, theme) == 0)
