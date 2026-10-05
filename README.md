@@ -1,7 +1,7 @@
 # RIPPS2
 
 > ### Kill it: RIPPS2 build 70 (alpha)
-> **RIP PS2: rest in peace, the ELF killer.**
+> **RIP PS2, the ELF killer.** ELF-sufficient, never ELF-destructive: your other ELFs stay safe on the shelf (nothing is deleted unless you ask), they just get a well-earned rest.
 > 1. **[Download RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/download/v0.0.70-alpha/RIPPS2.elf)** (one file, about 1.9 MB).
 > 2. Copy it to a USB stick or memory card, and launch it from FreeMcBoot, PS2BBL, wLaunchELF or whatever you already use to start homebrew. In PCSX2: **System > Start File** and pick `RIPPS2.elf`.
 > 3. Tell us how it went: [open an issue](https://github.com/akilluminati47/RIPPS2/issues) or find **#RIPPS2** on the developers' Discord, [discord.gg/ggkCDWqhE](https://discord.gg/ggkCDWqhE) (invite good for October 2026).
