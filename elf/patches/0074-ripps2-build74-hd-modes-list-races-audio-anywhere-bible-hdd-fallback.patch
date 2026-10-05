@@ -1,0 +1,1085 @@
+diff --git a/include/renderman.h b/include/renderman.h
+index aa5a6e7..83782b4 100644
+--- a/include/renderman.h
++++ b/include/renderman.h
+@@ -140,6 +140,7 @@ void rmStartFrame(void);
+ 
+ /** Ends the frame - last to call every frame */
+ void rmEndFrame(void);
++int rmQueueBusy(void); // build 74: an HD mode, or the last frame filled most of the draw queue
+ 
+ /** Sets the display offset in units of pixels */
+ void rmSetDisplayOffset(int x, int y);
+diff --git a/include/sound.h b/include/sound.h
+index aff9c67..0e73068 100644
+--- a/include/sound.h
++++ b/include/sound.h
+@@ -77,4 +77,6 @@ void bgmUnMute(void);
+  * why the art worst-open latch samples it separately. */
+ extern volatile int gBgmInRead;
+ 
++int ripps2AudioBase(char *out, int size, int searchDrives); // build 74: the folder the AUDIO folder is in
++
+ #endif
+diff --git a/src/favsupport.c b/src/favsupport.c
+index e7acd72..210f7a3 100644
+--- a/src/favsupport.c
++++ b/src/favsupport.c
+@@ -51,8 +51,8 @@ typedef struct
+     char *text; // heap copy; owned here (for a VCD favourite this is the .VCD basename / launch name)
+ } fav_rec_t;
+ 
+-static fav_rec_t *favArray = NULL;
+-static int favCount = 0;
++static fav_rec_t *volatile favArray = NULL;
++static volatile int favCount = 0;
+ 
+ static char *favStrdup(const char *s)
+ {
+@@ -392,15 +392,39 @@ static int favWriteFile(fav_raw_t *recs, int count)
+ 
+ // ---- in-memory array lifecycle ------------------------------------------------
+ 
+-static void favFreeArray(void)
++static void favFreeRecords(fav_rec_t *arr, int count)
+ {
+-    if (favArray != NULL) {
+-        for (int i = 0; i < favCount; i++)
+-            free(favArray[i].text);
+-        free(favArray);
+-        favArray = NULL;
++    if (arr != NULL) {
++        for (int i = 0; i < count; i++)
++            free(arr[i].text);
++        free(arr);
+     }
+-    favCount = 0;
++}
++
++// RIPPS2 build 74: a rebuild no longer frees the list under its readers. It used to free it first and
++// fill a new one in place, while the GUI (the info page: a row's source, kind, flags) and the art
++// worker read it with no lock -- a freed or half-built record. Now the new list is built aside and
++// published whole; the old one is kept, untouched, until the rebuild after, by when no reader that
++// started on it is still in it.
++static fav_rec_t *favRetired = NULL;
++static int favRetiredCount = 0;
++
++static void favPublish(fav_rec_t *arr, int count)
++{
++    favFreeRecords(favRetired, favRetiredCount);
++    favRetired = favArray;
++    favRetiredCount = favCount;
++    favCount = 0; // a reader never pairs the new list with the old count
++    favArray = arr;
++    favCount = count;
++}
++
++static void favFreeArray(void)
++{
++    favPublish(NULL, 0);
++    favFreeRecords(favRetired, favRetiredCount);
++    favRetired = NULL;
++    favRetiredCount = 0;
+ }
+ 
+ // Resolve a stored record to a live source list + mark the source item favourited. BDM-range
+@@ -641,7 +665,8 @@ static int favSameRecord(const fav_raw_t *a, const fav_raw_t *b)
+ 
+ static int favUpdateItemList(item_list_t *itemList)
+ {
+-    favFreeArray();
++    fav_rec_t *arr = NULL;
++    int cnt = 0;
+     mixClearStars(); // RIPPS2: relit below from the records that resolve
+ 
+     int rawCount = 0, recentCount = 0, favRaw = 0, i, j;
+@@ -654,6 +679,7 @@ static int favUpdateItemList(item_list_t *itemList)
+     if (rawCount == 0) {
+         free(favs);
+         free(recents);
++        favPublish(NULL, 0);
+         return 0;
+     }
+     fav_raw_t *recs = (fav_raw_t *)calloc(rawCount, sizeof(fav_raw_t));
+@@ -663,6 +689,7 @@ static int favUpdateItemList(item_list_t *itemList)
+         free(isRecent);
+         free(favs);
+         free(recents);
++        favPublish(NULL, 0);
+         return 0;
+     }
+     for (i = 0; i < recentCount; i++) {
+@@ -674,10 +701,11 @@ static int favUpdateItemList(item_list_t *itemList)
+     free(favs);
+     free(recents);
+ 
+-    favArray = (fav_rec_t *)calloc(rawCount, sizeof(fav_rec_t));
+-    if (favArray == NULL) {
++    arr = (fav_rec_t *)calloc(rawCount, sizeof(fav_rec_t));
++    if (arr == NULL) {
+         free(recs);
+         free(isRecent);
++        favPublish(NULL, 0);
+         return 0;
+     }
+ 
+@@ -731,19 +759,20 @@ static int favUpdateItemList(item_list_t *itemList)
+         if (txt == NULL)
+             continue; // OOM -> skip this record rather than store a NULL name
+ 
+-        favArray[favCount].owner = owner;
+-        favArray[favCount].mode = resolvedMode;
+-        favArray[favCount].id = resolvedId;
+-        favArray[favCount].icon_id = recs[i].icon_id;
+-        favArray[favCount].text_id = recs[i].text_id;
+-        favArray[favCount].kind = recs[i].kind;
+-        favArray[favCount].text = txt;
+-        favCount++;
++        arr[cnt].owner = owner;
++        arr[cnt].mode = resolvedMode;
++        arr[cnt].id = resolvedId;
++        arr[cnt].icon_id = recs[i].icon_id;
++        arr[cnt].text_id = recs[i].text_id;
++        arr[cnt].kind = recs[i].kind;
++        arr[cnt].text = txt;
++        cnt++;
+     }
+ 
+     free(recs);
+     free(isRecent);
+-    return favCount;
++    favPublish(arr, cnt);
++    return cnt;
+ }
+ 
+ static int favGetItemCount(item_list_t *itemList) { return favCount; }
+@@ -980,15 +1009,11 @@ static int favGetImage(item_list_t *itemList, char *folder, int isRelative, char
+ // wrapper mode. Returns -1 when no favourite matches (e.g. a theme attribute-image
+ // value, which takes the passthrough path in favGetImage). Pure in-memory scan, no IO.
+ //
+-// Thread safety: callers are GUI-thread render paths (prio 31), but favArray is rebuilt
+-// UNLOCKED by favUpdateItemList on the prio-30 IO worker (menuDeferredUpdate). Safe today
+-// because the IO thread outranks the GUI thread (a rebuild in progress keeps us off-CPU),
+-// favFreeArray NULLs favArray/favCount before the rebuild's first blocking point (favReadFile)
+-// so a scan started around a rebuild hits the NULL guard, entries become visible only after
+-// full population (favCount++ last), and the FAV submenu rows that drive these scans are torn
+-// down (clearMenuGameList) before the rebuild starts. Do NOT raise the GUI thread's priority
+-// to/above the IO worker's or add a yield inside favFreeArray without adding real
+-// synchronization here.
++// Thread safety: callers are GUI-thread render paths, and favArray is rebuilt by favUpdateItemList on
++// the IO worker with no lock. RIPPS2 build 74: that no longer leans on thread priorities (the music
++// decoder and the IO worker's blocking reads both let the GUI run mid-rebuild): the new list is built
++// aside and published whole (favPublish), and the old one is freed only at the rebuild after, so a
++// scan sees either list complete, never a freed or half-built one.
+ int favGetArtMode(const char *value)
+ {
+     if (favArray == NULL || value == NULL)
+diff --git a/src/mixsupport.c b/src/mixsupport.c
+index 3fa320a..16b3b31 100644
+--- a/src/mixsupport.c
++++ b/src/mixsupport.c
+@@ -301,26 +301,53 @@ static item_list_t *mixOwnerView(int id, item_list_t *view)
+     return view;
+ }
+ 
++// RIPPS2 build 74: a row as it stands, copied out under mixSema. The GUI thread asks about the row
++// on screen (the info page: its flags, its source, its kind) while the IO worker may be rebuilding
++// this list -- which frees the array first. Reading mixArray outside the lock could read a freed
++// record, the info page hang testers hit on All Games as the disc and cover came in.
++typedef struct
++{
++    item_list_t view;
++    int kind, mode, id;
++    char text[256];
++} mix_row_t;
++
++static int mixRow(int id, mix_row_t *r)
++{
++    int ok = 0;
++    mixLock();
++    if (mixOwnerView(id, &r->view) != NULL) {
++        r->kind = mixArray[id].kind;
++        r->mode = mixArray[id].mode;
++        r->id = mixArray[id].id;
++        snprintf(r->text, sizeof(r->text), "%s", mixArray[id].text);
++        ok = 1;
++    }
++    mixUnlock();
++    return ok;
++}
++
+ // The row's id in its source's list right now. The source may have rescanned since this list was
+ // built (its rebuild queues ours right behind it): trust the stored id only while it still names the
+ // same game, else find the game again by name. -1 when it is gone.
+-static int mixOwnerId(int id, item_list_t *o)
++static int mixOwnerId(mix_row_t *r)
+ {
++    item_list_t *o = &r->view;
+     int i, count;
+     char *name;
+ 
+-    if (!mixValidIndex(id) || o == NULL || o->itemGetCount == NULL || o->itemGetName == NULL)
++    if (o->itemGetCount == NULL || o->itemGetName == NULL)
+         return -1;
+     count = o->itemGetCount(o);
+-    i = mixArray[id].id;
++    i = r->id;
+     if (i >= 0 && i < count) {
+         name = o->itemGetName(o, i);
+-        if (name != NULL && strcmp(name, mixArray[id].text) == 0)
++        if (name != NULL && strcmp(name, r->text) == 0)
+             return i;
+     }
+     for (i = 0; i < count; i++) {
+         name = o->itemGetName(o, i);
+-        if (name != NULL && strcmp(name, mixArray[id].text) == 0)
++        if (name != NULL && strcmp(name, r->text) == 0)
+             return i;
+     }
+     return -1;
+@@ -328,8 +355,13 @@ static int mixOwnerId(int id, item_list_t *o)
+ 
+ static int mixGetRowView(item_list_t *itemList, int id)
+ {
++    int kind = -1;
+     (void)itemList;
+-    return mixValidIndex(id) ? favKindView(mixArray[id].kind) : -1;
++    mixLock();
++    if (mixValidIndex(id))
++        kind = mixArray[id].kind;
++    mixUnlock();
++    return kind >= 0 ? favKindView(kind) : -1;
+ }
+ 
+ static char *mixGetItemName(item_list_t *itemList, int id)
+@@ -349,12 +381,13 @@ static char *mixGetItemStartup(item_list_t *itemList, int id)
+ 
+ static config_set_t *mixGetConfig(item_list_t *itemList, int id)
+ {
+-    item_list_t ownerView, *o = mixOwnerView(id, &ownerView);
+-    if (o == NULL)
++    mix_row_t r;
++    if (!mixRow(id, &r))
+         return NULL;
++    item_list_t *o = &r.view;
+     // A PS1 row's config is keyed by its name under the source's prefix, as on a device page and as
+     // favGetConfig builds it
+-    if (mixKindIsPs1(mixArray[id].kind)) {
++    if (mixKindIsPs1(r.kind)) {
+         char *prefix = o->itemGetPrefix != NULL ? o->itemGetPrefix(o) : NULL;
+         if (prefix == NULL)
+             return NULL;
+@@ -362,13 +395,13 @@ static config_set_t *mixGetConfig(item_list_t *itemList, int id)
+         char sep[2] = {(pl > 0 && prefix[pl - 1] == '\\') ? '\\' : '/', '\0'};
+         base_game_info_t game;
+         memset(&game, 0, sizeof(game));
+-        snprintf(game.name, sizeof(game.name), "%s", mixArray[id].text);
+-        snprintf(game.extension, sizeof(game.extension), "%s", mixArray[id].kind == FAV_KIND_CUE ? CUE_ROW_EXTENSION : ".VCD");
++        snprintf(game.name, sizeof(game.name), "%s", r.text);
++        snprintf(game.extension, sizeof(game.extension), "%s", r.kind == FAV_KIND_CUE ? CUE_ROW_EXTENSION : ".VCD");
+         game.parts = 1;
+         game.format = GAME_FORMAT_ISO;
+         return sbPopulateConfig(&game, prefix, sep);
+     }
+-    int ownerId = mixOwnerId(id, o);
++    int ownerId = mixOwnerId(&r);
+     if (o->itemGetConfig == NULL || ownerId < 0)
+         return NULL;
+     return o->itemGetConfig(o, ownerId);
+@@ -376,18 +409,19 @@ static config_set_t *mixGetConfig(item_list_t *itemList, int id)
+ 
+ static void mixLaunchItem(item_list_t *itemList, int id, config_set_t *configSet)
+ {
+-    item_list_t ownerView, *o = mixOwnerView(id, &ownerView);
+-    if (o == NULL)
++    mix_row_t r;
++    if (!mixRow(id, &r))
+         return;
+-    if (mixKindIsPs1(mixArray[id].kind)) { // PS1 titles launch by name, through the row's own core
+-        if (mixArray[id].kind == FAV_KIND_CUE) {
++    item_list_t *o = &r.view;
++    if (mixKindIsPs1(r.kind)) { // PS1 titles launch by name, through the row's own core
++        if (r.kind == FAV_KIND_CUE) {
+             if (o->itemLaunchCue != NULL)
+-                o->itemLaunchCue(o, mixArray[id].text, configSet);
++                o->itemLaunchCue(o, r.text, configSet);
+         } else if (o->itemLaunchVcd != NULL)
+-            o->itemLaunchVcd(o, mixArray[id].text, configSet);
++            o->itemLaunchVcd(o, r.text, configSet);
+         return;
+     }
+-    int ownerId = mixOwnerId(id, o);
++    int ownerId = mixOwnerId(&r);
+     if (o->itemLaunch != NULL && ownerId >= 0)
+         o->itemLaunch(o, ownerId, configSet);
+ }
+@@ -495,34 +529,44 @@ static int mixSelectedId(void)
+ 
+ unsigned char mixGetFlags(item_list_t *itemList)
+ {
+-    item_list_t ownerView, *o = mixOwnerView(mixSelectedId(), &ownerView);
+-    return o != NULL ? o->flags : 0;
++    mix_row_t r;
++    return mixRow(mixSelectedId(), &r) ? r.view.flags : 0;
+ }
+ 
+ static int mixCheckVMC(item_list_t *itemList, char *name, int createSize)
+ {
+-    item_list_t ownerView, *o = mixOwnerView(mixSelectedId(), &ownerView);
+-    if (o == NULL || o->itemCheckVMC == NULL)
++    mix_row_t r;
++    if (!mixRow(mixSelectedId(), &r) || r.view.itemCheckVMC == NULL)
+         return -1;
+-    return o->itemCheckVMC(o, name, createSize);
++    return r.view.itemCheckVMC(&r.view, name, createSize);
+ }
+ 
+ // ---- public ----
+ 
+ int mixGetItemSourceMode(int id)
+ {
+-    return mixValidIndex(id) ? mixArray[id].mode : -1;
++    int mode = -1;
++    mixLock();
++    if (mixValidIndex(id))
++        mode = mixArray[id].mode;
++    mixUnlock();
++    return mode;
+ }
+ 
+ int mixGetItemSourceId(int id)
+ {
+-    item_list_t ownerView, *o = mixOwnerView(id, &ownerView);
+-    return o != NULL ? mixOwnerId(id, o) : -1;
++    mix_row_t r;
++    return mixRow(id, &r) ? mixOwnerId(&r) : -1;
+ }
+ 
+ int mixGetItemKind(int id)
+ {
+-    return mixValidIndex(id) ? mixArray[id].kind : -1;
++    int kind = -1;
++    mixLock();
++    if (mixValidIndex(id))
++        kind = mixArray[id].kind;
++    mixUnlock();
++    return kind;
+ }
+ 
+ void mixRequestUpdate(void)
+@@ -555,8 +599,9 @@ void mixMarkStar(int mode, int id, int kind, const char *text)
+     opl_io_module_t *mod = oplGetModule(MIX_MODE);
+     submenu_list_t *cur;
+ 
+-    if (mod == NULL || text == NULL || mixArray == NULL)
++    if (mod == NULL || text == NULL)
+         return;
++    mixLock();
+     for (cur = mod->subMenu; cur != NULL; cur = cur->next) {
+         int r = cur->item.id;
+         if (!mixValidIndex(r) || mixArray[r].kind != kind || strcmp(mixArray[r].text, text) != 0)
+@@ -566,6 +611,7 @@ void mixMarkStar(int mode, int id, int kind, const char *text)
+             continue;
+         cur->item.favourited = 1;
+     }
++    mixUnlock();
+ }
+ 
+ item_list_t *mixGetObject(int initOnly)
+diff --git a/src/opl.c b/src/opl.c
+index 5058c80..49a447e 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -5308,6 +5308,10 @@ static void deferredAudioInit(void)
+ 
+     guiSetBootStatusSticky(_l(_STR_BOOT_LOADING_SOUNDS)); // boot-step localizer (IO thread) -- see gui.c
+     audioInit();
++    {
++        char dir[256]; // build 74: the AUDIO folder beside RIPPS2, or on a drive that is up by now
++        ripps2AudioBase(dir, sizeof(dir), 1);
++    }
+     ret = sfxInit(1);
+     if (ret < 0)
+         LOG("sfxInit: failed to initialize - %d.\n", ret);
+diff --git a/src/renderman.c b/src/renderman.c
+index b294e01..cb9e712 100644
+--- a/src/renderman.c
++++ b/src/renderman.c
+@@ -111,6 +111,45 @@ const u64 gColFocus = GS_SETREG_RGBA(0xFF, 0xFF, 0xFF, 0x50);  // Alpha 0x50 ->
+ const u64 gDefaultCol = GS_SETREG_RGBA(0x80, 0x80, 0x80, 0x80); // Special color for texture multiplication
+ const u64 gDefaultAlpha = GS_SETREG_ALPHA(0, 1, 0, 1, 0);
+ 
++// RIPPS2 build 74: room in the draw queue. gsKit checks no bounds in a release build (its check is
++// GSKIT_DEBUG only): a frame that outgrows its queue writes on past it, into whatever memory follows.
++// The HD modes (720p, 1080i) draw into gsKit's 256 KB persistent queues and replay them for every
++// band of the screen -- a quarter of the 1 MB the other modes get -- and RIPPS2's towers, orbs and
++// glass can fill that. Each primitive is now dropped once less than RM_QUEUE_RESERVE is left (the
++// frame loses detail, the console keeps running), and the last frame's use is kept so the towers
++// draw simpler before it comes to that.
++#define RM_QUEUE_RESERVE (16 * 1024)
++static unsigned int rmQueueDropped = 0;
++static int rmQueueUsePct = 0;
++
++static int rmQueueFull(void)
++{
++    GSQUEUE *q = gsGlobal != NULL ? gsGlobal->CurQueue : NULL;
++    if (q == NULL || q->pool_max[q->dbuf] == NULL)
++        return 0;
++    if ((u32)q->pool_max[q->dbuf] - (u32)q->pool_cur > RM_QUEUE_RESERVE)
++        return 0;
++    if (rmQueueDropped++ == 0)
++        LOG("RENDERMAN: draw queue full in vmode %d; dropping primitives this frame\n", vmode);
++    return 1;
++}
++
++static void rmQueueFrameEnd(void)
++{
++    GSQUEUE *q = gsGlobal != NULL ? gsGlobal->CurQueue : NULL;
++    if (q != NULL && q->pool_max[q->dbuf] != NULL && q->pool[q->dbuf] != NULL) {
++        u32 size = (u32)q->pool_max[q->dbuf] - (u32)q->pool[q->dbuf];
++        u32 used = (u32)q->pool_cur - (u32)q->pool[q->dbuf];
++        rmQueueUsePct = size > 0 ? (int)((u64)used * 100 / size) : 0;
++    }
++    rmQueueDropped = 0;
++}
++
++int rmQueueBusy(void)
++{
++    return hires || rmQueueUsePct >= 60;
++}
++
+ void rmInvalidateTexture(GSTEXTURE *txt)
+ {
+     gsKit_TexManager_invalidate(gsGlobal, txt);
+@@ -137,6 +176,7 @@ void rmStartFrame(void)
+ 
+ void rmEndFrame(void)
+ {
++    rmQueueFrameEnd();
+     if (hires) {
+         gsKit_hires_sync(gsGlobal);
+         gsKit_hires_flip(gsGlobal);
+@@ -275,7 +315,18 @@ int rmSetMode(int force)
+             // other _gsKit_create_passes caller is gsKit_hires_set_bg, which OPL never calls (and
+             // must not casually: a bg texture replaces the baked clear entirely).
+             gsGlobal->PrimAlphaEnable = GS_SETTING_OFF;
+-            gsKit_hires_init_screen(gsGlobal, rm_mode_table[vmode].passes);
++            {
++                // RIPPS2 build 74: gsKit_hires_init_screen raises its caller -- the GUI thread -- to
++                // priority 2 ("HACK" in gsHires.c), above the IO worker and the music decoder, and
++                // nothing ever lowered it again, not even back in a non-HD mode: in 720p and 1080i
++                // the menu starved the drives and the music. Its own GS thread (priority 1) and the
++                // hsync handler do the timing; the caller goes back to where it was.
++                ee_thread_status_t st;
++                int tid = GetThreadId(), prio = ReferThreadStatus(tid, &st) >= 0 ? st.current_priority : -1;
++                gsKit_hires_init_screen(gsGlobal, rm_mode_table[vmode].passes);
++                if (prio > 0)
++                    ChangeThreadPriority(tid, prio);
++            }
+             gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
+         } else {
+             gsKit_init_screen(gsGlobal);
+@@ -389,6 +440,8 @@ static void rmTiltPoint(float *x, float *y)
+ #define TILT_CELL_PX 40.0f
+ static void rmTiltTexQuad(GSTEXTURE *txt, const float *px, const float *py, float u0, float v0, float u1, float v1, u64 color)
+ {
++    if (rmQueueFull())
++        return;
+     float w = fmaxf(fabsf(px[1] - px[0]), fabsf(px[3] - px[2])), h = fmaxf(fabsf(py[2] - py[0]), fabsf(py[3] - py[1]));
+     int nx = (int)(w / TILT_CELL_PX) + 1, ny = (int)(h / TILT_CELL_PX) + 1, i, j, k;
+     if (nx > 8)
+@@ -469,6 +522,8 @@ static void rmSetupQuad(GSTEXTURE *txt, int x, int y, short aligned, int w, int
+ 
+ void rmDrawQuad(rm_quad_t *q)
+ {
++    if (rmQueueFull())
++        return;
+     // RIPPS2: a translucent draw (vertex alpha below 0x80) blends even when the texture has no alpha
+     if ((q->txt->PSM == GS_PSM_CT32) || (q->txt->Clut && q->txt->ClutPSM == GS_PSM_CT32)) {
+         gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
+@@ -512,6 +567,8 @@ void rmSetReflectionYOffset(int yoff)
+ // fade instead of a flat, "pasted-on second box".
+ static void rmDrawReflection(GSTEXTURE *txt, rm_quad_t *q, float bottomY, float botV)
+ {
++    if (rmQueueFull())
++        return;
+     int reflH = (bottomY - q->ul.y) / 4;
+     if (reflH <= 0)
+         return;
+@@ -568,6 +625,8 @@ void rmDrawPixmap(GSTEXTURE *txt, int x, int y, short aligned, int w, int h, sho
+ void rmDrawOverlayPixmap(GSTEXTURE *overlay, int x, int y, short aligned, int w, int h, short scaled, u64 color,
+                          GSTEXTURE *inlay, int ulx, int uly, int urx, int ury, int blx, int bly, int brx, int bry, int reflection)
+ {
++    if (rmQueueFull())
++        return;
+     rm_quad_t quad;
+     rmSetupQuad(overlay, x, y, aligned, w, h, scaled, color, &quad);
+     int origBly = bly, origBry = bry; // unscaled inlay lower corners (element/texture space) for the reflection
+@@ -639,6 +698,8 @@ void rmDrawOverlayPixmap(GSTEXTURE *overlay, int x, int y, short aligned, int w,
+ void rmDrawInlayPixmap(GSTEXTURE *txt, int x, int y, short aligned, int w, int h, short scaled, u64 color,
+                        int ulx, int uly, int urx, int ury, int blx, int bly, int brx, int bry)
+ {
++    if (rmQueueFull())
++        return;
+     rm_quad_t quad;
+     rmSetupQuad(txt, x, y, aligned, w, h, scaled, color, &quad);
+ 
+@@ -677,6 +738,8 @@ void rmDrawInlayPixmap(GSTEXTURE *txt, int x, int y, short aligned, int w, int h
+ 
+ void rmDrawRect(int x, int y, int w, int h, u64 color)
+ {
++    if (rmQueueFull())
++        return;
+     float fx = X_SCALE(x);
+     float fy = Y_SCALE(y);
+     float fw = X_SCALE(w);
+@@ -703,6 +766,8 @@ void rmDrawRect(int x, int y, int w, int h, u64 color)
+    dark colour swatch then read as an open box (zackcage6). Each side keeps at least one line. */
+ void rmDrawFramedRect(int x, int y, int w, int h, int border, u64 frameColor, u64 fillColor)
+ {
++    if (rmQueueFull())
++        return;
+     int x0 = X_SCALE(x), y0 = Y_SCALE(y), x1 = X_SCALE(x + w), y1 = Y_SCALE(y + h);
+     int bx = X_SCALE(border), by = Y_SCALE(border);
+ 
+@@ -722,6 +787,8 @@ void rmDrawFramedRect(int x, int y, int w, int h, int border, u64 frameColor, u6
+ 
+ void rmDrawLine(int x1, int y1, int x2, int y2, u64 color)
+ {
++    if (rmQueueFull())
++        return;
+     float fx1 = X_SCALE(x1);
+     float fy1 = Y_SCALE(y1);
+     float fx2 = X_SCALE(x2);
+@@ -740,6 +807,8 @@ void rmDrawLine(int x1, int y1, int x2, int y2, u64 color)
+ // native pillars and orbs. Vertex colours are interpolated by the GS, alpha included.
+ void rmDrawTriGouraud(float x1, float y1, u64 c1, float x2, float y2, u64 c2, float x3, float y3, u64 c3)
+ {
++    if (rmQueueFull())
++        return;
+     float p[6] = {X_SCALE(x1), Y_SCALE(y1), X_SCALE(x2), Y_SCALE(y2), X_SCALE(x3), Y_SCALE(y3)};
+     int i;
+     if (gTiltOn)
+@@ -758,6 +827,8 @@ void rmDrawTriGouraud(float x1, float y1, u64 c1, float x2, float y2, u64 c2, fl
+ void rmDrawQuadGouraud(float x1, float y1, u64 c1, float x2, float y2, u64 c2,
+                        float x3, float y3, u64 c3, float x4, float y4, u64 c4)
+ {
++    if (rmQueueFull())
++        return;
+     float p[8] = {X_SCALE(x1), Y_SCALE(y1), X_SCALE(x2), Y_SCALE(y2), X_SCALE(x3), Y_SCALE(y3), X_SCALE(x4), Y_SCALE(y4)};
+     int i;
+     if (gTiltOn)
+diff --git a/src/ripps2bg.c b/src/ripps2bg.c
+index c984611..787985d 100644
+--- a/src/ripps2bg.c
++++ b/src/ripps2bg.c
+@@ -633,7 +633,7 @@ void ripps2DrawPillars(void)
+         static float lowUntil = -1.0f;
+         u32 worstEver, longFrames;
+         guiGetFrameWatchdog(&worstEver, &longFrames);
+-        if (longFrames != prevLong || bgmReserveLow())
++        if (longFrames != prevLong || bgmReserveLow() || rmQueueBusy()) // build 74: + a draw queue near full (HD)
+             lowUntil = t + 1.0f;
+         prevLong = longFrames;
+         bgLowDetail = t < lowUntil;
+diff --git a/src/ripps2boot.c b/src/ripps2boot.c
+index 3be56c7..e7be100 100644
+--- a/src/ripps2boot.c
++++ b/src/ripps2boot.c
+@@ -1003,10 +1003,14 @@ static void blInstallOn(int port, const blWhere_t *w, const char *alt)
+ // was there is read out first and kept in __sysconf/RIPPS2, and RESTORE puts it back. RIPPS2 itself is
+ // copied to __sysconf too, so the HDD starts it with nothing else plugged in.
+ 
+-#define BL_HDD_PART      "hdd0:__sysconf"
+-#define BL_HDD_MNT       "pfs1:"
+-#define BL_HDD_ELF       "hdd0:__sysconf:pfs:/RIPPS2/RIPPS2.ELF" // as PS2BBL's config reaches it
+-#define BL_HDD_BACKUP    BL_HDD_MNT "/RIPPS2/MBR-BACKUP.KELF"
++// Where BIBLE's HDD files go (build 74): __sysconf, where PS2BBL's HDD build reads its config; on a
++// drive without one (some formatting tools leave it out) __common, with the config on a memory card,
++// which PS2BBL reads first anyway. blHddOpen fills these.
++static char blHddRoot[16];     // "pfs1:/" or "pfs0:/" (the live __common data home, already mounted)
++static char blHddElf[64];      // RIPPS2's copy, as PS2BBL reaches it
++static const char *blHddPart;  // "__sysconf" or "__common"
++static int blHddMounted;       // pfs1: is ours to let go
++#define BL_HDD_MNT "pfs1:"
+ #define BL_HDD_AREA      0x2000 // the boot area's first sector, inside __mbr
+ #define BL_HDD_BLOCK     2      // sectors a write carries (fileXio's RPC buffer is small)
+ #define BL_HDD_MAX_BACK  8192   // sectors of an old boot program kept (4 MB: any real one is far smaller)
+@@ -1112,73 +1116,139 @@ static int blHddBootOn(void)
+     return tries < 100;
+ }
+ 
+-static int blHddMount(void)
++// 0 on success, else the last mount error
++static int blHddOpen(void)
+ {
+-    fileXioUmount(BL_HDD_MNT);
+-    return fileXioMount(BL_HDD_MNT, BL_HDD_PART, FIO_MT_RDWR) == 0;
++    static const char *const parts[] = {"__sysconf", "__common"};
++    char dev[24];
++    int i, r = -1;
++
++    blHddMounted = 0;
++    for (i = 0; i < 2; i++) {
++        // __common may be the live data home on pfs0: already (APA will not open it twice)
++        if (i == 1 && gHDDPrefix != NULL && hddGetLiveOplHomeSelection() == HDD_OPL_HOME_COMMON) {
++            snprintf(blHddRoot, sizeof(blHddRoot), "pfs0:/");
++            r = 0;
++        } else {
++            snprintf(dev, sizeof(dev), "hdd0:%s", parts[i]);
++            fileXioUmount(BL_HDD_MNT);
++            if ((r = fileXioMount(BL_HDD_MNT, dev, FIO_MT_RDWR)) < 0) {
++                LOG("BIBLE: mount %s failed (%d)\n", dev, r);
++                continue;
++            }
++            snprintf(blHddRoot, sizeof(blHddRoot), BL_HDD_MNT "/");
++            blHddMounted = 1;
++        }
++        blHddPart = parts[i];
++        snprintf(blHddElf, sizeof(blHddElf), "hdd0:%s:pfs:/RIPPS2/RIPPS2.ELF", parts[i]);
++        return 0;
++    }
++    return r;
++}
++
++static void blHddClose(void)
++{
++    if (blHddMounted)
++        fileXioUmount(BL_HDD_MNT);
++    blHddMounted = 0;
++}
++
++// a path under the HDD folder BIBLE uses
++static const char *blHddPath(const char *rel)
++{
++    static char path[96];
++    snprintf(path, sizeof(path), "%s%s", blHddRoot, rel);
++    return path;
+ }
+ 
+ static void blHddInstall(void)
+ {
+-    char msg[900], boot[256], alt[160] = "";
++    char msg[900], boot[256], first[160] = "", second[160] = "", conf[48] = "";
+     unsigned char *old = NULL;
+     u32 oldStart = 0, oldSize = 0;
+-    int ok, bootOn, kept = 0, keptConfig = 0, len, fd, r;
++    int ok, bootOn, kept = 0, keptConfig = 0, len, fd, r, mcConfig;
++
++    ioBlockOps(1);
++    r = blHddOpen();
++    blHddClose();
++    ioBlockOps(0);
++    if (r != 0) {
++        guiMsgBoxSound(SFX_ERROR);
++        snprintf(msg, sizeof(msg), "RIPPS2 could not open the HDD's __sysconf or __common partition (error %d), so BIBLE has nowhere to keep RIPPS2 and its config there. Nothing was changed.", r);
++        guiMsgBox(msg, 0, NULL);
++        return;
++    }
++    mcConfig = strcmp(blHddPart, "__sysconf") != 0; // PS2BBL's HDD build reads only __sysconf on the HDD
+ 
+     if (!ripps2GetBootPath(boot, sizeof(boot)))
+         boot[0] = '\0';
+-    // RIPPS2 as it is now goes second, when PS2BBL's HDD build can reach it (a card or a USB drive)
++    // RIPPS2 where it is now goes first when every PS2BBL reaches it (a memory card or a USB drive:
++    // quicker to start than the HDD, and a card's PS2BBL starts it too); the HDD copy is the one after
+     if (boot[0] && strncmp(boot, "hdd", 3) && strncmp(boot, "pfs", 3))
+-        blPathFor(0, boot, ripps2GetBootBdmType(), alt, sizeof(alt));
+-    if (!strncmp(alt, "massX:", 6))
+-        alt[0] = '\0'; // the HDD build has no MX4SIO driver
++        blPathFor(0, boot, ripps2GetBootBdmType(), first, sizeof(first));
++    if (!strncmp(first, "massX:", 6))
++        first[0] = '\0'; // the HDD build has no MX4SIO driver
++    if (first[0])
++        snprintf(second, sizeof(second), "%s", blHddElf);
++    else
++        snprintf(first, sizeof(first), "%s", blHddElf);
++    if (mcConfig) {
++        int port = blCards[0].present ? 0 : blCards[1].present ? 1 : -1;
++        if (port < 0) {
++            guiMsgBoxSound(SFX_ERROR);
++            guiMsgBox("This HDD has no __sysconf partition, so BIBLE's config has to go on a memory card (PS2BBL reads a card's first), and there is none in either slot. Insert one, then try again.", 0, NULL);
++            return;
++        }
++        snprintf(conf, sizeof(conf), "mc%d:/PS2BBL/CONFIG.INI", port);
++    }
+ 
+     snprintf(msg, sizeof(msg),
+              "INSTALL BIBLE ON THE INTERNAL HDD\n"
+              "- RIPPS2 is copied to %s.\n"
+-             "- The HDD's boot program now in __mbr is read out and kept in __sysconf/RIPPS2 (RESTORE puts it back).\n"
++             "- The HDD's boot program now in __mbr is read out and kept in %s/RIPPS2 (RESTORE puts it back).\n"
+              "- PS2BBL 1.2.0's HDD build is written in its place, and the console set to start it at power on.\n"
+-             "- Its config, hdd0:__sysconf:pfs:/PS2BBL/CONFIG.INI, starts RIPPS2 first, BOOT LOCK on.\n"
++             "- Its config (%s) starts RIPPS2 from %s first%s%s, BOOT LOCK on.\n"
+              "This needs a console that boots from its HDD (a fat PS2 with the network adapter). Keep it on until it says done.",
+-             BL_HDD_ELF);
++             blHddElf, blHddPart, mcConfig ? conf : "hdd0:__sysconf:pfs:/PS2BBL/CONFIG.INI", first,
++             second[0] ? ", then " : "", second);
+     guiMsgBoxSound(SFX_MESSAGE);
+     guiMsgBoxStartOption("INSTALL BIBLE");
+     if (guiMsgBox(msg, 0, NULL) != 2)
+         return;
+ 
+     ioBlockOps(1);
+-    if (!blHddMount()) {
++    if (blHddOpen() != 0) {
+         ioBlockOps(0);
+         guiMsgBoxSound(SFX_ERROR);
+-        guiMsgBox("RIPPS2 could not open the HDD's __sysconf partition, where BIBLE keeps its config. Nothing was changed.", 0, NULL);
++        guiMsgBox("The HDD partition BIBLE uses went away. Nothing was changed.", 0, NULL);
+         return;
+     }
+-    mkdir(BL_HDD_MNT "/RIPPS2", 0777);
+-    mkdir(BL_HDD_MNT "/PS2BBL", 0777);
++    mkdir(blHddPath("RIPPS2"), 0777);
+ 
+     // 1. RIPPS2 onto the HDD (a copy that is already there is written over: it may be older)
+-    if (!boot[0] || !blCopy(boot, BL_HDD_MNT "/RIPPS2/RIPPS2.ELF", "the HDD")) {
+-        fileXioUmount(BL_HDD_MNT);
++    if (!boot[0] || !blCopy(boot, blHddPath("RIPPS2/RIPPS2.ELF"), "the HDD")) {
++        blHddClose();
+         ioBlockOps(0);
+         guiMsgBoxSound(SFX_ERROR);
+-        guiMsgBox("BIBLE could not copy RIPPS2 to the HDD's __sysconf partition. Check its free space. Nothing else was changed.", 0, NULL);
++        snprintf(msg, sizeof(msg), "BIBLE could not copy RIPPS2 to the HDD's %s partition. Check its free space. Nothing else was changed.", blHddPart);
++        guiMsgBox(msg, 0, NULL);
+         return;
+     }
+ 
+     // 2. what boots from the HDD now, kept (once: a repair never writes BIBLE over the first backup)
+-    if ((fd = open(BL_HDD_BACKUP, O_RDONLY)) >= 0) {
++    if ((fd = open(blHddPath("RIPPS2/MBR-BACKUP.KELF"), O_RDONLY)) >= 0) {
+         close(fd);
+         kept = 1;
+     } else if (blHddCurrent(&oldStart, &oldSize) && oldSize > 0 && oldSize <= BL_HDD_MAX_BACK && oldStart >= BL_HDD_AREA) {
+         guiRenderTextScreen("BIBLE: keeping the HDD's boot program");
+         if ((old = memalign(64, oldSize * 512)) == NULL || blHddRead(oldStart, oldSize, old) != 0 ||
+-            blWrite(BL_HDD_BACKUP, (const char *)old, oldSize * 512) != 0) {
++            blWrite(blHddPath("RIPPS2/MBR-BACKUP.KELF"), (const char *)old, oldSize * 512) != 0) {
+             free(old);
+-            remove(BL_HDD_BACKUP);
+-            fileXioUmount(BL_HDD_MNT);
++            remove(blHddPath("RIPPS2/MBR-BACKUP.KELF"));
++            blHddClose();
+             ioBlockOps(0);
+             guiMsgBoxSound(SFX_ERROR);
+-            guiMsgBox("BIBLE could not keep a copy of the HDD's boot program, so it stopped before changing it. RIPPS2 was copied to __sysconf; nothing else was changed.", 0, NULL);
++            guiMsgBox("BIBLE could not keep a copy of the HDD's boot program, so it stopped before changing it. RIPPS2 was copied to the HDD; nothing else was changed.", 0, NULL);
+             return;
+         }
+         free(old);
+@@ -1186,23 +1256,32 @@ static void blHddInstall(void)
+     }
+ 
+     // 3. the config: one PS2BBL owners already have stays, BOOT LOCK set in it; else BIBLE's
++    if (!mcConfig) {
++        mkdir(blHddPath("PS2BBL"), 0777);
++        snprintf(conf, sizeof(conf), "%s", blHddPath("PS2BBL/CONFIG.INI"));
++    } else {
++        char dir[24];
++        snprintf(dir, sizeof(dir), "%.4s/PS2BBL", conf);
++        mkdir(dir, 0777);
++    }
+     len = 0;
+-    if (blRead(BL_HDD_MNT "/PS2BBL/CONFIG.INI") >= 0) {
++    if (blRead(conf) >= 0) {
+         keptConfig = 1;
+         if ((len = blUnlocked(blText)) >= 0)
+             memcpy(blText, blOut, len + 1);
+     } else
+-        len = blBibleConfig(alt, "");
++        len = blBibleConfig(second, "");
+     if (len >= 0)
+-        len = blLocked(blText, BL_HDD_ELF);
+-    if (len < 0 || blWrite(BL_HDD_MNT "/PS2BBL/CONFIG.INI", blOut, len) != 0) {
+-        fileXioUmount(BL_HDD_MNT);
++        len = blLocked(blText, first);
++    if (len < 0 || blWrite(conf, blOut, len) != 0) {
++        blHddClose();
+         ioBlockOps(0);
+         guiMsgBoxSound(SFX_ERROR);
+-        guiMsgBox("BIBLE could not write its config to the HDD's __sysconf partition. The boot program was not changed.", 0, NULL);
++        snprintf(msg, sizeof(msg), "BIBLE could not write its config (%s). The boot program was not changed.", conf);
++        guiMsgBox(msg, 0, NULL);
+         return;
+     }
+-    fileXioUmount(BL_HDD_MNT);
++    blHddClose();
+ 
+     // 4. the boot program itself, then the console's setting
+     r = blHddWriteBoot(bible_hdd_xlf, (int)size_bible_hdd_xlf, "BIBLE: writing PS2BBL to the HDD's boot area");
+@@ -1211,16 +1290,29 @@ static void blHddInstall(void)
+     if (r != 0) {
+         guiMsgBoxSound(SFX_ERROR);
+         snprintf(msg, sizeof(msg), "BIBLE could not write the HDD's boot program (step %d). %s", -r,
+-                 kept ? "The one that was there is kept in __sysconf/RIPPS2/MBR-BACKUP.KELF: BOOT LOADER > MANAGE > RESTORE puts it back." : "");
++                 kept ? "The one that was there is kept in RIPPS2/MBR-BACKUP.KELF on the HDD: BOOT LOADER > MANAGE > RESTORE puts it back." : "");
+         guiMsgBox(msg, 0, NULL);
+         return;
+     }
++    // every other PS2BBL config points the same way when RIPPS2 lives where they all reach
++    if (strncmp(first, "hdd", 3)) {
++        char where[200];
++        int changed, failed, unreachable;
++        blChosenPath = first;
++        blApplyAll(1, &changed, &failed, &unreachable, where, sizeof(where));
++        blChosenPath = NULL;
++    }
+     guiMsgBoxSound(bootOn ? SFX_SAVE : SFX_ERROR);
+-    ok = snprintf(msg, sizeof(msg), "BIBLE is installed on the internal HDD and BOOT LOCK is on: at power on the console starts RIPPS2 from %s, at once.%s%s",
+-                  BL_HDD_ELF, kept ? " The HDD's old boot program is kept (MANAGE > RESTORE)." : "",
+-                  keptConfig ? " Your own PS2BBL config on the HDD was kept, BOOT LOCK set in it." : " Hold TRIANGLE at power on for the browser, START for a disc.");
++    ok = snprintf(msg, sizeof(msg), "BIBLE is installed on the internal HDD and BOOT LOCK is on: at power on the console starts RIPPS2 from %s%s%s%s, at once. Config: %s.%s%s",
++                  first, second[0] ? " (then " : "", second, second[0] ? ")" : "", conf,
++                  kept ? " The HDD's old boot program is kept (MANAGE > RESTORE)." : "",
++                  keptConfig ? " Your own PS2BBL config was kept, BOOT LOCK set in it." : " Hold TRIANGLE at power on for the browser, START for a disc.");
+     if (!bootOn && ok < (int)sizeof(msg))
+-        snprintf(msg + ok, sizeof(msg) - ok, " The console would not take the setting that starts its HDD at power on: set it with the HDD utility, or install again.");
++        ok += snprintf(msg + ok, sizeof(msg) - ok, " The console would not take the setting that starts its HDD at power on: set it with the HDD utility, or install again.");
++    // PS2BBL reads a memory card's config before the HDD's: with RIPPS2 only on the HDD, a card's decides
++    if (!mcConfig && !strncmp(first, "hdd", 3) && ok < (int)sizeof(msg) &&
++        (blRead("mc0:/PS2BBL/CONFIG.INI") >= 0 || blRead("mc1:/PS2BBL/CONFIG.INI") >= 0))
++        snprintf(msg + ok, sizeof(msg) - ok, " A memory card here has its own PS2BBL/CONFIG.INI, which PS2BBL reads before the HDD's: take that card out at power on, or start RIPPS2 from the card and install again.");
+     guiMsgBox(msg, 0, NULL);
+ }
+ 
+@@ -1231,11 +1323,11 @@ static void blHddRestore(void)
+ 
+     guiMsgBoxSound(SFX_MESSAGE);
+     guiMsgBoxStartOption("RESTORE");
+-    if (guiMsgBox("PUT BACK THE HDD'S OLD BOOT PROGRAM\nThe one BIBLE kept (__sysconf/RIPPS2/MBR-BACKUP.KELF) goes back in __mbr, in BIBLE's place. RIPPS2 and the PS2BBL config stay on __sysconf.", 0, NULL) != 2)
++    if (guiMsgBox("PUT BACK THE HDD'S OLD BOOT PROGRAM\nThe one BIBLE kept (RIPPS2/MBR-BACKUP.KELF on the HDD) goes back in __mbr, in BIBLE's place. RIPPS2 and the PS2BBL config stay where they are.", 0, NULL) != 2)
+         return;
+     ioBlockOps(1);
+-    if (!blHddMount() || (fd = open(BL_HDD_BACKUP, O_RDONLY)) < 0) {
+-        fileXioUmount(BL_HDD_MNT);
++    if (blHddOpen() != 0 || (fd = open(blHddPath("RIPPS2/MBR-BACKUP.KELF"), O_RDONLY)) < 0) {
++        blHddClose();
+         ioBlockOps(0);
+         guiMsgBoxSound(SFX_ERROR);
+         guiMsgBox("There is no kept boot program on this HDD. Nothing was changed.", 0, NULL);
+@@ -1247,14 +1339,14 @@ static void blHddRestore(void)
+     if (data == NULL || read(fd, data, size) != size) {
+         close(fd);
+         free(data);
+-        fileXioUmount(BL_HDD_MNT);
++        blHddClose();
+         ioBlockOps(0);
+         guiMsgBoxSound(SFX_ERROR);
+         guiMsgBox("RIPPS2 could not read the kept boot program. Nothing was changed.", 0, NULL);
+         return;
+     }
+     close(fd);
+-    fileXioUmount(BL_HDD_MNT);
++    blHddClose();
+     r = blHddWriteBoot(data, size, "BIBLE: putting the HDD's boot program back");
+     free(data);
+     ioBlockOps(0);
+@@ -1266,11 +1358,11 @@ static int blHddHasBackup(void)
+ {
+     int fd, has = 0;
+     ioBlockOps(1);
+-    if (blHddMount() && (fd = open(BL_HDD_BACKUP, O_RDONLY)) >= 0) {
++    if (blHddOpen() == 0 && (fd = open(blHddPath("RIPPS2/MBR-BACKUP.KELF"), O_RDONLY)) >= 0) {
+         close(fd);
+         has = 1;
+     }
+-    fileXioUmount(BL_HDD_MNT);
++    blHddClose();
+     ioBlockOps(0);
+     return has;
+ }
+diff --git a/src/ripps2cd.c b/src/ripps2cd.c
+index 37b0945..4c19263 100644
+--- a/src/ripps2cd.c
++++ b/src/ripps2cd.c
+@@ -539,7 +539,7 @@ static void cdCopy(int track)
+         cdSay("THAT TRACK IS DATA, NOT SOUND");
+         return;
+     }
+-    if (!oplGetRipps2Dir(dir, sizeof(dir) - 8)) {
++    if (!ripps2AudioBase(dir, sizeof(dir) - 8, 0)) { // build 74: where the AUDIO folder is, if not beside RIPPS2
+         guiMsgBoxSound(SFX_ERROR);
+         guiMsgBox("RIPPS2 cannot tell which drive it was started from, so it does not know where the AUDIO folder is.", 0, NULL);
+         return;
+diff --git a/src/sound.c b/src/sound.c
+index a7d366c..854bdcf 100644
+--- a/src/sound.c
++++ b/src/sound.c
+@@ -19,6 +19,7 @@
+ #include "include/ioman.h"
+ #include "include/themes.h"
+ #include "include/pad.h"
++#include "include/bdmsupport.h" // bdmSlotEverConnected: the AUDIO folder on a drive (build 74)
+ 
+ // Silence unused variable warnings from vorbisfile.h
+ static ov_callbacks OV_CALLBACKS_DEFAULT __attribute__((unused));
+@@ -288,6 +289,78 @@ static int sfxLoad(struct sfxEffect *sfxData, audsrv_adpcm_t *sfx)
+     return ret;
+ }
+ 
++// RIPPS2 build 74: where the AUDIO folder is. Beside RIPPS2 first: the quickest, and where the boot
++// sound comes from before any drive is up. Then the memory cards and every drive that has started, at
++// its top or in its APPS folder, and the HDD's data home (where its ART is): so RIPPS2 started from a
++// memory card (BIBLE, quick) plays the AUDIO kept on the HDD or a USB drive. out gets the folder the
++// AUDIO folder is in ("...APPS/"), as oplGetRipps2Dir gives RIPPS2's own. 1 when one was found.
++static int audioHas(const char *base)
++{
++    char path[280];
++    DIR *d;
++    snprintf(path, sizeof(path), "%sAUDIO", base);
++    if ((d = opendir(path)) == NULL) {
++        snprintf(path, sizeof(path), "%sSOUND", base);
++        d = opendir(path);
++    }
++    if (d == NULL) {
++        snprintf(path, sizeof(path), "%sMUSIC", base);
++        d = opendir(path);
++    }
++    if (d != NULL)
++        closedir(d);
++    return d != NULL;
++}
++
++static char audioBase[256];
++static volatile int audioBaseFound = 0;
++
++// searchDrives: only on the IO worker (the boot's sound load, ripps2AudioLateCheck): a memory card
++// must never be asked from two threads at once. Every other caller takes what was found.
++int ripps2AudioBase(char *out, int size, int searchDrives)
++{
++    static const char *const roots[] = {"mc0:/", "mc1:/", "mass0:/", "mass1:/", "mass2:/", "mass3:/", "mass4:/", "mass5:/",
++                                        "mass6:/", "mass7:/", "mmce0:/", "mmce1:/", NULL};
++    static const char *const subs[] = {"", "APPS/"};
++    char base[256];
++    int i, j;
++
++    if (audioBaseFound)
++        return snprintf(out, size, "%s", audioBase) < size;
++    if (oplGetRipps2Dir(base, sizeof(base) - 8) && audioHas(base)) {
++        snprintf(audioBase, sizeof(audioBase), "%s", base);
++        audioBaseFound = 1;
++        return snprintf(out, size, "%s", audioBase) < size;
++    }
++    if (searchDrives) {
++        if (gHDDPrefix != NULL && gHDDPrefix[0] && audioHas(gHDDPrefix)) {
++            snprintf(audioBase, sizeof(audioBase), "%s", gHDDPrefix);
++            audioBaseFound = 1;
++        }
++        for (i = 0; !audioBaseFound && roots[i] != NULL; i++) {
++            if (!strncmp(roots[i], "mass", 4) && !bdmSlotEverConnected(BDM_MODE + (roots[i][4] - '0')))
++                continue; // never ask an empty slot
++            for (j = 0; j < 2 && !audioBaseFound; j++) {
++                snprintf(base, sizeof(base), "%s%s", roots[i], subs[j]);
++                if (audioHas(base)) {
++                    snprintf(audioBase, sizeof(audioBase), "%s", base);
++                    audioBaseFound = 1;
++                }
++            }
++        }
++        if (!audioBaseFound && gHDDPrefix != NULL && (audioHas("pfs0:/") || audioHas("pfs0:/APPS/"))) {
++            snprintf(audioBase, sizeof(audioBase), audioHas("pfs0:/") ? "pfs0:/" : "pfs0:/APPS/");
++            audioBaseFound = 1;
++        }
++        if (audioBaseFound)
++            LOG("AUDIO: using the AUDIO folder in %s\n", audioBase);
++    }
++    if (audioBaseFound)
++        return snprintf(out, size, "%s", audioBase) < size;
++    // none anywhere: RIPPS2's own folder, where a new one goes (the CD player copies tracks there)
++    return oplGetRipps2Dir(out, size);
++}
++
+ // Returns number of audio files successfully loaded, < 0 if an unrecoverable error occurred.
+ int sfxInit(int bootSnd)
+ {
+@@ -324,7 +397,7 @@ int sfxInit(int bootSnd)
+             thmSfxEnabled = 1;
+             closedir(dir);
+         }
+-    } else if (oplGetRipps2Dir(sound_path, sizeof(sound_path) - 6)) {
++    } else if (ripps2AudioBase(sound_path, sizeof(sound_path) - 6, 0)) { // build 74: beside RIPPS2, or on a drive
+         // RIPPS2: the AUDIO folder beside RIPPS2 (<event>.adp, RiptOPL's names and RIPPS2's) for the
+         // built-in themes; a SOUND folder (builds 61 to 65) still counts
+         size_t base = strlen(sound_path);
+@@ -577,7 +650,7 @@ void sfxBootStart(void)
+     audsrv_adpcm_init();
+     sfxInitDefaults();
+     audioSetVolume();
+-    if (thmGetFilePath(thmGetGuiValue()) == NULL && oplGetRipps2Dir(path, sizeof(path) - 16)) {
++    if (thmGetFilePath(thmGetGuiValue()) == NULL && ripps2AudioBase(path, sizeof(path) - 16, 0)) { // beside RIPPS2 only: no drive is up yet
+         size_t base = strlen(path);
+         strcat(path, "AUDIO/boot.adp");
+         if (sfxRead(path, &sfx_files[SFX_BOOT]) != 0) { // the built-in (or baked) one stays when there is none
+@@ -597,6 +670,43 @@ void sfxBootStart(void)
+     }
+ }
+ 
++// Build 74: RIPPS2 started where it has no AUDIO folder (a memory card, through BIBLE) finds the one on
++// a drive once that drive is up. The GUI asks every few seconds for the first three minutes; the IO
++// worker looks, and on a find loads the sounds from there and starts the music.
++static volatile int audioLatePending = 0;
++
++static void audioLateWork(void)
++{
++    char dir[256];
++    if (!audioBaseFound && ripps2AudioBase(dir, sizeof(dir), 1) && audioBaseFound) {
++        sfxInit(0);
++        if (gEnableBGM && !isBgmPlaying()) {
++            bgmFadeIn = 1;
++            bgmFadeAt = clock();
++            bgmStart();
++            if (!isBgmPlaying())
++                bgmFadeIn = 0;
++        }
++    }
++    audioLatePending = 0;
++}
++
++static void audioLateTick(void)
++{
++    static clock_t next = 0, until = 0;
++    clock_t now = clock();
++    if (audioBaseFound || audioLatePending || thmGetFilePath(thmGetGuiValue()) != NULL)
++        return;
++    if (until == 0)
++        until = now + 180 * CLOCKS_PER_SEC;
++    if ((long)(now - until) > 0 || (long)(now - next) < 0)
++        return;
++    next = now + 4 * CLOCKS_PER_SEC;
++    audioLatePending = 1;
++    if (ioPutRequest(IO_CUSTOM_SIMPLEACTION, &audioLateWork) != IO_OK)
++        audioLatePending = 0;
++}
++
+ // The IO worker, once every sound is loaded
+ void sfxBootSoundsLoaded(void)
+ {
+@@ -624,6 +734,8 @@ void bgmBootTick(void)
+     static int started = 0;
+     static clock_t lastStep = 0;
+ 
++    if (started)
++        audioLateTick(); // build 74: an AUDIO folder on a drive that started after the boot
+     if (!started) {
+         // once the sounds are in, and not before the boot sound's last two seconds: it ushers the
+         // music in rather than playing under it
+@@ -1366,7 +1478,7 @@ int bgmMusicList(char (*names)[RIPPS2_MUSIC_NAME], int max)
+     char dir[256];
+     int n;
+ 
+-    if (!oplGetRipps2Dir(dir, sizeof(dir) - 8))
++    if (!ripps2AudioBase(dir, sizeof(dir) - 8, 0))
+         return 0;
+     n = bgmMusicScan(dir, "AUDIO", 1, names, 0, max);
+     n = bgmMusicScan(dir, "MUSIC", 0, names, n, max);
+@@ -1401,7 +1513,7 @@ static int bgmMusicPath(char *out, int size)
+     char dir[256];
+     int n = bgmMusicList(names, RIPPS2_MUSIC_MAX), i, pick = 0;
+ 
+-    if (n == 0 || !oplGetRipps2Dir(dir, sizeof(dir)))
++    if (n == 0 || !ripps2AudioBase(dir, sizeof(dir), 0))
+         return 0;
+     for (i = 0; i < n; i++)
+         if (!strcasecmp(names[i], gRipps2Music)) {
