@@ -5,7 +5,10 @@ Builds, for build N:
   ripps2-icon.png  the RIPPS2 Audio Studio icon (five equaliser bars), as the post's author icon
   post-N.json      the webhook payload: the banner first, then what is new and what to test
 
-    python make_test_embed.py --build 70 --notes notes.md [--release URL] [--out DIR] [--post]
+    python make_test_embed.py --build 70 --notes notes.md [--release URL] [--attach FILE ...] [--out DIR] [--post]
+
+--attach adds files to the post as downloads (build 73: RIPPS2.elf itself, so testers get the build
+from the post).
 
 notes.md holds the post's words:
     # <one-line pitch>
@@ -173,16 +176,17 @@ def payload(build, notes, release):
             'attachments': [{'id': 0, 'filename': 'test-me-%d.png' % build}, {'id': 1, 'filename': 'ripps2-icon.png'}]}
 
 
-def post(data, files):
+def post(data, files, extra=()):
     url = os.environ.get('RIPPS2_DISCORD_WEBHOOK', '')
     if not url.startswith('https://discord.com/api/webhooks/'):
         sys.exit('RIPPS2_DISCORD_WEBHOOK is not set to a Discord webhook URL')
     boundary = uuid.uuid4().hex
     parts = [('--%s\r\nContent-Disposition: form-data; name="payload_json"\r\nContent-Type: application/json\r\n\r\n' % boundary).encode() +
              json.dumps(data).encode() + b'\r\n']
-    for i, path in enumerate(files):
-        parts.append(('--%s\r\nContent-Disposition: form-data; name="files[%d]"; filename="%s"\r\nContent-Type: image/png\r\n\r\n'
-                      % (boundary, i, os.path.basename(path))).encode() + open(path, 'rb').read() + b'\r\n')
+    for i, path in enumerate(list(files) + list(extra)):
+        kind = 'image/png' if i < len(files) else 'application/octet-stream'
+        parts.append(('--%s\r\nContent-Disposition: form-data; name="files[%d]"; filename="%s"\r\nContent-Type: %s\r\n\r\n'
+                      % (boundary, i, os.path.basename(path), kind)).encode() + open(path, 'rb').read() + b'\r\n')
     parts.append(('--%s--\r\n' % boundary).encode())
     req = urllib.request.Request(url + '?wait=true', data=b''.join(parts), method='POST',
                                  headers={'Content-Type': 'multipart/form-data; boundary=%s' % boundary, 'User-Agent': 'RIPPS2-test-post'})
@@ -198,6 +202,7 @@ def main():
     ap.add_argument('--release', default='')
     ap.add_argument('--out', default='.')
     ap.add_argument('--post', action='store_true')
+    ap.add_argument('--attach', action='append', default=[])
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
     bn, ic = os.path.join(a.out, 'test-me-%d.png' % a.build), os.path.join(a.out, 'ripps2-icon.png')
@@ -208,8 +213,10 @@ def main():
     json.dump(data, open(jp, 'w', encoding='utf-8'), indent=1, ensure_ascii=False)
     size = sum(len(json.dumps(e)) for e in data['embeds'])
     print(bn, ic, jp, 'embed text about %d of 6000 characters' % size)
+    for f in a.attach:
+        data['attachments'].append({'id': len(data['attachments']), 'filename': os.path.basename(f)})
     if a.post:
-        post(data, [bn, ic])
+        post(data, [bn, ic], a.attach)
 
 
 if __name__ == '__main__':
