@@ -34,6 +34,18 @@ index 76cc8af..7a200f5 100644
      NETCFG_OK,
      // Section labels for the SMB-only block, so it can be hidden whole when the selected network
      // protocol is not SMB. Appended here to keep the NETCFG_*_0..N consecutive runs above intact.
+diff --git a/include/gui.h b/include/gui.h
+index 89c3e4c..9818642 100644
+--- a/include/gui.h
++++ b/include/gui.h
+@@ -71,6 +71,7 @@ void guiSwitchScreen(int target);
+ void guiSwitchScreenInstant(int target); // RIPPS2: no fade (category switches)
+ void guiStartFrame(void); // RIPPS2: the frame bracket, for ripps2bg.c's own launch frames
+ void guiEndFrame(void);
++u32 guiGetFrameWatchdog(u32 *worstUs, u32 *overruns); // the last frame's length, the worst, the long ones (us)
+ 
+ void guiReloadScreenExtents();
+ 
 diff --git a/include/ioman.h b/include/ioman.h
 index 8d98c6d..8bf8fcf 100644
 --- a/include/ioman.h
