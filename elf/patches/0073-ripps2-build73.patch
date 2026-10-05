@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index b6ed6ec..01cf720 100644
+index b6ed6ec..715f162 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -133,7 +133,7 @@ ifneq ($(GIT_TAG),latest)
@@ -17,7 +17,7 @@ index b6ed6ec..01cf720 100644
  
 -EE_LIBS = -L$(PS2SDK)/ports/lib -L$(GSKIT)/lib -L./lib -lgskit -ldmakit -lpoweroff -lfileXio -liopreboot -lpatches -lpng -lz -lmc -lfreetype -lvux -lcdvd -lnetman -lps2ips -laudsrv -lvorbisfile -lvorbis -logg -lpadx -lelf-loader-nocolour -lkbd -lsecr
 -EE_INCS += -I$(PS2SDK)/ports/include -I$(PS2SDK)/ports/include/freetype2 -I$(GSKIT)/include -I$(GSKIT)/ee/dma/include -I$(GSKIT)/ee/gs/include -Imodules/iopcore/common -Imodules/network/common -Imodules/hdd/common -Iinclude
-+EE_LIBS = -L$(PS2SDK)/ports/lib -L$(GSKIT)/lib -L./lib -lbearssl -lgskit -ldmakit -lpoweroff -lfileXio -liopreboot -lpatches -lpng -lz -lmc -lfreetype -lvux -lcdvd -lnetman -lps2ips -laudsrv -lvorbisfile -lvorbis -logg -lpadx -lelf-loader-nocolour -lkbd -lsecr
++EE_LIBS = -L$(PS2SDK)/ports/lib -L$(GSKIT)/lib -L./lib -lbearssl -lgskit -ldmakit -lpoweroff -lfileXio -liopreboot -lpatches -lpng -ljpeg -lz -lmc -lfreetype -lvux -lcdvd -lnetman -lps2ips -laudsrv -lvorbisfile -lvorbis -logg -lpadx -lelf-loader-nocolour -lkbd -lsecr
 +EE_INCS += -Ibearssl-0.6/inc -I$(PS2SDK)/ports/include -I$(PS2SDK)/ports/include/freetype2 -I$(GSKIT)/include -I$(GSKIT)/ee/dma/include -I$(GSKIT)/ee/gs/include -Imodules/iopcore/common -Imodules/network/common -Imodules/hdd/common -Iinclude
  BIN2C = $(PS2SDK)/bin/bin2c
  
@@ -533,17 +533,19 @@ index b9e0da3..c179f1e 100644
      {'S', "carried unmodified: github.com/Gageformer/Ember/releases"},
 diff --git a/src/ripps2art.c b/src/ripps2art.c
 new file mode 100644
-index 0000000..02232cc
+index 0000000..e4bfe96
 --- /dev/null
 +++ b/src/ripps2art.c
-@@ -0,0 +1,550 @@
+@@ -0,0 +1,696 @@
 +/*
 +  RIPPS2 build 73: Cover Art Download (Settings > Network, after NBD Server).
 +
 +  For every PS2 game in the started lists that has no cover, the PS2 itself fetches one over HTTPS from
 +  xlenore's ps2-covers collection on GitHub (the source ORBIT's launcher uses) and writes it into that
-+  drive's ART folder as <ID>_COV.jpg, where RIPPS2 already looks for covers. Nothing else is touched:
-+  a game that already has a cover keeps it.
++  drive's ART folder as <ID>_COV.png, where RIPPS2 already looks for covers. Nothing else is touched:
++  a game that already has a cover keeps it. The collection's covers are 512x736 JPEGs and RIPPS2 reads
++  PNG only, so each one is decoded here (libjpeg-turbo, its DCT scaling does most of the shrink) and
++  saved at OPL's cover size, 140x200, like every other cover on the drive.
 +
 +  Each source is asked where its covers live by drawing nothing: texDiscoverLoad in probe mode reports
 +  the path the source would try (texSetProbe), so every drive type, HDD and network included, gets
@@ -557,7 +559,9 @@ index 0000000..02232cc
 +  Receiving: libps2ips forwards recv over SIF RPC, and its short or unaligned pieces travel a second
 +  path that misbehaved on hardware for the achievements client (ranet.c). Every recv here lands in a
 +  64-byte-aligned bounce buffer and asks for a multiple of 64 bytes, and a failure is reported with
-+  its stage and BearSSL's error code, so a tester's photo says where it broke.
++  its stage and BearSSL's error code, so a tester's photo says where it broke. The IOP side used to
++  drop the end of a piece whose tail did not fit its reply (TLS then failed with BR_ERR_BAD_MAC);
++  RIPPS2's ps2ips.irx now leaves such a tail queued for the next call.
 +*/
 +
 +#include <stdio.h>
@@ -574,6 +578,9 @@ index 0000000..02232cc
 +#include <sifrpc.h>
 +#include <ps2ips.h>
 +#include <ps2ip_rpc.h>
++#include <setjmp.h>
++#include <jpeglib.h>
++#include <png.h>
 +
 +#include "include/opl.h"
 +#include "include/gui.h"
@@ -672,7 +679,7 @@ index 0000000..02232cc
 +
 +static int artHasCover(const char *base)
 +{
-+    static const char *const ext[] = {"png", "jpg", "jpeg", "PNG", "JPG", NULL};
++    static const char *const ext[] = {"png", NULL}; // what texDiscoverLoad reads: a lone .jpg shows nothing
 +    char p[272];
 +    int i, fd;
 +    for (i = 0; ext[i] != NULL; i++) {
@@ -967,6 +974,129 @@ index 0000000..02232cc
 +    return -1;
 +}
 +
++// ---------------------------------------------------------------- JPEG in, PNG out
++#define ART_COV_W 140 // OPL's cover size (themes.c THM_COVER_W)
++#define ART_COV_H 200
++#define ART_PNG_MAX (ART_COV_W * ART_COV_H * 3 + 16384) // stored rows, worst case, plus the chunks
++
++struct artJpegErr {
++    struct jpeg_error_mgr pub;
++    jmp_buf jb;
++};
++
++static void artJpegFail(j_common_ptr c)
++{
++    longjmp(((struct artJpegErr *)c->err)->jb, 1);
++}
++
++// The cover as 140x200 RGB in out, or 0 for a picture libjpeg will not read
++static int artDecode(const unsigned char *jpg, int len, unsigned char *out)
++{
++    static struct jpeg_decompress_struct d;
++    static struct artJpegErr je;
++    static unsigned char *src; // static: it outlives a longjmp
++    unsigned int sw, sh, x, y;
++
++    src = NULL;
++    d.err = jpeg_std_error(&je.pub);
++    je.pub.error_exit = artJpegFail;
++    if (setjmp(je.jb)) {
++        jpeg_destroy_decompress(&d);
++        free(src);
++        return 0;
++    }
++    jpeg_create_decompress(&d);
++    jpeg_mem_src(&d, (unsigned char *)jpg, len);
++    jpeg_read_header(&d, TRUE);
++    d.out_color_space = JCS_RGB;
++    d.scale_num = 1; // the smallest 1/2^n the decoder can give that still covers 140x200
++    d.scale_denom = 1;
++    while (d.scale_denom < 8 && d.image_width / (d.scale_denom * 2) >= ART_COV_W && d.image_height / (d.scale_denom * 2) >= ART_COV_H)
++        d.scale_denom *= 2;
++    jpeg_start_decompress(&d);
++    sw = d.output_width;
++    sh = d.output_height;
++    if (d.output_components != 3 || sw == 0 || sh == 0 || (src = (unsigned char *)malloc(sw * sh * 3)) == NULL)
++        longjmp(je.jb, 1);
++    while (d.output_scanline < sh) {
++        JSAMPROW row = src + d.output_scanline * sw * 3;
++        jpeg_read_scanlines(&d, &row, 1);
++    }
++    jpeg_finish_decompress(&d);
++    jpeg_destroy_decompress(&d);
++
++    // the rest of the way by averaging boxes (256x368 to 140x200 for the collection's covers)
++    for (y = 0; y < ART_COV_H; y++) {
++        unsigned int y0 = y * sh / ART_COV_H, y1 = (y + 1) * sh / ART_COV_H;
++        if (y1 <= y0)
++            y1 = y0 + 1;
++        for (x = 0; x < ART_COV_W; x++) {
++            unsigned int x0 = x * sw / ART_COV_W, x1 = (x + 1) * sw / ART_COV_W, sum[3] = {0, 0, 0}, n = 0, i, j, c;
++            if (x1 <= x0)
++                x1 = x0 + 1;
++            for (j = y0; j < y1; j++)
++                for (i = x0; i < x1; i++, n++)
++                    for (c = 0; c < 3; c++)
++                        sum[c] += src[(j * sw + i) * 3 + c];
++            for (c = 0; c < 3; c++)
++                out[(y * ART_COV_W + x) * 3 + c] = (unsigned char)((sum[c] + n / 2) / n);
++        }
++    }
++    free(src);
++    src = NULL;
++    return 1;
++}
++
++typedef struct {
++    unsigned char *p;
++    int n, cap;
++} art_mem_t;
++
++static void artPngWrite(png_structp png, png_bytep data, png_size_t n)
++{
++    art_mem_t *m = (art_mem_t *)png_get_io_ptr(png);
++    if (m->n + (int)n > m->cap)
++        png_error(png, "cover too big");
++    memcpy(m->p + m->n, data, n);
++    m->n += n;
++}
++
++static void artPngFlush(png_structp png)
++{
++    (void)png;
++}
++
++// 140x200 RGB as a PNG in out; its length, or 0
++static int artEncode(const unsigned char *rgb, unsigned char *out, int cap)
++{
++    static art_mem_t m;
++    png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
++    png_infop info = png != NULL ? png_create_info_struct(png) : NULL;
++    int y;
++
++    if (png == NULL || info == NULL) {
++        png_destroy_write_struct(&png, &info);
++        return 0;
++    }
++    if (setjmp(png_jmpbuf(png))) {
++        png_destroy_write_struct(&png, &info);
++        return 0;
++    }
++    m.p = out;
++    m.n = 0;
++    m.cap = cap;
++    png_set_write_fn(png, &m, artPngWrite, artPngFlush);
++    png_set_IHDR(png, info, ART_COV_W, ART_COV_H, 8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT,
++                 PNG_FILTER_TYPE_DEFAULT);
++    png_set_compression_level(png, 6);
++    png_write_info(png, info);
++    for (y = 0; y < ART_COV_H; y++)
++        png_write_row(png, (png_bytep)(rgb + y * ART_COV_W * 3));
++    png_write_end(png, info);
++    png_destroy_write_struct(&png, &info);
++    return m.n;
++}
++
 +static int artSave(const art_target_t *t, const unsigned char *buf, int len)
 +{
 +    char dir[256], file[272];
@@ -976,7 +1106,7 @@ index 0000000..02232cc
 +        snprintf(dir, sizeof(dir), "%.*s", (int)(slash - t->path), t->path);
 +        mkdir(dir, 0777); // ART: there already on most drives
 +    }
-+    snprintf(file, sizeof(file), "%s.jpg", t->path);
++    snprintf(file, sizeof(file), "%s.png", t->path);
 +    if ((fd = open(file, O_WRONLY | O_CREAT | O_TRUNC, 0666)) < 0)
 +        return 0;
 +    w = write(fd, buf, len);
@@ -991,18 +1121,20 @@ index 0000000..02232cc
 +// ---------------------------------------------------------------- the run
 +void ripps2ArtDownload(void)
 +{
-+    unsigned char *body = NULL;
++    unsigned char *body = NULL, *rgb = NULL;
 +    char err[96];
-+    int i, len, status, connected = 0;
++    int i, len, status, connected = 0, saved;
 +
 +    artDone = artGot = artMissing = artFailed = 0;
 +    artLine[0] = artLine2[0] = '\0';
 +    artCount = 0;
 +    artTargets = (art_target_t *)malloc(sizeof(art_target_t) * ART_MAX_GAMES);
 +    body = (unsigned char *)malloc(ART_MAX_BYTES);
-+    if (artTargets == NULL || body == NULL) {
++    rgb = (unsigned char *)malloc(ART_COV_W * ART_COV_H * 3);
++    if (artTargets == NULL || body == NULL || rgb == NULL) {
 +        free(artTargets);
 +        free(body);
++        free(rgb);
 +        artTargets = NULL;
 +        guiMsgBox("Not enough memory for the cover download.", 0, NULL);
 +        return;
@@ -1016,6 +1148,7 @@ index 0000000..02232cc
 +    if (artCount == 0) {
 +        free(artTargets);
 +        free(body);
++        free(rgb);
 +        artTargets = NULL;
 +        guiMsgBox("Every game in your started lists already has a cover. Start a drive's list first to look at its games.", 0, NULL);
 +        return;
@@ -1026,6 +1159,7 @@ index 0000000..02232cc
 +    if (netLoadInitModules(NET_PROTO_SMB) != 0) {
 +        free(artTargets);
 +        free(body);
++        free(rgb);
 +        artTargets = NULL;
 +        guiMsgBox("The network did not start. Check the cable, and the IP settings on this page.", 0, NULL);
 +        return;
@@ -1054,7 +1188,18 @@ index 0000000..02232cc
 +                connected = 0;
 +            }
 +        }
-+        if (status == 200 && len > 4 && body[0] == 0xFF && body[1] == 0xD8 && artSave(t, body, len))
++        saved = 0;
++        if (status == 200 && len > 4 && body[0] == 0xFF && body[1] == 0xD8) {
++            // the JPEG becomes a 140x200 PNG in the same buffer (the JPEG is done with by then)
++            if (!artDecode(body, len, rgb))
++                snprintf(err, sizeof(err), "%s: the picture would not decode.", t->serial);
++            else if ((len = artEncode(rgb, body, ART_MAX_BYTES)) <= 0)
++                snprintf(err, sizeof(err), "%s: the PNG would not encode.", t->serial);
++            else if (!(saved = artSave(t, body, len)))
++                snprintf(err, sizeof(err), "%s: the drive would not take the file.", t->serial);
++            status = saved ? 200 : 0;
++        }
++        if (saved)
 +            artGot++;
 +        else if (status == 404)
 +            artMissing++;
@@ -1072,6 +1217,7 @@ index 0000000..02232cc
 +    }
 +    artClose();
 +    free(body);
++    free(rgb);
 +    free(artTargets);
 +    artTargets = NULL;
 +
