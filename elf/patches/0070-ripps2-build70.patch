@@ -128,7 +128,7 @@ index 7fe7d25..890363a 100644
      // SMB server data it relates to, without duplicating any of that state in this page.
      {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_POPSTARTER_NETWORK_SETTINGS}}},
 diff --git a/src/gui.c b/src/gui.c
-index 87b8a02..dfd1659 100644
+index 87b8a02..2999e44 100644
 --- a/src/gui.c
 +++ b/src/gui.c
 @@ -520,7 +520,7 @@ static int guiRenderRANotices(int y, int yadd)
@@ -161,7 +161,54 @@ index 87b8a02..dfd1659 100644
      if (result && !guiSettingsLeftUntouched(diaNetConfig, result, NULL, NULL)) {
          int netProtoVal2, netAccessVal2;
          diaGetInt(diaNetConfig, CFG_NETPROTOCOL, &netProtoVal2);
-@@ -3840,11 +3845,25 @@ static void guiHandleOp(struct gui_update_t *item)
+@@ -2951,6 +2956,30 @@ reshow_sources:
+     return guiSettingsPageResult(result);
+ }
+ 
++// RIPPS2 build 70: 720p and 1080i are 16:9 pictures, so the canvas must be drawn for widescreen there;
++// every other mode (SD, EDTV, VGA) is 4:3. Choosing a video mode ticks Widescreen to match it, live;
++// Widescreen can still be set by hand afterwards (a 4:3 signal on a 16:9 set that stretches it).
++static int guiVModeIsWide(int vmode)
++{
++    return vmode == 10 || vmode == 11; // HDTV 1280x720p, HDTV 1920x1080i (vmodeNames below)
++}
++
++static int guiWideFollowVMode(struct UIItem *ui, int *shownVMode)
++{
++    int vmode = 0, wide = 0;
++    diaGetInt(ui, UICFG_VMODE, &vmode);
++    if (vmode == *shownVMode)
++        return 0;
++    *shownVMode = vmode;
++    diaGetInt(ui, UICFG_WIDESCREEN, &wide);
++    if (wide == guiVModeIsWide(vmode))
++        return 0;
++    diaSetInt(ui, UICFG_WIDESCREEN, guiVModeIsWide(vmode));
++    return 1;
++}
++
++static int guiDisplayShownVMode = -1;
++
+ static int guiSettingsDisplayUpdater(int modified)
+ {
+     int temp, x, y;
+@@ -2959,6 +2988,7 @@ static int guiSettingsDisplayUpdater(int modified)
+         return 0;
+ 
+     guiSettingsSavePending = 1;
++    guiWideFollowVMode(guiSettingsActiveDialog, &guiDisplayShownVMode); // RIPPS2 build 70
+ 
+     diaGetInt(guiSettingsActiveDialog, UICFG_XOFF, &x);
+     diaGetInt(guiSettingsActiveDialog, UICFG_YOFF, &y);
+@@ -3029,6 +3059,7 @@ static int guiSettingsShowInterface(void)
+     diaSetVisible(ui, UICFG_COVERFLOW_BUTTON, 1);
+     diaSetInt(ui, UICFG_VMODE, gVMode);
+     diaSetInt(ui, UICFG_WIDESCREEN, gWideScreen);
++    guiDisplayShownVMode = gVMode; // RIPPS2 build 70: Widescreen follows a video mode CHANGE, not the page opening
+     diaSetInt(ui, UICFG_XOFF, gXOff);
+     diaSetInt(ui, UICFG_YOFF, gYOff);
+     diaSetInt(ui, UICFG_OVERSCAN, gOverscan);
+@@ -3840,11 +3871,25 @@ static void guiHandleOp(struct gui_update_t *item)
      }
  }
  
@@ -188,7 +235,7 @@ index 87b8a02..dfd1659 100644
  
          guiHandleOp(gUpdateList->item);
  
-@@ -3876,6 +3895,11 @@ static void guiHandleDeferredOps(void)
+@@ -3876,6 +3921,11 @@ static void guiHandleDeferredOps(void)
      SignalSema(gSemaId);
  }
  
@@ -200,7 +247,7 @@ index 87b8a02..dfd1659 100644
  void guiExecDeferredOps(void)
  {
      // Clears deferred operations list by executing them.
-@@ -4647,7 +4671,7 @@ void guiIntroLoop(void)
+@@ -4647,7 +4697,7 @@ void guiIntroLoop(void)
  
          guiDrawOverlays();
  
@@ -209,7 +256,7 @@ index 87b8a02..dfd1659 100644
          bgmBootTick(); // RIPPS2: the music comes in under the intro once the sounds are loaded
  
          guiEndFrame();
-@@ -4693,8 +4717,8 @@ void guiMainLoop(void)
+@@ -4693,8 +4743,8 @@ void guiMainLoop(void)
          guiShowRANotices();
  #endif
  
@@ -371,7 +418,7 @@ index cc43fde..4ce63b5 100644
          launchDiagMark(6); // io + art drain done -- the per-module teardown below runs next
  
 diff --git a/src/ripps2bg.c b/src/ripps2bg.c
-index 17d7d36..8854346 100644
+index 17d7d36..1711c77 100644
 --- a/src/ripps2bg.c
 +++ b/src/ripps2bg.c
 @@ -12,6 +12,8 @@
@@ -420,9 +467,30 @@ index 17d7d36..8854346 100644
  }
  
  static inline unsigned int cpuTicks(void)
-@@ -94,6 +113,9 @@ static p2 project(v3 p)
+@@ -85,6 +104,17 @@ static void camLook(v3 eye, v3 target, float fovDeg)
+     camFocal = 240.0f / tanf(fovDeg * PI / 360.0f);
+ }
+ 
++// RIPPS2 build 70: widescreen (anamorphic 16:9, and every 720p/1080i picture) shows the 640-wide
++// canvas a third wider. Pixmaps and fonts were drawn narrower for it already (SCALING_RATIO, the font
++// aspect); the scenes drawn here were not, so towers, orbs and every round glow stood stretched. Every
++// screen-space x offset now goes through this factor (1 for 4:3, 0.75 for 16:9), set each frame.
++static float wideK = 1.0f;
++
++static void wideUpdate(void)
++{
++    wideK = (float)rmWideScale(4096) / 4096.0f;
++}
++
+ static p2 project(v3 p)
+ {
+     v3 d = vsub(p, camEye);
+@@ -92,8 +122,11 @@ static p2 project(v3 p)
+     o.z = vdot(d, camF);
+     o.ok = o.z > 0.5f;
      if (o.ok) {
-         o.x = CX + vdot(d, camR) / o.z * camFocal;
+-        o.x = CX + vdot(d, camR) / o.z * camFocal;
++        o.x = CX + vdot(d, camR) / o.z * camFocal * wideK;
          o.y = CY - vdot(d, camU) / o.z * camFocal;
 +        // build 70: nothing that is not a sane screen position ever reaches the GS
 +        if (!(fabsf(o.x) < 100000.0f && fabsf(o.y) < 100000.0f))
@@ -430,7 +498,36 @@ index 17d7d36..8854346 100644
      }
      return o;
  }
-@@ -740,6 +762,16 @@ int ripps2LaunchScreenHeld(void)
+@@ -313,9 +346,9 @@ static void moteGlow(float x, float y, float r, int a)
+     int k;
+     const int seg = 6;
+     u64 centre = RGBA(0xB0, 0xD0, 0xFF, a), rim = RGBA(0xB0, 0xD0, 0xFF, 0);
+-    float px = x + r, py = y;
++    float px = x + r * wideK, py = y;
+     for (k = 1; k <= seg; k++) {
+-        float ang = TAU * k / seg, nx = x + cosf(ang) * r, ny = y + sinf(ang) * r;
++        float ang = TAU * k / seg, nx = x + cosf(ang) * r * wideK, ny = y + sinf(ang) * r;
+         rmDrawTriGouraud(x, y, centre, px, py, rim, nx, ny, rim);
+         px = nx;
+         py = ny;
+@@ -406,7 +439,7 @@ static void drawBeam(float x, float z, float y0, float w, float b)
+     p2 pb = project(base), pt = project(tip);
+     if (!onScreen(pb) || !onScreen(pt))
+         return;
+-    float hwb = w * 0.5f * camFocal / pb.z, hwt = w * 0.5f * camFocal / pt.z;
++    float hwb = w * 0.5f * camFocal / pb.z * wideK, hwt = w * 0.5f * camFocal / pt.z * wideK;
+     int a = (int)(0x58 * fminf(1.0f, b));
+     u64 c0 = RGBA(0x5C, 0x98, 0xFF, a), c1 = RGBA(0x5C, 0x98, 0xFF, 0);
+     u64 k0 = RGBA(0xDC, 0xEA, 0xFF, a), k1 = RGBA(0xDC, 0xEA, 0xFF, 0);
+@@ -550,6 +583,7 @@ void ripps2DrawPillars(void)
+ {
+     int i, j, k;
+     float t = sceneTime();
++    wideUpdate();
+ 
+     if (towerCount == 0)
+         pillarsInit();
+@@ -740,6 +774,16 @@ int ripps2LaunchScreenHeld(void)
      return launchHeld;
  }
  
@@ -447,7 +544,7 @@ index 17d7d36..8854346 100644
  void ripps2LaunchAborted(void)
  {
      // the launch returned (it failed): back to the idle field under the menu
-@@ -782,7 +814,7 @@ static void lorenzStep(float dt)
+@@ -782,7 +826,7 @@ static void lorenzStep(float dt)
          }
          lorenzReady = 1;
      }
@@ -456,7 +553,7 @@ index 17d7d36..8854346 100644
      for (i = 0; i < LORENZ_N; i++) {
          v3 *p = &lorenz[i];
          for (k = 0; k < 4; k++) {
-@@ -791,6 +823,12 @@ static void lorenzStep(float dt)
+@@ -791,6 +835,12 @@ static void lorenzStep(float dt)
              p->y += dy * h;
              p->z += dz * h;
          }
@@ -469,7 +566,69 @@ index 17d7d36..8854346 100644
      }
  }
  
-@@ -1048,6 +1086,9 @@ static void spinUpdate(float dt)
+@@ -893,14 +943,34 @@ static v3 formationAt(int f, int i, int n, float t)
+     }
+ }
+ 
+-// Formation frame to world: tilt toward the camera, then spin
++// Formation frame to world: tilt toward the camera, then spin. RIPPS2 build 70: the four sines and
++// cosines are kept for the last two (formation, time) pairs asked for -- the shown formation and,
++// mid-morph, the one it leaves -- instead of computed again for every point.
++static struct
++{
++    int f;
++    float t, ct, st, cs, ss;
++} twCache[2] = {{-1, 0, 1, 0, 1, 0}, {-1, 0, 1, 0, 1, 0}};
++static int twNext = 0;
++
+ static v3 toWorld(int f, v3 p, float t)
+ {
+-    float tl = formations[f].tilt, sp = formations[f].spin * t;
+-    if (tl != 0.0f)
+-        p = V(p.x, p.y * cosf(tl) - p.z * sinf(tl), p.y * sinf(tl) + p.z * cosf(tl));
+-    if (sp != 0.0f)
+-        p = V(p.x * cosf(sp) + p.z * sinf(sp), p.y, -p.x * sinf(sp) + p.z * cosf(sp));
++    int i = twCache[0].f == f && twCache[0].t == t ? 0 : twCache[1].f == f && twCache[1].t == t ? 1 : -1;
++    if (i < 0) {
++        float tl = formations[f].tilt, sp = formations[f].spin * t;
++        i = twNext;
++        twNext ^= 1;
++        twCache[i].f = f;
++        twCache[i].t = t;
++        twCache[i].ct = cosf(tl);
++        twCache[i].st = sinf(tl);
++        twCache[i].cs = cosf(sp);
++        twCache[i].ss = sinf(sp);
++    }
++    if (formations[f].tilt != 0.0f)
++        p = V(p.x, p.y * twCache[i].ct - p.z * twCache[i].st, p.y * twCache[i].st + p.z * twCache[i].ct);
++    if (formations[f].spin != 0.0f)
++        p = V(p.x * twCache[i].cs + p.z * twCache[i].ss, p.y, -p.x * twCache[i].ss + p.z * twCache[i].cs);
+     return p;
+ }
+ 
+@@ -910,10 +980,10 @@ static void glow(float x, float y, float r, int cr, int cg, int cb, int ca)
+     int k;
+     const int seg = 10;
+     u64 centre = RGBA(cr, cg, cb, ca), rimC = RGBA(cr, cg, cb, 0);
+-    float px = x + r, py = y;
++    float px = x + r * wideK, py = y;
+     for (k = 1; k <= seg; k++) {
+         float ang = TAU * k / seg;
+-        float nx = x + cosf(ang) * r, ny = y + sinf(ang) * r * 0.9f;
++        float nx = x + cosf(ang) * r * wideK, ny = y + sinf(ang) * r * 0.9f;
+         rmDrawTriGouraud(x, y, centre, px, py, rimC, nx, ny, rimC);
+         px = nx;
+         py = ny;
+@@ -1032,6 +1102,7 @@ static v3 guidePt(int f, int k, float u, float t)
+ #define SPIN_PITCH_MAX 1.1f // keep the formation from tipping over
+ 
+ static float spinYaw = 0.0f, spinPitch = 0.0f, spinYawVel = 0.0f, spinPitchVel = 0.0f;
++static void spinTrig(void);
+ 
+ static void spinUpdate(float dt)
+ {
+@@ -1048,17 +1119,32 @@ static void spinUpdate(float dt)
      }
      spinYaw = fmodf(spinYaw + spinYawVel * dt, TAU);
      spinPitch += spinPitchVel * dt;
@@ -479,7 +638,59 @@ index 17d7d36..8854346 100644
      if (spinPitch > SPIN_PITCH_MAX || spinPitch < -SPIN_PITCH_MAX) {
          spinPitch = spinPitch > 0.0f ? SPIN_PITCH_MAX : -SPIN_PITCH_MAX;
          spinPitchVel = 0.0f;
-@@ -1278,6 +1319,8 @@ void ripps2DrawOrbs(void)
+     }
++    spinTrig();
++}
++
++// RIPPS2 build 70: the spin's sines and cosines, once a frame (spinUpdate). spin() runs for every
++// orb, tail sample and outline point -- it took four trig calls each time, thousands a frame.
++static float spinCy = 1.0f, spinSy = 0.0f, spinCp = 1.0f, spinSp = 0.0f;
++
++static void spinTrig(void)
++{
++    spinCy = cosf(spinYaw);
++    spinSy = sinf(spinYaw);
++    spinCp = cosf(spinPitch);
++    spinSp = sinf(spinPitch);
+ }
+ 
+ static v3 spin(v3 p)
+ {
+-    float cy = cosf(spinYaw), sy = sinf(spinYaw), cp = cosf(spinPitch), sp = sinf(spinPitch);
+-    v3 q = V(p.x * cy + p.z * sy, p.y, -p.x * sy + p.z * cy);
+-    return V(q.x, q.y * cp - q.z * sp, q.y * sp + q.z * cp);
++    v3 q = V(p.x * spinCy + p.z * spinSy, p.y, -p.x * spinSy + p.z * spinCy);
++    return V(q.x, q.y * spinCp - q.z * spinSp, q.y * spinSp + q.z * spinCp);
+ }
+ 
+ static void guideLine(int f, v3 a, v3 b, float t, u64 col)
+@@ -1068,16 +1154,17 @@ static void guideLine(int f, v3 a, v3 b, float t, u64 col)
+         softLine(pa.x, pa.y, pb.x, pb.y, 0.9f, 1.0f, col); // soft, like the pillars': steady on a CRT
+ }
+ 
+-// A sampled curve, drawn on up to `reveal` of its length
++// A sampled curve, drawn on up to `reveal` of its length (build 70: each point placed once, not twice)
+ static void guideCurve(int f, int k, int samples, int closed, float t, float reveal, u64 col)
+ {
+     int segs = closed ? samples : samples - 1, s;
+     int shown = (int)(segs * reveal + 0.5f);
+     float den = (float)(closed ? samples : samples - 1);
+-    v3 prev = guidePt(f, k, 0.0f, t);
++    p2 prev = project(spin(toWorld(f, guidePt(f, k, 0.0f, t), t)));
+     for (s = 1; s <= shown; s++) {
+-        v3 cur = guidePt(f, k, (float)s / den, t);
+-        guideLine(f, prev, cur, t, col);
++        p2 cur = project(spin(toWorld(f, guidePt(f, k, (float)s / den, t), t)));
++        if (prev.ok && cur.ok)
++            softLine(prev.x, prev.y, cur.x, cur.y, 0.9f, 1.0f, col); // soft, like the pillars': steady on a CRT
+         prev = cur;
+     }
+ }
+@@ -1275,9 +1362,12 @@ void ripps2SetOrbInput(int showPaths, int boost)
+ void ripps2DrawOrbs(void)
+ {
+     int i, k;
++    wideUpdate();
      float t = nowSeconds();
      float dt = lastT > 0.0f ? t - lastT : 1.0f;
      lastT = t;
@@ -488,7 +699,7 @@ index 17d7d36..8854346 100644
  
      if (lorenzPathCount == 0)
          guidesInit();
-@@ -1319,6 +1362,7 @@ void ripps2DrawOrbs(void)
+@@ -1319,6 +1409,7 @@ void ripps2DrawOrbs(void)
      if (dt > 0.25f) { // the tab was just opened: fresh tails, and show the outline
          trailValid = 0;
          guideStart = t;
@@ -496,7 +707,7 @@ index 17d7d36..8854346 100644
      }
      if (f != shownFormation) { // morph from wherever the orbs are
          prevFormation = shownFormation;
-@@ -1434,6 +1478,7 @@ void ripps2DrawOrbs(void)
+@@ -1434,6 +1525,7 @@ void ripps2DrawOrbs(void)
  static float bgMsAvg = 0.0f;
  static int fpsFrames = 0, fpsShown = 0;
  static float fpsWindow = 0.0f;
@@ -504,7 +715,15 @@ index 17d7d36..8854346 100644
  #endif
  
  // The top and bottom of the screen darken like the mockups, so the category bar and the hints read
-@@ -1460,16 +1505,23 @@ void ripps2DrawBackground(void)
+@@ -1447,6 +1539,7 @@ static void drawVignette(void)
+ 
+ void ripps2DrawBackground(void)
+ {
++    wideUpdate();
+ #if RIPPS2_PERF_HUD
+     unsigned int t0 = cpuTicks();
+ #endif
+@@ -1460,16 +1553,23 @@ void ripps2DrawBackground(void)
      float ms = (float)(cpuTicks() - t0) / 294912.0f;
      bgMsAvg = bgMsAvg * 0.9f + ms * 0.1f;
      float t = nowSeconds();
