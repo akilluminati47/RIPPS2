@@ -1,0 +1,2409 @@
+diff --git a/.github/scripts/test_ember_settings.py b/.github/scripts/test_ember_settings.py
+index 56068f9..18a3309 100644
+--- a/.github/scripts/test_ember_settings.py
++++ b/.github/scripts/test_ember_settings.py
+@@ -357,6 +357,8 @@ for key, row in (
+         failures.append(f'src/gui.c: Ember Game Settings never stores {key}')
+ if game_page and 'menuSaveConfig()' not in game_page:
+     failures.append('src/gui.c: Ember Game Settings does not save the CFG')
++if game_page and 'menuSaveEmberGameSettings(configSet)' not in game_page:
++    failures.append('src/gui.c: Ember Game Settings does not save settings.txt before launch')
+ 
+ row_function = function_text(gui_c, 'src/gui.c', 'static int emberSettingFromRow(')
+ if row_function:
+@@ -449,12 +451,13 @@ rewrite_functions = ''.join(function_text(cue_c, 'src/cuesupport.c', sig) for si
+ if rewrite_functions.count('{') >= 3:
+     compile_and_run('ember_rewrite', REWRITE_HARNESS.replace('@FUNCTIONS@', rewrite_functions))
+ 
+-# cueApplySettings only opens a file when it has something to do there.
++# The launch path and explicit save only open a file when they have something to do there.
+ apply_fn = function_text(cue_c, 'src/cuesupport.c', 'void cueApplySettings(')
++save_game_fn = function_text(cue_c, 'src/cuesupport.c', 'int cueSaveGameSettings(')
+ if apply_fn and not re.search(r'if \(nGlobal > 0\)', apply_fn):
+     failures.append('cueApplySettings: the main settings.txt must only be touched when a global setting is set')
+-if apply_fn and not re.search(r'if \(nGame > 0\)', apply_fn):
+-    failures.append('cueApplySettings: a game\'s settings.txt must only be touched when that game has a setting')
++if save_game_fn and not re.search(r'if \(nGame == 0\)\s*return 1;', save_game_fn):
++    failures.append('cueSaveGameSettings: a game with no managed setting must not touch settings.txt')
+ 
+ APPLY_HARNESS = r'''
+ #include <stdio.h>
+@@ -486,7 +489,8 @@ int gEmberDither = EMBER_SETTING_UNSET;
+ int gEmberShading = EMBER_SETTING_UNSET;
+ int gEmberController = EMBER_SETTING_UNSET;
+ 
+-static int globalTouches, gameTouches;
++static int globalTouches, gameTouches, writeResult = 1;
++static char lastGamePath[768];
+ 
+ static int configGetInt(config_set_t *cfg, const char *key, int *value)
+ {
+@@ -510,14 +514,16 @@ static int configGetInt(config_set_t *cfg, const char *key, int *value)
+ }
+ static const char *cueEmberFolder(void) { return "EMBER"; }
+ static char cueSep(const char *prefix) { (void)prefix; return '/'; }
+-static void cueRewriteSettingsFile(const char *path, const cue_setting_t *want, int count)
++static int cueRewriteSettingsFile(const char *path, const cue_setting_t *want, int count)
+ {
+     (void)want;
+     (void)count;
+-    if (strstr(path, "/games/") != NULL)
++    if (strstr(path, "/games/") != NULL) {
+         gameTouches++;
+-    else
++        snprintf(lastGamePath, sizeof(lastGamePath), "%s", path);
++    } else
+         globalTouches++;
++    return writeResult;
+ }
+ 
+ @FUNCTIONS@
+@@ -532,6 +538,8 @@ static void reset(config_set_t *cfg)
+     gEmberShading = EMBER_SETTING_UNSET;
+     gEmberController = EMBER_SETTING_UNSET;
+     globalTouches = gameTouches = 0;
++    lastGamePath[0] = '\0';
++    writeResult = 1;
+ }
+ static void expect(const char *what, int globalWant, int gameWant)
+ {
+@@ -587,15 +595,33 @@ int main(void)
+     cueApplySettings("mass0:/", "../x", &cfg);
+     expect("path-like game names do not touch game settings", 0, 0);
+ 
++    reset(&cfg);
++    gEmberDisplay = EMBER_DISPLAY_240;
++    cfg.shadingPresent = 1;
++    cfg.shading = EMBER_SHADING_24;
++    if (!cueSaveGameSettings("mass0:/", "Game", &cfg))
++        fails++;
++    expect("explicit game save does not write global settings", 0, 1);
++    if (strcmp(lastGamePath, "mass0:/EMBER/games/Game/settings.txt") != 0) {
++        printf("FAIL explicit save used wrong game path: %s\n", lastGamePath);
++        fails++;
++    }
++    writeResult = 0;
++    if (cueSaveGameSettings("mass0:/", "Game", &cfg) != 0) {
++        printf("FAIL failed settings.txt write reported success\n");
++        fails++;
++    }
++
+     if (!fails)
+         printf("ember settings: apply guards prevent file access for empty setting lists\n");
+     return fails ? 1 : 0;
+ }
+ '''
+ 
+-if apply_fn:
++if apply_fn and save_game_fn:
+     apply_functions = (function_text(cue_c, 'src/cuesupport.c', 'int cueNameLaunchable(') +
+                        function_text(cue_c, 'src/cuesupport.c', 'static void cueWantSetting(') +
++                       save_game_fn +
+                        apply_fn)
+     apply_defines = (defines(config_h, 'include/config.h',
+                              ('CONFIG_ITEM_EMBER_TIMING', 'CONFIG_ITEM_EMBER_DITHER',
+diff --git a/.github/scripts/test_neutrino_args_editor.py b/.github/scripts/test_neutrino_args_editor.py
+new file mode 100644
+index 0000000..2bd0afc
+--- /dev/null
++++ b/.github/scripts/test_neutrino_args_editor.py
+@@ -0,0 +1,61 @@
++"""Check that the console editor can round-trip long fields and refuses overflow."""
++
++from pathlib import Path
++import re
++import subprocess
++import tempfile
++
++root = Path(__file__).resolve().parents[2]
++source = (root / "src/supportbase.c").read_text(encoding="utf-8")
++
++
++def function(name):
++    match = re.search(r"^(?:static )?(?:int|void) " + name + r"\([^;{]*\)\s*\{", source, re.M)
++    if not match:
++        raise RuntimeError(f"missing {name}")
++    return source[match.start() : source.index("\n}", match.start()) + 2]
++
++
++declarations = "\n".join(
++    function(name) for name in ("naAppend", "naAppendKV", "neutrinoArgsParse", "neutrinoArgsAssemble")
++)
++header = (root / "include/supportbase.h").read_text(encoding="utf-8")
++struct = re.search(r"typedef struct\s*\{\s*int qb;.*?\} neutrino_args_t;", header, re.S)
++if not struct:
++    raise RuntimeError("missing neutrino_args_t")
++
++harness = r"""
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++@STRUCT@
++@FUNCTIONS@
++int main(void)
++{
++    const char *input = "-cfg=mc0:/NEUTRINO/config/a-very-long-configuration-name.toml -bsdfs=bd --b level=2";
++    neutrino_args_t args;
++    char output[256];
++    neutrinoArgsParse(input, &args);
++    if (strcmp(args.cfg, "mc0:/NEUTRINO/config/a-very-long-configuration-name.toml")) return 1;
++    args.qb = 1;
++    if (!neutrinoArgsAssemble(&args, output, sizeof(output))) return 2;
++    if (strcmp(output, "-qb -cfg=mc0:/NEUTRINO/config/a-very-long-configuration-name.toml -bsdfs=bd --b level=2")) return 3;
++    memset(args.cfg, 'x', sizeof(args.cfg) - 1);
++    args.cfg[sizeof(args.cfg) - 1] = '\0';
++    if (neutrinoArgsAssemble(&args, output, sizeof(output))) return 4;
++    memset(&args, 0, sizeof(args));
++    memset(args.extra, 'x', 220);
++    args.extra[220] = '\0';
++    if (!neutrinoArgsAssemble(&args, output, sizeof(output)) || strlen(output) != 220) return 5;
++    return 0;
++}
++"""
++
++with tempfile.TemporaryDirectory() as tmp:
++    program = Path(tmp) / "editor.c"
++    binary = Path(tmp) / "editor"
++    program.write_text(harness.replace("@STRUCT@", struct.group()).replace("@FUNCTIONS@", declarations), encoding="utf-8")
++    subprocess.run(["gcc", "-std=gnu99", "-Wall", "-Werror", "-o", str(binary), str(program)], check=True)
++    subprocess.run([str(binary)], check=True)
++
++print("neutrino args editor: long value round-trip, flag order, and overflow rejection OK")
+diff --git a/.github/scripts/test_neutrino_argv_budget.py b/.github/scripts/test_neutrino_argv_budget.py
+new file mode 100644
+index 0000000..8119069
+--- /dev/null
++++ b/.github/scripts/test_neutrino_argv_budget.py
+@@ -0,0 +1,139 @@
++"""Compile the real Neutrino argv builder and verify pre-teardown budget refusal."""
++from pathlib import Path
++import re
++import subprocess
++import tempfile
++
++root = Path(__file__).resolve().parents[2]
++source = (root / "src/system.c").read_text(encoding="utf-8")
++
++
++def function(signature):
++    match = re.search(r"^" + re.escape(signature) + r"[^;{]*\)\s*\{", source, re.M)
++    if match is None:
++        raise AssertionError(f"missing {signature}")
++    return source[match.start():source.index("\n}", match.start()) + 2]
++
++
++functions = "\n\n".join(function(sig) for sig in (
++    "static const char *getDeviceName(",
++    "static int appendArgTokens(",
++    "static int sysStartupShapeOk(",
++    "static int neutrinoArgHasActiveFlag(",
++    "static int neutrinoEffectiveBsdfs(",
++    "static const char *sysLastPathSeparator(",
++    "static int sysRunNeutrinoLaunch(",
++    "int sysNeutrinoArgsPreflight(",
++))
++
++for filename in ("bdmsupport.c", "hddsupport.c", "mmcesupport.c", "udpfssupport.c"):
++    leg = (root / "src" / filename).read_text(encoding="utf-8")
++    assert "sysNeutrinoArgsPreflight(" in leg, filename
++    assert leg.index("sysNeutrinoArgsPreflight(") < leg.index("sysLaunchNeutrino("), filename
++
++bdm = (root / "src/bdmsupport.c").read_text(encoding="utf-8")
++assert re.search(r"if \(sysNeutrinoArgsPreflight\([^;]+?\) < 0\) \{\s*failResult = 1;", bdm), \
++    "BDM budget refusal must not fall back to the native core"
++
++harness = r'''
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++
++#define LOG(...) ((void)0)
++#define NET_BOOT_UDPFS 2
++#define LAUNCHDIAG_REFUSE_ARGS 1
++#define LAUNCHDIAG_REFUSE_CORE_ARGV 2
++#define _STR_NEUTRINO_LAUNCH_ARGS_OVERFLOW 7
++#define NEUTRINO_VMC_SLOTS 2
++typedef struct { char arg[NEUTRINO_VMC_SLOTS][160]; } neutrino_vmc_args_t;
++
++static char gNeutrinoArgs[256];
++static int gNeutrinoElfArg = 1, gEnableDebug, gLaunchDiag;
++static int lastWarning, loads, refuses, lastArgc;
++static char lastArgs[14][256];
++static int bdmGetLoadedNetProtocol(void) { return 0; }
++static int convertCompatmaskToModes(int mask) { return mask; }
++static const char *_l(int id) { lastWarning = id; return ""; }
++static void guiWarning(const char *msg, int secs) { (void)msg; (void)secs; }
++static void launchDiagRefuse(int reason) { (void)reason; refuses++; }
++static void launchDiagMark(int stage) { (void)stage; }
++static int sysLoadELFKeepIOP(const char *path, const char *args, int argc, char **argv)
++{
++    (void)path; (void)args;
++    lastArgc = argc;
++    for (int i = 0; i < argc; i++) snprintf(lastArgs[i], sizeof(lastArgs[i]), "%s", argv[i]);
++    loads++;
++    return 0;
++}
++
++@FUNCTIONS@
++
++static int check(const char *name, const char *global, const char *game, const neutrino_vmc_args_t *vmc, int expected)
++{
++    snprintf(gNeutrinoArgs, sizeof(gNeutrinoArgs), "%s", global);
++    lastWarning = 0;
++    int beforeLoads = loads;
++    int result = sysNeutrinoArgsPreflight("usb", "mass0:/DVD/SLUS_123.45.iso", "SLUS_123.45",
++                                        0, 0, "mass0:/NEUTRINO/neutrino.elf", game, 0, 0, 0, 0, vmc);
++    if (result != expected || loads != beforeLoads ||
++        (expected < 0 && lastWarning != _STR_NEUTRINO_LAUNCH_ARGS_OVERFLOW)) {
++        printf("FAIL %s: result=%d warning=%d loads=%d\n", name, result, lastWarning, loads);
++        return 1;
++    }
++    return 0;
++}
++
++int main(void)
++{
++    int failures = 0;
++    char many[160] = "";
++    for (int i = 0; i < 18; i++) strcat(many, "-x ");
++    char longArg[224];
++    longArg[0] = '-'; longArg[1] = 'x';
++    memset(longArg + 2, 'a', sizeof(longArg) - 3);
++    longArg[sizeof(longArg) - 1] = '\0';
++    neutrino_vmc_args_t vmc = {{"", ""}};
++    snprintf(vmc.arg[0], sizeof(vmc.arg[0]), "-mc0=mass0:/VMC/%0138d.bin", 0);
++
++    failures += check("normal options", "-dbc", "-gsm=fp2", NULL, 0);
++    failures += check("entry count", many, "", NULL, -1);
++    failures += check("byte pool", longArg, "", NULL, -1);
++    failures += check("VMC consumes budget", "-cfg=long-name", "", &vmc, -1);
++
++    /* Exactly 14 target entries must retain each token after the second --b pass. */
++    snprintf(gNeutrinoArgs, sizeof(gNeutrinoArgs), "-a -b -c -d -e -f --b tail");
++    int beforeLoads = loads;
++    if (sysRunNeutrinoLaunch("usb", "mass0:/DVD/SLUS_123.45.iso", "SLUS_123.45", 0, 0,
++                             "mass0:/NEUTRINO/neutrino.elf", "", 0, 0, 0, 0, NULL, 0) != 0 ||
++        loads != beforeLoads + 1 || lastArgc != 14 ||
++        strcmp(lastArgs[6], "-a") || strcmp(lastArgs[11], "-f") ||
++        strcmp(lastArgs[12], "--b") || strcmp(lastArgs[13], "tail")) {
++        puts("FAIL boundary argv must preserve each token without concatenated suffixes");
++        failures++;
++    }
++
++    snprintf(gNeutrinoArgs, sizeof(gNeutrinoArgs), "%s", many);
++    beforeLoads = loads;
++    int beforeRefuses = refuses;
++    if (sysRunNeutrinoLaunch("usb", "mass0:/DVD/SLUS_123.45.iso", "SLUS_123.45", 0, 0,
++                             "mass0:/NEUTRINO/neutrino.elf", "", 0, 0, 0, 0, NULL, 0) != -1 ||
++        loads != beforeLoads || refuses != beforeRefuses + 1) {
++        puts("FAIL actual launch must refuse an overfull argv even if preflight was bypassed");
++        failures++;
++    }
++    return failures ? 1 : 0;
++}
++'''
++
++with tempfile.TemporaryDirectory() as tmp:
++    src = Path(tmp) / "budget.c"
++    exe = Path(tmp) / "budget"
++    src.write_text(harness.replace("@FUNCTIONS@", functions), encoding="utf-8")
++    build = subprocess.run(["gcc", "-std=gnu99", "-Wall", "-Werror", "-Wno-unused-function",
++                            "-o", str(exe), str(src)], capture_output=True, text=True)
++    assert build.returncode == 0, build.stderr
++    result = subprocess.run([str(exe)], capture_output=True, text=True)
++    assert result.returncode == 0, result.stdout + result.stderr
++
++print("neutrino argv budget: count, bytes, VMC, 14-entry token integrity, and pre-teardown refusal OK")
+diff --git a/.github/scripts/test_neutrino_bsdfs.py b/.github/scripts/test_neutrino_bsdfs.py
+index f8c74df..08c9a11 100644
+--- a/.github/scripts/test_neutrino_bsdfs.py
++++ b/.github/scripts/test_neutrino_bsdfs.py
+@@ -8,7 +8,7 @@ neutrinoEffectiveBsdfs sysLaunchNeutrino builds its argv from, so the two cannot
+ 
+ bd TYPED into the Neutrino args counts too (CodeRabbit on #762): it used to switch our own -bsdfs off
+ and leave a bare file path in -dvd, which bd can never open -- after the teardown. The effective value
+-is the last active typed token (per-game args after global ones, the first "--b" ending them), else
++is the last active typed token (per-game args after global ones, with "--b" ending each scope), else
+ the picker. A typed -dvd= does NOT exempt a launch: it is a tail token the argv budget can drop,
+ which would leave our device-0 tuple in charge (CodeRabbit's security review of #762).
+ 
+@@ -37,6 +37,7 @@ def function_text(signature):
+ 
+ functions = ''.join(function_text(sig) for sig in (
+     'static const char *getDeviceName(',
++    'static int appendArgTokens(',
+     'static int neutrinoArgHasActiveFlag(',
+     'static int neutrinoEffectiveBsdfs(',
+     'int sysNeutrinoPreflight(',
+@@ -46,7 +47,7 @@ functions = ''.join(function_text(sig) for sig in (
+ # value as its OWN -bsdfs= even when it was typed: ours is a core arg the budget never drops, the
+ # user's is a tail token it may, and a bdfs: -dvd without -bsdfs=bd fails after the teardown
+ # (CodeRabbit on #762, second pass).
+-launch = function_text('void sysLaunchNeutrino(')
++launch = function_text('static int sysRunNeutrinoLaunch(')
+ if 'int fsOverride = neutrinoEffectiveBsdfs(deviceName, neutrinoBsdfs, extraArgs);' not in launch or \
+         'if (fsOverride) {' not in launch or '!typedFs' in launch:
+     failures.append('sysLaunchNeutrino: must take fsOverride from neutrinoEffectiveBsdfs (shared with the preflight) '
+@@ -115,9 +116,9 @@ int main(void)
+     scenario("-bsdfs= after --b belongs to the game",    "usb",  0,   "",             "--b -bsdfs=bd",   -1,   0, 0);
+     scenario("typed bd on ATA",                          "ata",  0,   "",             "-bsdfs=bd",       -1,   0, 0);
+     scenario("typed bd on mmce (no fs layer)",           "mmce", 0,   "",             "-bsdfs=bd",       -1,   0, 0);
+-    /* "--b": everything after the FIRST one -- per-game args included -- belongs to the game */
+-    scenario("global --b ends the per-game args",        "usb",  0,   "-bsdfs=bd --b", "-bsdfs=exfat",   -1,   1, 3);
+-    scenario("global --b hides a per-game bd",           "usb",  0,   "--b",          "-bsdfs=bd",       -1,   0, 0);
++    /* Each scope's --b ends its own Neutrino flags, preserving per-game overrides. */
++    scenario("per-game exfat after global --b",          "usb",  0,   "-bsdfs=bd --b", "-bsdfs=exfat",   -1,   0, 0);
++    scenario("per-game bd after global --b",             "usb",  0,   "--b",          "-bsdfs=bd",       -1,   1, 3);
+     scenario("-dvd= after --b is the game's",            "usb",  0,   "",             "-bsdfs=bd --b -dvd=bdfs:usb1p0", -1, 1, 3);
+     scenario("global -dvd= is still refused",            "usb",  0,   "-dvd=bdfs:usb1p0", "-bsdfs=bd",   -1,   1, 3);
+     scenario("typed -dvd= with a known number proceeds", "usb",  0,   "",             "-bsdfs=bd -dvd=bdfs:usb1p0",  1, 0, 0);
+@@ -144,6 +145,36 @@ int main(void)
+         printf("FAIL a -bsdfs= after --b is the game's, so the picker stands\n");
+         fails++;
+     }
++    snprintf(gNeutrinoArgs, sizeof(gNeutrinoArgs), "%s", "--b -bsdfs=bd");
++    if (neutrinoEffectiveBsdfs("usb", 0, "-bsdfs=exfat") != 1) {
++        printf("FAIL per-game exfat must survive a global ELF-argument tail\n");
++        fails++;
++    }
++    if (neutrinoArgHasActiveFlag("--b -elf=cdrom0:FOO;1", "-elf=")) {
++        printf("FAIL ELF arguments after --b must not suppress generated Neutrino flags\n");
++        fails++;
++    }
++    {
++        char globalBuf[256], gameBuf[256], *argv[14];
++        int argc = 0, globalBreak = 0, gameBreak = 0;
++        const char *global = "-dbc --b -elf=global.elf";
++        const char *game = "-bsdfs=exfat $-qb --b level=2";
++        argc = appendArgTokens(argv, argc, 14, globalBuf, sizeof(globalBuf), global, 0, &globalBreak);
++        argc = appendArgTokens(argv, argc, 14, gameBuf, sizeof(gameBuf), game, 0, &gameBreak);
++        if (globalBreak || gameBreak) argv[argc++] = "--b";
++        argc = appendArgTokens(argv, argc, 14, globalBuf, sizeof(globalBuf), global, 1, &globalBreak);
++        argc = appendArgTokens(argv, argc, 14, gameBuf, sizeof(gameBuf), game, 1, &gameBreak);
++        const char *want[] = {"-dbc", "-bsdfs=exfat", "--b", "-elf=global.elf", "level=2"};
++        if (argc != 5) {
++            printf("FAIL global/per-game --b argument count: %d\n", argc);
++            fails++;
++        } else {
++            for (int i = 0; i < argc; i++) if (strcmp(argv[i], want[i])) {
++                printf("FAIL global/per-game --b order at %d: %s\n", i, argv[i]);
++                fails++;
++            }
++        }
++    }
+     return fails ? 1 : 0;
+ }
+ '''
+@@ -168,4 +199,4 @@ if failures:
+     for failure in failures:
+         print(' - ' + failure)
+     sys.exit(1)
+-print('neutrino bsdfs: 28 preflight scenarios + 5 argv checks OK (bd with no device number refused before teardown, typed or picked, even beside a typed -dvd=; --b ends the Neutrino args)')
++print('neutrino bsdfs: 28 preflight scenarios + 8 argv checks OK (bd without device number refused before teardown; per-game options survive global --b)')
+diff --git a/.github/workflows/flavours.yml b/.github/workflows/flavours.yml
+index 9f14773..7aa34d0 100644
+--- a/.github/workflows/flavours.yml
++++ b/.github/workflows/flavours.yml
+@@ -83,6 +83,10 @@ jobs:
+         run: python3 .github/scripts/test_cheat_load.py
+       - name: Check that a -bsdfs=bd launch without a device number is refused before teardown
+         run: python3 .github/scripts/test_neutrino_bsdfs.py
++      - name: Check Neutrino argument editing preserves full values and rejects overlong saves
++        run: python3 .github/scripts/test_neutrino_args_editor.py
++      - name: Check Neutrino launch arguments fit before teardown without dropping tokens
++        run: python3 .github/scripts/test_neutrino_argv_budget.py
+       - name: Check that turning Network Connectivity off and on keeps the chosen protocol
+         run: python3 .github/scripts/test_net_protocol_pick.py
+       - name: Check that long theme text stops at the next element and scrolls instead of overlapping
+diff --git a/CREDITS b/CREDITS
+index de0044f..0e43994 100644
+--- a/CREDITS
++++ b/CREDITS
+@@ -211,8 +211,8 @@ Special and sincere thanks to:
+     contributor across OPL's long history, all named above in this file.
+ 
+ Testing, bug reports and real-hardware feedback:
+-by eliminator1403, lucaslmgv, AndrewBento, AcidReach, bodvenomz, nuno6573, Blade1984
+-and zackcage6
++by eliminator1403, lucaslmgv, AndrewBento, AcidReach, bodvenomz, nuno6573, Blade1984,
++zackcage6 and Aislinn🏳️‍⚧️
+ 
+ The RiptOPL name:
+ by Akilluminati47 (https://github.com/akilluminati47)
+diff --git a/README.md b/README.md
+index 9086772..dc99333 100644
+--- a/README.md
++++ b/README.md
+@@ -403,7 +403,9 @@ This build layers several features on top of upstream OPL:
+   **Per game:** on an Ember title, **Triangle → Ember Game Settings** exposes *Timing*, *Dithering*,
+   *Shading* and *Controller*. Ember reads those four keys from
+   `EMBER/games/<Folder Name>/settings.txt`; *Display* remains global-only. The choices are stored in
+-  `CFG/<Folder Name>.cfg` and applied at launch. **Default means inherit the global Ember setting**:
++  `CFG/<Folder Name>.cfg`. Pressing **OK** saves the CFG and applies those choices to the title's
++  `settings.txt` immediately, without launching it; launch reapplies them if needed.
++  **Default means inherit the global Ember setting**:
+   RiptOPL removes that game's corresponding key; any non-Default value overrides the global one. On
+   a Favourites entry the same source-game CFG is edited.
+ 
+@@ -1001,7 +1003,7 @@ work it is built on:
+ 
+ Enormous thanks to the testers who run rolling builds on real consoles and file the
+ reports that shape the fixes — **eliminator1403, lucaslmgv, AndrewBento, AcidReach, bodvenomz,
+-nuno6573, zackcage6 and Blade1984**.
++nuno6573, zackcage6, Blade1984 and Aislinn🏳️‍⚧️**.
+ 
+ ### The name (this fork)
+ 
+diff --git a/docs/COMMUNITY_REPORTS_HANDOFF_2026-10-02.md b/docs/COMMUNITY_REPORTS_HANDOFF_2026-10-02.md
+new file mode 100644
+index 0000000..0522015
+--- /dev/null
++++ b/docs/COMMUNITY_REPORTS_HANDOFF_2026-10-02.md
+@@ -0,0 +1,497 @@
++# Community reports handoff — October 2, 2026
++
++This handoff collects the RiptOPL reports from TwistedZeon, FifthFox,
++eliminator1403, Aislinn, and zackcage6. It is a triage and implementation
++guide, not a claim that the reported behavior has been reproduced or fixed.
++The [artwork comparison screenshot](./community-report-evidence/2026-10-02/art-last-good-3248.png)
++adds one concrete artwork comparison:
++**3248 loaded artwork normally; Beta 3420 Korium loads it slowly**, according
++to eliminator1403. Beta 3420 Korium now has release and tag provenance below.
++The September 27 build history narrows revision 3248 to the PR #770 source
++line. The exact ELF is unnecessary for comparing the source changes; the
++remaining uncertainty is whether that branch build was the tester's binary.
++
++## Preserved report evidence
++
++These are the original user-provided captures, kept with this handoff so their
++temporary local paths are not required:
++
++- [Art version comparison and attached ELF message](./community-report-evidence/2026-10-02/art-last-good-3248.png)
++- [Neutrino picker and 480i request](./community-report-evidence/2026-10-02/neutrino-480i-picker.png)
++- [Neutrino picker clip](./community-report-evidence/2026-10-02/neutrino-picker-clip.mp4)
++- [CRT font report](./community-report-evidence/2026-10-02/crt-font-report.png)
++- [Default video and field-flip compatibility follow-up](./community-report-evidence/2026-10-02/neutrino-default-field-flip.png)
++- [October 3 iLink/Neutrino follow-up](./community-report-evidence/2026-10-03/ilink-neutrino-followup.png)
++
++The clip records the menu interaction, not the game's rolling/flipping output.
++
++## Implementation checkpoint
++
++As of October 3, [#825](https://github.com/NathanNeurotic/Open-PS2-Loader/pull/825)
++is merged for immediate per-game Ember settings saves, and
++[#826](https://github.com/NathanNeurotic/Open-PS2-Loader/pull/826) is merged for
++PS1 row labels and save-card guidance. Focused host checks and GitHub
++format/build workflows passed for both; real-console testing is still required.
++The original dirty `migrate/riptopl-korium` checkout was preserved. This
++document remains the report and evidence ledger. The short
++[tech contributor roadmap](./TECH_CONTRIBUTOR_ROADMAP_2026-10-03.md) lists the
++next work in practical order.
++
++## Working rules and current checkout
++
++- Repository: `NathanNeurotic/Open-PS2-Loader`. The separately named
++  `NathanNeurotic/RiptOPL` repository is a future migration destination, not
++  an interchangeable source for this work.
++- Current checkout at handoff: `migrate/riptopl-korium`, HEAD `0afa4962`.
++  It has pre-existing edits in Ember settings, launch support, release/docs
++  files, an untracked `docs/DOCUMENTATION_AUDIT_HANDOFF.md`, and an untracked
++  `worktrees-temp/` directory. Preserve them. Recheck `git status`, refs,
++  remotes, and release provenance before changing anything. Use an isolated
++  worktree for source work that would overlap these edits.
++- The user prefers a concrete plan and approval before source implementation.
++  Keep fixes causal and small. Do not add a delay, queue, retry, or new launch
++  machinery solely because a tester found one working configuration.
++- Host tests, builds, and CI are not physical-console passes. Do not run PCSX2
++  locally as a substitute. The user tests Actions or preview `BOOT.ELF` builds
++  on real hardware.
++- Source paths and line numbers below identify this checkout snapshot. Recheck
++  them after changing refs. A `gh release list --repo
++  NathanNeurotic/Open-PS2-Loader` read returned `401 Unauthorized` during this
++  triage, so no current release-to-commit mapping was established.
++
++## Report ledger
++
++| ID | Report and desired outcome | What is established | What remains unknown |
++| --- | --- | --- | --- |
++| E1 | TwistedZeon wants per-game Ember `settings.txt` written from the menu, without launching the game. | PR #825 merged the immediate-save implementation; focused host tests and CI builds passed. | Console behavior and slow/failed writes on each supported device. |
++| I1 | FifthFox's iLink drive sometimes needs a recent drive reboot to launch PS2 ISOs. After reformatting a drive previously used on a Mac, exFAT was visible but still would not launch PS2 games after reboot; FAT32 worked better in that setup. A later Seagate drive and PS2 logo enabled successful Jak and Daxter launch with four compatibility modes. | These are tester observations, not isolated causes. | Exact build, drive/enclosure, partition scheme, filesystem, four modes, console, game ID, and results with one variable changed at a time. |
++| I2 | FifthFox initially reported "Neutrino (MC) runs via iLink" with PS2 logo and a custom argument, but on October 3 said they **cannot repeat** that success. They suspect the logo must run after compatibility modes to slow a drive/enclosure handshake. | This is an intermittent result, not a stable working combination. The source appends auto compatibility modes before auto `-logo`, but that ordering does not prove a timing cause. | Exact build, Neutrino ELF/ISO locations and version, full stored/effective args, whether `-logo` reached Neutrino, cold-start repetitions, and measured iLink readiness. |
++| I3 | FifthFox tried a custom text-only theme to keep memory available but did not gain a repeatable launch; an AI suggested disabling Coverflow, and FifthFox could not find an option. Native OPL launches with individual modes seem robust in their tests. | Launch teardown already stops art requests and releases menu resources. Coverflow is theme-defined; the built-in `<OPL>` theme is an alternate view. | Active theme, its declared elements, memory measurements before/after teardown, and controlled same-game native/Neutrino comparisons. |
++| I4 | FifthFox says RiptOPL removes `-logo` from custom Neutrino arguments, sees two logo controls in launcher settings but none in the game menu, and wants the full effective Neutrino argv visible per game. | Current source has a per-game **Neutrino Launch Args → Logo** toggle and passes global/per-game active `-logo` tokens to its argv builder; iLink is not in the automatic logo-suppression list. User-supplied tail arguments may be dropped if the 256-byte launch pool is full. | Which field was edited, the saved `$NeutrinoArgs`/global `neutrino_args` values, whether the UI merely moved `-logo` from Extra to its checkbox, and the final argv on the tester's build. |
++| V1 | TwistedZeon reports that a PAL game is "flipping" on an NTSC interlaced CRT under Neutrino and explicitly asks for 480i. | The clip shows the video picker, not game output. A later screenshot confirms the field-flip picker is disabled while Video is Default. Upstream parses `-gsm=:1` but does not enable GSM without a forced video mode; it exposes no forced NTSC 480i. | Exact game, cable/CRT, what "flipping" looks like during gameplay (roll, field shake, or periodic loss), and whether native OPL-core GSM works for that title. |
++| T1 | zackcage6 says the font in the pictured RiptOPL settings view looks "sluggish" and is hard to read on the CRT; they suggest changing the font or rendering it for interlace. | The main RiptOPL interface already offers NTSC/PAL interlaced `FLICKER-FREE` modes, and themes can load alternate fonts. Neither has been tested for this report. | Exact build, theme/font, interface video mode, CRT/cable, whether "sluggish" means visual flicker/blur or slow UI response, and whether the alternate mode improves legibility. |
++| A1 | eliminator1403 reports slow art in Beta 3420 Korium and names 3248 as the last good build. | September 27 build history points to PR #770 head `f83e6f9f` as the revision-3248 source line; Beta 3420 Korium names source `1a663941`. PR #773 reverted the active-art priority tier between them. | Identify whether the visibly late texture is COV, ICO, or BG; compare the two source paths and validate a narrow fix on hardware. |
++| P1 | Aislinn wants a useful error when PS1 prerequisites are missing. | Launch paths already show several missing POPSTARTER/Ember/BIOS messages; missing Ember core can remove Ember rows at scan time. | Which missing item and path produced the reported lack of guidance, and whether the title was a VCD or Ember folder. |
++| P2 | Aislinn mistook PS1 007 entries for PS2 titles without cover art, then could not open the expected PS2 game/VMC menu. | PS1 rows intentionally open a different Triangle menu. PR #826 merged a PS1 row label and save-card guidance there. | Console legibility in each theme/view and what save-card workflow the tester expected. |
++
++## E1 — Save Ember per-game settings before launch
++
++At this document's original checkout snapshot, the implementation was
++uncommitted; its focused source changes are now merged through PR #825.
++`src/gui.c:3489` confirms the Ember per-game editor; `src/menusys.c:608`
++routes its save through the selected support's `itemSaveCueSettings` callback;
++`src/cuesupport.c:507` updates only managed per-game keys in
++`EMBER/games/<Name>/settings.txt`. The callbacks cover BDM, SMB, APA/PFS HDD,
++MMCE, UDPFS, and Favorites delegation; review each before a completeness
++claim. Confirming an unchanged dialog also requests the file save, while no
++managed keys should leave the file untouched. Launch still reapplies managed
++settings. The global `EMBER/settings.txt` is a separate changed-only path.
++
++The October 2 run of `python .github/scripts/test_ember_settings.py` passed its
++host checks, including explicit per-game save, path selection, preservation of
++unmanaged lines, and a simulated failed write. `git diff --check` also passed
++on the dirty checkout. Neither exercises actual device latency or a console.
++
++Review risks before shipping:
++
++1. A successful CFG save followed by a failed Ember file write leaves the
++   menu's CFG value ahead of the file until the next launch. The UI must report
++   this accurately, and the next attempt must recover.
++2. `menuSaveEmberGameSettings()` currently calls device I/O after drawing a
++   saving screen. Confirm it cannot stall input for an unacceptable time on
++   SMB, UDPFS, MMCE, or a waking disk. Reuse existing deferred I/O if evidence
++   requires it; avoid inventing a new worker.
++3. Check writable game-folder and APA mount behavior, Default-key removal,
++   no-op save, short write/restore, and hand-written unknown lines on hardware.
++
++The requested user outcome is a saved per-game file after confirming the
++existing menu. A separate **Save** row is unnecessary unless testers find
++confirming the dialog unclear.
++
++## I1/I2 — iLink native and Neutrino launch reliability
++
++FifthFox reported an initial need to reboot the drive before native PS2 games
++would launch, and suggested an internal-HDD-like delay as a possible remedy.
++The drive had been reformatted from Mac use for PC use; exFAT exposed its
++contents to RiptOPL, yet even rebooting did not make PS2 games launch in that
++configuration. FAT32 worked better in the reported setup. FifthFox suspected
++exFAT driver memory use, but supplied no memory measurement; the earlier drive
++also made unusual mechanical noises, and the later Seagate swap changes the
++hardware under test. They also observed
++Ember titles appearing promptly while PS2 titles populated later; that
++ordering alone does not establish a memory shortage or a failed PS2 scan.
++Turning off all artwork and using RiptOPL modes 1, 3, and 6 allowed
++Madagascar to launch without repowering in one test. That suggests the native
++OPL core, because mode 6 is disabled under Neutrino (`src/guigame.c:1164`),
++but confirm the core
++with the tester. In this source those modes mean Accurate Reads, Unhook
++Syscalls, and Disable IGR respectively
++(`include/iosupport.h:94`); none by itself demonstrates a drive spin-up fix.
++Later, Jak and Daxter:
++The Precursor Legacy launched without a drive reboot with **four unspecified
++modes plus PS2 logo** after a Seagate drive swap. A separate report says
++"Neutrino (MC) runs via iLink" with PS2 logo; do not assume which file was on
++the memory card until the tester confirms it. The screenshot renders its custom
++argument as `-=gc136`; get the exact bytes rather than silently correcting or
++copying that string. Neutrino's documented grammar is `-gc=<digits>` and its
++documented compatibility modes are 0, 1, 2, 3, 5, and 7; its mode 1 is labeled
++"dummy" and it does not document mode 6. RiptOPL's native OPL mode numbers
++do not have identical meanings. Source: `src/system.c:1234` and the official
++Neutrino README at <https://github.com/ps2max32/neutrino>.
++
++**October 3 correction:** FifthFox [could not repeat the Neutrino/iLink
++success](./community-report-evidence/2026-10-03/ilink-neutrino-followup.png).
++They now suspect the PS2 logo must be triggered after compatibility modes to
++give their enclosure time to handshake. They say RiptOPL removes `-logo` from
++custom arguments, that two launcher-menu locations expose logo controls but
++their custom game menu does not, and that seeing the full effective Neutrino
++arguments in the game menu would help. Their text-only theme experiment did not
++make the launch repeatable. They also report native OPL launches with individual
++modes as relatively robust. None of this isolates a memory or timing cause.
++
++At the source snapshot recorded in PR #825, the per-game Compatibility dialog has a
++**Neutrino Launch Args** button (`src/guigame.c:1256`) whose structured
++sub-screen has a **Logo** checkbox (`src/dialogs.c:1856`); the global launcher
++menu has its own PS2 Logo setting and Neutrino args editor. The parser moves a
++typed `-logo` into that checkbox and reassembles the stored args with `-logo`
++(`src/supportbase.c:2202-2261`). Thus a token disappearing from the **Extra**
++field alone would not show that it was removed from the saved or launched args.
++The iLink backend passes the global logo preference to Neutrino and is not in
++`sysLaunchNeutrino()`'s automatic logo-suppression list. Auto-generated `-gc`
++precedes auto-generated `-logo`, and global then per-game user tokens come
++after those (`src/system.c:1660-1747`). Command-line order does not by itself
++establish the order or duration of Neutrino's later boot operations. The
++256-byte argv pool check may drop
++tail user tokens, including a typed per-game `-logo`, without on-screen notice
++(`src/system.c:1753-1772`). These are source possibilities, not a diagnosis of
++FifthFox's build. Obtain their saved config and final argv before changing
++argument order or promising that the logo delay fixes the drive handshake.
++
++Coverflow is a theme element, with separate built-in `<OPL>` and `<Coverflow>`
++theme choices (`src/themes.c:3464`, `src/themes.c:3767-3779`). Selecting
++`<OPL>` is a controlled no-Coverflow UI comparison. If FifthFox's text-only
++theme truly declares no Coverflow element, it has already removed that drawing
++path; repeating the same failure would argue against Coverflow rendering as
++the sole cause. The reported lack of an obvious toggle is a discoverability
++issue, but a new switch should not be presented as a memory or iLink fix
++without a measured comparison.
++
++Do not infer that FAT32 is universally required for iLink or that exFAT fails
++because of memory. Neutrino documents FAT32 and exFAT for block devices;
++FifthFox's result could depend on the bridge, enclosure, spin-up state, driver
++handoff, fragmentation, or mode combination. Likewise, PS2 logo may add
++helpful time, but the report does not prove a fixed delay would reproduce it.
++
++The native BDM and Neutrino paths differ. `src/bdmsupport.c:2054` passes
++`gPS2Logo` to Neutrino's `-logo`; the native path does its own logo check and
++loader handoff around `src/bdmsupport.c:2320`. `src/opl.c:4460` and
++`src/texcache.c:644` already shut down art work during teardown. `deinitEx()`
++also has a bounded I/O/art drain and then calls `guiEnd`, `thmEnd`, and `rmEnd`
++(`src/opl.c:4460`). Its source comments report a previously measured
++multi-second handoff pause. Measure the actual iLink readiness and memory
++state before adding another wait or extra cleanup. A simple/low-art theme is
++a diagnostic configuration, not an established memory fix.
++
++Minimum tester matrix, on one known-good drive/enclosure and one ISO:
++
++1. Record console model, iLink bridge and drive model, partition scheme
++   (MBR/GPT), filesystem, build/ELF hash, game ID, loader core, Neutrino
++   version/location, and exact arguments. Separate "device and games list are
++   readable" from "ISO launches" in each result.
++2. Try cold-drive and recently-rebooted-drive launches with the same settings.
++3. Change only PS2 logo; then change one compatibility mode at a time. Repeat
++   successful combinations after a full console and drive cold start.
++4. Only then compare the original drive or exFAT. A second game distinguishes
++   a title-specific mode requirement from transport readiness.
++5. If a console diagnostic build is needed, log the iLink device and partition
++   state at handoff; prefer that evidence over a blind sleep.
++
++Treat the native launches as individual tester observations; the earlier
++Neutrino success is now explicitly **unrepeatable**. Do not generalize any of
++them to all iLink drives, POPSTARTER, or exFAT.
++
++## V1 — PAL game on an NTSC interlaced CRT with Neutrino
++
++`src/gui.c:2067` and `src/gui.c:2969` list RiptOPL's Neutrino video choices.
++`src/system.c:1684` emits `-gsm=fp1`, `fp2`, or `1080ix1..3`; the optional
++`:1..3` half is field-flip compatibility, not a PAL-to-NTSC standard switch.
++The official Neutrino README describes unforced output as 480i/576i and its
++forced low-resolution modes as automatically PAL/NTSC. Do not add a menu label
++for NTSC 480i without upstream support for such an argument.
++
++In the [picker screenshot](./community-report-evidence/2026-10-02/neutrino-480i-picker.png), TwistedZeon explicitly says **"No 480i"** and
++clarifies: **"I'm trying to play a pal game on ntsc but the video is
++flipping."** The preserved [5.27-second video](./community-report-evidence/2026-10-02/neutrino-picker-clip.mp4) shows the RiptOPL
++Neutrino Video picker being cycled on a CRT. It does **not** show the game's
++output, so it cannot establish the visual failure mode or prove that a field
++flip setting would fix it. `1080i` is interlaced, but it is HDTV timing rather
++than the standard-definition 480i/576i signal their CRT needs. The available
++`240p` and `480p` choices do not supply a forced NTSC 480i mode.
++
++The October 2 [follow-up screenshot](./community-report-evidence/2026-10-02/neutrino-default-field-flip.png)
++adds a concrete UI reproduction. TwistedZeon
++said that leaving **Neutrino Video** on **Default** disables **Neutrino GSM
++Compatibility**, so they cannot select a field-flipping type without changing
++video mode; they checked again and confirmed this. darkladark said Luna selects
++`fp2` (480p/576p) when compatibility is enabled from Default. This is a report
++about Luna's behavior, not a tested fix for TwistedZeon's interlaced CRT.
++
++The dependency is deeper than RiptOPL's greyed picker. Neutrino's loader parser
++accepts an empty video component with a compatibility value, such as
++`-gsm=:1`, but its EE core calls `EnableGSM()` only when `GsmVideoMode` is not
++`NONE`. As a result, enabling RiptOPL's picker and emitting `-gsm=:1` would
++store a setting that parses yet does not activate the field-flipping hook in
++the inspected upstream commit. RiptOPL currently emits the compatibility
++component only with a forced video mode. Source references:
++[parser](https://github.com/ps2max32/neutrino/blob/7be8de2798c99af433c91993e021746a54d6800d/ee/loader/src/main.c#L215-L274),
++[GSM enable gate](https://github.com/ps2max32/neutrino/blob/7be8de2798c99af433c91993e021746a54d6800d/ee/ee_core/src/main.c#L82-L90),
++and [field-flipping hook](https://github.com/ps2max32/neutrino/blob/7be8de2798c99af433c91993e021746a54d6800d/ee/ee_core/src/gsm_api.c#L647-L690).
++Confirm the exact Neutrino ELF version in the tester's setup before extending
++this conclusion to that build. Forcing `fp2` selects progressive 480p/576p,
++which may be unusable on the reported CRT. Do not silently select it from
++Default. The issue remains open pending a game-output clip or another upstream
++method for interlaced field-flip compatibility without forced progressive mode.
++
++First determine whether "flipping" means vertical roll due to 50 Hz/PAL on
++an NTSC-only CRT, or field shake with an otherwise visible signal. The former
++needs an NTSC-rate interlaced output; the latter may be the documented
++compatibility field. If the game works under RiptOPL's native OPL core, its
++GSM picker includes interlaced **NTSC** (`src/guigame.c:455`,
++`src/gsm.c:108`); have the tester try that as a targeted workaround. A CRT
++that cannot sync to 480p should not be asked to test 480p/1080i as a fix.
++
++## T1 — CRT font legibility and perceived sluggishness
++
++In the [font report screenshot](./community-report-evidence/2026-10-02/crt-font-report.png), zackcage6 describes the **font** in the pictured
++settings view as "sluggish + not easily view-able" and asks whether the font
++should change or be rendered for interlace. The screenshot shows text on a CRT,
++but does not identify the build, theme, selected RiptOPL interface video mode,
++connection, or whether "sluggish" refers to motion/response time versus
++flicker, ghosting, or soft glyph edges. Keep this report separate from
++TwistedZeon's PAL-game output problem; a menu font change cannot establish a
++Neutrino PAL-to-NTSC fix.
++
++The **Interface → Video Mode** picker already exposes NTSC/PAL 640-wide
++interlaced `FLICKER-FREE` entries (`src/gui.c:2839`), distinct from the
++per-game **Neutrino Video** picker. In this checkout they use `GS_FRAME` with
++the same interlaced CRT timing as the corresponding `GS_FIELD` modes
++(`src/renderman.c:65-82`). The source notes reduced line flicker on thin text
++at the cost of half the framebuffer's vertical detail; it may improve or
++worsen perceived sharpness on this CRT. The built-in Korium theme uses the
++embedded default font, while folder themes can select a font file and size
++(`misc/conf_theme_OPL.cfg:17`, `src/themes.c:3359-3382`).
++
++For a controlled console comparison, record the current interface mode,
++theme/font, cable, display model, and build. Photograph or film the same
++settings page with standard NTSC 640x448i and `FLICKER-FREE` NTSC 640x448i,
++holding camera exposure/shutter and theme constant. Compare static legibility
++and actual navigation response separately; only then try an alternate font or
++size if the video mode does not solve the reported issue. Do not assume
++Neutrino's per-game `-gsm` setting changes RiptOPL menu text rendering.
++
++## A1 — Slow artwork in 3420 versus 3248
++
++The [artwork screenshot](./community-report-evidence/2026-10-02/art-last-good-3248.png)
++supplies the comparison: eliminator1403 called **3248** the last good version
++and **Beta 3420 Korium** slow. Treat this as a build regression report. The
++same tester's settings produced different results across those builds; do not
++attribute the difference to a user configuration change.
++
++The Makefile computes a normal revision as `git rev-list --count HEAD + 2`.
++The Korium release workflow instead pins that number to its last common
++`rebuild/main` commit. As checked on October 2, the
++[rolling-korium release](https://github.com/NathanNeurotic/Open-PS2-Loader/releases/tag/rolling-korium)
++lists `RIPTOPL-DEBUG-v1.2.0-Beta-3420-Korium.zip` and names source
++[`1a663941`](https://github.com/NathanNeurotic/Open-PS2-Loader/commit/1a6639410beaf8dd9c5505be0f470fd5f5a60259).
++The moving `rolling-korium` tag points to that commit; its merge base with
++`rebuild/main` is `65d4b89a` (commit count 3418, hence revision 3420).
++This establishes the published Beta 3420 source line.
++
++The September 27 [build-flavours history](https://github.com/NathanNeurotic/Open-PS2-Loader/actions/workflows/flavours.yml)
++contains a successful [PR #770 run](https://github.com/NathanNeurotic/Open-PS2-Loader/actions/runs/36293060322)
++at head [`f83e6f9f`](https://github.com/NathanNeurotic/Open-PS2-Loader/commit/f83e6f9f6166015dbdecb8b6f024c988daf58b1b).
++That branch head has 3246 commits and computes revision **3248** under its
++Makefile. The adjacent successful runs were 3247 at `7527919a` and 3246 at
++`7273b222`; the next `rebuild/main` rolling run was 3249 at merge `f8b739b6`.
++No successful mainline rolling run in that interval has revision 3248. This
++identifies the 3248 **source line** without obtaining an ELF. The PR workflow's
++default checkout is a merge ref, so run metadata alone cannot prove its ELF
++printed 3248 or that this was eliminator1403's downloaded binary.
++
++The `f83e6f9f` source gives the active cover, icon, and background one priority
++tier and requests the small selected images before the background.
++The later
++[`68405e23`](https://github.com/NathanNeurotic/Open-PS2-Loader/commit/68405e2392d3bb6606f46863365cb0f1f844784b)
++rollback removed that tier and restored front-of-queue promotion/background
++admission after **other** testers reported late or out-of-order art. Beta 3420
++contains the rollback and subsequent background-cancellation fix. This is a
++specific reason that a **background** may appear later in 3420; it does not by
++itself establish a slower COV read. The rollback was itself a response to a
++regression. Do not reapply PR #770 wholesale: it was reverted because it
++caused other art-order problems.
++The later screenshot also shows eliminator1403 uploading a 1.41 MB
++`RIPTOPL.ELF` at 11:00 AM, but its bytes and build identity were not supplied.
++Do not assume that attachment is build 3248, Beta 3420, or a confirmed fix.
++
++Relevant source history in this branch:
++
++- September 16: `6057c6c2` added per-game `BG` art to the built-in main list.
++  Large background PNGs can occupy the single art worker ahead of a cover.
++  See `misc/conf_theme_OPL.cfg:27`.
++- September 26: `7273b222` introduced a new priority tier for COV/ICO/BG.
++  The source-backed late/out-of-order mechanism was older requests retaining
++  priority ahead of a new selection, plus a removed Coverflow BG admission
++  gate. September 27 commit `68405e23` rolled that feature back. Do not blame
++  the reverted algorithm without verifying that a specific shipped build
++  predates the rollback.
++- September 27: `96fc1d6d` broadened stale-background cancellation across
++  BG cache slots. It intends to reduce waiting behind obsolete backgrounds.
++- Later commits in this checkout changed theme layout/discovery, but a review
++  of `src/texcache.c`, `src/textures.c`, and `src/artindex.c` history found no
++  newer cover read/decode rewrite that itself proves this report's cause.
++
++More precise source comparison, checked against the **published Korium tree**
++`1a663941` on October 3:
++
++- The revision-3248 branch source `f83e6f9f` built-in `<OPL>` list declares `Background` and
++  `ItemCover`, but no `ItemIcon`. Korium's list declares `Background`,
++  `ItemCover`, and `ItemIcon` (`misc/conf_theme_OPL.cfg`). Korium can request
++  an extra `ICO` lookup/read for the selected game, including a miss on some
++  devices. This is a source difference in **list mode**; neither theme has an
++  `ItemIcon` in Coverflow.
++- Revision-3248 source `f83e6f9f` submitted selected COV, ICO (if present), and BG to one
++  priority tier. In 3420 the selected COV is promoted to the queue front, BG
++  is ordinary work, and Coverflow withholds a new BG request until its selected
++  cover settles (`src/themes.c:1260-1335`, `src/texcache.c:484-510`). If the
++  tester means the full background scene by "art," later appearance is partly
++  expected from this policy. Undoing it would risk the earlier out-of-order
++  regression; the code does not show a general COV decoder slowdown.
++- `src/artindex.c` has no source delta between `f83e6f9f` and the published
++  3420 tree. The changed `src/textures.c` entries bind built-in/static PNGs;
++  they are not a demonstrated rewrite of the per-game cover read or decoder.
++
++The source establishes a specific scheduling change and a possible extra icon
++request; it does not establish that selected COV decoding became slower. The
++next diagnostic is to identify which texture appears late in the existing
++report, then compare COV/ICO/BG request and completion timing in builds on the
++same console. The existing **Settings → Advanced → Debug** HUD at
++`src/gui.c:4292` reports `Q/A/D/X`, last load `ms`, last successful `ok ms`
++and decoded dimensions, staged-open times `O:`, error counts, and art-index
++hits. A slow `O:` miss points to directory lookup; small opens but large
++`ok ms` point to read/decode cost; growing queues with low completions point
++to scheduling or contention. This is instrumentation for confirming the code
++path, not a request to reconfigure the tester's setup.
++
++October 3 A/B follow-up: the [ART770 run](https://github.com/NathanNeurotic/Open-PS2-Loader/actions/runs/37143757153)
++restores PR #770 scheduling on the Korium base; the [ART773 run](https://github.com/NathanNeurotic/Open-PS2-Loader/actions/runs/37143714039)
++uses the same Korium runtime source without that change. Both OFFICIALROLLING
++builds passed CI. zackcage6 reported similar core behavior in both and said
++ordinary loose artwork (not ART.TAR) appeared about one second slower than the
++Inception theme, with artwork toggles tried both ways. That observation weakens
++PR #770 scheduling as the cause of *their* difference, but compares themes and
++does not resolve eliminator1403's 3248-versus-3420 report. eliminator1403
++replied "404" to the artifact links; GitHub Actions artifacts require a signed-in
++viewer. The artifacts still exist, but there is no A/B console result from the
++original reporter. Keep the report open and avoid a speculative renderer change.
++
++## P1/P2 — PS1 prerequisites, row identity, and memory-card guidance
++
++Aislinn mistook PS1 007 entries for PS2 games when covers were absent, tried
++to assign every game a VMC, and found that the expected PS2 Game Settings menu
++would not open. In their list, the PS1 007 titles appeared before the PS2
++titles; they only recognized the boundary after the failed boot/menu attempt.
++That ordering is an observation about their setup, not a guaranteed sort rule
++for every view. The observed menu behavior is consistent with current routing:
++`src/opl.c:668` sends a PS1 row's Triangle action to
++`menuInitVcdMenu()`, while PS2 rows open `menuInitGameMenu()`.
++`src/menusys.c:729` currently offers global PS emulation settings, Ember
++per-game settings only for Ember rows, and Rename. It deliberately omits
++PS2-only VMC, GSM, and compatibility controls. This is an understandable UI
++misread, not proof that the PS2 Game Settings handler failed.
++
++The three save-card paths must stay distinct:
++
++- PS2 games: RiptOPL's Game Settings can assign a PS2 VMC.
++- Ember PS1 folders: Ember creates/uses `MC1.vmc` and `MC2.vmc` inside the
++  game's folder on writable media, generally on first launch. These are not
++  the PS2 VMC picker (`README.md:361` and
++  `docs/EMBER-INTEGRATION-PLAN.md:726`).
++- POPSTARTER VCD rows: do not promise the PS2 VMC picker or invent an Ember
++  `MC1.vmc` rule. Check POPSTARTER's actual memory-card behavior and the
++  installed build before writing user-facing guidance.
++
++The maintainer's reply was that this sounded like a need for better on-screen
++guidance and possibly settings fixes. Treat "settings fixes" as a follow-up
++question, not a diagnosed defect: determine whether Aislinn wants a clear
++explanation of automatic PS1 save cards, a way to prepare them before first
++launch, or a different PS1 menu action. Do not route PS1 titles through the
++PS2 VMC editor merely to make a familiar menu appear.
++
++Missing-prerequisite messages already exist *at launch* in several backends:
++`_STR_POPSTARTER_NOT_FOUND`, `_STR_EMBER_NOT_FOUND`,
++`_STR_EMBER_BIOS_MISSING`, and `_STR_EMBER_NO_DISC` are used in
++`src/bdmsupport.c`, `src/ethsupport.c`, `src/hddsupport.c`, and
++`src/mmcesupport.c`; UDPFS is Ember-only. At scan time,
++`src/cuesupport.c:182` skips Ember rows when `ember.elf` is unreadable,
++so a missing core may appear as an empty/partial PS1 library instead of a
++launch error. Preserve the valid POPSTARTER half of the library when Ember
++is absent. Identify which prerequisite Aislinn lacked before changing the
++notification path.
++
++Presentation work to plan after reproducing the no-art case:
++
++1. Show a persistent **PS1** identity on a selected PS1 row or its list,
++   including Mixed and Favorites views, without needing cover art or a new
++   device lookup. The existing PS1 jewel-case/disc defaults in
++   `misc/conf_theme_OPL.cfg:118` help visually, but Aislinn's report shows
++   they were insufficient in the tested context. Base the label on row kind,
++   not only the page, because mixed views contain both PS1 and PS2 rows.
++2. On the PS1 Triangle menu, explain why PS2 VMC settings are absent and
++   where this core stores saves. Keep the actionable Ember settings item.
++   Avoid a dead PS2 VMC menu on a PS1 row.
++3. For missing components, prefer one precise message at the attempted
++   operation, naming the missing core/BIOS/path and the supported setup.
++   Avoid repeated boot or scan popups for a deliberately unused PS1 core.
++
++Test no-cover PS1 and PS2 rows in Both, Mixed, PS1-only, and Favorites views;
++test VCD and Ember rows separately; test missing POPSTARTER, missing
++`ember.elf`, missing `bios.bin`, and an unreadable device separately. Check
++localization and that normal PS2 Game Settings/VMC behavior is unchanged.
++
++The first two presentation actions above are merged through PR #826. They
++remain unverified on a console; the missing-component case lacks the reported
++file/path and was deliberately left without a speculative code change.
++
++## Suggested implementation sequence and completion gates
++
++1. **Resolve remaining evidence.** Use the revision-3248 branch and Beta 3420
++   source histories above to isolate the art scheduling path; then validate a
++   narrow change on hardware. Keep the iLink matrix separate. Capture
++   Aislinn's source/view/theme and the missing PS1 prerequisite.
++2. **Console-check E1 and P2.** PR #825 merged the narrow Ember save, and PR
++   #826 merged the PS1 row/menu guidance, with host checks and CI builds passed. Validate
++   pre-launch writes, Default behavior and failures on writable Ember devices;
++   inspect no-cover PS1 and PS2 rows in each view and theme on a real console.
++   Preserve the original dirty checkout and keep POPSTARTER and Ember tests
++   distinct.
++3. **Reproduce P1 before changing its error path.** Identify which PS1 core,
++   file, and path were missing and whether the user saw a VCD or Ember folder.
++   Add only the guidance that the reproduced flow lacks.
++4. **Fix A1 only after isolating the code path.** Compare the documented
++   3248/3420 source delta and make the smallest scheduling, lookup, or theme
++   change supported by HUD and console timing. Do not reinstall PR #770's
++   broad priority system; other testers reported ordering regressions in it.
++5. **Investigate I1/I2 and V1 separately.** Preserve the successful iLink
++   combinations as test cases; add a readiness delay only if controlled tests
++   isolate timing and a measurable condition or bounded wait. Treat Neutrino
++   CRT output as an upstream-capability question; validate the native OPL GSM
++   workaround where compatible.
++6. **Check T1 on the reported CRT.** Compare the existing main-interface
++   interlaced modes and measure UI response before changing glyph assets or
++   rendering. Keep Neutrino game-video settings out of this menu-font test.
++
++For every code change: inspect the exact diff and `git diff --check`, use a
++focused behavior test when the behavior can be host-tested, build the relevant
++PS2 flavor(s), and hand a specific Actions/preview ELF to console testers.
++Record real-console results by build hash, device, game, mode, and result.
++Do not close a hardware report from source or CI evidence alone.
+diff --git a/docs/EMBER-INTEGRATION-PLAN.md b/docs/EMBER-INTEGRATION-PLAN.md
+index bca15fe..198cdc8 100644
+--- a/docs/EMBER-INTEGRATION-PLAN.md
++++ b/docs/EMBER-INTEGRATION-PLAN.md
+@@ -926,9 +926,10 @@ The main-config keys are `ember_display_mode`, `ember_timing`, `ember_dither`,
+ and Controller. Display remains global-only.
+ 
+ For the per-game editor, **Default means inherit global**. Confirming the dialog stores value 0 in the
+-game CFG. At launch, `cueApplySettings()` interprets that as removal of the corresponding key from
+-`EMBER/games/<Name>/settings.txt`, allowing Ember's global value to apply. A non-Default value is
+-written as the per-game override.
++game CFG and immediately removes the corresponding key from `EMBER/games/<Name>/settings.txt`,
++allowing Ember's global value to apply. A non-Default value is written as the per-game override.
++Launch also reapplies the managed values if the file changed outside RiptOPL. When no per-game key
++has been managed, confirming an unchanged dialog does not create an empty settings file.
+ 
+ Per-game CFG keys:
+ 
+diff --git a/docs/NEUTRINO.md b/docs/NEUTRINO.md
+index e5c7725..7caaecc 100644
+--- a/docs/NEUTRINO.md
++++ b/docs/NEUTRINO.md
+@@ -181,7 +181,7 @@ settings:
+ > post-2692 change corrects the mismatch; only a new hardware pass can establish whether it was the
+ > complete cause, so this remains **pending retest** rather than being documented as proven.
+ 
+-On top of those, you can pass **extra Neutrino flags** (e.g. media-type or video tweaks)
++On top of those, you can pass **extra Neutrino flags**
+ in two places. Both are **appended after** the auto-built arguments; **global first, then
+ per-game**, so a game can extend the global set.
+ 
+@@ -199,7 +199,14 @@ Both rows are **buttons** that open the same structured sub-screen rather than o
+ field: **Quick Boot** (`-qb`), **Debug Colors** (`-dbc`), **PS2 Logo** (`-logo`), **Working Dir**
+ (`-cwd`), **Config** (`-cfg`), **Boot ELF** (`-elf`), `-ata0`, `-ata0id`, `-ata1`, plus a
+ free-text **Extra** field for everything else. OPL reassembles the fields in the order Neutrino
+-accepts, with the Extra / `--b` tail last.
++accepts, with the Extra / `--b` tail last. Select any text field to edit its full value with the
++on-screen keyboard; the row displays a short preview. The complete assembled argument string must
++fit its 255-character saved limit, and the editor refuses to save an overlong result instead of
++silently truncating it. At launch, OPL composes the full global, per-game, and automatic arguments
++and checks the 14-entry / 256-byte ExecPS2 budget before leaving the menu. If either limit is
++exceeded, a manual launch shows a warning and stays in the menu so no requested argument is
++silently lost. HDD autolaunch falls back to the native core, as it does for other Neutrino
++preflight failures.
+ 
+ Quick Boot means **enter Neutrino's load environment directly**; it is not merely a boot-screen
+ toggle. RiptOPL supplies it automatically for USB, iLink, and UDPFS handoffs, so enabling the field
+@@ -208,26 +215,50 @@ yourself on those devices changes nothing and does not add a duplicate.
+ The stored format is unchanged — a space-separated string, e.g.:
+ 
+ ```
+--mt=dvd -gsm=1
++-cfg=custom -qb
+ ```
+ 
+-> **Editor length:** each on-screen field still edits at most 31 characters (the same limit as
+-> Custom ELF / Game ID), but fields you don't touch keep their full stored value, so editing one
+-> field no longer truncates the others. Edit `neutrino_args` / `$NeutrinoArgs` directly in the
+-> config file only when a single field needs more than 31 characters — OPL reads and forwards the
+-> full string at launch.
++The **Extra Args** field accepts Neutrino flags not given their own row, including `-bsdfs`,
++`-mc0`/`-mc1`, `-gc`, and `--b` for an ELF's own arguments. RiptOPL normally derives the game
++device (`-bsd`) and ISO (`-dvd`) and provides VMC, compatibility, and video controls elsewhere in
++the GUI. Overrides of those boot-critical values are expert settings: the chosen backend and image
++path still have to agree, and a missing VMC file can prevent boot.
+ 
+-### Automatic `-elf=` (enabled by default; config key only)
++| Upstream option | On-console control (global and per-game where applicable) |
++|---|---|
++| `-bsd`, `-dvd` | Derived from the selected game source and image; an override can be entered in either Extra Args field. |
++| `-bsdfs` | Per-game **Neutrino Filesystem** picker, or either Extra Args field for a global/default or a custom value. |
++| `-gsm` | Global **Neutrino Video** and **Neutrino GSM Compatibility** defaults; per-game pickers override them. |
++| `-gc` | Per-game compatibility switches; either Extra Args field can also carry a manual value. |
++| `-mc0`, `-mc1` | Per-game VMC controls; either Extra Args field can carry a manual path. |
++| `-elf`, `-cwd`, `-cfg`, `-ata0`, `-ata0id`, `-ata1`, `-qb`, `-dbc`, `-logo` | Named controls in both Advanced Arguments screens. Automatic `-elf` also has a global toggle. |
++| `--b` and ELF arguments | Enter in Extra Args. If both scopes use `--b`, RiptOPL collects the Neutrino options first and passes one combined ELF-argument tail, global then per-game. |
++
++All of these controls are reachable from RiptOPL's GUI. The Extra Args field retains a way to
++enter new Neutrino options if upstream adds them before RiptOPL has a named control.
++
++### Automatic `-elf=` (enabled by default)
+ 
+-RiptOPL defaults `neutrino_elf_arg` to `1` (there is deliberately no settings-screen row for
+-this), making every Neutrino launch also pass
++**Game Launching → Auto Boot ELF (-elf)** controls `neutrino_elf_arg`. It defaults on, making
++Neutrino launches also pass
+ `-elf=cdrom0:\<STARTUP>;1` -- the game's boot-file path -- so Neutrino's per-GameID
+ `config/<GameID>.toml` compatibility lookup can resolve before its IOP reset. It is only
+ emitted for retail-shaped startups (`AAAA_NNN.NN`) and never when your own args already carry
+-an `-elf=`. Set `neutrino_elf_arg = 0` by hand to disable it if a launch misbehaves.
++an `-elf=`. Turn it off in the GUI if a launch misbehaves. For a single game, the per-game **Boot
++ELF** field can supply `auto` (Neutrino's own disc lookup) or a specific ELF path, which suppresses
++the generated boot path for that game.
++
++### Video-mode limits
++
++Neutrino's current `-gsm` modes are 240p/288p, 480p/576p, and 1080i x1–x3; the low-resolution
++modes follow the game's PAL/NTSC choice. **Off** keeps its native 480i/576i output. Neither
++Neutrino's documented CLI nor NHDDL's game-video GUI supplies a force-NTSC-480i option for a PAL
++game. NHDDL's `video: ntsc` setting changes **NHDDL's own menu**, not Neutrino's game output.
++The upstream loader parses `-gsm=:1` through `:3`, but its EE core does not enable GSM when no
++video mode is selected, so field compatibility alone is not an effective substitute.
+ 
+ For the full list of flags Neutrino accepts, see the
+-[Neutrino documentation](https://github.com/rickgaiser/neutrino).
++[Neutrino documentation](https://github.com/ps2max32/neutrino/blob/master/README.md).
+ 
+ ## 4. Network boot — the Network Protocol selector
+ 
+diff --git a/docs/TECH_CONTRIBUTOR_ROADMAP_2026-10-03.md b/docs/TECH_CONTRIBUTOR_ROADMAP_2026-10-03.md
+new file mode 100644
+index 0000000..24d964d
+--- /dev/null
++++ b/docs/TECH_CONTRIBUTOR_ROADMAP_2026-10-03.md
+@@ -0,0 +1,31 @@
++# RiptOPL: what is left
++
++The [full handoff](./COMMUNITY_REPORTS_HANDOFF_2026-10-02.md) has the reports
++and technical detail. [#825](https://github.com/NathanNeurotic/Open-PS2-Loader/pull/825)
++(Ember settings save) and [#826](https://github.com/NathanNeurotic/Open-PS2-Loader/pull/826)
++(PS1 labels and menu guidance) are merged into `rebuild/main`. Builds and host
++checks passed; the console check is still open.
++
++## Finish line
++
++1. On one real PS2, confirm an Ember setting changes `settings.txt` before
++   launching the game.
++2. With covers off, confirm a PS1 game is clearly marked and opens its PS1
++   menu, while a PS2 game still opens its normal settings.
++3. Fix anything those checks break, then do the final build/release check.
++   Other reports stay tracked; they do not all need to be solved first.
++
++## If tech wants to help
++
++Pick **one**, whichever is interesting. A clear diagnosis is useful even
++without a PR:
++
++- **Slow art:** find out whether the late image is a cover, icon, or background.
++- **Neutrino logo:** check whether a custom `-logo` survives from the game menu
++  into the actual launch arguments.
++- **PS1 error message:** reproduce one missing Ember or POPSTARTER component
++  and fix the on-screen guidance if it is unclear.
++
++The iLink reliability, PAL/NTSC CRT, and font reports remain in the full
++handoff until someone can reproduce them. This is a pick-one list, not a job
++assigned to tech.
+diff --git a/include/config.h b/include/config.h
+index 4d1933c..fcf3e5c 100644
+--- a/include/config.h
++++ b/include/config.h
+@@ -131,7 +131,7 @@ enum CONFIG_INDEX {
+ #define CONFIG_OPL_NEUTRINO_PATH              "neutrino_path"
+ #define CONFIG_OPL_NEUTRINO_DEVICE            "neutrino_device"            // legacy device-INDEX (mc0/mass0/mmce0); read-only, migrated
+ #define CONFIG_OPL_NEUTRINO_DEVTYPE           "neutrino_devtype"           // device-TYPE (NEUTRINO_DEV_*); the live key
+-#define CONFIG_OPL_NEUTRINO_ELF_ARG           "neutrino_elf_arg"           // default-on (no UI row): auto-emit -elf=cdrom0:\<startup>;1 (parity Delta-10)
++#define CONFIG_OPL_NEUTRINO_ELF_ARG           "neutrino_elf_arg"           // default-on GUI toggle: auto-emit -elf=cdrom0:\<startup>;1 (parity Delta-10)
+ #define CONFIG_OPL_POPSTARTER_PATH            "popstarter_path"            // free-text custom path (used only when device=Custom)
+ #define CONFIG_OPL_POPSTARTER_DEVICE          "popstarter_device"          // device TYPE holding POPS/POPSTARTER.ELF (POPS_DEV_*)
+ #define CONFIG_OPL_POPSTARTER_RETROGEM_GAMEID "popstarter_retrogem_gameid" // RetroGEM Game ID optical barcode for VCD launches
+diff --git a/include/cuesupport.h b/include/cuesupport.h
+index 928e900..298f750 100644
+--- a/include/cuesupport.h
++++ b/include/cuesupport.h
+@@ -133,8 +133,12 @@ int cueNameLaunchable(const char *name);
+ // treats an absent POPS folder -- so a device with only one of the two never looks like a failure.
+ int cueScanDir(const char *devPrefix, cue_entry_t **outList);
+ 
++// Persist only the managed per-game keys before launch; 1 means written or already correct.
++// The folder must already exist. Default removes only its corresponding override.
++int cueSaveGameSettings(const char *devPrefix, const char *name, config_set_t *configSet);
++
+ // Apply managed Ember settings on launch. Global settings go to EMBER/settings.txt; per-game
+-// Controller/Shading from configSet go to EMBER/games/<name>/settings.txt. Unset settings leave the
++// Timing/Dither/Shading/Controller from configSet go to EMBER/games/<name>/settings.txt. Unset settings leave the
+ // corresponding key untouched; Default removes only that key. Unknown keys/comments are preserved.
+ // Best-effort: settings I/O never blocks launch, and a failed truncating write restores the original.
+ void cueApplySettings(const char *devPrefix, const char *name, config_set_t *configSet);
+diff --git a/include/dialogs.h b/include/dialogs.h
+index aea8b02..067ba8d 100644
+--- a/include/dialogs.h
++++ b/include/dialogs.h
+@@ -104,6 +104,7 @@ enum UI_ITEMS {
+     CFG_NEUTRINO_PATH,
+     CFG_NEUTRINO_VIDEO,   // global default Neutrino -gsm video mode (gNeutrinoVideoDefault); per-game "Default" follows it
+     CFG_NEUTRINO_GSMCOMP, // global default -gsm ":c" comp half (gNeutrinoGsmCompDefault)
++    CFG_NEUTRINO_ELF_ARG, // auto-supply the game's boot ELF to Neutrino
+     CFG_POPSTARTER_DEVICE,
+     CFG_LBL_POPSTARTER_PATH,
+     CFG_POPSTARTER_PATH,
+diff --git a/include/gui.h b/include/gui.h
+index 36b659d..4ae50bb 100644
+--- a/include/gui.h
++++ b/include/gui.h
+@@ -163,7 +163,14 @@ void guiShowNeutrinoDefaults(void);
+ int guiNeutrinoPathHandler(char *text, int maxLen);
+ int guiPopstarterPathHandler(char *text, int maxLen);
+ int guiExitPathHandler(char *text, int maxLen);
+-void guiShowNeutrinoArgsConfig(char *argsBuf, int bufSize);
++int guiShowNeutrinoArgsConfig(char *argsBuf, int bufSize); // 1 when the saved args changed
++int guiNeutrinoArgsCwdHandler(char *text, int maxLen);
++int guiNeutrinoArgsCfgHandler(char *text, int maxLen);
++int guiNeutrinoArgsElfHandler(char *text, int maxLen);
++int guiNeutrinoArgsAta0Handler(char *text, int maxLen);
++int guiNeutrinoArgsAta0idHandler(char *text, int maxLen);
++int guiNeutrinoArgsAta1Handler(char *text, int maxLen);
++int guiNeutrinoArgsExtraHandler(char *text, int maxLen);
+ int guiShowAudioConfig(void);
+ int guiShowNetConfig(void);
+ 
+diff --git a/include/iosupport.h b/include/iosupport.h
+index bf6f67d..a6cda3e 100644
+--- a/include/iosupport.h
++++ b/include/iosupport.h
+@@ -214,6 +214,10 @@ typedef struct _item_list_t
+     /// keeps its master discovery id while showing a filtered subset. NULL means identity mapping.
+     /// APPENDED for positional-initializer compatibility.
+     int (*itemGetSourceId)(item_list_t *itemList, int id);
++
++    /// Persist Ember's per-game settings without launching the title. The name is the complete
++    /// EMBER/games/ folder name, including when called through a Favourites proxy.
++    int (*itemSaveCueSettings)(item_list_t *itemList, int id, const char *name, config_set_t *configSet);
+ } item_list_t;
+ 
+ #define ITEM_VIEW_NATIVE    0
+diff --git a/include/menusys.h b/include/menusys.h
+index 03fae44..452e3d5 100644
+--- a/include/menusys.h
++++ b/include/menusys.h
+@@ -134,6 +134,7 @@ char *menuItemGetText(menu_item_t *it);
+ config_set_t *menuLoadConfig();
+ config_set_t *gameMenuLoadConfig(struct UIItem *ui);
+ int menuSaveConfig();
++int menuSaveEmberGameSettings(config_set_t *configSet);
+ int menuSaveSettings(void);
+ // Queue an async re-read of the current item's config WITH the #Size stat enabled. The scroll-path
+ // load skips that stat (see sbSetConfigStatSize); the info screen calls this so #Size still resolves.
+diff --git a/include/supportbase.h b/include/supportbase.h
+index a4dacd5..fcd6211 100644
+--- a/include/supportbase.h
++++ b/include/supportbase.h
+@@ -114,20 +114,20 @@ int sbNeutrinoDeinitException(const char *neutrinoPath);
+ // Structured view of the USER-settable Neutrino launch flags (the catch-all "Launch Args" box).
+ typedef struct
+ {
+-    int qb;          // -qb (quick-boot)
+-    int dbc;         // -dbc (debug colors)
+-    int logo;        // -logo (PS2 logo)
+-    char cwd[64];    // -cwd=
+-    char cfg[64];    // -cfg=
+-    char elf[64];    // -elf=
+-    char ata0[64];   // -ata0=
+-    char ata0id[64]; // -ata0id=
+-    char ata1[64];   // -ata1=
+-    char extra[64];  // unrecognised/free tokens, space-joined; "--b ..." preserved at the tail
++    int qb;           // -qb (quick-boot)
++    int dbc;          // -dbc (debug colors)
++    int logo;         // -logo (PS2 logo)
++    char cwd[256];    // -cwd=
++    char cfg[256];    // -cfg=
++    char elf[256];    // -elf=
++    char ata0[256];   // -ata0=
++    char ata0id[256]; // -ata0id=
++    char ata1[256];   // -ata1=
++    char extra[256];  // unrecognised/free tokens, space-joined; "--b ..." preserved at the tail
+ } neutrino_args_t;
+ // Parse an args string into the struct; assemble it back in a Neutrino-accepted order (--b last).
+ void neutrinoArgsParse(const char *in, neutrino_args_t *na);
+-void neutrinoArgsAssemble(const neutrino_args_t *na, char *out, int outSize);
++int neutrinoArgsAssemble(const neutrino_args_t *na, char *out, int outSize); // 0 if the result would be truncated
+ 
+ // Fully-formed Neutrino -mcN VMC args for both slots, resolved from the per-game config
+ // BEFORE deinit frees it. vmcPrefix = the device prefix VMC/ lives under.
+diff --git a/include/system.h b/include/system.h
+index 537c0e7..66b693e 100644
+--- a/include/system.h
++++ b/include/system.h
+@@ -52,6 +52,10 @@ void sysLaunchNeutrino(const char *driver, const char *path, const char *startup
+ // <0 = abort the launch (a toast has already been shown).
+ int sysNeutrinoPreflight(const char *driver, const char *neutrinoPath, int neutrinoBsdfs, const char *extraArgs, int bdDevNr);
+ 
++// Compose the exact launch argv while the GUI is still live. Refuses a launch that would exceed
++// the 14-entry or 256-byte ExecPS2 budget, with a visible warning instead of dropping arguments.
++int sysNeutrinoArgsPreflight(const char *driver, const char *path, const char *startup, int compatmask, int EnablePS2Logo, const char *neutrinoPath, const char *extraArgs, int neutrinoVideo, int neutrinoGsmComp, int neutrinoBsdfs, int bdDevNr, const neutrino_vmc_args_t *vmcArgs);
++
+ // Launch an external POPSTARTER.ELF for a PS1 VCD. selector = the target's argv[0]
+ // "<POPS>/<prefix><name>.ELF" token. Caller deinit()s with UNMOUNT_EXCEPTION first.
+ void sysLaunchPopstarter(const char *popstarterElf, const char *selector);
+diff --git a/lng_tmpl/_base.yml b/lng_tmpl/_base.yml
+index cf1111f..70ab14e 100644
+--- a/lng_tmpl/_base.yml
++++ b/lng_tmpl/_base.yml
+@@ -792,7 +792,9 @@ gui_strings:
+ - label: HINT_MODE7
+   string: Neutrino only -- fix games that overrun an IOP buffer (-gc=7)
+ - label: HINT_NEUTRINO_ARGS
+-  string: Extra Neutrino flags, space-separated (e.g. -mt=dvd). Global applies to all games; per-game adds on top. Prefix a flag with $ to disable it without deleting.
++  string: Advanced Neutrino options. Global applies to all games; per-game adds on top. Extra accepts other supported flags. Prefix a flag with $ to disable it without deleting.
++- label: HINT_NEUTRINO_AUTO_ELF
++  string: Pass the game's boot ELF to Neutrino for per-title config lookup. On by default; a manually set Boot ELF option takes precedence.
+ - label: HINT_NEUTRINO_BSDFS
+   string: Force Neutrino's block-device filesystem (-bsdfs). Auto = per-device default. hdl/bd are expert options; pair them with a matching -dvd= in the launch args if the auto path shape doesn't fit.
+ - label: HINT_NEUTRINO_DEVICE
+@@ -848,7 +850,7 @@ gui_strings:
+ - label: NARGS_ATA1
+   string: ATA1 Image (-ata1)
+ - label: NARGS_AUTO_NOTE
+-  string: 'Auto: -bsd -dvd -gc -gsm -mc -dbc -logo'
++  string: 'Auto: game device and ISO, per-game compatibility and VMC, selected video mode'
+ - label: NARGS_CFG
+   string: Config (-cfg)
+ - label: NARGS_CWD
+@@ -867,6 +869,12 @@ gui_strings:
+   string: Network Protocol
+ - label: NEUTRINO_ARGS
+   string: Neutrino Launch Args
++- label: NEUTRINO_ARGS_TOO_LONG
++  string: Neutrino arguments exceed the saved length. Shorten a field before saving.
++- label: NEUTRINO_LAUNCH_ARGS_OVERFLOW
++  string: Neutrino launch arguments exceed the safe limit. Shorten the global or game arguments.
++- label: NEUTRINO_AUTO_ELF
++  string: Auto Boot ELF (-elf)
+ - label: NEUTRINO_BSDFS
+   string: Neutrino Filesystem
+ - label: NEUTRINO_DEFAULTS
+@@ -1372,7 +1380,7 @@ gui_strings:
+ - label: EMBER_GAME_SETTINGS
+   string: Ember Game Settings
+ - label: HINT_EMBER_GAME_SETTING
+-  string: "This game only. Default inherits the global Ember setting; Timing, Dithering, Shading or Controller overrides it. RiptOPL writes the result to EMBER/games/<name>/settings.txt at launch."
++  string: "This game only. Press OK to write EMBER/games/<name>/settings.txt before launch. An untouched Default keeps an existing file value; changing a value back to Default removes its override."
+ - label: EMBER_TIMING
+   string: Ember Timing
+ - label: HINT_EMBER_TIMING
+@@ -1443,3 +1451,5 @@ gui_strings:
+   string: Music
+ - label: HINT_RIPPS2_MUSIC
+   string: "Plays the bgm files in the AUDIO folder beside RIPPS2 (Ogg without tags, or 16-bit WAV). A theme's own music plays instead."
++- label: PS1_SAVE_GUIDANCE
++  string: "PS1 saves depend on Ember or POPSTARTER; PS2 VMC settings do not apply."
+diff --git a/src/bdmsupport.c b/src/bdmsupport.c
+index d54a16f..ca6f587 100644
+--- a/src/bdmsupport.c
++++ b/src/bdmsupport.c
+@@ -2035,6 +2035,10 @@ static int bdmTryNeutrinoLaunch(item_list_t *itemList, base_game_info_t *game, b
+     // Δ6 preflight (driver token + network toml sync) -- abort stays in a live menu.
+     if (sysNeutrinoPreflight(bdmCurrentDriver, neutrinoPath, neutrinoBsdfs, neutrinoExtraArgs, bdmDevNr) < 0)
+         goto fail;
++    if (sysNeutrinoArgsPreflight(bdmCurrentDriver, partname, game->startup, compatmask, gPS2Logo, neutrinoPath, neutrinoExtraArgs, neutrinoVideo, neutrinoGsmComp, neutrinoBsdfs, bdmDevNr, &neutrinoVmc) < 0) {
++        failResult = 1; // an overfull Neutrino argv must not silently fall back to the native core
++        goto fail;
++    }
+     if (gLaunchDiag)
+         launchDiagMark(3);
+ 
+@@ -2607,11 +2611,23 @@ static char *bdmGetPrefix(item_list_t *itemList)
+     return pDeviceData->bdmPrefix;
+ }
+ 
++static int bdmSaveCueSettings(item_list_t *itemList, int id, const char *name, config_set_t *configSet)
++{
++    bdm_device_data_t *device = (bdm_device_data_t *)itemList->priv;
++    char ps1Prefix[64];
++    (void)id;
++
++    if (device == NULL || (device->bdmDeviceType == BDM_TYPE_SDC && !cacheAbortMmceImageLoadsTimed(500)))
++        return 0;
++    bdmBuildPs1Prefix(ps1Prefix, sizeof(ps1Prefix), itemList->mode);
++    return cueSaveGameSettings(ps1Prefix, name, configSet);
++}
++
+ static item_list_t bdmGameList = {
+     BDM_MODE, 2, 0, 0, MENU_MIN_INACTIVE_FRAMES, BDM_MODE_UPDATE_DELAY, NULL, NULL, &bdmGetTextId, &bdmGetPrefix, &bdmInit, &bdmNeedsUpdate,
+     &bdmUpdateGameList, &bdmGetGameCount, &bdmGetGame, &bdmGetGameName, &bdmGetGameNameLength, &bdmGetGameStartup, &bdmDeleteGame, &bdmRenameGame,
+     &bdmLaunchGame, &bdmGetConfig, &bdmGetImage, &bdmCleanUp, &bdmShutdown, &bdmCheckVMC, &bdmGetIconId, &bdmLaunchVcd,
+-    /* viewOverride */ 0, /* itemGetArtArchivePath */ NULL, &bdmLaunchCue, &bdmGetItemView, &bdmGetSourceId};
++    /* viewOverride */ 0, /* itemGetArtArchivePath */ NULL, &bdmLaunchCue, &bdmGetItemView, &bdmGetSourceId, &bdmSaveCueSettings};
+ 
+ void bdmInitSemaphore()
+ {
+diff --git a/src/cuesupport.c b/src/cuesupport.c
+index d51db38..52586cd 100644
+--- a/src/cuesupport.c
++++ b/src/cuesupport.c
+@@ -408,7 +408,7 @@ static int cueWriteAll(int fd, const char *data, int len)
+     return 1;
+ }
+ 
+-static void cueRewriteSettingsFile(const char *path, const cue_setting_t *want, int wantCount)
++static int cueRewriteSettingsFile(const char *path, const cue_setting_t *want, int wantCount)
+ {
+     char *before;
+     char *after;
+@@ -418,7 +418,7 @@ static void cueRewriteSettingsFile(const char *path, const cue_setting_t *want,
+     int existed = 0;
+ 
+     if (path == NULL || want == NULL || wantCount <= 0)
+-        return;
++        return 0;
+ 
+     before = (char *)malloc(CUE_SETTINGS_MAX + 1);
+     after = (char *)malloc(CUE_SETTINGS_MAX + 1);
+@@ -426,7 +426,7 @@ static void cueRewriteSettingsFile(const char *path, const cue_setting_t *want,
+         free(before);
+         free(after);
+         LOG("[CUE] no memory to update %s -- left untouched\n", path);
+-        return;
++        return 0;
+     }
+ 
+     fd = open(path, O_RDONLY);
+@@ -438,18 +438,18 @@ static void cueRewriteSettingsFile(const char *path, const cue_setting_t *want,
+             LOG("[CUE] cannot read %s -- left untouched\n", path);
+             free(before);
+             free(after);
+-            return;
++            return 0;
+         }
+         if (len > CUE_SETTINGS_MAX) {
+             LOG("[CUE] %s is larger than Ember's settings buffer -- left untouched\n", path);
+             free(before);
+             free(after);
+-            return;
++            return 0;
+         }
+     } else if (!cueSettingsHaveValue(want, wantCount)) {
+         free(before);
+         free(after);
+-        return;
++        return 1;
+     }
+ 
+     out = cueRewriteSettings(before, len, want, wantCount, after, CUE_SETTINGS_MAX);
+@@ -457,33 +457,36 @@ static void cueRewriteSettingsFile(const char *path, const cue_setting_t *want,
+         LOG("[CUE] rewritten settings would not fit in %s -- left untouched\n", path);
+         free(before);
+         free(after);
+-        return;
++        return 0;
+     }
+ 
+     if (out == len && (out == 0 || memcmp(after, before, out) == 0)) {
+         free(before);
+         free(after);
+-        return;
++        return 1;
+     }
+ 
+     if (out == 0) {
++        int removed = 1;
+         if (existed && len > 0) {
+             if (unlink(path) == 0)
+                 LOG("[CUE] nothing left to keep in %s -- removed\n", path);
+-            else
++            else {
+                 LOG("[CUE] cannot remove %s -- previous settings remain\n", path);
++                removed = 0;
++            }
+         }
+         free(before);
+         free(after);
+-        return;
++        return removed;
+     }
+ 
+     fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+     if (fd < 0) {
+-        LOG("[CUE] cannot write %s -- launching with the previous Ember settings\n", path);
++        LOG("[CUE] cannot write %s -- previous Ember settings remain\n", path);
+         free(before);
+         free(after);
+-        return;
++        return 0;
+     }
+ 
+     if (!cueWriteAll(fd, after, out)) {
+@@ -504,12 +507,52 @@ static void cueRewriteSettingsFile(const char *path, const cue_setting_t *want,
+         }
+         free(before);
+         free(after);
+-        return;
++        return 0;
+     }
+ 
+-    close(fd);
++    out = close(fd);
+     free(before);
+     free(after);
++    if (out < 0)
++        LOG("[CUE] cannot close %s -- Ember settings save unconfirmed\n", path);
++    return out >= 0;
++}
++
++int cueSaveGameSettings(const char *devPrefix, const char *name, config_set_t *configSet)
++{
++    static const char *const timingValues[] = {NULL, "auto", "ntsc", "pal"};
++    static const char *const ditherValues[] = {NULL, "on", "off"};
++    static const char *const shadingValues[] = {NULL, "15", "24"};
++    static const char *const controllerValues[] = {NULL, "auto", "analog", "d2a"};
++    cue_setting_t game[4];
++    int nGame = 0;
++    int value, n;
++    char path[768];
++    char sep;
++
++    if (devPrefix == NULL || name == NULL || name[0] == '\0' ||
++        !cueNameLaunchable(name) || configSet == NULL)
++        return 0;
++
++    if (configGetInt(configSet, CONFIG_ITEM_EMBER_TIMING, &value))
++        cueWantSetting(game, &nGame, "timing", value, timingValues, EMBER_TIMING_COUNT);
++    if (configGetInt(configSet, CONFIG_ITEM_EMBER_DITHER, &value))
++        cueWantSetting(game, &nGame, "dither", value, ditherValues, EMBER_DITHER_COUNT);
++    if (configGetInt(configSet, CONFIG_ITEM_EMBER_SHADING, &value))
++        cueWantSetting(game, &nGame, "shading", value, shadingValues, EMBER_SHADING_COUNT);
++    if (configGetInt(configSet, CONFIG_ITEM_EMBER_CONTROLLER, &value))
++        cueWantSetting(game, &nGame, "controller", value, controllerValues, EMBER_CONTROLLER_COUNT);
++    if (nGame == 0)
++        return 1;
++
++    sep = cueSep(devPrefix);
++    n = snprintf(path, sizeof(path), "%s%s%c%s%c%s%c%s", devPrefix, cueEmberFolder(), sep,
++                 EMBER_GAMES_FOLDER, sep, name, sep, EMBER_SETTINGS_NAME);
++    if (n <= 0 || n >= (int)sizeof(path)) {
++        LOG("[CUE] Ember game settings path is too long -- per-game settings left untouched\n");
++        return 0;
++    }
++    return cueRewriteSettingsFile(path, game, nGame);
+ }
+ 
+ void cueApplySettings(const char *devPrefix, const char *name, config_set_t *configSet)
+@@ -520,13 +563,9 @@ void cueApplySettings(const char *devPrefix, const char *name, config_set_t *con
+     static const char *const shadingValues[] = {NULL, "15", "24"};
+     static const char *const controllerValues[] = {NULL, "auto", "analog", "d2a"};
+     cue_setting_t global[5];
+-    cue_setting_t game[4];
+     int nGlobal = 0;
+-    int nGame = 0;
+-    int value;
+     int n;
+     char path[768];
+-    char sep;
+ 
+     if (devPrefix == NULL)
+         return;
+@@ -537,35 +576,15 @@ void cueApplySettings(const char *devPrefix, const char *name, config_set_t *con
+     cueWantSetting(global, &nGlobal, "shading", gEmberShading, shadingValues, EMBER_SHADING_COUNT);
+     cueWantSetting(global, &nGlobal, "controller", gEmberController, controllerValues, EMBER_CONTROLLER_COUNT);
+ 
+-    if (configSet != NULL && name != NULL && name[0] != '\0' && cueNameLaunchable(name)) {
+-        if (configGetInt(configSet, CONFIG_ITEM_EMBER_TIMING, &value))
+-            cueWantSetting(game, &nGame, "timing", value, timingValues, EMBER_TIMING_COUNT);
+-        if (configGetInt(configSet, CONFIG_ITEM_EMBER_DITHER, &value))
+-            cueWantSetting(game, &nGame, "dither", value, ditherValues, EMBER_DITHER_COUNT);
+-        if (configGetInt(configSet, CONFIG_ITEM_EMBER_SHADING, &value))
+-            cueWantSetting(game, &nGame, "shading", value, shadingValues, EMBER_SHADING_COUNT);
+-        if (configGetInt(configSet, CONFIG_ITEM_EMBER_CONTROLLER, &value))
+-            cueWantSetting(game, &nGame, "controller", value, controllerValues, EMBER_CONTROLLER_COUNT);
+-    }
+-
+-    sep = cueSep(devPrefix);
+-
+     if (nGlobal > 0) {
+-        n = snprintf(path, sizeof(path), "%s%s%c%s", devPrefix, cueEmberFolder(), sep, EMBER_SETTINGS_NAME);
++        n = snprintf(path, sizeof(path), "%s%s%c%s", devPrefix, cueEmberFolder(), cueSep(devPrefix), EMBER_SETTINGS_NAME);
+         if (n > 0 && n < (int)sizeof(path))
+             cueRewriteSettingsFile(path, global, nGlobal);
+         else
+             LOG("[CUE] Ember settings path is too long -- global settings left untouched\n");
+     }
+-
+-    if (nGame > 0) {
+-        n = snprintf(path, sizeof(path), "%s%s%c%s%c%s%c%s", devPrefix, cueEmberFolder(), sep,
+-                     EMBER_GAMES_FOLDER, sep, name, sep, EMBER_SETTINGS_NAME);
+-        if (n > 0 && n < (int)sizeof(path))
+-            cueRewriteSettingsFile(path, game, nGame);
+-        else
+-            LOG("[CUE] Ember game settings path is too long -- per-game settings left untouched\n");
+-    }
++    if (configSet != NULL && name != NULL && name[0] != '\0' && cueNameLaunchable(name))
++        cueSaveGameSettings(devPrefix, name, configSet);
+ }
+ 
+ int cueGameHasImage(const char *devPrefix, const char *name)
+diff --git a/src/dialogs.c b/src/dialogs.c
+index c8dc052..edba718 100644
+--- a/src/dialogs.c
++++ b/src/dialogs.c
+@@ -1043,6 +1043,11 @@ struct UIItem diaNeutrinoDefaults[] = {
+     {UI_ENUM, CFG_NEUTRINO_GSMCOMP, 1, 1, _STR_HINT_NEUTRINO_GSM_COMP, 0, 0, {.intvalue = {0, 0}}},
+     {UI_BREAK},
+ 
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_NEUTRINO_AUTO_ELF}}},
++    {UI_SPACER},
++    {UI_BOOL, CFG_NEUTRINO_ELF_ARG, 1, 1, _STR_HINT_NEUTRINO_AUTO_ELF, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BREAK},
++
+     {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {"Neutrino Advanced Arguments", -1}}},
+     {UI_SPACER},
+     {UI_BUTTON, CFG_NEUTRINO_ARGS, 1, 1, _STR_HINT_NEUTRINO_ARGS, 0, 0, {.label = {NULL, _STR_MODIFY}}},
+@@ -1925,37 +1930,37 @@ struct UIItem diaNeutrinoArgs[] = {
+ 
+     {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_NARGS_CWD}}},
+     {UI_SPACER},
+-    {UI_STRING, NARGS_CWD, 1, 1, -1, 0, 0, {.stringvalue = {"", "", NULL}}},
++    {UI_STRING, NARGS_CWD, 1, 1, -1, 0, 0, {.stringvalue = {"", "", &guiNeutrinoArgsCwdHandler}}},
+     {UI_BREAK},
+ 
+     {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_NARGS_CFG}}},
+     {UI_SPACER},
+-    {UI_STRING, NARGS_CFG, 1, 1, -1, 0, 0, {.stringvalue = {"", "", NULL}}},
++    {UI_STRING, NARGS_CFG, 1, 1, -1, 0, 0, {.stringvalue = {"", "", &guiNeutrinoArgsCfgHandler}}},
+     {UI_BREAK},
+ 
+     {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_NARGS_ELF}}},
+     {UI_SPACER},
+-    {UI_STRING, NARGS_ELF, 1, 1, -1, 0, 0, {.stringvalue = {"", "", NULL}}},
++    {UI_STRING, NARGS_ELF, 1, 1, -1, 0, 0, {.stringvalue = {"", "", &guiNeutrinoArgsElfHandler}}},
+     {UI_BREAK},
+ 
+     {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_NARGS_ATA0}}},
+     {UI_SPACER},
+-    {UI_STRING, NARGS_ATA0, 1, 1, -1, 0, 0, {.stringvalue = {"", "", NULL}}},
++    {UI_STRING, NARGS_ATA0, 1, 1, -1, 0, 0, {.stringvalue = {"", "", &guiNeutrinoArgsAta0Handler}}},
+     {UI_BREAK},
+ 
+     {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_NARGS_ATA0ID}}},
+     {UI_SPACER},
+-    {UI_STRING, NARGS_ATA0ID, 1, 1, -1, 0, 0, {.stringvalue = {"", "", NULL}}},
++    {UI_STRING, NARGS_ATA0ID, 1, 1, -1, 0, 0, {.stringvalue = {"", "", &guiNeutrinoArgsAta0idHandler}}},
+     {UI_BREAK},
+ 
+     {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_NARGS_ATA1}}},
+     {UI_SPACER},
+-    {UI_STRING, NARGS_ATA1, 1, 1, -1, 0, 0, {.stringvalue = {"", "", NULL}}},
++    {UI_STRING, NARGS_ATA1, 1, 1, -1, 0, 0, {.stringvalue = {"", "", &guiNeutrinoArgsAta1Handler}}},
+     {UI_BREAK},
+ 
+     {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_NARGS_EXTRA}}},
+     {UI_SPACER},
+-    {UI_STRING, NARGS_EXTRA, 1, 1, -1, 0, 0, {.stringvalue = {"", "", NULL}}},
++    {UI_STRING, NARGS_EXTRA, 1, 1, -1, 0, 0, {.stringvalue = {"", "", &guiNeutrinoArgsExtraHandler}}},
+     {UI_BREAK},
+ 
+     {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_NARGS_AUTO_NOTE}}},
+diff --git a/src/ethsupport.c b/src/ethsupport.c
+index 6bc351a..8a00aa1 100644
+--- a/src/ethsupport.c
++++ b/src/ethsupport.c
+@@ -996,6 +996,13 @@ static char *ethGetPrefix(item_list_t *itemList)
+     return ethPrefix;
+ }
+ 
++static int ethSaveCueSettings(item_list_t *itemList, int id, const char *name, config_set_t *configSet)
++{
++    (void)itemList;
++    (void)id;
++    return gPCShareName[0] && cueSaveGameSettings(ethPrefix, name, configSet);
++}
++
+ const char *ethGetSMBPrefix(void)
+ {
+     return ethPrefix;
+@@ -1005,7 +1012,7 @@ static item_list_t ethGameList = {
+     ETH_MODE, 1, 0, 0, MENU_MIN_INACTIVE_FRAMES, ETH_MODE_UPDATE_DELAY, NULL, NULL, &ethGetTextId, &ethGetPrefix, &ethInit, &ethNeedsUpdate,
+     &ethUpdateGameList, &ethGetGameCount, &ethGetGame, &ethGetGameName, &ethGetGameNameLength, &ethGetGameStartup, &ethDeleteGame, &ethRenameGame,
+     &ethLaunchGame, &ethGetConfig, &ethGetImage, &ethCleanUp, &ethShutdown, &ethCheckVMC, &ethGetIconId, &ethLaunchVcd,
+-    ITEM_VIEW_NATIVE, NULL, &ethLaunchCue, &ethGetItemView, &ethGetSourceId};
++    ITEM_VIEW_NATIVE, NULL, &ethLaunchCue, &ethGetItemView, &ethGetSourceId, &ethSaveCueSettings};
+ 
+ int ethGetNetConfig(u8 *ip_address, u8 *netmask, u8 *gateway)
+ {
+diff --git a/src/favsupport.c b/src/favsupport.c
+index 9c9590c..e7acd72 100644
+--- a/src/favsupport.c
++++ b/src/favsupport.c
+@@ -889,6 +889,21 @@ static void favLaunchItem(item_list_t *itemList, int id, config_set_t *configSet
+     o->itemLaunch(o, favArray[id].id, configSet);
+ }
+ 
++static int favSaveCueSettings(item_list_t *itemList, int id, const char *name, config_set_t *configSet)
++{
++    item_list_t ownerView;
++    item_list_t *owner;
++    (void)itemList;
++
++    // Names are the complete Ember folder identities. Resolve the same owner as launch, even if
++    // its page is currently showing PS2 games.
++    if (!favValidIndex(id) || favArray[id].kind != FAV_KIND_CUE || strcmp(favArray[id].text, name) != 0)
++        return 0;
++    owner = favOwnerView(id, &ownerView);
++    return owner != NULL && owner->itemSaveCueSettings != NULL &&
++           owner->itemSaveCueSettings(owner, favArray[id].id, name, configSet);
++}
++
+ // Art proxy: the cache passes the source item's startup as `value`. Find the favourite whose
+ // source startup matches and forward to its owner's image lookup.
+ static int favGetImage(item_list_t *itemList, char *folder, int isRelative, char *value, char *suffix, GSTEXTURE *resultTex, short psm)
+@@ -1210,4 +1225,4 @@ static item_list_t favItemList = {
+     FAV_MODE, -1, 0, 0, MENU_MIN_INACTIVE_FRAMES, FAV_MODE_UPDATE_DELAY, NULL, NULL, &favGetTextId, NULL, &favInit, &favNeedsUpdate, &favUpdateItemList,
+     &favGetItemCount, NULL, &favGetItemName, &favGetItemNameLength, &favGetItemStartup, &favDeleteItem, &favRenameItem, &favLaunchItem,
+     &favGetConfig, &favGetImage, &favCleanUp, &favShutdown, &favCheckVMC, &favGetIconId,
+-    NULL, ITEM_VIEW_NATIVE, NULL, NULL, &favGetRowView, NULL};
++    NULL, ITEM_VIEW_NATIVE, NULL, NULL, &favGetRowView, NULL, &favSaveCueSettings};
+diff --git a/src/gui.c b/src/gui.c
+index 701bc67..1e42c0e 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -2185,6 +2185,7 @@ void guiShowNeutrinoDefaults(void)
+     diaSetEnum(diaNeutrinoDefaults, CFG_NEUTRINO_GSMCOMP, neutrinoGsmCompDefStrs);
+     diaSetInt(diaNeutrinoDefaults, CFG_NEUTRINO_GSMCOMP, gNeutrinoGsmCompDefault);
+     diaSetEnabled(diaNeutrinoDefaults, CFG_NEUTRINO_GSMCOMP, gNeutrinoVideoDefault != 0);
++    diaSetInt(diaNeutrinoDefaults, CFG_NEUTRINO_ELF_ARG, gNeutrinoElfArg);
+ 
+     int ret;
+ reshow_neutrino:
+@@ -2202,6 +2203,7 @@ reshow_neutrino:
+         snprintf(gNeutrinoPath, sizeof(gNeutrinoPath), "%s", neutrinoPathEdit);
+         diaGetInt(diaNeutrinoDefaults, CFG_NEUTRINO_VIDEO, &gNeutrinoVideoDefault);
+         diaGetInt(diaNeutrinoDefaults, CFG_NEUTRINO_GSMCOMP, &gNeutrinoGsmCompDefault);
++        diaGetInt(diaNeutrinoDefaults, CFG_NEUTRINO_ELF_ARG, &gNeutrinoElfArg);
+ 
+         applyConfig(-1, -1, 0);
+     }
+@@ -2210,10 +2212,35 @@ reshow_neutrino:
+ // Neutrino Launch Args sub-screen: edit the user-settable Neutrino flags as structured fields and
+ // reassemble them in a Neutrino-accepted order (--b last). Used for both the global args (here) and
+ // the per-game args. argsBuf in/out is the stored "Launch Args" string.
+-void guiShowNeutrinoArgsConfig(char *argsBuf, int bufSize)
+-{
++// UI_STRING holds only a 31-character preview. The callbacks edit the complete backing fields, so
++// a path or argument can be changed on the console without hand-editing a config file.
++static neutrino_args_t neutrinoArgsEdit;
++
++#define NEUTRINO_ARG_HANDLER(name, field)                                             \
++    int guiNeutrinoArgs##name##Handler(char *text, int maxLen)                        \
++    {                                                                                 \
++        if (!guiShowKeyboard(neutrinoArgsEdit.field, sizeof(neutrinoArgsEdit.field))) \
++            return 0;                                                                 \
++        snprintf(text, maxLen, "%s", neutrinoArgsEdit.field);                         \
++        return 1;                                                                     \
++    }
++
++NEUTRINO_ARG_HANDLER(Cwd, cwd)
++NEUTRINO_ARG_HANDLER(Cfg, cfg)
++NEUTRINO_ARG_HANDLER(Elf, elf)
++NEUTRINO_ARG_HANDLER(Ata0, ata0)
++NEUTRINO_ARG_HANDLER(Ata0id, ata0id)
++NEUTRINO_ARG_HANDLER(Ata1, ata1)
++NEUTRINO_ARG_HANDLER(Extra, extra)
++#undef NEUTRINO_ARG_HANDLER
++
++int guiShowNeutrinoArgsConfig(char *argsBuf, int bufSize)
++{
++    if (argsBuf == NULL || bufSize <= 0)
++        return 0;
+     neutrino_args_t na;
+     neutrinoArgsParse(argsBuf, &na);
++    neutrinoArgsEdit = na;
+ 
+     diaSetInt(diaNeutrinoArgs, NARGS_QB, na.qb ? 1 : 0);
+     diaSetInt(diaNeutrinoArgs, NARGS_DBC, na.dbc ? 1 : 0);
+@@ -2226,59 +2253,22 @@ void guiShowNeutrinoArgsConfig(char *argsBuf, int bufSize)
+     diaSetString(diaNeutrinoArgs, NARGS_ATA1, na.ata1);
+     diaSetString(diaNeutrinoArgs, NARGS_EXTRA, na.extra);
+ 
+-    // Baseline = the fields AS POPULATED (the UI caps each string at 31 chars). Comparing the
+-    // post-dialog fields against this tells us which fields the user actually edited, so untouched
+-    // fields can keep their FULL parsed value instead of the truncated UI copy.
+-    neutrino_args_t pop;
+-    diaGetInt(diaNeutrinoArgs, NARGS_QB, &pop.qb);
+-    diaGetInt(diaNeutrinoArgs, NARGS_DBC, &pop.dbc);
+-    diaGetInt(diaNeutrinoArgs, NARGS_LOGO, &pop.logo);
+-    diaGetString(diaNeutrinoArgs, NARGS_CWD, pop.cwd, sizeof(pop.cwd));
+-    diaGetString(diaNeutrinoArgs, NARGS_CFG, pop.cfg, sizeof(pop.cfg));
+-    diaGetString(diaNeutrinoArgs, NARGS_ELF, pop.elf, sizeof(pop.elf));
+-    diaGetString(diaNeutrinoArgs, NARGS_ATA0, pop.ata0, sizeof(pop.ata0));
+-    diaGetString(diaNeutrinoArgs, NARGS_ATA0ID, pop.ata0id, sizeof(pop.ata0id));
+-    diaGetString(diaNeutrinoArgs, NARGS_ATA1, pop.ata1, sizeof(pop.ata1));
+-    diaGetString(diaNeutrinoArgs, NARGS_EXTRA, pop.extra, sizeof(pop.extra));
+-
+-    if (diaExecuteDialog(diaNeutrinoArgs, -1, 1, NULL)) {
+-        neutrino_args_t out;
++    while (diaExecuteDialog(diaNeutrinoArgs, -1, 1, NULL)) {
+         char after[256];
+-        diaGetInt(diaNeutrinoArgs, NARGS_QB, &out.qb);
+-        diaGetInt(diaNeutrinoArgs, NARGS_DBC, &out.dbc);
+-        diaGetInt(diaNeutrinoArgs, NARGS_LOGO, &out.logo);
+-        diaGetString(diaNeutrinoArgs, NARGS_CWD, out.cwd, sizeof(out.cwd));
+-        diaGetString(diaNeutrinoArgs, NARGS_CFG, out.cfg, sizeof(out.cfg));
+-        diaGetString(diaNeutrinoArgs, NARGS_ELF, out.elf, sizeof(out.elf));
+-        diaGetString(diaNeutrinoArgs, NARGS_ATA0, out.ata0, sizeof(out.ata0));
+-        diaGetString(diaNeutrinoArgs, NARGS_ATA0ID, out.ata0id, sizeof(out.ata0id));
+-        diaGetString(diaNeutrinoArgs, NARGS_ATA1, out.ata1, sizeof(out.ata1));
+-        diaGetString(diaNeutrinoArgs, NARGS_EXTRA, out.extra, sizeof(out.extra));
+-        // Per-field merge: adopt only the fields the user actually changed; untouched fields keep
+-        // their FULL parsed value (na) so editing one field never truncates the others to 31 chars.
+-        if (out.qb != pop.qb)
+-            na.qb = out.qb;
+-        if (out.dbc != pop.dbc)
+-            na.dbc = out.dbc;
+-        if (out.logo != pop.logo)
+-            na.logo = out.logo;
+-        if (strcmp(out.cwd, pop.cwd) != 0)
+-            snprintf(na.cwd, sizeof(na.cwd), "%s", out.cwd);
+-        if (strcmp(out.cfg, pop.cfg) != 0)
+-            snprintf(na.cfg, sizeof(na.cfg), "%s", out.cfg);
+-        if (strcmp(out.elf, pop.elf) != 0)
+-            snprintf(na.elf, sizeof(na.elf), "%s", out.elf);
+-        if (strcmp(out.ata0, pop.ata0) != 0)
+-            snprintf(na.ata0, sizeof(na.ata0), "%s", out.ata0);
+-        if (strcmp(out.ata0id, pop.ata0id) != 0)
+-            snprintf(na.ata0id, sizeof(na.ata0id), "%s", out.ata0id);
+-        if (strcmp(out.ata1, pop.ata1) != 0)
+-            snprintf(na.ata1, sizeof(na.ata1), "%s", out.ata1);
+-        if (strcmp(out.extra, pop.extra) != 0)
+-            snprintf(na.extra, sizeof(na.extra), "%s", out.extra);
+-        neutrinoArgsAssemble(&na, after, sizeof(after));
++        na = neutrinoArgsEdit;
++        diaGetInt(diaNeutrinoArgs, NARGS_QB, &na.qb);
++        diaGetInt(diaNeutrinoArgs, NARGS_DBC, &na.dbc);
++        diaGetInt(diaNeutrinoArgs, NARGS_LOGO, &na.logo);
++        int afterSize = bufSize < (int)sizeof(after) ? bufSize : (int)sizeof(after);
++        if (!neutrinoArgsAssemble(&na, after, afterSize)) {
++            guiMsgBox(_l(_STR_NEUTRINO_ARGS_TOO_LONG), 0, NULL);
++            continue;
++        }
++        int changed = strcmp(argsBuf, after) != 0;
+         snprintf(argsBuf, bufSize, "%s", after);
++        return changed;
+     }
++    return 0;
+ }
+ 
+ 
+@@ -3246,6 +3236,7 @@ static int guiSettingsShowLaunch(void)
+     diaSetEnum(ui, CFG_NEUTRINO_GSMCOMP, neutrinoGsmCompDefStrs);
+     diaSetInt(ui, CFG_NEUTRINO_GSMCOMP, gNeutrinoGsmCompDefault);
+     diaSetEnabled(ui, CFG_NEUTRINO_GSMCOMP, gNeutrinoVideoDefault != 0);
++    diaSetInt(ui, CFG_NEUTRINO_ELF_ARG, gNeutrinoElfArg);
+     guiSettingsBeginDialog(ui);
+ 
+ reshow_launch:
+@@ -3260,7 +3251,8 @@ reshow_launch:
+         goto reshow_launch;
+     }
+     if (result == CFG_NEUTRINO_ARGS) {
+-        guiShowNeutrinoArgsConfig(gNeutrinoArgs, sizeof(gNeutrinoArgs));
++        if (guiShowNeutrinoArgsConfig(gNeutrinoArgs, sizeof(gNeutrinoArgs)))
++            guiSettingsSavePending = 1;
+         goto reshow_launch;
+     }
+ 
+@@ -3272,6 +3264,7 @@ reshow_launch:
+         snprintf(gNeutrinoPath, sizeof(gNeutrinoPath), "%s", neutrinoPathEdit);
+         diaGetInt(ui, CFG_NEUTRINO_VIDEO, &gNeutrinoVideoDefault);
+         diaGetInt(ui, CFG_NEUTRINO_GSMCOMP, &gNeutrinoGsmCompDefault);
++        diaGetInt(ui, CFG_NEUTRINO_ELF_ARG, &gNeutrinoElfArg);
+         applyConfig(-1, -1, 0);
+         menuReinitMainMenu();
+     }
+@@ -3756,9 +3749,9 @@ static int emberGameSettingGet(config_set_t *configSet, const char *key, int cou
+ }
+ 
+ // PS1 Triangle -> Ember Game Settings. Ember accepts timing, dither, shading and controller in
+-// a game's settings.txt; display is deliberately global-only. In this editor Default means inherit
+-// the global Ember setting. Confirming Default stores 0 in the game's CFG so cueApplySettings removes
+-// that per-game key at launch instead of preserving a stale hand-written override.
++// a game's settings.txt; display is deliberately global-only. An untouched Default preserves any
++// hand-written game value. Changing a managed value back to Default stores 0 in the game's CFG and
++// removes that per-game key immediately; launch reapplies managed values if the file changes.
+ void guiShowEmberGameSettings(void)
+ {
+     const char *timingStrs[] = {_l(_STR_DEFAULT), _l(_STR_AUTO), "NTSC", "PAL", NULL};
+@@ -3798,16 +3791,21 @@ void guiShowEmberGameSettings(void)
+     diaGetInt(diaEmberGameConfig, CFG_EMBER_SHADING, &newShading);
+     diaGetInt(diaEmberGameConfig, CFG_EMBER_CONTROLLER, &newController);
+ 
+-    // An absent CFG key is displayed as Default, but OK makes that inheritance explicit. This is
+-    // intentional: Ember defines a missing game key as "use the global settings.txt value".
+-    if (newTiming == timing && newDither == dither && newShading == shading && newController == controller)
+-        return;
++    // An absent CFG key is displayed as Default and stays unmanaged until a row changes. Once a row
++    // changes, store all four choices so a later return to Default can remove its per-game override.
++    if (newTiming != timing || newDither != dither || newShading != shading || newController != controller) {
++        configSetInt(configSet, CONFIG_ITEM_EMBER_TIMING, newTiming);
++        configSetInt(configSet, CONFIG_ITEM_EMBER_DITHER, newDither);
++        configSetInt(configSet, CONFIG_ITEM_EMBER_SHADING, newShading);
++        configSetInt(configSet, CONFIG_ITEM_EMBER_CONTROLLER, newController);
++        if (!menuSaveConfig()) // the normal CFG error message includes its path and errno
++            return;
++    }
+ 
+-    configSetInt(configSet, CONFIG_ITEM_EMBER_TIMING, newTiming);
+-    configSetInt(configSet, CONFIG_ITEM_EMBER_DITHER, newDither);
+-    configSetInt(configSet, CONFIG_ITEM_EMBER_SHADING, newShading);
+-    configSetInt(configSet, CONFIG_ITEM_EMBER_CONTROLLER, newController);
+-    menuSaveConfig(); // a failed write raises the usual "error saving settings" message
++    if (menuSaveEmberGameSettings(configSet))
++        guiMsgBox(_l(_STR_GAME_SETTINGS_SAVED), 0, NULL);
++    else
++        guiMsgBox(_l(_STR_ERROR_SAVING_SETTINGS), 0, NULL);
+ }
+ 
+ int guiShowKeyboard(char *value, int maxLength)
+diff --git a/src/hddsupport.c b/src/hddsupport.c
+index 71093c4..7ce8afb 100644
+--- a/src/hddsupport.c
++++ b/src/hddsupport.c
+@@ -2110,6 +2110,8 @@ static int hddTryNeutrinoLaunch(hdl_game_info_t *game, config_set_t *configSet)
+     // the autolaunch teardown -- aborting here instead would leak gAutoLaunchGame/configSet.
+     if (sysNeutrinoPreflight("apa", neutrinoPath, 0, NULL, -1) < 0)
+         return 0;
++    if (sysNeutrinoArgsPreflight("apa", apaPart, game->startup, compatMode, gPS2Logo, neutrinoPath, neutrinoExtraArgs, neutrinoVideo, neutrinoGsmComp, 0, -1, NULL) < 0)
++        return gAutoLaunchGame == NULL ? 1 : 0; // autolaunch needs the native path to own its teardown
+ 
+     // Honesty toast: the OPL core honors $VMC_N on HDD (mcemu over pfs0:VMC/), but Neutrino has no
+     // APA/pfs backing store to open the .bin from post-reset -- its APA support is -bsd=ata
+@@ -2708,6 +2710,35 @@ static char *hddGetPrefix(item_list_t *itemList)
+     return gHDDPrefix;
+ }
+ 
++static int hddSaveCueSettings(item_list_t *itemList, int id, const char *name, config_set_t *configSet)
++{
++    char mountSrc[APA_IDMAX + 6];
++    int idx, result = 0;
++    (void)itemList;
++    (void)id;
++
++    if (name == NULL || !cueNameLaunchable(name))
++        return 0;
++
++    // The scan and this write share pfs1:. Leave the live pfs0: data-home mount alone.
++    ioBlockOps(1);
++    idx = hddFindVcdByName(name);
++    if (idx < 0) {
++        hddBuildVcdGameList();
++        idx = hddFindVcdByName(name);
++    }
++    if (idx >= 0 && cueIsCueEntry(&hddVcdGames[idx])) {
++        snprintf(mountSrc, sizeof(mountSrc), "hdd0:%s", hddVcdParts[idx]);
++        fileXioUmount("pfs1:");
++        if (fileXioMount("pfs1:", mountSrc, FIO_MT_RDWR | HDD_PFS_MT_WRITETHROUGH) == 0) {
++            result = cueSaveGameSettings("pfs1:/", name, configSet);
++            fileXioUmount("pfs1:");
++        }
++    }
++    ioBlockOps(0);
++    return result;
++}
++
+ int hddGetArtArchivePath(item_list_t *itemList, char *out, int outSize)
+ {
+     (void)itemList;
+@@ -2723,4 +2754,4 @@ static item_list_t hddGameList = {
+     HDD_MODE, 0, 0, MODE_FLAG_COMPAT_DMA, MENU_MIN_INACTIVE_FRAMES, HDD_MODE_UPDATE_DELAY, NULL, NULL, &hddGetTextId, &hddGetPrefix, &hddInit, &hddNeedsUpdate, &hddUpdateGameList,
+     &hddGetGameCount, &hddGetGame, &hddGetGameName, &hddGetGameNameLength, &hddGetGameStartup, NULL, &hddRenameGame,
+     &hddLaunchGame, &hddGetConfig, &hddGetImage, &hddCleanUp, &hddShutdown, &hddCheckVMC, &hddGetIconId, &hddLaunchVcd, 0, &hddGetArtArchivePath,
+-    &hddLaunchVcd, &hddGetItemView, &hddGetSourceId};
++    &hddLaunchVcd, &hddGetItemView, &hddGetSourceId, &hddSaveCueSettings};
+diff --git a/src/menusys.c b/src/menusys.c
+index aac159b..898c203 100644
+--- a/src/menusys.c
++++ b/src/menusys.c
+@@ -612,6 +612,27 @@ int menuSaveConfig()
+     return menuSaveResult;
+ }
+ 
++int menuSaveEmberGameSettings(config_set_t *configSet)
++{
++    item_list_t *support;
++    int id;
++    char *name;
++
++    if (selected_item == NULL || selected_item->item == NULL ||
++        selected_item->item->current == NULL || configSet == NULL)
++        return 0;
++    support = selected_item->item->userdata;
++    id = selected_item->item->current->item.id;
++    if (support == NULL || support->itemGetName == NULL || support->itemSaveCueSettings == NULL)
++        return 0;
++    name = support->itemGetName(support, id);
++    if (name == NULL || name[0] == '\0')
++        return 0;
++
++    guiRenderTextScreen(_l(_STR_SAVING_SETTINGS));
++    return support->itemSaveCueSettings(support, id, name, configSet);
++}
++
+ int menuSaveSettings(void)
+ {
+     int result;
+@@ -2285,6 +2306,12 @@ void menuRenderAppMenu()
+     // app title
+     fntRenderString(RIPPS2_UI_FONT, 320, 20, ALIGN_CENTER, 0, 0, selected_item->item->current->item.text, gTheme->selTextColor);
+ 
++    // A PS1 row opens this smaller menu, not the PS2 VMC editor. Say why the missing PS2 control
++    // is intentional without claiming that Ember and POPSTARTER store their cards identically.
++    if (appMenu->item.id == APP_GLOBAL_PS_SETTINGS)
++        fntRenderStringFit(gTheme->fonts[0], 320, 43, ALIGN_CENTER, 600,
++                           _l(_STR_PS1_SAVE_GUIDANCE), gTheme->textColor, 0);
++
+     for (it = appMenu; it; it = it->next, cp++) {
+         // render, advance
+         fntRenderString(RIPPS2_UI_FONT, 320, y, ALIGN_CENTER, 0, 0, submenuItemGetText(&it->item), (cp == sitem) ? gTheme->selTextColor : gTheme->textColor);
+diff --git a/src/mmcesupport.c b/src/mmcesupport.c
+index f7edc8c..78d6b6b 100644
+--- a/src/mmcesupport.c
++++ b/src/mmcesupport.c
+@@ -1203,6 +1203,10 @@ void mmceLaunchGame(item_list_t *itemList, int id, config_set_t *configSet)
+             fileXioClose(vmc_fds[0]);
+         if (vmc_fds[1] >= 0)
+             fileXioClose(vmc_fds[1]);
++        if (sysNeutrinoPreflight("mmce", neutrinoPath, 0, NULL, -1) < 0) // D6 pre-teardown validation
++            return;
++        if (sysNeutrinoArgsPreflight("mmce", mmcePartname, mmceStartup, compatmask, EnablePS2Logo, neutrinoPath, neutrinoExtraArgs, neutrinoVideo, neutrinoGsmComp, 0, -1, &neutrinoVmc) < 0)
++            return;
+         // GameID for the NEUTRINO core (issue #68): the native OPL-core launch deliberately does
+         // NOT push a launcher GameID (see the issue-#50 note below -- in OPL core the in-game
+         // card is OPL's mcemu, and a mid-launch re-switch froze early-MC-probing games). That
+@@ -1224,8 +1228,6 @@ void mmceLaunchGame(item_list_t *itemList, int id, config_set_t *configSet)
+         // Neutrino keep-IOP handoff (sysLoadELFKeepIOP): Neutrino opens the mmce-hosted game through
+         // OUR mmceman mount and its config/modules from the neutrino.elf device (-cwd) before its own
+         // IOP reset -- keep BOTH mounted. An MC-hosted neutrino needs no exception (-1 second slot).
+-        if (sysNeutrinoPreflight("mmce", neutrinoPath, 0, NULL, -1) < 0) // D6 pre-teardown validation
+-            return;
+         int neutrinoDevMode = oplPath2Mode(neutrinoPath);
+         deinitEx(sbNeutrinoDeinitException(neutrinoPath), itemList->mode, neutrinoDevMode);
+         sysLaunchNeutrino("mmce", mmcePartname, mmceStartup, compatmask, EnablePS2Logo, neutrinoPath, neutrinoExtraArgs, neutrinoVideo, neutrinoGsmComp, 0 /* #11: mmce is fileid, no fs layer */, -1, &neutrinoVmc);
+@@ -1365,8 +1367,20 @@ static char *mmceGetPrefix(item_list_t *itemList)
+     return mmcePrefix;
+ }
+ 
++static int mmceSaveCueSettings(item_list_t *itemList, int id, const char *name, config_set_t *configSet)
++{
++    char ps1Root[64];
++    (void)itemList;
++    (void)id;
++
++    if (!cacheAbortMmceImageLoadsTimed(MMCE_ART_ABORT_WAIT_TICKS))
++        return 0;
++    mmceGetDeviceRoot(ps1Root, sizeof(ps1Root));
++    return cueSaveGameSettings(ps1Root, name, configSet);
++}
++
+ static item_list_t mmceGameList = {
+     MMCE_MODE, 2, 0, 0, MENU_MIN_INACTIVE_FRAMES, MMCE_MODE_UPDATE_DELAY, NULL, NULL, &mmceGetTextId, &mmceGetPrefix, &mmceInit, &mmceNeedsUpdate,
+     &mmceUpdateGameList, &mmceGetGameCount, &mmceGetGame, &mmceGetGameName, &mmceGetGameNameLength, &mmceGetGameStartup, &mmceDeleteGame, &mmceRenameGame,
+     &mmceLaunchGame, &mmceGetConfig, &mmceGetImage, &mmceCleanUp, &mmceShutdown, &mmceCheckVMC, &mmceGetIconId, &mmceLaunchVcd,
+-    /* viewOverride */ 0, /* itemGetArtArchivePath */ NULL, &mmceLaunchCue, &mmceGetItemView, &mmceGetSourceId};
++    /* viewOverride */ 0, /* itemGetArtArchivePath */ NULL, &mmceLaunchCue, &mmceGetItemView, &mmceGetSourceId, &mmceSaveCueSettings};
+diff --git a/src/supportbase.c b/src/supportbase.c
+index 4e14542..dc7aea3 100644
+--- a/src/supportbase.c
++++ b/src/supportbase.c
+@@ -1710,21 +1710,23 @@ int sbNeutrinoDeinitException(const char *neutrinoPath)
+ 
+ // ---- Neutrino launch-args parse / assemble (the "Launch Args" picker) ----------------
+ // naAppend joins a token onto out with a single separating space; naAppendKV joins "<key><val>".
+-static void naAppend(char *out, int outSize, const char *tok)
++static int naAppend(char *out, int outSize, const char *tok)
+ {
+-    int len = (int)strlen(out);
+-    if (len >= outSize - 1) // already full (or malformed) -- nothing more fits
+-        return;
+-    if (len > 0)
++    size_t len = strlen(out), tokenLen = strlen(tok);
++    int separator = len > 0;
++    if (outSize <= 0 || len + separator + tokenLen >= (size_t)outSize)
++        return 0;
++    if (separator)
+         out[len++] = ' ';
+-    snprintf(out + len, outSize - len, "%s", tok);
++    memcpy(out + len, tok, tokenLen + 1);
++    return 1;
+ }
+ 
+-static void naAppendKV(char *out, int outSize, const char *key, const char *val)
++static int naAppendKV(char *out, int outSize, const char *key, const char *val)
+ {
+-    char tmp[96];
+-    snprintf(tmp, sizeof(tmp), "%s%s", key, val);
+-    naAppend(out, outSize, tmp);
++    char tmp[256];
++    int len = snprintf(tmp, sizeof(tmp), "%s%s", key, val);
++    return len >= 0 && len < (int)sizeof(tmp) && naAppend(out, outSize, tmp);
+ }
+ 
+ int sbFileExists(const char *path)
+@@ -2244,31 +2246,33 @@ void neutrinoArgsParse(const char *in, neutrino_args_t *na)
+     }
+ }
+ 
+-void neutrinoArgsAssemble(const neutrino_args_t *na, char *out, int outSize)
++int neutrinoArgsAssemble(const neutrino_args_t *na, char *out, int outSize)
+ {
+     if (out == NULL || outSize <= 0)
+-        return;
++        return 0;
+     out[0] = '\0';
++    int ok = 1;
+     if (na->qb)
+-        naAppend(out, outSize, "-qb");
++        ok &= naAppend(out, outSize, "-qb");
+     if (na->dbc)
+-        naAppend(out, outSize, "-dbc");
++        ok &= naAppend(out, outSize, "-dbc");
+     if (na->logo)
+-        naAppend(out, outSize, "-logo");
++        ok &= naAppend(out, outSize, "-logo");
+     if (na->cwd[0])
+-        naAppendKV(out, outSize, "-cwd=", na->cwd);
++        ok &= naAppendKV(out, outSize, "-cwd=", na->cwd);
+     if (na->cfg[0])
+-        naAppendKV(out, outSize, "-cfg=", na->cfg);
++        ok &= naAppendKV(out, outSize, "-cfg=", na->cfg);
+     if (na->elf[0])
+-        naAppendKV(out, outSize, "-elf=", na->elf);
++        ok &= naAppendKV(out, outSize, "-elf=", na->elf);
+     if (na->ata0[0])
+-        naAppendKV(out, outSize, "-ata0=", na->ata0);
++        ok &= naAppendKV(out, outSize, "-ata0=", na->ata0);
+     if (na->ata0id[0])
+-        naAppendKV(out, outSize, "-ata0id=", na->ata0id);
++        ok &= naAppendKV(out, outSize, "-ata0id=", na->ata0id);
+     if (na->ata1[0])
+-        naAppendKV(out, outSize, "-ata1=", na->ata1);
++        ok &= naAppendKV(out, outSize, "-ata1=", na->ata1);
+     if (na->extra[0]) // extra (may hold "--b ...") goes LAST so the break + ELF args stay at the tail
+-        naAppend(out, outSize, na->extra);
++        ok &= naAppend(out, outSize, na->extra);
++    return ok;
+ }
+ 
+ // Resolve the per-game VMC slots ($VMC_0/$VMC_1) into discrete Neutrino "-mcN=<prefix>VMC/<name>.bin"
+diff --git a/src/system.c b/src/system.c
+index 7a56c28..f2096f1 100644
+--- a/src/system.c
++++ b/src/system.c
+@@ -1281,11 +1281,12 @@ static int convertCompatmaskToModes(int compatmask)
+     return atoi(result);
+ }
+ 
+-// Split a whitespace-separated argument string into individual argv entries appended
+-// after the auto-built ones. `buf` receives a bounded mutable copy of `src`, and the
+-// tokens point into it, so `buf` must stay live until the argv is consumed. Returns
+-// the updated argc; never exceeds argvMax.
+-static int appendArgTokens(char **argv, int argc, int argvMax, char *buf, int bufSize, const char *src)
++// Append either Neutrino options (before --b) or ELF arguments (after --b) from one
++// scope. Each pass copies src because strtok edits buf; both buffers stay live until
++// ExecPS2 consumes argv. A global --b must not turn per-game Neutrino options into
++// ELF arguments, so the two scopes are assembled before their tails.
++static int appendArgTokens(char **argv, int argc, int argvMax, char *buf, int bufSize,
++                           const char *src, int elfArgs, int *hasBreak)
+ {
+     if (src == NULL || src[0] == '\0')
+         return argc;
+@@ -1293,11 +1294,18 @@ static int appendArgTokens(char **argv, int argc, int argvMax, char *buf, int bu
+     snprintf(buf, bufSize, "%s", src);
+ 
+     char *tok = strtok(buf, " \t");
++    int afterBreak = 0;
+     while (tok != NULL && argc < argvMax) {
++        if (!afterBreak && strcmp(tok, "--b") == 0) {
++            afterBreak = 1;
++            *hasBreak = 1;
++            tok = strtok(NULL, " \t");
++            continue;
++        }
+         // A leading '$' marks a user-disabled flag (NHDDL convention): keep it in the
+         // args field for easy re-enabling, but don't forward it to Neutrino. Neutrino
+         // flags are all '-'-prefixed, so '$' never collides with a real argument.
+-        if (tok[0] != '$')
++        if (afterBreak == elfArgs && tok[0] != '$')
+             argv[argc++] = tok;
+         tok = strtok(NULL, " \t");
+     }
+@@ -1338,24 +1346,26 @@ static int neutrinoArgHasActiveFlag(const char *args, const char *flag)
+         return 0;
+     size_t flen = strlen(flag);
+     int keyPrefix = (flen > 0 && flag[flen - 1] == '=');
+-    const char *p = args;
+-    while ((p = strstr(p, flag)) != NULL) {
+-        int disabled = (p > args && *(p - 1) == '$');
+-        const char *tokStart = disabled ? p - 1 : p;
+-        int startOk = (tokStart == args) || (tokStart[-1] == ' ') || (tokStart[-1] == '\t');
+-        char after = p[flen];
+-        int endOk = keyPrefix || after == '\0' || after == ' ' || after == '\t';
+-        if (startOk && endOk && !disabled)
+-            return 1; // a whole-token, non-$-disabled occurrence -> the user is forwarding this flag
+-        p += flen;
++    for (const char *p = args; *p != '\0';) {
++        while (*p == ' ' || *p == '\t')
++            p++;
++        const char *end = p;
++        while (*end != '\0' && *end != ' ' && *end != '\t')
++            end++;
++        size_t len = end - p;
++        if (len == 3 && !strncmp(p, "--b", 3))
++            break;
++        if (len >= flen && !strncmp(p, flag, flen) && (keyPrefix || len == flen))
++            return 1;
++        p = end;
+     }
+     return 0;
+ }
+ 
+ // The -bsdfs Neutrino will actually run with, so the preflight and the argv builder agree on it.
+ // Read the user tokens the way Neutrino parses them: the global args, then the per-game args (the
+-// order appendArgTokens adds them), last one wins, a $-prefixed token is switched off, and the FIRST
+-// "--b" anywhere ends it -- everything after it, per-game args included, goes to the game. A typed
++// order appendArgTokens adds them), last one wins, a $-prefixed token is switched off, and --b
++// ends Neutrino options within each scope. Their ELF tails are appended after both scopes. A typed
+ // -bsdfs= found that way beats the per-game picker. mmce/udpfs are fileid backends with no fs layer.
+ // Returns 1 exfat / 2 hdl / 3 bd; 0 = Neutrino's own default (exfat) or a typed value it does not
+ // name.
+@@ -1374,7 +1384,7 @@ static int neutrinoEffectiveBsdfs(const char *deviceName, int neutrinoBsdfs, con
+                 end++;
+             int len = (int)(end - p);
+             if (len == 3 && !strncmp(p, "--b", 3))
+-                goto parsed;
++                break;
+             if (len > 7 && !strncmp(p, "-bsdfs=", 7)) {
+                 typed = 1;
+                 value = 0;
+@@ -1386,7 +1396,6 @@ static int neutrinoEffectiveBsdfs(const char *deviceName, int neutrinoBsdfs, con
+             p = end;
+         }
+     }
+-parsed:
+     if (!strcmp(deviceName, "mmce") || !strcmp(deviceName, "udpfs"))
+         return 0;
+     if (typed)
+@@ -1534,19 +1543,21 @@ int sysNeutrinoPreflight(const char *driver, const char *neutrinoPath, int neutr
+     return 0;
+ }
+ 
+-void sysLaunchNeutrino(const char *driver, const char *path, const char *startup, int compatmask, int EnablePS2Logo, const char *neutrinoPath, const char *extraArgs, int neutrinoVideo, int neutrinoGsmComp, int neutrinoBsdfs, int bdDevNr, const neutrino_vmc_args_t *vmcArgs)
++static int sysRunNeutrinoLaunch(const char *driver, const char *path, const char *startup, int compatmask, int EnablePS2Logo, const char *neutrinoPath, const char *extraArgs, int neutrinoVideo, int neutrinoGsmComp, int neutrinoBsdfs, int bdDevNr, const neutrino_vmc_args_t *vmcArgs, int checkOnly)
+ {
+     if (neutrinoPath == NULL || driver == NULL || path == NULL) {
+         LOG("[NEUTRINO] null arg, abort\n");
+-        launchDiagRefuse(LAUNCHDIAG_REFUSE_ARGS); // blink code 1
+-        return;
++        if (!checkOnly)
++            launchDiagRefuse(LAUNCHDIAG_REFUSE_ARGS); // blink code 1
++        return -1;
+     }
+ 
+     const char *deviceName = getDeviceName(driver);
+     if (!strcmp(deviceName, "unsupported")) {
+         LOG("[NEUTRINO] unsupported device '%s', abort\n", driver);
+-        launchDiagRefuse(LAUNCHDIAG_REFUSE_ARGS); // blink code 1
+-        return;
++        if (!checkOnly)
++            launchDiagRefuse(LAUNCHDIAG_REFUSE_ARGS); // blink code 1
++        return -1;
+     }
+ 
+     // HW-confirmed (issue #56, AndrewBento, PSXMemCard Gen2): Neutrino's -logo on the mmce backend
+@@ -1576,13 +1587,13 @@ void sysLaunchNeutrino(const char *driver, const char *path, const char *startup
+     char compatModes[32] = ""; // stays empty when no compat modes are forwarded (B1)
+     char globalArgsBuf[256];   // mutable copy of gNeutrinoArgs for tokenizing (tokens point in)
+     char extraArgsBuf[256];    // mutable copy of the per-game extraArgs for tokenizing
+-    char *argv[16];            // target argv[0] + auto args + tokenized user flags (kernel-budgeted)
++    char *argv[32];            // compose beyond the kernel budget so overflow is detected, never silently truncated
+     int argc = 0;
+     // 14, NOT sizeof(argv): the kernel args area holds at most 15 strings per ExecPS2 hop (ps2sdk
+     // exit.c SetArg, SETARG_MAX_ARGS 15 -- and ExecPS2 forwards the UNCLAMPED count, so overflowing
+     // makes the kernel read string bytes as argv pointers). Hop 1 prepends the elfldr child's load
+     // path, spending one slot, so the target argv must stay <= 14 entries.
+-    const int argvMax = 14;
++    const int argvMax = sizeof(argv) / sizeof(argv[0]);
+ 
+     // Target argv[0] = neutrino.elf's own path (NHDDL convention). sysLoadELFKeepIOP forwards
+     // argv verbatim -- argv[0] included -- so this must be supplied explicitly here (POPSTARTER
+@@ -1663,8 +1674,8 @@ void sysLaunchNeutrino(const char *driver, const char *path, const char *startup
+            until hardware says otherwise. A user-typed -qb in the global or per-game args wins -- do
+            not emit a second copy.
+ 
+-           Emitted ABOVE coreArgc so the pool-fit drop loop can never shed it: a dropped -qb would
+-           silently reinstate the reset and reproduce the black screen with no way to tell why. */
++           Composed before the budget check so an overfull launch is refused rather than silently
++           losing -qb and reproducing the black screen. */
+         if ((!strcmp(deviceName, "usb") || !strcmp(deviceName, "ilink") ||
+              !strcmp(deviceName, "udpfs") || !strcmp(deviceName, "udpfsbd") || !strcmp(deviceName, "udpbd")) &&
+             argc < argvMax &&
+@@ -1672,11 +1683,6 @@ void sysLaunchNeutrino(const char *driver, const char *path, const char *startup
+             argv[argc++] = "-qb";
+     }
+ 
+-    // Everything up to and including -dvd/-qb is the boot-critical core: the pool-fit drop loop below
+-    // must never shed these. A fixed floor of 3 silently stopped covering -dvd once the optional
+-    // -bsdfs slots in front of it (argv[3]) -- record the real core count instead.
+-    const int coreArgc = argc;
+-
+     // Only forward -gc when at least one compat mode is set: Neutrino treats
+     // -gc=0 as an explicit mode (IOP fast reads), NOT a no-op, so passing it for
+     // a game with no OPL modes selected would force unwanted behavior (B1).
+@@ -1719,7 +1725,7 @@ void sysLaunchNeutrino(const char *driver, const char *path, const char *startup
+     }
+ 
+     // Parity Delta-10, enabled by default via settings_riptopl.cfg "neutrino_elf_arg"=1
+-    // (deliberately no UI row): hand neutrino the boot ELF path directly so its per-GameID
++    // (exposed in Game Launching): hand neutrino the boot ELF path directly so its per-GameID
+     // config/<GameID>.toml compat lookup can resolve pre-reset. Shape-guarded to AAAA_NNN.NN
+     // startups and skipped when the user already forwards an -elf= (structured field or free
+     // text) -- neutrino must see exactly one.
+@@ -1766,35 +1772,37 @@ void sysLaunchNeutrino(const char *driver, const char *path, const char *startup
+ 
+     // Append user-supplied Neutrino flags: global defaults first, then the per-game
+     // string (so a game can extend the global set). Both are tokenized on whitespace.
+-    argc = appendArgTokens(argv, argc, argvMax, globalArgsBuf, sizeof(globalArgsBuf), gNeutrinoArgs);
+-    argc = appendArgTokens(argv, argc, argvMax, extraArgsBuf, sizeof(extraArgsBuf), extraArgs);
+-    if (gLaunchDiag)
+-        launchDiagMark(9); // argv composed -- the pool-fit check BELOW can still refuse (blink code 2)
++    int globalBreak = 0, gameBreak = 0;
++    argc = appendArgTokens(argv, argc, argvMax, globalArgsBuf, sizeof(globalArgsBuf), gNeutrinoArgs, 0, &globalBreak);
++    argc = appendArgTokens(argv, argc, argvMax, extraArgsBuf, sizeof(extraArgsBuf), extraArgs, 0, &gameBreak);
++    if ((globalBreak || gameBreak) && argc < argvMax)
++        argv[argc++] = "--b";
++    argc = appendArgTokens(argv, argc, argvMax, globalArgsBuf, sizeof(globalArgsBuf), gNeutrinoArgs, 1, &globalBreak);
++    argc = appendArgTokens(argv, argc, argvMax, extraArgsBuf, sizeof(extraArgsBuf), extraArgs, 1, &gameBreak);
++    if (gLaunchDiag && !checkOnly)
++        launchDiagMark(9); // argv composed -- the budget check below can still refuse (blink code 2)
+ 
+     // ExecPS2 argv BYTE budget (verified vs ps2sdk exit.c SetArg + the crt0 args struct): each hop
+     // carries its strings in ONE 256-byte pool, every NUL included. Hop 1 packs the child's load
+     // path PLUS this argv -- neutrinoPath is counted TWICE (loadpath and target argv[0]). SetArg's
+-    // copy is UNbounded, so exceeding the pool corrupts rather than truncates. Fit by dropping tail
+-    // args (user extras sit last; each drop LOGged); the boot-critical core (argv[0]/-bsd/
+-    // [-bsdfs]/-dvd, counted as coreArgc above) must survive or nothing can boot anyway -- past
+-    // that, refuse and let the LOG name the overage.
++    // copy is UNbounded, so exceeding the pool corrupts rather than truncates. Refuse the whole
++    // launch before teardown when preflighting; never silently discard a requested option.
+     {
+         int pool = (int)strlen(neutrinoPath) + 1; // hop-1 child argv[0] = the load path
+         int i;
+         for (i = 0; i < argc; i++)
+             pool += (int)strlen(argv[i]) + 1;
+-        while (pool > 256 && argc > coreArgc) {
+-            argc--;
+-            pool -= (int)strlen(argv[argc]) + 1;
+-            LOG("[NEUTRINO] argv pool over 256 bytes -- dropping tail arg: %s\n", argv[argc]);
+-        }
+-        if (pool > 256) {
+-            LOG("[NEUTRINO] argv pool %d bytes even at the core-args floor (256 max) -- refusing handoff\n", pool);
+-            launchDiagRefuse(LAUNCHDIAG_REFUSE_CORE_ARGV); // blink code 2: nothing repaints after the teardown
+-            return;
++        if (argc > 14 || pool > 256) {
++            LOG("[NEUTRINO] argv exceeds launch budget: %d entries (14 max), %d bytes (256 max)\n", argc, pool);
++            if (!checkOnly)
++                launchDiagRefuse(LAUNCHDIAG_REFUSE_CORE_ARGV); // blink code 2 if the preflight was bypassed
++            return -1;
+         }
+     }
+ 
++    if (checkOnly)
++        return 0;
++
+     // Log the FULL argv (not just bsd/dvd/compat) so the VMC -mc args are verifiable on hardware (#47).
+     LOG("[NEUTRINO] elf=%s argc=%d\n", neutrinoPath, argc);
+     {
+@@ -1810,6 +1818,21 @@ void sysLaunchNeutrino(const char *driver, const char *path, const char *startup
+     // the game device and the neutrino.elf device mounted (deinitEx).
+     if (sysLoadELFKeepIOP(neutrinoPath, "", argc, argv) < 0)
+         LOG("[NEUTRINO] keep-IOP handoff failed for %s\n", neutrinoPath);
++    return 0;
++}
++
++int sysNeutrinoArgsPreflight(const char *driver, const char *path, const char *startup, int compatmask, int EnablePS2Logo, const char *neutrinoPath, const char *extraArgs, int neutrinoVideo, int neutrinoGsmComp, int neutrinoBsdfs, int bdDevNr, const neutrino_vmc_args_t *vmcArgs)
++{
++    if (sysRunNeutrinoLaunch(driver, path, startup, compatmask, EnablePS2Logo, neutrinoPath, extraArgs, neutrinoVideo, neutrinoGsmComp, neutrinoBsdfs, bdDevNr, vmcArgs, 1) < 0) {
++        guiWarning(_l(_STR_NEUTRINO_LAUNCH_ARGS_OVERFLOW), 6);
++        return -1;
++    }
++    return 0;
++}
++
++void sysLaunchNeutrino(const char *driver, const char *path, const char *startup, int compatmask, int EnablePS2Logo, const char *neutrinoPath, const char *extraArgs, int neutrinoVideo, int neutrinoGsmComp, int neutrinoBsdfs, int bdDevNr, const neutrino_vmc_args_t *vmcArgs)
++{
++    sysRunNeutrinoLaunch(driver, path, startup, compatmask, EnablePS2Logo, neutrinoPath, extraArgs, neutrinoVideo, neutrinoGsmComp, neutrinoBsdfs, bdDevNr, vmcArgs, 0);
+ }
+ 
+ // Hand off to an external POPSTARTER.ELF to boot a PS1 VCD. The caller resolves the per-device
+diff --git a/src/themes.c b/src/themes.c
+index 40093a9..e6df3b5 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -2736,6 +2736,11 @@ static void drawItemsList(struct menu_list *menu, struct submenu_list *item, con
+             if (ps->item.isFolder) {
+                 snprintf(folderBuf, sizeof(folderBuf), "%s/", dispText);
+                 dispText = folderBuf;
++            } else if (libListRowView(list, ps->item.id) == LIB_VIEW_PS1) {
++                // Keep the core visible when no cover or decorator art is available, including
++                // Mixed and Favourites lists. This changes presentation, never the stored name.
++                snprintf(folderBuf, sizeof(folderBuf), "[PS1] %s", dispText);
++                dispText = folderBuf;
+             }
+ 
+             if (itemsList->decoratorImage &&
+@@ -2826,11 +2831,14 @@ static void drawItemText(struct menu_list *menu, struct submenu_list *item, conf
+                 // lands, the filename's own id prefix is shown, then the title as before.
+                 if (libListRowView(support, item->item.id) == LIB_VIEW_PS1) {
+                     char vcdId[VCD_ID_MAX];
++                    char labelledText[256];
++                    const char *text = vcdDisplayNameForRow(support, item->item.id, startup);
+                     if (vcdDisplayIdCached(startup, vcdId, sizeof(vcdId)) ||
+-                        vcdExtractGameId(startup, vcdId, sizeof(vcdId))) {
+-                        thmDrawElemText(elem, SIZING_NONE, vcdId, 1);
+-                        return;
+-                    }
++                        vcdExtractGameId(startup, vcdId, sizeof(vcdId)))
++                        text = vcdId;
++                    snprintf(labelledText, sizeof(labelledText), "[PS1] %s", text);
++                    thmDrawElemText(elem, SIZING_NONE, labelledText, 1);
++                    return;
+                 }
+                 thmDrawElemText(elem, SIZING_NONE, vcdDisplayNameForRow(support, item->item.id, startup), 1);
+             }
+diff --git a/src/udpfssupport.c b/src/udpfssupport.c
+index ed64780..52f254c 100644
+--- a/src/udpfssupport.c
++++ b/src/udpfssupport.c
+@@ -612,6 +612,8 @@ static void udpfsLaunchGame(item_list_t *itemList, int id, config_set_t *configS
+     // the user back into the menu sitting on the per-game card.
+     if (sysNeutrinoPreflight("udpfs", neutrinoPath, 0, NULL, -1) < 0)
+         return;
++    if (sysNeutrinoArgsPreflight("udpfs", partname, game->startup, compatmask, EnablePS2Logo, neutrinoPath, neutrinoExtraArgs, neutrinoVideo, neutrinoGsmComp, 0, -1, &neutrinoVmc) < 0)
++        return;
+ 
+     // MMCE cross-device game-id (#261): push the disc id to a present MMCE card before teardown frees
+     // `game`. Neutrino path forwarded so a Neutrino launch protects the MMCE hand-off timing.
+@@ -704,9 +706,16 @@ static char *udpfsGetPrefix(item_list_t *itemList)
+     return udpfsPrefix;
+ }
+ 
++static int udpfsSaveCueSettings(item_list_t *itemList, int id, const char *name, config_set_t *configSet)
++{
++    (void)itemList;
++    (void)id;
++    return cueSaveGameSettings(udpfsPrefix, name, configSet);
++}
++
+ static item_list_t udpfsGameList = {
+     UDPFS_MODE, 1, 0, 0, MENU_MIN_INACTIVE_FRAMES, UDPFS_MODE_UPDATE_DELAY, NULL, NULL, &udpfsGetTextId, &udpfsGetPrefix, &udpfsInit, &udpfsNeedsUpdate,
+     &udpfsUpdateGameList, &udpfsGetGameCount, &udpfsGetGame, &udpfsGetGameName, &udpfsGetGameNameLength, &udpfsGetGameStartup, &udpfsDeleteGame, &udpfsRenameGame,
+     &udpfsLaunchGame, &udpfsGetConfig, &udpfsGetImage, &udpfsCleanUp, &udpfsShutdown, &udpfsCheckVMC, &udpfsGetIconId,
+     /* itemLaunchVcd */ NULL, /* viewOverride */ 0, /* itemGetArtArchivePath */ NULL, &udpfsLaunchCue,
+-    &udpfsGetItemView, &udpfsGetSourceId};
++    &udpfsGetItemView, &udpfsGetSourceId, &udpfsSaveCueSettings};
