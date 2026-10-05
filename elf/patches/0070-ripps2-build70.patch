@@ -418,7 +418,7 @@ index cc43fde..4ce63b5 100644
          launchDiagMark(6); // io + art drain done -- the per-module teardown below runs next
  
 diff --git a/src/ripps2bg.c b/src/ripps2bg.c
-index 17d7d36..1711c77 100644
+index 17d7d36..0588a3e 100644
 --- a/src/ripps2bg.c
 +++ b/src/ripps2bg.c
 @@ -12,6 +12,8 @@
@@ -686,7 +686,117 @@ index 17d7d36..1711c77 100644
          prev = cur;
      }
  }
-@@ -1275,9 +1362,12 @@ void ripps2SetOrbInput(int showPaths, int boost)
+@@ -1178,12 +1265,60 @@ static void tailRibbon(float ax, float ay, float bx, float by, float wa, float w
+     rmDrawQuadGouraud(ax, ay, ca, bx, by, cb, ax - nax * wa, ay - nay * wa, za, bx - nbx * wb, by - nby * wb, zb);
+ }
+ 
++// RIPPS2 build 70: a tail's shape along its length -- widths, brightness, colours and the ripple --
++// depends only on the point's place along it and on the frame's time, never on the orb. It was worked
++// out per segment per orb (four powf and two sinf each: about 5,500 a frame for the 28-orb shapes, the
++// slowest thing on the page). Now once a frame for each tail length in use, and shared by every orb.
++// tailSub: curve points between two samples, 3 (smoothest) or 2 for the shapes with many orbs.
++static int tailSub = TAIL_SUB;
++static float tailFrameT = 0.0f; // set once a frame by ripps2DrawOrbs
++
++typedef struct
++{
++    int m;
++    float t;
++    float g[TAIL_PTS], c[TAIL_PTS];   // glow and core width factors (times the orb's width)
++    float ga[TAIL_PTS], ca[TAIL_PTS]; // glow and core alpha (times glowUp and the orb's visibility)
++    unsigned char gr[TAIL_PTS], gg[TAIL_PTS], cr[TAIL_PTS], cg[TAIL_PTS];
++} tail_profile_t;
++
++static tail_profile_t tailProf[2];
++
++static const tail_profile_t *tailProfile(int m, float t)
++{
++    int i = tailProf[0].m == m && tailProf[0].t == t ? 0 : tailProf[1].m == m && tailProf[1].t == t ? 1 : -1, k;
++    static int next = 0;
++    if (i >= 0)
++        return &tailProf[i];
++    tail_profile_t *p = &tailProf[next];
++    next ^= 1;
++    p->m = m;
++    p->t = t;
++    for (k = 0; k < m; k++) {
++        float f = 1.0f - (float)k / (m - 1); // 1 at the orb, 0 at the end
++        float rip = 1.0f + 0.12f * sinf(t * 9.0f - k * 0.55f);
++        // it grows out of the orb (whose own glow covers the join) instead of starting at full width
++        float in = fminf(1.0f, (1.0f - f) / 0.14f);
++        in = in * in * (3.0f - 2.0f * in);
++        rip *= 0.25f + 0.75f * in;
++        p->g[k] = 2.1f * powf(f, 0.7f) * rip;
++        p->c[k] = 0.55f * powf(f, 1.2f) * rip;
++        p->ga[k] = 0x26 * f;
++        p->ca[k] = 0x58 * f * f;
++        p->gr[k] = (unsigned char)lerpf(0x70, 0x50, f); // the glow: blue, shading toward violet at the far end
++        p->gg[k] = (unsigned char)lerpf(0x40, 0x88, f);
++        p->cr[k] = (unsigned char)lerpf(0x60, 0xE8, f); // the core: thin, hot white at the orb, cooling to blue
++        p->cg[k] = (unsigned char)lerpf(0x90, 0xF0, f);
++    }
++    return p;
++}
++
+ static void drawTail(int i, p2 head, float r, float vis)
+ {
+     float px[TRAIL_N + 2], py[TRAIL_N + 2], cx[TAIL_PTS], cy[TAIL_PTS], nxs[TAIL_PTS], nys[TAIL_PTS];
+     int k, s, n = 0, m = 0;
+     float width = r * 0.5f * (1.0f + TRAIL_BOOST_WIDTH * trailBoost), glowUp = 1.0f + TRAIL_BOOST_GLOW * trailBoost;
+-    float t = nowSeconds();
++    float t = tailFrameT; // the frame's one time, so every orb shares the frame's profile
+ 
+     // the control points: the orb itself, then its samples, newest first
+     px[n] = head.x;
+@@ -1206,8 +1341,8 @@ static void drawTail(int i, p2 head, float r, float vis)
+     // the smooth curve through them
+     for (k = 0; k < n - 1; k++) {
+         int k0 = k > 0 ? k - 1 : 0, k3 = k + 2 < n ? k + 2 : n - 1;
+-        for (s = 0; s < TAIL_SUB && m < TAIL_PTS; s++) {
+-            float u = (float)s / TAIL_SUB;
++        for (s = 0; s < tailSub && m < TAIL_PTS; s++) {
++            float u = (float)s / tailSub;
+             cx[m] = catmull(px[k0], px[k], px[k + 1], px[k3], u);
+             cy[m++] = catmull(py[k0], py[k], py[k + 1], py[k3], u);
+         }
+@@ -1224,28 +1359,16 @@ static void drawTail(int i, p2 head, float r, float vis)
+         nys[k] = len > 0.001f ? dx / len : 1.0f;
+     }
+ 
++    const tail_profile_t *tp = tailProfile(m, t);
++    float aScale = glowUp * vis;
+     for (k = 0; k < m - 1; k++) {
+-        float f0 = 1.0f - (float)k / (m - 1), f1 = 1.0f - (float)(k + 1) / (m - 1); // 1 at the orb, 0 at the end
+-        float rip0 = 1.0f + 0.12f * sinf(t * 9.0f - k * 0.55f), rip1 = 1.0f + 0.12f * sinf(t * 9.0f - (k + 1) * 0.55f);
+-        // it grows out of the orb (whose own glow covers the join) instead of starting at full width
+-        float in0 = fminf(1.0f, (1.0f - f0) / 0.14f), in1 = fminf(1.0f, (1.0f - f1) / 0.14f);
+-        in0 = in0 * in0 * (3.0f - 2.0f * in0);
+-        in1 = in1 * in1 * (3.0f - 2.0f * in1);
+-        rip0 *= 0.25f + 0.75f * in0;
+-        rip1 *= 0.25f + 0.75f * in1;
+-        float g0 = width * 2.1f * powf(f0, 0.7f) * rip0, g1 = width * 2.1f * powf(f1, 0.7f) * rip1;
+-        int ga0 = (int)(0x26 * glowUp * f0 * vis), ga1 = (int)(0x26 * glowUp * f1 * vis);
+-        // the glow: blue, shading toward violet at the far end
+-        tailRibbon(cx[k], cy[k], cx[k + 1], cy[k + 1], g0, g1, nxs[k], nys[k], nxs[k + 1], nys[k + 1],
+-                   RGBA((int)lerpf(0x70, 0x50, f0), (int)lerpf(0x40, 0x88, f0), 0xFF, ga0),
+-                   RGBA((int)lerpf(0x70, 0x50, f1), (int)lerpf(0x40, 0x88, f1), 0xFF, ga1));
+-        // the core: thin, hot white at the orb, cooling to blue
+-        float c0 = width * 0.55f * powf(f0, 1.2f) * rip0, c1 = width * 0.55f * powf(f1, 1.2f) * rip1;
+-        int ca0 = (int)(0x58 * glowUp * f0 * f0 * vis), ca1 = (int)(0x58 * glowUp * f1 * f1 * vis);
++        int ga0 = (int)(tp->ga[k] * aScale), ga1 = (int)(tp->ga[k + 1] * aScale);
++        tailRibbon(cx[k], cy[k], cx[k + 1], cy[k + 1], width * tp->g[k], width * tp->g[k + 1], nxs[k], nys[k], nxs[k + 1], nys[k + 1],
++                   RGBA(tp->gr[k], tp->gg[k], 0xFF, ga0), RGBA(tp->gr[k + 1], tp->gg[k + 1], 0xFF, ga1));
++        int ca0 = (int)(tp->ca[k] * aScale), ca1 = (int)(tp->ca[k + 1] * aScale);
+         if (ca0 > 1)
+-            tailRibbon(cx[k], cy[k], cx[k + 1], cy[k + 1], c0, c1, nxs[k], nys[k], nxs[k + 1], nys[k + 1],
+-                       RGBA((int)lerpf(0x60, 0xE8, f0), (int)lerpf(0x90, 0xF0, f0), 0xFF, ca0),
+-                       RGBA((int)lerpf(0x60, 0xE8, f1), (int)lerpf(0x90, 0xF0, f1), 0xFF, ca1));
++            tailRibbon(cx[k], cy[k], cx[k + 1], cy[k + 1], width * tp->c[k], width * tp->c[k + 1], nxs[k], nys[k], nxs[k + 1], nys[k + 1],
++                       RGBA(tp->cr[k], tp->cg[k], 0xFF, ca0), RGBA(tp->cr[k + 1], tp->cg[k + 1], 0xFF, ca1));
+     }
+ }
+ 
+@@ -1275,9 +1398,12 @@ void ripps2SetOrbInput(int showPaths, int boost)
  void ripps2DrawOrbs(void)
  {
      int i, k;
@@ -699,7 +809,7 @@ index 17d7d36..1711c77 100644
  
      if (lorenzPathCount == 0)
          guidesInit();
-@@ -1319,6 +1409,7 @@ void ripps2DrawOrbs(void)
+@@ -1319,6 +1445,7 @@ void ripps2DrawOrbs(void)
      if (dt > 0.25f) { // the tab was just opened: fresh tails, and show the outline
          trailValid = 0;
          guideStart = t;
@@ -707,7 +817,17 @@ index 17d7d36..1711c77 100644
      }
      if (f != shownFormation) { // morph from wherever the orbs are
          prevFormation = shownFormation;
-@@ -1434,6 +1525,7 @@ void ripps2DrawOrbs(void)
+@@ -1398,6 +1525,9 @@ void ripps2DrawOrbs(void)
+         pos[i] = spin(a);
+     }
+ 
++    tailSub = count > 14 ? 2 : TAIL_SUB; // build 70: the shapes with many orbs, a little coarser and twice as fast
++    tailFrameT = t;
++
+     // tails first, so the orbs sit on their heads
+     if (!trailValid || t - trailLastSample >= (1.0f + TRAIL_BOOST_REACH * trailBoost) / TRAIL_HZ) {
+         if (!trailValid) {
+@@ -1434,6 +1564,7 @@ void ripps2DrawOrbs(void)
  static float bgMsAvg = 0.0f;
  static int fpsFrames = 0, fpsShown = 0;
  static float fpsWindow = 0.0f;
@@ -715,7 +835,7 @@ index 17d7d36..1711c77 100644
  #endif
  
  // The top and bottom of the screen darken like the mockups, so the category bar and the hints read
-@@ -1447,6 +1539,7 @@ static void drawVignette(void)
+@@ -1447,6 +1578,7 @@ static void drawVignette(void)
  
  void ripps2DrawBackground(void)
  {
@@ -723,7 +843,7 @@ index 17d7d36..1711c77 100644
  #if RIPPS2_PERF_HUD
      unsigned int t0 = cpuTicks();
  #endif
-@@ -1460,16 +1553,23 @@ void ripps2DrawBackground(void)
+@@ -1460,16 +1592,23 @@ void ripps2DrawBackground(void)
      float ms = (float)(cpuTicks() - t0) / 294912.0f;
      bgMsAvg = bgMsAvg * 0.9f + ms * 0.1f;
      float t = nowSeconds();
