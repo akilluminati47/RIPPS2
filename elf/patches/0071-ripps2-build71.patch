@@ -598,10 +598,112 @@ index 5dc6350..b9e0da3 100644
      {'T', "RetroAchievements on the console by hacan359 (yoba)"},
      {'S', "game hashes and memory telemetry, made solid on hardware by oMrRexD"},
 diff --git a/src/ripps2bg.c b/src/ripps2bg.c
-index 8b64a8c..737d88f 100644
+index 8b64a8c..c984611 100644
 --- a/src/ripps2bg.c
 +++ b/src/ripps2bg.c
-@@ -1614,10 +1614,20 @@ void ripps2DrawBackground(void)
+@@ -262,6 +262,24 @@ static void softLine(float x1, float y1, float x2, float y2, float core, float f
+     rmDrawQuadGouraud(x1 - ax, y1 - ay, c, x2 - ax, y2 - ay, c, x1 - fx, y1 - fy, clear, x2 - fx, y2 - fy, clear);
+ }
+ 
++// RIPPS2 build 71: the core of a soft line alone, one quad instead of three: the edges of faces too
++// small for the feather to show, and every edge while the towers are holding back (bgLowDetail)
++static void coreLine(float x1, float y1, float x2, float y2, float core, u64 c)
++{
++    float dx = x2 - x1, dy = y2 - y1, len = sqrtf(dx * dx + dy * dy);
++    if (len < 0.25f)
++        return;
++    float nx = -dy / len, ny = dx / len, h = core * 0.5f + 0.35f, ny2 = h; // a touch wider: no feather
++    if (fabsf(ny) > 0.7f && fabsf(ny) * h < 1.0f)
++        ny2 = 1.0f / fabsf(ny);
++    float ax = nx * ny2, ay = ny * ny2;
++    rmDrawQuadGouraud(x1 + ax, y1 + ay, c, x2 + ax, y2 + ay, c, x1 - ax, y1 - ay, c, x2 - ax, y2 - ay, c);
++}
++
++// RIPPS2 build 71: towers hold back for a second after a frame ran long or while the music's reserve
++// is low (set once a frame in ripps2DrawPillars): no seams, single-quad edges
++static int bgLowDetail = 0;
++
+ static void drawSky(u64 top, u64 horizon, u64 floor)
+ {
+     rmDrawQuadGouraud(0, 0, top, 640, 0, top, 0, 290, horizon, 640, 290, horizon);
+@@ -411,14 +429,30 @@ static void drawSide(const v3 *c, v3 n, float k, float heat, float phase, float
+     // units up the face; now and then one window cell flickers on. Edges antialiased by the GS.
+     rmSetBlendAdditive(1);
+     u64 edge = RGBA(0x40, 0x80, 0xFF, 0x30 + (int)(0x40 * hk)), rim = RGBA(0x7E, 0xC2, 0xFF, 0x3C + (int)(0x24 * hk));
+-    softLine(bl.x, bl.y, tl.x, tl.y, 1.4f, 1.3f, edge);
+-    softLine(br.x, br.y, tr.x, tr.y, 1.4f, 1.3f, edge);
+-    softLine(tl.x, tl.y, tr.x, tr.y, 1.6f, 1.4f, rim);
+     float h = c[2].y - c[0].y, ys;
++    // build 71: how big the face is on screen picks its detail. Far faces (most of the field) were
++    // drawn as finely as near ones: about 60 quads a tower, 7,000 a frame.
++    float faceH = fmaxf(fabsf(bl.y - tl.y), fabsf(br.y - tr.y)), faceW = fmaxf(fabsf(br.x - bl.x), fabsf(tr.x - tl.x));
++    int fine = !bgLowDetail && faceH > 28.0f && faceW > 10.0f;
++    if (fine) {
++        softLine(bl.x, bl.y, tl.x, tl.y, 1.4f, 1.3f, edge);
++        softLine(br.x, br.y, tr.x, tr.y, 1.4f, 1.3f, edge);
++        softLine(tl.x, tl.y, tr.x, tr.y, 1.6f, 1.4f, rim);
++    } else {
++        coreLine(bl.x, bl.y, tl.x, tl.y, 1.4f, edge);
++        coreLine(br.x, br.y, tr.x, tr.y, 1.4f, edge);
++        coreLine(tl.x, tl.y, tr.x, tr.y, 1.6f, rim);
++    }
+     u64 seam = RGBA(0x40, 0x80, 0xFF, 0x10 + (int)(0x1C * hk));
+-    for (ys = 2.4f; ys < h - 0.4f; ys += 2.4f) {
+-        p2 a = facePoint(c, 0.0f, ys), b = facePoint(c, 1.0f, ys);
+-        softLine(a.x, a.y, b.x, b.y, 1.0f, 1.1f, seam);
++    float seamPx = h > 0.0f ? faceH * 2.4f / h : 0.0f; // the seams' spacing on screen
++    if (!bgLowDetail && seamPx >= 7.0f) {
++        for (ys = 2.4f; ys < h - 0.4f; ys += 2.4f) {
++            p2 a = facePoint(c, 0.0f, ys), b = facePoint(c, 1.0f, ys);
++            if (fine)
++                softLine(a.x, a.y, b.x, b.y, 1.0f, 1.1f, seam);
++            else
++                coreLine(a.x, a.y, b.x, b.y, 1.0f, seam);
++        }
+     }
+     if (h > 2.0f && sinf(t * 1.7f + phase * 3.1f) > 0.82f) {
+         float cy = 0.6f + fmodf(phase * 7.3f, 1.0f) * (h - 1.6f), u0 = 0.38f, u1 = 0.62f;
+@@ -593,6 +627,17 @@ void ripps2DrawPillars(void)
+ 
+     float L = launchT0 >= 0.0f ? t - launchT0 : -1.0f;
+     float intro = easeInOutCubicf(clamp01(t / INTRO_S));
++    // build 71: hold back for a second after a frame overran, or while the music's reserve is low
++    {
++        static u32 prevLong = 0;
++        static float lowUntil = -1.0f;
++        u32 worstEver, longFrames;
++        guiGetFrameWatchdog(&worstEver, &longFrames);
++        if (longFrames != prevLong || bgmReserveLow())
++            lowUntil = t + 1.0f;
++        prevLong = longFrames;
++        bgLowDetail = t < lowUntil;
++    }
+     float push = L >= 0.0f ? easeInOutCubicf(clamp01(L / 1.8f)) : 0.0f;
+     float glowAll = L >= 0.0f ? easeInOutCubicf(clamp01(L / 1.5f)) : 0.0f;
+     musicUpdate(t);
+@@ -719,10 +764,17 @@ void ripps2DrawPillars(void)
+                 rmDrawQuadGouraud(q0.x, q0.y, cap, q1.x, q1.y, cap, q2.x, q2.y, cap, q3.x, q3.y, cap);
+                 u64 capRim = RGBA(0x7E, 0xC2, 0xFF, 0x18);
+                 rmSetBlendAdditive(1);
+-                softLine(q0.x, q0.y, q1.x, q1.y, 1.2f, 1.2f, capRim);
+-                softLine(q1.x, q1.y, q3.x, q3.y, 1.2f, 1.2f, capRim);
+-                softLine(q3.x, q3.y, q2.x, q2.y, 1.2f, 1.2f, capRim);
+-                softLine(q2.x, q2.y, q0.x, q0.y, 1.2f, 1.2f, capRim);
++                if (!bgLowDetail && fabsf(q3.x - q0.x) + fabsf(q3.y - q0.y) > 24.0f) { // build 71: a near cap only
++                    softLine(q0.x, q0.y, q1.x, q1.y, 1.2f, 1.2f, capRim);
++                    softLine(q1.x, q1.y, q3.x, q3.y, 1.2f, 1.2f, capRim);
++                    softLine(q3.x, q3.y, q2.x, q2.y, 1.2f, 1.2f, capRim);
++                    softLine(q2.x, q2.y, q0.x, q0.y, 1.2f, 1.2f, capRim);
++                } else {
++                    coreLine(q0.x, q0.y, q1.x, q1.y, 1.2f, capRim);
++                    coreLine(q1.x, q1.y, q3.x, q3.y, 1.2f, capRim);
++                    coreLine(q3.x, q3.y, q2.x, q2.y, 1.2f, capRim);
++                    coreLine(q2.x, q2.y, q0.x, q0.y, 1.2f, capRim);
++                }
+                 rmSetBlendAdditive(0);
+             }
+         }
+@@ -1614,10 +1666,20 @@ void ripps2DrawBackground(void)
          shownWorstUs = winWorstUs; // the longest frame of the last second
          winWorstUs = 0;
      }
@@ -805,7 +907,7 @@ index 057e4fb..c13cdb4 100644
  // the names read cleaner as text. Fade In brings them in at the art's pace when Left / Right is
  // pressed, Fade Out has them there when the page opens; either way they stay a moment, then go.
 diff --git a/src/sound.c b/src/sound.c
-index 04bf10a..c9f22e7 100644
+index 04bf10a..a7d366c 100644
 --- a/src/sound.c
 +++ b/src/sound.c
 @@ -131,6 +131,20 @@ static void sfxSetCursorChannelsVolume(int volume)
@@ -876,7 +978,43 @@ index 04bf10a..c9f22e7 100644
          sent = audsrv_play_audio(chunk + done, room < left ? room : left);
          if (sent > 0)
              done += sent;
-@@ -1054,6 +1088,11 @@ static void bgmIoThread(void *arg)
+@@ -1039,11 +1073,35 @@ static void bgmThread(void *arg)
+     bgmIsPlaying = 0;
+ }
+ 
++// RIPPS2 build 71: the decoder's priority follows its reserve. Sharing the menu's priority (31), it
++// lost to every long frame: on a console the towers alone can take a whole frame, the reserve drained
++// and the music stuttered through loads (PCSX2 with the EE at half speed: 2 to 31 chunks of 192 while
++// drives started). Once the music has started, a reserve under BGM_BOOST_LOW chunks lifts the decoder
++// above the menu until it holds BGM_BOOST_HIGH again: frames give way before the sound does. Above
++// it, the decoder shares again and lets the menu's frames go first (the yield in the read loop).
++#define BGM_BOOST_LOW  40 // ~0.9 s
++#define BGM_BOOST_HIGH 72 // ~1.65 s
++static int bgmDecodePrio = BGM_THREAD_BASE_PRIO + 1;
++
++static void bgmDecodePriority(void)
++{
++    int want = bgmDecodePrio;
++    if (bgmBufferPrimed && bgmBufferedChunks < BGM_BOOST_LOW)
++        want = BGM_THREAD_BASE_PRIO; // with the playback thread, above the menu
++    else if (bgmBufferedChunks > BGM_BOOST_HIGH || !bgmBufferPrimed)
++        want = BGM_THREAD_BASE_PRIO + 1;
++    if (want != bgmDecodePrio) {
++        ChangeThreadPriority(GetThreadId(), want);
++        bgmDecodePrio = want;
++    }
++}
++
+ static void bgmIoThread(void *arg)
+ {
+     int decodeTotal, bitStream;
+ 
+     bgmIoThreadRunning = 1;
++    bgmDecodePrio = BGM_THREAD_BASE_PRIO + 1;
+     do {
+         WaitSema(inSema);
+ 
+@@ -1054,6 +1112,11 @@ static void bgmIoThread(void *arg)
          int bufferPtr = 0;
          gBgmInRead = 1;
          do {
@@ -884,10 +1022,18 @@ index 04bf10a..c9f22e7 100644
 +            // time between equal priorities: refilling its 4 s ring after a long load, it held the CPU
 +            // through vsyncs (the frame drops that came with the music). Each read now lets the menu
 +            // run first when its frame is due.
-+            RotateThreadReadyQueue(BGM_THREAD_BASE_PRIO + 1);
++            RotateThreadReadyQueue(bgmDecodePrio);
              if (bgmPcmRead != NULL) { // RIPPS2: raw PCM (a CD, a .wav)
                  int got = bgmPcmRead(bgmBuffer[wrPtr] + bufferPtr, decodeTotal);
                  if (got > 0) {
+@@ -1100,6 +1163,7 @@ static void bgmIoThread(void *arg)
+ 
+         wrPtr = (wrPtr + 1) % BGM_RING_BUFFER_COUNT;
+         bgmAdjustBufferedChunks(1);
++        bgmDecodePriority(); // build 71
+         SignalSema(outSema);
+     } while (!terminateFlag && (gEnableBGM || bgmPcmExternal != NULL) && !bgmPcmEnded);
+ 
 diff --git a/src/themes.c b/src/themes.c
 index c9ff9b2..40093a9 100644
 --- a/src/themes.c
