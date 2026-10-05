@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index b831e05..c2e7433 100644
+index b831e05..b8ab98e 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -133,7 +133,7 @@ ifneq ($(GIT_TAG),latest)
@@ -11,6 +11,17 @@ index b831e05..c2e7433 100644
  		dia.o ioman.o texcache.o themes.o supportbase.o bdmsupport.o netsupport.o ethsupport.o httpcatalog.o httpsupport.o udpfssupport.o hddsupport.o zso.o lz4.o launchdiag.o \
  		appsupport.o mmcesupport.o artindex.o vcdsupport.o cuesupport.o libview.o retrogem.o folderbrowse.o gui.o guigame.o vmc_groups.o textures.o opl.o atlas.o nbns.o httpclient.o gsm.o cheatman.o sound.o ps2cnf.o tar.o
  
+@@ -311,6 +311,10 @@ ifeq ($(RIPPS2_CD_TEST),1)
+ endif
+ # RIPPS2: a test build whose IO worker is not woken for a deferred save (the stall seen on consoles),
+ # to prove the save still runs. Never for a release.
++ifeq ($(RIPPS2_PERF_HUD),1)
++  EE_CFLAGS += -DRIPPS2_PERF_HUD=1
++endif
++
+ ifeq ($(RIPPS2_IO_STALL_TEST),1)
+   EE_CFLAGS += -DRIPPS2_IO_STALL_TEST
+ endif
 diff --git a/include/dialogs.h b/include/dialogs.h
 index 76cc8af..7a200f5 100644
 --- a/include/dialogs.h
@@ -23,8 +34,24 @@ index 76cc8af..7a200f5 100644
      NETCFG_OK,
      // Section labels for the SMB-only block, so it can be hidden whole when the selected network
      // protocol is not SMB. Appended here to keep the NETCFG_*_0..N consecutive runs above intact.
+diff --git a/include/ioman.h b/include/ioman.h
+index 8d98c6d..8bf8fcf 100644
+--- a/include/ioman.h
++++ b/include/ioman.h
+@@ -79,7 +79,10 @@ void ioNameAction(void *fn, const char *name);
+ int ioDescribeRunning(char *out, int size);
+ int ioDescribeWorker(char *out, int size);       // RIPPS2: the worker thread's state and the queue
+ int ioWorkerBusy(void);                          // RIPPS2: inside a job right now
+-int ioWorkPending(void);                         // RIPPS2: anything queued or running (lock-free)
++int ioWorkPending(void);
++void ioSetWaitPump(void (*pump)(void)); // RIPPS2: the teardown's waits draw frames through this (NULL: they sleep)
++void ioWaitPumpFrame(void);             // one frame through it, if set
++int ioWaitPumpActive(void);                         // RIPPS2: anything queued or running (lock-free)
+ void ioBoostWorker(int on);                      // RIPPS2: the worker above the GUI while the user waits
+ int ioPutRequestFront(int type, void *data);     // RIPPS2: right behind the running request
+ int ioDefuseRequest(int type, void *data);       // RIPPS2: a queued action that has not started, made a no-op
 diff --git a/include/ripps2.h b/include/ripps2.h
-index 3613b0c..5d5a1f1 100644
+index 3613b0c..5dd93a7 100644
 --- a/include/ripps2.h
 +++ b/include/ripps2.h
 @@ -88,6 +88,7 @@ void ripps2DrawPanelMorph(int ax, int ay, int aw, int ah, int bx, int by, int bw
@@ -43,6 +70,14 @@ index 3613b0c..5d5a1f1 100644
  void ripps2ShowAbout(const char *version, const char *build); // ripps2about.c: the scrolling credits
  
  // RIPPS2 saves (ripps2saves.c): PSU files and PS2 virtual memory card images, for the file browser
+@@ -137,6 +139,7 @@ void ripps2DrawBootFrame(void);     // the swoop's first frame, for boot screens
+ int ripps2IntroUiReady(void);       // the boot swoop has run long enough to bring the menu in
+ void ripps2PlayLaunchSequence(void); // pillars only, light-up and flash; the last frame holds
+ int ripps2LaunchScreenHeld(void);    // that frame is up: the teardown must not draw over it
++void ripps2LaunchPump(void);         // build 70: one more frame of it, with the loading mark, from the teardown's waits
+ void ripps2LaunchAborted(void);      // the launch failed and returned to the menu
+ 
+ #endif
 diff --git a/lng_tmpl/_base.yml b/lng_tmpl/_base.yml
 index b97d7c1..9d8a458 100644
 --- a/lng_tmpl/_base.yml
@@ -81,7 +116,7 @@ index 7fe7d25..890363a 100644
      // SMB server data it relates to, without duplicating any of that state in this page.
      {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_POPSTARTER_NETWORK_SETTINGS}}},
 diff --git a/src/gui.c b/src/gui.c
-index 87b8a02..fc760da 100644
+index 87b8a02..dfd1659 100644
 --- a/src/gui.c
 +++ b/src/gui.c
 @@ -520,7 +520,7 @@ static int guiRenderRANotices(int y, int yadd)
@@ -114,6 +149,125 @@ index 87b8a02..fc760da 100644
      if (result && !guiSettingsLeftUntouched(diaNetConfig, result, NULL, NULL)) {
          int netProtoVal2, netAccessVal2;
          diaGetInt(diaNetConfig, CFG_NETPROTOCOL, &netProtoVal2);
+@@ -3840,11 +3845,25 @@ static void guiHandleOp(struct gui_update_t *item)
+     }
+ }
+ 
+-static void guiHandleDeferredOps(void)
++// RIPPS2 build 70: budgetUs > 0 stops after about that long and leaves the rest of the queue for the
++// next frame. A list rebuild queues one op per game row (plus a sort), and running a thousand of them
++// in one frame dropped that frame and the next few -- a hitch every time a list refreshed. Nothing
++// waits on an op's completion, and a list may show part-built for a frame or two (the view switch
++// already allows it), so the order is all that has to hold, and it does. The teardown and every
++// other caller still drain the whole queue (guiExecDeferredOps).
++#define GUI_OPS_FRAME_BUDGET_US 4000
++
++static void guiHandleDeferredOpsBudget(int budgetUs)
+ {
++    clock_t from = clock();
+ 
+     WaitSema(gSemaId);
+     while (gUpdateList) {
++        if (budgetUs > 0 && clock() - from >= (clock_t)budgetUs * (CLOCKS_PER_SEC / 1000000)) {
++            // the rest next frame: gUpdateEnd still points at the queue's last node
++            SignalSema(gSemaId);
++            return;
++        }
+ 
+         guiHandleOp(gUpdateList->item);
+ 
+@@ -3876,6 +3895,11 @@ static void guiHandleDeferredOps(void)
+     SignalSema(gSemaId);
+ }
+ 
++static void guiHandleDeferredOps(void)
++{
++    guiHandleDeferredOpsBudget(0);
++}
++
+ void guiExecDeferredOps(void)
+ {
+     // Clears deferred operations list by executing them.
+@@ -4647,7 +4671,7 @@ void guiIntroLoop(void)
+ 
+         guiDrawOverlays();
+ 
+-        guiHandleDeferredOps();
++        guiHandleDeferredOpsBudget(GUI_OPS_FRAME_BUDGET_US); // RIPPS2 build 70: the swoop never stalls
+         bgmBootTick(); // RIPPS2: the music comes in under the intro once the sounds are loaded
+ 
+         guiEndFrame();
+@@ -4693,8 +4717,8 @@ void guiMainLoop(void)
+         guiShowRANotices();
+ #endif
+ 
+-        // handle deferred operations
+-        guiHandleDeferredOps();
++        // handle deferred operations (RIPPS2 build 70: a few milliseconds' worth a frame)
++        guiHandleDeferredOpsBudget(GUI_OPS_FRAME_BUDGET_US);
+ 
+         guiEndFrame();
+ 
+diff --git a/src/ioman.c b/src/ioman.c
+index 69230e5..5ae1007 100644
+--- a/src/ioman.c
++++ b/src/ioman.c
+@@ -666,6 +666,27 @@ int ioPrintf(const char *format, ...)
+     return ret;
+ }
+ 
++// RIPPS2 build 70: while set, the teardown's waits (below, and cacheEnd's art join) draw a frame of
++// the launch screen per vsync instead of spinning blind, so a launch never looks frozen. The time
++// budgets are unchanged; a frame simply replaces the sleep.
++static void (*ioWaitPump)(void) = NULL;
++
++void ioSetWaitPump(void (*pump)(void))
++{
++    ioWaitPump = pump;
++}
++
++void ioWaitPumpFrame(void)
++{
++    if (ioWaitPump != NULL)
++        ioWaitPump();
++}
++
++int ioWaitPumpActive(void)
++{
++    return ioWaitPump != NULL;
++}
++
+ int ioBlockOpsTimed(int block, int timeoutTicks)
+ {
+     ee_thread_status_t status;
+@@ -686,13 +707,20 @@ int ioBlockOpsTimed(int block, int timeoutTicks)
+         // (the historical behaviour); a non-negative value caps the wait. The NBD preflight
+         // passes a bound so a request stuck on a removed/slow device fails the start instead
+         // of freezing after audio and pads have already been dismantled.
+-        while (ioHasPendingRequests()) {
+-            if (timeoutTicks == 0)
+-                break;
+-            delay(1);
+-            if (timeoutTicks > 0)
+-                timeoutTicks--;
+-        }
++        if (ioWaitPump != NULL) {
++            // RIPPS2: frames instead of the spin; one delay(1) tick is about a quarter second
++            clock_t from = clock();
++            clock_t budget = timeoutTicks < 0 ? 0 : (clock_t)timeoutTicks * (CLOCKS_PER_SEC / 4);
++            while (ioHasPendingRequests() && (timeoutTicks < 0 || clock() - from < budget))
++                ioWaitPump();
++        } else
++            while (ioHasPendingRequests()) {
++                if (timeoutTicks == 0)
++                    break;
++                delay(1);
++                if (timeoutTicks > 0)
++                    timeoutTicks--;
++            }
+ 
+         // Only restore the saved priority if ReferThreadStatus actually filled it.
+         if (haveStatus)
 diff --git a/src/menusys.c b/src/menusys.c
 index e3a9fa9..0e14f1b 100644
 --- a/src/menusys.c
@@ -162,8 +316,50 @@ index e3a9fa9..0e14f1b 100644
          } else if (id == MENU_ABOUT) {
              guiShowAbout();
          } else if (id == MENU_SAVE_CHANGES) {
+diff --git a/src/opl.c b/src/opl.c
+index cc43fde..4ce63b5 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -4758,6 +4758,10 @@ void deinitEx(int exception, int modeSelected, int modeSelected2)
+     // wait was not.
+     bgmQuiesce();
+ 
++    // RIPPS2 build 70: after a launch light-up, the waits below keep drawing it (and the loading mark)
++    if (ripps2LaunchScreenHeld())
++        ioSetWaitPump(&ripps2LaunchPump);
++
+     // block all io ops, wait for the ones still running to finish (BOUNDED -- see the note above)
+     ioBlockOpsTimed(1, gDeinitTerminal ? EXIT_IO_DRAIN_TICKS : LAUNCH_IO_DRAIN_TICKS);
+ 
+@@ -4766,6 +4770,7 @@ void deinitEx(int exception, int modeSelected, int modeSelected2)
+     // below is about to unmount that device and close its descriptors.
+     gArtAbandoned = !cacheEnd(gDeinitTerminal);
+     guiExecDeferredOps();
++    ioSetWaitPump(NULL);
+     if (gLaunchDiag)
+         launchDiagMark(6); // io + art drain done -- the per-module teardown below runs next
+ 
+@@ -4841,6 +4846,10 @@ void deinit(int exception, int modeSelected)
+     // wait was not.
+     bgmQuiesce();
+ 
++    // RIPPS2 build 70: after a launch light-up, the waits below keep drawing it (and the loading mark)
++    if (ripps2LaunchScreenHeld())
++        ioSetWaitPump(&ripps2LaunchPump);
++
+     // block all io ops, wait for the ones still running to finish (BOUNDED -- see the note above)
+     ioBlockOpsTimed(1, gDeinitTerminal ? EXIT_IO_DRAIN_TICKS : LAUNCH_IO_DRAIN_TICKS);
+ 
+@@ -4849,6 +4858,7 @@ void deinit(int exception, int modeSelected)
+     // below is about to unmount that device and close its descriptors.
+     gArtAbandoned = !cacheEnd(gDeinitTerminal);
+     guiExecDeferredOps();
++    ioSetWaitPump(NULL);
+     if (gLaunchDiag)
+         launchDiagMark(6); // io + art drain done -- the per-module teardown below runs next
+ 
 diff --git a/src/ripps2bg.c b/src/ripps2bg.c
-index 17d7d36..cda048b 100644
+index 17d7d36..8854346 100644
 --- a/src/ripps2bg.c
 +++ b/src/ripps2bg.c
 @@ -12,6 +12,8 @@
@@ -175,7 +371,18 @@ index 17d7d36..cda048b 100644
  #include <stdio.h>
  #include <string.h>
  
-@@ -44,9 +46,24 @@ typedef struct
+@@ -24,7 +26,9 @@
+ #include "include/ripps2.h"
+ #include "include/sound.h"
+ 
+-#define RIPPS2_PERF_HUD 0 // 1: show the background's EE time and the FPS in the corner (dev builds)
++#ifndef RIPPS2_PERF_HUD // make RIPPS2_PERF_HUD=1: the frame timings in the corner (test builds only)
++#define RIPPS2_PERF_HUD 0
++#endif
+ 
+ #define PI   3.14159265f
+ #define TAU  6.28318531f
+@@ -44,9 +48,24 @@ typedef struct
      int ok;
  } p2;
  
@@ -201,7 +408,7 @@ index 17d7d36..cda048b 100644
  }
  
  static inline unsigned int cpuTicks(void)
-@@ -94,6 +111,9 @@ static p2 project(v3 p)
+@@ -94,6 +113,9 @@ static p2 project(v3 p)
      if (o.ok) {
          o.x = CX + vdot(d, camR) / o.z * camFocal;
          o.y = CY - vdot(d, camU) / o.z * camFocal;
@@ -211,7 +418,24 @@ index 17d7d36..cda048b 100644
      }
      return o;
  }
-@@ -782,7 +802,7 @@ static void lorenzStep(float dt)
+@@ -740,6 +762,16 @@ int ripps2LaunchScreenHeld(void)
+     return launchHeld;
+ }
+ 
++// RIPPS2 build 70: one frame of the lit launch screen with the loading mark breathing over it, drawn
++// from the teardown's waits (ioSetWaitPump) so the handoff never sits on a frozen picture
++void ripps2LaunchPump(void)
++{
++    guiStartFrame();
++    ripps2DrawPillars();
++    ripps2DrawBusy(0x80);
++    guiEndFrame();
++}
++
+ void ripps2LaunchAborted(void)
+ {
+     // the launch returned (it failed): back to the idle field under the menu
+@@ -782,7 +814,7 @@ static void lorenzStep(float dt)
          }
          lorenzReady = 1;
      }
@@ -220,7 +444,7 @@ index 17d7d36..cda048b 100644
      for (i = 0; i < LORENZ_N; i++) {
          v3 *p = &lorenz[i];
          for (k = 0; k < 4; k++) {
-@@ -791,6 +811,12 @@ static void lorenzStep(float dt)
+@@ -791,6 +823,12 @@ static void lorenzStep(float dt)
              p->y += dy * h;
              p->z += dz * h;
          }
@@ -233,7 +457,7 @@ index 17d7d36..cda048b 100644
      }
  }
  
-@@ -1048,6 +1074,9 @@ static void spinUpdate(float dt)
+@@ -1048,6 +1086,9 @@ static void spinUpdate(float dt)
      }
      spinYaw = fmodf(spinYaw + spinYawVel * dt, TAU);
      spinPitch += spinPitchVel * dt;
@@ -243,7 +467,7 @@ index 17d7d36..cda048b 100644
      if (spinPitch > SPIN_PITCH_MAX || spinPitch < -SPIN_PITCH_MAX) {
          spinPitch = spinPitch > 0.0f ? SPIN_PITCH_MAX : -SPIN_PITCH_MAX;
          spinPitchVel = 0.0f;
-@@ -1278,6 +1307,8 @@ void ripps2DrawOrbs(void)
+@@ -1278,6 +1319,8 @@ void ripps2DrawOrbs(void)
      float t = nowSeconds();
      float dt = lastT > 0.0f ? t - lastT : 1.0f;
      lastT = t;
@@ -252,7 +476,7 @@ index 17d7d36..cda048b 100644
  
      if (lorenzPathCount == 0)
          guidesInit();
-@@ -1319,6 +1350,7 @@ void ripps2DrawOrbs(void)
+@@ -1319,6 +1362,7 @@ void ripps2DrawOrbs(void)
      if (dt > 0.25f) { // the tab was just opened: fresh tails, and show the outline
          trailValid = 0;
          guideStart = t;
@@ -260,6 +484,41 @@ index 17d7d36..cda048b 100644
      }
      if (f != shownFormation) { // morph from wherever the orbs are
          prevFormation = shownFormation;
+@@ -1434,6 +1478,7 @@ void ripps2DrawOrbs(void)
+ static float bgMsAvg = 0.0f;
+ static int fpsFrames = 0, fpsShown = 0;
+ static float fpsWindow = 0.0f;
++static u32 winWorstUs = 0, shownWorstUs = 0;
+ #endif
+ 
+ // The top and bottom of the screen darken like the mockups, so the category bar and the hints read
+@@ -1460,16 +1505,23 @@ void ripps2DrawBackground(void)
+     float ms = (float)(cpuTicks() - t0) / 294912.0f;
+     bgMsAvg = bgMsAvg * 0.9f + ms * 0.1f;
+     float t = nowSeconds();
++    u32 worstEver, longFrames, lastUs = guiGetFrameWatchdog(&worstEver, &longFrames);
++    if (lastUs > winWorstUs)
++        winWorstUs = lastUs;
+     fpsFrames++;
+     if (t - fpsWindow >= 1.0f) {
+         fpsShown = (int)(fpsFrames / (t - fpsWindow) + 0.5f);
+         fpsFrames = 0;
+         fpsWindow = t;
++        shownWorstUs = winWorstUs; // the longest frame of the last second
++        winWorstUs = 0;
+     }
+-    char hud[32];
++    char hud[64];
+     int tenths = (int)(bgMsAvg * 10.0f + 0.5f); // integer formatting: no float printf needed
+-    snprintf(hud, sizeof(hud), "BG %d.%dMS %dFPS", tenths / 10, tenths % 10, fpsShown);
++    snprintf(hud, sizeof(hud), "BG %d.%dMS %dFPS  WORST %uMS  LONG %u", tenths / 10, tenths % 10, fpsShown,
++             (unsigned)(shownWorstUs / 1000), (unsigned)longFrames);
+     int w = fntCalcDimensions(gTheme->fonts[3], hud);
+-    fntRenderString(gTheme->fonts[3], 628 - w, 472, ALIGN_VCENTER, 0, 0, hud, GS_SETREG_RGBA(0x3D, 0x46, 0x5D, 0x80));
++    rmDrawRect(624 - w, 462, w + 8, 20, RGBA(0x00, 0x00, 0x00, 0x60));
++    fntRenderString(gTheme->fonts[3], 628 - w, 472, ALIGN_VCENTER, 0, 0, hud, GS_SETREG_RGBA(0x80, 0x78, 0x40, 0x80));
+ #endif
+ }
 diff --git a/src/ripps2files.c b/src/ripps2files.c
 index a2c718d..51f7cb9 100644
 --- a/src/ripps2files.c
@@ -453,3 +712,23 @@ index 695d889..8a0b3ff 100644
      float x, y, w, h;
      int own = markDrawFrame == guiFrameId;
  
+diff --git a/src/texcache.c b/src/texcache.c
+index f14a9ec..5726604 100644
+--- a/src/texcache.c
++++ b/src/texcache.c
+@@ -1137,8 +1137,13 @@ int cacheEnd(int forceStop)
+     gArtTerminate = 1;
+     cacheWakeArtWorker();
+ 
+-    while (gArtRunning && ms-- > 0)
+-        DelayThread(1000);
++    if (ioWaitPumpActive()) { // RIPPS2: the launch screen keeps moving while the art worker comes home
++        clock_t from = clock();
++        while (gArtRunning && clock() - from < (clock_t)ms * (CLOCKS_PER_SEC / 1000))
++            ioWaitPumpFrame();
++    } else
++        while (gArtRunning && ms-- > 0)
++            DelayThread(1000);
+ 
+     if (gArtRunning) {
+         // ABANDON, never TerminateThread. Killing a thread parked inside fileXio leaves the shared
