@@ -131,10 +131,31 @@ def loading_frames():
         save(im, 'load%d' % k)
 
 
-def blank(name):
-    # The drive name's prev/next arrows: the L1/R1 pills beside it already say that, so these
-    # are drawn fully transparent (the MenuText element is their only user).
-    im, _ = canvas(32, 32)
+# ---- the D-pad: Left / Right beside a drive's or a formation's name (Up / Down on Coverflow, where
+# the carousel has Left / Right). A plus in the outline style with the pressed arm lit, so it can never
+# be read as START's ring and triangle. RIPPSettings hides them by default. ----
+DPAD_LO, DPAD_HI = 2.0, 30.0   # the plus's reach
+ARM0, ARM1 = 10.0, 22.0        # an arm's width
+
+
+def dpad(name, arm):
+    im, d = canvas(32, 32)
+    lo, hi, a0, a1 = DPAD_LO, DPAD_HI, ARM0, ARM1
+    plus = [(a0, lo), (a1, lo), (a1, a0), (hi, a0), (hi, a1), (a1, a1), (a1, hi), (a0, hi), (a0, a1), (lo, a1), (lo, a0), (a0, a0)]
+    d.polygon([(x * SS, y * SS) for x, y in plus], fill=FILL, outline=LINE, width=round(OUTLINE * SS))
+    # the pressed arm, lit out to its outline (so it still reads at 18 px), with an arrowhead pointing out
+    e = OUTLINE / 2
+    boxes = {'left': (lo - e, a0 - e, a0 + 1, a1 + e), 'right': (a1 - 1, a0 - e, hi + e, a1 + e),
+             'up': (a0 - e, lo - e, a1 + e, a0 + 1), 'down': (a0 - e, a1 - 1, a1 + e, hi + e)}
+    x0, y0, x1, y1 = boxes[arm]
+    d.rounded_rectangle((x0 * SS, y0 * SS, x1 * SS, y1 * SS), radius=1.2 * SS, fill=TEXT)
+    cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+    k = 3.0
+    tips = {'left': [(cx - k, cy), (cx + k * 0.8, cy - k), (cx + k * 0.8, cy + k)],
+            'right': [(cx + k, cy), (cx - k * 0.8, cy - k), (cx - k * 0.8, cy + k)],
+            'up': [(cx, cy - k), (cx - k, cy + k * 0.8), (cx + k, cy + k * 0.8)],
+            'down': [(cx, cy + k), (cx - k, cy - k * 0.8), (cx + k, cy - k * 0.8)]}
+    d.polygon([(x * SS, y * SS) for x, y in tips[arm]], fill=(6, 14, 44, 255))
     save(im, name)
 
 
@@ -178,10 +199,10 @@ def main():
     badge_px = fit_size(set(BADGES.values()), BADGE_W - 12)
     for name, text in BADGES.items():
         badge(name, text, badge_px)
-    blank('left')
-    blank('right')
+    for name, arm in (('left', 'left'), ('right', 'right'), ('ripps2_up', 'up'), ('ripps2_down', 'down')):
+        dpad(name, arm)
     loading_frames()
-    print('wrote', 6 + len(PILLS) + len(BADGES) + 2 + 8, 'images to', OUT, '(pill labels %dpx, badge labels %dpx)' % (pill_px, badge_px))
+    print('wrote', 6 + len(PILLS) + len(BADGES) + 4 + 8, 'images to', OUT, '(pill labels %dpx, badge labels %dpx)' % (pill_px, badge_px))
 
 
 if __name__ == '__main__':

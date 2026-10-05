@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index b831e05..b8ab98e 100644
+index b831e05..92dc76c 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -133,7 +133,7 @@ ifneq ($(GIT_TAG),latest)
@@ -11,6 +11,15 @@ index b831e05..b8ab98e 100644
  		dia.o ioman.o texcache.o themes.o supportbase.o bdmsupport.o netsupport.o ethsupport.o httpcatalog.o httpsupport.o udpfssupport.o hddsupport.o zso.o lz4.o launchdiag.o \
  		appsupport.o mmcesupport.o artindex.o vcdsupport.o cuesupport.o libview.o retrogem.o folderbrowse.o gui.o guigame.o vmc_groups.o textures.o opl.o atlas.o nbns.o httpclient.o gsm.o cheatman.o sound.o ps2cnf.o tar.o
  
+@@ -166,7 +166,7 @@ PNG_ASSETS = load0 load1 load2 load3 load4 load5 load6 load7 usb usb_bd ilk_bd \
+ 	# unused icons - up down l2 r2
+ 
+ # RIPPS2: glass info panel and PS2 selector mark (gfx/ripps2_*.png, copied in by RIPPS2's build.sh)
+-PNG_ASSETS += ripps2_glass ripps2_mark ripps2_mark_glow L2R2 ripps2_ps1logo ripps2_ps2logo ripps2_grid_icons
++PNG_ASSETS += ripps2_glass ripps2_mark ripps2_mark_glow L2R2 ripps2_ps1logo ripps2_ps2logo ripps2_grid_icons ripps2_up ripps2_down
+ 
+ # The RA cover mark is embedded ONLY in the RA flavour: the default build has no
+ # RA_MARK enum member and no table row for it, so embedding the bitmap there would
 @@ -311,6 +311,10 @@ ifeq ($(RIPPS2_CD_TEST),1)
  endif
  # RIPPS2: a test build whose IO worker is not woken for a deferred save (the stall seen on consoles),
@@ -23,10 +32,22 @@ index b831e05..b8ab98e 100644
    EE_CFLAGS += -DRIPPS2_IO_STALL_TEST
  endif
 diff --git a/include/dialogs.h b/include/dialogs.h
-index 76cc8af..7a200f5 100644
+index 76cc8af..75eb0ba 100644
 --- a/include/dialogs.h
 +++ b/include/dialogs.h
-@@ -178,6 +178,7 @@ enum UI_ITEMS {
+@@ -36,6 +36,11 @@ enum UI_ITEMS {
+     UICFG_RIPPS2_RANDOM, // RIPPS2: Random Game (Off / On / Boot)
+     CFG_RIPPS2_BOOTLOCK, // RIPPS2: BOOT LOCK (PS2BBL starts RIPPS2 at power on)
+     UICFG_RIPPS2_MUSIC,  // RIPPS2: Music (a track from MUSIC/ beside RIPPS2)
++    UICFG_RIPPS2_GLYPHS,  // RIPPS2 build 70: RIPPSettings rows
++    UICFG_RIPPS2_PALETTE,
++    UICFG_RIPPS2_HINTS,
++    UICFG_RIPPS2_CATBAR,
++    UICFG_RIPPS2_CATSWAP,
+ 
+     CFG_DEBUG,
+     CFG_PS2LOGO,
+@@ -178,6 +183,7 @@ enum UI_ITEMS {
      NETCFG_ETHOPMODE,
      NETCFG_RECONNECT,
      NETCFG_POPSTARTER_BUTTON,
@@ -34,8 +55,24 @@ index 76cc8af..7a200f5 100644
      NETCFG_OK,
      // Section labels for the SMB-only block, so it can be hidden whole when the selected network
      // protocol is not SMB. Appended here to keep the NETCFG_*_0..N consecutive runs above intact.
+@@ -302,6 +308,7 @@ enum UI_ITEMS {
+     CFG_HDDOPLPART,
+     GENERAL_GSM_DEFAULTS_BUTTON,
+     RIPPS2_BIBLE_BUTTON, // RIPPS2: BOOT LOADER > MANAGE (BIBLE)
++    RIPPS2_SETTINGS_BUTTON, // RIPPS2 build 70: Controller Settings > RIPPSettings
+     LAUNCH_GSM_DEFAULTS_BUTTON,
+ 
+ #ifdef PADEMU
+@@ -370,6 +377,7 @@ extern struct UIItem diaNetConfig[];
+ extern struct UIItem diaUIConfig[];
+ extern struct UIItem diaAudioConfig[];
+ extern struct UIItem diaControllerConfig[];
++extern struct UIItem diaRipps2Config[]; // RIPPS2 build 70: RIPPSettings
+ extern struct UIItem diaCompatConfig[];
+ extern struct UIItem diaVMCConfig[];
+ extern struct UIItem diaGSConfig[];
 diff --git a/include/gui.h b/include/gui.h
-index 89c3e4c..9818642 100644
+index 89c3e4c..36b659d 100644
 --- a/include/gui.h
 +++ b/include/gui.h
 @@ -71,6 +71,7 @@ void guiSwitchScreen(int target);
@@ -46,6 +83,14 @@ index 89c3e4c..9818642 100644
  
  void guiReloadScreenExtents();
  
+@@ -136,6 +137,7 @@ void guiUpdateScreenScale(void);
+ 
+ void guiDrawBGPlasma();
+ int guiDrawIconAndText(int iconId, int textId, int font, int x, int y, u64 color);
++int guiDrawIconAndTextA(int iconId, int textId, int font, int x, int y, u64 color, u64 iconColor); // RIPPS2: icon colour given
+ void guiDrawSubMenuHints(void);
+ 
+ int guiAlignMenuHints(menu_hint_item_t *hint, int font, int width);
 diff --git a/include/ioman.h b/include/ioman.h
 index 8d98c6d..8bf8fcf 100644
 --- a/include/ioman.h
@@ -63,10 +108,35 @@ index 8d98c6d..8bf8fcf 100644
  int ioPutRequestFront(int type, void *data);     // RIPPS2: right behind the running request
  int ioDefuseRequest(int type, void *data);       // RIPPS2: a queued action that has not started, made a no-op
 diff --git a/include/ripps2.h b/include/ripps2.h
-index 3613b0c..5dd93a7 100644
+index 3613b0c..7eedea6 100644
 --- a/include/ripps2.h
 +++ b/include/ripps2.h
-@@ -88,6 +88,7 @@ void ripps2DrawPanelMorph(int ax, int ay, int aw, int ah, int bx, int by, int bw
+@@ -56,6 +56,24 @@ void ripps2SaveSettingsInBackground(void); // opl.c: a quiet settings save on th
+ enum { RIPPS2_RANDOM_OFF = 0, RIPPS2_RANDOM_ON, RIPPS2_RANDOM_BOOT };
+ extern int gRipps2Random;
+ 
++// RIPPSettings (Controller Settings > RIPPSettings, build 70): how RIPPS2's own pages look, saved in
++// the settings
++enum { RIPPS2_GLYPHS_HIDDEN = 0, RIPPS2_GLYPHS_SHOWN, RIPPS2_GLYPHS_FADE_IN, RIPPS2_GLYPHS_FADE_OUT, RIPPS2_GLYPHS_COUNT };
++enum { RIPPS2_SHOW_ON = 0, RIPPS2_SHOW_IDLE, RIPPS2_SHOW_OFF, RIPPS2_SHOW_COUNT }; // shown / fade when idle / hidden
++enum { RIPPS2_GLYPH_DRIVES = 0, RIPPS2_GLYPH_FORMATIONS }; // whose glyphs: Storage's drive name, Memory Files' formation
++#define RIPPS2_PALETTE_COUNT 6
++extern int gRipps2Glyphs;  // the D-pad glyphs beside a drive's or a formation's name (hidden by default)
++extern int gRipps2Palette; // Color Theme for everything RIPPS2 draws (ripps2tint.h): 0 is RIPPS2 blue
++extern int gRipps2Hints;   // the button hints along the bottom of the three tabs
++extern int gRipps2CatBar;  // LAUNCH DISC | STORAGE | MEMORY FILES along the top
++extern int gRipps2CatSwap; // 1: Memory Files first and Launch Disc last
++const char *ripps2PaletteName(int p);
++void ripps2NoteInput(void);         // every frame, once the pads are read: the idle time the fades follow
++void ripps2GlyphsPoke(int which);   // Left / Right (Up / Down on Coverflow) switched a drive or a formation
++float ripps2GlyphsAlpha(int which); // 0..1 this frame; call once a frame while that name is on screen
++float ripps2HintsAlpha(void);       // 0..1
++float ripps2CatBarAlpha(void);      // 0..1
++
+ void ripps2SetCategory(int cat);    // switch screens and fly the PS2 mark
+ void ripps2StepCategory(int dir);   // -1 / +1, clamped at the ends
+ void ripps2RenderCategoryBar(void); // the three labels plus the mark
+@@ -88,6 +106,7 @@ void ripps2DrawPanelMorph(int ax, int ay, int aw, int ah, int bx, int by, int bw
  void ripps2DrawBackground(void); // orbs on Memory Files, pillars everywhere else
  void ripps2DrawPillars(void);
  void ripps2DrawOrbs(void);
@@ -74,7 +144,7 @@ index 3613b0c..5dd93a7 100644
  int ripps2LaunchDvdVideo(void); // ripps2.c: a DVD video disc: ESR for an ESR-patched game, else a DVD player
  
  // The Memory Files browser (ripps2files.c)
-@@ -107,6 +108,7 @@ int ripps2EditFile(const char *path);                              // 1 when it
+@@ -107,6 +126,7 @@ int ripps2EditFile(const char *path);                              // 1 when it
  int ripps2EditMetadata(config_set_t *config, const char *gameName); // 1 when SAVE was chosen (values set, not written)
  
  void ripps2HddManager(void); // ripps2hdd.c
@@ -82,7 +152,7 @@ index 3613b0c..5dd93a7 100644
  void ripps2ShowAbout(const char *version, const char *build); // ripps2about.c: the scrolling credits
  
  // RIPPS2 saves (ripps2saves.c): PSU files and PS2 virtual memory card images, for the file browser
-@@ -137,6 +139,7 @@ void ripps2DrawBootFrame(void);     // the swoop's first frame, for boot screens
+@@ -137,6 +157,7 @@ void ripps2DrawBootFrame(void);     // the swoop's first frame, for boot screens
  int ripps2IntroUiReady(void);       // the boot swoop has run long enough to bring the menu in
  void ripps2PlayLaunchSequence(void); // pillars only, light-up and flash; the last frame holds
  int ripps2LaunchScreenHeld(void);    // that frame is up: the teardown must not draw over it
@@ -90,11 +160,59 @@ index 3613b0c..5dd93a7 100644
  void ripps2LaunchAborted(void);      // the launch failed and returned to the menu
  
  #endif
+diff --git a/include/ripps2tint.h b/include/ripps2tint.h
+new file mode 100644
+index 0000000..569d7ff
+--- /dev/null
++++ b/include/ripps2tint.h
+@@ -0,0 +1,29 @@
++#ifndef __RIPPS2TINT_H
++#define __RIPPS2TINT_H
++
++/*
++  RIPPSettings Color Theme. Included LAST by the files that draw RIPPS2's own pages (the towers, the
++  orbs, the glass, the CD player, the browser and its tools), so every colour they make, with
++  GS_SETREG_RGBA / GS_SETREG_RGBAQ or the macros built on them, goes through the theme's colour
++  matrix (ripps2ui.c). Greys come through unchanged, so text and the 0x80 grey that draws a texture
++  as it is never change: only the blues move. RIPPS2 blue (theme 0) costs a test and nothing else.
++*/
++
++#include <tamtypes.h>
++
++extern int gRipps2Palette;
++u64 ripps2TintSlow(int r, int g, int b, int a, u64 q);
++
++static inline u64 ripps2Tint(int r, int g, int b, int a, u64 q)
++{
++    if (gRipps2Palette == 0)
++        return (u64)(r & 0xFF) | ((u64)(g & 0xFF) << 8) | ((u64)(b & 0xFF) << 16) | ((u64)(a & 0xFF) << 24) | (q << 32);
++    return ripps2TintSlow(r, g, b, a, q);
++}
++
++#undef GS_SETREG_RGBA
++#undef GS_SETREG_RGBAQ
++#define GS_SETREG_RGBA(r, g, b, a)     ripps2Tint((int)(r), (int)(g), (int)(b), (int)(a), 0)
++#define GS_SETREG_RGBAQ(r, g, b, a, q) ripps2Tint((int)(r), (int)(g), (int)(b), (int)(a), (u64)(q))
++
++#endif
+diff --git a/include/textures.h b/include/textures.h
+index ac1b1f9..4b258bd 100644
+--- a/include/textures.h
++++ b/include/textures.h
+@@ -127,6 +127,8 @@ enum INTERNAL_TEXTURE {
+     RIPPS2_PS1_LOGO, // RIPPS2: the PS1 games filter's splash (image ripps2_ps1logo)
+     RIPPS2_PS2_LOGO, // RIPPS2: the PS2 games filter's splash (image ripps2_ps2logo)
+     RIPPS2_GRID_ICONS, // RIPPS2: the file browser settings grid's line icons and their glows, one atlas
++    RIPPS2_DPAD_UP,    // RIPPS2 build 70: the D-pad glyph, Up lit (Coverflow's drive glyphs; image ripps2_up)
++    RIPPS2_DPAD_DOWN,  // RIPPS2 build 70: the D-pad glyph, Down lit (image ripps2_down)
+ #ifdef RETROACHIEVEMENTS
+     // RA mark over a tracked game's cover (theme override "ra_mark"). Appended last:
+     // texId is positional.
 diff --git a/lng_tmpl/_base.yml b/lng_tmpl/_base.yml
-index b97d7c1..9d8a458 100644
+index b97d7c1..0a2f1e0 100644
 --- a/lng_tmpl/_base.yml
 +++ b/lng_tmpl/_base.yml
-@@ -1403,6 +1403,14 @@ gui_strings:
+@@ -1403,6 +1403,38 @@ gui_strings:
    string: "Shows what each memory card starts at power on (PS2BBL, FMCB, OSDMenu), and installs or repairs BIBLE: PS2BBL 1.2.0 by El Isra, bound to the card you choose, starting RIPPS2 at once with Boot Lock on. What the card started before is kept in a backup folder."
  - label: RIPPS2_MANAGE
    string: Manage
@@ -106,11 +224,49 @@ index b97d7c1..9d8a458 100644
 +  string: "Shares the hard drive over the network as an NBD device, so a PC can manage it. A status screen stays up while it runs; leave it to stop the server."
 +- label: RIPPS2_START
 +  string: Start
++- label: RIPPS2_SETTINGS
++  string: RIPPSettings
++- label: HINT_RIPPS2_SETTINGS
++  string: "How RIPPS2's own pages look: the D-pad glyphs beside names, a color theme for all three tabs, the button hints, the category bar, and which side Memory Files sits on."
++- label: RIPPS2_GLYPHS
++  string: D-pad Glyphs
++- label: HINT_RIPPS2_GLYPHS
++  string: "The D-pad glyphs beside a drive's name in Storage and a formation's name in Memory Files. Hidden leaves plain names. Fade In brings them in when you press Left or Right (Up or Down on Coverflow); Fade Out shows them as a page opens. Either way they fade away again."
++- label: RIPPS2_COLOR_THEME
++  string: Color Theme
++- label: HINT_RIPPS2_COLOR_THEME
++  string: "One color for everything RIPPS2 draws on all three tabs: the towers, the orbs, the glass, the CD player and the file browser. Text and game art keep their own colors."
++- label: RIPPS2_HINTS
++  string: Button Hints
++- label: HINT_RIPPS2_HINTS
++  string: "The button hints along the bottom of Launch Disc, Storage and Memory Files. Fade When Idle hides them after a few seconds without a press, and any button brings them back. The buttons work whatever this is set to."
++- label: RIPPS2_CATEGORY_BAR
++  string: Category Bar
++- label: HINT_RIPPS2_CATEGORY_BAR
++  string: "LAUNCH DISC, STORAGE and MEMORY FILES along the top. Fade When Idle hides them after a few seconds without a press, and any button brings them back. L1 and R1 switch categories whatever this is set to."
++- label: RIPPS2_CATEGORY_ORDER
++  string: Category Order
++- label: HINT_RIPPS2_CATEGORY_ORDER
++  string: "Swaps Memory Files with Launch Disc on the category bar, so Memory Files comes first. Made for the built-in Coverflow theme (Settings > Interface > Theme > <Coverflow>), where Left and Right run the carousel and Up and Down switch drives."
  - label: RIPPS2_MUSIC
    string: Music
  - label: HINT_RIPPS2_MUSIC
+diff --git a/src/dia.c b/src/dia.c
+index c73fc85..6659e62 100644
+--- a/src/dia.c
++++ b/src/dia.c
+@@ -1549,6 +1549,9 @@ int diaExecuteDialog(struct UIItem *ui, int uiId, short inMenu, int (*updater)(i
+     // slower controls for dialogs
+     setButtonDelay(KEY_UP, diaScrollDelay());
+     setButtonDelay(KEY_DOWN, diaScrollDelay());
++    // RIPPS2 build 70: Left / Right too, now the main screen runs them at the Scroll Speed (Coverflow)
++    setButtonDelay(KEY_LEFT, diaScrollDelay());
++    setButtonDelay(KEY_RIGHT, diaScrollDelay());
+ 
+     diaScrollOffset = 0; // start each dialog scrolled to the top
+ 
 diff --git a/src/dialogs.c b/src/dialogs.c
-index 7fe7d25..890363a 100644
+index 7fe7d25..da619a1 100644
 --- a/src/dialogs.c
 +++ b/src/dialogs.c
 @@ -185,6 +185,13 @@ struct UIItem diaNetConfig[] = {
@@ -127,8 +283,63 @@ index 7fe7d25..890363a 100644
      // POPSTARTER owns its own IPCONFIG.DAT / SMBCONFIG.DAT editor. Keep its entry beside the
      // SMB server data it relates to, without duplicating any of that state in this page.
      {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_POPSTARTER_NETWORK_SETTINGS}}},
+@@ -1786,6 +1793,12 @@ struct UIItem diaControllerConfig[] = {
+     {UI_HEADER, 0, 1, 1, -1, 0, 0, {.label = {NULL, _STR_CONTROLLER_SETTINGS}}},
+     {UI_SPLITTER},
+ 
++    // RIPPS2 build 70: RIPPSettings, how RIPPS2's own pages look
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_SETTINGS}}},
++    {UI_SPACER},
++    {UI_BUTTON, RIPPS2_SETTINGS_BUTTON, 1, 1, _STR_HINT_RIPPS2_SETTINGS, 0, 0, {.label = {NULL, _STR_MODIFY}}},
++    {UI_BREAK},
++
+     {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_SCROLLING}}},
+     {UI_SPACER},
+     {UI_ENUM, UICFG_SCROLL, 1, 1, -1, 0, 0, {.intvalue = {0, 0}}},
+@@ -1829,6 +1842,41 @@ struct UIItem diaControllerConfig[] = {
+     // end of dialog
+     {UI_TERMINATOR}};
+ 
++// RIPPS2 build 70: RIPPSettings (Controller Settings > RIPPSettings)
++struct UIItem diaRipps2Config[] = {
++    {UI_HEADER, 0, 1, 1, -1, 0, 0, {.label = {NULL, _STR_RIPPS2_SETTINGS}}},
++    {UI_SPLITTER},
++
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_GLYPHS}}},
++    {UI_SPACER},
++    {UI_ENUM, UICFG_RIPPS2_GLYPHS, 1, 1, _STR_HINT_RIPPS2_GLYPHS, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BREAK},
++
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_COLOR_THEME}}},
++    {UI_SPACER},
++    {UI_ENUM, UICFG_RIPPS2_PALETTE, 1, 1, _STR_HINT_RIPPS2_COLOR_THEME, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BREAK},
++
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_HINTS}}},
++    {UI_SPACER},
++    {UI_ENUM, UICFG_RIPPS2_HINTS, 1, 1, _STR_HINT_RIPPS2_HINTS, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BREAK},
++
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_CATEGORY_BAR}}},
++    {UI_SPACER},
++    {UI_ENUM, UICFG_RIPPS2_CATBAR, 1, 1, _STR_HINT_RIPPS2_CATEGORY_BAR, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BREAK},
++
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_CATEGORY_ORDER}}},
++    {UI_SPACER},
++    {UI_ENUM, UICFG_RIPPS2_CATSWAP, 1, 1, _STR_HINT_RIPPS2_CATEGORY_ORDER, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BREAK},
++
++    // buttons
++    {UI_OK, 0, 1, 1, -1, 0, 0, {.label = {NULL, _STR_OK}}},
++    // end of dialog
++    {UI_TERMINATOR}};
++
+ struct UIItem diaCoverflowConfig[] = {
+     {UI_HEADER, 0, 1, 1, -1, 0, 0, {.label = {NULL, _STR_COVERFLOW_SETTINGS}}},
+     {UI_SPLITTER},
 diff --git a/src/gui.c b/src/gui.c
-index 87b8a02..2999e44 100644
+index 87b8a02..1dee2cf 100644
 --- a/src/gui.c
 +++ b/src/gui.c
 @@ -520,7 +520,7 @@ static int guiRenderRANotices(int y, int yadd)
@@ -161,7 +372,86 @@ index 87b8a02..2999e44 100644
      if (result && !guiSettingsLeftUntouched(diaNetConfig, result, NULL, NULL)) {
          int netProtoVal2, netAccessVal2;
          diaGetInt(diaNetConfig, CFG_NETPROTOCOL, &netProtoVal2);
-@@ -2951,6 +2956,30 @@ reshow_sources:
+@@ -2558,6 +2563,67 @@ int guiShowAudioConfig(void)
+     return guiSettingsPageResult(result);
+ }
+ 
++// RIPPS2 build 70: RIPPSettings (Controller Settings > RIPPSettings): how RIPPS2's own pages look.
++// Each row shows live behind the page as it changes; Cancel puts back what was there.
++static const char *guiRipps2GlyphNames[] = {"Hidden", "Shown", "Fade In", "Fade Out", NULL};
++static const char *guiRipps2ShowNames[] = {"Shown", "Fade When Idle", "Hidden", NULL};
++static const char *guiRipps2OrderNames[] = {"Launch Disc First", "Memory Files First", NULL};
++static const char *guiRipps2PaletteNames[RIPPS2_PALETTE_COUNT + 1];
++
++static void guiRipps2SettingsRead(void)
++{
++    int v;
++    if (diaGetInt(diaRipps2Config, UICFG_RIPPS2_GLYPHS, &v) && v >= 0 && v < RIPPS2_GLYPHS_COUNT)
++        gRipps2Glyphs = v;
++    if (diaGetInt(diaRipps2Config, UICFG_RIPPS2_PALETTE, &v) && v >= 0 && v < RIPPS2_PALETTE_COUNT)
++        gRipps2Palette = v;
++    if (diaGetInt(diaRipps2Config, UICFG_RIPPS2_HINTS, &v) && v >= 0 && v < RIPPS2_SHOW_COUNT)
++        gRipps2Hints = v;
++    if (diaGetInt(diaRipps2Config, UICFG_RIPPS2_CATBAR, &v) && v >= 0 && v < RIPPS2_SHOW_COUNT)
++        gRipps2CatBar = v;
++    if (diaGetInt(diaRipps2Config, UICFG_RIPPS2_CATSWAP, &v) && (v == 0 || v == 1))
++        gRipps2CatSwap = v;
++}
++
++static int guiRipps2SettingsUpdater(int modified)
++{
++    if (modified)
++        guiRipps2SettingsRead();
++    return 0;
++}
++
++static void guiShowRipps2Settings(void)
++{
++    int i, keep[5] = {gRipps2Glyphs, gRipps2Palette, gRipps2Hints, gRipps2CatBar, gRipps2CatSwap};
++
++    for (i = 0; i < RIPPS2_PALETTE_COUNT; i++)
++        guiRipps2PaletteNames[i] = ripps2PaletteName(i);
++    guiRipps2PaletteNames[RIPPS2_PALETTE_COUNT] = NULL;
++    diaSetEnum(diaRipps2Config, UICFG_RIPPS2_GLYPHS, guiRipps2GlyphNames);
++    diaSetEnum(diaRipps2Config, UICFG_RIPPS2_PALETTE, guiRipps2PaletteNames);
++    diaSetEnum(diaRipps2Config, UICFG_RIPPS2_HINTS, guiRipps2ShowNames);
++    diaSetEnum(diaRipps2Config, UICFG_RIPPS2_CATBAR, guiRipps2ShowNames);
++    diaSetEnum(diaRipps2Config, UICFG_RIPPS2_CATSWAP, guiRipps2OrderNames);
++    diaSetInt(diaRipps2Config, UICFG_RIPPS2_GLYPHS, gRipps2Glyphs);
++    diaSetInt(diaRipps2Config, UICFG_RIPPS2_PALETTE, gRipps2Palette);
++    diaSetInt(diaRipps2Config, UICFG_RIPPS2_HINTS, gRipps2Hints);
++    diaSetInt(diaRipps2Config, UICFG_RIPPS2_CATBAR, gRipps2CatBar);
++    diaSetInt(diaRipps2Config, UICFG_RIPPS2_CATSWAP, gRipps2CatSwap);
++
++    if (diaExecuteDialog(diaRipps2Config, -1, 1, &guiRipps2SettingsUpdater)) {
++        guiRipps2SettingsRead();
++    } else {
++        gRipps2Glyphs = keep[0];
++        gRipps2Palette = keep[1];
++        gRipps2Hints = keep[2];
++        gRipps2CatBar = keep[3];
++        gRipps2CatSwap = keep[4];
++    }
++    if (gRipps2Glyphs != keep[0] || gRipps2Palette != keep[1] || gRipps2Hints != keep[2] || gRipps2CatBar != keep[3] ||
++        gRipps2CatSwap != keep[4])
++        guiSettingsSavePending = 1; // saved with the rest when Settings closes
++}
++
+ int guiShowControllerConfig(void)
+ {
+     int value;
+@@ -2594,6 +2660,10 @@ reshow_controller:
+             gSelectButton = value == 0 ? KEY_CIRCLE : KEY_CROSS;
+         else
+             gSelectButton = KEY_CIRCLE;
++        if (result == RIPPS2_SETTINGS_BUTTON) {
++            guiShowRipps2Settings();
++            goto reshow_controller;
++        }
+ #ifdef PADEMU
+         if (result == PADEMU_GLOBAL_BUTTON) {
+             guiGameShowPadEmuConfig(1);
+@@ -2951,6 +3021,30 @@ reshow_sources:
      return guiSettingsPageResult(result);
  }
  
@@ -192,7 +482,7 @@ index 87b8a02..2999e44 100644
  static int guiSettingsDisplayUpdater(int modified)
  {
      int temp, x, y;
-@@ -2959,6 +2988,7 @@ static int guiSettingsDisplayUpdater(int modified)
+@@ -2959,6 +3053,7 @@ static int guiSettingsDisplayUpdater(int modified)
          return 0;
  
      guiSettingsSavePending = 1;
@@ -200,7 +490,7 @@ index 87b8a02..2999e44 100644
  
      diaGetInt(guiSettingsActiveDialog, UICFG_XOFF, &x);
      diaGetInt(guiSettingsActiveDialog, UICFG_YOFF, &y);
-@@ -3029,6 +3059,7 @@ static int guiSettingsShowInterface(void)
+@@ -3029,6 +3124,7 @@ static int guiSettingsShowInterface(void)
      diaSetVisible(ui, UICFG_COVERFLOW_BUTTON, 1);
      diaSetInt(ui, UICFG_VMODE, gVMode);
      diaSetInt(ui, UICFG_WIDESCREEN, gWideScreen);
@@ -208,7 +498,7 @@ index 87b8a02..2999e44 100644
      diaSetInt(ui, UICFG_XOFF, gXOff);
      diaSetInt(ui, UICFG_YOFF, gYOff);
      diaSetInt(ui, UICFG_OVERSCAN, gOverscan);
-@@ -3840,11 +3871,25 @@ static void guiHandleOp(struct gui_update_t *item)
+@@ -3840,11 +3936,25 @@ static void guiHandleOp(struct gui_update_t *item)
      }
  }
  
@@ -235,7 +525,7 @@ index 87b8a02..2999e44 100644
  
          guiHandleOp(gUpdateList->item);
  
-@@ -3876,6 +3921,11 @@ static void guiHandleDeferredOps(void)
+@@ -3876,6 +3986,11 @@ static void guiHandleDeferredOps(void)
      SignalSema(gSemaId);
  }
  
@@ -247,7 +537,29 @@ index 87b8a02..2999e44 100644
  void guiExecDeferredOps(void)
  {
      // Clears deferred operations list by executing them.
-@@ -4647,7 +4697,7 @@ void guiIntroLoop(void)
+@@ -4260,6 +4375,12 @@ void guiDrawBGPlasma()
+ }
+ 
+ int guiDrawIconAndText(int iconId, int textId, int font, int x, int y, u64 color)
++{
++    return guiDrawIconAndTextA(iconId, textId, font, x, y, color, gDefaultCol);
++}
++
++// RIPPS2 build 70: the same with the icon's colour given (the hints fade with RIPPSettings)
++int guiDrawIconAndTextA(int iconId, int textId, int font, int x, int y, u64 color, u64 iconColor)
+ {
+     GSTEXTURE *iconTex = thmGetTexture(iconId);
+     int w = 0;
+@@ -4271,7 +4392,7 @@ int guiDrawIconAndText(int iconId, int textId, int font, int x, int y, u64 color
+ 
+     if (iconTex && iconTex->Mem) {
+         y += h >> 1;
+-        rmDrawPixmap(iconTex, x, y, ALIGN_VCENTER, w, h, SCALING_RATIO, gDefaultCol, 0);
++        rmDrawPixmap(iconTex, x, y, ALIGN_VCENTER, w, h, SCALING_RATIO, iconColor, 0);
+         x += rmWideScale(w) + 2;
+     } else {
+         // HACK: font is aligned to VCENTER, the default height icon height is 20
+@@ -4647,7 +4768,7 @@ void guiIntroLoop(void)
  
          guiDrawOverlays();
  
@@ -256,7 +568,15 @@ index 87b8a02..2999e44 100644
          bgmBootTick(); // RIPPS2: the music comes in under the intro once the sounds are loaded
  
          guiEndFrame();
-@@ -4693,8 +4743,8 @@ void guiMainLoop(void)
+@@ -4673,6 +4794,7 @@ void guiMainLoop(void)
+ 
+         // Read the pad states to prepare for input processing in the screen handler
+         guiReadPads();
++        ripps2NoteInput(); // RIPPS2 build 70: the idle time RIPPSettings' fades follow
+ 
+         // handle inputs and render screen
+         guiShow();
+@@ -4693,8 +4815,8 @@ void guiMainLoop(void)
          guiShowRANotices();
  #endif
  
@@ -267,6 +587,25 @@ index 87b8a02..2999e44 100644
  
          guiEndFrame();
  
+@@ -4754,7 +4876,7 @@ void guiUpdateScrollSpeed(void)
+ {
+     // sanitize the settings
+     if ((gScrollSpeed < 0) || (gScrollSpeed > 2))
+-        gScrollSpeed = 1;
++        gScrollSpeed = 2; // RIPPS2 build 70: Fast is the default
+ 
+     // update the pad delays for KEY_UP and KEY_DOWN
+     // default delay is 7
+@@ -4763,6 +4885,9 @@ void guiUpdateScrollSpeed(void)
+     // slow - 500 ms
+     setButtonDelay(KEY_UP, 500 - gScrollSpeed * 200); // 0,1,2 -> 500, 300, 100
+     setButtonDelay(KEY_DOWN, 500 - gScrollSpeed * 200);
++    // RIPPS2 build 70: and Left / Right, which run Coverflow's carousel (dialogs set their own, calmer)
++    setButtonDelay(KEY_LEFT, 500 - gScrollSpeed * 200);
++    setButtonDelay(KEY_RIGHT, 500 - gScrollSpeed * 200);
+ }
+ 
+ void guiUpdateScreenScale(void)
 diff --git a/src/ioman.c b/src/ioman.c
 index 69230e5..5ae1007 100644
 --- a/src/ioman.c
@@ -328,7 +667,7 @@ index 69230e5..5ae1007 100644
          // Only restore the saved priority if ReferThreadStatus actually filled it.
          if (haveStatus)
 diff --git a/src/menusys.c b/src/menusys.c
-index e3a9fa9..0e14f1b 100644
+index e3a9fa9..6bf1772 100644
 --- a/src/menusys.c
 +++ b/src/menusys.c
 @@ -38,6 +38,7 @@ enum MENU_IDs {
@@ -375,11 +714,139 @@ index e3a9fa9..0e14f1b 100644
          } else if (id == MENU_ABOUT) {
              guiShowAbout();
          } else if (id == MENU_SAVE_CHANGES) {
+@@ -1804,6 +1805,16 @@ void menuRenderMain(void)
+     ripps2DrawViewWord();      // RIPPS2: L3's new list, named large while it plays
+ }
+ 
++// RIPPS2 build 70: a drive step, which RIPPSettings' D-pad glyphs answer
++static void menuDriveStep(int dir)
++{
++    if (dir < 0)
++        menuPrevH();
++    else
++        menuNextH();
++    ripps2GlyphsPoke(RIPPS2_GLYPH_DRIVES);
++}
++
+ // Coverflow rotates the nav axis on the MAIN screen only: Left/Right step through the
+ // carousel (a vertical list move) while Up/Down switch device menus. Non-coverflow themes
+ // behave exactly as before. The info screen is intentionally NOT rotated (menuHandleInputInfo).
+@@ -1812,7 +1823,7 @@ static void menuNavigateLeft()
+     if (gTheme->coverflow)
+         menuPrevV();
+     else
+-        menuPrevH();
++        menuDriveStep(-1);
+ }
+ 
+ static void menuNavigateRight()
+@@ -1820,13 +1831,13 @@ static void menuNavigateRight()
+     if (gTheme->coverflow)
+         menuNextV();
+     else
+-        menuNextH();
++        menuDriveStep(1);
+ }
+ 
+ static void menuNavigateUp()
+ {
+     if (gTheme->coverflow)
+-        menuPrevH();
++        menuDriveStep(-1);
+     else
+         menuPrevV();
+ }
+@@ -1834,7 +1845,7 @@ static void menuNavigateUp()
+ static void menuNavigateDown()
+ {
+     if (gTheme->coverflow)
+-        menuNextH();
++        menuDriveStep(1);
+     else
+         menuNextV();
+ }
+@@ -1877,17 +1888,22 @@ void menuHandleInputMain()
+         menuRandomItem(1);
+     }
+ 
++    // RIPPS2 build 70: the game list's axis repeats while held and the drive axis steps once a press.
++    // That is Up / Down and Left / Right normally, and the other way round on Coverflow, whose
++    // carousel runs on Left / Right (build 69 made Left / Right single steps, which left the carousel
++    // one cover a press and Up / Down racing through the drives).
++    int cf = gTheme->coverflow != NULL;
+     if (getKeyOn(KEY_L1)) {
+         ripps2StepCategory(-1); // RIPPS2 build 69: L1/R1 switch categories (Launch Disc / Memory Files)
+     } else if (getKeyOn(KEY_R1)) {
+         ripps2StepCategory(1);
+-    } else if (getKeyOn(KEY_LEFT)) {
++    } else if (cf ? getKey(KEY_LEFT) : getKeyOn(KEY_LEFT)) {
+         menuNavigateLeft(); // RIPPS2 build 69: Left/Right switch drives, like the orb formations (FifthFox)
+-    } else if (getKeyOn(KEY_RIGHT)) {
++    } else if (cf ? getKey(KEY_RIGHT) : getKeyOn(KEY_RIGHT)) {
+         menuNavigateRight();
+-    } else if (getKey(KEY_UP)) {
++    } else if (cf ? getKeyOn(KEY_UP) : getKey(KEY_UP)) {
+         menuNavigateUp();
+-    } else if (getKey(KEY_DOWN)) {
++    } else if (cf ? getKeyOn(KEY_DOWN) : getKey(KEY_DOWN)) {
+         menuNavigateDown();
+     } else if (getKeyOn(KEY_CROSS)) {
+         if (!viewPending)
+@@ -1967,11 +1983,12 @@ void menuHandleInputInfo()
+         menuNextV();
+     } else if (getKeyOn(KEY_LEFT)) {
+         // RIPPS2 build 69: Left/Right switch drives here too; leaving the info page lands on that
+-        // drive's game list
+-        menuNavigateLeft();
++        // drive's game list. Build 70: on every theme, Coverflow included (this page is not rotated:
++        // Up / Down are its games, so Left / Right stepping a game was a second Up / Down).
++        menuDriveStep(-1);
+         guiSwitchScreen(GUI_SCREEN_MAIN);
+     } else if (getKeyOn(KEY_RIGHT)) {
+-        menuNavigateRight();
++        menuDriveStep(1);
+         guiSwitchScreen(GUI_SCREEN_MAIN);
+     } else if (getKeyOn(KEY_L1)) {
+         ripps2StepCategory(-1); // RIPPS2 build 69: L1/R1 switch categories, from the info page as well
 diff --git a/src/opl.c b/src/opl.c
-index cc43fde..4ce63b5 100644
+index cc43fde..c0d0ec0 100644
 --- a/src/opl.c
 +++ b/src/opl.c
-@@ -4758,6 +4758,10 @@ void deinitEx(int exception, int modeSelected, int modeSelected2)
+@@ -3250,6 +3250,21 @@ static void _loadConfig()
+                 gRipps2OrbPaths = value;
+             if (configGetInt(configOPL, "ripps2_orb_height", &value) && value >= 0 && value <= 2)
+                 gRipps2OrbHeight = value;
++            // RIPPS2 build 70: RIPPSettings. A settings file from before it (no ripps2_glyphs) still
++            // on the old default scroll speed, Medium, moves to the new one, Fast.
++            if (configGetInt(configOPL, "ripps2_glyphs", &value)) {
++                if (value >= 0 && value < RIPPS2_GLYPHS_COUNT)
++                    gRipps2Glyphs = value;
++            } else if (gScrollSpeed == 1)
++                gScrollSpeed = 2;
++            if (configGetInt(configOPL, "ripps2_palette", &value) && value >= 0 && value < RIPPS2_PALETTE_COUNT)
++                gRipps2Palette = value;
++            if (configGetInt(configOPL, "ripps2_hints", &value) && value >= 0 && value < RIPPS2_SHOW_COUNT)
++                gRipps2Hints = value;
++            if (configGetInt(configOPL, "ripps2_catbar", &value) && value >= 0 && value < RIPPS2_SHOW_COUNT)
++                gRipps2CatBar = value;
++            if (configGetInt(configOPL, "ripps2_catswap", &value) && (value == 0 || value == 1))
++                gRipps2CatSwap = value;
+             configGetColor(configOPL, CONFIG_OPL_BGCOLOR, gDefaultBgColor);
+             configGetColor(configOPL, CONFIG_OPL_TEXTCOLOR, gDefaultTextColor);
+             configGetColor(configOPL, CONFIG_OPL_UI_TEXTCOLOR, gDefaultUITextColor);
+@@ -3937,6 +3952,11 @@ static void _saveConfig()
+         configSetInt(configOPL, "ripps2_orb_speed", gRipps2OrbSpeed);
+         configSetInt(configOPL, "ripps2_orb_paths", gRipps2OrbPaths);
+         configSetInt(configOPL, "ripps2_orb_height", gRipps2OrbHeight);
++        configSetInt(configOPL, "ripps2_glyphs", gRipps2Glyphs); // RIPPS2 build 70: RIPPSettings
++        configSetInt(configOPL, "ripps2_palette", gRipps2Palette);
++        configSetInt(configOPL, "ripps2_hints", gRipps2Hints);
++        configSetInt(configOPL, "ripps2_catbar", gRipps2CatBar);
++        configSetInt(configOPL, "ripps2_catswap", gRipps2CatSwap);
+         configSetStr(configOPL, CONFIG_OPL_THEME, thmGetValue());
+         configSetStr(configOPL, CONFIG_OPL_LANGUAGE, lngGetValue());
+         configSetColor(configOPL, CONFIG_OPL_BGCOLOR, gDefaultBgColor);
+@@ -4758,6 +4778,10 @@ void deinitEx(int exception, int modeSelected, int modeSelected2)
      // wait was not.
      bgmQuiesce();
  
@@ -390,7 +857,7 @@ index cc43fde..4ce63b5 100644
      // block all io ops, wait for the ones still running to finish (BOUNDED -- see the note above)
      ioBlockOpsTimed(1, gDeinitTerminal ? EXIT_IO_DRAIN_TICKS : LAUNCH_IO_DRAIN_TICKS);
  
-@@ -4766,6 +4770,7 @@ void deinitEx(int exception, int modeSelected, int modeSelected2)
+@@ -4766,6 +4790,7 @@ void deinitEx(int exception, int modeSelected, int modeSelected2)
      // below is about to unmount that device and close its descriptors.
      gArtAbandoned = !cacheEnd(gDeinitTerminal);
      guiExecDeferredOps();
@@ -398,7 +865,7 @@ index cc43fde..4ce63b5 100644
      if (gLaunchDiag)
          launchDiagMark(6); // io + art drain done -- the per-module teardown below runs next
  
-@@ -4841,6 +4846,10 @@ void deinit(int exception, int modeSelected)
+@@ -4841,6 +4866,10 @@ void deinit(int exception, int modeSelected)
      // wait was not.
      bgmQuiesce();
  
@@ -409,7 +876,7 @@ index cc43fde..4ce63b5 100644
      // block all io ops, wait for the ones still running to finish (BOUNDED -- see the note above)
      ioBlockOpsTimed(1, gDeinitTerminal ? EXIT_IO_DRAIN_TICKS : LAUNCH_IO_DRAIN_TICKS);
  
-@@ -4849,6 +4858,7 @@ void deinit(int exception, int modeSelected)
+@@ -4849,6 +4878,7 @@ void deinit(int exception, int modeSelected)
      // below is about to unmount that device and close its descriptors.
      gArtAbandoned = !cacheEnd(gDeinitTerminal);
      guiExecDeferredOps();
@@ -417,11 +884,28 @@ index cc43fde..4ce63b5 100644
      if (gLaunchDiag)
          launchDiagMark(6); // io + art drain done -- the per-module teardown below runs next
  
+@@ -4966,7 +4996,7 @@ static void setDefaults(void)
+     gPCPassword[0] = '\0';
+     gNetworkStartup = ERROR_ETH_NOT_STARTED;
+     gHDDSpindown = 20;
+-    gScrollSpeed = 1;
++    gScrollSpeed = 2; // RIPPS2 build 70: Fast (was Medium)
+     gExitPath[0] = '\0';
+     gCustomSettingsPath[0] = '\0'; // opt-in: empty means "use the normal boot-dir/discovery home"
+     gDefaultDevice = MIX_MODE; // RIPPS2: All Games
 diff --git a/src/ripps2about.c b/src/ripps2about.c
-index 9bcdba8..5c5f290 100644
+index 9bcdba8..b83e916 100644
 --- a/src/ripps2about.c
 +++ b/src/ripps2about.c
-@@ -71,6 +71,12 @@ static const ab_row_t abRows[] = {
+@@ -23,6 +23,7 @@
+ #include "include/sound.h"
+ #include "include/ripps2.h"
+ #include "include/ripps2_build.h"
++#include "include/ripps2tint.h" // RIPPSettings Color Theme: last, so every colour below goes through it
+ 
+ #define AB_TOP     54  // the column shows between these
+ #define AB_BOTTOM  424
+@@ -71,6 +72,12 @@ static const ab_row_t abRows[] = {
      {'T', "ps2sdk's libcdvd and audsrv"},
      {'S', "the disc's sound read straight off it, the towers lit by it"},
      {'G', NULL},
@@ -435,7 +919,7 @@ index 9bcdba8..5c5f290 100644
      {'T', "PS2BBL by El Isra (israpps)"},
      {'S', "the PlayStation 2 Basic BootLoader: BOOT LOCK starts RIPPS2 with it"},
 diff --git a/src/ripps2bg.c b/src/ripps2bg.c
-index 17d7d36..c0086ad 100644
+index 17d7d36..8b64a8c 100644
 --- a/src/ripps2bg.c
 +++ b/src/ripps2bg.c
 @@ -12,6 +12,8 @@
@@ -447,9 +931,11 @@ index 17d7d36..c0086ad 100644
  #include <stdio.h>
  #include <string.h>
  
-@@ -24,7 +26,9 @@
+@@ -23,8 +25,11 @@
+ #include "include/pad.h"
  #include "include/ripps2.h"
  #include "include/sound.h"
++#include "include/ripps2tint.h" // RIPPSettings Color Theme: last, so every colour below goes through it
  
 -#define RIPPS2_PERF_HUD 0 // 1: show the background's EE time and the FPS in the corner (dev builds)
 +#ifndef RIPPS2_PERF_HUD // make RIPPS2_PERF_HUD=1: the frame timings in the corner (test builds only)
@@ -458,7 +944,7 @@ index 17d7d36..c0086ad 100644
  
  #define PI   3.14159265f
  #define TAU  6.28318531f
-@@ -44,9 +48,24 @@ typedef struct
+@@ -44,9 +49,24 @@ typedef struct
      int ok;
  } p2;
  
@@ -484,7 +970,7 @@ index 17d7d36..c0086ad 100644
  }
  
  static inline unsigned int cpuTicks(void)
-@@ -85,6 +104,17 @@ static void camLook(v3 eye, v3 target, float fovDeg)
+@@ -85,6 +105,17 @@ static void camLook(v3 eye, v3 target, float fovDeg)
      camFocal = 240.0f / tanf(fovDeg * PI / 360.0f);
  }
  
@@ -502,7 +988,7 @@ index 17d7d36..c0086ad 100644
  static p2 project(v3 p)
  {
      v3 d = vsub(p, camEye);
-@@ -92,8 +122,11 @@ static p2 project(v3 p)
+@@ -92,8 +123,11 @@ static p2 project(v3 p)
      o.z = vdot(d, camF);
      o.ok = o.z > 0.5f;
      if (o.ok) {
@@ -515,7 +1001,7 @@ index 17d7d36..c0086ad 100644
      }
      return o;
  }
-@@ -313,9 +346,9 @@ static void moteGlow(float x, float y, float r, int a)
+@@ -313,9 +347,9 @@ static void moteGlow(float x, float y, float r, int a)
      int k;
      const int seg = 6;
      u64 centre = RGBA(0xB0, 0xD0, 0xFF, a), rim = RGBA(0xB0, 0xD0, 0xFF, 0);
@@ -527,7 +1013,7 @@ index 17d7d36..c0086ad 100644
          rmDrawTriGouraud(x, y, centre, px, py, rim, nx, ny, rim);
          px = nx;
          py = ny;
-@@ -406,7 +439,7 @@ static void drawBeam(float x, float z, float y0, float w, float b)
+@@ -406,7 +440,7 @@ static void drawBeam(float x, float z, float y0, float w, float b)
      p2 pb = project(base), pt = project(tip);
      if (!onScreen(pb) || !onScreen(pt))
          return;
@@ -536,7 +1022,7 @@ index 17d7d36..c0086ad 100644
      int a = (int)(0x58 * fminf(1.0f, b));
      u64 c0 = RGBA(0x5C, 0x98, 0xFF, a), c1 = RGBA(0x5C, 0x98, 0xFF, 0);
      u64 k0 = RGBA(0xDC, 0xEA, 0xFF, a), k1 = RGBA(0xDC, 0xEA, 0xFF, 0);
-@@ -550,6 +583,7 @@ void ripps2DrawPillars(void)
+@@ -550,6 +584,7 @@ void ripps2DrawPillars(void)
  {
      int i, j, k;
      float t = sceneTime();
@@ -544,7 +1030,7 @@ index 17d7d36..c0086ad 100644
  
      if (towerCount == 0)
          pillarsInit();
-@@ -600,6 +634,17 @@ void ripps2DrawPillars(void)
+@@ -600,6 +635,17 @@ void ripps2DrawPillars(void)
      rmSetBlendAdditive(0);
      drawMotes(t, 0);
  
@@ -562,7 +1048,7 @@ index 17d7d36..c0086ad 100644
      // heights: the boot rise, breathing, the idle swell, and the launch heat
      for (i = 0; i < towerCount; i++) {
          tower_t *tw = &towers[i];
-@@ -611,10 +656,10 @@ void ripps2DrawPillars(void)
+@@ -611,10 +657,10 @@ void ripps2DrawPillars(void)
              float dist = sqrtf(tw->x * tw->x + tw->z * tw->z);
              for (k = 0; k < 3; k++) { // three rings, 0.28 s apart
                  float age = L - k * 0.28f;
@@ -575,7 +1061,7 @@ index 17d7d36..c0086ad 100644
              }
              heat = fminf(2.4f, heat + glowAll * 0.8f);
          }
-@@ -627,13 +672,12 @@ void ripps2DrawPillars(void)
+@@ -627,13 +673,12 @@ void ripps2DrawPillars(void)
              float v = musicAt(clamp01(u * 0.5f + 0.5f) * (MUS_BANDS - 1), age * (MUS_ROWS - 1));
              float mh = (0.6f + v * 11.5f) * (1.0f - 0.25f * age) * (0.9f + 0.2f * tw->base);
              float mheat = v * 1.15f * (1.0f - 0.6f * age);
@@ -593,7 +1079,7 @@ index 17d7d36..c0086ad 100644
              }
              tw->heat = fmaxf(tw->heat, mheat * musicMix);
              h = lerpf(h, mh * rise, musicMix);
-@@ -740,6 +784,16 @@ int ripps2LaunchScreenHeld(void)
+@@ -740,6 +785,16 @@ int ripps2LaunchScreenHeld(void)
      return launchHeld;
  }
  
@@ -610,7 +1096,7 @@ index 17d7d36..c0086ad 100644
  void ripps2LaunchAborted(void)
  {
      // the launch returned (it failed): back to the idle field under the menu
-@@ -782,7 +836,7 @@ static void lorenzStep(float dt)
+@@ -782,7 +837,7 @@ static void lorenzStep(float dt)
          }
          lorenzReady = 1;
      }
@@ -619,7 +1105,7 @@ index 17d7d36..c0086ad 100644
      for (i = 0; i < LORENZ_N; i++) {
          v3 *p = &lorenz[i];
          for (k = 0; k < 4; k++) {
-@@ -791,6 +845,12 @@ static void lorenzStep(float dt)
+@@ -791,6 +846,12 @@ static void lorenzStep(float dt)
              p->y += dy * h;
              p->z += dz * h;
          }
@@ -632,7 +1118,7 @@ index 17d7d36..c0086ad 100644
      }
  }
  
-@@ -893,14 +953,34 @@ static v3 formationAt(int f, int i, int n, float t)
+@@ -893,14 +954,34 @@ static v3 formationAt(int f, int i, int n, float t)
      }
  }
  
@@ -673,7 +1159,7 @@ index 17d7d36..c0086ad 100644
      return p;
  }
  
-@@ -910,10 +990,10 @@ static void glow(float x, float y, float r, int cr, int cg, int cb, int ca)
+@@ -910,10 +991,10 @@ static void glow(float x, float y, float r, int cr, int cg, int cb, int ca)
      int k;
      const int seg = 10;
      u64 centre = RGBA(cr, cg, cb, ca), rimC = RGBA(cr, cg, cb, 0);
@@ -686,7 +1172,7 @@ index 17d7d36..c0086ad 100644
          rmDrawTriGouraud(x, y, centre, px, py, rimC, nx, ny, rimC);
          px = nx;
          py = ny;
-@@ -1032,6 +1112,7 @@ static v3 guidePt(int f, int k, float u, float t)
+@@ -1032,6 +1113,7 @@ static v3 guidePt(int f, int k, float u, float t)
  #define SPIN_PITCH_MAX 1.1f // keep the formation from tipping over
  
  static float spinYaw = 0.0f, spinPitch = 0.0f, spinYawVel = 0.0f, spinPitchVel = 0.0f;
@@ -694,7 +1180,7 @@ index 17d7d36..c0086ad 100644
  
  static void spinUpdate(float dt)
  {
-@@ -1048,17 +1129,32 @@ static void spinUpdate(float dt)
+@@ -1048,17 +1130,32 @@ static void spinUpdate(float dt)
      }
      spinYaw = fmodf(spinYaw + spinYawVel * dt, TAU);
      spinPitch += spinPitchVel * dt;
@@ -730,7 +1216,7 @@ index 17d7d36..c0086ad 100644
  }
  
  static void guideLine(int f, v3 a, v3 b, float t, u64 col)
-@@ -1068,16 +1164,17 @@ static void guideLine(int f, v3 a, v3 b, float t, u64 col)
+@@ -1068,16 +1165,17 @@ static void guideLine(int f, v3 a, v3 b, float t, u64 col)
          softLine(pa.x, pa.y, pb.x, pb.y, 0.9f, 1.0f, col); // soft, like the pillars': steady on a CRT
  }
  
@@ -752,7 +1238,7 @@ index 17d7d36..c0086ad 100644
          prev = cur;
      }
  }
-@@ -1178,12 +1275,60 @@ static void tailRibbon(float ax, float ay, float bx, float by, float wa, float w
+@@ -1178,12 +1276,60 @@ static void tailRibbon(float ax, float ay, float bx, float by, float wa, float w
      rmDrawQuadGouraud(ax, ay, ca, bx, by, cb, ax - nax * wa, ay - nay * wa, za, bx - nbx * wb, by - nby * wb, zb);
  }
  
@@ -814,7 +1300,7 @@ index 17d7d36..c0086ad 100644
  
      // the control points: the orb itself, then its samples, newest first
      px[n] = head.x;
-@@ -1206,8 +1351,8 @@ static void drawTail(int i, p2 head, float r, float vis)
+@@ -1206,8 +1352,8 @@ static void drawTail(int i, p2 head, float r, float vis)
      // the smooth curve through them
      for (k = 0; k < n - 1; k++) {
          int k0 = k > 0 ? k - 1 : 0, k3 = k + 2 < n ? k + 2 : n - 1;
@@ -825,7 +1311,7 @@ index 17d7d36..c0086ad 100644
              cx[m] = catmull(px[k0], px[k], px[k + 1], px[k3], u);
              cy[m++] = catmull(py[k0], py[k], py[k + 1], py[k3], u);
          }
-@@ -1224,28 +1369,16 @@ static void drawTail(int i, p2 head, float r, float vis)
+@@ -1224,28 +1370,16 @@ static void drawTail(int i, p2 head, float r, float vis)
          nys[k] = len > 0.001f ? dx / len : 1.0f;
      }
  
@@ -862,7 +1348,7 @@ index 17d7d36..c0086ad 100644
      }
  }
  
-@@ -1275,9 +1408,12 @@ void ripps2SetOrbInput(int showPaths, int boost)
+@@ -1275,9 +1409,12 @@ void ripps2SetOrbInput(int showPaths, int boost)
  void ripps2DrawOrbs(void)
  {
      int i, k;
@@ -875,7 +1361,7 @@ index 17d7d36..c0086ad 100644
  
      if (lorenzPathCount == 0)
          guidesInit();
-@@ -1319,6 +1455,7 @@ void ripps2DrawOrbs(void)
+@@ -1319,6 +1456,7 @@ void ripps2DrawOrbs(void)
      if (dt > 0.25f) { // the tab was just opened: fresh tails, and show the outline
          trailValid = 0;
          guideStart = t;
@@ -883,7 +1369,7 @@ index 17d7d36..c0086ad 100644
      }
      if (f != shownFormation) { // morph from wherever the orbs are
          prevFormation = shownFormation;
-@@ -1398,6 +1535,9 @@ void ripps2DrawOrbs(void)
+@@ -1398,6 +1536,9 @@ void ripps2DrawOrbs(void)
          pos[i] = spin(a);
      }
  
@@ -893,7 +1379,7 @@ index 17d7d36..c0086ad 100644
      // tails first, so the orbs sit on their heads
      if (!trailValid || t - trailLastSample >= (1.0f + TRAIL_BOOST_REACH * trailBoost) / TRAIL_HZ) {
          if (!trailValid) {
-@@ -1434,6 +1574,7 @@ void ripps2DrawOrbs(void)
+@@ -1434,6 +1575,7 @@ void ripps2DrawOrbs(void)
  static float bgMsAvg = 0.0f;
  static int fpsFrames = 0, fpsShown = 0;
  static float fpsWindow = 0.0f;
@@ -901,7 +1387,7 @@ index 17d7d36..c0086ad 100644
  #endif
  
  // The top and bottom of the screen darken like the mockups, so the category bar and the hints read
-@@ -1447,6 +1588,7 @@ static void drawVignette(void)
+@@ -1447,6 +1589,7 @@ static void drawVignette(void)
  
  void ripps2DrawBackground(void)
  {
@@ -909,7 +1395,7 @@ index 17d7d36..c0086ad 100644
  #if RIPPS2_PERF_HUD
      unsigned int t0 = cpuTicks();
  #endif
-@@ -1460,16 +1602,23 @@ void ripps2DrawBackground(void)
+@@ -1460,16 +1603,23 @@ void ripps2DrawBackground(void)
      float ms = (float)(cpuTicks() - t0) / 294912.0f;
      bgMsAvg = bgMsAvg * 0.9f + ms * 0.1f;
      float t = nowSeconds();
@@ -936,11 +1422,52 @@ index 17d7d36..c0086ad 100644
 +    fntRenderString(gTheme->fonts[3], 628 - w, 472, ALIGN_VCENTER, 0, 0, hud, GS_SETREG_RGBA(0x80, 0x78, 0x40, 0x80));
  #endif
  }
+diff --git a/src/ripps2cd.c b/src/ripps2cd.c
+index fcf8a8d..6163546 100644
+--- a/src/ripps2cd.c
++++ b/src/ripps2cd.c
+@@ -41,6 +41,7 @@
+ #include "include/sound.h"
+ #include "include/ripps2.h"
+ #include "include/ioman.h" // LOG
++#include "include/ripps2tint.h" // RIPPSettings Color Theme: last, so every colour below goes through it
+ 
+ #define CD_TRACKS_MAX 99
+ #define CD_SECTOR     2352
+diff --git a/src/ripps2edit.c b/src/ripps2edit.c
+index c2d3faa..fa6fe9b 100644
+--- a/src/ripps2edit.c
++++ b/src/ripps2edit.c
+@@ -33,6 +33,7 @@
+ #include "include/sound.h"
+ #include "include/config.h"
+ #include "include/ripps2.h"
++#include "include/ripps2tint.h" // RIPPSettings Color Theme: last, so every colour below goes through it
+ 
+ #define ED_MAX_LINES 1000
+ #define ED_LINE      256
 diff --git a/src/ripps2files.c b/src/ripps2files.c
-index a2c718d..51f7cb9 100644
+index a2c718d..42a1d3a 100644
 --- a/src/ripps2files.c
 +++ b/src/ripps2files.c
-@@ -1669,7 +1669,7 @@ static void fbTileAlive(int l, int t, int r, int b, float now, int a)
+@@ -56,6 +56,7 @@
+ #include "include/hddsupport.h"
+ #include "include/lang.h" // _STR_HDD_NOT_CONNECTED_ERROR
+ #include "include/cuesupport.h" // EMBER_ELF_NAME
++#include "include/ripps2tint.h" // RIPPSettings Color Theme: last, so every colour below goes through it
+ 
+ #define FB_MAX      400 // entries in one folder
+ #define FB_NAME     128
+@@ -1452,8 +1453,6 @@ static void fbOrbitsPage(void)
+                 rmDrawRect(OB_X + 7, y + 6, 8, 8, on ? FB_PRIM(0x9C, 0xB8, 0xFF, 0x80) : FB_PRIM(0x03, 0x08, 0x22, 0x80));
+                 fntRenderString(gTheme->fonts[8], OB_X + 26, y + 10, ALIGN_VCENTER, 0, 0, ripps2FormationName(f),
+                                 cur ? FB_LIT : on ? FB_SOFT : FB_DIM);
+-                if (f == gRipps2Formation)
+-                    fntRenderString(gTheme->fonts[5], OB_X + OB_W - fntCalcDimensions(gTheme->fonts[5], "SHOWING"), y + 10, ALIGN_VCENTER, 0, 0, "SHOWING", FB_DIM);
+             }
+         }
+         if (toast[0] && clock() - toastAt < 2 * CLOCKS_PER_SEC)
+@@ -1669,7 +1668,7 @@ static void fbTileAlive(int l, int t, int r, int b, float now, int a)
  
  static int fbDrawGrid(void)
  {
@@ -949,12 +1476,24 @@ index a2c718d..51f7cb9 100644
      int i, uiFont = gTheme->fonts[4];
  
      if (fbGridClosing) {
+diff --git a/src/ripps2hdd.c b/src/ripps2hdd.c
+index 4998b21..0c17bca 100644
+--- a/src/ripps2hdd.c
++++ b/src/ripps2hdd.c
+@@ -34,6 +34,7 @@
+ #include "include/sound.h"
+ #include "include/hddsupport.h"
+ #include "include/ripps2.h"
++#include "include/ripps2tint.h" // RIPPSettings Color Theme: last, so every colour below goes through it
+ 
+ #define HM_MAX   128
+ #define HM_ROWS  14
 diff --git a/src/ripps2ra.c b/src/ripps2ra.c
 new file mode 100644
-index 0000000..e2e5d82
+index 0000000..8edb4af
 --- /dev/null
 +++ b/src/ripps2ra.c
-@@ -0,0 +1,161 @@
+@@ -0,0 +1,162 @@
 +/*
 +  Copyright 2026, RIPPS2 contributors
 +  Licenced under Academic Free License version 3.0
@@ -989,6 +1528,7 @@ index 0000000..e2e5d82
 +#include "include/discsupport.h"
 +#include "include/supportbase.h"
 +#endif
++#include "include/ripps2tint.h" // RIPPSettings Color Theme: last, so every colour below goes through it
 +
 +#define RA_LIT  GS_SETREG_RGBA(0x80, 0x80, 0x80, 0x80)
 +#define RA_DIM  GS_SETREG_RGBA(0x4C, 0x52, 0x64, 0x80)
@@ -1117,10 +1657,235 @@ index 0000000..e2e5d82
 +    readPads();
 +}
 diff --git a/src/ripps2ui.c b/src/ripps2ui.c
-index 695d889..8a0b3ff 100644
+index 695d889..008d3cb 100644
 --- a/src/ripps2ui.c
 +++ b/src/ripps2ui.c
-@@ -209,7 +209,7 @@ void ripps2RenderCategoryBar(void)
+@@ -35,6 +35,7 @@
+ #include <unistd.h>
+ #include <kernel.h>
+ #include <delaythread.h>
++#include "include/ripps2tint.h" // RIPPSettings Color Theme: last, so every colour below goes through it
+ 
+ int gRipps2Category = RIPPS2_CAT_STORAGE;
+ 
+@@ -83,6 +84,174 @@ int ripps2FormationStep(int from, int dir)
+ }
+ static int formationDirty = 0; // changed since the last save
+ 
++// ---- RIPPSettings (Controller Settings > RIPPSettings) ----
++int gRipps2Glyphs = RIPPS2_GLYPHS_HIDDEN, gRipps2Palette = 0, gRipps2Hints = RIPPS2_SHOW_ON, gRipps2CatBar = RIPPS2_SHOW_ON,
++    gRipps2CatSwap = 0;
++
++#define ART_FADE_S   0.35f // the art's fade in (themes.c ART_FADE_S): the glyphs and the idle fades come in at its pace
++#define GLYPH_HOLD_S 2.5f  // the glyphs stay this long after a press (or the page opening, for Fade Out)
++#define GLYPH_OUT_S  0.7f  // and go over this, like the formation's name
++#define IDLE_S       6.0f  // Fade When Idle: no press for this long
++#define IDLE_OUT_S   0.7f
++
++static float smoothUnit(float x)
++{
++    if (x <= 0.0f)
++        return 0.0f;
++    if (x >= 1.0f)
++        return 1.0f;
++    return x * x * (3.0f - 2.0f * x);
++}
++
++// Idle time: the last press of any button (or a tilt of the right stick). Another loop holding the
++// screen (a dialog, a launch) counts as use, so the bar and the hints are back when it hands over.
++static double inputAt = 0.0, inputLast = 0.0;
++static float idleShow = 1.0f; // 1 shown .. 0 faded, eased toward what the idle time says
++
++void ripps2NoteInput(void)
++{
++    double now = ripps2Seconds();
++    int k, any = 0, sx = 0, sy = 0;
++    for (k = KEY_LEFT; k <= KEY_L2; k++) {
++        if (getKeyPressed(k)) {
++            any = 1;
++            break;
++        }
++    }
++    padGetRightStick(&sx, &sy);
++    if (sx * sx + sy * sy > 40 * 40)
++        any = 1;
++    float dt = (float)(now - inputLast);
++    if (inputLast == 0.0 || dt > 0.5f || dt < 0.0f) { // the first frame, or the screen was elsewhere
++        any = 1;
++        dt = 0.0f;
++    }
++    inputLast = now;
++    if (any)
++        inputAt = now;
++    float target = now - inputAt < IDLE_S ? 1.0f : 0.0f;
++    if (idleShow < target)
++        idleShow = fminf(target, idleShow + dt / ART_FADE_S);
++    else if (idleShow > target)
++        idleShow = fmaxf(target, idleShow - dt / IDLE_OUT_S);
++}
++
++static float showAlpha(int mode)
++{
++    if (mode == RIPPS2_SHOW_OFF)
++        return 0.0f;
++    if (mode == RIPPS2_SHOW_IDLE)
++        return smoothUnit(idleShow);
++    return 1.0f;
++}
++
++float ripps2HintsAlpha(void)
++{
++    return showAlpha(gRipps2Hints);
++}
++
++float ripps2CatBarAlpha(void)
++{
++    return showAlpha(gRipps2CatBar);
++}
++
++// The D-pad glyphs beside a drive's name (Storage) and a formation's (Memory Files). Hidden by default:
++// the names read cleaner as text. Fade In brings them in at the art's pace when Left / Right is
++// pressed, Fade Out has them there when the page opens; either way they stay a moment, then go.
++typedef struct
++{
++    double pokedAt, seenAt;
++    float a;
++} glyph_fade_t;
++static glyph_fade_t glyphFade[2];
++
++void ripps2GlyphsPoke(int which)
++{
++    glyph_fade_t *g = &glyphFade[which ? 1 : 0];
++    g->pokedAt = ripps2Seconds();
++    if (gRipps2Glyphs == RIPPS2_GLYPHS_FADE_OUT)
++        g->a = 1.0f; // back at once, then away again
++}
++
++float ripps2GlyphsAlpha(int which)
++{
++    glyph_fade_t *g = &glyphFade[which ? 1 : 0];
++    double now = ripps2Seconds();
++    float dt = (float)(now - g->seenAt);
++    if (g->seenAt == 0.0 || dt > 0.5f || dt < 0.0f) { // not drawn for a while: the page has just opened
++        dt = 0.0f;
++        if (now - g->pokedAt > 1.0) // (a press that brought the page here still counts)
++            g->pokedAt = gRipps2Glyphs == RIPPS2_GLYPHS_FADE_OUT ? now : -100.0;
++        g->a = gRipps2Glyphs == RIPPS2_GLYPHS_FADE_OUT && now - g->pokedAt < GLYPH_HOLD_S ? 1.0f : 0.0f;
++    }
++    g->seenAt = now;
++    if (gRipps2Glyphs == RIPPS2_GLYPHS_SHOWN)
++        return 1.0f;
++    if (gRipps2Glyphs != RIPPS2_GLYPHS_FADE_IN && gRipps2Glyphs != RIPPS2_GLYPHS_FADE_OUT)
++        return 0.0f;
++    if (now - g->pokedAt < GLYPH_HOLD_S)
++        g->a = fminf(1.0f, g->a + dt / ART_FADE_S);
++    else
++        g->a = fmaxf(0.0f, g->a - dt / GLYPH_OUT_S);
++    return smoothUnit(g->a);
++}
++
++// The Color Theme: one colour matrix over everything RIPPS2 draws itself (ripps2tint.h). Each theme
++// is a turn of the hue with a change of saturation, the two built so a grey stays the same grey.
++static const struct
++{
++    const char *name;
++    float hue, sat;
++} paletteDef[RIPPS2_PALETTE_COUNT] = {
++    {"RIPPS2", 0.0f, 1.0f}, {"Ember", 150.0f, 1.6f}, {"Blood", 130.0f, 1.8f},
++    {"Ectoplasm", 250.0f, 1.2f}, {"Amethyst", 40.0f, 1.1f}, {"Bone", 180.0f, 0.25f}};
++static int paletteBuilt = -1, paletteM[9]; // x1024
++
++const char *ripps2PaletteName(int p)
++{
++    return p >= 0 && p < RIPPS2_PALETTE_COUNT ? paletteDef[p].name : paletteDef[0].name;
++}
++
++static void paletteBuild(int p)
++{
++    const float L[3] = {0.213f, 0.715f, 0.072f};
++    float rad = paletteDef[p].hue * 3.14159265f / 180.0f, c = cosf(rad), s = sinf(rad), sat = paletteDef[p].sat;
++    float h[9] = {0.213f + c * 0.787f - s * 0.213f, 0.715f - c * 0.715f - s * 0.715f, 0.072f - c * 0.072f + s * 0.928f,
++                  0.213f - c * 0.213f + s * 0.143f, 0.715f + c * 0.285f + s * 0.140f, 0.072f - c * 0.072f - s * 0.283f,
++                  0.213f - c * 0.213f - s * 0.787f, 0.715f - c * 0.715f + s * 0.715f, 0.072f + c * 0.928f + s * 0.072f};
++    int i, j, k;
++    for (i = 0; i < 3; i++) {
++        for (j = 0; j < 3; j++) {
++            float v = 0.0f;
++            for (k = 0; k < 3; k++)
++                v += ((i == k ? sat : 0.0f) + L[k] * (1.0f - sat)) * h[k * 3 + j];
++            paletteM[i * 3 + j] = (int)(v * 1024.0f + (v >= 0.0f ? 0.5f : -0.5f));
++        }
++    }
++    paletteBuilt = p;
++}
++
++u64 ripps2TintSlow(int r, int g, int b, int a, u64 q)
++{
++    int p = gRipps2Palette, o[3], i;
++    if (p <= 0 || p >= RIPPS2_PALETTE_COUNT)
++        return (u64)(r & 0xFF) | ((u64)(g & 0xFF) << 8) | ((u64)(b & 0xFF) << 16) | ((u64)(a & 0xFF) << 24) | (q << 32);
++    if (paletteBuilt != p)
++        paletteBuild(p);
++    for (i = 0; i < 3; i++) {
++        int v = (paletteM[i * 3] * r + paletteM[i * 3 + 1] * g + paletteM[i * 3 + 2] * b) >> 10;
++        o[i] = v < 0 ? 0 : v > 255 ? 255 : v;
++    }
++    return (u64)o[0] | ((u64)o[1] << 8) | ((u64)o[2] << 16) | ((u64)(a & 0xFF) << 24) | (q << 32);
++}
++
++// Category Order: Memory Files and Launch Disc trade places on the bar (Storage stays in the middle).
++// A category's place on the bar, and the category at a place: the same swap both ways.
++static int catSlot(int cat)
++{
++    return gRipps2CatSwap ? RIPPS2_CAT_COUNT - 1 - cat : cat;
++}
++
+ // ---- The flying PS2 mark ----
+ //
+ // The mark is a weight on a damped spring pulled toward the selected category. It keeps its own
+@@ -143,21 +312,24 @@ void ripps2RenderCategoryBar(void)
+         } else if (enter < 0.0f)
+             enter = 0.0f;
+     }
+-    int alpha = (int)(0x80 * fminf(1.0f, enter * 1.6f));
++    float barA = ripps2CatBarAlpha(); // RIPPSettings: shown, faded when idle, or hidden
++    int alpha = (int)(0x80 * fminf(1.0f, enter * 1.6f) * barA);
+     u64 lit = (COLOR_LIT & ~(0xFFULL << 24)) | ((u64)alpha << 24);
+     u64 dim = (COLOR_DIM & ~(0xFFULL << 24)) | ((u64)alpha << 24);
+ 
+     // the current category bright at full size (font2), the other two greyer and a size down (font7)
+-    for (i = 0; i < RIPPS2_CAT_COUNT; i++)
+-        fntRenderString(i == gRipps2Category ? font : gTheme->fonts[7], categoryX[i], BAR_Y, ALIGN_CENTER, 0, 0, categoryLabel[i], i == gRipps2Category ? lit : dim);
++    if (alpha > 0)
++        for (i = 0; i < RIPPS2_CAT_COUNT; i++)
++            fntRenderString(i == gRipps2Category ? font : gTheme->fonts[7], categoryX[catSlot(i)], BAR_Y, ALIGN_CENTER, 0, 0, categoryLabel[i], i == gRipps2Category ? lit : dim);
+ 
+     GSTEXTURE *mark = thmGetTexture(RIPPS2_MARK);
+     if (mark == NULL)
+         return;
+ 
+-    // the spring, in small fixed steps so it behaves the same at any frame rate
++    // the spring, in small fixed steps so it behaves the same at any frame rate (and while the bar is
++    // hidden, so the mark is in its place when the bar comes back)
+     clock_t now = clock();
+-    float target = (float)categoryX[gRipps2Category];
++    float target = (float)categoryX[catSlot(gRipps2Category)];
+     float dt = markLast != 0 ? (float)(now - markLast) / (float)CLOCKS_PER_SEC : 0.0f;
+     markLast = now;
+     if (!markReady || dt > 0.25f) { // first frame, or the bar was away: rest where it belongs
+@@ -197,7 +369,10 @@ void ripps2RenderCategoryBar(void)
+     }
+     if (!flipActive)
+         w *= 1.0f + 0.22f * fminf(1.0f, speed / 900.0f); // stretches with its speed
+-    rmDrawPixmap(mark, (int)x, (int)y, ALIGN_CENTER, (int)w, MARK_H, SCALING_RATIO, COLOR_TEX, 0);
++    if (barA <= 0.0f)
++        return; // hidden: the loading mark goes to the corner instead (ripps2DrawBusy)
++    rmDrawPixmap(mark, (int)x, (int)y, ALIGN_CENTER, (int)w, MARK_H, SCALING_RATIO,
++                 (COLOR_TEX & ~(0xFFULL << 24)) | ((u64)(int)(0x80 * barA) << 24), 0);
+     markDrawX = x;
+     markDrawY = y;
+     markDrawW = w;
+@@ -209,7 +384,7 @@ void ripps2RenderCategoryBar(void)
  void ripps2DrawBusy(int alpha)
  {
      GSTEXTURE *mark = thmGetTexture(RIPPS2_MARK), *glow = thmGetTexture(RIPPS2_MARK_GLOW);
@@ -1129,6 +1894,110 @@ index 695d889..8a0b3ff 100644
      float x, y, w, h;
      int own = markDrawFrame == guiFrameId;
  
+@@ -424,18 +599,18 @@ void ripps2SetCategory(int cat)
+         guiSwitchScreenInstant(GUI_SCREEN_RIPPS2_MEMORY);
+ }
+ 
+-// Left / Right on any category page: the next one along, wrapping end to end with a coin flip
++// L1 / R1 on any category page: the next one along the bar, wrapping end to end with a coin flip
+ void ripps2StepCategory(int dir)
+ {
+-    int next = gRipps2Category + (dir < 0 ? -1 : 1);
+-    if (next < 0 || next >= RIPPS2_CAT_COUNT) {
+-        next = next < 0 ? RIPPS2_CAT_COUNT - 1 : 0;
++    int slot = catSlot(gRipps2Category) + (dir < 0 ? -1 : 1);
++    if (slot < 0 || slot >= RIPPS2_CAT_COUNT) {
++        slot = slot < 0 ? RIPPS2_CAT_COUNT - 1 : 0;
+         flipActive = 1;
+         flipFromX = markX;
+-        flipToX = (float)categoryX[next];
++        flipToX = (float)categoryX[slot];
+         flipFinishAt = 0;
+     }
+-    ripps2SetCategory(next);
++    ripps2SetCategory(catSlot(slot));
+ }
+ 
+ // Button glyphs draw at the hint bar's height (20), keeping each image's own aspect
+@@ -448,7 +623,8 @@ static int glyphWidth(GSTEXTURE *t)
+ // Text that goes with a button glyph uses RIPPS2 Sleek at the prompt size (theme font6)
+ #define PROMPT_FONT (gTheme->fonts[6])
+ 
+-// A START button glyph followed by the action name, centred as one unit
++// A START button glyph followed by the action name, centred as one unit (one of the hints RIPPSettings
++// can fade or hide)
+ static void renderStartPrompt(const char *action, int y)
+ {
+     GSTEXTURE *start = thmGetTexture(START_ICON);
+@@ -456,10 +632,13 @@ static void renderStartPrompt(const char *action, int y)
+     int iconW = glyphWidth(start), iconH = start ? GLYPH_H : 0;
+     int gap = start ? 10 : 0;
+     int x0 = 320 - (iconW + gap + textW) / 2;
++    int a = (int)(0x80 * ripps2HintsAlpha());
+ 
++    if (a <= 0)
++        return;
+     if (start)
+-        rmDrawPixmap(start, x0 + iconW / 2, y, ALIGN_CENTER, iconW, iconH, SCALING_RATIO, COLOR_TEX, 0);
+-    fntRenderString(PROMPT_FONT, x0 + iconW + gap, y, ALIGN_VCENTER, 0, 0, action, COLOR_LIT);
++        rmDrawPixmap(start, x0 + iconW / 2, y, ALIGN_CENTER, iconW, iconH, SCALING_RATIO, withAlpha(COLOR_TEX, a), 0);
++    fntRenderString(PROMPT_FONT, x0 + iconW + gap, y, ALIGN_VCENTER, 0, 0, action, withAlpha(COLOR_LIT, a));
+ }
+ 
+ // ---- LAUNCH DISC ----
+@@ -679,7 +858,7 @@ void ripps2HandleInputLaunch(void)
+     if (getKeyOn(KEY_R1)) {
+         ripps2StepCategory(1);
+     } else if (getKeyOn(KEY_L1)) {
+-        ripps2StepCategory(-1); // round to Memory Files
++        ripps2StepCategory(-1); // round the end of the bar, when Launch Disc is at one
+     } else if (getKeyOn(KEY_START)) {
+         sfxPlay(SFX_CONFIRM);
+         int wait;
+@@ -738,6 +917,7 @@ void ripps2RenderMemory(void)
+     // the disc note (small, between small Left / Right), its count just under it
+     renderStartPrompt("START BROWSER", 423);
+ 
++    float glyphA = ripps2GlyphsAlpha(RIPPS2_GLYPH_FORMATIONS); // every frame, the name shown or not (RIPPSettings)
+     static int named = -1;
+     if (now - memoryLastFrame > CLOCKS_PER_SEC / 2 || named != gRipps2Formation) // back on the page, or the cycle moved on
+         formationNameShow();
+@@ -753,11 +933,12 @@ void ripps2RenderMemory(void)
+ 
+     const char *name = formationName[gRipps2Formation];
+     int half = fntCalcDimensions(gTheme->fonts[3], name) / 2, g = GLYPH_H * 3 / 4;
+-    u64 soft = GS_SETREG_RGBA(0x67, 0x6C, 0x7A, a), dim = GS_SETREG_RGBA(0x37, 0x3B, 0x4A, a), tex = GS_SETREG_RGBA(0x80, 0x80, 0x80, a);
++    int ga = (int)(a * glyphA);
++    u64 soft = GS_SETREG_RGBA(0x67, 0x6C, 0x7A, a), dim = GS_SETREG_RGBA(0x37, 0x3B, 0x4A, a), tex = GS_SETREG_RGBA(0x80, 0x80, 0x80, ga);
+     fntRenderString(gTheme->fonts[3], 320, 450, ALIGN_CENTER, 0, 0, name, soft);
+-    if (lt)
++    if (lt && ga > 0)
+         rmDrawPixmap(lt, 320 - half - 10 - g / 2, 450, ALIGN_CENTER, g, g, SCALING_RATIO, tex, 0);
+-    if (rt)
++    if (rt && ga > 0)
+         rmDrawPixmap(rt, 320 + half + 10 + g / 2, 450, ALIGN_CENTER, g, g, SCALING_RATIO, tex, 0);
+     snprintf(count, sizeof(count), "%02d / %02d", gRipps2Formation + 1, FORMATION_COUNT);
+     fntRenderString(gTheme->fonts[3], 320, 467, ALIGN_CENTER, 0, 0, count, dim);
+@@ -771,16 +952,18 @@ void ripps2HandleInputMemory(void)
+     if (getKeyOn(KEY_L1)) {
+         ripps2StepCategory(-1);
+     } else if (getKeyOn(KEY_R1)) {
+-        ripps2StepCategory(1); // round to Launch Disc
++        ripps2StepCategory(1); // round the end of the bar, when Memory Files is at one
+     } else if (getKeyOn(KEY_LEFT)) {
+         gRipps2Formation = ripps2FormationStep(gRipps2Formation, -1);
+         formationDirty = 1;
+         formationNameShow();
++        ripps2GlyphsPoke(RIPPS2_GLYPH_FORMATIONS);
+         sfxPlay(SFX_CURSOR);
+     } else if (getKeyOn(KEY_RIGHT)) {
+         gRipps2Formation = ripps2FormationStep(gRipps2Formation, 1);
+         formationDirty = 1;
+         formationNameShow();
++        ripps2GlyphsPoke(RIPPS2_GLYPH_FORMATIONS);
+         sfxPlay(SFX_CURSOR);
+     } else if (getKeyOn(KEY_START)) {
+         // RIPPS2 23c: Start opens the browser built in here; the orbs keep moving behind it
 diff --git a/src/texcache.c b/src/texcache.c
 index f14a9ec..5726604 100644
 --- a/src/texcache.c
@@ -1149,3 +2018,108 @@ index f14a9ec..5726604 100644
  
      if (gArtRunning) {
          // ABANDON, never TerminateThread. Killing a thread parked inside fileXio leaves the shared
+diff --git a/src/textures.c b/src/textures.c
+index e064547..9d09023 100644
+--- a/src/textures.c
++++ b/src/textures.c
+@@ -116,6 +116,8 @@ extern void *L2R2_png;         // RIPPS2: the L2+R2 "Random" hint
+ extern void *ripps2_ps1logo_png; // RIPPS2: the L3 filter splashes
+ extern void *ripps2_ps2logo_png;
+ extern void *ripps2_grid_icons_png; // RIPPS2: made by ps2-pillars elf/theme/make_grid_icons.py
++extern void *ripps2_up_png;   // RIPPS2 build 70: D-pad glyphs, ps2-pillars elf/theme/tools/make_glyphs.py
++extern void *ripps2_down_png;
+ #ifdef RETROACHIEVEMENTS
+ extern void *ra_mark_png;
+ #endif
+@@ -287,6 +289,8 @@ static texture_t internalDefault[TEXTURES_COUNT] = {
+     {RIPPS2_PS1_LOGO, "ripps2_ps1logo", &ripps2_ps1logo_png},
+     {RIPPS2_PS2_LOGO, "ripps2_ps2logo", &ripps2_ps2logo_png},
+     {RIPPS2_GRID_ICONS, "ripps2_grid_icons", &ripps2_grid_icons_png},
++    {RIPPS2_DPAD_UP, "ripps2_up", &ripps2_up_png},
++    {RIPPS2_DPAD_DOWN, "ripps2_down", &ripps2_down_png},
+ #ifdef RETROACHIEVEMENTS
+     // Positional: guarded by the same #ifdef as RA_MARK in enum INTERNAL_TEXTURE. Without
+     // this row TEXTURES_COUNT grows but the initialiser does not, leaving the last slot
+diff --git a/src/themes.c b/src/themes.c
+index 35f440c..38cfa6f 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -2552,10 +2552,11 @@ static void drawMenuText(struct menu_list *menu, struct submenu_list *item, conf
+ {
+     GSTEXTURE *leftIconTex = NULL, *rightIconTex = NULL;
+     const char *text = menuItemGetText(menu->item);
++    // RIPPS2 build 70: D-pad glyphs; Coverflow steps drives with Up / Down (its carousel has Left / Right)
+     if (findMenuPrev(menu) != 0)
+-        leftIconTex = thmGetTexture(LEFT_ICON);
++        leftIconTex = thmGetTexture(gTheme->coverflow ? RIPPS2_DPAD_UP : LEFT_ICON);
+     if (findMenuNext(menu) != 0)
+-        rightIconTex = thmGetTexture(RIGHT_ICON);
++        rightIconTex = thmGetTexture(gTheme->coverflow ? RIPPS2_DPAD_DOWN : RIGHT_ICON);
+ 
+     // RIPPS2 build 69: Left / Right switch drives, and their glyphs beside the drive's name step
+     // aside while its list is being read, coming back when it settles
+@@ -2566,9 +2567,11 @@ static void drawMenuText(struct menu_list *menu, struct submenu_list *item, conf
+         glyphAlpha = glyphAlpha > 0x10 ? glyphAlpha - 0x10 : 0;
+     else
+         glyphAlpha = glyphAlpha < 0x78 ? glyphAlpha + 0x08 : 0x80;
+-    u64 glyphCol = GS_SETREG_RGBA(0x80, 0x80, 0x80, glyphAlpha);
++    // and RIPPSettings: hidden (the default), shown, or fading in or out around a press
++    int shownAlpha = (int)(glyphAlpha * ripps2GlyphsAlpha(RIPPS2_GLYPH_DRIVES));
++    u64 glyphCol = GS_SETREG_RGBA(0x80, 0x80, 0x80, shownAlpha);
+ 
+-    if (glyphAlpha == 0) {
++    if (shownAlpha <= 0) {
+         // nothing beside the name
+     } else if (elem->aligned) {
+         int offset = elem->width >> 1;
+@@ -2808,10 +2811,19 @@ static void drawItemText(struct menu_list *menu, struct submenu_list *item, conf
+     }
+ }
+ 
++// RIPPS2 build 70: a theme colour (text or icon) at the hints' RIPPSettings alpha
++static u64 hintFade(u64 color, float k)
++{
++    return (color & ~(0xFFULL << 24)) | ((u64)(int)(((color >> 24) & 0xFF) * k) << 24);
++}
++
+ static void drawHintText(struct menu_list *menu, struct submenu_list *item, config_set_t *config, struct theme_element *elem)
+ {
+     if (thmElemSkipsDevice(elem, menu->item->icon_id))
+         return; // devices= filter: not this page's element
++    float hintA = ripps2HintsAlpha(); // RIPPSettings: shown, faded when idle, or hidden
++    if (hintA <= 0.0f)
++        return;
+ 
+     /* HELD ACROSS BOTH WALKS, not just the draw loop. guiAlignMenuHints() traverses the list too, so
+        reading the head and then measuring it under one lock and drawing it under another would still
+@@ -2845,7 +2857,7 @@ static void drawHintText(struct menu_list *menu, struct submenu_list *item, conf
+         int x = elem->aligned ? (screenWidth - (total + gap * (count - 1))) / 2 : elem->posX;
+ 
+         for (; hint; hint = hint->next) {
+-            x = guiDrawIconAndText(hint->icon_id, hint->text_id, elem->font, x, elem->posY, elem->color);
++            x = guiDrawIconAndTextA(hint->icon_id, hint->text_id, elem->font, x, elem->posY, hintFade(elem->color, hintA), hintFade(gDefaultCol, hintA));
+             x += gap;
+         }
+     }
+@@ -2861,15 +2873,19 @@ static void drawInfoHintText(struct menu_list *menu, struct submenu_list *item,
+     // <name>_show_run=0 hides Run for a theme that draws its own launch prompt. Back always stays: it
+     // is the only way off this screen.
+     int first = elem->showRun ? 0 : 1;
++    float hintA = ripps2HintsAlpha(); // RIPPS2 build 70: RIPPSettings (Back still works with them hidden)
++    if (hintA <= 0.0f)
++        return;
++    u64 col = hintFade(elem->color, hintA), iconCol = hintFade(gDefaultCol, hintA);
+ 
+     if (elem->aligned)
+         x = guiAlignSubMenuHints(2 - first, infoHints + first, infoIcons + first, elem->font, elem->width, 1);
+ 
+     if (elem->showRun) {
+-        x = guiDrawIconAndText(gSelectButton == KEY_CIRCLE ? infoIcons[0] : infoIcons[1], infoHints[0], elem->font, x, elem->posY, elem->color);
++        x = guiDrawIconAndTextA(gSelectButton == KEY_CIRCLE ? infoIcons[0] : infoIcons[1], infoHints[0], elem->font, x, elem->posY, col, iconCol);
+         x += elem->width;
+     }
+-    x = guiDrawIconAndText(gSelectButton == KEY_CIRCLE ? infoIcons[1] : infoIcons[0], infoHints[1], elem->font, x, elem->posY, elem->color);
++    x = guiDrawIconAndTextA(gSelectButton == KEY_CIRCLE ? infoIcons[1] : infoIcons[0], infoHints[1], elem->font, x, elem->posY, col, iconCol);
+ }
+ 
+ /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
