@@ -417,6 +417,23 @@ index cc43fde..4ce63b5 100644
      if (gLaunchDiag)
          launchDiagMark(6); // io + art drain done -- the per-module teardown below runs next
  
+diff --git a/src/ripps2about.c b/src/ripps2about.c
+index 9bcdba8..5c5f290 100644
+--- a/src/ripps2about.c
++++ b/src/ripps2about.c
+@@ -71,6 +71,12 @@ static const ab_row_t abRows[] = {
+     {'T', "ps2sdk's libcdvd and audsrv"},
+     {'S', "the disc's sound read straight off it, the towers lit by it"},
+     {'G', NULL},
++    {'H', "ACHIEVEMENTS: SPIRIT OF RA"},
++    {'T', "RetroAchievements on the console by hacan359 (yoba)"},
++    {'S', "game hashes and memory telemetry, made solid on hardware by oMrRexD"},
++    {'T', "xeRAbora by hacan359, rcheevos by RetroAchievements"},
++    {'S', "the PC client that unlocks them; the hash every game is known by"},
++    {'G', NULL},
+     {'H', "BOOT LOCK AND BIBLE"},
+     {'T', "PS2BBL by El Isra (israpps)"},
+     {'S', "the PlayStation 2 Basic BootLoader: BOOT LOCK starts RIPPS2 with it"},
 diff --git a/src/ripps2bg.c b/src/ripps2bg.c
 index 17d7d36..c0086ad 100644
 --- a/src/ripps2bg.c
