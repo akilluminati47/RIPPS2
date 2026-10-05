@@ -440,14 +440,28 @@ index edba718..cb28925 100644
      // SMB server data it relates to, without duplicating any of that state in this page.
      {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_POPSTARTER_NETWORK_SETTINGS}}},
 diff --git a/src/gui.c b/src/gui.c
-index 1e42c0e..db78087 100644
+index 1e42c0e..80150b9 100644
 --- a/src/gui.c
 +++ b/src/gui.c
-@@ -1522,6 +1522,10 @@ reshow_network:
+@@ -1522,6 +1522,24 @@ reshow_network:
              handleLwnbdSrv();
          goto reshow_network;
      }
 +    if (result == NETCFG_ART_BUTTON) { // RIPPS2 build 73: covers off the internet, with its own page
++        // the IP rows as they stand on the page now (DHCP, or a static address just typed), the
++        // same way the page stores them when it is left
++        int artProto, k;
++        diaGetInt(diaNetConfig, CFG_NETPROTOCOL, &artProto);
++        if (artProto == 1 || artProto == 2)
++            ps2_ip_use_dhcp = netConfigDhcpPreference;
++        else
++            diaGetInt(diaNetConfig, NETCFG_PS2_IP_ADDR_TYPE, &ps2_ip_use_dhcp);
++        for (k = 0; k < 4; ++k) {
++            diaGetInt(diaNetConfig, NETCFG_PS2_IP_ADDR_0 + k, &ps2_ip[k]);
++            diaGetInt(diaNetConfig, NETCFG_PS2_NETMASK_0 + k, &ps2_netmask[k]);
++            diaGetInt(diaNetConfig, NETCFG_PS2_GATEWAY_0 + k, &ps2_gateway[k]);
++            diaGetInt(diaNetConfig, NETCFG_PS2_DNS_0 + k, &ps2_dns[k]);
++        }
 +        ripps2ArtDownload();
 +        goto reshow_network;
 +    }
@@ -473,10 +487,10 @@ index b9e0da3..c179f1e 100644
      {'S', "carried unmodified: github.com/Gageformer/Ember/releases"},
 diff --git a/src/ripps2art.c b/src/ripps2art.c
 new file mode 100644
-index 0000000..e1ce17b
+index 0000000..46a9bca
 --- /dev/null
 +++ b/src/ripps2art.c
-@@ -0,0 +1,506 @@
+@@ -0,0 +1,521 @@
 +/*
 +  RIPPS2 build 73: Cover Art Download (Settings > Network, after NBD Server).
 +
@@ -769,24 +783,39 @@ index 0000000..e1ce17b
 +    unsigned char seed[32];
 +    unsigned int days, secs;
 +
++    // the addresses to try: what DNS says, then GitHub's content addresses (the same four for years),
++    // each shown on the page as it is dialled, so a photo of a failure says where it went
++    unsigned int addr[8];
++    int n = 0, k, ok = 0;
 +    artClose();
-+    memset(&a, 0, sizeof(a));
-+    a.sin_family = AF_INET;
-+    a.sin_port = htons(443);
 +    he = gethostbyname(ART_HOST);
-+    if (he != NULL && he->h_addr_list != NULL && he->h_addr_list[0] != NULL)
-+        memcpy(&a.sin_addr, he->h_addr_list[0], sizeof(a.sin_addr));
-+    else
-+        a.sin_addr.s_addr = artIp(fallback[tries++ & 3]); // GitHub's content addresses, when DNS will not answer
-+
-+    artSock = socket(AF_INET, SOCK_STREAM, 0);
-+    if (artSock < 0) {
-+        snprintf(err, errSize, "No socket (%d).", artSock);
-+        return 0;
++    if (he != NULL && he->h_addr_list != NULL)
++        for (k = 0; he->h_addr_list[k] != NULL && n < 4; k++)
++            memcpy(&addr[n++], he->h_addr_list[k], sizeof(addr[0]));
++    for (k = 0; k < 4; k++)
++        addr[n++] = artIp(fallback[(tries + k) & 3]);
++    tries++;
++    for (k = 0; k < n && !ok; k++) {
++        unsigned int h = ntohl(addr[k]);
++        memset(&a, 0, sizeof(a));
++        a.sin_family = AF_INET;
++        a.sin_port = htons(443);
++        a.sin_addr.s_addr = addr[k];
++        snprintf(artLine2, sizeof(artLine2), "%s %u.%u.%u.%u%s", k < n - 4 ? "DNS" : "fallback", h >> 24, (h >> 16) & 255,
++                 (h >> 8) & 255, h & 255, he == NULL ? " (no DNS answer)" : "");
++        artDraw();
++        artSock = socket(AF_INET, SOCK_STREAM, 0);
++        if (artSock < 0) {
++            snprintf(err, errSize, "No socket (%d).", artSock);
++            return 0;
++        }
++        if (connect(artSock, (struct sockaddr *)&a, sizeof(a)) < 0)
++            artClose();
++        else
++            ok = 1;
 +    }
-+    if (connect(artSock, (struct sockaddr *)&a, sizeof(a)) < 0) {
-+        snprintf(err, errSize, "Could not connect to %s.", ART_HOST);
-+        artClose();
++    if (!ok) {
++        snprintf(err, errSize, "Could not connect to %s (last tried %s).", ART_HOST, artLine2);
 +        return 0;
 +    }
 +
