@@ -423,7 +423,7 @@ index 70ab14e..39fa4a6 100644
    string: D-pad Glyphs
  - label: HINT_RIPPS2_GLYPHS
 diff --git a/modules/network/ps2ips/ps2ips.c b/modules/network/ps2ips/ps2ips.c
-index b4c4031..ee16a7a 100644
+index b4c4031..e9be679 100644
 --- a/modules/network/ps2ips/ps2ips.c
 +++ b/modules/network/ps2ips/ps2ips.c
 @@ -166,6 +166,26 @@ static void do_recv( void * rpcBuffer, int size )
@@ -453,14 +453,17 @@ index b4c4031..ee16a7a 100644
  	// Do actual TCP recv
  	rlen = recv(recv_pkt->socket, lwip_buffer + s_offset, recvlen, recv_pkt->flags);
  
-@@ -579,7 +599,10 @@ static void do_gethostbyname( void *rpcBuffer, int size )
+@@ -579,7 +599,13 @@ static void do_gethostbyname( void *rpcBuffer, int size )
  		resPtr->result = 0;
  		resPtr->hostent.h_addrtype = ret->h_addrtype;
  		resPtr->hostent.h_length = ret->h_length;
 -		memcpy(&resPtr->hostent.h_addr, &ret->h_addr_list[0], sizeof(resPtr->hostent.h_addr));
 +		/* RIPPS2 fix (build 73): h_addr_list[0] points at the address;
 +		   the stock code copied the pointer itself, so every lookup
-+		   answered an IOP address (0x8001xxxx) instead of the host's. */
++		   answered an IOP address (0x8001xxxx) instead of the host's.
++		   ps2sdk's EE wrapper still reads none of it (tcpip.h's h_addr
++		   macro shrinks its reply to 8 bytes): RIPPS2 asks with its own
++		   16-byte reply (ripps2art.c artLookup). */
 +		memcpy(&resPtr->hostent.h_addr, ret->h_addr_list[0], sizeof(resPtr->hostent.h_addr));
  	}else{
  		resPtr->result = -1;
@@ -530,10 +533,10 @@ index b9e0da3..c179f1e 100644
      {'S', "carried unmodified: github.com/Gageformer/Ember/releases"},
 diff --git a/src/ripps2art.c b/src/ripps2art.c
 new file mode 100644
-index 0000000..f4a21fa
+index 0000000..02232cc
 --- /dev/null
 +++ b/src/ripps2art.c
-@@ -0,0 +1,526 @@
+@@ -0,0 +1,550 @@
 +/*
 +  RIPPS2 build 73: Cover Art Download (Settings > Network, after NBD Server).
 +
@@ -568,8 +571,9 @@ index 0000000..f4a21fa
 +#include <delaythread.h>
 +#include <timer.h>
 +#include <libcdvd.h>
++#include <sifrpc.h>
 +#include <ps2ips.h>
-+#include <netdb.h>
++#include <ps2ip_rpc.h>
 +
 +#include "include/opl.h"
 +#include "include/gui.h"
@@ -808,6 +812,37 @@ index 0000000..f4a21fa
 +    return htonl((v[0] << 24) | (v[1] << 16) | (v[2] << 8) | v[3]);
 +}
 +
++// The host's address, asked of ps2ips.irx directly, in network order (0: no answer). ps2sdk's EE
++// gethostbyname never sees the address: tcpip.h's "#define h_addr h_addr_list[0]" turns the reply's
++// address member into a zero-length array, so the wrapper asks for an 8-byte reply and reads what
++// was left past it. Same server and call, with room for the address (offset 8).
++static unsigned int artLookup(const char *host)
++{
++    static SifRpcClientData_t cd;
++    static unsigned char buf[256] __attribute__((aligned(64)));
++    unsigned int v;
++    int k;
++
++    for (k = 0; cd.server == NULL && k < 100; k++) {
++        if (sceSifBindRpc(&cd, PS2IP_IRX, 0) < 0)
++            return 0;
++        if (cd.server == NULL)
++            nopdelay();
++    }
++    if (cd.server == NULL)
++        return 0;
++    memset(buf, 0, sizeof(buf));
++    snprintf((char *)buf, sizeof(buf), "%s", host);
++    if (sceSifCallRpc(&cd, PS2IPS_ID_GETHOSTBYNAME, 0, buf, sizeof(buf), buf, 16, NULL, NULL) < 0)
++        return 0;
++    memcpy(&k, buf, sizeof(k)); // result: 0 = found
++    memcpy(&v, buf + 8, sizeof(v));
++    if (k != 0 || buf[4] != AF_INET) // h_addrtype, little-endian s16
++        return 0;
++    k = ntohl(v) >> 24;
++    return (k == 0 || k == 127 || k >= 224) ? 0 : v; // nothing a public host cannot be
++}
++
 +static void artClose(void)
 +{
 +    if (artSock >= 0) {
@@ -822,7 +857,6 @@ index 0000000..f4a21fa
 +    static const char *const fallback[] = {"185.199.108.133", "185.199.109.133", "185.199.110.133", "185.199.111.133"};
 +    static int tries = 0;
 +    struct sockaddr_in a;
-+    struct hostent *he;
 +    unsigned char seed[32];
 +    unsigned int days, secs;
 +
@@ -831,15 +865,8 @@ index 0000000..f4a21fa
 +    unsigned int addr[8];
 +    int n = 0, k, ok = 0;
 +    artClose();
-+    he = gethostbyname(ART_HOST);
-+    if (he != NULL && he->h_length == 4 && he->h_addr_list != NULL)
-+        for (k = 0; he->h_addr_list[k] != NULL && n < 4; k++) {
-+            unsigned int v;
-+            memcpy(&v, he->h_addr_list[k], sizeof(v));
-+            v = ntohl(v);
-+            if ((v >> 24) != 0 && (v >> 24) != 127 && (v >> 24) < 224)
-+                addr[n++] = htonl(v);
-+        }
++    if ((addr[0] = artLookup(ART_HOST)) != 0)
++        n = 1;
 +    for (k = 0; k < 4; k++)
 +        addr[n++] = artIp(fallback[(tries + k) & 3]);
 +    tries++;
