@@ -56,6 +56,21 @@ if [ -n "${RIPPS2_SOUND_PACK:-}" ]; then
   python3 "$HERE/theme/tools/bake_sound_pack.py" "$RIPPS2_SOUND_PACK" "$SRC/src/ripps2sfxpack.c"
 fi
 
+# BearSSL 0.6 (build 73: the cover art download's HTTPS), Thomas Pornin, MIT (elf/bearssl), as
+# lib/libbearssl.a. Its 32-bit code paths: the R5900 has no 64-bit multiply.
+tar xzf "$HERE/bearssl/bearssl-0.6.tar.gz" -C "$SRC"
+mkdir -p "$SRC/lib" "$SRC/bearssl-obj"
+BR_CC="${PS2DEV:-/usr/local/ps2dev}/ee/bin/mips64r5900el-ps2-elf-gcc"
+BR_AR="${PS2DEV:-/usr/local/ps2dev}/ee/bin/mips64r5900el-ps2-elf-ar"
+find "$SRC/bearssl-0.6/src" -name '*.c' | while read -r f; do
+  o="$SRC/bearssl-obj/$(echo "${f#$SRC/bearssl-0.6/src/}" | tr '/' '_' | sed 's/\.c$/.o/')"
+  "$BR_CC" -O2 -G0 -D_EE -I"$SRC/bearssl-0.6/inc" -I"$SRC/bearssl-0.6/src" \
+    -DBR_64=0 -DBR_INT128=0 -DBR_UMUL128=0 -DBR_USE_URANDOM=0 -DBR_USE_GETENTROPY=0 -DBR_USE_UNIX_TIME=0 \
+    -DBR_USE_WIN32_RAND=0 -DBR_USE_WIN32_TIME=0 -DBR_RDRAND=0 -c "$f" -o "$o"
+done
+"$BR_AR" rcs "$SRC/lib/libbearssl.a" "$SRC"/bearssl-obj/*.o
+echo "BearSSL: $(ls "$SRC"/bearssl-obj/*.o | wc -l) objects"
+
 cd "$SRC"
 sh .github/scripts/install_coherent_mmce.sh
 make clean
