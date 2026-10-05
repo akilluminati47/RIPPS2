@@ -32,6 +32,9 @@ cp -f "$HERE/theme/fonts/ripps2_sleek.ttf" "$SRC/misc/ripps2_sleek.ttf"
 cp -f "$HERE/theme/fonts/ripps2_sleek_bold.ttf" "$SRC/misc/ripps2_sleekbold.ttf"
 cp -f "$HERE/theme/fonts/ripps2_sleek_case.ttf" "$SRC/misc/ripps2_sleekcase.ttf"
 cp -f "$HERE/theme/fonts/ripps2_one.ttf" "$SRC/misc/ripps2_one.ttf"
+# RIPFLOW's fonts (build 70): Roboto Condensed and Bold Condensed, Apache-2.0 (theme/fonts/ROBOTO-LICENSE.txt)
+cp -f "$HERE/theme/fonts/ripflow.ttf" "$SRC/misc/ripflow.ttf"
+cp -f "$HERE/theme/fonts/ripflow_bold.ttf" "$SRC/misc/ripflowbold.ttf"
 # The Memory Files ELF, compiled in and launched from RAM (patch 0004)
 # Built-in textures: glass info panel and PS2 selector mark (patch 0006)
 cp -f "$HERE"/theme/gfx/*.png "$SRC/gfx/"
