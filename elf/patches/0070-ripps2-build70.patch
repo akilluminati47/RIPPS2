@@ -1,0 +1,455 @@
+diff --git a/Makefile b/Makefile
+index b831e05..c2e7433 100644
+--- a/Makefile
++++ b/Makefile
+@@ -133,7 +133,7 @@ ifneq ($(GIT_TAG),latest)
+ endif
+ endif
+ 
+-FRONTEND_OBJS = ripps2.o ripps2ui.o ripps2boot.o ripps2cd.o ripps2sfxpack.o ripps2bg.o ripps2files.o ripps2edit.o ripps2hdd.o ripps2kbd.o ripps2saves.o ripps2about.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o mixsupport.o metadb.o \
++FRONTEND_OBJS = ripps2.o ripps2ui.o ripps2boot.o ripps2ra.o ripps2cd.o ripps2sfxpack.o ripps2bg.o ripps2files.o ripps2edit.o ripps2hdd.o ripps2kbd.o ripps2saves.o ripps2about.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o mixsupport.o metadb.o \
+ 		dia.o ioman.o texcache.o themes.o supportbase.o bdmsupport.o netsupport.o ethsupport.o httpcatalog.o httpsupport.o udpfssupport.o hddsupport.o zso.o lz4.o launchdiag.o \
+ 		appsupport.o mmcesupport.o artindex.o vcdsupport.o cuesupport.o libview.o retrogem.o folderbrowse.o gui.o guigame.o vmc_groups.o textures.o opl.o atlas.o nbns.o httpclient.o gsm.o cheatman.o sound.o ps2cnf.o tar.o
+ 
+diff --git a/include/dialogs.h b/include/dialogs.h
+index 76cc8af..7a200f5 100644
+--- a/include/dialogs.h
++++ b/include/dialogs.h
+@@ -178,6 +178,7 @@ enum UI_ITEMS {
+     NETCFG_ETHOPMODE,
+     NETCFG_RECONNECT,
+     NETCFG_POPSTARTER_BUTTON,
++    NETCFG_NBD_BUTTON, // RIPPS2 build 70: Start NBD Server, moved here from the main menu
+     NETCFG_OK,
+     // Section labels for the SMB-only block, so it can be hidden whole when the selected network
+     // protocol is not SMB. Appended here to keep the NETCFG_*_0..N consecutive runs above intact.
+diff --git a/include/ripps2.h b/include/ripps2.h
+index 3613b0c..5d5a1f1 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -88,6 +88,7 @@ void ripps2DrawPanelMorph(int ax, int ay, int aw, int ah, int bx, int by, int bw
+ void ripps2DrawBackground(void); // orbs on Memory Files, pillars everywhere else
+ void ripps2DrawPillars(void);
+ void ripps2DrawOrbs(void);
++double ripps2Seconds(void); // ripps2bg.c: seconds since the first frame, from the 64-bit timer (clock() wraps every 71.6 min)
+ int ripps2LaunchDvdVideo(void); // ripps2.c: a DVD video disc: ESR for an ESR-patched game, else a DVD player
+ 
+ // The Memory Files browser (ripps2files.c)
+@@ -107,6 +108,7 @@ int ripps2EditFile(const char *path);                              // 1 when it
+ int ripps2EditMetadata(config_set_t *config, const char *gameName); // 1 when SAVE was chosen (values set, not written)
+ 
+ void ripps2HddManager(void); // ripps2hdd.c
++void ripps2Achievements(void); // ripps2ra.c: SpiritofRA, the main menu's ACHIEVEMENTS page
+ void ripps2ShowAbout(const char *version, const char *build); // ripps2about.c: the scrolling credits
+ 
+ // RIPPS2 saves (ripps2saves.c): PSU files and PS2 virtual memory card images, for the file browser
+diff --git a/lng_tmpl/_base.yml b/lng_tmpl/_base.yml
+index b97d7c1..9d8a458 100644
+--- a/lng_tmpl/_base.yml
++++ b/lng_tmpl/_base.yml
+@@ -1403,6 +1403,14 @@ gui_strings:
+   string: "Shows what each memory card starts at power on (PS2BBL, FMCB, OSDMenu), and installs or repairs BIBLE: PS2BBL 1.2.0 by El Isra, bound to the card you choose, starting RIPPS2 at once with Boot Lock on. What the card started before is kept in a backup folder."
+ - label: RIPPS2_MANAGE
+   string: Manage
++- label: RIPPS2_ACHIEVEMENTS
++  string: Achievements
++- label: RIPPS2_NBD_SERVER
++  string: NBD Server
++- label: HINT_RIPPS2_NBD_SERVER
++  string: "Shares the hard drive over the network as an NBD device, so a PC can manage it. A status screen stays up while it runs; leave it to stop the server."
++- label: RIPPS2_START
++  string: Start
+ - label: RIPPS2_MUSIC
+   string: Music
+ - label: HINT_RIPPS2_MUSIC
+diff --git a/src/dialogs.c b/src/dialogs.c
+index 7fe7d25..890363a 100644
+--- a/src/dialogs.c
++++ b/src/dialogs.c
+@@ -185,6 +185,13 @@ struct UIItem diaNetConfig[] = {
+     {UI_BREAK},
+ #endif
+ 
++    // RIPPS2 build 70: the NBD server starts here (it was a main menu entry); the status screen it
++    // shows while running is unchanged, and leaving it stops the server
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_NBD_SERVER}}},
++    {UI_SPACER},
++    {UI_BUTTON, NETCFG_NBD_BUTTON, 1, 1, _STR_HINT_RIPPS2_NBD_SERVER, 0, 0, {.label = {NULL, _STR_RIPPS2_START}}},
++    {UI_BREAK},
++
+     // POPSTARTER owns its own IPCONFIG.DAT / SMBCONFIG.DAT editor. Keep its entry beside the
+     // SMB server data it relates to, without duplicating any of that state in this page.
+     {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_POPSTARTER_NETWORK_SETTINGS}}},
+diff --git a/src/gui.c b/src/gui.c
+index 87b8a02..fc760da 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -520,7 +520,7 @@ static int guiRenderRANotices(int y, int yadd)
+         return y;
+ 
+     if (!raNoticeTimer) {
+-        raNoticeTimer = clock() + 8000 * (CLOCKS_PER_SEC / 1000);
++        raNoticeTimer = clock() | 1; // RIPPS2: when it went up (never 0); a deadline breaks at the clock's wrap
+         sfxPlay(SFX_MESSAGE);
+     }
+ 
+@@ -529,7 +529,7 @@ static int guiRenderRANotices(int y, int yadd)
+         y += yadd;
+     }
+ 
+-    if (clock() >= raNoticeTimer) {
++    if (clock() - raNoticeTimer >= 8 * CLOCKS_PER_SEC) {
+         raNoticeLines = 0;
+         raNoticeTimer = 0;
+     }
+@@ -1517,6 +1517,11 @@ reshow_network:
+         guiShowPopsNetConfig();
+         goto reshow_network;
+     }
++    if (result == NETCFG_NBD_BUTTON) { // RIPPS2 build 70: the NBD server, with its status screen
++        if (menuCheckParentalLock() == 0)
++            handleLwnbdSrv();
++        goto reshow_network;
++    }
+     if (result && !guiSettingsLeftUntouched(diaNetConfig, result, NULL, NULL)) {
+         int netProtoVal2, netAccessVal2;
+         diaGetInt(diaNetConfig, CFG_NETPROTOCOL, &netProtoVal2);
+diff --git a/src/menusys.c b/src/menusys.c
+index e3a9fa9..0e14f1b 100644
+--- a/src/menusys.c
++++ b/src/menusys.c
+@@ -38,6 +38,7 @@ enum MENU_IDs {
+     // Retired Network Update slot. Keep subsequent menu IDs stable even though the item itself is gone.
+     MENU_RETIRED_NETWORK_UPDATE,
+     MENU_NBD,
++    MENU_ACHIEVEMENTS, // RIPPS2 build 70: SpiritofRA
+     MENU_ABOUT,
+     MENU_SAVE_CHANGES,
+     MENU_EXIT,
+@@ -645,13 +646,11 @@ static void menuInitMainMenu(void)
+         submenuDestroy(&mainMenu);
+ 
+     // initialize the menu
+-    // RIPPS2: no Launch PS2 Disc here -- LAUNCH DISC is the first category
+-#ifdef RETROACHIEVEMENTS
+-    submenuAppendItem(&mainMenu, -1, NULL, MENU_RA_DISC_CHECK, _STR_RA_DISC_CHECK);
+-    submenuAppendItem(&mainMenu, -1, NULL, MENU_RA_DISC_LAUNCH, _STR_RA_DISC_LAUNCH);
+-#endif
++    // RIPPS2: no Launch PS2 Disc here -- LAUNCH DISC is the first category. Build 70: ACHIEVEMENTS
++    // (SpiritofRA) takes Start NBD Server's place and holds the RA disc check and launch; the NBD
++    // server starts from Network settings.
+     submenuAppendItem(&mainMenu, -1, NULL, MENU_SETTINGS, _STR_SETTINGS);
+-    submenuAppendItem(&mainMenu, -1, NULL, MENU_NBD, _STR_STARTNBD);
++    submenuAppendItem(&mainMenu, -1, NULL, MENU_ACHIEVEMENTS, _STR_RIPPS2_ACHIEVEMENTS);
+     submenuAppendItem(&mainMenu, -1, NULL, MENU_ABOUT, _STR_ABOUT);
+     submenuAppendItem(&mainMenu, -1, NULL, MENU_EXIT, _STR_EXIT);
+     submenuAppendItem(&mainMenu, -1, NULL, MENU_POWER_OFF, _STR_POWEROFF);
+@@ -1492,7 +1491,7 @@ void menuRenderMenu()
+         y += spacing;
+         // Group the live service/settings actions above the informational/exit actions.
+         // Key this to the actual row ID, not enum arithmetic, so retired/reserved IDs cannot move the gap.
+-        if (it->item.id == MENU_NBD)
++        if (it->item.id == MENU_ACHIEVEMENTS)
+             y += spacing / 2;
+     }
+ 
+@@ -1602,6 +1601,8 @@ void menuHandleInputMenu()
+         } else if (id == MENU_NBD) {
+             if (menuCheckParentalLock() == 0)
+                 handleLwnbdSrv();
++        } else if (id == MENU_ACHIEVEMENTS) {
++            ripps2Achievements();
+         } else if (id == MENU_ABOUT) {
+             guiShowAbout();
+         } else if (id == MENU_SAVE_CHANGES) {
+diff --git a/src/ripps2bg.c b/src/ripps2bg.c
+index 17d7d36..cda048b 100644
+--- a/src/ripps2bg.c
++++ b/src/ripps2bg.c
+@@ -12,6 +12,8 @@
+ 
+ #include <math.h>
+ #include <time.h>
++#include <kernel.h>
++#include <timer.h> // GetTimerSystemTime, kBUSCLK: the 64-bit clock the animations run on
+ #include <stdio.h>
+ #include <string.h>
+ 
+@@ -44,9 +46,24 @@ typedef struct
+     int ok;
+ } p2;
+ 
++// Seconds since the first frame drawn, from the EE's 64-bit bus-clock counter. Build 70: this was
++// clock(), which on the EE is a 32-bit count of microseconds and wraps every 71.6 minutes. At the wrap
++// the time jumped back 4295 s: the orbs' frame step went hugely negative, the right-stick spin's
++// expf(-dt) became inf, the attractor ran backwards and blew up, and every orb went to NaN -- the
++// "leave Memory Files on and the orbs glitch, then the console crashes" report (build 69, hardware).
++// Counted from the first call, a float keeps sub-millisecond steps for many hours.
++double ripps2Seconds(void)
++{
++    static u64 base = 0;
++    u64 now = GetTimerSystemTime();
++    if (base == 0)
++        base = now;
++    return (double)(now - base) / (double)kBUSCLK;
++}
++
+ static float nowSeconds(void)
+ {
+-    return (float)clock() / (float)CLOCKS_PER_SEC;
++    return (float)ripps2Seconds();
+ }
+ 
+ static inline unsigned int cpuTicks(void)
+@@ -94,6 +111,9 @@ static p2 project(v3 p)
+     if (o.ok) {
+         o.x = CX + vdot(d, camR) / o.z * camFocal;
+         o.y = CY - vdot(d, camU) / o.z * camFocal;
++        // build 70: nothing that is not a sane screen position ever reaches the GS
++        if (!(fabsf(o.x) < 100000.0f && fabsf(o.y) < 100000.0f))
++            o.ok = 0;
+     }
+     return o;
+ }
+@@ -782,7 +802,7 @@ static void lorenzStep(float dt)
+         }
+         lorenzReady = 1;
+     }
+-    float h = fminf(dt, 0.05f) * 0.35f / 4.0f;
++    float h = fminf(fmaxf(dt, 0.0f), 0.05f) * 0.35f / 4.0f; // build 70: never backwards (it diverges)
+     for (i = 0; i < LORENZ_N; i++) {
+         v3 *p = &lorenz[i];
+         for (k = 0; k < 4; k++) {
+@@ -791,6 +811,12 @@ static void lorenzStep(float dt)
+             p->y += dy * h;
+             p->z += dz * h;
+         }
++        // the attractor lives within |x|, |y| < 30, 0 < z < 60: a point outside it (or NaN) starts again
++        if (!(fabsf(p->x) < 60.0f && fabsf(p->y) < 60.0f && p->z > -10.0f && p->z < 90.0f)) {
++            p->x = 0.1f + (i % 6) * 0.35f;
++            p->y = 0.2f * i - 2.0f;
++            p->z = 16.0f + (i % 5) * 1.8f;
++        }
+     }
+ }
+ 
+@@ -1048,6 +1074,9 @@ static void spinUpdate(float dt)
+     }
+     spinYaw = fmodf(spinYaw + spinYawVel * dt, TAU);
+     spinPitch += spinPitchVel * dt;
++    if (!(fabsf(spinYawVel) < 100.0f && fabsf(spinPitchVel) < 100.0f && fabsf(spinYaw) <= TAU && fabsf(spinPitch) < 10.0f)) {
++        spinYaw = spinPitch = spinYawVel = spinPitchVel = 0.0f; // build 70: a bad step never sticks
++    }
+     if (spinPitch > SPIN_PITCH_MAX || spinPitch < -SPIN_PITCH_MAX) {
+         spinPitch = spinPitch > 0.0f ? SPIN_PITCH_MAX : -SPIN_PITCH_MAX;
+         spinPitchVel = 0.0f;
+@@ -1278,6 +1307,8 @@ void ripps2DrawOrbs(void)
+     float t = nowSeconds();
+     float dt = lastT > 0.0f ? t - lastT : 1.0f;
+     lastT = t;
++    if (!(dt >= 0.0f && dt < 3600.0f)) // build 70: a clock that went backwards is a fresh page, never a step
++        dt = 1.0f;
+ 
+     if (lorenzPathCount == 0)
+         guidesInit();
+@@ -1319,6 +1350,7 @@ void ripps2DrawOrbs(void)
+     if (dt > 0.25f) { // the tab was just opened: fresh tails, and show the outline
+         trailValid = 0;
+         guideStart = t;
++        orbClock = fmodf(orbClock, 1800.0f); // build 70: and the orbs' own clock stays small (float steps stay exact)
+     }
+     if (f != shownFormation) { // morph from wherever the orbs are
+         prevFormation = shownFormation;
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index a2c718d..51f7cb9 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -1669,7 +1669,7 @@ static void fbTileAlive(int l, int t, int r, int b, float now, int a)
+ 
+ static int fbDrawGrid(void)
+ {
+-    float t = (float)(clock() - fbGridAt) / CLOCKS_PER_SEC, k, now = (float)clock() / CLOCKS_PER_SEC;
++    float t = (float)(clock() - fbGridAt) / CLOCKS_PER_SEC, k, now = (float)ripps2Seconds();
+     int i, uiFont = gTheme->fonts[4];
+ 
+     if (fbGridClosing) {
+diff --git a/src/ripps2ra.c b/src/ripps2ra.c
+new file mode 100644
+index 0000000..e2e5d82
+--- /dev/null
++++ b/src/ripps2ra.c
+@@ -0,0 +1,161 @@
++/*
++  Copyright 2026, RIPPS2 contributors
++  Licenced under Academic Free License version 3.0
++  Review OpenUsbLd README & LICENSE files for further details.
++
++  SpiritofRA: RIPPS2's RetroAchievements page (main menu > ACHIEVEMENTS, where Start NBD Server used to
++  be; the NBD server now starts from Network settings). It gathers what RiptOPL's RetroAchievements
++  flavour already does -- hacan359's implementation, made solid on hardware by oMrRexD -- in one place:
++  the telemetry and badge switches, the PC link test, and the disc in the tray. The PC side is the
++  xeRAbora client on the same network; the console only hashes games and streams the memory addresses
++  a game's achievements watch.
++
++  ORBIT (danielnuld/ps2-launcher) showed the same idea for Neutrino launches with an agent inside its
++  Neutrino fork (third_party/neutrino-igr, AFL-3.0); that is the next step here (see OPLino). ORBIT's
++  launcher itself is GPL-3.0, and none of it is in RIPPS2.
++*/
++
++#include <stdio.h>
++#include <string.h>
++
++#include "include/opl.h"
++#include "include/gui.h"
++#include "include/renderman.h"
++#include "include/fntsys.h"
++#include "include/themes.h"
++#include "include/textures.h"
++#include "include/pad.h"
++#include "include/sound.h"
++#include "include/lang.h"
++#include "include/ripps2.h"
++#ifdef RETROACHIEVEMENTS
++#include "include/discsupport.h"
++#include "include/supportbase.h"
++#endif
++
++#define RA_LIT  GS_SETREG_RGBA(0x80, 0x80, 0x80, 0x80)
++#define RA_DIM  GS_SETREG_RGBA(0x4C, 0x52, 0x64, 0x80)
++#define RA_SOFT GS_SETREG_RGBA(0x67, 0x6C, 0x7A, 0x80)
++#define RA_GOLD GS_SETREG_RGBA(0x7A, 0x66, 0x30, 0x80)
++#define RA_PRIM(r, g, b, a) GS_SETREG_RGBAQ((r), (g), (b), (a), 0x00)
++#define RA_X     60
++#define RA_W     520
++#define RA_Y     118
++#define RA_ROW_H 30
++
++static void raHint(int icon, const char *text, int *x, int y)
++{
++    GSTEXTURE *t = thmGetTexture(icon);
++    if (t != NULL) {
++        rmDrawPixmap(t, *x, y - 10, ALIGN_NONE, 20, 20, SCALING_RATIO, RA_LIT, 0);
++        *x += 24;
++    }
++    fntRenderString(gTheme->fonts[4], *x, y, ALIGN_VCENTER, 0, 0, text, RA_SOFT);
++    *x += fntCalcDimensions(gTheme->fonts[4], text) + 18;
++}
++
++#ifdef RETROACHIEVEMENTS
++enum { RA_ROW_TELEMETRY = 0, RA_ROW_BADGES, RA_ROW_TEST, RA_ROW_DISC_CHECK, RA_ROW_DISC_LAUNCH, RA_ROW_HOW, RA_ROW_COUNT };
++static const char *const raRowName[RA_ROW_COUNT] = {"TELEMETRY", "BADGES", "TEST THE PC LINK", "CHECK THE DISC", "PLAY THE DISC WITH ACHIEVEMENTS", "HOW IT WORKS"};
++#endif
++
++void ripps2Achievements(void)
++{
++    int openKey = gSelectButton == KEY_CIRCLE ? KEY_CIRCLE : KEY_CROSS, backKey = gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE;
++#ifdef RETROACHIEVEMENTS
++    int sel = 0, changed = 0, i;
++#endif
++
++    readPads();
++    while (1) {
++        readPads();
++        rmStartFrame();
++        ripps2DrawBackground();
++        ripps2DrawPagePanel();
++        fntRenderString(gTheme->fonts[5], RA_X, 44, ALIGN_VCENTER, 0, 0, "SPIRIT OF RA", RA_GOLD);
++        fntRenderString(gTheme->fonts[4], RA_X, 66, ALIGN_VCENTER, 0, 0, "ACHIEVEMENTS", RA_LIT);
++        rmDrawLine(RA_X, 82, RA_X + RA_W, 82, RA_PRIM(0x4A, 0x72, 0xDC, 0x60));
++#ifdef RETROACHIEVEMENTS
++        fntRenderString(gTheme->fonts[5], RA_X, 98, ALIGN_VCENTER, 0, 0,
++                        gRATelemetry ? "ON: games with a watch list report to xeRAbora on your PC" : "OFF: games start exactly as they would without it", RA_SOFT);
++        for (i = 0; i < RA_ROW_COUNT; i++) {
++            int y = RA_Y + i * RA_ROW_H + (i >= RA_ROW_TEST ? 12 : 0), cur = i == sel;
++            if (cur) {
++                rmDrawRect(RA_X - 8, y - 2, RA_W + 16, RA_ROW_H - 4, RA_PRIM(0x1E, 0x3C, 0x96, 0x58));
++                rmDrawRect(RA_X - 8, y - 2, 3, RA_ROW_H - 4, RA_PRIM(0x6A, 0x9A, 0xFF, 0x80));
++            }
++            fntRenderString(gTheme->fonts[8], RA_X + 6, y + 11, ALIGN_VCENTER, 0, 0, raRowName[i], cur ? RA_LIT : RA_SOFT);
++            if (i == RA_ROW_TELEMETRY || i == RA_ROW_BADGES) {
++                int on = i == RA_ROW_TELEMETRY ? gRATelemetry : gRABadges;
++                const char *v = on ? "ON" : "OFF";
++                fntRenderString(gTheme->fonts[5], RA_X + RA_W - fntCalcDimensions(gTheme->fonts[5], v), y + 11, ALIGN_VCENTER, 0, 0, v,
++                                on ? RA_GOLD : RA_DIM);
++            }
++        }
++        guiShowRANotices(); // the answers to the tests, as they come back
++#else
++        fntRenderString(gTheme->fonts[4], 320, 220, ALIGN_CENTER, 0, 0, "This RIPPS2 build was made without achievements.", RA_SOFT);
++#endif
++        {
++            int hx = RA_X, hy = 448;
++#ifdef RETROACHIEVEMENTS
++            raHint(gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON, "SELECT", &hx, hy);
++#endif
++            raHint(gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON, "BACK", &hx, hy);
++        }
++        rmEndFrame();
++
++        if (getKeyOn(backKey) || getKeyOn(KEY_TRIANGLE)) {
++            sfxPlay(SFX_CANCEL);
++            break;
++        }
++#ifdef RETROACHIEVEMENTS
++        if (getKey(KEY_UP) && sel > 0) {
++            sel--;
++            sfxPlay(SFX_CURSOR);
++        } else if (getKey(KEY_DOWN) && sel < RA_ROW_COUNT - 1) {
++            sel++;
++            sfxPlay(SFX_CURSOR);
++        } else if ((sel == RA_ROW_TELEMETRY || sel == RA_ROW_BADGES) && (getKeyOn(openKey) || getKeyOn(KEY_LEFT) || getKeyOn(KEY_RIGHT))) {
++            if (sel == RA_ROW_TELEMETRY)
++                gRATelemetry = !gRATelemetry;
++            else
++                gRABadges = !gRABadges;
++            changed = 1;
++            sfxPlay(SFX_CONFIRM);
++        } else if (getKeyOn(openKey)) {
++            sfxPlay(SFX_CONFIRM);
++            if (sel == RA_ROW_TEST) {
++                sbTestPCLinkDeferred();
++                guiShowRANotice(_l(_STR_RA_LOOKING_FOR_PC), NULL);
++            } else if (sel == RA_ROW_DISC_CHECK) {
++                if (discCheckSupportDeferred())
++                    guiShowRANotice(_l(_STR_RA_DISC_CHECKING), NULL);
++                else
++                    guiShowRANotice(_l(_STR_RA_CHECK_RUNNING), NULL);
++            } else if (sel == RA_ROW_DISC_LAUNCH) {
++                if (!gRATelemetry) {
++                    guiMsgBoxSound(SFX_ERROR);
++                    guiMsgBox("Turn TELEMETRY on first: with it off, the game starts without achievements.", 0, NULL);
++                } else
++                    discLaunch(&guiRenderProbeFrame); // success never returns
++            } else if (sel == RA_ROW_HOW) {
++                guiMsgBox("Run the xeRAbora client on a PC on the same network, signed in to your RetroAchievements account. "
++                          "Then, for a game on USB, MMCE, SMB or the HDD: open its game menu (TRIANGLE) and CHECK GAME SUPPORT. "
++                          "A tracked game gets the RA badge; with TELEMETRY on, start it and unlocks pop up over the game. "
++                          "For a disc in the tray, use CHECK THE DISC, then PLAY THE DISC WITH ACHIEVEMENTS. "
++                          "Games started through Neutrino, POPSTARTER or Ember are not tracked yet.",
++                          0, NULL);
++            }
++            readPads();
++        }
++#else
++        (void)openKey;
++#endif
++    }
++#ifdef RETROACHIEVEMENTS
++    if (changed)
++        ripps2SaveSettingsInBackground();
++#endif
++    readPads();
++}
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index 695d889..8a0b3ff 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -209,7 +209,7 @@ void ripps2RenderCategoryBar(void)
+ void ripps2DrawBusy(int alpha)
+ {
+     GSTEXTURE *mark = thmGetTexture(RIPPS2_MARK), *glow = thmGetTexture(RIPPS2_MARK_GLOW);
+-    float t = (float)clock() / (float)CLOCKS_PER_SEC, b = 0.5f + 0.5f * sinf(t * 6.2832f / 1.4f);
++    float t = (float)ripps2Seconds(), b = 0.5f + 0.5f * sinf(t * 6.2832f / 1.4f);
+     float x, y, w, h;
+     int own = markDrawFrame == guiFrameId;
+ 

@@ -54,7 +54,9 @@ sh .github/scripts/install_coherent_mmce.sh
 make clean
 # DIRTY= : the tree is RiptOPL plus our patches by design, so the version never says -dirty
 # RIPPS2_MAKE_FLAGS: extra make flags, e.g. DEBUG=1 EESIO_DEBUG=1 for a build that logs over EE SIO
-make LOCALVERSION=RIPPS2 DIRTY= ${RIPPS2_MAKE_FLAGS:-} release
+# RETROACHIEVEMENTS=1 (build 70, SpiritofRA): RiptOPL's RetroAchievements flavour, the shipping loader
+# plus achievements; telemetry stays off until the user turns it on (Achievements in the main menu)
+make LOCALVERSION=RIPPS2 DIRTY= RETROACHIEVEMENTS=1 ${RIPPS2_MAKE_FLAGS:-} release
 
 mkdir -p "$OUT"
 ELF="$(ls RIPTOPL-*.ELF | head -n1)"
