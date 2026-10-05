@@ -1,5 +1,31 @@
 # RIPPS2 changelog
 
+## Build 72 (alpha), changes since build 70
+
+### PS1 games
+- **Ember is built in.** RIPPS2 carries Ember (Gageformer's PS1 emulator) unmodified. The first time you start an Ember game from a drive, it writes Ember and its licence into that drive's `EMBER` folder, then starts the game. Ember games are listed even before Ember is there. Bring your own PS1 BIOS as `EMBER/bios.bin`.
+- POPSTARTER still starts from your own copy, which RIPPS2 finds on your drives.
+- **Ember Game Settings** save per game from Triangle, and PS1 rows explain their save-card menu (from RiptOPL).
+
+### Memory Files
+- **.elf and .ELF programs start from the internal HDD** (APA) as well as every other drive.
+
+### Smoother
+- **The music no longer stutters through big loads**: the decoder takes the CPU first whenever its reserve runs low, and frames give way instead.
+- **The towers cost about half as much per frame**: far towers are drawn simpler, and every tower simpler still for a moment while the PS2 is busy.
+- **One press, one sound**: with a custom AUDIO pack, a press that opens or leaves a page plays the page's sound alone.
+
+### Colors and More (Settings > Interface)
+- **Source Name**: Shown, Fade When Idle (with the category bar) or Hidden.
+- **Show Recents**: 0 to 9 of your last launched games at the top of Favorites, newest first (0 turns it off).
+- Every button hint reads in lowercase: the save prompt, the START menu and message boxes too.
+
+### Neutrino (from RiptOPL)
+- Every Neutrino argument can be edited from the game's settings, video modes are explained, and RIPPS2 warns before the arguments get too long to pass.
+
+### Under the hood
+- RiptOPL's latest `rebuild/main` (31 commits, to dc6206f) is merged in.
+
 ## Build 70 (alpha), changes since build 66
 
 ### Boot Lock and BIBLE
