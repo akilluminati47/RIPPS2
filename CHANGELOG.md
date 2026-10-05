@@ -1,5 +1,11 @@
 # RIPPS2 changelog
 
+## Build 76 (alpha), changes since build 75
+
+### Guard rails (nothing on screen changes)
+- **Every build now runs RiptOPL's 34 host checks** on RIPPS2's patched tree, plus RIPPS2's own: HD modes stay single-pass, every drawn shape checks the draw queue, All Games and Favorites never free a list under a reader, the AUDIO search order, BIBLE's HDD fallback and the quiet-boot marker. Where RIPPS2 differs from RiptOPL on purpose, `elf/tests/expected_failures.txt` says why; anything else that breaks fails the build.
+- **A new compiler warning in a RIPPS2 file fails the build.**
+
 ## Build 75 (alpha), changes since build 74
 
 ### 720p and 1080i, drawn in one pass

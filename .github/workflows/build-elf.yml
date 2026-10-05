@@ -35,11 +35,21 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Build
+        shell: bash
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          sh elf/build.sh
+          set -o pipefail
+          sh elf/build.sh 2>&1 | tee build.log
         env:
           RIPPS2_MAKE_FLAGS: ${{ inputs.debug && 'DEBUG=1 EESIO_DEBUG=1' || '' }} ${{ inputs.flags }}
+
+      # build 76: RIPPS2's own source files build without a warning (a new one fails the build)
+      - name: Warning gate (RIPPS2 files)
+        shell: bash
+        run: |
+          if grep -E "src/ripps2[a-z0-9]*\.c:[0-9]+:[0-9]+: warning" build.log; then
+            echo "::error::a RIPPS2 source file builds with a warning"; exit 1
+          fi
 
       - name: Upload RIPPS2.elf
         uses: actions/upload-artifact@v6
@@ -48,3 +58,17 @@ jobs:
           path: out/RIPPS2.elf
           if-no-files-found: error
           retention-days: 30
+
+  # build 76: RiptOPL's host checks on the patched tree, plus RIPPS2's own (elf/tests). A plain Ubuntu
+  # runner: the checks compile real loader code with the host gcc.
+  host-tests:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Apply the patch series
+        run: sh elf/build.sh --prepare-only
+
+      - name: Host tests
+        run: python3 elf/tests/run_host_tests.py riptopl

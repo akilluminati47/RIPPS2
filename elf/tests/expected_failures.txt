@@ -1,0 +1,10 @@
+# RiptOPL host tests that fail on RIPPS2 by design. One line each: <test file> <why RIPPS2 differs>.
+# A failure not listed here fails the build (build 76).
+test_apa_table_safety.py RIPPS2's HDD Manager and BIBLE on the HDD use hdd0: on purpose; its driver opens only the __mbr boot area and user-partition deletes (builds 73-74)
+test_audio_threads.py the harness lacks RIPPS2's music-buffer counters (gBgmUnderruns and the ring HUD, build 71)
+test_io_queue_trims.py RIPPS2 notes each request's start time between marking it running and running it (build 65); the order is intact
+test_ra_disc.py RIPPS2's Launch Disc replaces the region this test slices out of system.c
+test_settings_back_keeps_edits.py NBD Server moved from the main menu to Settings > Network (build 70)
+test_settings_fit.py RIPPS2's own colours replace RiptOPL's plasma palette
+test_site_sync.py RiptOPL's documentation-site tool (needs bs4); RIPPS2 does not publish that site
+test_vmode_confirm.py the confirm prompt draws in RIPPS2's font over its pillars; the harness stubs RiptOPL's theme fonts

@@ -24,6 +24,13 @@ for p in "$HERE"/patches/*.patch; do
   git -C "$SRC" apply --whitespace=nowarn "$p"
 done
 
+# build 76: --prepare-only stops here, with RiptOPL and every patch applied, for the host tests
+# (.github/workflows/build-elf.yml runs them on a plain Ubuntu runner, which has no ps2dev toolchain)
+if [ "${1:-}" = "--prepare-only" ]; then
+  echo "Prepared $SRC (patches applied)"
+  exit 0
+fi
+
 # Embedded RIPPS2 assets: our layout becomes the built-in theme, and the menu font
 # is compiled in (patch 0001 loads it as builtin:ripps2)
 cp -f "$HERE/theme/conf_theme.cfg" "$SRC/misc/conf_theme_OPL.cfg"

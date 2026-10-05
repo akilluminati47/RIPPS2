@@ -1,0 +1,13 @@
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index 78f5dba..6e1218f 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -1134,7 +1134,7 @@ static void fbEdit(const char *name)
+ static void fbStartDrivesWork(void)
+ {
+     DIR *d;
+-    int r;
++    int r __attribute__((unused)); // build 76: read only by LOG, which a release build compiles out
+     // the BDM core with each transport (bdmEnsureTypedSource), as a typed custom path brings one up
+     r = bdmEnsureTypedSource(BDM_TYPE_USB, 2500);
+     LOG("START DRIVES: USB %d\n", r);
