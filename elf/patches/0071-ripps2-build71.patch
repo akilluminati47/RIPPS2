@@ -1,0 +1,928 @@
+diff --git a/Makefile b/Makefile
+index 41398b7..b6ed6ec 100644
+--- a/Makefile
++++ b/Makefile
+@@ -133,7 +133,7 @@ ifneq ($(GIT_TAG),latest)
+ endif
+ endif
+ 
+-FRONTEND_OBJS = ripps2.o ripps2ui.o ripps2boot.o ripps2ra.o ripps2cd.o ripps2sfxpack.o ripps2bg.o ripps2files.o ripps2edit.o ripps2hdd.o ripps2kbd.o ripps2saves.o ripps2about.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o mixsupport.o metadb.o \
++FRONTEND_OBJS = ripps2.o ripps2ui.o ripps2boot.o ripps2ra.o ripps2ember.o ripps2cd.o ripps2sfxpack.o ripps2bg.o ripps2files.o ripps2edit.o ripps2hdd.o ripps2kbd.o ripps2saves.o ripps2about.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o mixsupport.o metadb.o \
+ 		dia.o ioman.o texcache.o themes.o supportbase.o bdmsupport.o netsupport.o ethsupport.o httpcatalog.o httpsupport.o udpfssupport.o hddsupport.o zso.o lz4.o launchdiag.o \
+ 		appsupport.o mmcesupport.o artindex.o vcdsupport.o cuesupport.o libview.o retrogem.o folderbrowse.o gui.o guigame.o vmc_groups.o textures.o opl.o atlas.o nbns.o httpclient.o gsm.o cheatman.o sound.o ps2cnf.o tar.o
+ 
+@@ -189,7 +189,7 @@ AUDIO_OBJS =	boot.o cancel.o confirm.o cursor.o message.o transition.o bd_connec
+ # icon_sys.o + save_icn.o are the memory-card browser save icon for the settings folder.
+ # icon.sys names list.icn, copy.icn and del.icn; all three are the same artwork, so ONE blob is
+ # embedded and util.c writes it out under all three names (see saveIconName in src/util.c).
+-MISC_OBJS =	icon_sys.o save_icn.o icon_sys_A.o icon_sys_J.o icon_sys_C.o bible_xlf.o bible_mx4sio_xlf.o conf_theme_OPL.o theme_coverflow.o ripps2_font.o ripps2_sleek.o ripps2_sleekbold.o ripps2_sleekcase.o ripps2_one.o ripflow.o ripflowbold.o
++MISC_OBJS =	icon_sys.o save_icn.o icon_sys_A.o icon_sys_J.o icon_sys_C.o bible_xlf.o bible_mx4sio_xlf.o conf_theme_OPL.o theme_coverflow.o ripps2_font.o ripps2_sleek.o ripps2_sleekbold.o ripps2_sleekcase.o ripps2_one.o ripflow.o ripflowbold.o ember_elf.o ember_licence.o
+ 
+ TRANSLATIONS = Albanian Arabic Bulgarian Cebuano Croatian Czech Danish Dutch Filipino French \
+ 	Galician German Greek Hungarian Indonesian Italian Japanese Korean Laotian Persian Polish Portuguese \
+@@ -1157,6 +1157,13 @@ $(EE_ASM_DIR)ripps2_sleekbold.c: misc/ripps2_sleekbold.ttf | $(EE_ASM_DIR)
+ $(EE_ASM_DIR)ripps2_sleekcase.c: misc/ripps2_sleekcase.ttf | $(EE_ASM_DIR)
+ 	$(BIN2C) $< $@ $(*F)_raw
+ 
++# RIPPS2 build 71: Ember (gzip -9 of elf/ember/ember.elf) and its licence, copied in by RIPPS2's build.sh
++$(EE_ASM_DIR)ember_elf.c: misc/ember_elf.gz | $(EE_ASM_DIR)
++	$(BIN2C) $< $@ $(*F)_gz
++
++$(EE_ASM_DIR)ember_licence.c: misc/ember_licence.txt | $(EE_ASM_DIR)
++	$(BIN2C) $< $@ $(*F)_txt
++
+ # RIPPS2 build 70: RIPFLOW's fonts (Roboto Condensed, Bold Condensed; copied in by RIPPS2's build.sh)
+ $(EE_ASM_DIR)ripflow.c: misc/ripflow.ttf | $(EE_ASM_DIR)
+ 	$(BIN2C) $< $@ $(*F)_raw
+diff --git a/include/cuesupport.h b/include/cuesupport.h
+index e2c5ad2..928e900 100644
+--- a/include/cuesupport.h
++++ b/include/cuesupport.h
+@@ -113,6 +113,7 @@ const char *cueEmberFolder(void);
+ // devPrefix is a device ROOT ending in its separator ("mass0:/", "mmce0:/", an SMB prefix ending
+ // "\\"), NOT gBDMPrefix -- Ember reads its own directory and nothing else.
+ int cueResolveEmber(const char *devPrefix, char *out, int outSize);
++int cueEnsureEmber(const char *devPrefix, char *out, int outSize); // RIPPS2 build 71: resolve, or install the bundled Ember
+ 
+ // As cueResolveEmber, for the user-supplied bios.bin Ember needs at launch. A missing BIOS drops
+ // Ember to the PS1 shell with no explanation, so callers check this BEFORE deinit and say so.
+diff --git a/include/dialogs.h b/include/dialogs.h
+index f0c85e3..aea8b02 100644
+--- a/include/dialogs.h
++++ b/include/dialogs.h
+@@ -41,6 +41,8 @@ enum UI_ITEMS {
+     UICFG_RIPPS2_HINTS,
+     UICFG_RIPPS2_CATBAR,
+     UICFG_RIPPS2_CATSWAP,
++    UICFG_RIPPS2_SRCNAME, // build 71
++    UICFG_RIPPS2_RECENTS,
+ 
+     CFG_DEBUG,
+     CFG_PS2LOGO,
+diff --git a/include/favsupport.h b/include/favsupport.h
+index 39a87ed..d4e3363 100644
+--- a/include/favsupport.h
++++ b/include/favsupport.h
+@@ -39,6 +39,9 @@ unsigned char favGetFlags(item_list_t *itemList);
+ // Source device mode of the FAV item at FAV-list index id, or -1 if out of range. Used by the
+ // theme engine to draw APP favourites with the apps element (proper art box + overlay).
+ int favGetItemSourceMode(int id);
++int favGetItemSourceId(int id); // RIPPS2 build 71: the source id of the FAV item at index id, or -1
++// RIPPS2 build 71: Show Recents: the launched game goes to the top of recents.bin (nine kept)
++void favPushRecent(int mode, int id, int icon_id, int text_id, const char *text, int kind);
+ 
+ // LIB_VIEW_ISO / PS1 / ELF kind of one displayed favorite, or -1 when id is invalid. The Favorites
+ // All-in-One shelf uses this to keep row-specific menus honest even though the page view is ALL.
+diff --git a/include/ripps2.h b/include/ripps2.h
+index fc7fef1..851c6f2 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -67,6 +67,9 @@ extern int gRipps2Palette; // Color Theme for everything RIPPS2 draws (ripps2tin
+ extern int gRipps2Hints;   // the button hints along the bottom of the three tabs
+ extern int gRipps2CatBar;  // LAUNCH DISC | STORAGE | MEMORY FILES along the top
+ extern int gRipps2CatSwap; // 1: Memory Files first and Launch Disc last
++extern int gRipps2SrcName; // build 71: the source's name over the game list, RIPPS2_SHOW_*
++extern int gRipps2Recents; // build 71: Show Recents, 0 (off) to 9 recently launched games on Favorites
++float ripps2SourceNameAlpha(void);
+ const char *ripps2PaletteName(int p);
+ void ripps2NoteInput(void);         // every frame, once the pads are read: the idle time the fades follow
+ void ripps2GlyphsPoke(int which);   // Left / Right (Up / Down on Coverflow) switched a drive or a formation
+@@ -129,6 +132,7 @@ int ripps2EditFile(const char *path);                              // 1 when it
+ int ripps2EditMetadata(config_set_t *config, const char *gameName); // 1 when SAVE was chosen (values set, not written)
+ 
+ void ripps2HddManager(void); // ripps2hdd.c
++int ripps2EmberInstall(const char *elfPath); // ripps2ember.c (build 71): write the Ember RIPPS2 carries
+ void ripps2Achievements(void); // ripps2ra.c: SpiritofRA, the main menu's ACHIEVEMENTS page
+ void ripps2ShowAbout(const char *version, const char *build); // ripps2about.c: the scrolling credits
+ 
+diff --git a/include/sound.h b/include/sound.h
+index b522b63..aff9c67 100644
+--- a/include/sound.h
++++ b/include/sound.h
+@@ -56,6 +56,8 @@ void bgmStart(void);
+ void sfxBootStart(void);        // RIPPS2: the main thread, as the towers rise: audio up, the boot sound playing
+ void sfxBootSoundsLoaded(void); // RIPPS2: the IO worker, every sound loaded: the music may start
+ void bgmBootTick(void);         // RIPPS2: every GUI frame: starts the music once the sounds are in, then fades it in
++int bgmHudReserve(void);            // RIPPS2 build 71 (perf HUD): decoded chunks waiting, -1 with no music
++extern volatile unsigned int gBgmUnderruns;  // RIPPS2 build 71 (perf HUD): times audsrv's ring ran dry
+ void bgmStop(void);
+ // Signal the BGM threads to stop WITHOUT waiting for them. For deinit, so the decoder stops reading
+ // the device before that device is torn down, without putting a blocking join at the top of the
+diff --git a/lng_tmpl/_base.yml b/lng_tmpl/_base.yml
+index 87bb065..cf1111f 100644
+--- a/lng_tmpl/_base.yml
++++ b/lng_tmpl/_base.yml
+@@ -1427,6 +1427,14 @@ gui_strings:
+   string: Category Bar
+ - label: HINT_RIPPS2_CATEGORY_BAR
+   string: "LAUNCH DISC, STORAGE and MEMORY FILES along the top. Fade When Idle hides them until you press a button."
++- label: RIPPS2_SOURCE_NAME
++  string: Source Name
++- label: HINT_RIPPS2_SOURCE_NAME
++  string: "The source's name over the games (ALL GAMES, HDD GAMES and so on). Fade When Idle fades it with the category bar."
++- label: RIPPS2_RECENTS
++  string: Show Recents
++- label: HINT_RIPPS2_RECENTS
++  string: "Up to this many of your last launched games at the top of Favorites, newest first. 0 turns it off."
+ - label: RIPPS2_CATEGORY_ORDER
+   string: Category Order
+ - label: HINT_RIPPS2_CATEGORY_ORDER
+diff --git a/src/bdmsupport.c b/src/bdmsupport.c
+index 1df589b..d54a16f 100644
+--- a/src/bdmsupport.c
++++ b/src/bdmsupport.c
+@@ -1753,7 +1753,7 @@ static void bdmLaunchCue(item_list_t *itemList, const char *cueName, config_set_
+ 
+     bdmBuildPs1Prefix(ps1Prefix, sizeof(ps1Prefix), itemList->mode); // device ROOT: EMBER/ lives there
+ 
+-    if (!cueResolveEmber(ps1Prefix, emberElf, sizeof(emberElf))) {
++    if (!cueEnsureEmber(ps1Prefix, emberElf, sizeof(emberElf))) { // RIPPS2 build 71: or the bundled one
+         guiMsgBox(_l(_STR_EMBER_NOT_FOUND), 0, NULL);
+         return;
+     }
+diff --git a/src/cuesupport.c b/src/cuesupport.c
+index a3f1444..daf6d10 100644
+--- a/src/cuesupport.c
++++ b/src/cuesupport.c
+@@ -23,6 +23,7 @@
+ #include "include/textures.h"   // texDiscoverLoad + ERR_BAD_FILE (folder cover fallback)
+ #include "include/vcdsupport.h" // vcdFillGameList + vcdSortKey -- the POPSTARTER half of the union
+ #include "include/cuesupport.h"
++#include "include/ripps2.h" // RIPPS2 build 71: ripps2EmberInstall
+ 
+ // Path separator for a device prefix: '\\' for SMB (its prefix ends in a backslash), else '/'.
+ // Auto-detected from the trailing character so one code path serves mass/mmce/pfs and SMB alike.
+@@ -64,6 +65,15 @@ int cueResolveEmber(const char *devPrefix, char *out, int outSize)
+     return cueResolveEmberFile(devPrefix, EMBER_ELF_NAME, out, outSize);
+ }
+ 
++// RIPPS2 build 71: the launch paths' Ember: the drive's own, or the one RIPPS2 carries, written into
++// the drive's EMBER folder the first time (never from a list scan: it writes 1.6 MB)
++int cueEnsureEmber(const char *devPrefix, char *out, int outSize)
++{
++    if (cueResolveEmber(devPrefix, out, outSize))
++        return 1;
++    return out != NULL && outSize > 0 && out[0] != '\0' && ripps2EmberInstall(out);
++}
++
+ int cueResolveEmberBios(const char *devPrefix, char *out, int outSize)
+ {
+     return cueResolveEmberFile(devPrefix, EMBER_BIOS_NAME, out, outSize);
+diff --git a/src/dialogs.c b/src/dialogs.c
+index eaab620..c8dc052 100644
+--- a/src/dialogs.c
++++ b/src/dialogs.c
+@@ -879,6 +879,17 @@ struct UIItem diaColorsConfig[] = {
+     {UI_SPACER},
+     {UI_ENUM, UICFG_RIPPS2_CATSWAP, 1, 1, _STR_HINT_RIPPS2_CATEGORY_ORDER, 0, 0, {.intvalue = {0, 0}}},
+     {UI_BREAK},
++
++    // build 71
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_SOURCE_NAME}}},
++    {UI_SPACER},
++    {UI_ENUM, UICFG_RIPPS2_SRCNAME, 1, 1, _STR_HINT_RIPPS2_SOURCE_NAME, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BREAK},
++
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_RECENTS}}},
++    {UI_SPACER},
++    {UI_INT, UICFG_RIPPS2_RECENTS, 1, 1, _STR_HINT_RIPPS2_RECENTS, 0, 0, {.intvalue = {0, 0, 0, 9}}},
++    {UI_BREAK},
+     {UI_SPLITTER},
+ 
+     {UI_LABEL, 0, 1, 1, -1, -30, 0, {.label = {NULL, _STR_TXTCOLOR}}},
+diff --git a/src/ethsupport.c b/src/ethsupport.c
+index d957300..6bc351a 100644
+--- a/src/ethsupport.c
++++ b/src/ethsupport.c
+@@ -686,7 +686,7 @@ static void ethLaunchCue(item_list_t *itemList, const char *cueName, config_set_
+         guiMsgBox(_l(_STR_EMBER_BAD_NAME), 0, NULL);
+         return;
+     }
+-    if (!cueResolveEmber(ethPrefix, emberElf, sizeof(emberElf))) {
++    if (!cueEnsureEmber(ethPrefix, emberElf, sizeof(emberElf))) { // RIPPS2 build 71: or the bundled one
+         guiMsgBox(_l(_STR_EMBER_NOT_FOUND), 0, NULL);
+         return;
+     }
+diff --git a/src/favsupport.c b/src/favsupport.c
+index a970ed2..45615e5 100644
+--- a/src/favsupport.c
++++ b/src/favsupport.c
+@@ -31,6 +31,7 @@
+ #include "include/bdmsupport.h" // bdmSupportIsUDPBD -- POPSTARTER favourites cannot bind to UDPBD
+ #include "include/favsupport.h"
+ #include "include/mixsupport.h" // RIPPS2: stars on All Games rows
++#include "include/ripps2.h"     // RIPPS2 build 71: Show Recents
+ 
+ int gFAVStartMode;
+ 
+@@ -66,7 +67,8 @@ static char *favStrdup(const char *s)
+ 
+ // favourites.bin lives next to the master config in the SHARED OPL config dir (not renamed to
+ // riptopl) so favourites carry across OPL / uOPL / wOPL -- only our settings file is private.
+-static void favGetFilePath(char *out, int outSize)
++// RIPPS2 build 71: recents.bin lives beside it, in the same record format
++static void favGetNamedPath(char *out, int outSize, const char *name)
+ {
+     config_set_t *cfg = configGetByType(CONFIG_OPL);
+     const char *fn = (cfg != NULL && cfg->filename != NULL) ? cfg->filename : "mc0:OPL/" CONFIG_OPL_FILENAME;
+@@ -79,12 +81,17 @@ static void favGetFilePath(char *out, int outSize)
+             dirLen = outSize - 1;
+         memcpy(out, fn, dirLen);
+         out[dirLen] = '\0';
+-        strncat(out, "favourites.bin", outSize - strlen(out) - 1);
++        strncat(out, name, outSize - strlen(out) - 1);
+     } else {
+-        snprintf(out, outSize, "mc0:OPL/favourites.bin");
++        snprintf(out, outSize, "mc0:OPL/%s", name);
+     }
+ }
+ 
++static void favGetFilePath(char *out, int outSize)
++{
++    favGetNamedPath(out, outSize, "favourites.bin");
++}
++
+ // ---- explicit little-endian scalar IO (never raw-struct) ----------------------
+ 
+ static int rdBytes(int fd, void *buf, int n) { return read(fd, buf, n) == n; }
+@@ -197,11 +204,11 @@ static fav_raw_t *favReadWoplFile(int fd, int *outCount)
+ 
+ // Read + bounds-check the whole file into a heap array of raw records. Returns NULL (and
+ // *outCount = 0) on any error/corruption. Caller frees the array.
+-static fav_raw_t *favReadFile(int *outCount)
++static fav_raw_t *favReadNamed(const char *name, int *outCount)
+ {
+     char path[256];
+     *outCount = 0;
+-    favGetFilePath(path, sizeof(path));
++    favGetNamedPath(path, sizeof(path), name);
+ 
+     int fd = open(path, O_RDONLY);
+     if (fd < 0)
+@@ -312,7 +319,12 @@ static void bufU32(u8 *b, int *o, u32 v)
+ 
+    The image is sized from the actual text lengths rather than FAV_MAX_ITEMS * FAV_TEXT_MAX, so a
+    normal library allocates a few KB instead of 140. */
+-static int favWriteFile(fav_raw_t *recs, int count)
++static fav_raw_t *favReadFile(int *outCount)
++{
++    return favReadNamed("favourites.bin", outCount);
++}
++
++static int favWriteNamed(const char *name, fav_raw_t *recs, int count)
+ {
+     char path[256];
+     int i, off = 0, size = 8; // header: magic(4) + version(2) + count(2)
+@@ -355,7 +367,7 @@ static int favWriteFile(fav_raw_t *recs, int count)
+ 
+     // Open as late as possible. O_TRUNC empties the file the instant it succeeds, so anything that
+     // can fail belongs above it -- otherwise a failure here trades a good list for an empty one.
+-    favGetFilePath(path, sizeof(path));
++    favGetNamedPath(path, sizeof(path), name);
+     fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+     if (fd < 0) {
+         LOG("FAV write open failed: %s\n", path);
+@@ -373,6 +385,11 @@ static int favWriteFile(fav_raw_t *recs, int count)
+     return 1;
+ }
+ 
++static int favWriteFile(fav_raw_t *recs, int count)
++{
++    return favWriteNamed("favourites.bin", recs, count);
++}
++
+ // ---- in-memory array lifecycle ------------------------------------------------
+ 
+ static void favFreeArray(void)
+@@ -610,19 +627,54 @@ static void favInit(item_list_t *itemList)
+ // MUST drive a single append pass: rebuild the validated in-memory array and return its
+ // count. updateMenuFromGameList does the clear + append from this count -- we never clear or
+ // append the submenu here (that would double-drive the list).
++static int favModesMatch(int a, int b);
++
++// RIPPS2 build 71: the same game, stored twice (a recent that is also a favourite)
++static int favSameRecord(const fav_raw_t *a, const fav_raw_t *b)
++{
++    return favModesMatch(a->mode, b->mode) && favIdsMatchForMode(a->mode, a->id, b->id) && a->kind == b->kind &&
++           strcmp(a->text, b->text) == 0;
++}
++
+ static int favUpdateItemList(item_list_t *itemList)
+ {
+     favFreeArray();
+     mixClearStars(); // RIPPS2: relit below from the records that resolve
+ 
+-    int rawCount = 0;
+-    fav_raw_t *recs = favReadFile(&rawCount);
+-    if (recs == NULL)
++    int rawCount = 0, recentCount = 0, favRaw = 0, i, j;
++    fav_raw_t *favs = favReadFile(&favRaw);
++    // RIPPS2 build 71: Show Recents puts the last launched games, newest first, above the favourites
++    fav_raw_t *recents = gRipps2Recents > 0 ? favReadNamed("recents.bin", &recentCount) : NULL;
++    if (recentCount > gRipps2Recents)
++        recentCount = gRipps2Recents;
++    rawCount = recentCount + favRaw;
++    if (rawCount == 0) {
++        free(favs);
++        free(recents);
++        return 0;
++    }
++    fav_raw_t *recs = (fav_raw_t *)calloc(rawCount, sizeof(fav_raw_t));
++    unsigned char *isRecent = (unsigned char *)calloc(rawCount, 1);
++    if (recs == NULL || isRecent == NULL) {
++        free(recs);
++        free(isRecent);
++        free(favs);
++        free(recents);
+         return 0;
++    }
++    for (i = 0; i < recentCount; i++) {
++        recs[i] = recents[i];
++        isRecent[i] = 1;
++    }
++    for (i = 0; i < favRaw; i++)
++        recs[recentCount + i] = favs[i];
++    free(favs);
++    free(recents);
+ 
+     favArray = (fav_rec_t *)calloc(rawCount, sizeof(fav_rec_t));
+     if (favArray == NULL) {
+         free(recs);
++        free(isRecent);
+         return 0;
+     }
+ 
+@@ -635,8 +687,14 @@ static int favUpdateItemList(item_list_t *itemList)
+         int resolvedMode = recs[i].mode;
+         int resolvedId = recs[i].id;
+         item_list_t *owner = favResolve(recs[i].mode, recs[i].id, recs[i].text, recs[i].kind, &resolvedMode, &resolvedId);
+-        if (owner != NULL)
++        if (owner != NULL && !isRecent[i])
+             mixMarkStar(resolvedMode, resolvedId, recs[i].kind, recs[i].text); // RIPPS2: the All Games row too
++        if (!isRecent[i]) { // build 71: a favourite already shown among the recents is not listed twice
++            for (j = 0; j < recentCount && !favSameRecord(&recs[j], &recs[i]); j++)
++                ;
++            if (j < recentCount)
++                continue;
++        }
+ 
+         // The FAV page keeps its own L3 ring (All / PS2 / PS1 / ELF): resolution above is global
+         // star/state reconciliation. All accepts every kind; the other stops filter one shelf.
+@@ -679,6 +737,7 @@ static int favUpdateItemList(item_list_t *itemList)
+     }
+ 
+     free(recs);
++    free(isRecent);
+     return favCount;
+ }
+ 
+@@ -706,6 +765,11 @@ static item_list_t *favOwnerView(int id, item_list_t *view)
+ // Source device mode (APP_MODE / HDD_MODE / BDM range / ...) of the FAV item at FAV-list index
+ // id, or -1 if id is out of range. Lets the theme engine redirect e.g. an APP favourite to the
+ // apps element (correct art folder + case overlay) instead of the game cover element.
++int favGetItemSourceId(int id) // RIPPS2 build 71
++{
++    return favValidIndex(id) ? favArray[id].id : -1;
++}
++
+ int favGetItemSourceMode(int id)
+ {
+     return favValidIndex(id) ? favArray[id].mode : -1;
+@@ -1090,6 +1154,36 @@ void favRemoveByIndex(int favIndex)
+     removeFavouriteByIdAndText(srcMode, srcId, txt, srcKind);
+ }
+ 
++// RIPPS2 build 71: Show Recents. The game about to launch goes to the top of recents.bin (it is
++// moved there if it is already in it), which keeps the nine most recent.
++#define FAV_RECENTS_MAX 9
++void favPushRecent(int mode, int id, int icon_id, int text_id, const char *text, int kind)
++{
++    int count = 0, n = 1, i;
++    fav_raw_t *recs, *out;
++
++    if (text == NULL || text[0] == '\0')
++        return;
++    recs = favReadNamed("recents.bin", &count);
++    out = (fav_raw_t *)calloc(FAV_RECENTS_MAX, sizeof(fav_raw_t));
++    if (out == NULL) {
++        free(recs);
++        return;
++    }
++    out[0].mode = mode;
++    out[0].id = id;
++    out[0].icon_id = icon_id;
++    out[0].text_id = text_id;
++    out[0].kind = kind;
++    snprintf(out[0].text, FAV_TEXT_MAX, "%s", text);
++    for (i = 0; i < count && n < FAV_RECENTS_MAX; i++)
++        if (!favSameRecord(&recs[i], &out[0]))
++            out[n++] = recs[i];
++    favWriteNamed("recents.bin", out, n);
++    free(out);
++    free(recs);
++}
++
+ void loadFavourites(void)
+ {
+     // Mark the FAV list stale and schedule its single canonical rebuild. The clear + re-append
+diff --git a/src/gui.c b/src/gui.c
+index 5d52a72..0bfd962 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -2357,6 +2357,10 @@ static void guiRipps2SettingsRead(void)
+         gRipps2CatBar = v;
+     if (diaGetInt(diaColorsConfig, UICFG_RIPPS2_CATSWAP, &v) && (v == 0 || v == 1))
+         gRipps2CatSwap = v;
++    if (diaGetInt(diaColorsConfig, UICFG_RIPPS2_SRCNAME, &v) && v >= 0 && v < RIPPS2_SHOW_COUNT)
++        gRipps2SrcName = v;
++    if (diaGetInt(diaColorsConfig, UICFG_RIPPS2_RECENTS, &v) && v >= 0 && v <= 9)
++        gRipps2Recents = v;
+ }
+ 
+ static int guiRipps2SettingsUpdater(int modified)
+@@ -2382,13 +2386,16 @@ static void guiRipps2SettingsSet(void)
+     diaSetInt(diaColorsConfig, UICFG_RIPPS2_HINTS, gRipps2Hints);
+     diaSetInt(diaColorsConfig, UICFG_RIPPS2_CATBAR, gRipps2CatBar);
+     diaSetInt(diaColorsConfig, UICFG_RIPPS2_CATSWAP, gRipps2CatSwap);
++    diaSetEnum(diaColorsConfig, UICFG_RIPPS2_SRCNAME, guiRipps2ShowNames);
++    diaSetInt(diaColorsConfig, UICFG_RIPPS2_SRCNAME, gRipps2SrcName);
++    diaSetInt(diaColorsConfig, UICFG_RIPPS2_RECENTS, gRipps2Recents);
+ }
+ 
+ void guiShowColorsConfig(void)
+ {
+     int themeID = thmGetGuiValue();
+     int editable = (themeID == 0 || themeID == thmFindGuiID("<RIPFLOW>"));
+-    int keep[5] = {gRipps2Glyphs, gRipps2Palette, gRipps2Hints, gRipps2CatBar, gRipps2CatSwap};
++    int keep[7] = {gRipps2Glyphs, gRipps2Palette, gRipps2Hints, gRipps2CatBar, gRipps2CatSwap, gRipps2SrcName, gRipps2Recents};
+ 
+     guiRipps2SettingsSet();
+ 
+@@ -2426,10 +2433,16 @@ void guiShowColorsConfig(void)
+         gRipps2Hints = keep[2];
+         gRipps2CatBar = keep[3];
+         gRipps2CatSwap = keep[4];
++        gRipps2SrcName = keep[5];
++        gRipps2Recents = keep[6];
+     }
+     if (gRipps2Glyphs != keep[0] || gRipps2Palette != keep[1] || gRipps2Hints != keep[2] || gRipps2CatBar != keep[3] ||
+-        gRipps2CatSwap != keep[4])
++        gRipps2CatSwap != keep[4] || gRipps2SrcName != keep[5])
+         guiSettingsSavePending = 1; // saved with the rest when Settings closes
++    if (gRipps2Recents != keep[6]) {
++        guiSettingsSavePending = 1;
++        ioPutRequest(IO_CUSTOM_SIMPLEACTION, &loadFavourites); // build 71: Favorites shows them now
++    }
+     if (ret) {
+         if (editable) {
+             diaGetColor(diaColorsConfig, UICFG_BGCOL, gDefaultBgColor);
+diff --git a/src/hddsupport.c b/src/hddsupport.c
+index 5d7d7a0..71093c4 100644
+--- a/src/hddsupport.c
++++ b/src/hddsupport.c
+@@ -1924,7 +1924,7 @@ static void hddDoLaunchEmber(item_list_t *itemList, const char *name, const char
+ 
+     // Verify against the partition as it is mounted RIGHT NOW, not against what the scan saw: the
+     // scan read this partition read-only through pfs1: and may be minutes old.
+-    if (!cueResolveEmber("pfs0:/", emberElf, sizeof(emberElf))) {
++    if (!cueEnsureEmber("pfs0:/", emberElf, sizeof(emberElf))) { // RIPPS2 build 71: or the bundled one
+         hddRestoreDataHome();
+         ioBlockOps(0);
+         guiMsgBox(_l(_STR_EMBER_NOT_FOUND), 0, NULL);
+diff --git a/src/mmcesupport.c b/src/mmcesupport.c
+index 42b8c8c..f7edc8c 100644
+--- a/src/mmcesupport.c
++++ b/src/mmcesupport.c
+@@ -855,7 +855,7 @@ static void mmceLaunchCue(item_list_t *itemList, const char *cueName, config_set
+ 
+     mmceGetDeviceRoot(ps1Root, sizeof(ps1Root));
+ 
+-    if (!cueResolveEmber(ps1Root, emberElf, sizeof(emberElf))) {
++    if (!cueEnsureEmber(ps1Root, emberElf, sizeof(emberElf))) { // RIPPS2 build 71: or the bundled one
+         guiMsgBox(_l(_STR_EMBER_NOT_FOUND), 0, NULL);
+         return;
+     }
+diff --git a/src/opl.c b/src/opl.c
+index c0d0ec0..5058c80 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -416,6 +416,8 @@ void ripps2StartSources(void)
+     }
+ }
+ 
++static void itemPushRecent(struct menu_item *curMenu, item_list_t *support); // RIPPS2 build 71
++
+ static void itemExecSelect(struct menu_item *curMenu)
+ {
+     item_list_t *support = curMenu->userdata;
+@@ -446,6 +448,7 @@ static void itemExecSelect(struct menu_item *curMenu)
+                     snprintf(gameIdStartup, sizeof(gameIdStartup), "%s", startup);
+                 // Flash the GameID barcode (Pixel FX/RetroGEM HDMI auto-profile) before handoff. Use
+                 // the stack copy: the hold renders/unlocks for many frames while source lists may refresh.
++                itemPushRecent(curMenu, support); // RIPPS2 build 71: Show Recents
+                 // RIPPS2: the pillars light up (no menu), then the handoff; a launch that returns failed
+                 ripps2PlayLaunchSequence();
+                 guiShowGameID(gameIdStartup);
+@@ -685,6 +688,36 @@ static int itemFavKind(item_list_t *support, int id, const char *text)
+     return cueIsCueEntry(game) ? FAV_KIND_CUE : FAV_KIND_VCD;
+ }
+ 
++// RIPPS2 build 71: Show Recents. The game about to launch goes to the top of recents.bin, filed the way
++// R3 files a favourite: an All Games or Favorites row as the game on its own source.
++static void itemPushRecent(struct menu_item *curMenu, item_list_t *support)
++{
++    submenu_item_t *it;
++    int mode, id, kind;
++
++    if (gRipps2Recents <= 0 || curMenu == NULL || curMenu->current == NULL || support == NULL)
++        return;
++    it = &curMenu->current->item;
++    if (support->mode == MIX_MODE) {
++        mode = mixGetItemSourceMode(it->id);
++        id = mixGetItemSourceId(it->id);
++        kind = mixGetItemKind(it->id);
++    } else if (support->mode == FAV_MODE) {
++        mode = favGetItemSourceMode(it->id);
++        id = favGetItemSourceId(it->id);
++        kind = favGetItemKind(it->id);
++    } else {
++        if (it->isFolder || folderDepth(support->mode) > 0)
++            return;
++        mode = support->mode;
++        id = libListSourceId(support, it->id);
++        kind = itemFavKind(support, it->id, it->text);
++    }
++    if (mode < 0 || id < 0 || kind < 0)
++        return;
++    favPushRecent(mode, id, it->icon_id, it->text_id, it->text, kind);
++}
++
+ // R3: toggle the current row's favourite star (checklist item 33). On the Favourites tab
+ // itself R3 removes; on any source list it adds/removes by (mode, id, text).
+ static void itemExecFav(struct menu_item *curMenu)
+@@ -3265,6 +3298,10 @@ static void _loadConfig()
+                 gRipps2CatBar = value;
+             if (configGetInt(configOPL, "ripps2_catswap", &value) && (value == 0 || value == 1))
+                 gRipps2CatSwap = value;
++            if (configGetInt(configOPL, "ripps2_srcname", &value) && value >= 0 && value < RIPPS2_SHOW_COUNT)
++                gRipps2SrcName = value; // build 71
++            if (configGetInt(configOPL, "ripps2_recents", &value) && value >= 0 && value <= 9)
++                gRipps2Recents = value;
+             configGetColor(configOPL, CONFIG_OPL_BGCOLOR, gDefaultBgColor);
+             configGetColor(configOPL, CONFIG_OPL_TEXTCOLOR, gDefaultTextColor);
+             configGetColor(configOPL, CONFIG_OPL_UI_TEXTCOLOR, gDefaultUITextColor);
+@@ -3957,6 +3994,8 @@ static void _saveConfig()
+         configSetInt(configOPL, "ripps2_hints", gRipps2Hints);
+         configSetInt(configOPL, "ripps2_catbar", gRipps2CatBar);
+         configSetInt(configOPL, "ripps2_catswap", gRipps2CatSwap);
++        configSetInt(configOPL, "ripps2_srcname", gRipps2SrcName); // build 71
++        configSetInt(configOPL, "ripps2_recents", gRipps2Recents);
+         configSetStr(configOPL, CONFIG_OPL_THEME, thmGetValue());
+         configSetStr(configOPL, CONFIG_OPL_LANGUAGE, lngGetValue());
+         configSetColor(configOPL, CONFIG_OPL_BGCOLOR, gDefaultBgColor);
+diff --git a/src/ripps2about.c b/src/ripps2about.c
+index 5dc6350..b9e0da3 100644
+--- a/src/ripps2about.c
++++ b/src/ripps2about.c
+@@ -72,6 +72,12 @@ static const ab_row_t abRows[] = {
+     {'T', "ps2sdk's libcdvd and audsrv"},
+     {'S', "the disc's sound read straight off it, the towers lit by it"},
+     {'G', NULL},
++    {'H', "PS1 GAMES"},
++    {'T', "Ember by Gageformer"},
++    {'S', "carried unmodified: github.com/Gageformer/Ember/releases"},
++    {'T', "POPSTARTER by krHACKen"},
++    {'S', "started from your own copy, found on your drives"},
++    {'G', NULL},
+     {'H', "ACHIEVEMENTS: SPIRIT OF RA"},
+     {'T', "RetroAchievements on the console by hacan359 (yoba)"},
+     {'S', "game hashes and memory telemetry, made solid on hardware by oMrRexD"},
+diff --git a/src/ripps2bg.c b/src/ripps2bg.c
+index 8b64a8c..737d88f 100644
+--- a/src/ripps2bg.c
++++ b/src/ripps2bg.c
+@@ -1614,10 +1614,20 @@ void ripps2DrawBackground(void)
+         shownWorstUs = winWorstUs; // the longest frame of the last second
+         winWorstUs = 0;
+     }
+-    char hud[64];
++    char hud[96];
+     int tenths = (int)(bgMsAvg * 10.0f + 0.5f); // integer formatting: no float printf needed
+-    snprintf(hud, sizeof(hud), "BG %d.%dMS %dFPS  WORST %uMS  LONG %u", tenths / 10, tenths % 10, fpsShown,
+-             (unsigned)(shownWorstUs / 1000), (unsigned)longFrames);
++    // build 71: the music's decoded reserve (its low point this second, in 23 ms chunks) and audsrv's
++    // empty-ring count: a low reserve with no gaps is the EE side, gaps with a full reserve the IOP
++    static int resLow = 1000, resShown = -1;
++    int res = bgmHudReserve();
++    if (res >= 0 && res < resLow)
++        resLow = res;
++    if (fpsFrames == 0) { // the window just turned over above
++        resShown = resLow < 1000 ? resLow : -1;
++        resLow = 1000;
++    }
++    snprintf(hud, sizeof(hud), "BG %d.%dMS %dFPS  WORST %uMS  LONG %u  BGM %d  GAPS %u", tenths / 10, tenths % 10, fpsShown,
++             (unsigned)(shownWorstUs / 1000), (unsigned)longFrames, resShown, (unsigned)gBgmUnderruns);
+     int w = fntCalcDimensions(gTheme->fonts[3], hud);
+     rmDrawRect(624 - w, 462, w + 8, 20, RGBA(0x00, 0x00, 0x00, 0x60));
+     fntRenderString(gTheme->fonts[3], 628 - w, 472, ALIGN_VCENTER, 0, 0, hud, GS_SETREG_RGBA(0x80, 0x78, 0x40, 0x80));
+diff --git a/src/ripps2ember.c b/src/ripps2ember.c
+new file mode 100644
+index 0000000..1fe7ae4
+--- /dev/null
++++ b/src/ripps2ember.c
+@@ -0,0 +1,96 @@
++/*
++  RIPPS2 build 71: Ember on board.
++
++  Ember, the PS1 emulator for the PS2 by Gageformer, rides inside RIPPS2.ELF gzip-compressed, with its
++  licence. Launching an Ember game from a drive whose EMBER folder has no ember.elf writes the build
++  there, unmodified (the gzip trailer's CRC and the size are checked), with LICENSE-BETA.txt beside
++  it, and the launch goes on. Only the launch paths do this: a list scan never writes 1.6 MB.
++
++  Bundled under the Ember Public Beta Testing Licence (elf/ember/LICENSE-BETA.txt in ps2-pillars):
++  unmodified and complete, with its licence, credited in About with its release page, and free.
++*/
++
++#include <stdio.h>
++#include <string.h>
++#include <fcntl.h>
++#include <unistd.h>
++#include <zlib.h>
++#include <sys/stat.h>
++
++#include "include/opl.h"
++#include "include/ioman.h"
++#include "include/ripps2.h"
++
++extern void *ember_elf_gz; // misc/ember_elf.gz: elf/ember/ember.elf, gzip -9 by RIPPS2's build.sh
++extern int size_ember_elf_gz;
++extern void *ember_licence_txt; // misc/ember_licence.txt: elf/ember/LICENSE-BETA.txt
++extern int size_ember_licence_txt;
++
++#define EMBER_ELF_SIZE 1611956 // the bundled build, Beta-2, as released
++#define EMBER_CHUNK    (32 * 1024)
++
++static unsigned char emberOut[EMBER_CHUNK] __attribute__((aligned(64)));
++
++int ripps2EmberInstall(const char *elfPath)
++{
++    char dir[256], lic[288];
++    const char *slash = strrchr(elfPath, '/'), *bslash = strrchr(elfPath, '\\');
++    const char *sep = slash > bslash ? slash : bslash;
++    z_stream zs;
++    int fd, total = 0, ret, ok = 1, writes = 0;
++
++    if (sep == NULL || (int)(sep - elfPath) >= (int)sizeof(dir))
++        return 0;
++    snprintf(dir, sizeof(dir), "%.*s", (int)(sep - elfPath), elfPath);
++    mkdir(dir, 0777); // the EMBER folder: there already when the drive has Ember games
++    snprintf(lic, sizeof(lic), "%.*sLICENSE-BETA.txt", (int)(sep - elfPath + 1), elfPath);
++
++    fd = open(elfPath, O_WRONLY | O_CREAT | O_TRUNC, 0666);
++    if (fd < 0) {
++        LOG("EMBER: cannot write %s\n", elfPath);
++        return 0;
++    }
++    memset(&zs, 0, sizeof(zs));
++    zs.next_in = (unsigned char *)&ember_elf_gz;
++    zs.avail_in = size_ember_elf_gz;
++    if (inflateInit2(&zs, 15 + 16) != Z_OK) { // 15 + 16: a gzip stream
++        close(fd);
++        remove(elfPath);
++        return 0;
++    }
++    do {
++        zs.next_out = emberOut;
++        zs.avail_out = EMBER_CHUNK;
++        ret = inflate(&zs, Z_NO_FLUSH);
++        if (ret != Z_OK && ret != Z_STREAM_END) {
++            ok = 0;
++            break;
++        }
++        int n = EMBER_CHUNK - zs.avail_out;
++        if (n > 0 && write(fd, emberOut, n) != n) {
++            ok = 0;
++            break;
++        }
++        total += n;
++        if ((++writes & 3) == 0)
++            ripps2LaunchPump(); // the towers keep moving while it writes
++    } while (ret != Z_STREAM_END);
++    inflateEnd(&zs);
++    close(fd);
++
++    if (!ok || total != EMBER_ELF_SIZE) {
++        LOG("EMBER: install failed (%d of %d bytes)\n", total, EMBER_ELF_SIZE);
++        remove(elfPath);
++        return 0;
++    }
++    fd = open(lic, O_WRONLY | O_CREAT | O_TRUNC, 0666);
++    if (fd < 0 || write(fd, &ember_licence_txt, size_ember_licence_txt) != size_ember_licence_txt) {
++        if (fd >= 0)
++            close(fd);
++        remove(elfPath); // Ember goes with its licence, or not at all
++        return 0;
++    }
++    close(fd);
++    LOG("EMBER: installed %s\n", elfPath);
++    return 1;
++}
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index 9e5978f..09b57f6 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -1025,14 +1025,11 @@ static void fbRunElf(const fb_entry_t *e)
+     if (!guiMsgBox(ask, 1, NULL))
+         return;
+     fbJoin(elfPath, sizeof(elfPath), fbPath, e->name);
+-    if (!strncmp(elfPath, "pfs", 3)) { // an HDD ELF needs its partition path; not handled here yet
+-        guiMsgBox("Run HDD programs from the APPS page for now.", 0, NULL);
+-        return;
+-    }
+     argv[0] = elfPath;
+     // build 69 (FifthFox: "Ember does not run from Launcher"): Ember cannot start a drive of its own,
+     // it inherits the IOP it is handed (sysLaunchEmber). The reset below left it blind; it goes the
+-    // way the PS1 pages start it, the IOP and its drives kept, its own path as argv[0]
++    // way the PS1 pages start it, the IOP and its drives kept, its own path as argv[0] (on the HDD
++    // too: it reads its games through the live pfs0: mount)
+     const char *base = strrchr(elfPath, '/');
+     if (!strcasecmp(base != NULL ? base + 1 : elfPath, EMBER_ELF_NAME)) {
+         ripps2PlayLaunchSequence();
+@@ -1041,6 +1038,31 @@ static void fbRunElf(const fb_entry_t *e)
+         ripps2LaunchAborted();
+         return;
+     }
++    // build 71: an ELF on the hard drive starts the way the APPS page starts one (it used to say "use
++    // the APPS page"): loaded from the live pfs0: mount, handed hdd0:<partition>:pfs:/path as its
++    // argv[0] (the wLaunchELF / OSDMenu form, which survives the IOP reset), and the loader cleans
++    // the HDD up once the ELF is in memory
++    if (!strncmp(elfPath, "pfs", 3)) {
++        static char partition[sizeof(gOPLPart) + 1], hddArgv0[sizeof(partition) + 320];
++        const char *colon = strchr(elfPath, ':');
++        if (gOPLPart[0] == '\0' || colon == NULL) {
++            guiMsgBox("This hard drive has no OPL partition mounted, so RIPPS2 cannot start programs from it.", 0, NULL);
++            return;
++        }
++        snprintf(partition, sizeof(partition), "%s:", gOPLPart);
++        snprintf(hddArgv0, sizeof(hddArgv0), "%spfs:%s", partition, colon + 1);
++        // the kernel's one 256-byte argument pool: the load path, argv[0] and the loader's flag
++        if (strlen(elfPath) + 1 + strlen(hddArgv0) + 1 + sizeof("-la=RH") > 256) {
++            guiMsgBox("This program's path is too long to start. Move it to a shorter folder.", 0, NULL);
++            return;
++        }
++        argv[0] = hddArgv0;
++        ripps2PlayLaunchSequence();
++        deinit(UNMOUNT_EXCEPTION, IO_MODE_SELECTED_ALL_SPARE); // keep the drive the ELF is on
++        sysLoadELFApp(elfPath, partition, 1, argv, 1, 1);
++        ripps2LaunchAborted();
++        return;
++    }
+     ripps2PlayLaunchSequence();
+     deinit(UNMOUNT_EXCEPTION, IO_MODE_SELECTED_ALL_SPARE); // keep the drive the ELF is on
+     sysLoadELFApp(elfPath, NULL, 1, argv, 1, 0);
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index 057e4fb..c13cdb4 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -88,6 +88,7 @@ static int formationDirty = 0; // changed since the last save
+ // ---- RIPPSettings (Controller Settings > RIPPSettings) ----
+ int gRipps2Glyphs = RIPPS2_GLYPHS_HIDDEN, gRipps2Palette = 0, gRipps2Hints = RIPPS2_SHOW_ON, gRipps2CatBar = RIPPS2_SHOW_ON,
+     gRipps2CatSwap = 0;
++int gRipps2SrcName = RIPPS2_SHOW_ON, gRipps2Recents = 0; // build 71
+ 
+ #define ART_FADE_S   0.35f // the art's fade in (themes.c ART_FADE_S): the glyphs and the idle fades come in at its pace
+ #define GLYPH_HOLD_S 2.5f  // the glyphs stay this long after a press (or the page opening, for Fade Out)
+@@ -156,6 +157,11 @@ float ripps2CatBarAlpha(void)
+     return showAlpha(gRipps2CatBar);
+ }
+ 
++float ripps2SourceNameAlpha(void)
++{
++    return showAlpha(gRipps2SrcName); // build 71: the same idle fade as the category bar
++}
++
+ // The D-pad glyphs beside a drive's name (Storage) and a formation's (Memory Files). Hidden by default:
+ // the names read cleaner as text. Fade In brings them in at the art's pace when Left / Right is
+ // pressed, Fade Out has them there when the page opens; either way they stay a moment, then go.
+diff --git a/src/sound.c b/src/sound.c
+index 04bf10a..c9f22e7 100644
+--- a/src/sound.c
++++ b/src/sound.c
+@@ -131,6 +131,20 @@ static void sfxSetCursorChannelsVolume(int volume)
+ // for either way. Deliberate presses are far more than a frame apart and all still play.
+ #define SFX_ONESHOT_COALESCE_MS 50
+ 
++// RIPPS2 build 71: one press, one sound. A press that opens or leaves a page raises its confirm or
++// cancel AND the page's own sound within a few milliseconds; with an AUDIO folder those are different
++// sounds, and two or three were heard. Within SFX_PRESS_MS the bigger one wins: a confirm, cancel or
++// message after a page sound is dropped, and one before it is cut off as the page sound takes the
++// next channel (the rotation mutes the one before).
++#define SFX_PRESS_MS 150
++
++static int sfxPressRank(int id)
++{
++    if (id == SFX_CONFIRM || id == SFX_CANCEL || id == SFX_MESSAGE)
++        return 1;
++    return 2;
++}
++
+ static int sfxIsUiOneShot(int id)
+ {
+     return (id == SFX_CONFIRM) || (id == SFX_CANCEL) || (id == SFX_MESSAGE) || (id == SFX_TRANSITION) ||
+@@ -509,10 +523,12 @@ void sfxPlay(int id)
+             if (sfxIsUiOneShot(id)) { // see SFX_ONESHOT_COALESCE_MS
+                 static u32 lastOneShotTicks = 0;
+                 static int lastOneShotId = -1;
++                u32 sinceMs = lastOneShotTicks != 0 ? (sfxStartTicks - lastOneShotTicks) / SFX_CLOCKS_PER_MS : 0xFFFFFFFFu;
+                 // RIPPS2: only the same sound raised twice is dropped; a different one interrupts
+-                if (lastOneShotTicks != 0 && id == lastOneShotId &&
+-                    (sfxStartTicks - lastOneShotTicks) / SFX_CLOCKS_PER_MS < SFX_ONESHOT_COALESCE_MS)
++                if (id == lastOneShotId && sinceMs < SFX_ONESHOT_COALESCE_MS)
+                     return;
++                if (sinceMs < SFX_PRESS_MS && sfxPressRank(id) < sfxPressRank(lastOneShotId))
++                    return; // build 71: the page sound of this press already played
+                 lastOneShotTicks = sfxStartTicks;
+                 lastOneShotId = id;
+             }
+@@ -979,6 +995,16 @@ static int bgmWaitForRoom(int want)
+ // Queue one decoded chunk, in as many pieces as the audsrv ring has room for. audsrv_play_audio keeps
+ // what fits and DROPS the rest, so each piece is at most the room just seen and the chunk advances by
+ // what was actually queued. Returns 0 once asked to terminate.
++// RIPPS2 build 71 (perf HUD): audsrv's ring found completely empty (the IOP played everything it had:
++// a gap in the sound), and the room it has then
++volatile unsigned int gBgmUnderruns = 0;
++static int bgmRingMax = 0, bgmRingWasEmpty = 0;
++
++int bgmHudReserve(void)
++{
++    return bgmIsPlaying ? bgmBufferedChunks : -1;
++}
++
+ static int bgmQueueChunk(const char *chunk)
+ {
+     int done = 0;
+@@ -990,6 +1016,14 @@ static int bgmQueueChunk(const char *chunk)
+ 
+         if (room <= 0)
+             return 0;
++        if (room > bgmRingMax)
++            bgmRingMax = room; // the most room seen: the ring empty
++        else if (room == bgmRingMax && bgmPlayed > 8 * BGM_RING_BUFFER_SIZE) {
++            if (!bgmRingWasEmpty)
++                gBgmUnderruns++;
++            bgmRingWasEmpty = 1;
++        } else
++            bgmRingWasEmpty = 0;
+         sent = audsrv_play_audio(chunk + done, room < left ? room : left);
+         if (sent > 0)
+             done += sent;
+@@ -1054,6 +1088,11 @@ static void bgmIoThread(void *arg)
+         int bufferPtr = 0;
+         gBgmInRead = 1;
+         do {
++            // RIPPS2 build 71: the decoder shares priority 31 with the menu, and the EE does not share
++            // time between equal priorities: refilling its 4 s ring after a long load, it held the CPU
++            // through vsyncs (the frame drops that came with the music). Each read now lets the menu
++            // run first when its frame is due.
++            RotateThreadReadyQueue(BGM_THREAD_BASE_PRIO + 1);
+             if (bgmPcmRead != NULL) { // RIPPS2: raw PCM (a CD, a .wav)
+                 int got = bgmPcmRead(bgmBuffer[wrPtr] + bufferPtr, decodeTotal);
+                 if (got > 0) {
+diff --git a/src/themes.c b/src/themes.c
+index c9ff9b2..40093a9 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -2588,7 +2588,8 @@ static void drawMenuText(struct menu_list *menu, struct submenu_list *item, conf
+     else
+         glyphAlpha = glyphAlpha < 0x78 ? glyphAlpha + 0x08 : 0x80;
+     // and RIPPSettings: hidden (the default), shown, or fading in or out around a press
+-    int shownAlpha = (int)(glyphAlpha * ripps2GlyphsAlpha(RIPPS2_GLYPH_DRIVES));
++    float srcA = ripps2SourceNameAlpha(); // build 71: Source Name, Shown / Fade When Idle / Hidden
++    int shownAlpha = (int)(glyphAlpha * ripps2GlyphsAlpha(RIPPS2_GLYPH_DRIVES) * srcA);
+     u64 glyphCol = GS_SETREG_RGBA(0x80, 0x80, 0x80, shownAlpha);
+ 
+     if (shownAlpha <= 0) {
+@@ -2608,7 +2609,9 @@ static void drawMenuText(struct menu_list *menu, struct submenu_list *item, conf
+         if (rightIconTex && rightIconTex->Mem)
+             rmDrawPixmap(rightIconTex, elem->posX + textW + 6, elem->posY - 2, elem->aligned, 18, 18, elem->scaled, glyphCol, 0);
+     }
+-    fntRenderString(elem->font, elem->posX, elem->posY, elem->aligned, 0, 0, text, elem->color);
++    if (srcA > 0.0f)
++        fntRenderString(elem->font, elem->posX, elem->posY, elem->aligned, 0, 0, text,
++                        (elem->color & ~(0xFFULL << 24)) | ((u64)(int)(((elem->color >> 24) & 0xFF) * srcA) << 24));
+ }
+ 
+ static void drawBDMIndex(struct menu_list *menu, struct submenu_list *item, config_set_t *config, struct theme_element *elem)
+diff --git a/src/udpfssupport.c b/src/udpfssupport.c
+index a50e16d..ed64780 100644
+--- a/src/udpfssupport.c
++++ b/src/udpfssupport.c
+@@ -471,7 +471,7 @@ static void udpfsLaunchCue(item_list_t *itemList, const char *cueName, config_se
+         guiMsgBox(_l(_STR_EMBER_BAD_NAME), 0, NULL);
+         return;
+     }
+-    if (!cueResolveEmber(udpfsPrefix, emberElf, sizeof(emberElf))) {
++    if (!cueEnsureEmber(udpfsPrefix, emberElf, sizeof(emberElf))) { // RIPPS2 build 71: or the bundled one
+         guiMsgBox(_l(_STR_EMBER_NOT_FOUND), 0, NULL);
+         return;
+     }

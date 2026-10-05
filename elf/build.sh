@@ -32,6 +32,10 @@ cp -f "$HERE/theme/fonts/ripps2_sleek.ttf" "$SRC/misc/ripps2_sleek.ttf"
 cp -f "$HERE/theme/fonts/ripps2_sleek_bold.ttf" "$SRC/misc/ripps2_sleekbold.ttf"
 cp -f "$HERE/theme/fonts/ripps2_sleek_case.ttf" "$SRC/misc/ripps2_sleekcase.ttf"
 cp -f "$HERE/theme/fonts/ripps2_one.ttf" "$SRC/misc/ripps2_one.ttf"
+# Ember (build 71): Gageformer's PS1 emulator, carried unmodified (gzip here, inflated byte for byte
+# when RIPPS2 installs it) with its licence (elf/ember/LICENSE-BETA.txt)
+gzip -9 -n -c "$HERE/ember/ember.elf" > "$SRC/misc/ember_elf.gz"
+cp -f "$HERE/ember/LICENSE-BETA.txt" "$SRC/misc/ember_licence.txt"
 # RIPFLOW's fonts (build 70): Roboto Condensed and Bold Condensed, Apache-2.0 (theme/fonts/ROBOTO-LICENSE.txt)
 cp -f "$HERE/theme/fonts/ripflow.ttf" "$SRC/misc/ripflow.ttf"
 cp -f "$HERE/theme/fonts/ripflow_bold.ttf" "$SRC/misc/ripflowbold.ttf"
