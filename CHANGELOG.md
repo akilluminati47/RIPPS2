@@ -1,5 +1,54 @@
 # RIPPS2 changelog
 
+## Build 70 (alpha), changes since build 66
+
+### Boot Lock and BIBLE
+- **Settings > General & System > Boot Loader > Manage** shows what each memory card starts at power on (PS2BBL, FMCB, OSDMenu).
+- **BIBLE** is El Isra's PS2BBL 1.2.0, set up by RIPPS2: no wait at power on, RIPPS2 first. It installs on the card you pick; whatever was there before is kept in a backup folder, and CIRCLE at power on still starts it.
+- **Boot Lock** only edits a real PS2BBL now (it finds one beside itself and in the system-update folder), and cleans up the file build 68 wrote for FMCB cards.
+
+### Achievements (SpiritofRA)
+- **Achievements** in the START menu (where Start NBD Server was): telemetry and badges, a PC link test, and RetroAchievements for the disc in the tray. The PC side is the xeRAbora client on your network.
+- **NBD Server** moved to **Settings > Network**, with the same status screen.
+
+### Controls
+- **L1 / R1** switch Launch Disc, Storage and Memory Files from any of them, the info page included.
+- **Left / Right** switch drives on Storage and orb formations on Memory Files.
+- **Scrolling is Fast** by default.
+
+### RIPFLOW (Settings > Interface > Theme)
+- The built-in cover carousel, renamed from Coverflow: just the covers, the source at the bottom centre, its own Roboto type, and its console frame on every tab and on the info page, with the drive's icons kept.
+- **Left / Right** run the covers (hold to scroll); **Up / Down** switch sources.
+
+### Colors and More (Settings > Interface)
+- **Color Theme** for all three tabs: RIPPS2, Ember, Blood, Ectoplasm, Amethyst, Bone.
+- **D-pad Glyphs** beside drive and formation names: Hidden (the new default), Shown, Fade In, Fade Out.
+- **Button Hints** and **Category Bar**: Shown, Fade When Idle, Hidden.
+- **Category Order**: Memory Files first and Launch Disc last (made for RIPFLOW).
+
+### Look and feel
+- Tooltips and button hints read in lowercase, and tooltips fade away after 4.2 seconds. Menus keep their capitals.
+- Many shorter tooltips.
+- **720p and 1080i turn Widescreen on by themselves** (4:3 modes turn it off; you can still set it by hand), and the towers and orbs keep their shape in widescreen.
+- The orbs and towers are much lighter on the PS2 (the busiest formations went from 23 ms a frame to 7), for a steadier 60 fps.
+- Launching keeps the towers and the loading mark moving until the game takes over.
+
+### Memory Files
+- **Orbit Settings** (START grid): cycle, speed, path lines, height, and which formations are in use, all live.
+- **HDD Manager** is Square on an APA hard drive: fast now, and removing a partition takes two screens.
+- Drives have real names (USB, MX4SIO, iLink, exFAT HDD), and **START DRIVES** starts them whatever Storage's start modes say.
+- **The orbs, towers and CD visualiser no longer break after 72 minutes**: leave it on overnight.
+- Ember started from the file browser works.
+
+### Storage
+- Saves and launches go ahead of background work, and art and game details never wait behind the music.
+- The All Games list loads once, and the info page's art, logo, disc and cover come in together.
+- MMCE: START copies to a memory-card home.
+
+### Discs and PS1
+- The CD player takes any CD with sound tracks (CD-Extra, mixed mode, burned CDs).
+- The POPSTARTER path fills itself in from a POPSTARTER.ELF on your drives (POPS, APPS or the drive's top, or a game's own POPS/XX.name.ELF).
+
 ## Build 66 (alpha), changes since build 55
 
 ### Launch Disc

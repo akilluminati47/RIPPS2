@@ -1,11 +1,12 @@
 # RIPPS2
 
-> ### Get RIPPS2 (build 66, alpha)
-> 1. **[Download RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/download/v0.0.66-alpha/RIPPS2.elf)** (one file, about 1.7 MB).
+> ### Kill it: RIPPS2 build 70 (alpha)
+> **RIP PS2: rest in peace, the ELF killer.**
+> 1. **[Download RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/download/v0.0.70-alpha/RIPPS2.elf)** (one file, about 1.9 MB).
 > 2. Copy it to a USB stick or memory card, and launch it from FreeMcBoot, PS2BBL, wLaunchELF or whatever you already use to start homebrew. In PCSX2: **System > Start File** and pick `RIPPS2.elf`.
 > 3. Tell us how it went: [open an issue](https://github.com/akilluminati47/RIPPS2/issues) or find **#RIPPS2** on the developers' Discord, [discord.gg/ggkCDWqhE](https://discord.gg/ggkCDWqhE) (invite good for October 2026).
 >
-> [What's new in build 66](https://github.com/akilluminati47/RIPPS2/releases/tag/v0.0.66-alpha) | [Changelog](CHANGELOG.md) | [Watch the build 66 reel](https://youtu.be/jRbt9ScaBNw) | [Every release](https://github.com/akilluminati47/RIPPS2/releases)
+> [What's new in build 70](https://github.com/akilluminati47/RIPPS2/releases/tag/v0.0.70-alpha) | [Changelog](CHANGELOG.md) | [Watch the build 66 reel](https://youtu.be/jRbt9ScaBNw) | [Every release](https://github.com/akilluminati47/RIPPS2/releases)
 
 [![RIPPS2 build 66 reel](media/ripps2-b66-poster.png)](https://youtu.be/jRbt9ScaBNw)
 

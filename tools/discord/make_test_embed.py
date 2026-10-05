@@ -146,7 +146,7 @@ def payload(build, notes, release):
         'color': BLUE,
         'author': {'name': 'RIPPS2', 'icon_url': 'attachment://ripps2-icon.png'},
         'title': 'Test me | Build %d' % build,
-        'description': pitch + ('\n\n**Download:** %s' % release if release else ''),
+        'description': pitch + ('\n\n**Kill it** (RIP PS2, the ELF killer): %s' % release if release else ''),
         'image': {'url': 'attachment://test-me-%d.png' % build},
     }
     if release:
