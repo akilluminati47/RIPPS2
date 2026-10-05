@@ -1,5 +1,12 @@
 # RIPPS2 changelog
 
+## Build 77 (alpha), changes since build 76
+
+### Neutrino is built in
+- **RIPPS2 carries Neutrino 1.8.0** (rickgaiser's PS2 device emulator, AFL-3.0), unmodified. When a game starts through Neutrino and there is no Neutrino where RIPPS2 looks, it asks: install it **on the game's drive** or **on memory card 1 or 2**, your pick. Then the game starts.
+- Your own Neutrino always comes first (the path in Settings, the game's drive, the memory cards). Network game sources offer the memory cards.
+- The copy is checked: an install cut short is never taken for a complete one.
+
 ## Build 76 (alpha), changes since build 75
 
 ### Guard rails (nothing on screen changes)

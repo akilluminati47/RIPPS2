@@ -58,6 +58,9 @@ cp -f "$HERE/bible/HSYSTEM.XLF" "$SRC/misc/bible_hdd_system.xlf"
 # POPSTARTER (build 73): krHACKen's PS1 launcher, carried as released (elf/popstarter/README.md); RIPPS2
 # writes it to a drive's POPS folder only when the user has no POPSTARTER of their own
 cp -f "$HERE/popstarter/POPSTARTER.ELF" "$SRC/misc/popstarter_elf.bin"
+# Neutrino 1.8.0 (build 77): rickgaiser's release folder as a gzip'd tar, AFL-3.0 (elf/neutrino/README.md);
+# RIPPS2 installs it where the user picks when a Neutrino launch finds none
+cp -f "$HERE/neutrino/neutrino-1.8.0.tar.gz" "$SRC/misc/neutrino.tar.gz"
 # The build number shown in About: the number of the last patch (build N is patch N)
 LAST="$(ls "$HERE"/patches/0*.patch | tail -n1)"
 NUM="$(basename "$LAST" | cut -c1-4 | sed 's/^0*//')"
