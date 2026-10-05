@@ -533,10 +533,10 @@ index b9e0da3..c179f1e 100644
      {'S', "carried unmodified: github.com/Gageformer/Ember/releases"},
 diff --git a/src/ripps2art.c b/src/ripps2art.c
 new file mode 100644
-index 0000000..e4bfe96
+index 0000000..2b102c8
 --- /dev/null
 +++ b/src/ripps2art.c
-@@ -0,0 +1,696 @@
+@@ -0,0 +1,833 @@
 +/*
 +  RIPPS2 build 73: Cover Art Download (Settings > Network, after NBD Server).
 +
@@ -545,7 +545,7 @@ index 0000000..e4bfe96
 +  drive's ART folder as <ID>_COV.png, where RIPPS2 already looks for covers. Nothing else is touched:
 +  a game that already has a cover keeps it. The collection's covers are 512x736 JPEGs and RIPPS2 reads
 +  PNG only, so each one is decoded here (libjpeg-turbo, its DCT scaling does most of the shrink) and
-+  saved at OPL's cover size, 140x200, like every other cover on the drive.
++  saved as OPL's covers are: 140x200, 8-bit (256 colours by median cut, dithered), about 20 KB.
 +
 +  Each source is asked where its covers live by drawing nothing: texDiscoverLoad in probe mode reports
 +  the path the source would try (texSetProbe), so every drive type, HDD and network included, gets
@@ -977,7 +977,6 @@ index 0000000..e4bfe96
 +// ---------------------------------------------------------------- JPEG in, PNG out
 +#define ART_COV_W 140 // OPL's cover size (themes.c THM_COVER_W)
 +#define ART_COV_H 200
-+#define ART_PNG_MAX (ART_COV_W * ART_COV_H * 3 + 16384) // stored rows, worst case, plus the chunks
 +
 +struct artJpegErr {
 +    struct jpeg_error_mgr pub;
@@ -1066,34 +1065,172 @@ index 0000000..e4bfe96
 +    (void)png;
 +}
 +
-+// 140x200 RGB as a PNG in out; its length, or 0
++// ---- 8-bit: 256 colours by median cut, Floyd-Steinberg dithered, as the art collections' covers are
++#define ART_PIX (ART_COV_W * ART_COV_H)
++
++typedef struct {
++    int lo, hi;      // its pixels: order[lo..hi)
++    int chan, range; // its widest channel and how wide
++} art_box_t;
++
++static void artBoxMeasure(const unsigned char *rgb, const unsigned short *order, art_box_t *b)
++{
++    int mn[3] = {255, 255, 255}, mx[3] = {0, 0, 0}, i, c;
++    for (i = b->lo; i < b->hi; i++) {
++        const unsigned char *p = rgb + order[i] * 3;
++        for (c = 0; c < 3; c++) {
++            if (p[c] < mn[c])
++                mn[c] = p[c];
++            if (p[c] > mx[c])
++                mx[c] = p[c];
++        }
++    }
++    b->chan = 0;
++    b->range = mx[0] - mn[0];
++    for (c = 1; c < 3; c++)
++        if (mx[c] - mn[c] > b->range) {
++            b->range = mx[c] - mn[c];
++            b->chan = c;
++        }
++}
++
++// rgb (ART_PIX pixels) as palette indexes in idx; the palette's size
++static int artQuantize(const unsigned char *rgb, unsigned short *order, unsigned short *tmp, unsigned char *idx, png_color *pal)
++{
++    static art_box_t box[256];
++    static short errA[(ART_COV_W + 2) * 3], errB[(ART_COV_W + 2) * 3];
++    short *cur = errA, *nxt = errB, *sw;
++    int nb = 1, i, k, x, y, c;
++
++    for (i = 0; i < ART_PIX; i++)
++        order[i] = i;
++    box[0].lo = 0;
++    box[0].hi = ART_PIX;
++    artBoxMeasure(rgb, order, &box[0]);
++    while (nb < 256) {
++        int best = -1, cnt[256], acc = 0, v, total, cut, pos[256];
++        unsigned int score = 0;
++        art_box_t *b;
++        for (i = 0; i < nb; i++) { // the widest of the busiest
++            unsigned int s = (unsigned int)box[i].range * (unsigned int)(box[i].hi - box[i].lo);
++            if (box[i].range > 0 && s > score) {
++                score = s;
++                best = i;
++            }
++        }
++        if (best < 0)
++            break; // fewer colours than 256 in the picture
++        b = &box[best];
++        total = b->hi - b->lo;
++        memset(cnt, 0, sizeof(cnt));
++        for (i = b->lo; i < b->hi; i++)
++            cnt[rgb[order[i] * 3 + b->chan]]++;
++        for (v = 0, acc = 0; v < 256; v++) { // sorted by that channel (a counting sort)
++            pos[v] = b->lo + acc;
++            acc += cnt[v];
++        }
++        for (i = b->lo; i < b->hi; i++)
++            tmp[pos[rgb[order[i] * 3 + b->chan]]++] = order[i];
++        memcpy(order + b->lo, tmp + b->lo, total * sizeof(order[0]));
++        for (v = 0, acc = 0; v < 256; v++) { // the median, cut between two values, never through one
++            acc += cnt[v];
++            if (acc * 2 >= total)
++                break;
++        }
++        cut = acc < total ? acc : acc - cnt[v]; // range > 0: both halves keep pixels
++        box[nb].lo = b->lo + cut;
++        box[nb].hi = b->hi;
++        b->hi = b->lo + cut;
++        artBoxMeasure(rgb, order, b);
++        artBoxMeasure(rgb, order, &box[nb]);
++        nb++;
++    }
++    for (k = 0; k < nb; k++) { // each colour: its box's average
++        unsigned int sum[3] = {0, 0, 0}, n = box[k].hi - box[k].lo;
++        for (i = box[k].lo; i < box[k].hi; i++)
++            for (c = 0; c < 3; c++)
++                sum[c] += rgb[order[i] * 3 + c];
++        pal[k].red = (sum[0] + n / 2) / n;
++        pal[k].green = (sum[1] + n / 2) / n;
++        pal[k].blue = (sum[2] + n / 2) / n;
++    }
++
++    // each pixel to its nearest colour, the miss carried on to the neighbours (errors in 16ths)
++    memset(errA, 0, sizeof(errA));
++    for (y = 0; y < ART_COV_H; y++) {
++        memset(nxt, 0, sizeof(errA));
++        for (x = 0; x < ART_COV_W; x++) {
++            const unsigned char *p = rgb + (y * ART_COV_W + x) * 3;
++            int want[3], bestK = 0, bestD = 0x7FFFFFFF;
++            for (c = 0; c < 3; c++) {
++                want[c] = p[c] + cur[(x + 1) * 3 + c] / 16;
++                want[c] = want[c] < 0 ? 0 : want[c] > 255 ? 255 : want[c];
++            }
++            for (k = 0; k < nb; k++) {
++                int dr = want[0] - pal[k].red, dg = want[1] - pal[k].green, db = want[2] - pal[k].blue;
++                int d = dr * dr * 3 + dg * dg * 4 + db * db * 2; // green counts most to the eye
++                if (d < bestD) {
++                    bestD = d;
++                    bestK = k;
++                }
++            }
++            idx[y * ART_COV_W + x] = bestK;
++            for (c = 0; c < 3; c++) {
++                int e = want[c] - (c == 0 ? pal[bestK].red : c == 1 ? pal[bestK].green : pal[bestK].blue);
++                cur[(x + 2) * 3 + c] += e * 7;
++                nxt[x * 3 + c] += e * 3;
++                nxt[(x + 1) * 3 + c] += e * 5;
++                nxt[(x + 2) * 3 + c] += e;
++            }
++        }
++        sw = cur;
++        cur = nxt;
++        nxt = sw;
++    }
++    return nb;
++}
++
++// 140x200 RGB as an 8-bit palette PNG in out; its length, or 0
 +static int artEncode(const unsigned char *rgb, unsigned char *out, int cap)
 +{
 +    static art_mem_t m;
-+    png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-+    png_infop info = png != NULL ? png_create_info_struct(png) : NULL;
-+    int y;
++    static unsigned char *work; // static: it outlives a longjmp
++    static png_color pal[256];
++    png_structp png;
++    png_infop info;
++    unsigned char *idx;
++    int y, n;
 +
++    if ((work = (unsigned char *)malloc(ART_PIX * 5)) == NULL)
++        return 0;
++    idx = work + ART_PIX * 4; // after order[] and tmp[], two shorts a pixel each
++    n = artQuantize(rgb, (unsigned short *)work, (unsigned short *)work + ART_PIX, idx, pal);
++    png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
++    info = png != NULL ? png_create_info_struct(png) : NULL;
 +    if (png == NULL || info == NULL) {
 +        png_destroy_write_struct(&png, &info);
++        free(work);
 +        return 0;
 +    }
 +    if (setjmp(png_jmpbuf(png))) {
 +        png_destroy_write_struct(&png, &info);
++        free(work);
 +        return 0;
 +    }
 +    m.p = out;
 +    m.n = 0;
 +    m.cap = cap;
 +    png_set_write_fn(png, &m, artPngWrite, artPngFlush);
-+    png_set_IHDR(png, info, ART_COV_W, ART_COV_H, 8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT,
++    png_set_IHDR(png, info, ART_COV_W, ART_COV_H, 8, PNG_COLOR_TYPE_PALETTE, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT,
 +                 PNG_FILTER_TYPE_DEFAULT);
-+    png_set_compression_level(png, 6);
++    png_set_PLTE(png, info, pal, n);
++    png_set_compression_level(png, 9); // 28 KB of indexes: the best squeeze costs nothing
 +    png_write_info(png, info);
 +    for (y = 0; y < ART_COV_H; y++)
-+        png_write_row(png, (png_bytep)(rgb + y * ART_COV_W * 3));
++        png_write_row(png, (png_bytep)(idx + y * ART_COV_W));
 +    png_write_end(png, info);
 +    png_destroy_write_struct(&png, &info);
++    free(work);
 +    return m.n;
 +}
 +
@@ -1190,7 +1327,7 @@ index 0000000..e4bfe96
 +        }
 +        saved = 0;
 +        if (status == 200 && len > 4 && body[0] == 0xFF && body[1] == 0xD8) {
-+            // the JPEG becomes a 140x200 PNG in the same buffer (the JPEG is done with by then)
++            // the JPEG becomes a 140x200 8-bit PNG in the same buffer (the JPEG is done with by then)
 +            if (!artDecode(body, len, rgb))
 +                snprintf(err, sizeof(err), "%s: the picture would not decode.", t->serial);
 +            else if ((len = artEncode(rgb, body, ART_MAX_BYTES)) <= 0)
