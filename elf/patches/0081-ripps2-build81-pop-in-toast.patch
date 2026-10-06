@@ -214,7 +214,7 @@ index 47e90c8..444f710 100644
          configSetStr(configOPL, CONFIG_OPL_THEME, thmGetValue());
          configSetStr(configOPL, CONFIG_OPL_LANGUAGE, lngGetValue());
 diff --git a/src/ripps2ui.c b/src/ripps2ui.c
-index 6f5a815..cc24d64 100644
+index 6f5a815..a6aae66 100644
 --- a/src/ripps2ui.c
 +++ b/src/ripps2ui.c
 @@ -90,6 +90,65 @@ static int formationDirty = 0; // changed since the last save
@@ -360,13 +360,13 @@ index 6f5a815..cc24d64 100644
  }
  
  // ---- The flying PS2 mark ----
-@@ -450,13 +509,26 @@ void ripps2DrawBusy(int alpha)
+@@ -450,14 +509,27 @@ void ripps2DrawBusy(int alpha)
  #define WORD_OUT_S  0.55f
  #define WORD_Y      228
  #define WORD_TRACK  10.0f // px between letters
 -#define WORD_FONT   (gTheme->fonts[14])
 +#define WORD_MAX_SPAN 560.0f // build 81: the widest a word may run (UDPFSBD GAMES), letters closing up to fit
-+#define WORD_FONT   (viewWordOwnFont ? ripps2ToastFont() : gTheme->fonts[14]) // build 81: the toast's own face
++#define WORD_FONT   (ripps2ViewWordFont()) // build 81: RIPPS2 Sleek Bold 64 on every theme (was font14)
  #define WORD_RGBA(r, g, b, a) GS_SETREG_RGBAQ((r), (g), (b), (a), 0x00)
  #define LOGO_TALL_H 96  // the PS1 logo's height on screen
  #define LOGO_WIDE_W 300 // the PS2 mark's width on screen
@@ -374,30 +374,23 @@ index 6f5a815..cc24d64 100644
 +static char viewWord[24], viewCaption[24]; // build 81: room for a source's name (APPLICATIONS)
  static int viewLogo = -1;
  static clock_t viewWordStart = 0;
-+static int viewWordOwnFont = 0; // build 81: this one is the Pop In toast
-+
-+// build 81: the Pop In toast draws in RIPPS2's own view-word face, Sleek Bold at 64 px (the built-in theme's
-+// font14, the one L3's ALL plays in), on every theme, so it looks and moves the same everywhere. Loaded
-+// once and kept: it outlives every theme. L3's view word still uses the theme's font14.
-+static int ripps2ToastFont(void)
+ 
++// build 81: the view word's face: L3's ALL / PS1 / PS2 and the Pop In source toast both draw in RIPPS2
++// Sleek Bold at 64 px, on every theme (RIPFLOW included), so they look and move the same everywhere. It
++// used to be the theme's font14. Loaded once and kept: it outlives every theme. This is the one place a
++// theme's own view-word face would plug in.
++static int ripps2ViewWordFont(void)
 +{
 +    static int font = FNT_ERROR;
 +    if (font == FNT_ERROR)
 +        font = fntLoadFile("builtin:ripps2sleekbold", 64);
 +    return font != FNT_ERROR ? font : gTheme->fonts[14];
 +}
- 
++
  static u64 withAlpha(u64 c, int a)
  {
-@@ -465,6 +537,7 @@ static u64 withAlpha(u64 c, int a)
- 
- void ripps2ShowViewWord(const char *word, int logo, const char *caption)
- {
-+    viewWordOwnFont = 0; // L3's word: the theme's font14 (the toast sets its own face after this)
-     snprintf(viewWord, sizeof(viewWord), "%s", word != NULL ? word : "");
-     snprintf(viewCaption, sizeof(viewCaption), "%s", caption != NULL ? caption : "");
-     viewLogo = logo;
-@@ -536,6 +609,8 @@ void ripps2DrawViewWord(void)
+     return (c & ~(0xFFULL << 24)) | ((u64)(a < 0 ? 0 : a > 0x80 ? 0x80 : a) << 24);
+@@ -536,6 +608,8 @@ void ripps2DrawViewWord(void)
              w[i] = fntCalcDimensions(WORD_FONT, ch);
              total += w[i];
          }
@@ -406,7 +399,7 @@ index 6f5a815..cc24d64 100644
          span = total + track * (n - 1);
          halfW = span / 2.0f;
          halfH = 30.0f;
-@@ -595,56 +670,30 @@ void ripps2DrawViewWord(void)
+@@ -595,56 +669,29 @@ void ripps2DrawViewWord(void)
      }
  }
  
@@ -480,11 +473,10 @@ index 6f5a815..cc24d64 100644
 +        word[i] = toupper((unsigned char)text[i]);
 +    word[i] = '\0';
 +    ripps2ShowViewWord(word, -1, NULL);
-+    viewWordOwnFont = 1; // in RIPPS2's own face on every theme
  }
  
  void ripps2SetCategory(int cat)
-@@ -657,6 +706,8 @@ void ripps2SetCategory(int cat)
+@@ -657,6 +704,8 @@ void ripps2SetCategory(int cat)
      }
  
      gRipps2Category = cat; // the mark's spring takes it from here, from wherever the mark is
