@@ -44,7 +44,7 @@ Arguments beyond the budget (14 entries / 256 bytes) are **refused** now; nothin
 - a `DelayThread` before the handoff: it runs before Neutrino's reset, with RIPPS2's iLink stack still live;
 - per-game custom ordering: Neutrino ignores order, so it would be UI for no effect.
 
-## Files (as patch 0083; build 81 went to the Pop In toast, 82 to HD text and the RIPgrid flip)
+## Files (as patch 0084; build 81 went to the Pop In toast, 82 to HD text and the RIPgrid flip, 83 to Star and YOUR ACCOUNT)
 - `src/system.c`, `include/system.h`: the composer, `sysNeutrinoFormatArgs`, the `-logo` move.
 - `include/iosupport.h`: the callback.
 - the bdm / hdd / mmce / udpfs supports, with fav / mix passing it through.

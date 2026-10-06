@@ -1,0 +1,268 @@
+diff --git a/lng_tmpl/_base.yml b/lng_tmpl/_base.yml
+index 58304d3..65ad7d8 100644
+--- a/lng_tmpl/_base.yml
++++ b/lng_tmpl/_base.yml
+@@ -712,15 +712,15 @@ gui_strings:
+ - label: BOOT_READY
+   string: Ready.
+ - label: FAV
+-  string: Favorites
++  string: Starred Games
+ - label: FAVMODE
+-  string: Favorites Start Mode
++  string: Starred Games Start Mode
+ - label: FAV_HINT
+-  string: Favorite
++  string: Star
+ - label: FAV_MSG
+-  string: "%s not allowed through Favorites Menu."
++  string: "%s not allowed from Starred Games."
+ - label: FAV_PERSISTENCE_MSG
+-  string: "%s is not allowed while the item is marked as favorite."
++  string: "%s is not allowed while the game is starred."
+ - label: ADVANCED_ARGUMENTS
+   string: Advanced Arguments
+ - label: ADVANCED_SETTINGS
+@@ -816,9 +816,9 @@ gui_strings:
+ - label: HINT_RUMBLE
+   string: Short vibration when moving the cursor, confirming or going back -- needs a DualShock in analog mode
+ - label: HINT_VCD_FIRST_DISC
+-  string: Show only Disc 1 of a multi-disc PS1 game in the device lists (POPSLoader style). Hides files named (Disc 2), (CD 2), etc. All discs stay on the card for in-game swapping; Favorites are not filtered.
++  string: Show only Disc 1 of a multi-disc PS1 game in the device lists (POPSLoader style). Hides files named (Disc 2), (CD 2), etc. All discs stay on the card for in-game swapping; starred games are not filtered.
+ - label: HINT_VCD_HIDE_GAMEID
+-  string: Cosmetic only -- hide a leading game-ID prefix (e.g. SLUS_005.51.) from PS1/VCD list names. Names without an ID are shown as-is. Does not change launch, cover art, or favorites.
++  string: Cosmetic only -- hide a leading game-ID prefix (e.g. SLUS_005.51.) from PS1/VCD list names. Names without an ID are shown as-is. Does not change launch, cover art, or stars.
+ - label: HINT_VCD_SHOW_PP_POPS
+   string: HDD only -- list one-game partitions named PP.<ID>.POPS.<name> (e.g. PP.SCES-01492.POPS.MEDIEVIL) as PS1 games. Enumeration only; launch is unchanged. Other PP.* partitions (apps, PS2 games) stay hidden.
+ - label: HINT_VMC_SLOT_DISABLE
+@@ -1189,7 +1189,7 @@ gui_strings:
+ - label: GAME_VIEW_MODE
+   string: PS2/PS1 Game Display
+ - label: HINT_GAME_VIEW_MODE
+-  string: "All lists PS2 and PS1 games together and L3 cycles All, PS1, PS2. PS2 or PS1 shows only that type and disables L3. APPS and Favorites use their own display rules."
++  string: "All lists PS2 and PS1 games together and L3 cycles All, PS1, PS2. PS2 or PS1 shows only that type and disables L3. APPS and Starred Games use their own display rules."
+ - label: VIEW_MIXED
+   string: Showing PS2 + PS1 games
+ - label: VIEW_PS1_ELF
+@@ -1201,13 +1201,13 @@ gui_strings:
+ - label: VIEW
+   string: View
+ - label: VIEW_PS2
+-  string: Showing PS2 favorites
++  string: Showing starred PS2 games
+ - label: VIEW_PS1
+-  string: Showing PS1 favorites
++  string: Showing starred PS1 games
+ - label: VIEW_ELF
+-  string: Showing ELF favorites
++  string: Showing starred ELFs
+ - label: VIEW_ALL
+-  string: Showing all favorites
++  string: Showing all starred games
+ - label: VMC_FRAGMENTED_ON_CREATE
+   string: VMC created, but it is fragmented. Memory card emulation needs one unbroken file, so this VMC will be skipped at launch and the real card used instead. Free up space and make it again, or copy one in from another device.
+ - label: KEYB_MOVE_CURSOR
+@@ -1452,7 +1452,7 @@ gui_strings:
+ - label: RIPPS2_RECENTS
+   string: Show Recents
+ - label: HINT_RIPPS2_RECENTS
+-  string: "Up to this many of your last launched games at the top of Favorites, newest first. 0 turns it off."
++  string: "Up to this many of your last launched games at the top of Starred Games, newest first. 0 turns it off."
+ - label: RIPPS2_CATEGORY_ORDER
+   string: Category Order
+ - label: HINT_RIPPS2_CATEGORY_ORDER
+diff --git a/src/dialogs.c b/src/dialogs.c
+index e9f85c3..2b7253b 100644
+--- a/src/dialogs.c
++++ b/src/dialogs.c
+@@ -430,7 +430,7 @@ struct UIItem diaDeviceConfig[] = {
+     {UI_ENUM, CFG_APPMODE, 1, 1, -1, 0, 0, {.intvalue = {0, 0}}},
+     {UI_BREAK},
+ 
+-    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {"Favorites Page Start Mode", -1}}},
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {"Starred Games Page Start Mode", -1}}},
+     {UI_SPACER},
+     {UI_ENUM, CFG_FAVMODE, 1, 1, -1, 0, 0, {.intvalue = {0, 0}}},
+     {UI_BREAK},
+diff --git a/src/opl.c b/src/opl.c
+index 444f710..333519c 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -573,7 +573,7 @@ static void itemExecToggleView(struct menu_item *curMenu)
+                 word = view == LIB_VIEW_ELF ? "ELF" : "ALL";
+             else
+                 logo = RIPPS2_PS2_LOGO;
+-            caption = "FAVORITES";
++            caption = "STARRED GAMES"; // build 83: Star / Starred Games on screen (FAV_MODE inside)
+         } else if (support->mode == APP_MODE) {
+             word = view == LIB_VIEW_PS1_ELF ? "PS1 ELF" : "APPS";
+             caption = "APPLICATIONS";
+diff --git a/src/ripps2ra.c b/src/ripps2ra.c
+index 21b39e6..48bfb86 100644
+--- a/src/ripps2ra.c
++++ b/src/ripps2ra.c
+@@ -75,9 +75,38 @@ typedef struct
+ } ra_game_t;
+ 
+ #define RA_ACCT_MAX  256
+-#define RA_ACCT_ROWS 12
++#define RA_ACCT_ROWS 11
+ #define RA_ACCT_ROWH 26
+ 
++// build 83: words laid out in lines that fit `w` (unscaled units), one fntRenderString per line, so a
++// message wraps whole instead of being clipped mid-word
++static void raWrap(int font, int x, int y, int w, int lineh, const char *text, u64 col)
++{
++    char line[160], word[64];
++    const char *p = text;
++    line[0] = '\0';
++    while (*p) {
++        int k = 0;
++        while (*p == ' ')
++            p++;
++        while (*p && *p != ' ' && k < (int)sizeof(word) - 1)
++            word[k++] = *p++;
++        word[k] = '\0';
++        if (k == 0)
++            break;
++        char next[160];
++        snprintf(next, sizeof(next), "%s%s%s", line, line[0] ? " " : "", word);
++        if (line[0] && rmUnScaleX(fntCalcDimensions(font, next)) > w) {
++            fntRenderString(font, x, y, ALIGN_VCENTER, 0, 0, line, col);
++            y += lineh;
++            snprintf(line, sizeof(line), "%s", word);
++        } else
++            snprintf(line, sizeof(line), "%s", next);
++    }
++    if (line[0])
++        fntRenderString(font, x, y, ALIGN_VCENTER, 0, 0, line, col);
++}
++
+ static int raAcctCmp(const void *a, const void *b)
+ {
+     const ra_game_t *x = a, *y = b;
+@@ -183,63 +212,85 @@ static void raAccount(void)
+         rmDrawRect(0, 0, 640, 480, RA_PRIM(0x02, 0x04, 0x10, a * 3 / 4)); // the towers step back
+         ripps2DrawPagePanel();
+ 
+-        // the account: its numbers large, one bar for everything
+-        fntRenderString(gTheme->fonts[5], RA_X - 30, 40, ALIGN_VCENTER, 0, 0, "YOUR ACCOUNT", RA_GOLD);
+-        fntRenderString(RIPPS2_CASE_FONT, RA_X - 30, 60, ALIGN_VCENTER, 0, 0,
+-                        gRATelemetry ? "RetroAchievements, as xeRAbora had it at each game's last check" : "TELEMETRY is off: these are the counts from each game's last check", RA_SOFT);
+-        snprintf(buf, sizeof(buf), "%d", sumUnlocked);
+-        int nx = fntRenderString(gTheme->fonts[14], RA_X - 30, 96, ALIGN_VCENTER, 0, 0, buf, RA_LIT);
+-        snprintf(buf, sizeof(buf), "of %d achievements   %d games   %d mastered", sumTotal, n, mastered);
+-        fntRenderString(RIPPS2_CASE_FONT, nx + 10, 102, ALIGN_VCENTER, 0, 0, buf, RA_SOFT);
+-        raAcctBar(RA_X - 30, 120, RA_W + 60, 6, sumUnlocked, sumTotal, a);
++        // build 83: laid out like a RetroAchievements profile. A stats strip, the list with each game's
++        // count, and the chosen game's card; long text scrolls (titles) or wraps (messages), never cut off.
++        fntRenderString(gTheme->fonts[5], 30, 34, ALIGN_VCENTER, 0, 0, "YOUR ACCOUNT", RA_GOLD);
++        fntRenderStringFit(RIPPS2_CASE_FONT, 30, 54, ALIGN_VCENTER, 580,
++                           gRATelemetry ? "RetroAchievements, as xeRAbora had it at each game's last check" : "TELEMETRY is off: these are the counts from each game's last check",
++                           RA_SOFT, 1);
++        snprintf(buf, sizeof(buf), "%d / %d", sumUnlocked, sumTotal);
++        fntRenderString(gTheme->fonts[8], 30, 82, ALIGN_VCENTER, 0, 0, buf, RA_LIT);
++        fntRenderString(RIPPS2_CASE_FONT, 30, 102, ALIGN_VCENTER, 0, 0, "achievements unlocked", RA_DIM);
++        snprintf(buf, sizeof(buf), "%d", n);
++        fntRenderString(gTheme->fonts[8], 300, 82, ALIGN_VCENTER, 0, 0, buf, RA_LIT);
++        fntRenderString(RIPPS2_CASE_FONT, 300, 102, ALIGN_VCENTER, 0, 0, n == 1 ? "game" : "games", RA_DIM);
++        snprintf(buf, sizeof(buf), "%d", mastered);
++        fntRenderString(gTheme->fonts[8], 440, 82, ALIGN_VCENTER, 0, 0, buf, mastered > 0 ? RA_GOLD : RA_LIT);
++        fntRenderString(RIPPS2_CASE_FONT, 440, 102, ALIGN_VCENTER, 0, 0, "mastered", RA_DIM);
++        raAcctBar(30, 116, 580, 6, sumUnlocked, sumTotal, a);
+ 
+         if (n == 0) {
+-            fntRenderString(RIPPS2_CASE_FONT, 320, 230, ALIGN_CENTER, 440, 0,
+-                            "No games yet. Open a game's menu (TRIANGLE) and CHECK GAME SUPPORT with xeRAbora running on your PC: "
+-                            "each game it knows lands here, with what your account has unlocked.",
+-                            RA_SOFT);
++            raWrap(RIPPS2_CASE_FONT, 60, 220, 520, 20,
++                   "No games yet. Open a game's menu (TRIANGLE) and CHECK GAME SUPPORT with xeRAbora running on your PC: "
++                   "each game it knows lands here, with what your account has unlocked.",
++                   RA_SOFT);
+         } else {
+-            // the list on the left, the chosen game's card on the right
++            // the list on the left: the title, its count on the right, a thin bar under
+             if (sel < top)
+                 top = sel;
+             if (sel >= top + RA_ACCT_ROWS)
+                 top = sel - RA_ACCT_ROWS + 1;
+             for (i = top; i < n && i < top + RA_ACCT_ROWS; i++) {
+                 ra_game_t *g = &games[i];
+-                int y = 140 + (i - top) * RA_ACCT_ROWH, cur = i == sel;
++                int y = 134 + (i - top) * RA_ACCT_ROWH, cur = i == sel;
+                 if (cur) {
+-                    rmDrawRect(RA_X - 38, y, 330, RA_ACCT_ROWH - 3, RA_PRIM(0x1E, 0x3C, 0x96, a * 0x58 / 0x80));
+-                    rmDrawRect(RA_X - 38, y, 3, RA_ACCT_ROWH - 3, RA_PRIM(0x6A, 0x9A, 0xFF, a));
++                    rmDrawRect(22, y, 314, RA_ACCT_ROWH - 3, RA_PRIM(0x1E, 0x3C, 0x96, a * 0x58 / 0x80));
++                    rmDrawRect(22, y, 3, RA_ACCT_ROWH - 3, RA_PRIM(0x6A, 0x9A, 0xFF, a));
+                 }
+-                fntRenderStringFit(RIPPS2_CASE_FONT, RA_X - 28, y + 9, ALIGN_VCENTER, 300, g->title, cur ? RA_LIT : RA_SOFT, cur);
+-                raAcctBar(RA_X - 28, y + 18, 300, 2, g->unlocked, g->total, cur ? a : a / 2);
++                if (g->unlocked >= 0)
++                    snprintf(buf, sizeof(buf), "%d/%d", g->unlocked, g->total);
++                else
++                    snprintf(buf, sizeof(buf), "%d", g->total);
++                int cw0 = rmUnScaleX(fntCalcDimensions(RIPPS2_CASE_FONT, buf));
++                fntRenderString(RIPPS2_CASE_FONT, 330 - cw0, y + 9, ALIGN_VCENTER, 0, 0, buf,
++                                g->total > 0 && g->unlocked >= g->total ? RA_GOLD : (cur ? RA_SOFT : RA_DIM));
++                fntRenderStringFit(RIPPS2_CASE_FONT, 32, y + 9, ALIGN_VCENTER, 290 - cw0 - 16, g->title, cur ? RA_LIT : RA_SOFT, cur);
++                raAcctBar(32, y + 19, 298, 2, g->unlocked, g->total, cur ? a : a / 2);
+             }
++
++            // the chosen game's card
+             ra_game_t *g = &games[sel];
+-            int cx = 382, cw = 228;
+-            rmDrawRect(cx, 140, cw, 300, RA_PRIM(0x04, 0x0C, 0x2E, a * 0x40 / 0x80));
+-            rmDrawLine(cx, 140, cx + cw, 140, RA_PRIM(0x4A, 0x72, 0xDC, a * 0x60 / 0x80));
+-            snprintf(buf, sizeof(buf), "%s", g->title);
+-            fntFitString(gTheme->fonts[8], buf, cw - 20);
+-            fntRenderString(gTheme->fonts[8], cx + 10, 152, ALIGN_NONE, cw - 20, 70, buf, RA_LIT);
++            int cx = 350, cw = 262, tx = cx + 12, tw = cw - 24, mastery = g->total > 0 && g->unlocked >= g->total;
++            rmDrawRect(cx, 134, cw, 292, RA_PRIM(0x04, 0x0C, 0x2E, a * 0x40 / 0x80));
++            rmDrawLine(cx, 134, cx + cw, 134, RA_PRIM(mastery ? 0xC8 : 0x4A, mastery ? 0xA0 : 0x72, mastery ? 0x40 : 0xDC, a * 0x60 / 0x80));
++            fntRenderStringFit(gTheme->fonts[8], tx, 154, ALIGN_VCENTER, tw, g->title, RA_LIT, 1);
++            snprintf(buf, sizeof(buf), "%s   on %s", g->serial, g->where);
++            fntRenderStringFit(RIPPS2_CASE_FONT, tx, 176, ALIGN_VCENTER, tw, buf, RA_DIM, 1);
++            rmDrawRect(tx, 190, tw, 1, RA_PRIM(0x2A, 0x3C, 0x78, a * 0x60 / 0x80));
+             if (g->unlocked >= 0) {
+-                snprintf(buf, sizeof(buf), "%d", g->unlocked);
+-                int ux = fntRenderString(gTheme->fonts[14], cx + 10, 262, ALIGN_VCENTER, 0, 0, buf, g->total > 0 && g->unlocked >= g->total ? RA_GOLD : RA_LIT);
+-                snprintf(buf, sizeof(buf), "/ %d", g->total);
+-                fntRenderString(gTheme->fonts[5], ux + 8, 268, ALIGN_VCENTER, 0, 0, buf, RA_SOFT);
+-                raAcctBar(cx + 10, 296, cw - 20, 6, g->unlocked, g->total, a);
+-                snprintf(buf, sizeof(buf), g->total > 0 && g->unlocked >= g->total ? "Mastered" : "%d%% unlocked", g->total > 0 ? g->unlocked * 100 / g->total : 0);
+-                fntRenderString(RIPPS2_CASE_FONT, cx + 10, 316, ALIGN_VCENTER, 0, 0, buf, g->total > 0 && g->unlocked >= g->total ? RA_GOLD : RA_SOFT);
++                snprintf(buf, sizeof(buf), "%d / %d", g->unlocked, g->total);
++                fntRenderString(gTheme->fonts[8], tx, 222, ALIGN_VCENTER, 0, 0, buf, mastery ? RA_GOLD : RA_LIT);
++                fntRenderString(RIPPS2_CASE_FONT, tx, 244, ALIGN_VCENTER, 0, 0, "achievements unlocked", RA_DIM);
++                raAcctBar(tx, 258, tw, 8, g->unlocked, g->total, a);
++                if (mastery)
++                    snprintf(buf, sizeof(buf), "Mastered");
++                else if (g->unlocked == 0)
++                    snprintf(buf, sizeof(buf), "Not started yet");
++                else
++                    snprintf(buf, sizeof(buf), "%d%% complete", g->total > 0 ? g->unlocked * 100 / g->total : 0);
++                fntRenderString(RIPPS2_CASE_FONT, tx, 282, ALIGN_VCENTER, 0, 0, buf, mastery ? RA_GOLD : RA_SOFT);
+             } else {
+-                snprintf(buf, sizeof(buf), "%d achievements", g->total);
+-                fntRenderString(gTheme->fonts[5], cx + 10, 268, ALIGN_VCENTER, 0, 0, buf, RA_LIT);
+-                fntRenderString(RIPPS2_CASE_FONT, cx + 10, 296, ALIGN_NONE, cw - 20, 0, "Update xeRAbora to see what you have unlocked.", RA_SOFT);
++                snprintf(buf, sizeof(buf), "%d", g->total);
++                fntRenderString(gTheme->fonts[8], tx, 222, ALIGN_VCENTER, 0, 0, buf, RA_LIT);
++                fntRenderString(RIPPS2_CASE_FONT, tx, 244, ALIGN_VCENTER, 0, 0, "achievements in this set", RA_DIM);
++                raAcctBar(tx, 258, tw, 8, 0, g->total, a);
++                raWrap(RIPPS2_CASE_FONT, tx, 282, tw, 18, "Update xeRAbora on your PC to see what you have unlocked.", RA_SOFT);
+             }
+             if (g->unsupported > 0) {
+-                snprintf(buf, sizeof(buf), "%d not tracked on PS2 yet", g->unsupported);
+-                fntRenderString(RIPPS2_CASE_FONT, cx + 10, 340, ALIGN_VCENTER, 0, 0, buf, RA_DIM);
++                snprintf(buf, sizeof(buf), "%d of them not tracked on PS2 yet", g->unsupported);
++                raWrap(RIPPS2_CASE_FONT, tx, 330, tw, 18, buf, RA_DIM);
+             }
+-            snprintf(buf, sizeof(buf), "%s   %s", g->serial, g->where);
+-            fntRenderString(RIPPS2_CASE_FONT, cx + 10, 424, ALIGN_VCENTER, 0, 0, buf, RA_DIM);
++            raWrap(RIPPS2_CASE_FONT, tx, 392, tw, 18, "From this game's last CHECK GAME SUPPORT.", RA_DIM);
+         }
+         {
+             int hx = RA_X - 30, hy = 456;

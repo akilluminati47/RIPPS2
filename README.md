@@ -75,10 +75,12 @@ RIPPS2 started life as a web theme, and that version is still here: **live demo*
 | Option | Opens |
 | --- | --- |
 | **Launch Disc** | The pillars, with a double blast fired into the center of the field |
-| **Storage** | The pillars |
+| **Storage** | The elf shelf, standing in front of the pillars |
 | **Memory Files** | The orbs |
 
-The PS2 mark rides under the selected option and flies between them: a swoop to a neighbour, a deeper dive with a coin flip when going end to end. Labels follow the visitor's system language (18 languages, override with `?lang=fr` and similar). Anything the menu font cannot draw falls back to a clean sans as a whole word.
+The PS2 mark rides under the selected option and flies between them: a swoop to a neighbor, a deeper dive with a coin flip when going end to end. Labels follow the visitor's system language (18 languages, override with `?lang=fr` and similar). Anything the menu font cannot draw falls back to a clean sans as a whole word.
+
+**Elf shelf:** Storage's showcase. uOPL's wooden plank in front of the towers, and on it the RIPPS2 mark six times over: a dead elf's felt hat standing brim-down in its own pool of blood, one for each Colors and More theme (RIPPS2, Ember, Blood, Amethyst, Bone, Ectoplasm). Three show at a time, the way RIPFLOW shows covers: the middle one turns to watch the pointer (the nearer it is, the quicker it turns) and bobs on its spring, and Left / Right or a touch on either neighbor turns the shelf. It lands on the blue RIPPS2 hat.
 
 **Pillars:** glass data towers with glowing edges, seams, flickering cells and energy pulses, on a reflective floor. Towers rise out of the ground on load, then breathe and ripple; the pointer sends ripples and a click sets off a blast. Adapts resolution on slow devices, pauses off screen, respects reduced motion.
 

@@ -1,5 +1,17 @@
 # RIPPS2 changelog
 
+## Build 83 (testing), changes since build 82
+
+### Star your games
+- **Favorite is now Star.** R3's hint says Star, and the list it fills is **Starred Games**: the source, its Pop In toast, L3's caption and the Settings rows. Only the words change; your starred games and settings carry over.
+
+### YOUR ACCOUNT
+- **Laid out like a RetroAchievements profile.** Unlocked, games and mastered across the top with one bar for everything; each game's count beside its name in the list; the chosen game's card with its unlocked / total, a bar, and Mastered, % complete or Not started. Long titles scroll and messages wrap, so nothing is cut off.
+- Fixed: the card showed leftover text after a short title (KATAMARI DAMACY NTS 5 GAMES...), and the big total drew as a broken block.
+
+### RIPgrid (theme pack)
+- The covers sit a little lower and smaller, so the chosen one clears the category bar and the PS2 mark and the rest never touch it; the hints (list and info page) use RIPPS2 Sleek's lowercase face.
+
 ## Build 82 (testing), changes since build 81
 
 ### HD text fixed
