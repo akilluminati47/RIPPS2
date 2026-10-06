@@ -1,5 +1,14 @@
 # RIPPS2 changelog
 
+## Build 78 (testing), changes since build 77
+
+For the new themes: Adapt, Adapt Rx, RIPgrid and RIPgrid Rx (in the RIPPS2-themes kit).
+
+### Theme engine
+- **Grid** element: the game list as a page of covers in rows (columns, rows and spacing set by the theme). Left / Right step one cover, Up / Down one row, and past the top or bottom row a new press switches drive.
+- **Frosted glass**: `blur=1` on a glass panel softens the game's own background art behind it, made again as you move between games.
+- **`towers=0`**: a theme can keep the pillars off the game pages (its own colour shows where there is no art); Settings still show the pillars behind glass.
+
 ## Build 77 (alpha), changes since build 76
 
 ### Neutrino is built in

@@ -1,0 +1,577 @@
+diff --git a/include/ripps2.h b/include/ripps2.h
+index 05258bd..f71050e 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -99,6 +99,8 @@ void ripps2TiltEnd(void);
+ 
+ // ---- Storage art panel glass (theme element Ripps2PanelGlass) ----
+ void ripps2DrawPanelGlass(int x, int y, int w, int h, int hasItem);
++int ripps2MakeFrost(const GSTEXTURE *src, GSTEXTURE *dst); // build 78: src shrunk to a soft 80x60 copy (frosted glass)
++void ripps2DrawFrost(GSTEXTURE *frost, int x, int y, int w, int h); // ... the part of it under x,y,w,h
+ void ripps2DrawPagePanel(void); // menus / settings / dialogs: one clear-glass panel behind the page
+ void ripps2DrawHintBox(int x, int y, int w, int h); // the settings help text's box, in the same glass
+ void ripps2DrawHintBoxA(int x, int y, int w, int h, float a); // build 70: the same, fading (0..1)
+diff --git a/include/themes.h b/include/themes.h
+index 527b2c3..dbc2ffc 100644
+--- a/include/themes.h
++++ b/include/themes.h
+@@ -112,6 +112,7 @@ typedef struct theme_element
+     int vcenter;          // RIPPS2: centre wrapped text in the element's height (<name>_vcenter=1)
+     int itemHeight;       // RIPPS2: ItemsList row pitch (<name>_item_height; 0 = MENU_ITEM_HEIGHT)
+     int slide;            // RIPPS2: GameImage slideshow position (<name>_slide=1..4; 0 = not a slide)
++    int blur;             // RIPPS2 build 78: Ripps2PanelGlass over frosted backdrop (<name>_blur=1)
+     // Per-device element filter (theme key devices=usb,hdd,...): bitmask over the thmDeviceVocab
+     // table indices in themes.c. 0 = unfiltered (the pre-existing behavior). deviceCoverage is
+     // filled at theme-load validation for UNFILTERED MenuIcon/ItemsList/HintText elements: the
+@@ -216,6 +217,11 @@ typedef struct theme
+ 
+     theme_element_t *coverflow;
+     int coverflowCoverOffset;
++    GSTEXTURE frost[2];    // RIPPS2 build 78: the main / info backdrop shrunk and softened, under blur glass
++    const void *frostKey[2][2]; // ... made from this texture memory, for this item (rebuilt when either changes)
++    int noTowers;          // RIPPS2 build 78: towers=0, the game pages never show the pillars (bg_color instead)
++    theme_element_t *grid; // RIPPS2 build 78: the first Grid element (a page of covers in rows), NULL if none
++    int gridColumns, gridRows, gridSpacing;
+ 
+     int gameCacheCount;
+ 
+@@ -245,6 +251,7 @@ int thmCoverflowIsAnimating(void);
+ void thmInit(void);
+ void thmReinit(const char *path);
+ void thmReloadScreenExtents(void);
++int thmGridColumns(void); // RIPPS2 build 78: the active Grid element's columns, 0 without one
+ void thmDrawBackdrop(void); // RIPPS2 build 70: the theme's backdrop images (RIPFLOW's frame) on the other tabs
+ int thmIsBackdropElem(const theme_element_t *elem); // RIPPS2 build 70: Background, images and device icons
+ int thmAddElements(char *path, const char *separator, int forceRefresh);
+diff --git a/src/menusys.c b/src/menusys.c
+index 898c203..da95f9f 100644
+--- a/src/menusys.c
++++ b/src/menusys.c
+@@ -1854,11 +1854,45 @@ static void menuDriveStep(int dir)
+     ripps2GlyphsPoke(RIPPS2_GLYPH_DRIVES);
+ }
+ 
++// RIPPS2 build 78: a Grid theme moves in two dimensions. Left/Right step one cover; Up/Down one row
++// (a whole row of steps, so the list's own paging still follows); past the top or bottom row they
++// switch drive, as Up/Down do on Coverflow. A short last row is reached by its last cover.
++static void menuGridStep(int dir)
++{
++    int cols = thmGridColumns(), cur = 0, count = 0, i;
++    submenu_list_t *p;
++
++    for (p = selected_item->item->submenu; p != NULL; p = p->next, count++)
++        if (p == selected_item->item->current)
++            cur = count;
++    if (dir < 0 && cur < cols) {
++        if (getKeyOn(KEY_UP)) // a held arrow stops at the edge; a new press changes drive
++            menuDriveStep(-1);
++        return;
++    }
++    if (dir > 0 && cur / cols == (count - 1) / cols) {
++        if (getKeyOn(KEY_DOWN))
++            menuDriveStep(1);
++        return;
++    }
++    int target = cur + dir * cols;
++    if (target > count - 1)
++        target = count - 1;
++    for (i = cur; i < target; i++)
++        menuNextV();
++    for (i = cur; i > target; i--)
++        menuPrevV();
++}
++
+ // Coverflow rotates the nav axis on the MAIN screen only: Left/Right step through the
+ // carousel (a vertical list move) while Up/Down switch device menus. Non-coverflow themes
+ // behave exactly as before. The info screen is intentionally NOT rotated (menuHandleInputInfo).
+ static void menuNavigateLeft()
+ {
++    if (thmGridColumns() > 0) {
++        menuPrevV();
++        return;
++    }
+     if (gTheme->coverflow)
+         menuPrevV();
+     else
+@@ -1867,6 +1901,10 @@ static void menuNavigateLeft()
+ 
+ static void menuNavigateRight()
+ {
++    if (thmGridColumns() > 0) {
++        menuNextV();
++        return;
++    }
+     if (gTheme->coverflow)
+         menuNextV();
+     else
+@@ -1875,6 +1913,10 @@ static void menuNavigateRight()
+ 
+ static void menuNavigateUp()
+ {
++    if (thmGridColumns() > 0) {
++        menuGridStep(-1);
++        return;
++    }
+     if (gTheme->coverflow)
+         menuDriveStep(-1);
+     else
+@@ -1883,6 +1925,10 @@ static void menuNavigateUp()
+ 
+ static void menuNavigateDown()
+ {
++    if (thmGridColumns() > 0) {
++        menuGridStep(1);
++        return;
++    }
+     if (gTheme->coverflow)
+         menuDriveStep(1);
+     else
+@@ -1932,17 +1978,18 @@ void menuHandleInputMain()
+     // carousel runs on Left / Right (build 69 made Left / Right single steps, which left the carousel
+     // one cover a press and Up / Down racing through the drives).
+     int cf = gTheme->coverflow != NULL;
++    int grid = thmGridColumns() > 0; // build 78: every arrow moves through the grid, and repeats
+     if (getKeyOn(KEY_L1)) {
+         ripps2StepCategory(-1); // RIPPS2 build 69: L1/R1 switch categories (Launch Disc / Memory Files)
+     } else if (getKeyOn(KEY_R1)) {
+         ripps2StepCategory(1);
+-    } else if (cf ? getKey(KEY_LEFT) : getKeyOn(KEY_LEFT)) {
++    } else if ((cf || grid) ? getKey(KEY_LEFT) : getKeyOn(KEY_LEFT)) {
+         menuNavigateLeft(); // RIPPS2 build 69: Left/Right switch drives, like the orb formations (FifthFox)
+-    } else if (cf ? getKey(KEY_RIGHT) : getKeyOn(KEY_RIGHT)) {
++    } else if ((cf || grid) ? getKey(KEY_RIGHT) : getKeyOn(KEY_RIGHT)) {
+         menuNavigateRight();
+-    } else if (cf ? getKeyOn(KEY_UP) : getKey(KEY_UP)) {
++    } else if ((cf && !grid) ? getKeyOn(KEY_UP) : getKey(KEY_UP)) {
+         menuNavigateUp();
+-    } else if (cf ? getKeyOn(KEY_DOWN) : getKey(KEY_DOWN)) {
++    } else if ((cf && !grid) ? getKeyOn(KEY_DOWN) : getKey(KEY_DOWN)) {
+         menuNavigateDown();
+     } else if (getKeyOn(KEY_CROSS)) {
+         if (!viewPending)
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index c13cdb4..36e4ce5 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -16,6 +16,7 @@
+ #include <ctype.h>
+ #include <stdio.h>
+ #include <string.h>
++#include <malloc.h>
+ 
+ #include "include/opl.h"
+ #include "include/gui.h"
+@@ -1104,6 +1105,107 @@ void ripps2DrawPanelMorph(int ax, int ay, int aw, int ah, int bx, int by, int bw
+     panelFrame(x, y, w, h);
+ }
+ 
++// ---- frosted glass (build 78) ----
++// A blur panel shows what is behind it softened. The GS cannot blur live at no cost, but a theme's
++// backdrop is a still image: at load it is shrunk to 80x60 (box average, then a 3x3 soften) and the
++// panel draws its own part of that, stretched with bilinear filtering -- frosted glass for one quad.
++#define FROST_W 80
++#define FROST_H 60
++
++static void frostTexel(const GSTEXTURE *t, int x, int y, int *r, int *g, int *b)
++{
++    const unsigned char *m = (const unsigned char *)t->Mem, *c;
++    int i;
++    switch (t->PSM) {
++        case GS_PSM_CT32:
++            c = m + (y * t->Width + x) * 4;
++            break;
++        case GS_PSM_CT24:
++            c = m + (y * t->Width + x) * 3;
++            break;
++        case GS_PSM_T8:
++            i = m[y * t->Width + x];
++            i = (i & 0x18) == 8 ? i + 8 : (i & 0x18) == 0x10 ? i - 8 : i; // the loader's CSM1 swizzle
++            c = (const unsigned char *)t->Clut + i * 4;
++            break;
++        case GS_PSM_T4:
++            i = m[(y * t->Width + x) / 2];
++            i = (x & 1) ? i >> 4 : i & 0x0F;
++            c = (const unsigned char *)t->Clut + i * 4;
++            break;
++        default:
++            *r = *g = *b = 0;
++            return;
++    }
++    *r = c[0];
++    *g = c[1];
++    *b = c[2];
++}
++
++int ripps2MakeFrost(const GSTEXTURE *src, GSTEXTURE *dst)
++{
++    static unsigned char tmp[FROST_W * FROST_H * 3];
++    int x, y, sx, sy;
++
++    memset(dst, 0, sizeof(*dst));
++    if (src == NULL || src->Mem == NULL || src->Width < FROST_W || src->Height < FROST_H ||
++        ((src->PSM == GS_PSM_T8 || src->PSM == GS_PSM_T4) && src->Clut == NULL))
++        return 0;
++    int bw = src->Width / FROST_W, bh = src->Height / FROST_H, step = bw > 2 ? bw / 2 : 1;
++    for (y = 0; y < FROST_H; y++)
++        for (x = 0; x < FROST_W; x++) {
++            int r = 0, g = 0, b = 0, n = 0, cr, cg, cb;
++            for (sy = 0; sy < bh; sy += step)
++                for (sx = 0; sx < bw; sx += step, n++) {
++                    frostTexel(src, x * bw + sx, y * bh + sy, &cr, &cg, &cb);
++                    r += cr;
++                    g += cg;
++                    b += cb;
++                }
++            unsigned char *o = tmp + (y * FROST_W + x) * 3;
++            o[0] = r / n;
++            o[1] = g / n;
++            o[2] = b / n;
++        }
++    dst->Width = FROST_W;
++    dst->Height = FROST_H;
++    dst->PSM = GS_PSM_CT32;
++    dst->Filter = GS_FILTER_LINEAR;
++    dst->Mem = memalign(128, FROST_W * FROST_H * 4);
++    if (dst->Mem == NULL)
++        return 0;
++    for (y = 0; y < FROST_H; y++) // 3x3 soften, so the stretched copy shows no blocks
++        for (x = 0; x < FROST_W; x++) {
++            int r = 0, g = 0, b = 0, n = 0, dx, dy;
++            for (dy = -1; dy <= 1; dy++)
++                for (dx = -1; dx <= 1; dx++) {
++                    int xx = x + dx, yy = y + dy;
++                    if (xx < 0 || yy < 0 || xx >= FROST_W || yy >= FROST_H)
++                        continue;
++                    const unsigned char *c = tmp + (yy * FROST_W + xx) * 3;
++                    r += c[0];
++                    g += c[1];
++                    b += c[2];
++                    n++;
++                }
++            unsigned char *o = (unsigned char *)dst->Mem + (y * FROST_W + x) * 4;
++            o[0] = r / n;
++            o[1] = g / n;
++            o[2] = b / n;
++            o[3] = 0x80;
++        }
++    return 1;
++}
++
++void ripps2DrawFrost(GSTEXTURE *frost, int x, int y, int w, int h)
++{
++    if (frost == NULL || frost->Mem == NULL || w <= 0 || h <= 0)
++        return;
++    float u0 = (float)x * FROST_W / 640.0f, v0 = (float)y * FROST_H / 480.0f;
++    float u1 = (float)(x + w) * FROST_W / 640.0f, v1 = (float)(y + h) * FROST_H / 480.0f;
++    rmDrawPixmapPart(frost, x, y, ALIGN_NONE, w, h, SCALING_NONE, gDefaultCol, u0, v0, u1, v1);
++}
++
+ void ripps2DrawPanelGlass(int x, int y, int w, int h, int hasItem)
+ {
+     if (!hasItem) {
+diff --git a/src/themes.c b/src/themes.c
+index e6df3b5..94f65ae 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -105,6 +105,7 @@ enum ELEM_ATTRIBUTE_TYPE {
+     ELEM_TYPE_GAME_COUNT_TEXT,
+     ELEM_TYPE_COVERFLOW,
+     ELEM_TYPE_RIPPS2_PANEL_GLASS, // RIPPS2: art panel tint + frame (over a GameImage, under text)
++    ELEM_TYPE_GRID,               // RIPPS2 build 78: the game list as a page of covers in rows
+     ELEM_TYPE_COUNT
+ };
+ 
+@@ -135,7 +136,8 @@ static const char *elementsType[ELEM_TYPE_COUNT] = {
+     "BdmIndex",
+     "GameCountText",
+     "Coverflow",
+-    "Ripps2PanelGlass"};
++    "Ripps2PanelGlass",
++    "Grid"};
+ 
+ // Per-device element filter (theme key devices=usb,hdd,... on MenuIcon/ItemsList/HintText) /////////////////////////////////
+ //
+@@ -1081,10 +1083,55 @@ static void ripps2PanelRect(struct theme_element *elem, int *x, int *y)
+     }
+ }
+ 
++// RIPPS2 build 78: what a game page shows where it has no image: the pillars, or the theme's bg_color
++// on a theme with towers=0
++static void thmDrawEmptyBackdrop(void)
++{
++    if (gTheme != NULL && gTheme->noTowers)
++        rmDrawRect(0, 0, screenWidth, screenHeight, GS_SETREG_RGBA(gTheme->bgColor[0], gTheme->bgColor[1], gTheme->bgColor[2], 0x80));
++    else
++        ripps2DrawBackground();
++}
++
++static GSTEXTURE *getGameImageCached(image_cache_t *cache, struct submenu_item *item);
++
++// RIPPS2 build 78: the frosted copy of what is behind a blur panel -- its family's Background, the
++// game's own background art once it is loaded, else the theme's default -- made again only when that
++// texture or the game changes
++static GSTEXTURE *thmFrostFor(struct submenu_list *item, struct theme_element *glass)
++{
++    int slot = glass->family == &gTheme->mainElems ? 0 : 1;
++    GSTEXTURE *src = NULL;
++    theme_element_t *e;
++
++    for (e = glass->family->first; e != NULL && e != glass; e = e->next) {
++        if (e->type != ELEM_TYPE_BACKGROUND || e->extended == NULL)
++            continue;
++        mutable_image_t *mi = (mutable_image_t *)e->extended;
++        src = (mi->cache != NULL && item != NULL && !item->item.isFolder) ? getGameImageCached(mi->cache, &item->item) : NULL;
++        if ((src == NULL || src->Mem == NULL) && mi->defaultTexture != NULL)
++            src = &mi->defaultTexture->source;
++    }
++    if (src == NULL || src->Mem == NULL)
++        return NULL;
++    if (gTheme->frostKey[slot][0] != src->Mem || gTheme->frostKey[slot][1] != item) {
++        if (gTheme->frost[slot].Mem != NULL) {
++            rmUnloadTexture(&gTheme->frost[slot]);
++            texFree(&gTheme->frost[slot]);
++        }
++        ripps2MakeFrost(src, &gTheme->frost[slot]);
++        gTheme->frostKey[slot][0] = src->Mem;
++        gTheme->frostKey[slot][1] = item;
++    }
++    return gTheme->frost[slot].Mem != NULL ? &gTheme->frost[slot] : NULL;
++}
++
+ static void drawRipps2PanelGlass(struct menu_list *menu, struct submenu_list *item, config_set_t *config, struct theme_element *elem)
+ {
+     int x, y;
+     ripps2PanelRect(elem, &x, &y);
++    if (elem->blur) // build 78: frosted glass, the page's backdrop softened under the tint
++        ripps2DrawFrost(thmFrostFor(item, elem), x, y, elem->width, elem->height);
+     ripps2DrawPanelGlass(x, y, elem->width, elem->height, item != NULL);
+ }
+ 
+@@ -1714,7 +1761,7 @@ static void drawGameImage(struct menu_list *menu, struct submenu_list *item, con
+                 texture = &gameImage->defaultTexture->source;
+             else {
+                 if (elem->type == ELEM_TYPE_BACKGROUND)
+-                    ripps2DrawBackground(); // RIPPS2: theme pages draw the bare pillars
++                    thmDrawEmptyBackdrop(); // RIPPS2: theme pages draw the bare pillars
+                 return;
+             }
+         }
+@@ -1729,7 +1776,7 @@ static void drawGameImage(struct menu_list *menu, struct submenu_list *item, con
+         else if (!isSlide && (gameImage->defaultTexture == NULL || texture != &gameImage->defaultTexture->source)) {
+             float in = artFadeIn(drawElem, item, texture);
+             if (in < 1.0f && drawElem->type == ELEM_TYPE_BACKGROUND)
+-                ripps2DrawBackground(); // the pillars show until it is all there
++                thmDrawEmptyBackdrop(); // the pillars show until it is all there
+             slideW *= in;
+             if (slideW <= 0.0f)
+                 return;
+@@ -1763,7 +1810,7 @@ static void drawGameImage(struct menu_list *menu, struct submenu_list *item, con
+         if (gameImage->defaultTexture)
+             rmDrawPixmap(&gameImage->defaultTexture->source, elem->posX, elem->posY, elem->aligned, elem->width, elem->height, elem->scaled, gDefaultCol, 0);
+         else
+-            ripps2DrawBackground(); // RIPPS2: theme pages draw the bare pillars
++            thmDrawEmptyBackdrop(); // RIPPS2: theme pages draw the bare pillars (bg_color with towers=0)
+     }
+ }
+ 
+@@ -2248,6 +2295,138 @@ static void drawCoverFlow(struct menu_list *menu, struct submenu_list *item, con
+     rmSetReflectionYOffset(0); // don't leak the offset to any other reflection draw
+ }
+ 
++// Grid (RIPPS2 build 78) ////////////////////////////////////////////////////////////////////////////////////////////////
++//
++// The game list as a page of covers: <name>_columns across (default 4), <name>_rows down (default 2),
++// <name>_spacing pixels between them (default 14). x is the grid's horizontal centre (POS_MID by
++// default), y the top of its first row, width/height one cover; overlay=, default= and reflection=
++// work as on ItemCover. The selection is the cover drawn larger, framed, and last; the page scrolls by
++// whole rows to keep it in view. Left/Right step one cover, Up/Down one row, and past the top or
++// bottom row they switch drive (menusys.c, menuGridStep).
++
++static int gridTop;              // the first row shown
++static const void *gridTopMenu;  // ... for this menu
++
++int thmGridColumns(void)
++{
++    return (gTheme != NULL && gTheme->grid != NULL) ? gTheme->gridColumns : 0;
++}
++
++static void drawGridCover(struct menu_list *menu, struct submenu_list *it, struct theme_element *elem, item_list_t *src,
++                          int cx, int cy, int w, int h, int selected)
++{
++    theme_element_t *coverElem = thmGetElemForItem(menu, it, elem);
++    mutable_image_t *img = (mutable_image_t *)coverElem->extended;
++    GSTEXTURE *texture;
++
++    if (img == NULL)
++        return;
++    texture = getGameImageTextureEx(img->cache, src, &it->item, selected);
++    if (texture == NULL || texture->Mem == NULL)
++        texture = img->defaultTexture ? &img->defaultTexture->source : thmGetTexture(COVER_DEFAULT);
++    if (texture == NULL || texture->Mem == NULL)
++        return;
++    u64 col = selected ? gDefaultCol : GS_SETREG_RGBA(0x70, 0x70, 0x70, 0x80); // the others a step back
++    if (img->overlayTexture) {
++        image_texture_t *ov = img->overlayTexture;
++        int csw = coverElem->width > 0 ? coverElem->width : 1, csh = coverElem->height > 0 ? coverElem->height : 1;
++        rmDrawOverlayPixmap(&ov->source, cx, cy, ALIGN_CENTER, w, h, SCALING_RATIO, col, texture,
++                            ov->upperLeft_x * w / csw, ov->upperLeft_y * h / csh, ov->upperRight_x * w / csw, ov->upperRight_y * h / csh,
++                            ov->lowerLeft_x * w / csw, ov->lowerLeft_y * h / csh, ov->lowerRight_x * w / csw, ov->lowerRight_y * h / csh, elem->reflection);
++    } else
++        rmDrawPixmap(texture, cx, cy, ALIGN_CENTER, w, h, SCALING_RATIO, col, elem->reflection && selected);
++}
++
++static void drawGrid(struct menu_list *menu, struct submenu_list *item, config_set_t *config, struct theme_element *elem)
++{
++    struct submenu_list *p, *first;
++    int cols = gTheme->gridColumns, rows = gTheme->gridRows, gap = gTheme->gridSpacing;
++    int cur = 0, i, k, w = elem->width, h = elem->height;
++
++    if (item == NULL || elem->extended == NULL || cols < 1 || rows < 1 || w <= 0 || h <= 0)
++        return;
++    item_list_t *src = (item_list_t *)thmGetItemSource(menu, item);
++    for (p = menu->item->submenu; p != NULL && p != item; p = p->next)
++        cur++;
++    if (p == NULL)
++        return;
++
++    // the page keeps the selection's row in view, moving by whole rows
++    if (gridTopMenu != menu) {
++        gridTopMenu = menu;
++        gridTop = 0;
++    }
++    if (cur / cols < gridTop)
++        gridTop = cur / cols;
++    else if (cur / cols >= gridTop + rows)
++        gridTop = cur / cols - rows + 1;
++    for (first = menu->item->submenu, i = 0; first != NULL && i < gridTop * cols; i++)
++        first = first->next;
++
++    int cellW = rmWideScale(w), stepX = cellW + gap, stepY = h + gap;
++    int left = elem->posX - (cols * stepX - gap) / 2 + cellW / 2;
++    int top = elem->posY + h / 2;
++    int selX = 0, selY = 0;
++
++    // the selection's art is asked for first (priority), so a cold page fills from the cover in focus
++    for (p = first, k = 0; p != NULL && k < cols * rows; p = p->next, k++) {
++        if (p == item) {
++            selX = left + (k % cols) * stepX;
++            selY = top + (k / cols) * stepY;
++            continue;
++        }
++        if (!p->item.isFolder)
++            drawGridCover(menu, p, elem, src, left + (k % cols) * stepX, top + (k / cols) * stepY, w, h, 0);
++    }
++    if (!item->item.isFolder && selX) {
++        int sw = w * 112 / 100, sh = h * 112 / 100, fw = rmWideScale(sw) + 6, fh = sh + 6;
++        u64 frame = gTheme->selTextColor;
++        rmDrawRect(selX - fw / 2, selY - fh / 2, fw, 2, frame);
++        rmDrawRect(selX - fw / 2, selY + fh / 2 - 2, fw, 2, frame);
++        rmDrawRect(selX - fw / 2, selY - fh / 2, 2, fh, frame);
++        rmDrawRect(selX + fw / 2 - 2, selY - fh / 2, 2, fh, frame);
++        drawGridCover(menu, item, elem, src, selX, selY, sw, sh, 1);
++    }
++}
++
++static void initGrid(const char *themePath, config_set_t *themeConfig, theme_t *theme, theme_element_t *elem, const char *name)
++{
++    char key[64];
++    int cols = 4, rows = 2, gap = 14;
++
++    snprintf(key, sizeof(key), "%s_columns", name);
++    configGetInt(themeConfig, key, &cols);
++    snprintf(key, sizeof(key), "%s_rows", name);
++    configGetInt(themeConfig, key, &rows);
++    snprintf(key, sizeof(key), "%s_spacing", name);
++    configGetInt(themeConfig, key, &gap);
++    if (cols < 1 || cols > 8)
++        cols = 4;
++    if (rows < 1 || rows > 4)
++        rows = 2;
++    if (gap < 0 || gap > 64)
++        gap = 14;
++
++    // enough cache slots for a page and the row after it
++    int slots = cols * rows + cols;
++    if (slots < COVER_CACHE_SLOTS)
++        slots = COVER_CACHE_SLOTS;
++    mutable_image_t *mutableImage = initMutableImage(themePath, themeConfig, theme, name, elem->type, "COV", slots, NULL, NULL);
++    elem->extended = mutableImage;
++    elem->endElem = &endMutableImage;
++
++    if (mutableImage && mutableImage->cache) {
++        elem->drawElem = &drawGrid;
++        if (!theme->grid) {
++            theme->grid = elem;
++            theme->gridColumns = cols;
++            theme->gridRows = rows;
++            theme->gridSpacing = gap;
++        }
++    } else
++        LOG("THEMES Grid %s: NO cache, elem disabled !!\n", name);
++}
++
+ static void initCoverflow(const char *themePath, config_set_t *themeConfig, theme_t *theme, theme_element_t *elem, const char *name)
+ {
+     mutable_image_t *mutableImage = initMutableImage(themePath, themeConfig, theme, name, elem->type, "COV", COVER_CACHE_SLOTS, NULL, NULL);
+@@ -2498,6 +2677,9 @@ static theme_element_t *initBasic(const char *themePath, config_set_t *themeConf
+     snprintf(elemProp, sizeof(elemProp), "%s_slide", name);
+     if (configGetInt(themeConfig, elemProp, &intValue) && intValue > 0 && intValue <= 4)
+         elem->slide = intValue;
++    snprintf(elemProp, sizeof(elemProp), "%s_blur", name);
++    if (configGetInt(themeConfig, elemProp, &intValue))
++        elem->blur = intValue ? 1 : 0;
+     snprintf(elemProp, sizeof(elemProp), "%s_tilt_scale", name);
+     if (configGetInt(themeConfig, elemProp, &intValue) && intValue > 0 && intValue <= 400)
+         elem->tiltScale = intValue;
+@@ -2524,7 +2706,7 @@ static theme_element_t *initBasic(const char *themePath, config_set_t *themeConf
+ // Internal elements ////////////////////////////////////////////////////////////////////////////////////////////////////////
+ static void drawBackground(struct menu_list *menu, struct submenu_list *item, config_set_t *config, struct theme_element *elem)
+ {
+-    ripps2DrawBackground(); // RIPPS2: theme pages draw the bare pillars
++    thmDrawEmptyBackdrop(); // RIPPS2: theme pages draw the bare pillars
+ }
+ 
+ static void initBackground(const char *themePath, config_set_t *themeConfig, theme_t *theme, theme_element_t *elem, const char *name, const char *pattern, int count, const char *texture)
+@@ -3574,6 +3756,11 @@ static int addGUIElem(const char *themePath, config_set_t *themeConfig, theme_t
+             } else if (!strcmp(elementsType[ELEM_TYPE_RIPPS2_PANEL_GLASS], type)) {
+                 elem = initBasic(themePath, themeConfig, theme, name, ELEM_TYPE_RIPPS2_PANEL_GLASS, 0, 0, ALIGN_NONE, 320, 240, SCALING_RATIO, gDefaultCol, theme->fonts[0]);
+                 elem->drawElem = &drawRipps2PanelGlass;
++            } else if (!strcmp(elementsType[ELEM_TYPE_GRID], type)) {
++                // RIPPS2 build 78: COV-cache backed like Coverflow; x is the grid's centre, y its top,
++                // width/height one cover
++                elem = initBasic(themePath, themeConfig, theme, name, ELEM_TYPE_GAME_IMAGE, screenWidth >> 1, 60, ALIGN_NONE, 104, 146, SCALING_RATIO, gDefaultCol, theme->fonts[0]);
++                initGrid(themePath, themeConfig, theme, elem, name);
+             } else if (!strcmp(elementsType[ELEM_TYPE_COVERFLOW], type)) {
+                 // GAME_IMAGE-backed (COV cache) so initMutableImage/findDuplicate work unchanged.
+                 // Allow one per list (e.g. a games "main" coverflow + an "appsMain" coverflow,
+@@ -3747,6 +3934,11 @@ static void thmFree(theme_t *theme)
+         // free textures
+         GSTEXTURE *texture;
+         int id = 0;
++        for (int f = 0; f < 2; f++) // build 78: the frosted copies
++            if (theme->frost[f].Mem != NULL) {
++                rmUnloadTexture(&theme->frost[f]);
++                texFree(&theme->frost[f]);
++            }
+         for (; id < TEXTURES_COUNT; id++) {
+             texture = &theme->textures[id];
+             if (texture->Mem != NULL) {
+@@ -3956,6 +4148,7 @@ static int thmLoad(const char *themePath)
+     newT->favsItemsList = NULL;
+     newT->vcdItemsList = NULL;
+     newT->coverflow = NULL;
++    newT->grid = NULL;
+     newT->coverflowCoverOffset = 0;
+     newT->loadingIcon = NULL;
+     newT->loadingIconCount = LOAD7_ICON - LOAD0_ICON + 1;
+@@ -4255,6 +4448,10 @@ static int thmLoad(const char *themePath)
+             thmLoadResource(&newT->textures[SETTINGS_BG], SETTINGS_BG, themePath, GS_PSM_CT32, 0);
+     }
+ 
++    // RIPPS2 build 78: towers=0 keeps the pillars off the game pages (Settings still shows them)
++    if (configGetInt(themeConfig, "towers", &intValue) && intValue == 0)
++        newT->noTowers = 1;
++
+     configFree(themeConfig); // all themeConfig reads are done now (last was use_settings_bg above)
+ 
+     // The old theme cannot be freed while its caches are still referenced by the
