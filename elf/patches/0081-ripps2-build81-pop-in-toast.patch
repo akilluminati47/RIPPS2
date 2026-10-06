@@ -1,0 +1,171 @@
+diff --git a/include/ripps2.h b/include/ripps2.h
+index d061b71..a6f7b71 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -60,10 +60,11 @@ extern int gRipps2Random;
+ // the settings
+ enum { RIPPS2_GLYPHS_HIDDEN = 0, RIPPS2_GLYPHS_SHOWN, RIPPS2_GLYPHS_FADE_IN, RIPPS2_GLYPHS_FADE_OUT, RIPPS2_GLYPHS_COUNT };
+ enum { RIPPS2_SHOW_ON = 0, RIPPS2_SHOW_IDLE, RIPPS2_SHOW_OFF, RIPPS2_SHOW_COUNT }; // shown / fade when idle / hidden
+-// build 80: Source Name has one more, Pop In (the name rises in letter by letter, as L3's view word does)
++// build 80: Source Name has one more, Pop In; build 81: the name is not drawn over the list, it plays as
++// a view word (ALL GAMES, HDD GAMES...) in the middle of the page when it changes
+ enum { RIPPS2_SRC_POP = RIPPS2_SHOW_COUNT, RIPPS2_SRC_COUNT };
+-int ripps2SourceNameMode(void);
+-float ripps2DrawSourcePop(int font, int x, int y, short aligned, const char *text, u64 colour); // the setting, with a theme's source_name=pop standing in for Shown
++int ripps2SourceNameMode(void);  // the setting, with a theme's source_name=pop standing in for Shown
++void ripps2SourceToast(const char *text); // Pop In: call each frame the list's source name would draw
+ enum { RIPPS2_GLYPH_DRIVES = 0, RIPPS2_GLYPH_FORMATIONS }; // whose glyphs: Storage's drive name, Memory Files' formation
+ #define RIPPS2_PALETTE_COUNT 6
+ extern int gRipps2Glyphs;  // the D-pad glyphs beside a drive's or a formation's name (hidden by default)
+diff --git a/lng_tmpl/_base.yml b/lng_tmpl/_base.yml
+index 863b80e..e529176 100644
+--- a/lng_tmpl/_base.yml
++++ b/lng_tmpl/_base.yml
+@@ -1448,7 +1448,7 @@ gui_strings:
+ - label: RIPPS2_SOURCE
+   string: Source
+ - label: HINT_RIPPS2_SOURCE_NAME
+-  string: "The source's name over the games (ALL GAMES, HDD GAMES and so on). Fade When Idle fades it with the category bar; Pop In has it rise in letter by letter when the page opens or the source changes. Themes can make Pop In their Shown."
++  string: "The source's name over the games (ALL GAMES, HDD GAMES and so on). Fade When Idle fades it with the category bar; Pop In shows it big in the middle of the page instead, the way L3 names the list, on the first list after boot and whenever the source changes, then fades. Themes can make Pop In their Shown."
+ - label: RIPPS2_RECENTS
+   string: Show Recents
+ - label: HINT_RIPPS2_RECENTS
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index 6f5a815..ecf652a 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -450,11 +450,12 @@ void ripps2DrawBusy(int alpha)
+ #define WORD_OUT_S  0.55f
+ #define WORD_Y      228
+ #define WORD_TRACK  10.0f // px between letters
++#define WORD_MAX_SPAN 560.0f // build 81: the widest a word may run (UDPFSBD GAMES), letters closing up to fit
+ #define WORD_FONT   (gTheme->fonts[14])
+ #define WORD_RGBA(r, g, b, a) GS_SETREG_RGBAQ((r), (g), (b), (a), 0x00)
+ #define LOGO_TALL_H 96  // the PS1 logo's height on screen
+ #define LOGO_WIDE_W 300 // the PS2 mark's width on screen
+-static char viewWord[12], viewCaption[24];
++static char viewWord[24], viewCaption[24]; // build 81: room for a source's name (APPLICATIONS)
+ static int viewLogo = -1;
+ static clock_t viewWordStart = 0;
+ 
+@@ -536,6 +537,8 @@ void ripps2DrawViewWord(void)
+             w[i] = fntCalcDimensions(WORD_FONT, ch);
+             total += w[i];
+         }
++        if (n > 1 && total + WORD_TRACK * (n - 1) > WORD_MAX_SPAN) // build 81: a long source name stays on screen
++            track = fmaxf(-2.0f, (WORD_MAX_SPAN - total) / (n - 1)) + 18.0f * out * out;
+         span = total + track * (n - 1);
+         halfW = span / 2.0f;
+         halfH = 30.0f;
+@@ -595,56 +598,29 @@ void ripps2DrawViewWord(void)
+     }
+ }
+ 
+-// build 80: Source Name's Pop In. The source's name rises in letter by letter, the way L3's view word
+-// does (up from below, a touch past, settling, brightest mid-landing), when the page opens or the
+-// source changes; then it stays. Returns how far in it is (0-1), for the D-pad glyphs beside it.
+-#define SRC_STEP_S 0.045f
+-#define SRC_IN_S   0.36f
+-float ripps2DrawSourcePop(int font, int x, int y, short aligned, const char *text, u64 colour)
++// build 81: Source Name's Pop In is a view word. The source's name is not drawn over the list at all;
++// it plays as L3's toast does, centred on the page in the same letters at the same size, the whole
++// name in capitals (ALL GAMES, HDD GAMES...: the GAMES tells it from L3's ALL), letter by letter, then
++// holds and fades: on the first list after boot, on every source change and on coming back to Storage
++// from another tab. Not on closing an info page or Settings: the list did not change.
++static int srcToastArmed = 1; // the first list after boot
++
++void ripps2SourceToast(const char *text)
+ {
+     static char shown[64];
+-    static double startAt = 0.0, seenAt = 0.0;
+-    double now = ripps2Seconds();
+-    char ch[2] = {0, 0};
+-    int i, n = (int)strlen(text), total = 0;
++    char word[sizeof(viewWord)];
++    int i;
+ 
+-    if (n > (int)sizeof(shown) - 1)
+-        n = sizeof(shown) - 1;
+-    if (now - seenAt > 0.5 || strncmp(shown, text, sizeof(shown) - 1) != 0) { // the page opened, or another source
+-        snprintf(shown, sizeof(shown), "%s", text);
+-        startAt = now;
+-    }
+-    seenAt = now;
+-    float t = (float)(now - startAt);
+-    for (i = 0; i < n; i++) {
+-        ch[0] = text[i];
+-        total += rmUnScaleX(fntCalcDimensions(font, ch));
+-    }
+-    int lx = (aligned & ALIGN_HCENTER) ? x - total / 2 : x;
+-    short va = (aligned & ALIGN_VCENTER) ? ALIGN_VCENTER : ALIGN_NONE;
+-    int baseA = (colour >> 24) & 0xFF;
+-    for (i = 0; i < n; i++) {
+-        ch[0] = text[i];
+-        int cw = rmUnScaleX(fntCalcDimensions(font, ch));
+-        float li = (t - SRC_STEP_S * i) / SRC_IN_S;
+-        if (li > 0.0f && ch[0] != ' ') {
+-            if (li > 1.0f)
+-                li = 1.0f;
+-            int ly = y + (int)((1.0f - easeOutBack(li)) * 10.0f);
+-            float flare = li < 1.0f ? sinf(3.14159265f * li) : 0.0f;
+-            if (flare > 0.0f) {
+-                u64 glow = WORD_RGBA(0x50, 0x78, 0xC0, (int)(0x40 * flare));
+-                rmSetBlendAdditive(1);
+-                fntRenderString(font, lx - 1, ly, va, 0, 0, ch, glow);
+-                fntRenderString(font, lx + 1, ly, va, 0, 0, ch, glow);
+-                rmSetBlendAdditive(0);
+-            }
+-            fntRenderString(font, lx, ly, va, 0, 0, ch, withAlpha(colour, (int)(baseA * fminf(1.0f, li * 1.8f))));
+-        }
+-        lx += cw;
+-    }
+-    float done = (t - SRC_STEP_S * (n > 0 ? n - 1 : 0)) / SRC_IN_S;
+-    return done <= 0.0f ? 0.0f : done >= 1.0f ? 1.0f : smoothUnit(done);
++    if (text == NULL || text[0] == '\0')
++        return;
++    if (!srcToastArmed && strncmp(shown, text, sizeof(shown) - 1) == 0)
++        return;
++    srcToastArmed = 0;
++    snprintf(shown, sizeof(shown), "%s", text);
++    for (i = 0; text[i] != '\0' && i < (int)sizeof(word) - 1; i++)
++        word[i] = toupper((unsigned char)text[i]);
++    word[i] = '\0';
++    ripps2ShowViewWord(word, -1, NULL);
+ }
+ 
+ void ripps2SetCategory(int cat)
+@@ -657,6 +633,8 @@ void ripps2SetCategory(int cat)
+     }
+ 
+     gRipps2Category = cat; // the mark's spring takes it from here, from wherever the mark is
++    if (cat == RIPPS2_CAT_STORAGE)
++        srcToastArmed = 1; // build 81: Pop In names the source again on arrival
+ 
+     // no fade: the mark's flight across the bar is the transition
+     if (cat == RIPPS2_CAT_STORAGE)
+diff --git a/src/themes.c b/src/themes.c
+index 7624264..04346ad 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -2889,6 +2889,10 @@ static void drawMenuText(struct menu_list *menu, struct submenu_list *item, conf
+         glyphAlpha = glyphAlpha < 0x78 ? glyphAlpha + 0x08 : 0x80;
+     // and RIPPSettings: hidden (the default), shown, or fading in or out around a press
+     float srcA = ripps2SourceNameAlpha(); // build 71: Source Name, Shown / Fade When Idle / Hidden
++    if (ripps2SourceNameMode() == RIPPS2_SRC_POP) { // build 81: no line over the list, the view word names it
++        ripps2SourceToast(text);
++        return;
++    }
+     int shownAlpha = (int)(glyphAlpha * ripps2GlyphsAlpha(RIPPS2_GLYPH_DRIVES) * srcA);
+     u64 glyphCol = GS_SETREG_RGBA(0x80, 0x80, 0x80, shownAlpha);
+ 
+@@ -2909,9 +2913,7 @@ static void drawMenuText(struct menu_list *menu, struct submenu_list *item, conf
+         if (rightIconTex && rightIconTex->Mem)
+             rmDrawPixmap(rightIconTex, elem->posX + textW + 6, elem->posY - 2, elem->aligned, 18, 18, elem->scaled, glyphCol, 0);
+     }
+-    if (ripps2SourceNameMode() == RIPPS2_SRC_POP) // build 80: rises in letter by letter, then stays
+-        ripps2DrawSourcePop(elem->font, elem->posX, elem->posY, elem->aligned, text, elem->color);
+-    else if (srcA > 0.0f)
++    if (srcA > 0.0f)
+         fntRenderString(elem->font, elem->posX, elem->posY, elem->aligned, 0, 0, text,
+                         (elem->color & ~(0xFFULL << 24)) | ((u64)(int)(((elem->color >> 24) & 0xFF) * srcA) << 24));
+ }

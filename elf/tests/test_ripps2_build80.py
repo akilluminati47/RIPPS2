@@ -57,8 +57,8 @@ if '"Pop In"' not in gui or 'RIPPS2_SRC_COUNT' not in gui:
     fail.append('Source Name must offer Pop In')
 if '"source_name"' not in th or 'gTheme->srcNamePop' not in ui:
     fail.append('source_name=pop must make Pop In the theme default')
-if 'ripps2DrawSourcePop(' not in th or 'easeOutBack(' not in ui[ui.index('float ripps2DrawSourcePop('):]:
-    fail.append('Pop In must rise letter by letter like the view word')
+if 'ripps2SourceToast(' not in th or 'void ripps2SourceToast(' not in ui:  # build 81: it plays as the view word
+    fail.append('Pop In must name the source with the view word')
 
 # --- Coverflow / Grid: the cancel button cycles the sources on the game list, not on the info page
 main = ms[ms.index('void menuHandleInputMain()'):]

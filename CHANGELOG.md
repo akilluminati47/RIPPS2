@@ -1,5 +1,11 @@
 # RIPPS2 changelog
 
+## Build 81 (testing), changes since build 80
+
+### Game list
+- **Source Name: Pop In is now a toast.** The source's name is no longer drawn over the list: it plays in the middle of the page the way L3 names the list, in the same big letters, the whole name in capitals (ALL GAMES, HDD GAMES, BDM GAMES; the GAMES tells it apart from L3's ALL). It comes on the first list after boot, whenever the source changes and when you come back to Storage from another tab, then holds and fades. Closing an info page or Settings does not repeat it. Themes with `source_name=pop` (Adapt, Adapt Rx, RIPgrid) get it too, so their static source line is gone.
+- Long names (UDPFSBD GAMES) close their letters up to stay on screen.
+
 ## Build 80 (testing), changes since build 79
 
 ### STATUS
