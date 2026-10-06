@@ -34,6 +34,18 @@
   @keyframes float { 50% { transform: translateY(-10px); } }
   @media (prefers-reduced-motion: reduce) { .console { animation: none; } }
 
+  /* Storage: the elf shelf (elfshelf.js) stands in front of the towers; the console steps aside */
+  .hero .shelf { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none;
+    opacity: 0; transition: opacity .7s ease; }
+  .hero .shelf[data-shelf="on"] { opacity: 1; }
+  .shelf-caption { position: absolute; left: 0; right: 0; bottom: 9vh; z-index: 2; text-align: center; pointer-events: none;
+    font-family: "Master", var(--menu-font); text-transform: uppercase; letter-spacing: .14em;
+    font-size: clamp(1rem, 2.4vw, 1.7rem); color: #f4f8ff; opacity: 0; transition: opacity .5s ease;
+    text-shadow: 0 0 6px rgba(200, 222, 255, .8), 0 0 22px rgba(110, 160, 255, .6); }
+  .shelf-caption[data-shelf="on"] { opacity: 1; }
+  .hero[data-tab="storage"] .console { opacity: 0; transition: opacity .5s ease; }
+  .hero[data-tab="launch"] .console { opacity: 1; transition: opacity .5s ease; }
+
   /* Phones on their side: tighter images so both fit above the towers */
   @media (max-height: 500px) {
     .hero-content { gap: 2vh; transform: translateY(-6vh); }
@@ -52,6 +64,8 @@
 
 <section class="hero" id="hero">
   <canvas id="pillars" aria-hidden="true"></canvas>
+  <canvas class="shelf" id="shelf" aria-label="The elf shelf: touch a hat beside the middle one, or press Left / Right"></canvas>
+  <div class="shelf-caption" id="shelf-caption" aria-live="polite"></div>
   <div class="hero-content">
     <img class="console" src="assets/console.png" alt="Console" onerror="this.remove()">
   </div>
@@ -69,13 +83,20 @@
 <script type="module">
   import { createPillars } from "./pillars.js";
   import { initMenu } from "./menu.js";
+  import { createElfShelf } from "./elfshelf.js";
 
   const hero = document.getElementById("hero");
 
   // Launch Disc sparks the field: two blasts straight into the center
   let pillars;
   const spark = () => { pillars.blast(); setTimeout(() => pillars.blast(), 220); };
-  const { arrived } = initMenu({ onLaunch: spark });
+  // Storage shows the elf shelf, Launch Disc the console; the site lands on Storage
+  let shelf;
+  const showTab = (name) => {
+    hero.dataset.tab = name;
+    shelf?.show(name === "storage");
+  };
+  const { arrived, current } = initMenu({ onLaunch: spark, onSelect: showTab });
 
   // Coming over from the orbs page skips the rise-up intro so the towers are already standing
   if (arrived) document.documentElement.classList.add("arrived");
@@ -85,6 +106,11 @@
     startTime: arrived ? 6 : Number(new URLSearchParams(location.search).get("t")) || 0,
   });
   if (arrived === "launch") spark();
+
+  try {
+    shelf = createElfShelf(document.getElementById("shelf"), { interactTarget: hero, caption: document.getElementById("shelf-caption") });
+  } catch (e) { console.warn("elf shelf:", e); }
+  showTab(arrived === "launch" ? "launch" : current);
 
 </script>
 </body>

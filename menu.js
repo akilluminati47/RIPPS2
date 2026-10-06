@@ -1,5 +1,6 @@
 // Top menu behavior shared by both pages.
-// Launch Disc and Storage show the pillars page; Memory Files opens the orbs page.
+// Launch Disc and Storage show the pillars page; Memory Files opens the orbs page. The site lands on
+// Storage (its elf shelf); #launch-disc opens Launch Disc. onSelect hears every change of tab on the page.
 // Selecting Launch Disc sparks the pillars (onLaunch), right away if we are already
 // there, or on arrival after navigating over from the orbs page.
 // Labels follow the visitor's language (override with ?lang=xx).
@@ -53,7 +54,7 @@ const clamp01 = (x) => Math.min(1, Math.max(0, x));
 const lerp = (a, b, t) => a + (b - a) * t;
 const easeInOutCubic = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
 
-export function initMenu({ onLaunch } = {}) {
+export function initMenu({ onLaunch, onSelect } = {}) {
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const onPillars = !location.pathname.endsWith("orbs.html");
   const nav = document.querySelector(".options");
@@ -69,7 +70,7 @@ export function initMenu({ onLaunch } = {}) {
     label.classList.toggle("fb", !IN_FONT.test(text.toLocaleUpperCase(lang)));
   });
 
-  const currentFromPage = () => ORDER.indexOf(!onPillars ? "memory" : location.hash === "#storage" ? "storage" : "launch");
+  const currentFromPage = () => ORDER.indexOf(!onPillars ? "memory" : location.hash === "#launch-disc" ? "launch" : "storage");
   function mark(idx) {
     items.forEach((el, k) => (k === idx ? el.setAttribute("aria-current", "page") : el.removeAttribute("aria-current")));
   }
@@ -189,6 +190,7 @@ export function initMenu({ onLaunch } = {}) {
       if (samePage) {
         history.replaceState(null, "", name === "storage" ? "#storage" : "#launch-disc");
         flyTo(idx);
+        onSelect?.(name);
         if (name === "launch") onLaunch?.();
       } else {
         // Crossing pages: let the mark land first, then tell the next page how we arrived
@@ -206,5 +208,5 @@ export function initMenu({ onLaunch } = {}) {
   if (arrived && !reduced) landAt = performance.now();
   requestAnimationFrame(frame);
 
-  return { arrived, lang };
+  return { arrived, lang, current: ORDER[cur] };
 }

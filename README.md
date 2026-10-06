@@ -79,6 +79,7 @@ RIPPS2 is designed and directed by akilluminati47 and built with Claude (Anthrop
 - mymc by Ross Ridge and [mymcplus](https://github.com/thestr4ng3r/mymcplus) by Florian Maerkl: what RIPPS2's card image writes are checked against.
 - Planet N Compact by [Iconian Fonts](https://www.iconian.com) (`assets/master.ttf`). RIPPS2 Sleek and Sleek Bold are drawn for RIPPS2.
 - Web version: [three.js](https://threejs.org) r160, MIT (see `vendor/LICENSE`); [Albert Sans](https://github.com/usted/Albert-Sans), SIL Open Font License (see `vendor/fonts/OFL.txt`).
+- The web mockup's elf shelf (Storage, [akilluminati47.github.io/RIPPS2](https://akilluminati47.github.io/RIPPS2/)) stands on the wooden plank from [uOPL](https://github.com/SlimPugGamer/uOPL) (`gfx/plank.png`, AFL-3.0).
 - The RIPPS2 mark, the dead elf, is original: rendered in three.js (MIT) from `media/deadelf/scene.html`, with a vector version in `assets/ripps2-deadelf.svg`.
 - The build 66 reel (on YouTube) is set to Slideshow (Daytime) by Kazumi Totaka, from the Wii News Channel (Nintendo, 2006); the build 55 reel's music is original. Game art seen in testing came from the community OPL art database and is not part of RIPPS2.
 

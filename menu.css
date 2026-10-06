@@ -39,3 +39,5 @@
 .options .selector.ghost { opacity: 0; filter: blur(.02em); }
 
 @media (max-height: 500px) { .options { top: 10px; font-size: clamp(.85rem, 2vw, 1.3rem); } }
+/* Phones upright: the three labels fit across */
+@media (max-width: 480px) { .options { font-size: clamp(.7rem, 3.4vw, .95rem); letter-spacing: .03em; column-gap: 12px; } }
