@@ -62,6 +62,11 @@ if 'v != ripps2ColorsShown(bit)' not in take or 'gRipps2UserSet |= bit;' not in 
     fail.append('moving a row off what it showed must make it the user\'s')
 if '"ripps2_userset"' not in opl or opl.count('ripps2_userset') < 2:
     fail.append('the changed rows must be saved and loaded (ripps2_userset)')
+# --- the view word keeps its 64 px face in a theme without a font14 of its own
+lf = th[th.index('static void thmLoadFonts('):]
+lf = lf[:lf.index('\n}\n')]
+if 'if (theme->fonts[14] == theme->fonts[0])' not in lf or 'fntLoadFile("builtin:ripps2sleekbold", size)' not in lf:
+    fail.append('a theme without font14 must get RIPPS2 Sleek Bold for the view word')
 # --- RIPFLOW: Memory Files first, unless the user picked an order
 if 'category_order=memory_files_first' not in cf:
     fail.append('RIPFLOW must default to Memory Files first')

@@ -454,7 +454,7 @@ index 6f5a815..cad9486 100644
      // no fade: the mark's flight across the bar is the transition
      if (cat == RIPPS2_CAT_STORAGE)
 diff --git a/src/themes.c b/src/themes.c
-index 7624264..c9eb843 100644
+index 7624264..b478987 100644
 --- a/src/themes.c
 +++ b/src/themes.c
 @@ -2889,6 +2889,10 @@ static void drawMenuText(struct menu_list *menu, struct submenu_list *item, conf
@@ -479,7 +479,26 @@ index 7624264..c9eb843 100644
          fntRenderString(elem->font, elem->posX, elem->posY, elem->aligned, 0, 0, text,
                          (elem->color & ~(0xFFULL << 24)) | ((u64)(int)(((elem->color >> 24) & 0xFF) * srcA) << 24));
  }
-@@ -4592,6 +4594,34 @@ static int thmLoad(const char *themePath)
+@@ -4230,6 +4232,18 @@ static void thmLoadFonts(config_set_t *themeConfig, const char *themePath, theme
+             }
+         }
+     }
++
++    // RIPPS2 build 81: font14 draws the view word (L3's ALL / PS1 / PS2, the Pop In source toast), made for
++    // 64 px letters. A theme without a font14 of its own gets RIPPS2 Sleek Bold at that size (font14_size
++    // still sets it) instead of its default font, which drew the toast as a thin line of text.
++    if (theme->fonts[14] == theme->fonts[0]) {
++        int size = 0;
++        if (!configGetInt(themeConfig, "font14_size", &size) || size <= 0)
++            size = 64;
++        int fntHandle = fntLoadFile("builtin:ripps2sleekbold", size);
++        if (fntHandle != FNT_ERROR)
++            theme->fonts[14] = fntHandle;
++    }
+ }
+ 
+ // Bound the MMCE-art drain before a theme swap. On timeout the current theme
+@@ -4592,6 +4606,34 @@ static int thmLoad(const char *themePath)
          if (configGetStr(themeConfig, "source_name", &srcName) && srcName != NULL && !strcmp(srcName, "pop"))
              newT->srcNamePop = 1;
      }

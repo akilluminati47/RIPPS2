@@ -5,6 +5,7 @@
 ### Game list
 - **Source Name: Pop In is now a toast.** The source's name is no longer drawn over the list: it plays in the middle of the page the way L3 names the list, in the same big letters, the whole name in capitals (ALL GAMES, HDD GAMES, BDM GAMES; the GAMES tells it apart from L3's ALL). It comes on the first list after boot, whenever the source changes and when you come back to Storage from another tab, then holds and fades. Closing an info page or Settings does not repeat it. Themes with `source_name=pop` (Adapt, Adapt Rx, RIPgrid) get it too, so their static source line is gone.
 - Long names (UDPFSBD GAMES) close their letters up to stay on screen.
+- **The toast keeps its size on every theme.** The view word (L3's ALL / PS1 / PS2 and the Pop In toast) draws in a theme's `font14`; a theme without one now gets RIPPS2 Sleek Bold at 64 px instead of its small text font.
 
 ### Themes set the look, you keep the last word
 - **A theme can now choose Colors and More for itself** in its `conf_theme.cfg`: `color_theme` (RIPPS2, Ember, Blood, Ectoplasm, Amethyst, Bone), `category_bar` and `button_hints` (shown, fade, hidden), `dpad_glyphs` (hidden, shown, fade_in, fade_out), `category_order` (launch_disc_first, memory_files_first), and `source_name` (shown, fade, hidden as well as pop). No rebuild of the ELF: any theme folder can do it.
