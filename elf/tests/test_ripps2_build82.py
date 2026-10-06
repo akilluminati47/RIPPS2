@@ -33,6 +33,9 @@ for text, where in (('Update cancelled.', lng), ('colour depth', lng), ('MIT lic
 # --- RIPgrid: back covers, the 2 s flip that stays, a page slide
 if '"COV2"' not in th or 'gridBackFor(elem)' not in th:
     fail.append('the grid must keep its own back cover (COV2) cache')
+if 'initGridBack(themeConfig, theme, name,' not in th or '_back_pattern' not in th or \
+        re.search(r'initMutableImage\([^;]*"COV2"', th):
+    fail.append('the back covers need a cache of their own: through initMutableImage the Grid (a GAME_IMAGE) reads its pattern=COV over COV2')
 if 'FLIP_HOLD_S 2.0f' not in th or 'ripps2StickSide()' not in th or 'gridFlips[k].target = !gridFlips[k].target;' not in th:
     fail.append('a 2 s hold of the right stick must turn the chosen case over, and again turn it back')
 if 'ripps2TiltBeginTurn(' not in th or 'int ripps2StickSide(void)' not in ui:
