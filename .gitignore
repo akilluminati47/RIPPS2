@@ -1,3 +1,24 @@
 elfs/
 out/
 riptopl/
+
+# hand-offs between sessions stay on the machine that wrote them
+HANDOFF*.md
+
+# caches and local tooling
+__pycache__/
+*.pyc
+node_modules/
+.venv/
+.claude/
+*.log
+
+# disk images and partial downloads
+*.raw
+*.iso
+*.part
+
+# OS clutter
+Thumbs.db
+desktop.ini
+.DS_Store
