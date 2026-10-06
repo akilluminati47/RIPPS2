@@ -66,22 +66,32 @@ export function createElfShelf(canvas, { interactTarget = canvas, caption = null
   // ---- the shelf: uOPL's plank, its grain on top and its lit edge on the front ----
   const shelf = new THREE.Group();
   scene.add(shelf);
-  const SHELF_W = 15, SHELF_D = 3.2, SHELF_T = 0.32;
-  new THREE.TextureLoader().load("assets/plank.png", (tex) => {
-    tex.colorSpace = THREE.SRGBColorSpace;
-    tex.anisotropy = 8;
-    const top = tex.clone(); top.needsUpdate = true;     // the grain: rows 0-185 of 256
-    top.repeat.set(1, 185 / 256); top.offset.set(0, 1 - 185 / 256);
-    const edge = tex.clone(); edge.needsUpdate = true;   // the front edge: rows 186-212
-    edge.repeat.set(1, 26 / 256); edge.offset.set(0, 1 - 212 / 256);
+  // The plank is short (1024 x 256): its grain (rows 0-185) and its front edge (rows 186-212) are cut
+  // apart and each tiled, mirrored, at its own proportions along a shelf wider than any screen; never
+  // stretched. The camera looks down on it steeply, as uOPL shows it, so the grain reads deep.
+  const SHELF_W = 40, SHELF_D = 4.6, SHELF_T = 0.36;
+  const plankImg = new Image();
+  plankImg.onload = () => {
+    const cut = (y0, h) => {
+      const c = document.createElement("canvas"); c.width = plankImg.width; c.height = h;
+      c.getContext("2d").drawImage(plankImg, 0, y0, plankImg.width, h, 0, 0, plankImg.width, h);
+      const t = new THREE.CanvasTexture(c);
+      t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+      t.wrapS = THREE.MirroredRepeatWrapping; t.wrapT = THREE.ClampToEdgeWrapping;
+      return t;
+    };
+    const grain = cut(0, 185), edge = cut(186, 26);
+    grain.repeat.set(SHELF_W / (SHELF_D * plankImg.width / 185), 1);   // one tile is as wide as the grain is deep allows
+    edge.repeat.set(SHELF_W / (SHELF_T * plankImg.width / 26), 1);
     const wood = (map) => new THREE.MeshStandardMaterial({ map, roughness: 0.55, metalness: 0, envMap: env, envMapIntensity: 0.35 });
     const dark = new THREE.MeshStandardMaterial({ color: "#3a1c0c", roughness: 0.8 });
     // box faces: +x, -x, +y (top), -y, +z (front), -z
-    const box = new THREE.Mesh(new THREE.BoxGeometry(SHELF_W, SHELF_T, SHELF_D), [dark, dark, wood(top), dark, wood(edge), dark]);
-    box.position.y = -SHELF_T / 2;
+    const box = new THREE.Mesh(new THREE.BoxGeometry(SHELF_W, SHELF_T, SHELF_D), [dark, dark, wood(grain), dark, wood(edge), dark]);
+    box.position.set(0, -SHELF_T / 2, 0.3);
     box.receiveShadow = true;
     shelf.add(box);
-  });
+  };
+  plankImg.src = "assets/plank.png";
 
   // ---- blood ----
   function blobShape(r, lobes, jag, rnd, cx = 0, cy = 0) {
@@ -124,6 +134,22 @@ export function createElfShelf(canvas, { interactTarget = canvas, caption = null
     g.computeVertexNormals(); return g;
   })();
 
+  // the felt's flop as a vertex-shader bend about (R, uBendY): above uBendY the cone curls toward +x by
+  // uBend radians over its length, normals turned with it
+  function bendFelt(mat, u) {
+    mat.onBeforeCompile = (sh) => {
+      Object.assign(sh.uniforms, u);
+      sh.vertexShader = sh.vertexShader
+        .replace("#include <common>", "#include <common>\nuniform float uBend, uBendY, uLen;")
+        .replace("#include <beginnormal_vertex>", `#include <beginnormal_vertex>
+          if (position.y > uBendY) { float bR = (uLen - uBendY) / max(0.05, uBend); float th = (position.y - uBendY) / bR;
+            float c = cos(th), s = sin(th); objectNormal = vec3(c * objectNormal.x - s * objectNormal.y, s * objectNormal.x + c * objectNormal.y, objectNormal.z); }`)
+        .replace("#include <begin_vertex>", `#include <begin_vertex>
+          if (position.y > uBendY) { float bR = (uLen - uBendY) / max(0.05, uBend); float th = (position.y - uBendY) / bR; float r = bR - position.x;
+            transformed.x = bR - r * cos(th); transformed.y = uBendY + r * sin(th); }`);
+    };
+  }
+
   function makeHat(def) {
     const rnd = rng(def.seed);
     const feltMap = canvasTex(512, 512, (c, w, h) => {
@@ -139,37 +165,50 @@ export function createElfShelf(canvas, { interactTarget = canvas, caption = null
     });
     feltMap.flipY = false;
 
-    const L = 2.3, BEND_T = 0.42, BEND_Y = BEND_T * L, R = (L - BEND_Y) / def.bend;
+    // The cone is built straight; the flop toward the bell is done live in the vertex shader (bendFelt),
+    // so the pointer's up / down lifts or drops the tip on a spring instead of tipping the hat over.
+    const L = 2.3, BEND_Y = 0.42 * L;
     const prof = [];
-    for (let i = 0; i <= 36; i++) { const t = i / 36; prof.push(new THREE.Vector2(0.62 * Math.pow(1 - t, 1.15) + 0.012, t * L)); }
+    for (let i = 0; i <= 40; i++) { const t = i / 40; prof.push(new THREE.Vector2(0.62 * Math.pow(1 - t, 1.15) + 0.012, t * L)); }
     let geo = mergeVertices(new THREE.LatheGeometry(prof, 72));
     const p = geo.attributes.position, v = new THREE.Vector3();
     for (let i = 0; i < p.count; i++) {
       v.fromBufferAttribute(p, i);
-      if (v.y > BEND_Y) { const th = (v.y - BEND_Y) / R, r = R - v.x; v.x = R - r * Math.cos(th); v.y = BEND_Y + r * Math.sin(th); }
-      v.multiplyScalar(1 + 0.025 * Math.sin(v.y * 9 + v.z * 7) * Math.sin(Math.atan2(v.z, v.x) * 5));
+      const t = v.y / L, ang = Math.atan2(v.z, v.x);
+      // felt is never perfect: soft dents, and a crinkle where the cone gathers into the fur
+      let k = 1 + 0.025 * Math.sin(v.y * 9 + v.z * 7) * Math.sin(ang * 5);
+      if (t < 0.14) k += 0.07 * (1 - t / 0.14) * Math.sin(ang * 13 + Math.sin(ang * 3) * 2);
+      v.x *= k; v.z *= k;
       p.setXYZ(i, v.x, v.y, v.z);
     }
     geo.computeVertexNormals();
-
+    const bendU = { uBend: { value: def.bend }, uBendY: { value: BEND_Y }, uLen: { value: L } };
     const hat = new THREE.Group();
-    const felt = new THREE.MeshPhysicalMaterial({ map: feltMap, bumpMap: feltBump, bumpScale: 1.2, roughness: 0.92, sheen: 0.6, sheenRoughness: 0.7,
+    const felt = new THREE.MeshPhysicalMaterial({ shadowSide: THREE.FrontSide, map: feltMap, bumpMap: feltBump, bumpScale: 0.5, roughness: 0.92, sheen: 0.6, sheenRoughness: 0.7,
       sheenColor: new THREE.Color(def.sheen), side: THREE.DoubleSide, envMap: env, envMapIntensity: 0.4 });
+    bendFelt(felt, bendU);
     const cone = new THREE.Mesh(geo, felt); cone.castShadow = true; hat.add(cone);
+    const depth = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking });
+    bendFelt(depth, bendU);
+    cone.customDepthMaterial = depth;   // its shadow bends with it
     const fur = new THREE.Mesh(furGeo, new THREE.MeshStandardMaterial({ map: furMap, roughness: 1, bumpMap: feltBump, bumpScale: 3 }));
     fur.rotation.x = Math.PI / 2; fur.position.y = 0.05; fur.castShadow = true; hat.add(fur);
     const bell = new THREE.Mesh(new THREE.SphereGeometry(0.15, 32, 20), bellMat);
-    bell.position.set(R - R * Math.cos(def.bend) + 0.04, BEND_Y + R * Math.sin(def.bend) - 0.1, 0);
     bell.castShadow = true; hat.add(bell);
+    const placeBell = (a) => { // at the bent tip, wherever the spring has the felt
+      const R = (L - BEND_Y) / Math.max(0.05, a);
+      bell.position.set(R - R * Math.cos(a) + 0.04, BEND_Y + R * Math.sin(a) - 0.1, 0);
+    };
+    placeBell(def.bend);
 
     // the hat stands in its own pool, sunk to half the fur; the pool keeps still while the hat turns
     const holder = new THREE.Group();
     const spin = new THREE.Group();   // yaw (follows the pointer on the middle hat)
     spin.add(hat);
-    hat.rotation.order = "YXZ";
-    hat.rotation.set(-0.05, def.turn, def.lean);
+    // upright on the wood, its fur in the blood: the brim's underside rests on the plank, never through it
+    hat.rotation.set(0, def.turn, 0);
     hat.scale.setScalar(1.25);
-    hat.position.y = -0.1;
+    hat.position.y = 0.105;
     const pool = puddle(blobShape(1.55, 2, 0.02, rnd), 0.03);
     holder.add(pool);
     for (let i = 0; i < 4; i++) { // a few drops close by, each hat its own
@@ -177,7 +216,8 @@ export function createElfShelf(canvas, { interactTarget = canvas, caption = null
       holder.add(puddle(blobShape(r, 2, 0.02, rnd, Math.cos(a) * d, Math.sin(a) * d * 0.6), 0.012 + r * 0.05));
     }
     holder.add(spin);
-    holder.userData = { spin, hat, yaw: 0, wobble: 0 };
+    // the bell's spring: bend (rad) and its speed
+    holder.userData = { spin, hat, yaw: 0, bendU, placeBell, base: def.bend, bend: def.bend, bendV: 0 };
     holder.traverse((o) => { if (o.isMesh) o.userData.holder = holder; });
     return holder;
   }
@@ -187,10 +227,10 @@ export function createElfShelf(canvas, { interactTarget = canvas, caption = null
   // ---- light ----
   const key = new THREE.SpotLight("#ffd9b0", 260, 40, 0.55, 0.6, 1.6);
   key.position.set(-5, 10, 7); key.castShadow = true;
-  key.shadow.mapSize.set(1024, 1024); key.shadow.bias = -0.0004; key.shadow.radius = 5;
+  key.shadow.mapSize.set(1024, 1024); key.shadow.bias = -0.0006; key.shadow.normalBias = 0.04; key.shadow.radius = 5;
   scene.add(key, key.target);
-  const rim = new THREE.SpotLight("#3c6ef0", 380, 40, 0.7, 0.7, 1.6);
-  rim.position.set(7, 4, -7); scene.add(rim, rim.target);
+  const rim = new THREE.SpotLight("#3c6ef0", 150, 40, 0.3, 0.6, 1.6);
+  rim.position.set(6, 6.5, -8); rim.target.position.set(0, 1.4, 0); scene.add(rim, rim.target); // on the felt, off the wood
   scene.add(new THREE.HemisphereLight("#28324a", "#0a0405", 0.45));
 
   // ---- the carousel ----
@@ -229,7 +269,7 @@ export function createElfShelf(canvas, { interactTarget = canvas, caption = null
     const holder = hit.object.userData.holder, k = hats.indexOf(holder);
     const off = wrap(k - pos);
     e.stopImmediatePropagation(); // a hat, not the towers' blast
-    if (Math.abs(off) < 0.5) holder.userData.wobble = 1;  // the middle one shivers
+    if (Math.abs(off) < 0.5) holder.userData.bendV -= 4.5;  // the middle one's bell jumps
     else step(Math.sign(off));
   };
   const onKey = (e) => {
@@ -251,11 +291,11 @@ export function createElfShelf(canvas, { interactTarget = canvas, caption = null
     camera.aspect = w / h;
     // keep the three places in view on a narrow screen: step back a little, and close the places up
     const fit = Math.min(1.8, Math.max(1, 1.25 / camera.aspect));
-    camera.position.set(0, 3.4 * fit, 12.5 * fit);
+    camera.position.set(0, 6.4 * fit, 11.8 * fit);   // looking down on the plank, as uOPL shows it
     const halfW = camera.position.length() * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect;
     slotX = Math.min(SLOT_X, halfW * 0.64);
     sideScale = slotX < SLOT_X ? SIDE_SCALE * Math.max(0.75, slotX / SLOT_X) : SIDE_SCALE;
-    camera.lookAt(0, 0.9, 0);
+    camera.lookAt(0, 0.75, 0.3);
     camera.updateProjectionMatrix();
   }
   const ro = new ResizeObserver(resize); ro.observe(canvas); resize();
@@ -285,16 +325,20 @@ export function createElfShelf(canvas, { interactTarget = canvas, caption = null
         const near = Math.max(0, 1 - Math.hypot(dx, dy * 0.8) / 1.1);
         goal = Math.max(-1.3, Math.min(1.3, dx * 1.6));
         ud.yaw += (goal - ud.yaw) * (1 - Math.exp(-dt * (0.8 + 9 * near * near)));
-        ud.spin.rotation.x = Math.max(-0.18, Math.min(0.12, -dy * 0.25)) * near;
+        // up / down is the bell's: the pointer above lifts the tip, below lets it droop
+        ud.bendGoal = ud.base + Math.max(-0.7, Math.min(0.6, -dy * 0.9)) * near;
       } else {
-        goal = 0.25 * Math.sin(t * 0.6 + k * 1.7); // the others idle, their bells swaying
+        goal = 0.25 * Math.sin(t * 0.6 + k * 1.7); // the others idle
         ud.yaw += (goal - ud.yaw) * (1 - Math.exp(-dt * 1.5));
-        ud.spin.rotation.x *= 1 - Math.min(1, dt * 3);
+        ud.bendGoal = ud.base + 0.06 * Math.sin(t * 0.9 + k * 2.3); // their bells breathing
       }
+      // turning flings the bell: the spring takes the yaw's speed as a kick
+      const yawV = (ud.yaw - (ud.lastYaw ?? ud.yaw)) / Math.max(dt, 1e-3); ud.lastYaw = ud.yaw;
+      ud.bendV += (-(ud.bend - ud.bendGoal) * 42 - ud.bendV * 5.5 + Math.abs(yawV) * 0.9) * dt;
+      ud.bend = Math.max(0.15, Math.min(2.4, ud.bend + ud.bendV * dt));
+      ud.bendU.uBend.value = ud.bend;
+      ud.placeBell(ud.bend);
       ud.spin.rotation.y = ud.yaw;
-      // a touch on the middle hat: a damped shiver
-      if (ud.wobble > 0.001) { ud.wobble *= Math.exp(-dt * 3); ud.spin.rotation.z = Math.sin(t * 28) * 0.08 * ud.wobble; }
-      else ud.spin.rotation.z = 0.02 * Math.sin(t * 1.1 + k);
     });
     if (visible) renderer.render(scene, camera);
   }
