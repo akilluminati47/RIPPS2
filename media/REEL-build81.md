@@ -1,10 +1,14 @@
 # Build 81 reel: shot list
 
-Supersedes [REEL-build80.md](REEL-build80.md) (that reel was never cut): same capture, music bed
-(Slideshow (Daytime), one 108 s loop at 160 BPM) and title cards as the build 66 reel, with build 81 on
-screen. It opens on the **web version** at full 16:9 to draw people in, then the console.
+Supersedes [REEL-build80.md](REEL-build80.md) (that reel was never cut): same capture and title cards as
+the build 66 reel, with build 81 on screen. It opens on the **web version** at full 16:9 to draw people in,
+then shows what that turned into on the console.
 
-## Act 1: the web version (akilluminati47.github.io/RIPPS2), 16:9, on the melody (A)
+**Music, two halves:** the first half (the web version) on **Details** (x-Radar Portable, PSP system
+music, Sony); the second half (the console) on **Slideshow (Daytime)** (Kazumi Totaka, the Wii's News
+Channel, Nintendo), RIPPS2's bgm 1. The user's own copies; the reel goes to YouTube, never into this repo.
+
+## Act 1: the web version (akilluminati47.github.io/RIPPS2), 16:9, on Details
 
 Captured deterministically with the montage harness (Playwright, Chrome on the GPU, virtual clock), so
 every spring and swing is frame exact.
@@ -16,9 +20,12 @@ every spring and swing is frame exact.
 3. **The shelf turns**: Right, Right (Ember, Blood slide in, captions popping), then back Left to RIPPS2.
 4. **Launch Disc**: the PS2 mark flies along the menu to LAUNCH DISC; a click on the towers sets off the
    blast, ripples trailing the pointer.
-5. **Memory Files**: the orbs page, an orbit formation turning; out on a beat to the console.
+5. **Memory Files**: the orbs page, an orbit formation turning.
 
-## Act 2: the console (PCSX2, 640x448/512, RIPPS2 build 81), on the groove (B) and bridge (C)
+**The bridge:** the web picture fades down under a caption, *this is what it turned into...*, and the
+music crosses from Details into Slideshow (Daytime) as the PS2's boot swoop fades up.
+
+## Act 2: the console (PCSX2, 640x512, RIPPS2 build 81), on Slideshow (Daytime)
 
 6. **Boot**: the boot swoop, the towers rising, the first list naming itself: **ALL GAMES** plays as the
    Pop In toast in the big Sleek face.
@@ -36,11 +43,13 @@ every spring and swing is frame exact.
     (public counts, no unlocks claimed), the detail card.
 13. **RIPFLOW** (Memory Files first on the bar), **Memory Files** orbs, **Launch Disc** with an audio CD's
     spectrum (the CD test build, playing the reel's own track, synced).
+14. **The R3 wiggle**: a quick-cut montage, a beat or half a beat each, of the right stick wiggling the
+    tilt on every theme and page: RIPPS2's info page, Adapt's case and info sheet, Adapt Rx, RIPgrid's
+    chosen cover, RIPFLOW.
 
 ## Act 3: the build to the hit (A'), then the end card
 
-14. The towers as the spectrum analyser land full screen on the hit.
-15. **End card**: the blue-hat mark, "Kill it: build 81", the download, the theme kit and the Discord.
+15. The towers as the spectrum analyser land full screen on the hit.
+16. **End card**: the blue-hat mark, "Kill it: build 81", the download, the theme kit and the Discord.
 
-Captions sit only beside a picture, never over a full-screen shot. Music: the user's own copy of
-Slideshow (Daytime) (Kazumi Totaka, Nintendo); the reel goes to YouTube, never into this repo.
+Captions sit only beside a picture, never over a full-screen shot (the bridge's line is the one card).
