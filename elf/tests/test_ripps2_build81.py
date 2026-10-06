@@ -67,6 +67,9 @@ lf = th[th.index('static void thmLoadFonts('):]
 lf = lf[:lf.index('\n}\n')]
 if 'if (theme->fonts[14] == theme->fonts[0])' not in lf or 'fntLoadFile("builtin:ripps2sleekbold", size)' not in lf:
     fail.append('a theme without font14 must get RIPPS2 Sleek Bold for the view word')
+# --- the Pop In toast in RIPPS2's own face on every theme; L3's word keeps the theme's font14
+if 'fntLoadFile("builtin:ripps2sleekbold", 64)' not in ui or 'viewWordOwnFont = 1;' not in st or 'viewWordOwnFont = 0;' not in ui:
+    fail.append('the Pop In toast must draw in RIPPS2 Sleek Bold 64 on every theme, L3 in font14')
 # --- RIPFLOW: Memory Files first, unless the user picked an order
 if 'category_order=memory_files_first' not in cf:
     fail.append('RIPFLOW must default to Memory Files first')
