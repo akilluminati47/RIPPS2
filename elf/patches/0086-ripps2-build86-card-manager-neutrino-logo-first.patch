@@ -25,10 +25,10 @@ index 7a1e9ae..c14a556 100644
  // ---- Boot swoop and launch light-up (ripps2bg.c) ----
 diff --git a/src/ripps2card.c b/src/ripps2card.c
 new file mode 100644
-index 0000000..3cb916a
+index 0000000..2a07001
 --- /dev/null
 +++ b/src/ripps2card.c
-@@ -0,0 +1,593 @@
+@@ -0,0 +1,604 @@
 +/*
 +  Copyright 2026, RIPPS2 contributors
 +  Licenced under Academic Free License version 3.0
@@ -299,6 +299,16 @@ index 0000000..3cb916a
 +    return 1;
 +}
 +
++static int cmFileSize(const char *path)
++{
++    int fd = open(path, O_RDONLY), size;
++    if (fd < 0)
++        return -1;
++    size = (int)lseek(fd, 0, SEEK_END);
++    close(fd);
++    return size;
++}
++
 +// The whole card into an 8 MB VMC, by genvmc, which reads the card itself
 +static void cmBackUp(char *toast, int tsize)
 +{
@@ -337,7 +347,12 @@ index 0000000..3cb916a
 +            st.VMC_status = 1;
 +        if (st.VMC_status == 1)
 +            started = 1;
-+        else if (started || frames > 120)
++        else if (started)
++            break;
++        else if (st.VMC_progress == 100 && cmFileSize(path) == 8 * 1024 * 1024) {
++            started = 1; // done before the first look (a fast card): the new file says so
++            break;
++        } else if (frames > 180)
 +            break;
 +        readPads();
 +        if (!aborted && getKeyOn(gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE)) {
@@ -349,11 +364,7 @@ index 0000000..3cb916a
 +    }
 +    ioBlockOps(0);
 +    // and the file is the whole card: 8 MB
-+    fd = open(path, O_RDONLY);
-+    int size = fd >= 0 ? (int)lseek(fd, 0, SEEK_END) : -1;
-+    if (fd >= 0)
-+        close(fd);
-+    int ok = 0;
++    int size = cmFileSize(path), ok = 0;
 +    if (aborted)
 +        snprintf(toast, tsize, "BACKUP STOPPED");
 +    else if (!started)
