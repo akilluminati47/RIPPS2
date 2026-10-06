@@ -1,5 +1,17 @@
 # RIPPS2 changelog
 
+## Build 82 (testing), changes since build 81
+
+### HD text fixed
+- **720p and 1080i text is the right size again.** Since build 75 drew those modes 640 wide for the GS to stretch, the fonts took the pixel shape upside down: text came out four times too wide at 720p (two and a quarter at 1080i) and spilled over every panel. Now it matches 480p, as it should.
+
+### RIPgrid
+- **Turn the case over.** Hold the right stick to one side for 2 seconds and the chosen case flips to its back cover, the way you lean. It stays turned on the grid when you move on and when you come back; hold again to turn it home. The back cover is asked for as soon as the front is in, and the flip waits for it.
+- **Pages slide.** The grid moves by whole pages now, and a new page slides in as the old one slides away, eased like RIPFLOW's carousel (off when Coverflow's animation speed is 0).
+
+### US spellings
+- What the menus say is in US English: canceled, color, license, behavior, center.
+
 ## Build 81 (testing), changes since build 80
 
 ### Game list

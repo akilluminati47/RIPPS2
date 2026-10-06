@@ -1,0 +1,431 @@
+diff --git a/include/ripps2.h b/include/ripps2.h
+index 2889d40..046b088 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -109,6 +109,8 @@ void ripps2RenderMemory(void);
+ void ripps2UpdateTilt(void);            // once per info frame: ease the view after the right stick
+ void ripps2TiltBegin(int cx, int cy, int scalePct); // tilt what is drawn next about (cx, cy), theme coords
+ void ripps2TiltEnd(void);
++void ripps2TiltBeginTurn(int cx, int cy, int scalePct, float turn); // build 82: the tilt plus a turn (radians) about y
++int ripps2StickSide(void);                                          // build 82: the right stick held left / right: -1, 0, 1
+ 
+ // ---- Storage art panel glass (theme element Ripps2PanelGlass) ----
+ void ripps2DrawPanelGlass(int x, int y, int w, int h, int hasItem);
+diff --git a/lng_tmpl/_base.yml b/lng_tmpl/_base.yml
+index e529176..58304d3 100644
+--- a/lng_tmpl/_base.yml
++++ b/lng_tmpl/_base.yml
+@@ -430,7 +430,7 @@ gui_strings:
+ - label: NET_UPDATE_DONE
+   string: Update completed.
+ - label: NET_UPDATE_CANCELLED
+-  string: Update cancelled.
++  string: Update canceled.
+ - label: CONFIRMATION_SETTINGS_UPDATE
+   string: Download settings from the network?
+ - label: CUSTOMIZED_SETTINGS
+@@ -1368,7 +1368,7 @@ gui_strings:
+ - label: EMBER_SHADING
+   string: Ember Shading
+ - label: HINT_EMBER_SHADING
+-  string: "Ember colour depth: 15-bit, or 24-bit (experimental). Written to the launched device's EMBER/settings.txt. A per-game value overrides this."
++  string: "Ember color depth: 15-bit, or 24-bit (experimental). Written to the launched device's EMBER/settings.txt. A per-game value overrides this."
+ - label: EMBER_CONTROLLER
+   string: Ember Controller
+ - label: HINT_EMBER_CONTROLLER
+diff --git a/src/renderman.c b/src/renderman.c
+index 3673d80..1309b31 100644
+--- a/src/renderman.c
++++ b/src/renderman.c
+@@ -69,9 +69,13 @@ static struct rm_mode rm_mode_table[NUM_RM_VMODES] = {
+     // normal queue, and the GS's display circuit stretches it to 1280 / 1920 (MAGH, which gsKit's
+     // init_screen derives from DW / Width): every animation at full detail, every vertical line kept
+     // (720 progressive lines; 1080i shows 540 per field). 16-bit dithered colour, as before, leaves
+-    // half of VRAM for textures. PAR: a pixel is 2 wide (720p), 3 wide by 2 tall per field (1080i).
+-    {GS_MODE_DTV_720P,   31,  640,  720,  1, 1, GS_NONINTERLACED, GS_FRAME, RM_ARATIO_16_9, 1,  2}, // HDTV720P@60Hz
+-    {GS_MODE_DTV_1080I,  31,  640, 1080,  1, 1, GS_INTERLACED,    GS_FRAME, RM_ARATIO_16_9, 4,  3}, // HDTV1080I@60Hz
++    // half of VRAM for textures. PAR is PAR2 / PAR1, a pixel's height over its width (fntsys scales a
++    // glyph's width by height scale x PAR): a 720p pixel is twice as wide as tall (1/2); a 1080i one
++    // 1.5 times as wide as a field line is tall (1/3, and rmGetPAR doubles it for the FRAME field).
++    // Build 82: these were 2/1 and 3/4, upside down, so HD text came out four times (720p) and two
++    // and a quarter times (1080i) too wide and ran off every panel.
++    {GS_MODE_DTV_720P,   31,  640,  720,  1, 1, GS_NONINTERLACED, GS_FRAME, RM_ARATIO_16_9, 2,  1}, // HDTV720P@60Hz
++    {GS_MODE_DTV_1080I,  31,  640, 1080,  1, 1, GS_INTERLACED,    GS_FRAME, RM_ARATIO_16_9, 3,  1}, // HDTV1080I@60Hz
+     // 24 bit color mode for older systems (non-interlaced, low resolution)
+     {GS_MODE_PAL,        16,  640,  256,  1, 4, GS_NONINTERLACED, GS_FRAME, RM_ARATIO_4_3,  8, 15}, // PAL@50Hz
+     {GS_MODE_NTSC,       16,  640,  224,  1, 4, GS_NONINTERLACED, GS_FRAME, RM_ARATIO_4_3,  7, 15}, // NTSC@60Hz
+diff --git a/src/ripps2about.c b/src/ripps2about.c
+index 70dc0a7..fdde255 100644
+--- a/src/ripps2about.c
++++ b/src/ripps2about.c
+@@ -74,7 +74,7 @@ static const ab_row_t abRows[] = {
+     {'G', NULL},
+     {'H', "COVER ART DOWNLOAD"},
+     {'T', "BearSSL by Thomas Pornin"},
+-    {'S', "the PS2's own HTTPS, MIT licence"},
++    {'S', "the PS2's own HTTPS, MIT license"},
+     {'T', "ps2-covers by xlenore"},
+     {'S', "the covers it fetches, as ORBIT's launcher does"},
+     {'G', NULL},
+@@ -110,7 +110,7 @@ static const ab_row_t abRows[] = {
+     {'T', "wLaunchELF by the ps2homebrew team"},
+     {'S', "the file manager RIPPS2's browser and settings grid follow"},
+     {'T', "wLaunchELF R3Z by NathanNeurotic"},
+-    {'S', "behaviour reference"},
++    {'S', "behavior reference"},
+     {'T', "Apollo Save Tool by bucanero"},
+     {'S', "the save tool reference: PSU export and import, card images"},
+     {'T', "ps2sdk by the ps2dev team"},
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index 6e1218f..f72e797 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -1468,7 +1468,7 @@ static void fbRunInstaller(void)
+ static void fbOrbitsPage(void)
+ {
+     static const char *const rowName[4] = {"CYCLE", "SPEED", "PATH LINES", "HEIGHT"};
+-    static const char *const values[4][4] = {{"OFF", "30 S", "1 MIN", "3 MIN"}, {"SLOW", "NORMAL", "FAST", NULL}, {"WITH L2", "FAINT", "ALWAYS", NULL}, {"CENTRE", "LOW", "HIGH", NULL}};
++    static const char *const values[4][4] = {{"OFF", "30 S", "1 MIN", "3 MIN"}, {"SLOW", "NORMAL", "FAST", NULL}, {"WITH L2", "FAINT", "ALWAYS", NULL}, {"CENTER", "LOW", "HIGH", NULL}};
+     static const int valueCount[4] = {4, 3, 3, 3};
+     int *setting[4] = {&gRipps2OrbCycle, &gRipps2OrbSpeed, &gRipps2OrbPaths, &gRipps2OrbHeight};
+     int formations = ripps2FormationCount(), rows = 4 + formations, sel = 0, changed = 0, i;
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index a6aae66..8fc178e 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -1385,3 +1385,17 @@ void ripps2TiltEnd(void)
+ {
+     rmSetTilt(0, 0, 0, 0.0f, 0.0f);
+ }
++
++// build 82: the stick's tilt plus a turn of its own about the vertical axis (RIPgrid's case flip)
++void ripps2TiltBeginTurn(int cx, int cy, int scalePct, float turn)
++{
++    rmSetTilt(1, cx, cy, tiltYaw * scalePct / 100.0f + turn, tiltPitch * scalePct / 100.0f);
++}
++
++// build 82: which way the right stick is held, -1 / 0 / 1 (well past the tilt's own range)
++int ripps2StickSide(void)
++{
++    int sx, sy;
++    padGetRightStick(&sx, &sy);
++    return sx > 100 ? 1 : sx < -100 ? -1 : 0;
++}
+diff --git a/src/themes.c b/src/themes.c
+index b478987..a9f90ec 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -2328,12 +2328,125 @@ static void drawCoverFlow(struct menu_list *menu, struct submenu_list *item, con
+ // The game list as a page of covers: <name>_columns across (default 4), <name>_rows down (default 2),
+ // <name>_spacing pixels between them (default 14). x is the grid's horizontal centre (POS_MID by
+ // default), y the top of its first row, width/height one cover; overlay=, default= and reflection=
+-// work as on ItemCover. The selection is the cover drawn larger, framed, and last; the page scrolls by
+-// whole rows to keep it in view. Left/Right step one cover, Up/Down one row, and past the top or
+-// bottom row they switch drive (menusys.c, menuGridStep).
++// work as on ItemCover. The selection is the cover drawn larger, framed, and last. Left/Right step one
++// cover, Up/Down one row, and past the top or bottom row they switch drive (menusys.c, menuGridStep).
++// Build 82: the grid shows whole pages, and moving to another page slides the old one away and the new
++// one in, a carousel eased as RIPFLOW's is; the chosen case can be flipped over to its back cover.
+ 
+-static int gridTop;              // the first row shown
++static int gridTop;              // the first row shown (a whole page: a multiple of the rows)
+ static const void *gridTopMenu;  // ... for this menu
++static int gridSlideFrom = -1;   // build 82: the page sliding away (its first row), -1 when still
++static int gridSlideDir, gridSlideFrames;
++static clock_t gridSlideStart;
++#define GRID_SLIDE_MS 320
++// build 82: the back covers (COV2), a cache of their own for each Grid element. Two places: a theme
++// switch builds the new theme before it frees the old, so both grids live for a moment.
++static struct
++{
++    const void *elem;
++    mutable_image_t *img;
++} gridBacks[2];
++
++static mutable_image_t *gridBackFor(const void *elem)
++{
++    int i;
++    for (i = 0; i < 2; i++)
++        if (gridBacks[i].elem == elem)
++            return gridBacks[i].img;
++    return NULL;
++}
++
++// build 82: the back of the case. Hold the right stick to one side for 2 s and the chosen case turns
++// over to its back cover, the way the stick leans; it stays turned on the grid when the selection moves
++// on and when it comes back, until the stick turns it home. Only once its back cover has loaded.
++#define GRID_FLIPS  64
++#define FLIP_HOLD_S 2.0f
++#define FLIP_TURN_S 0.55f
++static struct
++{
++    const void *item;
++    float pos;  // 0 front .. 1 back
++    int target; // where it is turning to
++    int side;   // the way it turns, +1 / -1
++} gridFlips[GRID_FLIPS];
++static int gridFlipNext;
++static const void *flipHoldItem;
++static int flipHoldSide, flipHoldDone;
++static clock_t flipHoldSince, flipLast;
++
++static int gridFlipFind(const void *item, int make)
++{
++    int i;
++    for (i = 0; i < GRID_FLIPS; i++)
++        if (gridFlips[i].item == item)
++            return i;
++    if (!make)
++        return -1;
++    for (i = 0; i < GRID_FLIPS; i++) // a free slot, else one that is at rest at the front
++        if (gridFlips[i].item == NULL || (gridFlips[i].target == 0 && gridFlips[i].pos <= 0.0f))
++            break;
++    if (i == GRID_FLIPS)
++        i = gridFlipNext++ % GRID_FLIPS;
++    gridFlips[i].item = item;
++    gridFlips[i].pos = 0.0f;
++    gridFlips[i].target = 0;
++    gridFlips[i].side = 1;
++    return i;
++}
++
++// a game's back cover if it is in memory (asking for it if not), else NULL
++static GSTEXTURE *gridBackTexture(const void *elem, item_list_t *src, struct submenu_list *it, int priority)
++{
++    mutable_image_t *gb = gridBackFor(elem);
++    GSTEXTURE *t = gb != NULL ? getGameImageTextureEx(gb->cache, src, &it->item, priority) : NULL;
++    return t != NULL && t->Mem != NULL ? t : NULL;
++}
++
++// the turn (radians) a case is drawn at: 0 front, +-pi its back
++static float gridFlipTurn(const void *item)
++{
++    int k = gridFlipFind(item, 0);
++    if (k < 0 || gridFlips[k].pos <= 0.0f)
++        return 0.0f;
++    float p = gridFlips[k].pos, e = p * p * (3.0f - 2.0f * p);
++    return gridFlips[k].side * 3.14159265f * e;
++}
++
++// once a frame: every case eases toward the side it is turning to; the chosen one turns over when the
++// stick has been held to one side for FLIP_HOLD_S and its back cover is there
++static void gridFlipUpdate(const void *selected, int backReady)
++{
++    clock_t now = clock();
++    float dt = flipLast != 0 ? (float)(now - flipLast) / (float)CLOCKS_PER_SEC : 0.0f;
++    int i, side = ripps2StickSide();
++    flipLast = now;
++    if (dt < 0.0f || dt > 0.25f)
++        dt = 0.016f;
++    for (i = 0; i < GRID_FLIPS; i++) {
++        if (gridFlips[i].item == NULL)
++            continue;
++        float goal = (float)gridFlips[i].target, step = dt / FLIP_TURN_S;
++        gridFlips[i].pos += gridFlips[i].pos < goal ? fminf(step, goal - gridFlips[i].pos) : -fminf(step, gridFlips[i].pos - goal);
++    }
++    if (side == 0 || selected == NULL || !backReady) {
++        flipHoldItem = NULL;
++        return;
++    }
++    if (flipHoldItem != selected || flipHoldSide != side) {
++        flipHoldItem = selected;
++        flipHoldSide = side;
++        flipHoldSince = now;
++        flipHoldDone = 0;
++        return;
++    }
++    if (!flipHoldDone && (float)(now - flipHoldSince) / (float)CLOCKS_PER_SEC >= FLIP_HOLD_S) {
++        int k = gridFlipFind(selected, 1);
++        gridFlips[k].target = !gridFlips[k].target;
++        gridFlips[k].side = -side; // the leaning side goes away first, as the tilt sends it
++        flipHoldDone = 1;          // let go and hold again to turn it back
++        sfxPlay(SFX_PAGE_IN);
++    }
++}
+ 
+ int thmGridColumns(void)
+ {
+@@ -2370,7 +2483,7 @@ static float gridFadeIn(const void *item, const void *tex)
+ }
+ 
+ static void drawGridCover(struct menu_list *menu, struct submenu_list *it, struct theme_element *elem, item_list_t *src,
+-                          int cx, int cy, int w, int h, int selected)
++                          int cx, int cy, int w, int h, int selected, GSTEXTURE *back)
+ {
+     theme_element_t *coverElem = thmGetElemForItem(menu, it, elem);
+     mutable_image_t *img = (mutable_image_t *)coverElem->extended;
+@@ -2378,6 +2491,11 @@ static void drawGridCover(struct menu_list *menu, struct submenu_list *it, struc
+ 
+     if (img == NULL)
+         return;
++    if (back != NULL) { // build 82: a turned case shows its back cover, the art alone
++        u64 col = selected ? GS_SETREG_RGBA(0x80, 0x80, 0x80, 0x80) : GS_SETREG_RGBA(0x70, 0x70, 0x70, 0x80);
++        rmDrawPixmap(back, cx, cy, ALIGN_CENTER, w, h, SCALING_RATIO, col, elem->reflection && selected);
++        return;
++    }
+     texture = getGameImageTextureEx(img->cache, src, &it->item, selected);
+     if (texture == NULL || texture->Mem == NULL) {
+         if (img->defaultTexture != NULL)
+@@ -2450,47 +2568,125 @@ static void drawGrid(struct menu_list *menu, struct submenu_list *item, config_s
+     if (p == NULL)
+         return;
+ 
+-    // the page keeps the selection's row in view, moving by whole rows
++    // build 82: the grid shows whole pages; the page holding the selection, sliding in when it changes
++    int page = (cur / cols) / rows * rows;
+     if (gridTopMenu != menu) {
+         gridTopMenu = menu;
+-        gridTop = 0;
++        gridTop = page;
++        gridSlideFrom = -1;
++    }
++    if (page != gridTop) {
++        if (gCoverflowAnimSpeed > 0) { // RIPFLOW's own switch: 0 means no slides anywhere
++            gridSlideFrom = gridTop;
++            gridSlideDir = page > gridTop ? 1 : -1;
++            gridSlideStart = clock();
++            gridSlideFrames = 0;
++        }
++        gridTop = page;
++    }
++    float slide = 1.0f; // 0 the old page in place .. 1 the new one in place
++    if (gridSlideFrom >= 0) {
++        clock_t dur = (clock_t)(GRID_SLIDE_MS * (CLOCKS_PER_SEC / 1000.0f)), el = clock() - gridSlideStart;
++        float t = el < 0 ? 1.0f : (float)el / (float)(dur > 0 ? dur : 1);
++        if (t >= 1.0f && gridSlideFrames == 0)
++            t = 0.5f; // at least one frame of the slide after a hitch at its start (as RIPFLOW does)
++        gridSlideFrames++;
++        if (t >= 1.0f)
++            gridSlideFrom = -1;
++        else
++            slide = 1.0f - powf(1.0f - t, 3.0f);
+     }
+-    if (cur / cols < gridTop)
+-        gridTop = cur / cols;
+-    else if (cur / cols >= gridTop + rows)
+-        gridTop = cur / cols - rows + 1;
+     for (first = menu->item->submenu, i = 0; first != NULL && i < gridTop * cols; i++)
+         first = first->next;
+ 
+     int cellW = rmWideScale(w), stepX = cellW + gap, stepY = h + gap;
+     int left = elem->posX - (cols * stepX - gap) / 2 + cellW / 2;
+     int top = elem->posY + h / 2;
++    int slideW = cols * stepX + 2 * gap; // a page and a gap: the old page clears the frame as the new arrives
++    int shift = gridSlideFrom >= 0 ? (int)(gridSlideDir * slideW * (1.0f - slide)) : 0;
+     int selX = -1, selY = 0;
+ 
++    // build 82: the back covers. The chosen game's is asked for as soon as its front is there; a turned
++    // case's stays wanted while it shows. The chosen case turns over on a 2 s hold of the stick.
++    GSTEXTURE *selBack = NULL;
++    if (gridBackFor(elem) != NULL && !item->item.isFolder) {
++        theme_element_t *ce = thmGetElemForItem(menu, item, elem);
++        mutable_image_t *front = ce != NULL ? (mutable_image_t *)ce->extended : NULL;
++        GSTEXTURE *ft = front != NULL ? getGameImageTextureEx(front->cache, src, &item->item, 1) : NULL;
++        if (ft != NULL && ft->Mem != NULL)
++            selBack = gridBackTexture(elem, src, item, 1);
++    }
++    gridFlipUpdate(item->item.isFolder ? NULL : item, selBack != NULL);
++
+     // build 80: with tilt=1 only the chosen cover tips with the right stick, about its own centre; the
+     // rest of the page holds still (the element-wide tilt menusys set up is put aside for them)
+     if (elem->tilt)
+         ripps2TiltEnd();
++    if (gridSlideFrom >= 0) { // the old page on its way out
++        struct submenu_list *old;
++        for (old = menu->item->submenu, i = 0; old != NULL && i < gridSlideFrom * cols; i++)
++            old = old->next;
++        int oshift = shift - gridSlideDir * slideW;
++        for (p = old, k = 0; p != NULL && k < cols * rows; p = p->next, k++)
++            if (!p->item.isFolder && p != item)
++                drawGridCover(menu, p, elem, src, left + (k % cols) * stepX + oshift, top + (k / cols) * stepY, w, h, 0,
++                              fabsf(gridFlipTurn(p)) > 1.5708f ? gridBackTexture(elem, src, p, 0) : NULL);
++    }
+     for (p = first, k = 0; p != NULL && k < cols * rows; p = p->next, k++) {
+         if (p == item) {
+-            selX = left + (k % cols) * stepX;
++            selX = left + (k % cols) * stepX + shift;
+             selY = top + (k / cols) * stepY;
+             continue;
+         }
+-        if (!p->item.isFolder)
+-            drawGridCover(menu, p, elem, src, left + (k % cols) * stepX, top + (k / cols) * stepY, w, h, 0);
++        if (p->item.isFolder)
++            continue;
++        float turn = gridFlipTurn(p);
++        GSTEXTURE *back = fabsf(turn) > 0.0f ? gridBackTexture(elem, src, p, 0) : NULL; // a turned case keeps its back
++        int cx = left + (k % cols) * stepX + shift, cy = top + (k / cols) * stepY;
++        if (back != NULL && fabsf(turn) < 3.1415f) { // still turning: about its own centre
++            int seeBack = fabsf(turn) > 1.5708f;
++            ripps2TiltBeginTurn(cx, cy, 0, seeBack ? turn - (turn > 0 ? 3.14159265f : -3.14159265f) : turn);
++            drawGridCover(menu, p, elem, src, cx, cy, w, h, 0, seeBack ? back : NULL);
++            ripps2TiltEnd();
++        } else
++            drawGridCover(menu, p, elem, src, cx, cy, w, h, 0, back);
+     }
+     if (selX >= 0 && !item->item.isFolder) {
+         int sw = w * 112 / 100, sh = h * 112 / 100;
+-        if (elem->tilt)
+-            ripps2TiltBegin(selX, selY, elem->tiltScale);
++        float turn = gridFlipTurn(item);
++        if (selBack == NULL && fabsf(turn) > 1.5708f)
++            turn = 0.0f; // turned, but its back is not in memory yet: front-on until it is
++        int seeBack = selBack != NULL && fabsf(turn) > 1.5708f;
++        float drawTurn = seeBack ? turn - (turn > 0 ? 3.14159265f : -3.14159265f) : turn;
++        if (elem->tilt || turn != 0.0f)
++            ripps2TiltBeginTurn(selX, selY, elem->tilt ? elem->tiltScale : 0, drawTurn);
+         drawGridGlow(selX, selY, rmWideScale(sw), sh);
+-        drawGridCover(menu, item, elem, src, selX, selY, sw, sh, 1);
+-        if (elem->tilt)
++        drawGridCover(menu, item, elem, src, selX, selY, sw, sh, 1, seeBack ? selBack : NULL);
++        if (elem->tilt || turn != 0.0f)
+             ripps2TiltEnd();
+     }
+ }
+ 
++static void endGrid(struct theme_element *elem)
++{
++    int i;
++    for (i = 0; i < 2; i++)
++        if (gridBacks[i].elem == elem) {
++            if (gridBacks[i].img != NULL) {
++                if (gridBacks[i].img->cache && !gridBacks[i].img->cacheLinked)
++                    cacheDestroyCache(gridBacks[i].img->cache);
++                free(gridBacks[i].img);
++            }
++            gridBacks[i].elem = NULL;
++            gridBacks[i].img = NULL;
++        }
++    gridSlideFrom = -1;
++    gridTopMenu = NULL;
++    memset(gridFlips, 0, sizeof(gridFlips)); // the list goes with the theme; so do its turned cases
++    flipHoldItem = NULL;
++    endMutableImage(elem);
++}
++
+ static void initGrid(const char *themePath, config_set_t *themeConfig, theme_t *theme, theme_element_t *elem, const char *name)
+ {
+     char key[64];
+@@ -2509,8 +2705,8 @@ static void initGrid(const char *themePath, config_set_t *themeConfig, theme_t *
+     if (gap < 0 || gap > 64)
+         gap = 14;
+ 
+-    // enough cache slots for a page and the row after it
+-    int slots = cols * rows + cols;
++    // build 82: enough cache slots for two pages (one slides out as the next slides in)
++    int slots = 2 * cols * rows;
+     if (slots < COVER_CACHE_SLOTS)
+         slots = COVER_CACHE_SLOTS;
+     mutable_image_t *mutableImage = initMutableImage(themePath, themeConfig, theme, name, elem->type, "COV", slots, NULL, NULL);
+@@ -2519,6 +2715,12 @@ static void initGrid(const char *themePath, config_set_t *themeConfig, theme_t *
+ 
+     if (mutableImage && mutableImage->cache) {
+         elem->drawElem = &drawGrid;
++        elem->endElem = &endGrid;
++        int slot = gridBacks[0].elem == NULL ? 0 : gridBacks[1].elem == NULL ? 1 : -1;
++        if (slot >= 0) { // build 82: the back covers, for the flip
++            gridBacks[slot].img = initMutableImage(themePath, themeConfig, theme, name, elem->type, "COV2", cols * rows, NULL, NULL);
++            gridBacks[slot].elem = gridBacks[slot].img != NULL ? elem : NULL;
++        }
+         if (!theme->grid) {
+             theme->grid = elem;
+             theme->gridColumns = cols;

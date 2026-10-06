@@ -82,7 +82,7 @@ if '.inf' not in ra or 'free(games)' not in acct or 'KEY_START' not in acct:
 # --- the grid: only the chosen cover tips
 g = th[th.index('static void drawGrid(struct menu_list'):]
 g = g[:g.index('\n}\n')]
-if g.count('ripps2TiltBegin(selX, selY') != 1 or 'ripps2TiltEnd();' not in g:
+if g.count('ripps2TiltBegin(selX, selY') + g.count('ripps2TiltBeginTurn(selX, selY') != 1 or 'ripps2TiltEnd();' not in g:  # build 82: the turn variant
     fail.append('on a Grid only the chosen cover may tilt')
 
 print('\n'.join(fail) or 'build80: STATUS, settings moves, Pop In, source button, account, grid tilt OK')
