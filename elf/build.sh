@@ -95,6 +95,13 @@ make clean
 # plus achievements; telemetry stays off until the user turns it on (Achievements in the main menu)
 make LOCALVERSION=RIPPS2 DIRTY= RETROACHIEVEMENTS=1 ${RIPPS2_MAKE_FLAGS:-} release
 
+# build 87: ee_core's room. Its stack is what ram84 leaves above .bss (ee_core/linkfile refuses under 3 KB);
+# the log shows how much a change to the in-game code took
+EE_NM="$(command -v mips64r5900el-ps2-elf-nm || true)"
+if [ -n "$EE_NM" ] && [ -f ee_core/ee_core.elf ]; then
+  "$EE_NM" ee_core/ee_core.elf | grep -E ' (_end_bss|_stack|_stack_size)$' | sed 's/^/ee_core: /' || true
+fi
+
 mkdir -p "$OUT"
 ELF="$(ls RIPTOPL-*.ELF | head -n1)"
 cp -f "$ELF" "$OUT/RIPPS2.elf"

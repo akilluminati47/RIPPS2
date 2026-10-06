@@ -18,7 +18,7 @@
 
 ### PS1 games on a real console
 - **A launch report.** Just before POPSTARTER or Ember takes over, RIPPS2 writes what it is about to do to `mc0:/RIPPS2/LAUNCH.TXT`: the file it is starting (its size and CRC, which tell which version it is), its arguments, Sony's POPS files or Ember's BIOS beside it, both cards' POPSTARTER folders, and the settings that steer it. A PS1 game that will not start says nothing on screen, and PCSX2 starts them fine, so this file is how a tester can show us what the console saw: open it in Memory Files, or post a photo.
-- **POPS files, asked about first.** On USB, iLink, MX4SIO, exFAT HDD and MMCE, a POPSTARTER launch without POPS.ELF and POPS_IOX.PAK (the PS1 emulator from your own console) in the game's POPS folder now says so before anything is written, instead of going to a black screen. START launches anyway.
+- **POPS files, asked about first.** On USB, iLink, MX4SIO, exFAT HDD and MMCE, a POPSTARTER launch without POPS.ELF and POPS_IOX.PAK (the PS1 emulator from your own console) in the game's POPS folder now says so before the memory card is prepared, instead of going to a black screen. START launches anyway.
 
 ### Video modes
 - **The 704-wide modes draw in one pass**, 16-bit like the HD modes. They were the last on gsKit's two-pass hires renderer, the one RIPPS2's towers overran in HD: confirming one, or letting the prompt time out, could freeze the console. The list no longer says HIRES.
