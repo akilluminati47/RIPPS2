@@ -1,3 +1,16 @@
+diff --git a/include/fntsys.h b/include/fntsys.h
+index 1ad3499..c727dd4 100644
+--- a/include/fntsys.h
++++ b/include/fntsys.h
+@@ -47,4 +47,8 @@ void fntSetLineHeight(int height); // RIPPS2: multi-line text line step, 0 = MEN
+  * We can't use the height for alignment, as the horizontal center would depends of the contained text itself */
+ int fntCalcDimensions(int id, const char *str);
+ 
++/** RIPPS2 build 83: how far below a string's y (as passed to fntRenderString with `aligned`) the middle of
++ * the face's capitals sits, in unscaled units. Centre text on a row by drawing it at rowMiddle - this. */
++int fntCenterOffset(int id, short aligned);
++
+ #endif
 diff --git a/lng_tmpl/_base.yml b/lng_tmpl/_base.yml
 index 58304d3..65ad7d8 100644
 --- a/lng_tmpl/_base.yml
@@ -84,6 +97,41 @@ index e9f85c3..2b7253b 100644
      {UI_SPACER},
      {UI_ENUM, CFG_FAVMODE, 1, 1, -1, 0, 0, {.intvalue = {0, 0}}},
      {UI_BREAK},
+diff --git a/src/fntsys.c b/src/fntsys.c
+index de06c97..a759a49 100644
+--- a/src/fntsys.c
++++ b/src/fntsys.c
+@@ -1016,6 +1016,30 @@ void fntFitString(int id, char *string, size_t width)
+     }
+ }
+ 
++// RIPPS2 build 83: the capitals' centreline below y. fntRenderString puts the baseline (fontSize - 2) below y
++// (half of fontSize - 4 with ALIGN_VCENTER), and a capital H stands bitmap_top above the baseline, so the
++// middle of the capitals is the baseline less half of that: measured from the face itself, whatever it is.
++int fntCenterOffset(int id, short aligned)
++{
++    int size, base, cap = 0;
++
++    if (id < 0 || id >= FNT_MAX_COUNT)
++        return 0;
++    fntLock();
++    font_t *font = &fonts[id];
++    size = font->fontSize;
++    if (font->isValid) {
++        fnt_glyph_cache_entry_t *glyph = fntCacheGlyph(font, 'H');
++        if (glyph != NULL && glyph->isValid)
++            cap = rmUnScaleY(-glyph->oy);
++    }
++    fntUnlock();
++    if (cap <= 0)
++        cap = size * 7 / 10; // a face with no H: a typical cap height
++    base = (aligned & ALIGN_VCENTER) ? (size - 4) / 2 : size - 2;
++    return base - cap / 2;
++}
++
+ int fntCalcDimensions(int id, const char *str)
+ {
+     int w;
 diff --git a/src/opl.c b/src/opl.c
 index 444f710..333519c 100644
 --- a/src/opl.c
@@ -266,3 +314,40 @@ index 21b39e6..48bfb86 100644
          }
          {
              int hx = RA_X - 30, hy = 456;
+diff --git a/src/themes.c b/src/themes.c
+index 580389d..9b50dfb 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -3249,8 +3249,10 @@ static void drawItemsList(struct menu_list *menu, struct submenu_list *item, con
+         // RIPPS2: rows on the theme's pitch (item_height), each title centred in its row
+         int rowStep = elem->itemHeight > 0 ? elem->itemHeight : MENU_ITEM_HEIGHT;
+         int rowTop = posY;
+-        // RIPPS2: +3 puts the capitals in the middle of the highlight bar (measured on screen)
++        // RIPPS2: icons where they always were; the title (build 83) centred on its row by the font's own
++        // centreline, so any theme's face sits in the middle of the highlight bar with nothing to adjust
+         posY = rowTop + (rowStep - MENU_ITEM_HEIGHT) / 2 + 3;
++        int textDy = rowStep / 2 - fntCenterOffset(elem->font, elem->aligned) - (posY - rowTop);
+         while (ps && !itemsList->hidden && (others++ < itemsList->displayedItems)) {
+             if (ps == item) {
+                 color = gTheme->selTextColor;
+@@ -3289,16 +3291,16 @@ static void drawItemsList(struct menu_list *menu, struct submenu_list *item, con
+                     rmDrawPixmap(&itemsList->decoratorImage->defaultTexture->source, posX, posY, elem->aligned, DECORATOR_SIZE, DECORATOR_SIZE, elem->scaled, gDefaultCol, 0);
+ 
+                 if (elem->textRoom > 0)
+-                    textEndX = fntRenderStringFit(elem->font, elem->posX + DECORATOR_SIZE, posY, elem->aligned, elem->textRoom, dispText, color, ps == item);
++                    textEndX = fntRenderStringFit(elem->font, elem->posX + DECORATOR_SIZE, posY + textDy, elem->aligned, elem->textRoom, dispText, color, ps == item);
+                 else
+-                    textEndX = fntRenderString(elem->font, elem->posX + DECORATOR_SIZE, posY, elem->aligned, elem->width, elem->height, dispText, color);
++                    textEndX = fntRenderString(elem->font, elem->posX + DECORATOR_SIZE, posY + textDy, elem->aligned, elem->width, elem->height, dispText, color);
+             } else {
+                 // Decorator-less Lists use the same center-out warming above; their separate COV
+                 // element draws the selected cover. No additional per-visible-row reads start here.
+                 if (elem->textRoom > 0)
+-                    textEndX = fntRenderStringFit(elem->font, elem->posX, posY, elem->aligned, elem->textRoom, dispText, color, ps == item);
++                    textEndX = fntRenderStringFit(elem->font, elem->posX, posY + textDy, elem->aligned, elem->textRoom, dispText, color, ps == item);
+                 else
+-                    textEndX = fntRenderString(elem->font, elem->posX, posY, elem->aligned, elem->width, elem->height, dispText, color);
++                    textEndX = fntRenderString(elem->font, elem->posX, posY + textDy, elem->aligned, elem->width, elem->height, dispText, color);
+             }
+ 
+             if (ps->item.favourited) {
