@@ -161,7 +161,7 @@ def payload(build, notes, release):
         'color': BLUE,
         'author': {'name': 'RIPPS2', 'icon_url': 'attachment://ripps2-icon.png'},
         'title': 'Test me | Build %d' % build,
-        'description': pitch + ('\n\n**Kill it:** %s\nThe ELF killer, but ELF-sufficient, never ELF-destructive: your other ELFs stay safe on the shelf.' % release
+        'description': pitch + ('\n\n**Kill it:** %s\nThe ELF killer, but ELF-sufficient, never ELF-destructive: your other ELFs stay safe on the [shelf](https://akilluminati47.github.io/RIPPS2/).' % release
                                 if release else ''),
         'image': {'url': 'attachment://test-me-%d.png' % build},
     }
