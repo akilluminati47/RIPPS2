@@ -1,0 +1,450 @@
+diff --git a/include/gui.h b/include/gui.h
+index f012f2b..438c0c0 100644
+--- a/include/gui.h
++++ b/include/gui.h
+@@ -123,6 +123,7 @@ struct gui_update_t *guiOpCreate(gui_op_type_t type);
+ int guiShowKeyboard(char *value, int maxLength);
+ int guiMsgBox(const char *text, int addAccept, struct UIItem *ui);
+ int guiIsActive(void);
++void guiCycleTheme(void); // build 79: the next theme (SELECT held 4.2 s)
+ void guiMsgBoxStartOption(const char *label); // RIPPS2: the next guiMsgBox offers START (returns 2)
+ void guiMsgBoxSound(int sfx); // RIPPS2: the next message box plays this sound (SFX_ERROR, SFX_SAVE)
+ int guiPromptRebootIop(void);
+diff --git a/include/ripps2.h b/include/ripps2.h
+index f71050e..f2b98f5 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -100,7 +100,8 @@ void ripps2TiltEnd(void);
+ // ---- Storage art panel glass (theme element Ripps2PanelGlass) ----
+ void ripps2DrawPanelGlass(int x, int y, int w, int h, int hasItem);
+ int ripps2MakeFrost(const GSTEXTURE *src, GSTEXTURE *dst); // build 78: src shrunk to a soft 80x60 copy (frosted glass)
+-void ripps2DrawFrost(GSTEXTURE *frost, int x, int y, int w, int h); // ... the part of it under x,y,w,h
++void ripps2DrawFrost(GSTEXTURE *frost, int x, int y, int w, int h, int crop, int alpha); // ... the part of it under x,y,w,h
++void ripps2DrawPanelFlat(int x, int y, int w, int h, const unsigned char *rgb, int alpha, int frame); // build 79: constant glass
+ void ripps2DrawPagePanel(void); // menus / settings / dialogs: one clear-glass panel behind the page
+ void ripps2DrawHintBox(int x, int y, int w, int h); // the settings help text's box, in the same glass
+ void ripps2DrawHintBoxA(int x, int y, int w, int h, float a); // build 70: the same, fading (0..1)
+diff --git a/include/themes.h b/include/themes.h
+index dbc2ffc..428786f 100644
+--- a/include/themes.h
++++ b/include/themes.h
+@@ -113,6 +113,10 @@ typedef struct theme_element
+     int itemHeight;       // RIPPS2: ItemsList row pitch (<name>_item_height; 0 = MENU_ITEM_HEIGHT)
+     int slide;            // RIPPS2: GameImage slideshow position (<name>_slide=1..4; 0 = not a slide)
+     int blur;             // RIPPS2 build 78: Ripps2PanelGlass over frosted backdrop (<name>_blur=1)
++    int glassTint;        // RIPPS2 build 79: Ripps2PanelGlass constant tint 0..128 (<name>_tint), -1 = the gradient
++    int glassFrame;       // RIPPS2 build 79: Ripps2PanelGlass frame line (<name>_frame, default 1)
++    unsigned char glassColor[3]; // RIPPS2 build 79: the tint's colour (<name>_tint_color, default RIPPS2 navy)
++    int wideCrop;         // RIPPS2 build 79: Background in 16:9 shows the middle 3/4 of its height (<name>_widecrop=1)
+     // Per-device element filter (theme key devices=usb,hdd,...): bitmask over the thmDeviceVocab
+     // table indices in themes.c. 0 = unfiltered (the pre-existing behavior). deviceCoverage is
+     // filled at theme-load validation for UNFILTERED MenuIcon/ItemsList/HintText elements: the
+@@ -218,7 +222,8 @@ typedef struct theme
+     theme_element_t *coverflow;
+     int coverflowCoverOffset;
+     GSTEXTURE frost[2];    // RIPPS2 build 78: the main / info backdrop shrunk and softened, under blur glass
+-    const void *frostKey[2][2]; // ... made from this texture memory, for this item (rebuilt when either changes)
++    const void *frostKey[2][2];
++    int frostCrop[2];      // RIPPS2 build 79: the frost's source is drawn widecrop // ... made from this texture memory, for this item (rebuilt when either changes)
+     int noTowers;          // RIPPS2 build 78: towers=0, the game pages never show the pillars (bg_color instead)
+     theme_element_t *grid; // RIPPS2 build 78: the first Grid element (a page of covers in rows), NULL if none
+     int gridColumns, gridRows, gridSpacing;
+diff --git a/lng_tmpl/_base.yml b/lng_tmpl/_base.yml
+index c70fba4..4b1a2fe 100644
+--- a/lng_tmpl/_base.yml
++++ b/lng_tmpl/_base.yml
+@@ -1467,3 +1467,5 @@ gui_strings:
+   string: "Neutrino will start with these arguments. Launch?"
+ - label: HINT_NARGS_EXTRA
+   string: "Other Neutrino flags, separated by spaces. A flag with its own row above (such as -logo) moves into that row when saved, and is still sent."
++- label: HINT_RIPPS2_THEME
++  string: "The look of every page. On the game list, hold SELECT for 4.2 seconds to switch to the next theme; a quick press of SELECT still refreshes the list."
+diff --git a/src/dialogs.c b/src/dialogs.c
+index e2ba4d8..2d2b04b 100644
+--- a/src/dialogs.c
++++ b/src/dialogs.c
+@@ -770,7 +770,7 @@ struct UIItem diaUIConfig[] = {
+ 
+     {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_THEME}}},
+     {UI_SPACER},
+-    {UI_ENUM, UICFG_THEME, 1, 1, -1, 0, 0, {.intvalue = {0, 0}}},
++    {UI_ENUM, UICFG_THEME, 1, 1, _STR_HINT_RIPPS2_THEME, 0, 0, {.intvalue = {0, 0}}},
+     {UI_BREAK},
+ 
+     // Theme-specific presentation controls stay together.
+diff --git a/src/gui.c b/src/gui.c
+index d0b9403..b7a24d9 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -1240,6 +1240,34 @@ reshow_ui:
+     guiFreeNameList(langNamesSnap);
+ }
+ 
++// RIPPS2 build 79: SELECT held 4.2 s on the game list -- the next theme in the Theme list (the built-in
++// ones and every theme found on a drive), applied the way Settings applies one, without a device
++// refresh, and saved quietly so it is there next time
++void guiCycleTheme(void)
++{
++    const char **names = thmGetGuiList();
++    int n = 0, cur = thmGetGuiValue(), next;
++    char msg[96];
++
++    while (names != NULL && names[n] != NULL)
++        n++;
++    if (n < 2)
++        return;
++    next = (cur + 1) % n;
++    padRumbleFlush();
++    if (isBgmPlaying())
++        bgmStop(); // a theme may bring its own music
++    applyConfig(next, -1, 1);
++    sfxInit(0);
++    if (gEnableBGM && !isBgmPlaying())
++        bgmStart();
++    if (thmGetGuiValue() == next) {
++        ripps2SaveSettingsInBackground();
++        snprintf(msg, sizeof(msg), "%s", thmGetGuiList()[next]);
++        guiWarning(msg, 3);
++    }
++}
++
+ static int httpTestBusy;
+ static int httpTestIp[4], httpTestPort;
+ static char httpTestBase[HTTP_BASE_PATH_MAX], httpTestMessage[128];
+diff --git a/src/menusys.c b/src/menusys.c
+index da95f9f..d2b8c02 100644
+--- a/src/menusys.c
++++ b/src/menusys.c
+@@ -2007,9 +2007,6 @@ void menuHandleInputMain()
+         // reinit main menu - show/hide items valid in the active context
+         menuInitMainMenu();
+         guiSwitchScreen(GUI_SCREEN_MENU);
+-    } else if (getKeyOn(KEY_SELECT)) {
+-        if (!viewPending)
+-            selected_item->item->refresh(selected_item->item);
+     } else if (getKeyOn(KEY_R3)) { // toggle favourite
+         if (!viewPending && selected_item->item->fav)
+             selected_item->item->fav(selected_item->item);
+@@ -2018,6 +2015,27 @@ void menuHandleInputMain()
+             selected_item->item->toggleView(selected_item->item);
+     }
+ 
++    // RIPPS2 build 79: SELECT. A press refreshes the list when it is let go (within 4.2 s); held 4.2 s it
++    // switches to the next theme instead, once per hold, with no refresh (the theme is all that changed)
++    {
++        static clock_t selectSince = 0;
++        static int selectHeld = 0, selectCycled = 0;
++        if (getKeyOn(KEY_SELECT)) {
++            selectHeld = 1;
++            selectCycled = 0;
++            selectSince = clock();
++        } else if (selectHeld && getKeyPressed(KEY_SELECT)) {
++            if (!selectCycled && (clock() - selectSince) >= (clock_t)(4.2f * CLOCKS_PER_SEC)) {
++                selectCycled = 1;
++                guiCycleTheme();
++            }
++        } else if (selectHeld) {
++            selectHeld = 0;
++            if (!selectCycled && !viewPending)
++                selected_item->item->refresh(selected_item->item);
++        }
++    }
++
+     // Last Played Auto Start
+     if (gRememberLastPlayed && gAutoStartLastPlayed > 0 && RemainSecs < 0 && DisableCron == 0 && !viewPending) {
+         DisableCron = 1; // Disable Counter
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index 36e4ce5..d1c2248 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -1197,13 +1197,26 @@ int ripps2MakeFrost(const GSTEXTURE *src, GSTEXTURE *dst)
+     return 1;
+ }
+ 
+-void ripps2DrawFrost(GSTEXTURE *frost, int x, int y, int w, int h)
++void ripps2DrawFrost(GSTEXTURE *frost, int x, int y, int w, int h, int crop, int alpha)
+ {
+-    if (frost == NULL || frost->Mem == NULL || w <= 0 || h <= 0)
++    if (frost == NULL || frost->Mem == NULL || w <= 0 || h <= 0 || alpha <= 0)
+         return;
+-    float u0 = (float)x * FROST_W / 640.0f, v0 = (float)y * FROST_H / 480.0f;
+-    float u1 = (float)(x + w) * FROST_W / 640.0f, v1 = (float)(y + h) * FROST_H / 480.0f;
+-    rmDrawPixmapPart(frost, x, y, ALIGN_NONE, w, h, SCALING_NONE, gDefaultCol, u0, v0, u1, v1);
++    // crop: the backdrop shows only the middle 3/4 of its height (widecrop in 16:9), and so does this
++    float vs = crop ? 0.75f : 1.0f, vo = crop ? 0.125f * FROST_H : 0.0f;
++    float u0 = (float)x * FROST_W / 640.0f, v0 = vo + (float)y * FROST_H * vs / 480.0f;
++    float u1 = (float)(x + w) * FROST_W / 640.0f, v1 = vo + (float)(y + h) * FROST_H * vs / 480.0f;
++    rmDrawPixmapPart(frost, x, y, ALIGN_NONE, w, h, SCALING_NONE, alpha >= 0x80 ? gDefaultCol : GS_SETREG_RGBA(0x80, 0x80, 0x80, alpha), u0, v0, u1, v1);
++}
++
++// build 79: a theme's clear glass -- one constant tint (a theme's tint=, tint_color=) over the frost,
++// with or without the frame line
++void ripps2DrawPanelFlat(int x, int y, int w, int h, const unsigned char *rgb, int alpha, int frame)
++{
++    u64 c = RGBA_PRIM(rgb[0], rgb[1], rgb[2], alpha);
++    if (alpha > 0)
++        rmDrawQuadGouraud(x, y, c, x + w, y, c, x, y + h, c, x + w, y + h, c);
++    if (frame)
++        panelFrame(x, y, w, h);
+ }
+ 
+ void ripps2DrawPanelGlass(int x, int y, int w, int h, int hasItem)
+diff --git a/src/themes.c b/src/themes.c
+index 94f65ae..4a6966f 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -1098,19 +1098,27 @@ static GSTEXTURE *getGameImageCached(image_cache_t *cache, struct submenu_item *
+ // RIPPS2 build 78: the frosted copy of what is behind a blur panel -- its family's Background, the
+ // game's own background art once it is loaded, else the theme's default -- made again only when that
+ // texture or the game changes
+-static GSTEXTURE *thmFrostFor(struct submenu_list *item, struct theme_element *glass)
++static float artFadeIn(void *elem, void *item, GSTEXTURE *tex);
++
++// fade: how far in the art under the glass is (it eases in as it arrives), so the frost eases with it
++static GSTEXTURE *thmFrostFor(struct submenu_list *item, struct theme_element *glass, float *fade)
+ {
+     int slot = glass->family == &gTheme->mainElems ? 0 : 1;
+     GSTEXTURE *src = NULL;
+     theme_element_t *e;
+ 
++    *fade = 1.0f;
++
+     for (e = glass->family->first; e != NULL && e != glass; e = e->next) {
+         if (e->type != ELEM_TYPE_BACKGROUND || e->extended == NULL)
+             continue;
+         mutable_image_t *mi = (mutable_image_t *)e->extended;
+         src = (mi->cache != NULL && item != NULL && !item->item.isFolder) ? getGameImageCached(mi->cache, &item->item) : NULL;
+-        if ((src == NULL || src->Mem == NULL) && mi->defaultTexture != NULL)
++        if (src != NULL && src->Mem != NULL)
++            *fade = artFadeIn(e, item, src);
++        else if (mi->defaultTexture != NULL)
+             src = &mi->defaultTexture->source;
++        gTheme->frostCrop[slot] = e->wideCrop;
+     }
+     if (src == NULL || src->Mem == NULL)
+         return NULL;
+@@ -1130,8 +1138,15 @@ static void drawRipps2PanelGlass(struct menu_list *menu, struct submenu_list *it
+ {
+     int x, y;
+     ripps2PanelRect(elem, &x, &y);
+-    if (elem->blur) // build 78: frosted glass, the page's backdrop softened under the tint
+-        ripps2DrawFrost(thmFrostFor(item, elem), x, y, elem->width, elem->height);
++    if (elem->blur) { // build 78: frosted glass, the page's backdrop softened under the tint
++        float fade;
++        GSTEXTURE *frost = thmFrostFor(item, elem, &fade);
++        ripps2DrawFrost(frost, x, y, elem->width, elem->height, gWideScreen && gTheme->frostCrop[elem->family == &gTheme->mainElems ? 0 : 1], (int)(0x80 * fade));
++    }
++    if (elem->glassTint >= 0) { // build 79: a theme's clear glass, one constant tint
++        ripps2DrawPanelFlat(x, y, elem->width, elem->height, elem->glassColor, elem->glassTint, elem->glassFrame);
++        return;
++    }
+     ripps2DrawPanelGlass(x, y, elem->width, elem->height, item != NULL);
+ }
+ 
+@@ -1139,19 +1154,28 @@ static void drawRipps2PanelGlass(struct menu_list *menu, struct submenu_list *it
+ // screen switches that morph one page's panel into the next. 0 when the page has none.
+ int thmGetPanelRect(int infoPage, int *x, int *y, int *w, int *h)
+ {
+-    theme_element_t *elem;
++    theme_element_t *elem, *found = NULL;
+ 
+     if (gTheme == NULL)
+         return 0;
++    // build 79: a frameless panel (frame=0) is a backdrop layer -- the frosted screen, a side bar -- so the
++    // morph uses the first framed one, and the first of any only when the page has no framed panel
+     for (elem = infoPage ? gTheme->infoElems.first : gTheme->mainElems.first; elem != NULL; elem = elem->next) {
+         if (elem->type == ELEM_TYPE_RIPPS2_PANEL_GLASS) {
+-            ripps2PanelRect(elem, x, y);
+-            *w = elem->width;
+-            *h = elem->height;
+-            return 1;
++            if (found == NULL)
++                found = elem;
++            if (elem->glassFrame) {
++                found = elem;
++                break;
++            }
+         }
+     }
+-    return 0;
++    if (found == NULL)
++        return 0;
++    ripps2PanelRect(found, x, y);
++    *w = found->width;
++    *h = found->height;
++    return 1;
+ }
+ 
+ static void initStaticImage(const char *themePath, config_set_t *themeConfig, theme_t *theme, theme_element_t *elem, const char *name, const char *imageName)
+@@ -1794,7 +1818,11 @@ static void drawGameImage(struct menu_list *menu, struct submenu_list *item, con
+                                 gameImage->overlayTexture->lowerLeft_x, gameImage->overlayTexture->lowerLeft_y, gameImage->overlayTexture->lowerRight_x, gameImage->overlayTexture->lowerRight_y, drawElem->reflection);
+             if (gameImage->overlayTexture2)
+                 rmDrawPixmap(&gameImage->overlayTexture2->source, drawElem->posX, drawElem->posY, drawElem->aligned, drawElem->width, drawElem->height, drawElem->scaled, imageCol, drawElem->reflection);
+-        } else
++        } else if (drawElem->type == ELEM_TYPE_BACKGROUND && drawElem->wideCrop && gWideScreen)
++            // build 79: 4:3 art on a 16:9 picture shows its middle 3/4 instead of stretching (a faux crop)
++            rmDrawPixmapPart(texture, drawElem->posX, drawElem->posY, drawElem->aligned, drawElem->width, drawElem->height, drawElem->scaled,
++                             imageCol, 0.0f, texture->Height * 0.125f, (float)texture->Width, texture->Height * 0.875f);
++        else
+             rmDrawPixmap(texture, drawElem->posX, drawElem->posY, drawElem->aligned, drawElem->width, drawElem->height, drawElem->scaled, imageCol, drawElem->reflection);
+         rmSetReflectionYOffset(0); // don't leak the offset to any other reflection draw
+ 
+@@ -2312,6 +2340,35 @@ int thmGridColumns(void)
+     return (gTheme != NULL && gTheme->grid != NULL) ? gTheme->gridColumns : 0;
+ }
+ 
++// build 79: each cover eases in when its art arrives (as RIPPS2's art does everywhere), remembered per
++// game for the covers on screen; a cover with no art is a clear glass tile with the game's name
++#define GRID_FADES 40
++static struct
++{
++    const void *item;
++    const void *tex;
++    clock_t since;
++} gridFades[GRID_FADES];
++static int gridFadeNext;
++
++static float gridFadeIn(const void *item, const void *tex)
++{
++    int i;
++    for (i = 0; i < GRID_FADES; i++)
++        if (gridFades[i].item == item) {
++            if (gridFades[i].tex != tex) {
++                gridFades[i].tex = tex;
++                gridFades[i].since = clock();
++            }
++            return artEase((float)(clock() - gridFades[i].since) / (float)CLOCKS_PER_SEC / ART_FADE_S);
++        }
++    i = gridFadeNext++ % GRID_FADES;
++    gridFades[i].item = item;
++    gridFades[i].tex = tex;
++    gridFades[i].since = clock();
++    return 0.0f;
++}
++
+ static void drawGridCover(struct menu_list *menu, struct submenu_list *it, struct theme_element *elem, item_list_t *src,
+                           int cx, int cy, int w, int h, int selected)
+ {
+@@ -2322,11 +2379,26 @@ static void drawGridCover(struct menu_list *menu, struct submenu_list *it, struc
+     if (img == NULL)
+         return;
+     texture = getGameImageTextureEx(img->cache, src, &it->item, selected);
+-    if (texture == NULL || texture->Mem == NULL)
+-        texture = img->defaultTexture ? &img->defaultTexture->source : thmGetTexture(COVER_DEFAULT);
+-    if (texture == NULL || texture->Mem == NULL)
++    if (texture == NULL || texture->Mem == NULL) {
++        if (img->defaultTexture != NULL)
++            texture = &img->defaultTexture->source; // a theme that wants a placeholder names one
++        else {
++            // no art: a clear glass tile with the name, so every game still reads in the grid
++            static const unsigned char tile[3] = {0x04, 0x0C, 0x2E};
++            char name[96];
++            int tw = rmWideScale(w);
++            ripps2DrawPanelFlat(cx - tw / 2, cy - h / 2, tw, h, tile, selected ? 0x30 : 0x20, 1);
++            snprintf(name, sizeof(name), "%s", it->item.text != NULL ? it->item.text : "");
++            fntFitString(elem->font, name, tw - 12);
++            fntRenderString(elem->font, cx, cy, ALIGN_CENTER, tw - 12, h - 12, name, selected ? gTheme->selTextColor : gTheme->textColor);
++            return;
++        }
++    }
++    float in = (img->defaultTexture != NULL && texture == &img->defaultTexture->source) ? 1.0f : gridFadeIn(it, texture);
++    int a = (int)(0x80 * in);
++    if (a <= 0)
+         return;
+-    u64 col = selected ? gDefaultCol : GS_SETREG_RGBA(0x70, 0x70, 0x70, 0x80); // the others a step back
++    u64 col = selected ? GS_SETREG_RGBA(0x80, 0x80, 0x80, a) : GS_SETREG_RGBA(0x70, 0x70, 0x70, a); // the others a step back
+     if (img->overlayTexture) {
+         image_texture_t *ov = img->overlayTexture;
+         int csw = coverElem->width > 0 ? coverElem->width : 1, csh = coverElem->height > 0 ? coverElem->height : 1;
+@@ -2337,6 +2409,33 @@ static void drawGridCover(struct menu_list *menu, struct submenu_list *it, struc
+         rmDrawPixmap(texture, cx, cy, ALIGN_CENTER, w, h, SCALING_RATIO, col, elem->reflection && selected);
+ }
+ 
++// build 79: the selection breathes -- a soft glow in the theme's selection colour, swelling and easing
++// over 2.4 s, under a crisp frame
++static void drawGridGlow(int cx, int cy, int w, int h)
++{
++    float t = (float)(clock() % (CLOCKS_PER_SEC * 12)) / (float)CLOCKS_PER_SEC;
++    float breath = 0.5f + 0.5f * sinf(t * 2.0f * 3.14159265f / 2.4f);
++    u64 sel = gTheme->selTextColor;
++    int r = sel & 0xFF, g = (sel >> 8) & 0xFF, b = (sel >> 16) & 0xFF, i;
++
++    rmSetBlendAdditive(1);
++    for (i = 3; i >= 1; i--) { // three soft rings, wider and fainter outwards
++        int grow = i * 3 + (int)(breath * 3.0f), alpha = (int)((0x10 + 0x10 * breath) / i);
++        u64 c = GS_SETREG_RGBA(r, g, b, alpha);
++        int x0 = cx - w / 2 - grow, y0 = cy - h / 2 - grow, x1 = cx + w / 2 + grow, y1 = cy + h / 2 + grow;
++        rmDrawRect(x0, y0, x1 - x0, i + 1, c);
++        rmDrawRect(x0, y1 - i - 1, x1 - x0, i + 1, c);
++        rmDrawRect(x0, y0, i + 1, y1 - y0, c);
++        rmDrawRect(x1 - i - 1, y0, i + 1, y1 - y0, c);
++    }
++    rmSetBlendAdditive(0);
++    u64 frame = GS_SETREG_RGBA(r, g, b, 0x60 + (int)(0x20 * breath));
++    rmDrawRect(cx - w / 2 - 2, cy - h / 2 - 2, w + 4, 2, frame);
++    rmDrawRect(cx - w / 2 - 2, cy + h / 2, w + 4, 2, frame);
++    rmDrawRect(cx - w / 2 - 2, cy - h / 2, 2, h, frame);
++    rmDrawRect(cx + w / 2, cy - h / 2, 2, h, frame);
++}
++
+ static void drawGrid(struct menu_list *menu, struct submenu_list *item, config_set_t *config, struct theme_element *elem)
+ {
+     struct submenu_list *p, *first;
+@@ -2366,9 +2465,8 @@ static void drawGrid(struct menu_list *menu, struct submenu_list *item, config_s
+     int cellW = rmWideScale(w), stepX = cellW + gap, stepY = h + gap;
+     int left = elem->posX - (cols * stepX - gap) / 2 + cellW / 2;
+     int top = elem->posY + h / 2;
+-    int selX = 0, selY = 0;
++    int selX = -1, selY = 0;
+ 
+-    // the selection's art is asked for first (priority), so a cold page fills from the cover in focus
+     for (p = first, k = 0; p != NULL && k < cols * rows; p = p->next, k++) {
+         if (p == item) {
+             selX = left + (k % cols) * stepX;
+@@ -2378,13 +2476,9 @@ static void drawGrid(struct menu_list *menu, struct submenu_list *item, config_s
+         if (!p->item.isFolder)
+             drawGridCover(menu, p, elem, src, left + (k % cols) * stepX, top + (k / cols) * stepY, w, h, 0);
+     }
+-    if (!item->item.isFolder && selX) {
+-        int sw = w * 112 / 100, sh = h * 112 / 100, fw = rmWideScale(sw) + 6, fh = sh + 6;
+-        u64 frame = gTheme->selTextColor;
+-        rmDrawRect(selX - fw / 2, selY - fh / 2, fw, 2, frame);
+-        rmDrawRect(selX - fw / 2, selY + fh / 2 - 2, fw, 2, frame);
+-        rmDrawRect(selX - fw / 2, selY - fh / 2, 2, fh, frame);
+-        rmDrawRect(selX + fw / 2 - 2, selY - fh / 2, 2, fh, frame);
++    if (selX >= 0 && !item->item.isFolder) {
++        int sw = w * 112 / 100, sh = h * 112 / 100;
++        drawGridGlow(selX, selY, rmWideScale(sw), sh);
+         drawGridCover(menu, item, elem, src, selX, selY, sw, sh, 1);
+     }
+ }
+@@ -2558,6 +2652,11 @@ static theme_element_t *initBasic(const char *themePath, config_set_t *themeConf
+     elem->tiltX = x;
+     elem->tiltY = y;
+     elem->tiltScale = 100;
++    elem->glassTint = -1; // build 79: the gradient unless the theme sets tint=
++    elem->glassFrame = 1;
++    elem->glassColor[0] = 0x04;
++    elem->glassColor[1] = 0x0C;
++    elem->glassColor[2] = 0x2E;
+     elem->imageAlpha = 0x80;
+     elem->lineHeight = 0;
+     elem->vcenter = 0;
+@@ -2680,6 +2779,17 @@ static theme_element_t *initBasic(const char *themePath, config_set_t *themeConf
+     snprintf(elemProp, sizeof(elemProp), "%s_blur", name);
+     if (configGetInt(themeConfig, elemProp, &intValue))
+         elem->blur = intValue ? 1 : 0;
++    snprintf(elemProp, sizeof(elemProp), "%s_tint", name);
++    if (configGetInt(themeConfig, elemProp, &intValue) && intValue >= 0 && intValue <= 0x80)
++        elem->glassTint = intValue;
++    snprintf(elemProp, sizeof(elemProp), "%s_frame", name);
++    if (configGetInt(themeConfig, elemProp, &intValue))
++        elem->glassFrame = intValue ? 1 : 0;
++    snprintf(elemProp, sizeof(elemProp), "%s_tint_color", name);
++    configGetColor(themeConfig, elemProp, elem->glassColor);
++    snprintf(elemProp, sizeof(elemProp), "%s_widecrop", name);
++    if (configGetInt(themeConfig, elemProp, &intValue))
++        elem->wideCrop = intValue ? 1 : 0;
+     snprintf(elemProp, sizeof(elemProp), "%s_tilt_scale", name);
+     if (configGetInt(themeConfig, elemProp, &intValue) && intValue > 0 && intValue <= 400)
+         elem->tiltScale = intValue;

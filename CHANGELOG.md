@@ -1,5 +1,23 @@
 # RIPPS2 changelog
 
+## Build 79 (testing), changes since build 78
+
+For the reworked Adapt, Adapt Rx, RIPgrid and RIPgrid Rx themes (RIPPS2-themes kit).
+
+### Switch themes with SELECT
+- **Hold SELECT for 4.2 seconds** on the game list and RIPPS2 steps to the next theme, once per hold, and remembers it. A shorter press still refreshes the list, when you let go; a hold that switched the theme does not refresh.
+- The Theme setting's tip says so.
+
+### Grid
+- **No stock disc or case**: each cover eases in as its art arrives. A game with no cover shows as a clear glass tile with its name.
+- **The selection breathes**: a soft glow in the theme's selection colour swells and eases under a crisp frame.
+
+### Glass and art
+- **Clear glass**: a theme can give a panel one even tint (`tint`, `tint_color`) and drop its frame (`frame=0`), for a full-screen frosted layer or a side bar.
+- The frost **eases in with the art** under it instead of appearing at once.
+- **`widecrop`**: on a 16:9 picture, a theme's background art shows its middle three quarters (a zoom) instead of stretching; frosted glass over it follows.
+- Page morphs use the first framed glass panel, so frameless layers don't count.
+
 ## Build 78 (testing), changes since build 77
 
 For the new themes: Adapt, Adapt Rx, RIPgrid and RIPgrid Rx (in the RIPPS2-themes kit).
