@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>RIPPS2: the dead elf</title>
+  <defs>
+    <!-- the pool: near-black red in the middle, a lit lip at the edge -->
+    <radialGradient id="pool" cx="48%" cy="58%" r="60%">
+      <stop offset="0" stop-color="#3a0006"/>
+      <stop offset="0.65" stop-color="#5c000b"/>
+      <stop offset="1" stop-color="#8a0612"/>
+    </radialGradient>
+    <linearGradient id="lip" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff5a64" stop-opacity="0"/>
+      <stop offset="0.75" stop-color="#ff4a55" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#2a0004"/>
+    </linearGradient>
+    <linearGradient id="streak" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#ffd8dc" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <!-- felt: green, the RIPPS2-blue rim light down its right side, blood wicking up from the brim -->
+    <linearGradient id="felt" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0f4a20"/>
+      <stop offset="0.45" stop-color="#1f7a35"/>
+      <stop offset="0.8" stop-color="#1b5a6a"/>
+      <stop offset="1" stop-color="#3c6ef0"/>
+    </linearGradient>
+    <linearGradient id="soak" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#4a0006" stop-opacity="0.95"/>
+      <stop offset="0.28" stop-color="#5a0008" stop-opacity="0.6"/>
+      <stop offset="0.5" stop-color="#5a0008" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="bell" cx="38%" cy="34%" r="65%">
+      <stop offset="0" stop-color="#fff2c0"/>
+      <stop offset="0.25" stop-color="#e6b648"/>
+      <stop offset="0.7" stop-color="#7a5212"/>
+      <stop offset="1" stop-color="#2a1a04"/>
+    </radialGradient>
+    <linearGradient id="fur" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.55" stop-color="#e4dccb"/>
+      <stop offset="0.8" stop-color="#9c2a30"/>
+      <stop offset="1" stop-color="#4a0006"/>
+    </linearGradient>
+    <!-- felt fibres and fur tufts: turbulence displacing the edges a little -->
+    <linearGradient id="furFront" x1="0" y1="290" x2="0" y2="336" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.45" stop-color="#ebe3d2"/>
+      <stop offset="0.72" stop-color="#a8323a"/>
+      <stop offset="1" stop-color="#3a0005"/>
+    </linearGradient>
+    <filter id="tufts" x="-10%" y="-30%" width="120%" height="160%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="4"/>
+      <feDisplacementMap in="SourceGraphic" scale="7"/>
+    </filter>
+    <filter id="grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="1.6" numOctaves="2" seed="9" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.35 0" result="dots"/>
+      <feComposite in="dots" in2="SourceGraphic" operator="in" result="d"/>
+      <feBlend in="SourceGraphic" in2="d" mode="multiply"/>
+    </filter>
+    <filter id="soft"><feGaussianBlur stdDeviation="3"/></filter>
+    <clipPath id="poolClip">
+      <path id="poolShape" d="M70 318 C52 282 92 254 150 252 C188 228 250 236 292 248 C352 230 430 246 452 284 C472 318 446 352 404 356 C384 384 322 392 262 380 C210 398 128 392 104 362 C76 356 62 340 70 318 Z"/>
+    </clipPath>
+  </defs>
+
+  <!-- stray drops, all inside the square -->
+  <g fill="#6a0010">
+    <ellipse cx="118" cy="412" rx="15" ry="9"/><ellipse cx="136" cy="420" rx="6" ry="4"/>
+    <ellipse cx="462" cy="252" rx="9" ry="6"/><ellipse cx="438" cy="392" rx="13" ry="7"/>
+    <ellipse cx="96" cy="250" rx="11" ry="6"/><ellipse cx="300" cy="216" rx="8" ry="5"/>
+  </g>
+
+  <!-- the pool: a lip, the surface, the hat's reflection, ripples, a gloss streak -->
+  <use href="#poolShape" fill="#2a0004" transform="translate(0 7)"/>
+  <use href="#poolShape" fill="url(#pool)"/>
+  <g clip-path="url(#poolClip)">
+    <!-- reflection: the hat upside down, dark and red, shortened by the angle -->
+    <g opacity="0.6" transform="translate(0 486) scale(1 -0.62)">
+      <path d="M198 300 C208 226 228 150 258 106 C280 74 318 64 338 84 C318 86 302 102 294 132 C286 176 300 242 322 300 Z" fill="#8a1a24"/>
+    </g>
+    <g fill="none" stroke="#ff6a74" stroke-opacity="0.18" stroke-width="2">
+      <ellipse cx="260" cy="316" rx="104" ry="32"/><ellipse cx="262" cy="318" rx="150" ry="47" stroke-opacity="0.6"/>
+    </g>
+    <ellipse cx="300" cy="270" rx="150" ry="9" fill="url(#streak)" transform="rotate(-6 300 270)"/>
+  </g>
+  <use href="#poolShape" fill="none" stroke="url(#lip)" stroke-width="3"/>
+
+  <!-- the hat, standing in it brim down, the tip flopped over to a gold bell -->
+  <g>
+    <path d="M186 300 A74 22 0 0 1 334 300" fill="none" stroke="#d8cfbd" stroke-width="24" stroke-linecap="round" filter="url(#tufts)"/>
+    <path d="M198 300 C208 226 228 150 258 106 C280 74 318 64 338 84 C318 86 302 102 294 132 C286 176 300 242 322 300 Z" fill="url(#felt)" filter="url(#grain)"/>
+    <path d="M198 300 C208 226 228 150 258 106 C280 74 318 64 338 84 C318 86 302 102 294 132 C286 176 300 242 322 300 Z" fill="url(#soak)"/>
+    <!-- felt crease -->
+    <path d="M262 112 C252 160 246 220 248 290" stroke="#0a3014" stroke-opacity="0.45" stroke-width="3" fill="none"/>
+    <!-- the bell -->
+    <circle cx="344" cy="92" r="17" fill="url(#bell)"/>
+    <path d="M334 100 Q344 106 354 100" stroke="#2a1a04" stroke-width="2.5" fill="none"/>
+    <!-- the fur brim's front half, sunk half way: white tufts on top, dark with blood below -->
+    <path d="M186 300 A74 22 0 0 0 334 300" fill="none" stroke="url(#furFront)" stroke-width="26" stroke-linecap="round" filter="url(#tufts)"/>
+    <path d="M196 296 A64 15 0 0 0 324 296" fill="none" stroke="#ffffff" stroke-opacity="0.5" stroke-width="5" filter="url(#soft)"/>
+    <!-- where the blood meets the fur: a meniscus -->
+    <path d="M176 312 Q260 340 344 312" stroke="#ff4a55" stroke-opacity="0.45" stroke-width="2" fill="none"/>
+  </g>
+</svg>

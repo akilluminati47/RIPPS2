@@ -1,0 +1,261 @@
+<!doctype html>
+<!-- RIPPS2 mark (the dead elf). Render: npm install three@0.169.0 beside this file, serve the folder, open scene.html?size=1024 (cam=hero|low|top, hat=, rim=, bg=clear|tile); window.__done holds the PNG. -->
+<html><head><meta charset="utf-8"><style>html,body{margin:0;background:transparent}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+</head><body>
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
+import { Reflector } from 'three/addons/objects/Reflector.js';
+
+const Q = new URLSearchParams(location.search);
+const SIZE = +(Q.get('size') || 1024);
+const BG = Q.get('bg') || 'clear';          // tile | clear
+const CAM = Q.get('cam') || 'hero';         // hero | low | top
+const RIM = Q.get('rim') || '#3c6ef0';      // the cold rim light: RIPPS2 blue
+const HAT = Q.get('hat') || '#145a28';      // felt
+const SEED = +(Q.get('seed') || 7);
+
+let s = SEED; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1);
+renderer.setSize(SIZE, SIZE);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const pmrem = new THREE.PMREMGenerator(renderer);
+// a dark room to reflect: black, one warm softbox up left, a thin RIPPS2-blue strip behind right, so
+// the blood stays near black and only its highlights show
+{
+  const env = new THREE.Scene(); env.background = new THREE.Color('#000000');
+  const panel = (w, h, col, pos, look) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: col, side: THREE.DoubleSide }));
+    m.position.copy(pos); m.lookAt(look); env.add(m); };
+  panel(6, 4, new THREE.Color(5, 4.2, 3.4), new THREE.Vector3(-6, 9, 5), new THREE.Vector3(0, 0, 0));
+  panel(0.6, 7, new THREE.Color(RIM).multiplyScalar(4), new THREE.Vector3(8, 4, -6), new THREE.Vector3(0, 0, 0));
+  panel(3, 0.4, new THREE.Color(2.5, 2.5, 2.8), new THREE.Vector3(2, 7, 8), new THREE.Vector3(0, 0, 0));
+  // where the pool's mirror sends the camera's eye: a long window, so the surface carries a glossy streak
+  panel(7, 0.22, new THREE.Color(1.6, 1.5, 1.5), new THREE.Vector3(-6, 6.0, -7.5), new THREE.Vector3(0, 0, 0));
+  panel(0.25, 3, new THREE.Color(1.2, 1.1, 1.1), new THREE.Vector3(-4.5, 6.0, -8.5), new THREE.Vector3(0, 0, 0));
+  scene.environment = pmrem.fromScene(env, 0.02).texture;
+}
+scene.environmentIntensity = 1.0;
+
+// ---- canvas textures ----------------------------------------------------------------------------
+function canvasTex(w, h, draw, srgb = true) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c);
+  if (srgb) t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8;
+  return t;
+}
+function noise(ctx, w, h, n, alpha, light) {
+  for (let i = 0; i < n; i++) {
+    const v = light ? 255 : 0;
+    ctx.fillStyle = `rgba(${v},${v},${v},${alpha * rnd()})`;
+    ctx.fillRect(rnd() * w, rnd() * h, 1 + rnd() * 2, 1 + rnd() * 2);
+  }
+}
+// wet concrete floor
+const floorMap = canvasTex(1024, 1024, (c, w, h) => {
+  c.fillStyle = '#0d0e11'; c.fillRect(0, 0, w, h);
+  for (let i = 0; i < 60; i++) { // blotches
+    const g = c.createRadialGradient(rnd() * w, rnd() * h, 0, rnd() * w, rnd() * h, 60 + rnd() * 160);
+    g.addColorStop(0, `rgba(${30 + rnd() * 20},${32 + rnd() * 20},${38 + rnd() * 20},0.35)`); g.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = g; c.fillRect(0, 0, w, h);
+  }
+  noise(c, w, h, 160000, 0.06, true); noise(c, w, h, 160000, 0.22, false);
+});
+const floorRough = canvasTex(512, 512, (c, w, h) => {
+  c.fillStyle = '#b8b8b8'; c.fillRect(0, 0, w, h);
+  for (let i = 0; i < 40; i++) { const g = c.createRadialGradient(rnd()*w, rnd()*h, 0, rnd()*w, rnd()*h, 40 + rnd()*120);
+    g.addColorStop(0, 'rgba(40,40,40,0.5)'); g.addColorStop(1, 'rgba(40,40,40,0)'); c.fillStyle = g; c.fillRect(0,0,w,h); }
+  noise(c, w, h, 30000, 0.4, false);
+}, false);
+// felt: fibres + soaking blood from the brim up
+const feltMap = canvasTex(1024, 1024, (c, w, h) => {
+  c.fillStyle = HAT; c.fillRect(0, 0, w, h);
+  for (let i = 0; i < 26000; i++) { // fibres
+    const x = rnd() * w, y = rnd() * h, a = rnd() * Math.PI, l = 3 + rnd() * 9;
+    c.strokeStyle = rnd() < 0.5 ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.10)';
+    c.beginPath(); c.moveTo(x, y); c.lineTo(x + Math.cos(a) * l, y + Math.sin(a) * l); c.stroke();
+  }
+  // v=0 is the brim (lathe bottom): blood wicks up, ragged
+  for (let x = 0; x < w; x += 2) { // canvas top = v 0 = the brim: blood wicks up from there, ragged
+    const reach = h * (0.30 + 0.16 * Math.sin(x * 0.013 + 1.7) * Math.sin(x * 0.031) + 0.06 * rnd());
+    const g = c.createLinearGradient(0, 0, 0, reach);
+    g.addColorStop(0, 'rgba(50,0,4,0.97)'); g.addColorStop(0.6, 'rgba(80,0,8,0.8)'); g.addColorStop(1, 'rgba(80,0,8,0)');
+    c.fillStyle = g; c.fillRect(x, 0, 2, reach);
+  }
+}, true);
+feltMap.flipY = false;
+const feltBump = canvasTex(512, 512, (c, w, h) => { c.fillStyle = '#808080'; c.fillRect(0,0,w,h); noise(c, w, h, 60000, 0.5, rnd() < 2); noise(c, w, h, 60000, 0.5, false); }, false);
+// blood surface ripples around where the hat went in
+const rippleNormal = canvasTex(1024, 1024, (c, w, h) => {
+  c.fillStyle = 'rgb(128,128,255)'; c.fillRect(0, 0, w, h);
+  const cx = w * 0.52, cy = h * 0.5;
+  for (let r = 40; r < 460; r += 26 + r * 0.05) {
+    for (let k = -1; k <= 1; k += 2) {
+      c.lineWidth = 6; c.beginPath();
+      for (let a = 0; a <= Math.PI * 2 + 0.01; a += 0.02) {
+        const rr = r + k * 3 + Math.sin(a * 5 + r) * 3;
+        const x = cx + Math.cos(a) * rr, y = cy + Math.sin(a) * rr * 0.92;
+        const nx = Math.cos(a) * k, ny = Math.sin(a) * k;
+        c.strokeStyle = `rgba(${128 + nx * 70},${128 + ny * 70},255,${0.55 * (1 - r / 520)})`;
+        if (a === 0) c.moveTo(x, y); else c.lineTo(x, y);
+      }
+      c.stroke();
+    }
+  }
+}, false);
+
+// ---- floor ---------------------------------------------------------------------------------------
+floorMap.repeat.set(3, 3); floorRough.repeat.set(3, 3);
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(14, 14), new THREE.MeshStandardMaterial({ map: floorMap, roughnessMap: floorRough, roughness: 0.85, metalness: 0 }));
+floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
+floor.material.envMap = null; floor.material.envMapIntensity = 0.0;
+
+// ---- the blood pool: an irregular blob with a meniscus, plus stray drops -------------------------
+function blobShape(r, lobes, jag, cx = 0, cy = 0) {
+  const sh = new THREE.Shape(), N = 160, ph = [rnd() * 6, rnd() * 6, rnd() * 6];
+  for (let i = 0; i <= N; i++) {
+    const a = (i / N) * Math.PI * 2;
+    const k = 1 + 0.14 * Math.sin(a * lobes + ph[0]) + 0.09 * Math.sin(a * (lobes * 2 + 1) + ph[1]) + 0.05 * Math.sin(a * 7 + ph[2] * 2)
+              + jag * Math.sin(a * 11 + ph[2]) + 0.4 * jag * Math.sin(a * 17 + ph[0]);
+    const x = cx + Math.cos(a) * r * k * 1.15, y = cy + Math.sin(a) * r * k * 0.95;
+    i ? sh.lineTo(x, y) : sh.moveTo(x, y);
+  }
+  return sh;
+}
+const bloodMat = new THREE.MeshPhysicalMaterial({
+  color: new THREE.Color(Q.get('blood') || '#560009'), roughness: 0.035, envMapIntensity: 1.6, metalness: 0.0, clearcoat: 1, clearcoatRoughness: 0.02,
+  sheen: 0.25, sheenColor: new THREE.Color('#c0101c'), normalMap: rippleNormal, normalScale: new THREE.Vector2(0.12, 0.12),
+  specularIntensity: 1, ior: 1.36,
+});
+function pool(shape, depth) {
+  const g = new THREE.ExtrudeGeometry(shape, { depth: depth * 0.2, bevelEnabled: true, bevelThickness: depth * 0.8, bevelSize: depth * 3.0, bevelSegments: 10, curveSegments: 64 });
+  // UVs for the ripple map: planar
+  g.computeBoundingBox(); const bb = g.boundingBox, p = g.attributes.position, uv = g.attributes.uv;
+  for (let i = 0; i < p.count; i++) uv.setXY(i, (p.getX(i) - bb.min.x) / (bb.max.x - bb.min.x), (p.getY(i) - bb.min.y) / (bb.max.y - bb.min.y));
+  const m = new THREE.Mesh(g, bloodMat); m.rotation.x = -Math.PI / 2; m.position.y = 0.0; m.receiveShadow = true; m.castShadow = false;
+  return m;
+}
+bloodMat.envMap = scene.environment; bloodMat.envMapIntensity = 1.0;
+const MIRROR = Q.get('mirror') !== '0';
+const poolSeed = s, mainShape = blobShape(1.75, 2, 0.02);
+scene.add(pool(mainShape, 0.03));
+if (MIRROR) {
+  // the pool as a true mirror, tinted the colour of blood, just above its own surface; the glossy
+  // surface (ripples, highlights) lies over it, part see-through
+  const inset = blobShape(1.75 * 0.985, 2, 0.02); s = poolSeed; const shp = blobShape(1.75 * 0.985, 2, 0.02);
+  const mirror = new Reflector(new THREE.ShapeGeometry(shp, 64), { textureWidth: SIZE, textureHeight: SIZE, color: new THREE.Color(Q.get('mtint') || '#c8303c'), clipBias: 0.003 });
+  mirror.rotation.x = -Math.PI / 2; mirror.position.y = 0.031; scene.add(mirror);
+  const gloss = new THREE.Mesh(new THREE.ShapeGeometry(shp, 64), bloodMat.clone());
+  gloss.material.transparent = true; gloss.material.opacity = +(Q.get('gloss') || 0.5); gloss.material.depthWrite = false;
+  gloss.rotation.x = -Math.PI / 2; gloss.position.y = 0.033; scene.add(gloss);
+}
+for (let i = 0; i < 9; i++) { // drops and runners
+  const a = rnd() * Math.PI * 2, d = 2.15 + rnd() * 0.55, r = 0.04 + rnd() * 0.12; // close in: nothing leaves the frame
+  const m = pool(blobShape(r, 2, 0.02, Math.cos(a) * d, Math.sin(a) * d * 0.85), 0.012 + r * 0.05); scene.add(m);
+}
+// a dark stain under the pool edge (blood soaking the concrete)
+const stain = new THREE.Mesh(new THREE.ShapeGeometry(blobShape(2.15, 3, 0.05)), new THREE.MeshStandardMaterial({ color: '#1a0204', roughness: 0.9, transparent: true, opacity: 0.85 }));
+s = SEED; // the same outline family as the pool
+stain.rotation.x = -Math.PI / 2; stain.position.y = 0.002; scene.add(stain);
+
+// ---- the hat -------------------------------------------------------------------------------------
+// a cone by lathe, its upper half bent over into a drooping curl (felt has no spine)
+const prof = [];
+for (let i = 0; i <= 40; i++) { const t = i / 40; prof.push(new THREE.Vector2(0.62 * Math.pow(1 - t, 1.15) + 0.012, t * 2.3)); }
+const BEND_T = 0.42, BEND_Y = BEND_T * 2.3, BEND_ANG = 1.45, BEND_R = (2.3 - BEND_Y) / BEND_ANG;
+let hatGeo = new THREE.LatheGeometry(prof, 96);
+hatGeo = mergeVertices(hatGeo);
+{
+  const p = hatGeo.attributes.position, v = new THREE.Vector3();
+  for (let i = 0; i < p.count; i++) {
+    v.fromBufferAttribute(p, i);
+    const t = v.y / 2.3; // 0 brim .. 1 tip
+    // bend: past a third of the way up the cone curls over about the Z axis, more toward the tip
+    if (t > BEND_T) { // classic bend about a centre at (R, yb): the felt flops over toward +x
+      const th = (v.y - BEND_Y) / BEND_R, r = BEND_R - v.x;
+      v.x = BEND_R - r * Math.cos(th); v.y = BEND_Y + r * Math.sin(th);
+    }
+    // felt is never perfect: a few soft dents
+    const dent = 0.025 * Math.sin(v.y * 9 + v.z * 7) * Math.sin(Math.atan2(v.z, v.x) * 5);
+    v.multiplyScalar(1 + dent);
+    p.setXYZ(i, v.x, v.y, v.z);
+  }
+  hatGeo.computeVertexNormals();
+}
+const felt = new THREE.MeshPhysicalMaterial({ map: feltMap, bumpMap: feltBump, bumpScale: 1.4, roughness: 0.92, sheen: 0.6, sheenRoughness: 0.7, sheenColor: new THREE.Color('#5fbf7f'), side: THREE.DoubleSide });
+const hat = new THREE.Group();
+const cone = new THREE.Mesh(hatGeo, felt); cone.castShadow = true; cone.receiveShadow = true; hat.add(cone);
+// the fur brim: a fat torus, its surface broken up so it reads as fur, the lower side blood-soaked
+const furMap = canvasTex(1024, 256, (c, w, h) => {
+  c.fillStyle = '#e9e1cf'; c.fillRect(0, 0, w, h);
+  for (let i = 0; i < 40000; i++) { const x = rnd()*w, y = rnd()*h; c.strokeStyle = rnd()<0.5?'rgba(255,255,255,0.25)':'rgba(120,100,80,0.18)'; c.beginPath(); c.moveTo(x,y); c.lineTo(x+rnd()*3-1.5, y+4+rnd()*6); c.stroke(); }
+  // soaked half (v from 0.5..1 is the underside after rotation)
+  for (let x = 0; x < w; x++) { const top = h * (0.45 + 0.15 * Math.sin(x * 0.02) * Math.cos(x * 0.007)); const g = c.createLinearGradient(0, top, 0, h);
+    g.addColorStop(0, 'rgba(110,0,10,0)'); g.addColorStop(0.25, 'rgba(110,0,10,0.85)'); g.addColorStop(1, 'rgba(60,0,4,1)'); c.fillStyle = g; c.fillRect(x, top, 1, h - top); }
+});
+const furGeo = new THREE.TorusGeometry(0.64, 0.13, 32, 160);
+{ const p = furGeo.attributes.position, v = new THREE.Vector3();
+  for (let i = 0; i < p.count; i++) { v.fromBufferAttribute(p, i); const n = 1 + 0.03 * (Math.sin(v.x * 23) * Math.cos(v.y * 19) + 0.6 * Math.sin(v.z * 29)); p.setXYZ(i, v.x * (1 + (n - 1) * 0.3), v.y * n, v.z * (1 + (n - 1) * 0.3)); }
+  furGeo.computeVertexNormals(); }
+const fur = new THREE.Mesh(furGeo, new THREE.MeshStandardMaterial({ map: furMap, roughness: 1, bumpMap: feltBump, bumpScale: 3 }));
+fur.rotation.x = Math.PI / 2; fur.position.y = 0.05; fur.castShadow = true; hat.add(fur);
+// the bell at the end of the curl
+{
+  const p = hatGeo.attributes.position; let best = 0, tip = new THREE.Vector3();
+  for (let i = 0; i < p.count; i++) if (p.getY(i) + p.getX(i) * 0.3 > best && Math.hypot(p.getX(i) - p.getX(i), p.getZ(i)) < 0.05) { best = p.getY(i) + p.getX(i) * 0.3; tip.set(p.getX(i), p.getY(i), p.getZ(i)); }
+  tip.set(BEND_R - BEND_R * Math.cos(BEND_ANG), BEND_Y + BEND_R * Math.sin(BEND_ANG), 0); // the curl's end
+  const bell = new THREE.Mesh(new THREE.SphereGeometry(0.15, 48, 32), new THREE.MeshPhysicalMaterial({ color: '#d4a640', metalness: 1, roughness: 0.22, clearcoat: 0.5 }));
+  bell.position.copy(tip).add(new THREE.Vector3(0.04, -0.1, 0)); bell.castShadow = true; hat.add(bell);
+  const slot = new THREE.Mesh(new THREE.TorusGeometry(0.07, 0.012, 8, 32), new THREE.MeshStandardMaterial({ color: '#2a1a05', metalness: 1, roughness: 0.5 }));
+  slot.position.copy(bell.position).add(new THREE.Vector3(0, -0.11, 0)); slot.rotation.x = Math.PI / 2; hat.add(slot);
+}
+// knocked over into the pool: on its side, the brim sunk a little below the surface
+// standing in it, fur brim down, sunk to half the fur's thickness; leaning a touch, the tip flopped over
+hat.rotation.order = 'YXZ';
+hat.rotation.y = Number(Q.get('turn') || 0.75); hat.rotation.z = 0.06; hat.rotation.x = -0.05;
+hat.scale.setScalar(1.25);
+hat.position.set(-0.15, -0.1, 0.05);
+scene.add(hat);
+// blood climbing the hat where it touches: a thin collar of blood hugging the brim at the surface
+
+
+// ---- lights --------------------------------------------------------------------------------------
+const key = new THREE.SpotLight('#ffd9b0', 160, 30, 0.5, 0.6, 1.6);
+key.position.set(-4, 7.5, 4); key.target.position.set(0, 0, 0); key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048); key.shadow.bias = -0.0004; key.shadow.radius = 6; scene.add(key, key.target);
+const rim = new THREE.SpotLight(RIM, 320, 30, 0.6, 0.7, 1.6); rim.position.set(5, 3.2, -5); scene.add(rim, rim.target);
+
+scene.add(new THREE.HemisphereLight('#20283a', '#050203', 0.35));
+
+// ---- camera --------------------------------------------------------------------------------------
+const cam = new THREE.PerspectiveCamera(CAM === 'top' ? 30 : (+Q.get('fov') || 28.5), 1, 0.1, 100);
+if (CAM === 'low') cam.position.set(6.6, 2.9, 9.4);
+else if (CAM === 'top') cam.position.set(1.5, 11.5, 4.8);
+else cam.position.set(5.4, 6.0, 7.6);
+cam.lookAt(0.0, 0.55, 0.0);
+
+if (BG === 'tile') {
+  scene.background = canvasTex(1024, 1024, (c, w, h) => {
+    const g = c.createRadialGradient(w * 0.5, h * 0.55, 0, w * 0.5, h * 0.55, w * 0.75);
+    g.addColorStop(0, '#16131a'); g.addColorStop(0.6, '#07070b'); g.addColorStop(1, '#000000');
+    c.fillStyle = g; c.fillRect(0, 0, w, h);
+  });
+  scene.fog = new THREE.Fog('#050507', 9, 15);
+} else {
+  floor.visible = false; stain.visible = false; // cut out: the pool and the hat alone
+}
+renderer.render(scene, cam);
+window.__done = renderer.domElement.toDataURL('image/png');
+</script></body></html>

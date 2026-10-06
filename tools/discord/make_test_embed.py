@@ -2,7 +2,7 @@
 
 Builds, for build N:
   test-me-N.png    the banner: "Test me | Build N" in RIPPS2 Sleek over the pillars, with the RIPPS2 mark
-  ripps2-icon.png  the RIPPS2 Audio Studio icon (five equaliser bars), as the post's author icon
+  ripps2-icon.png  the RIPPS2 mark (the dead elf: an elf's hat in a pool of blood), as the post's author icon
   post-N.json      the webhook payload: the banner first, then what is new and what to test
 
     python make_test_embed.py --build 70 --notes notes.md [--release URL] [--attach FILE ...] [--out DIR] [--post]
@@ -43,14 +43,14 @@ def font(name, size):
 
 
 def icon(size=256):
-    """The Audio Studio window icon (studio.py), drawn large: five bars, a blue that cools left to right."""
-    s = size / 32.0
+    """The RIPPS2 mark: the dead elf (assets/ripps2-deadelf.png, rendered in three.js by
+    media/deadelf/scene.html), on a dark rounded tile so it reads on Discord's light and dark themes."""
+    mark = Image.open(os.path.join(HERE, '..', '..', 'assets', 'ripps2-deadelf.png')).convert('RGBA')
     im = Image.new('RGBA', (size, size), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
-    d.rounded_rectangle((0, 0, size - 1, size - 1), radius=int(size * 0.18), fill=(6, 14, 46, 255))
-    for k, hh in enumerate((14, 24, 18, 28, 12)):
-        x0, y0 = (2 + k * 6) * s, (30 - hh) * s
-        d.rounded_rectangle((x0 + s * 0.5, y0, x0 + 5 * s - s * 0.5, 30 * s), radius=int(s * 1.2), fill=(90 + k * 20, 150, 255, 255))
+    d.rounded_rectangle((0, 0, size - 1, size - 1), radius=int(size * 0.18), fill=(10, 6, 12, 255))
+    inner = int(size * 0.92)
+    im.alpha_composite(mark.resize((inner, inner), Image.LANCZOS), ((size - inner) // 2, (size - inner) // 2))
     return im
 
 
