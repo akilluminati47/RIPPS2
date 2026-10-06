@@ -126,7 +126,7 @@ index a6aae66..8fc178e 100644
 +    return sx > 100 ? 1 : sx < -100 ? -1 : 0;
 +}
 diff --git a/src/themes.c b/src/themes.c
-index b478987..7e397c3 100644
+index b478987..4de1c4f 100644
 --- a/src/themes.c
 +++ b/src/themes.c
 @@ -2328,12 +2328,125 @@ static void drawCoverFlow(struct menu_list *menu, struct submenu_list *item, con
@@ -280,7 +280,7 @@ index b478987..7e397c3 100644
      texture = getGameImageTextureEx(img->cache, src, &it->item, selected);
      if (texture == NULL || texture->Mem == NULL) {
          if (img->defaultTexture != NULL)
-@@ -2450,47 +2568,138 @@ static void drawGrid(struct menu_list *menu, struct submenu_list *item, config_s
+@@ -2450,47 +2568,151 @@ static void drawGrid(struct menu_list *menu, struct submenu_list *item, config_s
      if (p == NULL)
          return;
  
@@ -350,6 +350,19 @@ index b478987..7e397c3 100644
 +                 flipHoldItem == item ? (int)((clock() - flipHoldSince) * 10 / CLOCKS_PER_SEC) : -1, selBack != NULL,
 +                 (int)(gridFlipTurn(item) * 100));
 +        fntRenderString(gTheme->fonts[0], 20, 20, ALIGN_NONE, 0, 0, dbg, GS_SETREG_RGBA(0xFF, 0xFF, 0x40, 0x80));
++        {
++            theme_element_t *ce = thmGetElemForItem(menu, item, elem);
++            mutable_image_t *fi = ce != NULL ? (mutable_image_t *)ce->extended : NULL;
++            GSTEXTURE *ft = fi != NULL ? getGameImageCached(fi->cache, &item->item) : NULL;
++            int cid = (uid >= 0 && item->item.cache_id != NULL) ? item->item.cache_id[uid] : -9;
++            const char *key = (gb != NULL && gb->cache != NULL && cid >= 0 && cid < gb->cache->count) ? gb->cache->content[cid].key : "-";
++            snprintf(dbg, sizeof(dbg), "sb=%x %dx%d m=%x ft=%x %dx%d m=%x fu=%d %s%s k=%s",
++                     (unsigned)selBack, selBack ? selBack->Width : 0, selBack ? selBack->Height : 0,
++                     selBack ? (unsigned)selBack->Mem : 0, (unsigned)ft, ft ? ft->Width : 0, ft ? ft->Height : 0,
++                     ft ? (unsigned)ft->Mem : 0, fi != NULL && fi->cache != NULL ? fi->cache->userId : -9,
++                     gb != NULL && gb->cache != NULL ? gb->cache->suffix : "-", gb != NULL && gb->cacheLinked ? "L" : "", key);
++            fntRenderString(gTheme->fonts[0], 20, 48, ALIGN_NONE, 0, 0, dbg, GS_SETREG_RGBA(0x40, 0xFF, 0xFF, 0x80));
++        }
 +    }
 +#endif
 +
@@ -432,7 +445,7 @@ index b478987..7e397c3 100644
  static void initGrid(const char *themePath, config_set_t *themeConfig, theme_t *theme, theme_element_t *elem, const char *name)
  {
      char key[64];
-@@ -2509,8 +2718,8 @@ static void initGrid(const char *themePath, config_set_t *themeConfig, theme_t *
+@@ -2509,8 +2731,8 @@ static void initGrid(const char *themePath, config_set_t *themeConfig, theme_t *
      if (gap < 0 || gap > 64)
          gap = 14;
  
@@ -443,7 +456,7 @@ index b478987..7e397c3 100644
      if (slots < COVER_CACHE_SLOTS)
          slots = COVER_CACHE_SLOTS;
      mutable_image_t *mutableImage = initMutableImage(themePath, themeConfig, theme, name, elem->type, "COV", slots, NULL, NULL);
-@@ -2519,6 +2728,12 @@ static void initGrid(const char *themePath, config_set_t *themeConfig, theme_t *
+@@ -2519,6 +2741,12 @@ static void initGrid(const char *themePath, config_set_t *themeConfig, theme_t *
  
      if (mutableImage && mutableImage->cache) {
          elem->drawElem = &drawGrid;
