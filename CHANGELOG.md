@@ -1,5 +1,24 @@
 # RIPPS2 changelog
 
+## Build 80 (testing), changes since build 79
+
+### STATUS
+- **A new STATUS page** on the START menu, where Achievements was: the homebrew RIPPS2 carries (Neutrino 1.8.0, POPSTARTER, Ember Beta-2, BIBLE), each under its own name, with where it is installed now, a way to install RIPPS2's copy, and its settings from around the menus (Neutrino's, PS1 Settings, POPSTARTER's network files, MANAGE for the boot loader).
+
+### Achievements
+- **Achievements moved to Settings**, the last page after Audio Settings.
+- **YOUR ACCOUNT**, its last row: every game you have checked, from every drive, with what your RetroAchievements account has unlocked (a bar per game, your totals, mastered games), as xeRAbora reported it at each game's last CHECK GAME SUPPORT. Opens with START, closes with BACK or START, and lets go of its list when it closes. Counts are kept from this build's checks on; xeRAbora versions that do not send the unlocked count show the total only.
+- **Badges** stay on by default: they cost nothing until TELEMETRY is on and xeRAbora answers on your PC (then a quick file check per game when a list refreshes, in the background). The page says so.
+
+### Settings
+- **Network**: RIPPS2's rows (NBD server, Cover Art) under their own RIPPS2 header; the RA switches left for the Achievements page; a clear row before OK.
+- **Colors and More**: Source Name sits under the D-pad glyphs; the Color Theme heads the colour pickers.
+
+### Game list
+- **Source Name: Pop In**: the source's name rises in letter by letter, the way L3's view word does, when the page opens or the source changes. Themes can make it their default (`source_name=pop`).
+- **Coverflow and Grid themes: Circle cycles the sources** (Cross, with Circle to select), since every arrow browses games there; the hint row says Source. Inside a folder it climbs out first; on the info page it is still Back.
+- **Grid**: with tilt on, only the chosen cover tips with the right stick.
+
 ## Build 79 (testing), changes since build 78
 
 For the reworked Adapt, Adapt Rx, RIPgrid and RIPgrid Rx themes (RIPPS2-themes kit).

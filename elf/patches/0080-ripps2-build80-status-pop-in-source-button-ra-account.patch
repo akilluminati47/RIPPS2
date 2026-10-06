@@ -1,0 +1,1257 @@
+diff --git a/Makefile b/Makefile
+index 25f9731..d40ed2b 100644
+--- a/Makefile
++++ b/Makefile
+@@ -133,7 +133,7 @@ ifneq ($(GIT_TAG),latest)
+ endif
+ endif
+ 
+-FRONTEND_OBJS = ripps2.o ripps2ui.o ripps2boot.o ripps2ra.o ripps2ember.o ripps2art.o ripps2cd.o ripps2sfxpack.o ripps2bg.o ripps2files.o ripps2edit.o ripps2hdd.o ripps2kbd.o ripps2saves.o ripps2about.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o mixsupport.o metadb.o \
++FRONTEND_OBJS = ripps2.o ripps2ui.o ripps2boot.o ripps2ra.o ripps2status.o ripps2ember.o ripps2art.o ripps2cd.o ripps2sfxpack.o ripps2bg.o ripps2files.o ripps2edit.o ripps2hdd.o ripps2kbd.o ripps2saves.o ripps2about.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o mixsupport.o metadb.o \
+ 		dia.o ioman.o texcache.o themes.o supportbase.o bdmsupport.o netsupport.o ethsupport.o httpcatalog.o httpsupport.o udpfssupport.o hddsupport.o zso.o lz4.o launchdiag.o \
+ 		appsupport.o mmcesupport.o artindex.o vcdsupport.o cuesupport.o libview.o retrogem.o folderbrowse.o gui.o guigame.o vmc_groups.o textures.o opl.o atlas.o nbns.o httpclient.o gsm.o cheatman.o sound.o ps2cnf.o tar.o
+ 
+diff --git a/include/ripps2.h b/include/ripps2.h
+index f2b98f5..d061b71 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -60,6 +60,10 @@ extern int gRipps2Random;
+ // the settings
+ enum { RIPPS2_GLYPHS_HIDDEN = 0, RIPPS2_GLYPHS_SHOWN, RIPPS2_GLYPHS_FADE_IN, RIPPS2_GLYPHS_FADE_OUT, RIPPS2_GLYPHS_COUNT };
+ enum { RIPPS2_SHOW_ON = 0, RIPPS2_SHOW_IDLE, RIPPS2_SHOW_OFF, RIPPS2_SHOW_COUNT }; // shown / fade when idle / hidden
++// build 80: Source Name has one more, Pop In (the name rises in letter by letter, as L3's view word does)
++enum { RIPPS2_SRC_POP = RIPPS2_SHOW_COUNT, RIPPS2_SRC_COUNT };
++int ripps2SourceNameMode(void);
++float ripps2DrawSourcePop(int font, int x, int y, short aligned, const char *text, u64 colour); // the setting, with a theme's source_name=pop standing in for Shown
+ enum { RIPPS2_GLYPH_DRIVES = 0, RIPPS2_GLYPH_FORMATIONS }; // whose glyphs: Storage's drive name, Memory Files' formation
+ #define RIPPS2_PALETTE_COUNT 6
+ extern int gRipps2Glyphs;  // the D-pad glyphs beside a drive's or a formation's name (hidden by default)
+@@ -137,6 +141,8 @@ int ripps2EditMetadata(config_set_t *config, const char *gameName); // 1 when SA
+ void ripps2HddManager(void); // ripps2hdd.c
+ int ripps2EmberInstall(const char *elfPath); // ripps2ember.c (build 71): write the Ember RIPPS2 carries
+ int ripps2PopstarterInstall(const char *elfPath);
++int ripps2NeutrinoInstallTo(const char *dir); // build 80: the carried Neutrino into dir ("mc0:/neutrino"...); 1 when complete
++void ripps2Status(void);                    // ripps2status.c (build 80): the main menu's STATUS page, RIPPS2's homebrew
+ int ripps2NeutrinoOffer(const char *activePrefix, char *out, int outSize); // ripps2ember.c (build 77): install the Neutrino RIPPS2 carries, where the user picks // ripps2ember.c (build 73): write the POPSTARTER RIPPS2 carries, when none is there
+ void ripps2ArtDownload(void); // ripps2art.c (build 73): covers for the games without one, over HTTPS
+ void ripps2Achievements(void); // ripps2ra.c: SpiritofRA, the main menu's ACHIEVEMENTS page
+diff --git a/include/themes.h b/include/themes.h
+index 428786f..dbf0baa 100644
+--- a/include/themes.h
++++ b/include/themes.h
+@@ -224,6 +224,7 @@ typedef struct theme
+     GSTEXTURE frost[2];    // RIPPS2 build 78: the main / info backdrop shrunk and softened, under blur glass
+     const void *frostKey[2][2];
+     int frostCrop[2];      // RIPPS2 build 79: the frost's source is drawn widecrop // ... made from this texture memory, for this item (rebuilt when either changes)
++    int srcNamePop;        // RIPPS2 build 80: source_name=pop, the theme's Source Name is Pop In unless the user picked otherwise
+     int noTowers;          // RIPPS2 build 78: towers=0, the game pages never show the pillars (bg_color instead)
+     theme_element_t *grid; // RIPPS2 build 78: the first Grid element (a page of covers in rows), NULL if none
+     int gridColumns, gridRows, gridSpacing;
+diff --git a/lng_tmpl/_base.yml b/lng_tmpl/_base.yml
+index 4b1a2fe..863b80e 100644
+--- a/lng_tmpl/_base.yml
++++ b/lng_tmpl/_base.yml
+@@ -1443,8 +1443,12 @@ gui_strings:
+   string: "LAUNCH DISC, STORAGE and MEMORY FILES along the top. Fade When Idle hides them until you press a button."
+ - label: RIPPS2_SOURCE_NAME
+   string: Source Name
++- label: RIPPS2_STATUS
++  string: Status
++- label: RIPPS2_SOURCE
++  string: Source
+ - label: HINT_RIPPS2_SOURCE_NAME
+-  string: "The source's name over the games (ALL GAMES, HDD GAMES and so on). Fade When Idle fades it with the category bar."
++  string: "The source's name over the games (ALL GAMES, HDD GAMES and so on). Fade When Idle fades it with the category bar; Pop In has it rise in letter by letter when the page opens or the source changes. Themes can make Pop In their Shown."
+ - label: RIPPS2_RECENTS
+   string: Show Recents
+ - label: HINT_RIPPS2_RECENTS
+diff --git a/src/dialogs.c b/src/dialogs.c
+index 2d2b04b..e9f85c3 100644
+--- a/src/dialogs.c
++++ b/src/dialogs.c
+@@ -169,21 +169,17 @@ struct UIItem diaNetConfig[] = {
+     {UI_BUTTON, NETCFG_HTTP_TEST, 1, 1, -1, 0, 0, {.label = {NULL, _STR_TEST}}},
+     {UI_BREAK},
+ 
+-#ifdef RETROACHIEVEMENTS
+-    // RetroAchievements. Always visible: telemetry rides whatever SMAP the LAUNCH loaded, so
+-    // unlike the SMB block above it is not conditioned on the selected network protocol. Only
+-    // the menu-side check is refused under UDPBD/UDPFS, and it says so when asked. These rows
+-    // belong to THIS page: guiShowNetConfig reads and writes them through diaNetConfig.
+-    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RA_TELEMETRY}}},
++    // POPSTARTER owns its own IPCONFIG.DAT / SMBCONFIG.DAT editor. Keep its entry beside the
++    // SMB server data it relates to, without duplicating any of that state in this page.
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_POPSTARTER_NETWORK_SETTINGS}}},
+     {UI_SPACER},
+-    {UI_BOOL, NETCFG_RA_TELEMETRY, 1, 1, -1, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BUTTON, NETCFG_POPSTARTER_BUTTON, 1, 1, -1, 0, 0, {.label = {NULL, _STR_MODIFY}}},
+     {UI_BREAK},
+ 
+-    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RA_BADGES}}},
+-    {UI_SPACER},
+-    {UI_BOOL, NETCFG_RA_BADGES, 1, 1, -1, 0, 0, {.intvalue = {1, 0}}},
+-    {UI_BREAK},
+-#endif
++    // RIPPS2 build 80: RIPPS2's own rows under their own header, the way the composed pages separate
++    // their sections (Achievements moved to Settings > Achievements: its switches live there now)
++    {UI_HEADER, 0, 1, 1, -1, 0, 0, {.label = {"RIPPS2", -1}}},
++    {UI_SPLITTER},
+ 
+     // RIPPS2 build 70: the NBD server starts here (it was a main menu entry); the status screen it
+     // shows while running is unchanged, and leaving it stops the server
+@@ -198,11 +194,8 @@ struct UIItem diaNetConfig[] = {
+     {UI_BUTTON, NETCFG_ART_BUTTON, 1, 1, _STR_HINT_RIPPS2_COVER_ART, 0, 0, {.label = {NULL, _STR_RIPPS2_DOWNLOAD}}},
+     {UI_BREAK},
+ 
+-    // POPSTARTER owns its own IPCONFIG.DAT / SMBCONFIG.DAT editor. Keep its entry beside the
+-    // SMB server data it relates to, without duplicating any of that state in this page.
+-    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_POPSTARTER_NETWORK_SETTINGS}}},
+-    {UI_SPACER},
+-    {UI_BUTTON, NETCFG_POPSTARTER_BUTTON, 1, 1, -1, 0, 0, {.label = {NULL, _STR_MODIFY}}},
++    // build 80: the chin, a clear row between the last setting and the buttons
++    {UI_LABEL, 0, 1, 1, -1, 0, 0, {.label = {" ", -1}}},
+     {UI_BREAK},
+ 
+     // buttons
+@@ -866,9 +859,10 @@ struct UIItem diaColorsConfig[] = {
+     {UI_ENUM, UICFG_RIPPS2_GLYPHS, 1, 1, _STR_HINT_RIPPS2_GLYPHS, 0, 0, {.intvalue = {0, 0}}},
+     {UI_BREAK},
+ 
+-    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_COLOR_THEME}}},
++    // build 71; build 80 moved it under the glyphs it sits beside
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_SOURCE_NAME}}},
+     {UI_SPACER},
+-    {UI_ENUM, UICFG_RIPPS2_PALETTE, 1, 1, _STR_HINT_RIPPS2_COLOR_THEME, 0, 0, {.intvalue = {0, 0}}},
++    {UI_ENUM, UICFG_RIPPS2_SRCNAME, 1, 1, _STR_HINT_RIPPS2_SOURCE_NAME, 0, 0, {.intvalue = {0, 0}}},
+     {UI_BREAK},
+ 
+     {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_HINTS}}},
+@@ -886,18 +880,18 @@ struct UIItem diaColorsConfig[] = {
+     {UI_ENUM, UICFG_RIPPS2_CATSWAP, 1, 1, _STR_HINT_RIPPS2_CATEGORY_ORDER, 0, 0, {.intvalue = {0, 0}}},
+     {UI_BREAK},
+ 
+-    // build 71
+-    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_SOURCE_NAME}}},
+-    {UI_SPACER},
+-    {UI_ENUM, UICFG_RIPPS2_SRCNAME, 1, 1, _STR_HINT_RIPPS2_SOURCE_NAME, 0, 0, {.intvalue = {0, 0}}},
+-    {UI_BREAK},
+-
+     {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_RECENTS}}},
+     {UI_SPACER},
+     {UI_INT, UICFG_RIPPS2_RECENTS, 1, 1, _STR_HINT_RIPPS2_RECENTS, 0, 0, {.intvalue = {0, 0, 0, 9}}},
+     {UI_BREAK},
+     {UI_SPLITTER},
+ 
++    // build 80: the Color Theme heads the colour pickers
++    {UI_LABEL, 0, 1, 1, -1, -30, 0, {.label = {NULL, _STR_RIPPS2_COLOR_THEME}}},
++    {UI_SPACER},
++    {UI_ENUM, UICFG_RIPPS2_PALETTE, 1, 1, _STR_HINT_RIPPS2_COLOR_THEME, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BREAK},
++
+     {UI_LABEL, 0, 1, 1, -1, -30, 0, {.label = {NULL, _STR_TXTCOLOR}}},
+     {UI_SPACER},
+     {UI_COLOUR, UICFG_TXTCOL, 1, 1, -1, -10, 17, {.colourvalue = {0, 0}}},
+diff --git a/src/gui.c b/src/gui.c
+index b7a24d9..6279474 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -1483,10 +1483,6 @@ int guiShowNetConfig(void)
+     diaSetString(diaNetConfig, NETCFG_SHARE_USERNAME, gPCUserName);
+     diaSetString(diaNetConfig, NETCFG_SHARE_PASSWORD, gPCPassword);
+     diaSetInt(diaNetConfig, NETCFG_ETHOPMODE, gETHOpMode);
+-#ifdef RETROACHIEVEMENTS
+-    diaSetInt(diaNetConfig, NETCFG_RA_TELEMETRY, gRATelemetry);
+-    diaSetInt(diaNetConfig, NETCFG_RA_BADGES, gRABadges);
+-#endif
+ 
+     // Protocol rows, seeded from the authoritative gNetworkProtocol.
+     //   Protocol: SMB(0)/UDPFS(1)/UDPBD(2)  -- OFF and UDPFSBD both collapse to their protocol
+@@ -1593,10 +1589,6 @@ reshow_network:
+             diaGetInt(diaNetConfig, NETCFG_SHARE_IP_ADDR_0 + i, &pc_ip[i]);
+         }
+         diaGetInt(diaNetConfig, NETCFG_ETHOPMODE, &gETHOpMode);
+-#ifdef RETROACHIEVEMENTS
+-        diaGetInt(diaNetConfig, NETCFG_RA_TELEMETRY, &gRATelemetry);
+-        diaGetInt(diaNetConfig, NETCFG_RA_BADGES, &gRABadges);
+-#endif
+ 
+         diaGetInt(diaNetConfig, NETCFG_SHARE_PORT, &gPCPort);
+         for (i = 0; i < 4; ++i)
+@@ -2379,6 +2371,7 @@ void guiShowArtworkConfig(void)
+ // its order. Each row shows live behind the page as it changes; Cancel puts back what was there.
+ static const char *guiRipps2GlyphNames[] = {"Hidden", "Shown", "Fade In", "Fade Out", NULL};
+ static const char *guiRipps2ShowNames[] = {"Shown", "Fade When Idle", "Hidden", NULL};
++static const char *guiRipps2SrcNames[] = {"Shown", "Fade When Idle", "Hidden", "Pop In", NULL}; // build 80
+ static const char *guiRipps2OrderNames[] = {"Launch Disc First", "Memory Files First", NULL};
+ static const char *guiRipps2PaletteNames[RIPPS2_PALETTE_COUNT + 1];
+ 
+@@ -2395,7 +2388,7 @@ static void guiRipps2SettingsRead(void)
+         gRipps2CatBar = v;
+     if (diaGetInt(diaColorsConfig, UICFG_RIPPS2_CATSWAP, &v) && (v == 0 || v == 1))
+         gRipps2CatSwap = v;
+-    if (diaGetInt(diaColorsConfig, UICFG_RIPPS2_SRCNAME, &v) && v >= 0 && v < RIPPS2_SHOW_COUNT)
++    if (diaGetInt(diaColorsConfig, UICFG_RIPPS2_SRCNAME, &v) && v >= 0 && v < RIPPS2_SRC_COUNT)
+         gRipps2SrcName = v;
+     if (diaGetInt(diaColorsConfig, UICFG_RIPPS2_RECENTS, &v) && v >= 0 && v <= 9)
+         gRipps2Recents = v;
+@@ -2424,7 +2417,7 @@ static void guiRipps2SettingsSet(void)
+     diaSetInt(diaColorsConfig, UICFG_RIPPS2_HINTS, gRipps2Hints);
+     diaSetInt(diaColorsConfig, UICFG_RIPPS2_CATBAR, gRipps2CatBar);
+     diaSetInt(diaColorsConfig, UICFG_RIPPS2_CATSWAP, gRipps2CatSwap);
+-    diaSetEnum(diaColorsConfig, UICFG_RIPPS2_SRCNAME, guiRipps2ShowNames);
++    diaSetEnum(diaColorsConfig, UICFG_RIPPS2_SRCNAME, guiRipps2SrcNames);
+     diaSetInt(diaColorsConfig, UICFG_RIPPS2_SRCNAME, gRipps2SrcName);
+     diaSetInt(diaColorsConfig, UICFG_RIPPS2_RECENTS, gRipps2Recents);
+ }
+@@ -3615,7 +3608,7 @@ static void guiDrawSettingsIndexHints(void)
+ 
+ static int guiSettingsShowIndex(int *page)
+ {
+-    const char *labels[SETTINGS_PAGE_COUNT + 1] = {
++    const char *labels[SETTINGS_PAGE_COUNT + 2] = {
+         _l(_STR_GAME_SOURCES),
+         _l(_STR_GENERAL_SYSTEM),
+         _l(_STR_MENU_NETWORK),
+@@ -3624,10 +3617,18 @@ static int guiSettingsShowIndex(int *page)
+         _l(_STR_POPSTARTER),
+         _l(_STR_CONTROLLER_SETTINGS),
+         _l(_STR_AUDIO_SETTINGS),
++#ifdef RETROACHIEVEMENTS
++        _l(_STR_RIPPS2_ACHIEVEMENTS), // build 80: moved here from the main menu, last of the pages
++#endif
+         _l(_STR_SAVE_CHANGES),
+     };
+     int selected = *page;
+-    const int itemCount = SETTINGS_PAGE_COUNT + 1;
++#ifdef RETROACHIEVEMENTS
++    const int achRow = SETTINGS_PAGE_COUNT, itemCount = SETTINGS_PAGE_COUNT + 2;
++#else
++    const int achRow = -1, itemCount = SETTINGS_PAGE_COUNT + 1;
++#endif
++    const int saveRow = itemCount - 1;
+     int spacing = 25;
+     int y;
+ 
+@@ -3654,7 +3655,7 @@ static int guiSettingsShowIndex(int *page)
+         for (int i = 0; i < itemCount; i++) {
+             fntRenderString(RIPPS2_UI_FONT, screenWidth >> 1, y, ALIGN_CENTER, 0, 0, labels[i], (i == selected) ? gTheme->selTextColor : gTheme->textColor);
+             y += spacing;
+-            if (i == SETTINGS_PAGE_COUNT - 1)
++            if (i == saveRow - 1)
+                 y += spacing / 2;
+         }
+ 
+@@ -3670,7 +3671,10 @@ static int guiSettingsShowIndex(int *page)
+             selected = (selected + 1) % itemCount;
+         } else if (getKeyOn(guiConfirmKey())) {
+             sfxPlay(SFX_CONFIRM);
+-            if (selected == SETTINGS_PAGE_COUNT) {
++            if (selected == achRow) {
++                ripps2Achievements(); // its own page; back here when it closes
++                readPads();
++            } else if (selected == saveRow) {
+                 if (menuSaveSettings() > 0) {
+                     // A successful in-shell save becomes the new discard baseline. Otherwise,
+                     // saving once and later choosing "Exit without saving" would wrongly restore
+diff --git a/src/menusys.c b/src/menusys.c
+index d2b8c02..5a6fb09 100644
+--- a/src/menusys.c
++++ b/src/menusys.c
+@@ -49,6 +49,7 @@ enum MENU_IDs {
+     MENU_RA_DISC_CHECK,
+     MENU_RA_DISC_LAUNCH,
+ #endif
++    MENU_STATUS, // RIPPS2 build 80: takes ACHIEVEMENTS' place (that page moved to Settings)
+ };
+ 
+ enum GAME_MENU_IDs {
+@@ -671,7 +672,7 @@ static void menuInitMainMenu(void)
+     // (SpiritofRA) takes Start NBD Server's place and holds the RA disc check and launch; the NBD
+     // server starts from Network settings.
+     submenuAppendItem(&mainMenu, -1, NULL, MENU_SETTINGS, _STR_SETTINGS);
+-    submenuAppendItem(&mainMenu, -1, NULL, MENU_ACHIEVEMENTS, _STR_RIPPS2_ACHIEVEMENTS);
++    submenuAppendItem(&mainMenu, -1, NULL, MENU_STATUS, _STR_RIPPS2_STATUS); // build 80: Achievements is under Settings now
+     submenuAppendItem(&mainMenu, -1, NULL, MENU_ABOUT, _STR_ABOUT);
+     submenuAppendItem(&mainMenu, -1, NULL, MENU_EXIT, _STR_EXIT);
+     submenuAppendItem(&mainMenu, -1, NULL, MENU_POWER_OFF, _STR_POWEROFF);
+@@ -1512,7 +1513,7 @@ void menuRenderMenu()
+         y += spacing;
+         // Group the live service/settings actions above the informational/exit actions.
+         // Key this to the actual row ID, not enum arithmetic, so retired/reserved IDs cannot move the gap.
+-        if (it->item.id == MENU_ACHIEVEMENTS)
++        if (it->item.id == MENU_STATUS)
+             y += spacing / 2;
+     }
+ 
+@@ -1624,6 +1625,8 @@ void menuHandleInputMenu()
+                 handleLwnbdSrv();
+         } else if (id == MENU_ACHIEVEMENTS) {
+             ripps2Achievements();
++        } else if (id == MENU_STATUS) {
++            ripps2Status();
+         } else if (id == MENU_ABOUT) {
+             guiShowAbout();
+         } else if (id == MENU_SAVE_CHANGES) {
+@@ -1854,6 +1857,36 @@ static void menuDriveStep(int dir)
+     ripps2GlyphsPoke(RIPPS2_GLYPH_DRIVES);
+ }
+ 
++// RIPPS2 build 80: Coverflow and Grid give every arrow to the games, so on their game list the cancel
++// button cycles the sources instead (wrapping from the last to the first), with a Source hint. Inside a
++// folder it still climbs out first; the info page keeps it as Back.
++static int menuSourceCycleActive(void)
++{
++    return gTheme->coverflow != NULL || thmGridColumns() > 0;
++}
++
++static void menuSourceCycle(void)
++{
++    struct menu_list *next = selected_item->next, *first = selected_item;
++    while (next != NULL && next->item->visible == 0)
++        next = next->next;
++    if (next == NULL) { // the last one: round to the first visible
++        while (first->prev != NULL)
++            first = first->prev;
++        while (first != NULL && first->item->visible == 0)
++            first = first->next;
++        if (first == NULL || first == selected_item)
++            return;
++        menuFolderResetLeaving(selected_item);
++        selected_item = first;
++        itemConfigId = -1;
++        sfxPlay(SFX_CURSOR);
++        ripps2GlyphsPoke(RIPPS2_GLYPH_DRIVES);
++        return;
++    }
++    menuDriveStep(1);
++}
++
+ // RIPPS2 build 78: a Grid theme moves in two dimensions. Left/Right step one cover; Up/Down one row
+ // (a whole row of steps, so the list's own paging still follows); past the top or bottom row they
+ // switch drive, as Up/Down do on Coverflow. A short last row is reached by its last cover.
+@@ -1991,6 +2024,9 @@ void menuHandleInputMain()
+         menuNavigateUp();
+     } else if ((cf && !grid) ? getKeyOn(KEY_DOWN) : getKey(KEY_DOWN)) {
+         menuNavigateDown();
++    } else if (menuSourceCycleActive() && getKeyOn(gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE) &&
++               (support == NULL || folderDepth(support->mode) == 0)) {
++        menuSourceCycle(); // build 80: the cancel button cycles the sources on Coverflow / Grid
+     } else if (getKeyOn(KEY_CROSS)) {
+         if (!viewPending)
+             selected_item->item->execCross(selected_item->item);
+diff --git a/src/opl.c b/src/opl.c
+index ebdf4f6..47e90c8 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -3300,7 +3300,7 @@ static void _loadConfig()
+                 gRipps2CatBar = value;
+             if (configGetInt(configOPL, "ripps2_catswap", &value) && (value == 0 || value == 1))
+                 gRipps2CatSwap = value;
+-            if (configGetInt(configOPL, "ripps2_srcname", &value) && value >= 0 && value < RIPPS2_SHOW_COUNT)
++            if (configGetInt(configOPL, "ripps2_srcname", &value) && value >= 0 && value < RIPPS2_SRC_COUNT)
+                 gRipps2SrcName = value; // build 71
+             if (configGetInt(configOPL, "ripps2_recents", &value) && value >= 0 && value <= 9)
+                 gRipps2Recents = value;
+diff --git a/src/ranet.c b/src/ranet.c
+index 8d7147b..53ceca1 100644
+--- a/src/ranet.c
++++ b/src/ranet.c
+@@ -109,6 +109,10 @@
+ #define RA_WAIT_ROUNDS 8
+ #define RA_MAX_BYTES   (16 * 1024)
+ 
++/* RIPPS2 build 80: the last answer's title and counts, saved as RA/<serial>.inf with the list */
++static char g_infTitle[96];
++static int g_infTotal, g_infUnlocked = -1, g_infUnsupported = -1;
++
+ /* Per-call non-blocking receive. The socket is also set non-blocking via
+    fcntl (see open_pc_socket), but on the menu's netman lwIP stack that
+    flag does not take effect: recvfrom blocks forever when no reply comes.
+@@ -364,6 +368,12 @@ int raAskPC(const char *hash, const char *serial, const char *savepath,
+         if (info != NULL && infosz > 0)
+             snprintf(info, infosz, "%s", len > 0 ? title : _l(_STR_RA_SUPPORTED));
+ 
++        /* RIPPS2 build 80: kept for Achievements > YOUR ACCOUNT, written beside the list below */
++        snprintf(g_infTitle, sizeof(g_infTitle), "%s", len > 0 ? title : "");
++        g_infTotal = nach;
++        g_infUnlocked = nunlocked;
++        g_infUnsupported = nunsupported;
++
+         if (info2 != NULL && info2sz > 0) {
+             if (nunlocked >= 0)
+                 snprintf(info2, info2sz, _l(_STR_RA_ACHIEVEMENTS_FULL),
+@@ -471,6 +481,16 @@ int raAskPC(const char *hash, const char *serial, const char *savepath,
+             fclose(f);
+             saved++;
+ 
++            /* RIPPS2 build 80: the game's RA title and counts as the PC had them for your account
++               (unlocked is -1 from a client too old to say), one per line: title, total,
++               unlocked, unsupported */
++            snprintf(file, sizeof(file), "%sRA/%s.inf", where[w], serial);
++            f = fopen(file, "wb");
++            if (f != NULL) {
++                fprintf(f, "%s\n%d\n%d\n%d\n", g_infTitle, g_infTotal, g_infUnlocked, g_infUnsupported);
++                fclose(f);
++            }
++
+             LOG("RA: list saved: %s (%d bytes)\n", file, total);
+         }
+ 
+diff --git a/src/ripps2ember.c b/src/ripps2ember.c
+index c3077bc..ca8e866 100644
+--- a/src/ripps2ember.c
++++ b/src/ripps2ember.c
+@@ -270,6 +270,12 @@ static int ripps2NeutrinoUnpack(const char *dir)
+     return ok;
+ }
+ 
++// build 80: Status installs it where the user picks, outside a launch
++int ripps2NeutrinoInstallTo(const char *dir)
++{
++    return ripps2NeutrinoUnpack(dir);
++}
++
+ // No Neutrino anywhere RIPPS2 looks: offer the one it carries, where the user picks. out gets the
+ // installed neutrino.elf. 0 when declined, impossible (no menu, autolaunch) or the write failed.
+ int ripps2NeutrinoOffer(const char *activePrefix, char *out, int outSize)
+diff --git a/src/ripps2ra.c b/src/ripps2ra.c
+index ac46639..21b39e6 100644
+--- a/src/ripps2ra.c
++++ b/src/ripps2ra.c
+@@ -16,7 +16,11 @@
+ */
+ 
+ #include <stdio.h>
++#include <stdlib.h>
+ #include <string.h>
++#include <strings.h>
++#include <time.h>
++#include <dirent.h>
+ 
+ #include "include/opl.h"
+ #include "include/gui.h"
+@@ -55,8 +59,222 @@ static void raHint(int icon, const char *text, int *x, int y)
+ }
+ 
+ #ifdef RETROACHIEVEMENTS
+-enum { RA_ROW_TELEMETRY = 0, RA_ROW_BADGES, RA_ROW_TEST, RA_ROW_DISC_CHECK, RA_ROW_DISC_LAUNCH, RA_ROW_HOW, RA_ROW_COUNT };
+-static const char *const raRowName[RA_ROW_COUNT] = {"TELEMETRY", "BADGES", "TEST THE PC LINK", "CHECK THE DISC", "PLAY THE DISC WITH ACHIEVEMENTS", "HOW IT WORKS"};
++enum { RA_ROW_TELEMETRY = 0, RA_ROW_BADGES, RA_ROW_TEST, RA_ROW_DISC_CHECK, RA_ROW_DISC_LAUNCH, RA_ROW_HOW, RA_ROW_ACCOUNT, RA_ROW_COUNT };
++static const char *const raRowName[RA_ROW_COUNT] = {"TELEMETRY", "BADGES", "TEST THE PC LINK", "CHECK THE DISC", "PLAY THE DISC WITH ACHIEVEMENTS", "HOW IT WORKS", "YOUR ACCOUNT"};
++
++/*
++  RIPPS2 build 80: YOUR ACCOUNT. Each CHECK GAME SUPPORT leaves RA/<serial>.inf beside the game's watch
++  list: the title and the achievement counts xeRAbora had for the signed-in account (ranet.c). This page
++  gathers them from every drive into one list, the way the Memory Files browser lists a folder: opened
++  with START (or the select button), read in when it opens, and let go of again when it closes.
++*/
++typedef struct
++{
++    char title[96], serial[24], where[12];
++    int total, unlocked, unsupported;
++} ra_game_t;
++
++#define RA_ACCT_MAX  256
++#define RA_ACCT_ROWS 12
++#define RA_ACCT_ROWH 26
++
++static int raAcctCmp(const void *a, const void *b)
++{
++    const ra_game_t *x = a, *y = b;
++    int px = x->total > 0 && x->unlocked > 0 ? x->unlocked * 1000 / x->total : -1;
++    int py = y->total > 0 && y->unlocked > 0 ? y->unlocked * 1000 / y->total : -1;
++    if (px != py)
++        return py - px; // furthest along first
++    return strcasecmp(x->title, y->title);
++}
++
++static int raAcctLoad(ra_game_t *games)
++{
++    static const char *const dirs[] = {"mass0:/RA", "mass1:/RA", "mmce0:/RA", "mmce1:/RA", "pfs0:/RA", "smb0:RA"};
++    static const char *const names[] = {"USB", "USB 2", "MMCE 1", "MMCE 2", "HDD", "SMB"};
++    int d, n = 0, i;
++
++    for (d = 0; d < (int)(sizeof(dirs) / sizeof(dirs[0])); d++) {
++        DIR *dir = opendir(dirs[d]);
++        struct dirent *de;
++        if (dir == NULL)
++            continue;
++        while ((de = readdir(dir)) != NULL && n < RA_ACCT_MAX) {
++            char path[192], line[128];
++            int len = (int)strlen(de->d_name), dup = 0;
++            FILE *f;
++            if (len < 5 || strcasecmp(de->d_name + len - 4, ".inf") != 0)
++                continue;
++            ra_game_t *g = &games[n];
++            snprintf(g->serial, sizeof(g->serial), "%.*s", len - 4, de->d_name);
++            for (i = 0; i < n; i++) // the share keeps a second copy of what a drive has
++                if (!strcasecmp(games[i].serial, g->serial))
++                    dup = 1;
++            if (dup)
++                continue;
++            snprintf(path, sizeof(path), "%s/%s", dirs[d], de->d_name);
++            if ((f = fopen(path, "rb")) == NULL)
++                continue;
++            g->title[0] = '\0';
++            g->total = 0;
++            g->unlocked = g->unsupported = -1;
++            if (fgets(line, sizeof(line), f) != NULL) {
++                line[strcspn(line, "\r\n")] = '\0';
++                snprintf(g->title, sizeof(g->title), "%s", line[0] ? line : g->serial);
++            }
++            if (fgets(line, sizeof(line), f) != NULL)
++                g->total = atoi(line);
++            if (fgets(line, sizeof(line), f) != NULL)
++                g->unlocked = atoi(line);
++            if (fgets(line, sizeof(line), f) != NULL)
++                g->unsupported = atoi(line);
++            fclose(f);
++            snprintf(g->where, sizeof(g->where), "%s", names[d]);
++            if (g->title[0])
++                n++;
++        }
++        closedir(dir);
++    }
++    qsort(games, n, sizeof(ra_game_t), raAcctCmp);
++    return n;
++}
++
++// a bar of progress: a dim track, a gold fill, a bright tip
++static void raAcctBar(int x, int y, int w, int h, int done, int total, int a)
++{
++    rmDrawRect(x, y, w, h, RA_PRIM(0x10, 0x16, 0x2C, a / 2));
++    if (total > 0 && done > 0) {
++        int fw = done >= total ? w : w * done / total;
++        rmDrawRect(x, y, fw, h, RA_PRIM(0x7A, 0x60, 0x20, a));
++        rmDrawRect(x + fw - 2, y, 2, h, RA_PRIM(0xFF, 0xE0, 0x90, a));
++    }
++}
++
++static void raAccount(void)
++{
++    int openKey = gSelectButton == KEY_CIRCLE ? KEY_CIRCLE : KEY_CROSS, backKey = gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE;
++    ra_game_t *games = malloc(sizeof(ra_game_t) * RA_ACCT_MAX);
++    int n, sel = 0, top = 0, i, sumTotal = 0, sumUnlocked = 0, mastered = 0, known = 0;
++    clock_t opened = clock();
++
++    if (games == NULL)
++        return;
++    guiRenderTextScreen("YOUR ACCOUNT: gathering your games");
++    n = raAcctLoad(games);
++    for (i = 0; i < n; i++) {
++        sumTotal += games[i].total;
++        if (games[i].unlocked >= 0) {
++            known++;
++            sumUnlocked += games[i].unlocked;
++            if (games[i].total > 0 && games[i].unlocked >= games[i].total)
++                mastered++;
++        }
++    }
++
++    readPads();
++    while (1) {
++        float in = (float)(clock() - opened) / (float)CLOCKS_PER_SEC / 0.35f; // the page eases in
++        int a = in >= 1.0f ? 0x80 : (int)(0x80 * in * in * (3.0f - 2.0f * in));
++        char buf[128];
++
++        readPads();
++        rmStartFrame();
++        ripps2DrawBackground();
++        rmDrawRect(0, 0, 640, 480, RA_PRIM(0x02, 0x04, 0x10, a * 3 / 4)); // the towers step back
++        ripps2DrawPagePanel();
++
++        // the account: its numbers large, one bar for everything
++        fntRenderString(gTheme->fonts[5], RA_X - 30, 40, ALIGN_VCENTER, 0, 0, "YOUR ACCOUNT", RA_GOLD);
++        fntRenderString(RIPPS2_CASE_FONT, RA_X - 30, 60, ALIGN_VCENTER, 0, 0,
++                        gRATelemetry ? "RetroAchievements, as xeRAbora had it at each game's last check" : "TELEMETRY is off: these are the counts from each game's last check", RA_SOFT);
++        snprintf(buf, sizeof(buf), "%d", sumUnlocked);
++        int nx = fntRenderString(gTheme->fonts[14], RA_X - 30, 96, ALIGN_VCENTER, 0, 0, buf, RA_LIT);
++        snprintf(buf, sizeof(buf), "of %d achievements   %d games   %d mastered", sumTotal, n, mastered);
++        fntRenderString(RIPPS2_CASE_FONT, nx + 10, 102, ALIGN_VCENTER, 0, 0, buf, RA_SOFT);
++        raAcctBar(RA_X - 30, 120, RA_W + 60, 6, sumUnlocked, sumTotal, a);
++
++        if (n == 0) {
++            fntRenderString(RIPPS2_CASE_FONT, 320, 230, ALIGN_CENTER, 440, 0,
++                            "No games yet. Open a game's menu (TRIANGLE) and CHECK GAME SUPPORT with xeRAbora running on your PC: "
++                            "each game it knows lands here, with what your account has unlocked.",
++                            RA_SOFT);
++        } else {
++            // the list on the left, the chosen game's card on the right
++            if (sel < top)
++                top = sel;
++            if (sel >= top + RA_ACCT_ROWS)
++                top = sel - RA_ACCT_ROWS + 1;
++            for (i = top; i < n && i < top + RA_ACCT_ROWS; i++) {
++                ra_game_t *g = &games[i];
++                int y = 140 + (i - top) * RA_ACCT_ROWH, cur = i == sel;
++                if (cur) {
++                    rmDrawRect(RA_X - 38, y, 330, RA_ACCT_ROWH - 3, RA_PRIM(0x1E, 0x3C, 0x96, a * 0x58 / 0x80));
++                    rmDrawRect(RA_X - 38, y, 3, RA_ACCT_ROWH - 3, RA_PRIM(0x6A, 0x9A, 0xFF, a));
++                }
++                fntRenderStringFit(RIPPS2_CASE_FONT, RA_X - 28, y + 9, ALIGN_VCENTER, 300, g->title, cur ? RA_LIT : RA_SOFT, cur);
++                raAcctBar(RA_X - 28, y + 18, 300, 2, g->unlocked, g->total, cur ? a : a / 2);
++            }
++            ra_game_t *g = &games[sel];
++            int cx = 382, cw = 228;
++            rmDrawRect(cx, 140, cw, 300, RA_PRIM(0x04, 0x0C, 0x2E, a * 0x40 / 0x80));
++            rmDrawLine(cx, 140, cx + cw, 140, RA_PRIM(0x4A, 0x72, 0xDC, a * 0x60 / 0x80));
++            snprintf(buf, sizeof(buf), "%s", g->title);
++            fntFitString(gTheme->fonts[8], buf, cw - 20);
++            fntRenderString(gTheme->fonts[8], cx + 10, 152, ALIGN_NONE, cw - 20, 70, buf, RA_LIT);
++            if (g->unlocked >= 0) {
++                snprintf(buf, sizeof(buf), "%d", g->unlocked);
++                int ux = fntRenderString(gTheme->fonts[14], cx + 10, 262, ALIGN_VCENTER, 0, 0, buf, g->total > 0 && g->unlocked >= g->total ? RA_GOLD : RA_LIT);
++                snprintf(buf, sizeof(buf), "/ %d", g->total);
++                fntRenderString(gTheme->fonts[5], ux + 8, 268, ALIGN_VCENTER, 0, 0, buf, RA_SOFT);
++                raAcctBar(cx + 10, 296, cw - 20, 6, g->unlocked, g->total, a);
++                snprintf(buf, sizeof(buf), g->total > 0 && g->unlocked >= g->total ? "Mastered" : "%d%% unlocked", g->total > 0 ? g->unlocked * 100 / g->total : 0);
++                fntRenderString(RIPPS2_CASE_FONT, cx + 10, 316, ALIGN_VCENTER, 0, 0, buf, g->total > 0 && g->unlocked >= g->total ? RA_GOLD : RA_SOFT);
++            } else {
++                snprintf(buf, sizeof(buf), "%d achievements", g->total);
++                fntRenderString(gTheme->fonts[5], cx + 10, 268, ALIGN_VCENTER, 0, 0, buf, RA_LIT);
++                fntRenderString(RIPPS2_CASE_FONT, cx + 10, 296, ALIGN_NONE, cw - 20, 0, "Update xeRAbora to see what you have unlocked.", RA_SOFT);
++            }
++            if (g->unsupported > 0) {
++                snprintf(buf, sizeof(buf), "%d not tracked on PS2 yet", g->unsupported);
++                fntRenderString(RIPPS2_CASE_FONT, cx + 10, 340, ALIGN_VCENTER, 0, 0, buf, RA_DIM);
++            }
++            snprintf(buf, sizeof(buf), "%s   %s", g->serial, g->where);
++            fntRenderString(RIPPS2_CASE_FONT, cx + 10, 424, ALIGN_VCENTER, 0, 0, buf, RA_DIM);
++        }
++        {
++            int hx = RA_X - 30, hy = 456;
++            raHint(gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON, "BACK", &hx, hy);
++            if (n > RA_ACCT_ROWS) {
++                raHint(L1_ICON, "PAGE", &hx, hy);
++                raHint(R1_ICON, "PAGE", &hx, hy);
++            }
++        }
++        rmEndFrame();
++
++        if (getKeyOn(backKey) || getKeyOn(KEY_START) || getKeyOn(KEY_TRIANGLE)) {
++            sfxPlay(SFX_CANCEL);
++            break;
++        }
++        if (n > 0) {
++            int to = sel;
++            if (getKey(KEY_UP))
++                to = sel > 0 ? sel - 1 : sel;
++            else if (getKey(KEY_DOWN))
++                to = sel < n - 1 ? sel + 1 : sel;
++            else if (getKeyOn(KEY_L1))
++                to = sel > RA_ACCT_ROWS ? sel - RA_ACCT_ROWS : 0;
++            else if (getKeyOn(KEY_R1))
++                to = sel + RA_ACCT_ROWS < n ? sel + RA_ACCT_ROWS : n - 1;
++            if (to != sel) {
++                sel = to;
++                sfxPlay(SFX_CURSOR);
++            }
++        }
++        (void)openKey;
++    }
++    free(games); // let go of it all on the way out, as the browser does
++    readPads();
++}
+ #endif
+ 
+ void ripps2Achievements(void)
+@@ -79,8 +297,12 @@ void ripps2Achievements(void)
+         // build 70: in the lowercase font, short enough for the page either way (the ON line ran off it)
+         fntRenderString(RIPPS2_CASE_FONT, RA_X, 98, ALIGN_VCENTER, RA_W, 0,
+                         gRATelemetry ? "On: tracked games report their unlocks to xeRAbora on your PC." : "Off: games start just as they would without it.", RA_SOFT);
++        // build 80: BADGES is on by default and costs nothing until TELEMETRY is on and xeRAbora answers
++        if (sel == RA_ROW_BADGES)
++            fntRenderString(RIPPS2_CASE_FONT, RA_X, RA_Y + RA_ROW_COUNT * RA_ROW_H + 40, ALIGN_VCENTER, RA_W, 0,
++                            "Badges only engage with TELEMETRY on and xeRAbora running on your PC; until then they cost nothing.", RA_DIM);
+         for (i = 0; i < RA_ROW_COUNT; i++) {
+-            int y = RA_Y + i * RA_ROW_H + (i >= RA_ROW_TEST ? 12 : 0), cur = i == sel;
++            int y = RA_Y + i * RA_ROW_H + (i >= RA_ROW_TEST ? 12 : 0) + (i >= RA_ROW_ACCOUNT ? 12 : 0), cur = i == sel;
+             if (cur) {
+                 rmDrawRect(RA_X - 8, y - 2, RA_W + 16, RA_ROW_H - 4, RA_PRIM(0x1E, 0x3C, 0x96, 0x58));
+                 rmDrawRect(RA_X - 8, y - 2, 3, RA_ROW_H - 4, RA_PRIM(0x6A, 0x9A, 0xFF, 0x80));
+@@ -124,6 +346,10 @@ void ripps2Achievements(void)
+                 gRABadges = !gRABadges;
+             changed = 1;
+             sfxPlay(SFX_CONFIRM);
++        } else if (sel == RA_ROW_ACCOUNT && (getKeyOn(openKey) || getKeyOn(KEY_START))) {
++            sfxPlay(SFX_CONFIRM);
++            raAccount(); // build 80: in with START (or select), out with BACK or START, like the browser
++            readPads();
+         } else if (getKeyOn(openKey)) {
+             sfxPlay(SFX_CONFIRM);
+             if (sel == RA_ROW_TEST) {
+diff --git a/src/ripps2status.c b/src/ripps2status.c
+new file mode 100644
+index 0000000..dfec38f
+--- /dev/null
++++ b/src/ripps2status.c
+@@ -0,0 +1,406 @@
++/*
++  Copyright 2026, RIPPS2 contributors
++  Licenced under Academic Free License version 3.0
++  Review OpenUsbLd README & LICENSE files for further details.
++
++  RIPPS2 build 80: STATUS (main menu, where ACHIEVEMENTS was; that page moved to Settings). The homebrew
++  RIPPS2 carries, each under its own name: where it is installed now, a way to install the copy RIPPS2
++  carries, and the settings for it that live elsewhere in the menus, gathered here so nobody has to know
++  which page holds what.
++
++    NEUTRINO 1.8.0      rickgaiser, AFL-3.0 (elf/neutrino)
++    POPSTARTER          krHACKen (elf/popstarter)
++    EMBER Beta-2        Gageformer, Ember Public Beta Testing Licence (elf/ember)
++    BIBLE               PS2BBL 1.2.0 set up for RIPPS2 (elf/bible)
++
++  The look is the ACHIEVEMENTS page's: gold names, soft status lines, a lit bar on the chosen row.
++*/
++
++#include <stdio.h>
++#include <string.h>
++#include <fcntl.h>
++#include <unistd.h>
++#include <dirent.h>
++
++#include "include/opl.h"
++#include "include/gui.h"
++#include "include/renderman.h"
++#include "include/fntsys.h"
++#include "include/themes.h"
++#include "include/textures.h"
++#include "include/pad.h"
++#include "include/sound.h"
++#include "include/lang.h"
++#include "include/ripps2.h"
++#include "include/ripps2tint.h" // RIPPSettings Color Theme: last, so every colour below goes through it
++
++#define ST_LIT  GS_SETREG_RGBA(0x80, 0x80, 0x80, 0x80)
++#define ST_DIM  GS_SETREG_RGBA(0x4C, 0x52, 0x64, 0x80)
++#define ST_SOFT GS_SETREG_RGBA(0x67, 0x6C, 0x7A, 0x80)
++#define ST_GOLD GS_SETREG_RGBA(0x7A, 0x66, 0x30, 0x80)
++#define ST_OK   GS_SETREG_RGBA(0x50, 0x7A, 0x5A, 0x80)
++#define ST_PRIM(r, g, b, a) GS_SETREG_RGBAQ((r), (g), (b), (a), 0x00)
++#define ST_X      60
++#define ST_W      520
++#define ST_TOP    100 // the list's viewport
++#define ST_BOTTOM 426
++#define ST_HEAD_H 34
++#define ST_LINE_H 22
++#define ST_ROW_H  28
++
++enum { ROW_HEAD = 0, ROW_STATUS, ROW_ACTION };
++enum {
++    ACT_NONE = 0,
++    ACT_NT_INSTALL,
++    ACT_NT_SETTINGS,
++    ACT_POPS_INSTALL,
++    ACT_POPS_SETTINGS,
++    ACT_POPS_NET,
++    ACT_EMBER_INSTALL,
++    ACT_BIBLE_MANAGE,
++};
++
++typedef struct
++{
++    int kind, action, ok;
++    char text[112], aside[48];
++} st_row_t;
++
++#define ST_ROWS 24
++static st_row_t stRows[ST_ROWS];
++static int stCount;
++
++static st_row_t *stAdd(int kind, int action, const char *text, const char *aside)
++{
++    st_row_t *r;
++    if (stCount >= ST_ROWS)
++        return &stRows[ST_ROWS - 1];
++    r = &stRows[stCount++];
++    r->kind = kind;
++    r->action = action;
++    r->ok = 0;
++    snprintf(r->text, sizeof(r->text), "%s", text);
++    snprintf(r->aside, sizeof(r->aside), "%s", aside != NULL ? aside : "");
++    return r;
++}
++
++static int stExists(const char *path)
++{
++    int fd = open(path, O_RDONLY);
++    if (fd < 0)
++        return 0;
++    close(fd);
++    return 1;
++}
++
++static int stDriveThere(const char *root) // "mass0:/", "mc0:/"
++{
++    DIR *d = opendir(root);
++    if (d == NULL)
++        return 0;
++    closedir(d);
++    return 1;
++}
++
++// "Installed: mass0:/neutrino, mc0:/neutrino" from the places that have it; how many found
++static int stFound(char *out, int size, const char *const *paths, int n, int folderOnly)
++{
++    int i, found = 0, len = snprintf(out, size, "Installed: ");
++    for (i = 0; i < n && len < size; i++) {
++        if (paths[i] == NULL || paths[i][0] == '\0' || !stExists(paths[i]))
++            continue;
++        const char *slash = folderOnly ? strrchr(paths[i], '/') : NULL;
++        int show = slash != NULL ? (int)(slash - paths[i]) : (int)strlen(paths[i]);
++        len += snprintf(out + len, size - len, "%s%.*s", found ? ", " : "", show, paths[i]);
++        found++;
++    }
++    return found;
++}
++
++// Looks once on the way in and after anything that writes; a frame says so, the cards take a moment
++static void stScan(void)
++{
++    char line[112], custom[300];
++    int n;
++
++    guiRenderTextScreen("STATUS: looking for RIPPS2's homebrew");
++    stCount = 0;
++
++    // NEUTRINO: the path in Settings, then the places a launch looks (the game's drive, the cards);
++    // config/system.toml goes in last, so a folder with it is a whole install
++    stAdd(ROW_HEAD, ACT_NONE, "NEUTRINO", "1.8.0  rickgaiser");
++    {
++        const char *p[4] = {NULL, "mass0:/neutrino/config/system.toml", "mc0:/neutrino/config/system.toml", "mc1:/neutrino/config/system.toml"};
++        if (gNeutrinoPath[0]) {
++            snprintf(custom, sizeof(custom), "%s", gNeutrinoPath);
++            p[0] = custom;
++        }
++        n = stFound(line, sizeof(line), p, 4, 0);
++        if (n) { // name the folders, not the file inside them
++            char *c;
++            while ((c = strstr(line, "/config/system.toml")) != NULL)
++                memmove(c, c + 19, strlen(c + 19) + 1);
++            while ((c = strstr(line, "/neutrino.elf")) != NULL)
++                memmove(c, c + 13, strlen(c + 13) + 1);
++        }
++        st_row_t *r = stAdd(ROW_STATUS, ACT_NONE, n ? line : "Not installed. A game that needs it offers RIPPS2's copy, or install it here.", NULL);
++        r->ok = n > 0;
++    }
++    stAdd(ROW_ACTION, ACT_NT_INSTALL, "INSTALL RIPPS2'S COPY", "USB or a memory card");
++    stAdd(ROW_ACTION, ACT_NT_SETTINGS, "NEUTRINO SETTINGS", "path, video, arguments");
++
++    // POPSTARTER: the path in Settings, the USB drive's POPS folder, the cards
++    stAdd(ROW_HEAD, ACT_NONE, "POPSTARTER", "krHACKen");
++    {
++        const char *p[4] = {gPopstarterPath, "mass0:/POPS/POPSTARTER.ELF", "mc0:/POPS/POPSTARTER.ELF", "mc1:/POPS/POPSTARTER.ELF"};
++        n = stFound(line, sizeof(line), p, 4, 1);
++        st_row_t *r = stAdd(ROW_STATUS, ACT_NONE, n ? line : "Not found yet. The first PS1 game started writes RIPPS2's copy to its drive's POPS folder.", NULL);
++        r->ok = n > 0;
++    }
++    stAdd(ROW_ACTION, ACT_POPS_INSTALL, "INSTALL RIPPS2'S COPY", "USB POPS folder");
++    stAdd(ROW_ACTION, ACT_POPS_SETTINGS, "PS1 SETTINGS", "POPSTARTER and Ember");
++    stAdd(ROW_ACTION, ACT_POPS_NET, "POPSTARTER NETWORK", "its own IP and SMB files");
++
++    // EMBER: beside the games, in the drive's EMBER folder
++    stAdd(ROW_HEAD, ACT_NONE, "EMBER", "Beta-2  Gageformer");
++    {
++        const char *p[1] = {"mass0:/EMBER/ember.elf"};
++        n = stFound(line, sizeof(line), p, 1, 1);
++        st_row_t *r = stAdd(ROW_STATUS, ACT_NONE, n ? line : "Not found on USB. Starting an Ember game writes it beside the games.", NULL);
++        r->ok = n > 0;
++    }
++    stAdd(ROW_ACTION, ACT_EMBER_INSTALL, "INSTALL RIPPS2'S COPY", "USB EMBER folder");
++
++    // BIBLE: what starts at power on is MANAGE's to show, card by card
++    stAdd(ROW_HEAD, ACT_NONE, "BIBLE", "PS2BBL 1.2.0 for RIPPS2");
++    {
++        int locked = ripps2BootLockState();
++        st_row_t *r = stAdd(ROW_STATUS, ACT_NONE,
++                            locked ? "A PS2BBL with RIPPS2's lock is on this console." : "MANAGE shows what each memory card starts, and installs or repairs BIBLE.", NULL);
++        r->ok = locked;
++    }
++    stAdd(ROW_ACTION, ACT_BIBLE_MANAGE, "MANAGE", "boot loader, card by card");
++}
++
++static int stRowH(const st_row_t *r)
++{
++    return r->kind == ROW_HEAD ? ST_HEAD_H : r->kind == ROW_STATUS ? ST_LINE_H : ST_ROW_H;
++}
++
++static int stNextAction(int from, int dir)
++{
++    int i;
++    for (i = from + dir; i >= 0 && i < stCount; i += dir)
++        if (stRows[i].kind == ROW_ACTION)
++            return i;
++    return from;
++}
++
++static void stHint(int icon, const char *text, int *x, int y)
++{
++    GSTEXTURE *t = thmGetTexture(icon);
++    if (t != NULL) {
++        rmDrawPixmap(t, *x, y - 10, ALIGN_NONE, 20, 20, SCALING_RATIO, ST_LIT, 0);
++        *x += 24;
++    }
++    *x = ripps2HintText(*x, y, text, ST_SOFT) + 18;
++}
++
++static void stTell(int ok, const char *what, const char *where)
++{
++    char msg[200];
++    guiMsgBoxSound(ok ? SFX_MESSAGE : SFX_ERROR);
++    if (ok)
++        snprintf(msg, sizeof(msg), "%s is installed in %s.", what, where);
++    else
++        snprintf(msg, sizeof(msg), "%s could not be written to %s. Check its free space and that it is not write protected.", what, where);
++    guiMsgBox(msg, 0, NULL);
++}
++
++static void stInstallNeutrino(void)
++{
++    const char *labels[3], *dirs[3];
++    int n = 0, pick;
++    if (stDriveThere("mass0:/")) {
++        labels[n] = "USB  (mass0:/neutrino)";
++        dirs[n++] = "mass0:/neutrino";
++    }
++    if (stDriveThere("mc0:/")) {
++        labels[n] = "MEMORY CARD 1  (about 600 KB)";
++        dirs[n++] = "mc0:/neutrino";
++    }
++    if (stDriveThere("mc1:/")) {
++        labels[n] = "MEMORY CARD 2  (about 600 KB)";
++        dirs[n++] = "mc1:/neutrino";
++    }
++    if (n == 0) {
++        guiMsgBoxSound(SFX_ERROR);
++        guiMsgBox("There is no USB drive or memory card to install Neutrino on.", 0, NULL);
++        return;
++    }
++    if ((pick = ripps2PickList(labels, n)) < 0)
++        return;
++    stTell(ripps2NeutrinoInstallTo(dirs[pick]), "Neutrino 1.8.0", dirs[pick]);
++}
++
++static void stInstallPopstarter(void)
++{
++    const char *path = "mass0:/POPS/POPSTARTER.ELF";
++    if (!stDriveThere("mass0:/")) {
++        guiMsgBoxSound(SFX_ERROR);
++        guiMsgBox("Connect the USB drive your PS1 games are on, then try again.", 0, NULL);
++        return;
++    }
++    if (stExists(path)) {
++        guiMsgBoxSound(SFX_MESSAGE);
++        guiMsgBox("There is a POPSTARTER in mass0:/POPS already. It is yours, and RIPPS2 leaves it as it is.", 0, NULL);
++        return;
++    }
++    guiRenderTextScreen("POPSTARTER: writing");
++    stTell(ripps2PopstarterInstall(path), "POPSTARTER", "mass0:/POPS");
++}
++
++static void stInstallEmber(void)
++{
++    const char *path = "mass0:/EMBER/ember.elf";
++    if (!stDriveThere("mass0:/")) {
++        guiMsgBoxSound(SFX_ERROR);
++        guiMsgBox("Connect the USB drive your Ember games are on, then try again.", 0, NULL);
++        return;
++    }
++    if (stExists(path) && guiMsgBox("There is an ember.elf in mass0:/EMBER already. Replace it with RIPPS2's Beta-2?", 1, NULL) != 1)
++        return;
++    guiRenderTextScreen("EMBER: writing");
++    stTell(ripps2EmberInstall(path), "Ember Beta-2", "mass0:/EMBER");
++}
++
++void ripps2Status(void)
++{
++    int openKey = gSelectButton == KEY_CIRCLE ? KEY_CIRCLE : KEY_CROSS, backKey = gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE;
++    int sel, scroll = 0, i, changed = 0;
++
++    stScan();
++    sel = stNextAction(-1, 1);
++    readPads();
++    while (1) {
++        readPads();
++        rmStartFrame();
++        ripps2DrawBackground();
++        ripps2DrawPagePanel();
++        fntRenderString(gTheme->fonts[5], ST_X, 44, ALIGN_VCENTER, 0, 0, "STATUS", ST_GOLD);
++        fntRenderString(RIPPS2_CASE_TITLE_FONT, ST_X, 66, ALIGN_VCENTER, 0, 0, "RIPPS2's homebrew", ST_LIT);
++        rmDrawLine(ST_X, 82, ST_X + ST_W, 82, ST_PRIM(0x4A, 0x72, 0xDC, 0x60));
++
++        // keep the chosen row in the viewport, its section's name with it where it fits
++        {
++            int top = 0, y = 0, selTop = 0, selBot = 0, head = 0;
++            for (i = 0; i < stCount; i++) {
++                if (stRows[i].kind == ROW_HEAD)
++                    head = y;
++                if (i == sel) {
++                    selTop = head;
++                    selBot = y + stRowH(&stRows[i]);
++                }
++                y += stRowH(&stRows[i]);
++            }
++            if (selBot - scroll > ST_BOTTOM - ST_TOP)
++                scroll = selBot - (ST_BOTTOM - ST_TOP);
++            if (selTop < scroll)
++                scroll = selTop;
++            if (scroll > y - (ST_BOTTOM - ST_TOP))
++                scroll = y - (ST_BOTTOM - ST_TOP);
++            if (scroll < 0)
++                scroll = 0;
++            (void)top;
++        }
++
++        int y = ST_TOP - scroll;
++        for (i = 0; i < stCount; i++) {
++            st_row_t *r = &stRows[i];
++            int h = stRowH(r);
++            if (y + h > ST_TOP - 4 && y < ST_BOTTOM) {
++                if (r->kind == ROW_HEAD) {
++                    fntRenderString(gTheme->fonts[5], ST_X, y + 20, ALIGN_VCENTER, 0, 0, r->text, ST_GOLD);
++                    fntRenderString(RIPPS2_CASE_FONT, ST_X + ST_W - rmUnScaleX(fntCalcDimensions(RIPPS2_CASE_FONT, r->aside)), y + 20, ALIGN_VCENTER, 0, 0, r->aside, ST_SOFT);
++                    rmDrawLine(ST_X, y + h - 3, ST_X + ST_W, y + h - 3, ST_PRIM(0x4A, 0x72, 0xDC, 0x30));
++                } else if (r->kind == ROW_STATUS) {
++                    rmDrawRect(ST_X, y + 6, 6, 6, r->ok ? ST_PRIM(0x50, 0xC8, 0x78, 0x80) : ST_PRIM(0x60, 0x66, 0x78, 0x80));
++                    fntRenderStringFit(RIPPS2_CASE_FONT, ST_X + 14, y + 9, ALIGN_VCENTER, ST_W - 14, r->text, r->ok ? ST_OK : ST_SOFT, 1);
++                } else {
++                    int cur = i == sel;
++                    if (cur) {
++                        rmDrawRect(ST_X - 8, y, ST_W + 16, h - 4, ST_PRIM(0x1E, 0x3C, 0x96, 0x58));
++                        rmDrawRect(ST_X - 8, y, 3, h - 4, ST_PRIM(0x6A, 0x9A, 0xFF, 0x80));
++                    }
++                    fntRenderString(gTheme->fonts[8], ST_X + 14, y + 12, ALIGN_VCENTER, 0, 0, r->text, cur ? ST_LIT : ST_SOFT);
++                    fntRenderString(RIPPS2_CASE_FONT, ST_X + ST_W - rmUnScaleX(fntCalcDimensions(RIPPS2_CASE_FONT, r->aside)), y + 12, ALIGN_VCENTER, 0, 0, r->aside,
++                                    cur ? ST_SOFT : ST_DIM);
++                }
++            }
++            y += h;
++        }
++        {
++            int hx = ST_X, hy = 448;
++            stHint(gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON, "SELECT", &hx, hy);
++            stHint(gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON, "BACK", &hx, hy);
++        }
++        rmEndFrame();
++
++        if (getKeyOn(backKey) || getKeyOn(KEY_TRIANGLE) || getKeyOn(KEY_START)) {
++            sfxPlay(SFX_CANCEL);
++            break;
++        }
++        if (getKey(KEY_UP)) {
++            int to = stNextAction(sel, -1);
++            if (to != sel) {
++                sel = to;
++                sfxPlay(SFX_CURSOR);
++            } else
++                scroll = 0; // the top: show the page's start
++        } else if (getKey(KEY_DOWN)) {
++            int to = stNextAction(sel, 1);
++            if (to != sel) {
++                sel = to;
++                sfxPlay(SFX_CURSOR);
++            }
++        } else if (getKeyOn(openKey) && sel >= 0 && sel < stCount) {
++            int act = stRows[sel].action, rescan = 0;
++            sfxPlay(SFX_CONFIRM);
++            switch (act) {
++                case ACT_NT_INSTALL:
++                    stInstallNeutrino();
++                    rescan = 1;
++                    break;
++                case ACT_NT_SETTINGS:
++                    guiShowNeutrinoDefaults();
++                    changed = rescan = 1;
++                    break;
++                case ACT_POPS_INSTALL:
++                    stInstallPopstarter();
++                    rescan = 1;
++                    break;
++                case ACT_POPS_SETTINGS:
++                    guiShowPsEmulationSettings();
++                    rescan = 1;
++                    break;
++                case ACT_POPS_NET:
++                    guiShowPopsNetConfig();
++                    break;
++                case ACT_EMBER_INSTALL:
++                    stInstallEmber();
++                    rescan = 1;
++                    break;
++                case ACT_BIBLE_MANAGE:
++                    ripps2BibleManage();
++                    rescan = 1;
++                    break;
++            }
++            if (rescan)
++                stScan();
++            readPads();
++        }
++    }
++    if (changed)
++        ripps2SaveSettingsInBackground();
++    readPads();
++}
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index d1c2248..6f5a815 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -158,9 +158,17 @@ float ripps2CatBarAlpha(void)
+     return showAlpha(gRipps2CatBar);
+ }
+ 
++int ripps2SourceNameMode(void)
++{
++    if (gRipps2SrcName == RIPPS2_SHOW_ON && gTheme != NULL && gTheme->srcNamePop)
++        return RIPPS2_SRC_POP; // build 80: the theme's own default
++    return gRipps2SrcName;
++}
++
+ float ripps2SourceNameAlpha(void)
+ {
+-    return showAlpha(gRipps2SrcName); // build 71: the same idle fade as the category bar
++    int mode = ripps2SourceNameMode();
++    return mode == RIPPS2_SRC_POP ? 1.0f : showAlpha(mode); // build 71: the same idle fade as the category bar
+ }
+ 
+ // The D-pad glyphs beside a drive's name (Storage) and a formation's (Memory Files). Hidden by default:
+@@ -587,6 +595,58 @@ void ripps2DrawViewWord(void)
+     }
+ }
+ 
++// build 80: Source Name's Pop In. The source's name rises in letter by letter, the way L3's view word
++// does (up from below, a touch past, settling, brightest mid-landing), when the page opens or the
++// source changes; then it stays. Returns how far in it is (0-1), for the D-pad glyphs beside it.
++#define SRC_STEP_S 0.045f
++#define SRC_IN_S   0.36f
++float ripps2DrawSourcePop(int font, int x, int y, short aligned, const char *text, u64 colour)
++{
++    static char shown[64];
++    static double startAt = 0.0, seenAt = 0.0;
++    double now = ripps2Seconds();
++    char ch[2] = {0, 0};
++    int i, n = (int)strlen(text), total = 0;
++
++    if (n > (int)sizeof(shown) - 1)
++        n = sizeof(shown) - 1;
++    if (now - seenAt > 0.5 || strncmp(shown, text, sizeof(shown) - 1) != 0) { // the page opened, or another source
++        snprintf(shown, sizeof(shown), "%s", text);
++        startAt = now;
++    }
++    seenAt = now;
++    float t = (float)(now - startAt);
++    for (i = 0; i < n; i++) {
++        ch[0] = text[i];
++        total += rmUnScaleX(fntCalcDimensions(font, ch));
++    }
++    int lx = (aligned & ALIGN_HCENTER) ? x - total / 2 : x;
++    short va = (aligned & ALIGN_VCENTER) ? ALIGN_VCENTER : ALIGN_NONE;
++    int baseA = (colour >> 24) & 0xFF;
++    for (i = 0; i < n; i++) {
++        ch[0] = text[i];
++        int cw = rmUnScaleX(fntCalcDimensions(font, ch));
++        float li = (t - SRC_STEP_S * i) / SRC_IN_S;
++        if (li > 0.0f && ch[0] != ' ') {
++            if (li > 1.0f)
++                li = 1.0f;
++            int ly = y + (int)((1.0f - easeOutBack(li)) * 10.0f);
++            float flare = li < 1.0f ? sinf(3.14159265f * li) : 0.0f;
++            if (flare > 0.0f) {
++                u64 glow = WORD_RGBA(0x50, 0x78, 0xC0, (int)(0x40 * flare));
++                rmSetBlendAdditive(1);
++                fntRenderString(font, lx - 1, ly, va, 0, 0, ch, glow);
++                fntRenderString(font, lx + 1, ly, va, 0, 0, ch, glow);
++                rmSetBlendAdditive(0);
++            }
++            fntRenderString(font, lx, ly, va, 0, 0, ch, withAlpha(colour, (int)(baseA * fminf(1.0f, li * 1.8f))));
++        }
++        lx += cw;
++    }
++    float done = (t - SRC_STEP_S * (n > 0 ? n - 1 : 0)) / SRC_IN_S;
++    return done <= 0.0f ? 0.0f : done >= 1.0f ? 1.0f : smoothUnit(done);
++}
++
+ void ripps2SetCategory(int cat)
+ {
+     if (cat < 0 || cat >= RIPPS2_CAT_COUNT || cat == gRipps2Category)
+diff --git a/src/themes.c b/src/themes.c
+index 4a6966f..7624264 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -2467,6 +2467,10 @@ static void drawGrid(struct menu_list *menu, struct submenu_list *item, config_s
+     int top = elem->posY + h / 2;
+     int selX = -1, selY = 0;
+ 
++    // build 80: with tilt=1 only the chosen cover tips with the right stick, about its own centre; the
++    // rest of the page holds still (the element-wide tilt menusys set up is put aside for them)
++    if (elem->tilt)
++        ripps2TiltEnd();
+     for (p = first, k = 0; p != NULL && k < cols * rows; p = p->next, k++) {
+         if (p == item) {
+             selX = left + (k % cols) * stepX;
+@@ -2478,8 +2482,12 @@ static void drawGrid(struct menu_list *menu, struct submenu_list *item, config_s
+     }
+     if (selX >= 0 && !item->item.isFolder) {
+         int sw = w * 112 / 100, sh = h * 112 / 100;
++        if (elem->tilt)
++            ripps2TiltBegin(selX, selY, elem->tiltScale);
+         drawGridGlow(selX, selY, rmWideScale(sw), sh);
+         drawGridCover(menu, item, elem, src, selX, selY, sw, sh, 1);
++        if (elem->tilt)
++            ripps2TiltEnd();
+     }
+ }
+ 
+@@ -2901,7 +2909,9 @@ static void drawMenuText(struct menu_list *menu, struct submenu_list *item, conf
+         if (rightIconTex && rightIconTex->Mem)
+             rmDrawPixmap(rightIconTex, elem->posX + textW + 6, elem->posY - 2, elem->aligned, 18, 18, elem->scaled, glyphCol, 0);
+     }
+-    if (srcA > 0.0f)
++    if (ripps2SourceNameMode() == RIPPS2_SRC_POP) // build 80: rises in letter by letter, then stays
++        ripps2DrawSourcePop(elem->font, elem->posX, elem->posY, elem->aligned, text, elem->color);
++    else if (srcA > 0.0f)
+         fntRenderString(elem->font, elem->posX, elem->posY, elem->aligned, 0, 0, text,
+                         (elem->color & ~(0xFFULL << 24)) | ((u64)(int)(((elem->color >> 24) & 0xFF) * srcA) << 24));
+ }
+@@ -3162,6 +3172,15 @@ static void drawHintText(struct menu_list *menu, struct submenu_list *item, conf
+     menuHintsLock();
+ 
+     menu_hint_item_t *hint = menu->item->hints;
++    // RIPPS2 build 80: Coverflow and Grid cycle the sources with the cancel button; say so last
++    menu_hint_item_t sourceHint = {guiCancelIcon(), _STR_RIPPS2_SOURCE, NULL};
++    int showSource = (gTheme->coverflow != NULL || gTheme->grid != NULL) && (findMenuNext(menu) || findMenuPrev(menu));
++    if (hint && showSource) {
++        menu_hint_item_t *last = hint;
++        while (last->next != NULL)
++            last = last->next;
++        last->next = &sourceHint; // unlinked again below, before the lock is let go
++    }
+     if (hint) {
+         // RIPPS2: fit the row between the screen margins. A full row (Menu, Run, Info, Options,
+         // Refresh, Favorite, PS1) is wider than a gap of elem->width allows, so the gap tightens
+@@ -3187,6 +3206,12 @@ static void drawHintText(struct menu_list *menu, struct submenu_list *item, conf
+             x = guiDrawIconAndTextA(hint->icon_id, hint->text_id, elem->font, x, elem->posY, hintFade(elem->color, hintA), hintFade(gDefaultCol, hintA));
+             x += gap;
+         }
++        if (showSource) {
++            menu_hint_item_t *h2 = menu->item->hints;
++            while (h2->next != &sourceHint)
++                h2 = h2->next;
++            h2->next = NULL;
++        }
+     }
+ 
+     menuHintsUnlock();
+@@ -4561,6 +4586,12 @@ static int thmLoad(const char *themePath)
+     // RIPPS2 build 78: towers=0 keeps the pillars off the game pages (Settings still shows them)
+     if (configGetInt(themeConfig, "towers", &intValue) && intValue == 0)
+         newT->noTowers = 1;
++    // RIPPS2 build 80: source_name=pop makes Pop In the theme's Source Name (the setting's Shown)
++    {
++        const char *srcName = NULL;
++        if (configGetStr(themeConfig, "source_name", &srcName) && srcName != NULL && !strcmp(srcName, "pop"))
++            newT->srcNamePop = 1;
++    }
+ 
+     configFree(themeConfig); // all themeConfig reads are done now (last was use_settings_bg above)
+ 
