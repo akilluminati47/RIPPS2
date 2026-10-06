@@ -25,10 +25,10 @@ index 7a1e9ae..c14a556 100644
  // ---- Boot swoop and launch light-up (ripps2bg.c) ----
 diff --git a/src/ripps2card.c b/src/ripps2card.c
 new file mode 100644
-index 0000000..bf1352f
+index 0000000..27a3c05
 --- /dev/null
 +++ b/src/ripps2card.c
-@@ -0,0 +1,570 @@
+@@ -0,0 +1,571 @@
 +/*
 +  Copyright 2026, RIPPS2 contributors
 +  Licenced under Academic Free License version 3.0
@@ -55,7 +55,8 @@ index 0000000..bf1352f
 +#include <dirent.h>
 +#include <sys/stat.h>
 +#include <libmc.h>
-+#include <fileXio_rpc.h> // fileXioDevctl: genvmc's devctls
++#define NEWLIB_PORT_AWARE
++#include <fileXio_rpc.h> // fileXioDevctl: genvmc's devctls (the one call below newlib)
 +
 +#include "include/opl.h"
 +#include "include/gui.h"
