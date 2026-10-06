@@ -1,3 +1,17 @@
+diff --git a/Makefile b/Makefile
+index d40ed2b..c84b6f5 100644
+--- a/Makefile
++++ b/Makefile
+@@ -311,6 +311,9 @@ ifeq ($(RIPPS2_CD_TEST),1)
+ endif
+ # RIPPS2: a test build whose IO worker is not woken for a deferred save (the stall seen on consoles),
+ # to prove the save still runs. Never for a release.
++ifeq ($(RIPPS2_GRID_DEBUG),1)
++  EE_CFLAGS += -DRIPPS2_GRID_DEBUG
++endif
+ ifeq ($(RIPPS2_PERF_HUD),1)
+   EE_CFLAGS += -DRIPPS2_PERF_HUD=1
+ endif
 diff --git a/include/ripps2.h b/include/ripps2.h
 index 2889d40..046b088 100644
 --- a/include/ripps2.h
@@ -112,7 +126,7 @@ index a6aae66..8fc178e 100644
 +    return sx > 100 ? 1 : sx < -100 ? -1 : 0;
 +}
 diff --git a/src/themes.c b/src/themes.c
-index b478987..a9f90ec 100644
+index b478987..7e397c3 100644
 --- a/src/themes.c
 +++ b/src/themes.c
 @@ -2328,12 +2328,125 @@ static void drawCoverFlow(struct menu_list *menu, struct submenu_list *item, con
@@ -266,7 +280,7 @@ index b478987..a9f90ec 100644
      texture = getGameImageTextureEx(img->cache, src, &it->item, selected);
      if (texture == NULL || texture->Mem == NULL) {
          if (img->defaultTexture != NULL)
-@@ -2450,47 +2568,125 @@ static void drawGrid(struct menu_list *menu, struct submenu_list *item, config_s
+@@ -2450,47 +2568,138 @@ static void drawGrid(struct menu_list *menu, struct submenu_list *item, config_s
      if (p == NULL)
          return;
  
@@ -325,6 +339,19 @@ index b478987..a9f90ec 100644
 +            selBack = gridBackTexture(elem, src, item, 1);
 +    }
 +    gridFlipUpdate(item->item.isFolder ? NULL : item, selBack != NULL);
++#ifdef RIPPS2_GRID_DEBUG
++    {
++        mutable_image_t *gb = gridBackFor(elem);
++        char dbg[160];
++        int uid = gb != NULL && gb->cache != NULL ? gb->cache->userId : -9;
++        snprintf(dbg, sizeof(dbg), "gb=%d uid=%d n=%d cid=%d side=%d hold=%d back=%d turn=%d",
++                 gb != NULL, uid, gTheme->gameCacheCount,
++                 (uid >= 0 && item->item.cache_id != NULL) ? item->item.cache_id[uid] : -9, ripps2StickSide(),
++                 flipHoldItem == item ? (int)((clock() - flipHoldSince) * 10 / CLOCKS_PER_SEC) : -1, selBack != NULL,
++                 (int)(gridFlipTurn(item) * 100));
++        fntRenderString(gTheme->fonts[0], 20, 20, ALIGN_NONE, 0, 0, dbg, GS_SETREG_RGBA(0xFF, 0xFF, 0x40, 0x80));
++    }
++#endif
 +
      // build 80: with tilt=1 only the chosen cover tips with the right stick, about its own centre; the
      // rest of the page holds still (the element-wide tilt menusys set up is put aside for them)
@@ -405,7 +432,7 @@ index b478987..a9f90ec 100644
  static void initGrid(const char *themePath, config_set_t *themeConfig, theme_t *theme, theme_element_t *elem, const char *name)
  {
      char key[64];
-@@ -2509,8 +2705,8 @@ static void initGrid(const char *themePath, config_set_t *themeConfig, theme_t *
+@@ -2509,8 +2718,8 @@ static void initGrid(const char *themePath, config_set_t *themeConfig, theme_t *
      if (gap < 0 || gap > 64)
          gap = 14;
  
@@ -416,7 +443,7 @@ index b478987..a9f90ec 100644
      if (slots < COVER_CACHE_SLOTS)
          slots = COVER_CACHE_SLOTS;
      mutable_image_t *mutableImage = initMutableImage(themePath, themeConfig, theme, name, elem->type, "COV", slots, NULL, NULL);
-@@ -2519,6 +2715,12 @@ static void initGrid(const char *themePath, config_set_t *themeConfig, theme_t *
+@@ -2519,6 +2728,12 @@ static void initGrid(const char *themePath, config_set_t *themeConfig, theme_t *
  
      if (mutableImage && mutableImage->cache) {
          elem->drawElem = &drawGrid;
