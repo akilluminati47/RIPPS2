@@ -2,7 +2,7 @@
 
 Builds, for build N:
   test-me-N.png    the banner: "Test me | Build N" in RIPPS2 Sleek over the pillars, with the RIPPS2 mark
-  ripps2-icon.png  the RIPPS2 mark (the dead elf: an elf's hat in a pool of blood), as the post's author icon
+  ripps2-icon.png  the RIPPS2 mark (the dead elf: an elf's blue hat in a pool of blood), as the post's author icon
   post-N.json      the webhook payload: the banner first, then what is new and what to test
 
     python make_test_embed.py --build 70 --notes notes.md [--release URL] [--attach FILE ...] [--out DIR] [--post]
@@ -42,10 +42,14 @@ def font(name, size):
     return ImageFont.truetype(os.path.join(FONTS, name), size)
 
 
+# The RIPPS2 mark: the dead elf in its blue hat (media/deadelf, rendered by media/deadelf/scene.html)
+MARK = os.path.join(HERE, '..', '..', 'media', 'deadelf', 'ripps2-deadelf-bluehat.png')
+
+
 def icon(size=256):
     """The RIPPS2 mark: the dead elf (assets/ripps2-deadelf.png, rendered in three.js by
     media/deadelf/scene.html), on a dark rounded tile so it reads on Discord's light and dark themes."""
-    mark = Image.open(os.path.join(HERE, '..', '..', 'assets', 'ripps2-deadelf.png')).convert('RGBA')
+    mark = Image.open(MARK).convert('RGBA')
     im = Image.new('RGBA', (size, size), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
     d.rounded_rectangle((0, 0, size - 1, size - 1), radius=int(size * 0.18), fill=(10, 6, 12, 255))
@@ -58,7 +62,7 @@ def mark(box):
     """The dead elf alone, with its own transparency, trimmed to what it draws and fitted into a
     box x box square: the banner puts it straight onto the night sky, no tile behind it. Scaled
     premultiplied, so the edges keep their colour instead of a dark fringe."""
-    m = Image.open(os.path.join(HERE, '..', '..', 'assets', 'ripps2-deadelf.png')).convert('RGBA')
+    m = Image.open(MARK).convert('RGBA')
     m = m.crop(m.getchannel('A').getbbox())
     k = box / max(m.size)
     m = m.convert('RGBa').resize((max(1, round(m.width * k)), max(1, round(m.height * k))), Image.LANCZOS).convert('RGBA')
@@ -215,10 +219,13 @@ def main():
     ap.add_argument('--out', default='.')
     ap.add_argument('--post', action='store_true')
     ap.add_argument('--attach', action='append', default=[])
+    ap.add_argument('--readme', action='store_true', help="also write the banner to media/ripps2-test-me.png (the README's header)")
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
     bn, ic = os.path.join(a.out, 'test-me-%d.png' % a.build), os.path.join(a.out, 'ripps2-icon.png')
     banner(a.build).save(bn, optimize=True)
+    if a.readme:
+        banner(a.build).save(os.path.join(HERE, '..', '..', 'media', 'ripps2-test-me.png'), optimize=True)
     icon().save(ic, optimize=True)
     data = payload(a.build, a.notes, a.release)
     jp = os.path.join(a.out, 'post-%d.json' % a.build)
