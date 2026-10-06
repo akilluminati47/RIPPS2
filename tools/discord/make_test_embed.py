@@ -54,6 +54,19 @@ def icon(size=256):
     return im
 
 
+def mark(box):
+    """The dead elf alone, with its own transparency, trimmed to what it draws and fitted into a
+    box x box square: the banner puts it straight onto the night sky, no tile behind it. Scaled
+    premultiplied, so the edges keep their colour instead of a dark fringe."""
+    m = Image.open(os.path.join(HERE, '..', '..', 'assets', 'ripps2-deadelf.png')).convert('RGBA')
+    m = m.crop(m.getchannel('A').getbbox())
+    k = box / max(m.size)
+    m = m.convert('RGBa').resize((max(1, round(m.width * k)), max(1, round(m.height * k))), Image.LANCZOS).convert('RGBA')
+    out = Image.new('RGBA', (box, box), (0, 0, 0, 0))
+    out.alpha_composite(m, ((box - m.width) // 2, (box - m.height) // 2))
+    return out
+
+
 def banner(build, w=1280, h=480):
     """Dark PS2 night, the pillars field low in the frame, and the words."""
     im = Image.new('RGB', (w, h), (2, 6, 20))
@@ -108,8 +121,7 @@ def banner(build, w=1280, h=480):
     sd.rectangle((0, 0, w, h * 0.5), fill=(1, 4, 14, 150))
     im = Image.alpha_composite(im.convert('RGBA'), shade.filter(ImageFilter.GaussianBlur(40)))
     d = ImageDraw.Draw(im)
-    ic = icon(132)
-    im.alpha_composite(ic, (70, 62))
+    im.alpha_composite(mark(140), (66, 56))
     big = font('ripps2_sleek_case.ttf', 104)
     small = font('ripps2_sleek_case.ttf', 40)
     title = 'Test me'
