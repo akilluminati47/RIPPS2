@@ -151,7 +151,7 @@ def parse_notes(path):
     return pitch, sections
 
 
-def payload(build, notes, release):
+def payload(build, notes, release, videos=()):
     pitch, sections = parse_notes(notes)
     news, tests, report = [], [], ''
     for title, lines in sections:
@@ -188,7 +188,9 @@ def payload(build, notes, release):
     if report:
         body['fields'].append({'name': 'Tell us', 'value': report[:1024], 'inline': False})
     body['footer'] = {'text': 'RIPPS2 build %d  |  alpha: keep your usual loader close by' % build, 'icon_url': 'attachment://ripps2-icon.png'}
-    return {'content': '', 'embeds': [head, body], 'allowed_mentions': {'parse': []},
+    # videos go in the message text, where Discord turns each link into a player above the card
+    content = '**Watch build %d:** ' % build + '  |  '.join(videos) if videos else ''
+    return {'content': content, 'embeds': [head, body], 'allowed_mentions': {'parse': []},
             'attachments': [{'id': 0, 'filename': 'test-me-%d.png' % build}, {'id': 1, 'filename': 'ripps2-icon.png'}]}
 
 
@@ -219,6 +221,7 @@ def main():
     ap.add_argument('--out', default='.')
     ap.add_argument('--post', action='store_true')
     ap.add_argument('--attach', action='append', default=[])
+    ap.add_argument('--video', action='append', default=[], help='a video link for the message text (Discord plays it), one per --video')
     ap.add_argument('--readme', action='store_true', help="also write the banner to media/ripps2-test-me.png (the README's header)")
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
@@ -227,7 +230,7 @@ def main():
     if a.readme:
         banner(a.build).save(os.path.join(HERE, '..', '..', 'media', 'ripps2-test-me.png'), optimize=True)
     icon().save(ic, optimize=True)
-    data = payload(a.build, a.notes, a.release)
+    data = payload(a.build, a.notes, a.release, a.video)
     jp = os.path.join(a.out, 'post-%d.json' % a.build)
     json.dump(data, open(jp, 'w', encoding='utf-8'), indent=1, ensure_ascii=False)
     size = sum(len(json.dumps(e)) for e in data['embeds'])
