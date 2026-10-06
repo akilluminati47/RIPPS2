@@ -6,6 +6,11 @@
 - **Source Name: Pop In is now a toast.** The source's name is no longer drawn over the list: it plays in the middle of the page the way L3 names the list, in the same big letters, the whole name in capitals (ALL GAMES, HDD GAMES, BDM GAMES; the GAMES tells it apart from L3's ALL). It comes on the first list after boot, whenever the source changes and when you come back to Storage from another tab, then holds and fades. Closing an info page or Settings does not repeat it. Themes with `source_name=pop` (Adapt, Adapt Rx, RIPgrid) get it too, so their static source line is gone.
 - Long names (UDPFSBD GAMES) close their letters up to stay on screen.
 
+### Themes set the look, you keep the last word
+- **A theme can now choose Colors and More for itself** in its `conf_theme.cfg`: `color_theme` (RIPPS2, Ember, Blood, Ectoplasm, Amethyst, Bone), `category_bar` and `button_hints` (shown, fade, hidden), `dpad_glyphs` (hidden, shown, fade_in, fade_out), `category_order` (launch_disc_first, memory_files_first), and `source_name` (shown, fade, hidden as well as pop). No rebuild of the ELF: any theme folder can do it.
+- **Your settings always win.** RIPPS2 now remembers which Colors and More rows you have changed. A theme's choice shows only on a row you have never touched that is still at its default, so anything you pick, the default included, stays yours on every theme. Colors and More shows what is in effect.
+- **RIPFLOW puts Memory Files first** on the category bar, unless you have picked an order.
+
 ## Build 80 (testing), changes since build 79
 
 ### STATUS

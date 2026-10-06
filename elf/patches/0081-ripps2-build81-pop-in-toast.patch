@@ -1,8 +1,8 @@
 diff --git a/include/ripps2.h b/include/ripps2.h
-index d061b71..a6f7b71 100644
+index d061b71..2889d40 100644
 --- a/include/ripps2.h
 +++ b/include/ripps2.h
-@@ -60,10 +60,11 @@ extern int gRipps2Random;
+@@ -60,14 +60,23 @@ extern int gRipps2Random;
  // the settings
  enum { RIPPS2_GLYPHS_HIDDEN = 0, RIPPS2_GLYPHS_SHOWN, RIPPS2_GLYPHS_FADE_IN, RIPPS2_GLYPHS_FADE_OUT, RIPPS2_GLYPHS_COUNT };
  enum { RIPPS2_SHOW_ON = 0, RIPPS2_SHOW_IDLE, RIPPS2_SHOW_OFF, RIPPS2_SHOW_COUNT }; // shown / fade when idle / hidden
@@ -17,6 +17,51 @@ index d061b71..a6f7b71 100644
  enum { RIPPS2_GLYPH_DRIVES = 0, RIPPS2_GLYPH_FORMATIONS }; // whose glyphs: Storage's drive name, Memory Files' formation
  #define RIPPS2_PALETTE_COUNT 6
  extern int gRipps2Glyphs;  // the D-pad glyphs beside a drive's or a formation's name (hidden by default)
+ extern int gRipps2Palette; // Color Theme for everything RIPPS2 draws (ripps2tint.h): 0 is RIPPS2 blue
++extern int gRipps2PaletteShown; // build 81: the one drawn: the setting, or a theme's color_theme standing in for blue
++void ripps2PaletteSync(void);   // build 81: recompute it (each frame, and as Colors and More changes)
++// build 81: the Colors and More rows the user has changed, saved as ripps2_userset. A theme's default for
++// a row (conf_theme.cfg) shows only while the user has never changed it and it holds its own default.
++enum { RIPPS2_SET_PALETTE = 1, RIPPS2_SET_CATBAR = 2, RIPPS2_SET_HINTS = 4, RIPPS2_SET_GLYPHS = 8,
++       RIPPS2_SET_SRCNAME = 16, RIPPS2_SET_CATSWAP = 32 };
++extern int gRipps2UserSet;
++int ripps2ColorsShown(int bit); // what a row shows: the value in effect, a theme's default included
+ extern int gRipps2Hints;   // the button hints along the bottom of the three tabs
+ extern int gRipps2CatBar;  // LAUNCH DISC | STORAGE | MEMORY FILES along the top
+ extern int gRipps2CatSwap; // 1: Memory Files first and Launch Disc last
+diff --git a/include/ripps2tint.h b/include/ripps2tint.h
+index 569d7ff..5187318 100644
+--- a/include/ripps2tint.h
++++ b/include/ripps2tint.h
+@@ -11,12 +11,12 @@
+ 
+ #include <tamtypes.h>
+ 
+-extern int gRipps2Palette;
++extern int gRipps2PaletteShown; // build 81: the setting, or the theme's color_theme standing in for RIPPS2 blue
+ u64 ripps2TintSlow(int r, int g, int b, int a, u64 q);
+ 
+ static inline u64 ripps2Tint(int r, int g, int b, int a, u64 q)
+ {
+-    if (gRipps2Palette == 0)
++    if (gRipps2PaletteShown == 0)
+         return (u64)(r & 0xFF) | ((u64)(g & 0xFF) << 8) | ((u64)(b & 0xFF) << 16) | ((u64)(a & 0xFF) << 24) | (q << 32);
+     return ripps2TintSlow(r, g, b, a, q);
+ }
+diff --git a/include/themes.h b/include/themes.h
+index dbf0baa..148e2d7 100644
+--- a/include/themes.h
++++ b/include/themes.h
+@@ -226,6 +226,9 @@ typedef struct theme
+     int frostCrop[2];      // RIPPS2 build 79: the frost's source is drawn widecrop // ... made from this texture memory, for this item (rebuilt when either changes)
+     int srcNamePop;        // RIPPS2 build 80: source_name=pop, the theme's Source Name is Pop In unless the user picked otherwise
+     int noTowers;          // RIPPS2 build 78: towers=0, the game pages never show the pillars (bg_color instead)
++    // RIPPS2 build 81: the theme's defaults for Colors and More (-1: none), each standing in while the
++    // setting is at its own default: color_theme, category_bar, button_hints, dpad_glyphs, source_name
++    int paletteDef, catBarDef, hintsDef, glyphsDef, srcNameDef, catSwapDef; // catSwapDef: category_order
+     theme_element_t *grid; // RIPPS2 build 78: the first Grid element (a page of covers in rows), NULL if none
+     int gridColumns, gridRows, gridSpacing;
+ 
 diff --git a/lng_tmpl/_base.yml b/lng_tmpl/_base.yml
 index 863b80e..e529176 100644
 --- a/lng_tmpl/_base.yml
@@ -30,11 +75,276 @@ index 863b80e..e529176 100644
  - label: RIPPS2_RECENTS
    string: Show Recents
  - label: HINT_RIPPS2_RECENTS
+diff --git a/misc/theme_coverflow.cfg b/misc/theme_coverflow.cfg
+index 54026ed..2c27470 100644
+--- a/misc/theme_coverflow.cfg
++++ b/misc/theme_coverflow.cfg
+@@ -2,6 +2,8 @@
+ # RIPPS2 build 70: RIPFLOW's own faces, Roboto Condensed for text and its Bold Condensed for menus
+ # (elf/theme/fonts/ROBOTO-LICENSE.txt); _caps=1 draws a face's menu names in capitals while the
+ # tooltips and hints (font15) keep their lowercase. Same slots as the RIPPS2 theme.
++# RIPPS2 build 81: RIPFLOW puts Memory Files first on the category bar unless the user has picked an order
++category_order=memory_files_first
+ default_font=builtin:ripflow
+ default_font_size=17
+ font1=builtin:ripflow
+diff --git a/src/gui.c b/src/gui.c
+index 6279474..cb8e4eb 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -2375,23 +2375,28 @@ static const char *guiRipps2SrcNames[] = {"Shown", "Fade When Idle", "Hidden", "
+ static const char *guiRipps2OrderNames[] = {"Launch Disc First", "Memory Files First", NULL};
+ static const char *guiRipps2PaletteNames[RIPPS2_PALETTE_COUNT + 1];
+ 
++// build 81: a row the user moves off what it showed (a theme's default included) becomes theirs for good
++static void guiRipps2Take(int id, int bit, int count, int *setting)
++{
++    int v;
++    if (diaGetInt(diaColorsConfig, id, &v) && v >= 0 && v < count && v != ripps2ColorsShown(bit)) {
++        *setting = v;
++        gRipps2UserSet |= bit;
++    }
++}
++
+ static void guiRipps2SettingsRead(void)
+ {
+     int v;
+-    if (diaGetInt(diaColorsConfig, UICFG_RIPPS2_GLYPHS, &v) && v >= 0 && v < RIPPS2_GLYPHS_COUNT)
+-        gRipps2Glyphs = v;
+-    if (diaGetInt(diaColorsConfig, UICFG_RIPPS2_PALETTE, &v) && v >= 0 && v < RIPPS2_PALETTE_COUNT)
+-        gRipps2Palette = v;
+-    if (diaGetInt(diaColorsConfig, UICFG_RIPPS2_HINTS, &v) && v >= 0 && v < RIPPS2_SHOW_COUNT)
+-        gRipps2Hints = v;
+-    if (diaGetInt(diaColorsConfig, UICFG_RIPPS2_CATBAR, &v) && v >= 0 && v < RIPPS2_SHOW_COUNT)
+-        gRipps2CatBar = v;
+-    if (diaGetInt(diaColorsConfig, UICFG_RIPPS2_CATSWAP, &v) && (v == 0 || v == 1))
+-        gRipps2CatSwap = v;
+-    if (diaGetInt(diaColorsConfig, UICFG_RIPPS2_SRCNAME, &v) && v >= 0 && v < RIPPS2_SRC_COUNT)
+-        gRipps2SrcName = v;
++    guiRipps2Take(UICFG_RIPPS2_GLYPHS, RIPPS2_SET_GLYPHS, RIPPS2_GLYPHS_COUNT, &gRipps2Glyphs);
++    guiRipps2Take(UICFG_RIPPS2_PALETTE, RIPPS2_SET_PALETTE, RIPPS2_PALETTE_COUNT, &gRipps2Palette);
++    guiRipps2Take(UICFG_RIPPS2_HINTS, RIPPS2_SET_HINTS, RIPPS2_SHOW_COUNT, &gRipps2Hints);
++    guiRipps2Take(UICFG_RIPPS2_CATBAR, RIPPS2_SET_CATBAR, RIPPS2_SHOW_COUNT, &gRipps2CatBar);
++    guiRipps2Take(UICFG_RIPPS2_CATSWAP, RIPPS2_SET_CATSWAP, 2, &gRipps2CatSwap);
++    guiRipps2Take(UICFG_RIPPS2_SRCNAME, RIPPS2_SET_SRCNAME, RIPPS2_SRC_COUNT, &gRipps2SrcName);
+     if (diaGetInt(diaColorsConfig, UICFG_RIPPS2_RECENTS, &v) && v >= 0 && v <= 9)
+         gRipps2Recents = v;
++    ripps2PaletteSync(); // build 81: the page behind shows the pick at once
+ }
+ 
+ static int guiRipps2SettingsUpdater(int modified)
+@@ -2412,13 +2417,14 @@ static void guiRipps2SettingsSet(void)
+     diaSetEnum(diaColorsConfig, UICFG_RIPPS2_HINTS, guiRipps2ShowNames);
+     diaSetEnum(diaColorsConfig, UICFG_RIPPS2_CATBAR, guiRipps2ShowNames);
+     diaSetEnum(diaColorsConfig, UICFG_RIPPS2_CATSWAP, guiRipps2OrderNames);
+-    diaSetInt(diaColorsConfig, UICFG_RIPPS2_GLYPHS, gRipps2Glyphs);
+-    diaSetInt(diaColorsConfig, UICFG_RIPPS2_PALETTE, gRipps2Palette);
+-    diaSetInt(diaColorsConfig, UICFG_RIPPS2_HINTS, gRipps2Hints);
+-    diaSetInt(diaColorsConfig, UICFG_RIPPS2_CATBAR, gRipps2CatBar);
+-    diaSetInt(diaColorsConfig, UICFG_RIPPS2_CATSWAP, gRipps2CatSwap);
++    // build 81: each row shows what is in effect, a theme's default included
++    diaSetInt(diaColorsConfig, UICFG_RIPPS2_GLYPHS, ripps2ColorsShown(RIPPS2_SET_GLYPHS));
++    diaSetInt(diaColorsConfig, UICFG_RIPPS2_PALETTE, ripps2ColorsShown(RIPPS2_SET_PALETTE));
++    diaSetInt(diaColorsConfig, UICFG_RIPPS2_HINTS, ripps2ColorsShown(RIPPS2_SET_HINTS));
++    diaSetInt(diaColorsConfig, UICFG_RIPPS2_CATBAR, ripps2ColorsShown(RIPPS2_SET_CATBAR));
++    diaSetInt(diaColorsConfig, UICFG_RIPPS2_CATSWAP, ripps2ColorsShown(RIPPS2_SET_CATSWAP));
+     diaSetEnum(diaColorsConfig, UICFG_RIPPS2_SRCNAME, guiRipps2SrcNames);
+-    diaSetInt(diaColorsConfig, UICFG_RIPPS2_SRCNAME, gRipps2SrcName);
++    diaSetInt(diaColorsConfig, UICFG_RIPPS2_SRCNAME, ripps2ColorsShown(RIPPS2_SET_SRCNAME));
+     diaSetInt(diaColorsConfig, UICFG_RIPPS2_RECENTS, gRipps2Recents);
+ }
+ 
+@@ -2426,7 +2432,7 @@ void guiShowColorsConfig(void)
+ {
+     int themeID = thmGetGuiValue();
+     int editable = (themeID == 0 || themeID == thmFindGuiID("<RIPFLOW>"));
+-    int keep[7] = {gRipps2Glyphs, gRipps2Palette, gRipps2Hints, gRipps2CatBar, gRipps2CatSwap, gRipps2SrcName, gRipps2Recents};
++    int keep[8] = {gRipps2Glyphs, gRipps2Palette, gRipps2Hints, gRipps2CatBar, gRipps2CatSwap, gRipps2SrcName, gRipps2Recents, gRipps2UserSet};
+ 
+     guiRipps2SettingsSet();
+ 
+@@ -2466,9 +2472,11 @@ void guiShowColorsConfig(void)
+         gRipps2CatSwap = keep[4];
+         gRipps2SrcName = keep[5];
+         gRipps2Recents = keep[6];
++        gRipps2UserSet = keep[7];
++        ripps2PaletteSync();
+     }
+     if (gRipps2Glyphs != keep[0] || gRipps2Palette != keep[1] || gRipps2Hints != keep[2] || gRipps2CatBar != keep[3] ||
+-        gRipps2CatSwap != keep[4] || gRipps2SrcName != keep[5])
++        gRipps2CatSwap != keep[4] || gRipps2SrcName != keep[5] || gRipps2UserSet != keep[7])
+         guiSettingsSavePending = 1; // saved with the rest when Settings closes
+     if (gRipps2Recents != keep[6]) {
+         guiSettingsSavePending = 1;
+diff --git a/src/opl.c b/src/opl.c
+index 47e90c8..444f710 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -3304,6 +3304,8 @@ static void _loadConfig()
+                 gRipps2SrcName = value; // build 71
+             if (configGetInt(configOPL, "ripps2_recents", &value) && value >= 0 && value <= 9)
+                 gRipps2Recents = value;
++            if (configGetInt(configOPL, "ripps2_userset", &value) && value >= 0)
++                gRipps2UserSet = value; // build 81: the rows a theme's defaults never touch
+             configGetColor(configOPL, CONFIG_OPL_BGCOLOR, gDefaultBgColor);
+             configGetColor(configOPL, CONFIG_OPL_TEXTCOLOR, gDefaultTextColor);
+             configGetColor(configOPL, CONFIG_OPL_UI_TEXTCOLOR, gDefaultUITextColor);
+@@ -3998,6 +4000,7 @@ static void _saveConfig()
+         configSetInt(configOPL, "ripps2_catswap", gRipps2CatSwap);
+         configSetInt(configOPL, "ripps2_srcname", gRipps2SrcName); // build 71
+         configSetInt(configOPL, "ripps2_recents", gRipps2Recents);
++        configSetInt(configOPL, "ripps2_userset", gRipps2UserSet); // build 81
+         ripps2QuietBootMark(gEnableSFX && gEnableBootSND); // build 75: what an HDD launch knows before its settings
+         configSetStr(configOPL, CONFIG_OPL_THEME, thmGetValue());
+         configSetStr(configOPL, CONFIG_OPL_LANGUAGE, lngGetValue());
 diff --git a/src/ripps2ui.c b/src/ripps2ui.c
-index 6f5a815..ecf652a 100644
+index 6f5a815..cad9486 100644
 --- a/src/ripps2ui.c
 +++ b/src/ripps2ui.c
-@@ -450,11 +450,12 @@ void ripps2DrawBusy(int alpha)
+@@ -90,6 +90,65 @@ static int formationDirty = 0; // changed since the last save
+ int gRipps2Glyphs = RIPPS2_GLYPHS_HIDDEN, gRipps2Palette = 0, gRipps2Hints = RIPPS2_SHOW_ON, gRipps2CatBar = RIPPS2_SHOW_ON,
+     gRipps2CatSwap = 0;
+ int gRipps2SrcName = RIPPS2_SHOW_ON, gRipps2Recents = 0; // build 71
++int gRipps2PaletteShown = 0; // build 81: the Color Theme drawn (ripps2tint.h): the setting, or the theme's color_theme
++int gRipps2UserSet = 0;      // build 81: RIPPS2_SET_* bits, the Colors and More rows the user has changed (saved)
++
++// build 81: a theme's own defaults for Colors and More (conf_theme.cfg: color_theme, category_bar,
++// button_hints, dpad_glyphs, category_order, source_name). The user always wins: a theme's value shows
++// only for a row the user has never changed (gRipps2UserSet) and that still holds its own default, so a
++// choice made in any build, the default itself included once picked, stays the user's.
++static int themeDefault(int setting, int settingDefault, int themeValue, int bit)
++{
++    if ((gRipps2UserSet & bit) || setting != settingDefault || themeValue < 0)
++        return setting;
++    return themeValue;
++}
++
++static int hintsMode(void)
++{
++    return themeDefault(gRipps2Hints, RIPPS2_SHOW_ON, gTheme != NULL ? gTheme->hintsDef : -1, RIPPS2_SET_HINTS);
++}
++
++static int catBarMode(void)
++{
++    return themeDefault(gRipps2CatBar, RIPPS2_SHOW_ON, gTheme != NULL ? gTheme->catBarDef : -1, RIPPS2_SET_CATBAR);
++}
++
++static int glyphsMode(void)
++{
++    return themeDefault(gRipps2Glyphs, RIPPS2_GLYPHS_HIDDEN, gTheme != NULL ? gTheme->glyphsDef : -1, RIPPS2_SET_GLYPHS);
++}
++
++static int catSwapMode(void)
++{
++    return themeDefault(gRipps2CatSwap, 0, gTheme != NULL ? gTheme->catSwapDef : -1, RIPPS2_SET_CATSWAP);
++}
++
++void ripps2PaletteSync(void)
++{
++    gRipps2PaletteShown = themeDefault(gRipps2Palette, 0, gTheme != NULL ? gTheme->paletteDef : -1, RIPPS2_SET_PALETTE);
++}
++
++// What Colors and More shows for a row: what is in effect, the theme's default included
++int ripps2ColorsShown(int bit)
++{
++    switch (bit) {
++        case RIPPS2_SET_GLYPHS:
++            return glyphsMode();
++        case RIPPS2_SET_PALETTE:
++            ripps2PaletteSync();
++            return gRipps2PaletteShown;
++        case RIPPS2_SET_HINTS:
++            return hintsMode();
++        case RIPPS2_SET_CATBAR:
++            return catBarMode();
++        case RIPPS2_SET_CATSWAP:
++            return catSwapMode();
++        case RIPPS2_SET_SRCNAME:
++            return ripps2SourceNameMode();
++    }
++    return 0;
++}
+ 
+ #define ART_FADE_S   0.35f // the art's fade in (themes.c ART_FADE_S): the glyphs and the idle fades come in at its pace
+ #define GLYPH_HOLD_S 2.5f  // the glyphs stay this long after a press (or the page opening, for Fade Out)
+@@ -114,6 +173,7 @@ static float idleShow = 1.0f; // 1 shown .. 0 faded, eased toward what the idle
+ void ripps2NoteInput(void)
+ {
+     double now = ripps2Seconds();
++    ripps2PaletteSync(); // build 81: a theme switch or a loaded setting shows from this frame
+     int k, any = 0, sx = 0, sy = 0;
+     for (k = KEY_LEFT; k <= KEY_L2; k++) {
+         if (getKeyPressed(k)) {
+@@ -150,19 +210,18 @@ static float showAlpha(int mode)
+ 
+ float ripps2HintsAlpha(void)
+ {
+-    return showAlpha(gRipps2Hints);
++    return showAlpha(hintsMode());
+ }
+ 
+ float ripps2CatBarAlpha(void)
+ {
+-    return showAlpha(gRipps2CatBar);
++    return showAlpha(catBarMode());
+ }
+ 
+ int ripps2SourceNameMode(void)
+ {
+-    if (gRipps2SrcName == RIPPS2_SHOW_ON && gTheme != NULL && gTheme->srcNamePop)
+-        return RIPPS2_SRC_POP; // build 80: the theme's own default
+-    return gRipps2SrcName;
++    int def = gTheme == NULL ? -1 : gTheme->srcNamePop ? RIPPS2_SRC_POP : gTheme->srcNameDef; // build 80: pop; 81: the others
++    return themeDefault(gRipps2SrcName, RIPPS2_SHOW_ON, def, RIPPS2_SET_SRCNAME);
+ }
+ 
+ float ripps2SourceNameAlpha(void)
+@@ -185,7 +244,7 @@ void ripps2GlyphsPoke(int which)
+ {
+     glyph_fade_t *g = &glyphFade[which ? 1 : 0];
+     g->pokedAt = ripps2Seconds();
+-    if (gRipps2Glyphs == RIPPS2_GLYPHS_FADE_OUT)
++    if (glyphsMode() == RIPPS2_GLYPHS_FADE_OUT)
+         g->a = 1.0f; // back at once, then away again
+ }
+ 
+@@ -197,13 +256,13 @@ float ripps2GlyphsAlpha(int which)
+     if (g->seenAt == 0.0 || dt > 0.5f || dt < 0.0f) { // not drawn for a while: the page has just opened
+         dt = 0.0f;
+         if (now - g->pokedAt > 1.0) // (a press that brought the page here still counts)
+-            g->pokedAt = gRipps2Glyphs == RIPPS2_GLYPHS_FADE_OUT ? now : -100.0;
+-        g->a = gRipps2Glyphs == RIPPS2_GLYPHS_FADE_OUT && now - g->pokedAt < GLYPH_HOLD_S ? 1.0f : 0.0f;
++            g->pokedAt = glyphsMode() == RIPPS2_GLYPHS_FADE_OUT ? now : -100.0;
++        g->a = glyphsMode() == RIPPS2_GLYPHS_FADE_OUT && now - g->pokedAt < GLYPH_HOLD_S ? 1.0f : 0.0f;
+     }
+     g->seenAt = now;
+-    if (gRipps2Glyphs == RIPPS2_GLYPHS_SHOWN)
++    if (glyphsMode() == RIPPS2_GLYPHS_SHOWN)
+         return 1.0f;
+-    if (gRipps2Glyphs != RIPPS2_GLYPHS_FADE_IN && gRipps2Glyphs != RIPPS2_GLYPHS_FADE_OUT)
++    if (glyphsMode() != RIPPS2_GLYPHS_FADE_IN && glyphsMode() != RIPPS2_GLYPHS_FADE_OUT)
+         return 0.0f;
+     if (now - g->pokedAt < GLYPH_HOLD_S)
+         g->a = fminf(1.0f, g->a + dt / ART_FADE_S);
+@@ -249,7 +308,7 @@ static void paletteBuild(int p)
+ 
+ u64 ripps2TintSlow(int r, int g, int b, int a, u64 q)
+ {
+-    int p = gRipps2Palette, o[3], i;
++    int p = gRipps2PaletteShown, o[3], i;
+     if (p <= 0 || p >= RIPPS2_PALETTE_COUNT)
+         return (u64)(r & 0xFF) | ((u64)(g & 0xFF) << 8) | ((u64)(b & 0xFF) << 16) | ((u64)(a & 0xFF) << 24) | (q << 32);
+     if (paletteBuilt != p)
+@@ -265,7 +324,7 @@ u64 ripps2TintSlow(int r, int g, int b, int a, u64 q)
+ // A category's place on the bar, and the category at a place: the same swap both ways.
+ static int catSlot(int cat)
+ {
+-    return gRipps2CatSwap ? RIPPS2_CAT_COUNT - 1 - cat : cat;
++    return catSwapMode() ? RIPPS2_CAT_COUNT - 1 - cat : cat; // build 81: a theme's category_order too
+ }
+ 
+ // ---- The flying PS2 mark ----
+@@ -450,11 +509,12 @@ void ripps2DrawBusy(int alpha)
  #define WORD_OUT_S  0.55f
  #define WORD_Y      228
  #define WORD_TRACK  10.0f // px between letters
@@ -48,7 +358,7 @@ index 6f5a815..ecf652a 100644
  static int viewLogo = -1;
  static clock_t viewWordStart = 0;
  
-@@ -536,6 +537,8 @@ void ripps2DrawViewWord(void)
+@@ -536,6 +596,8 @@ void ripps2DrawViewWord(void)
              w[i] = fntCalcDimensions(WORD_FONT, ch);
              total += w[i];
          }
@@ -57,7 +367,7 @@ index 6f5a815..ecf652a 100644
          span = total + track * (n - 1);
          halfW = span / 2.0f;
          halfH = 30.0f;
-@@ -595,56 +598,29 @@ void ripps2DrawViewWord(void)
+@@ -595,56 +657,29 @@ void ripps2DrawViewWord(void)
      }
  }
  
@@ -134,7 +444,7 @@ index 6f5a815..ecf652a 100644
  }
  
  void ripps2SetCategory(int cat)
-@@ -657,6 +633,8 @@ void ripps2SetCategory(int cat)
+@@ -657,6 +692,8 @@ void ripps2SetCategory(int cat)
      }
  
      gRipps2Category = cat; // the mark's spring takes it from here, from wherever the mark is
@@ -144,7 +454,7 @@ index 6f5a815..ecf652a 100644
      // no fade: the mark's flight across the bar is the transition
      if (cat == RIPPS2_CAT_STORAGE)
 diff --git a/src/themes.c b/src/themes.c
-index 7624264..04346ad 100644
+index 7624264..c9eb843 100644
 --- a/src/themes.c
 +++ b/src/themes.c
 @@ -2889,6 +2889,10 @@ static void drawMenuText(struct menu_list *menu, struct submenu_list *item, conf
@@ -169,3 +479,38 @@ index 7624264..04346ad 100644
          fntRenderString(elem->font, elem->posX, elem->posY, elem->aligned, 0, 0, text,
                          (elem->color & ~(0xFFULL << 24)) | ((u64)(int)(((elem->color >> 24) & 0xFF) * srcA) << 24));
  }
+@@ -4592,6 +4594,34 @@ static int thmLoad(const char *themePath)
+         if (configGetStr(themeConfig, "source_name", &srcName) && srcName != NULL && !strcmp(srcName, "pop"))
+             newT->srcNamePop = 1;
+     }
++    // RIPPS2 build 81: the rest of Colors and More from the theme, each standing in while the user's setting
++    // is at its default and untouched: color_theme=ripps2|ember|blood|ectoplasm|amethyst|bone, category_bar= and
++    // button_hints=shown|fade|hidden, dpad_glyphs=hidden|shown|fade_in|fade_out, source_name=shown|fade|hidden,
++    // category_order=launch_disc_first|memory_files_first
++    newT->paletteDef = newT->catBarDef = newT->hintsDef = newT->glyphsDef = newT->srcNameDef = newT->catSwapDef = -1;
++    {
++        static const char *const showNames[] = {"shown", "fade", "hidden"};
++        static const char *const glyphNames[] = {"hidden", "shown", "fade_in", "fade_out"};
++        const char *v = NULL;
++        int i;
++        if (configGetStr(themeConfig, "color_theme", &v) && v != NULL)
++            for (i = 0; i < RIPPS2_PALETTE_COUNT; i++)
++                if (!strcasecmp(v, ripps2PaletteName(i)))
++                    newT->paletteDef = i;
++        for (i = 0; i < 3; i++) {
++            if (configGetStr(themeConfig, "category_bar", &v) && v != NULL && !strcasecmp(v, showNames[i]))
++                newT->catBarDef = i;
++            if (configGetStr(themeConfig, "button_hints", &v) && v != NULL && !strcasecmp(v, showNames[i]))
++                newT->hintsDef = i;
++            if (configGetStr(themeConfig, "source_name", &v) && v != NULL && !strcasecmp(v, showNames[i]))
++                newT->srcNameDef = i;
++        }
++        for (i = 0; i < 4; i++)
++            if (configGetStr(themeConfig, "dpad_glyphs", &v) && v != NULL && !strcasecmp(v, glyphNames[i]))
++                newT->glyphsDef = i;
++        if (configGetStr(themeConfig, "category_order", &v) && v != NULL) // launch_disc_first | memory_files_first
++            newT->catSwapDef = !strcasecmp(v, "memory_files_first") ? 1 : !strcasecmp(v, "launch_disc_first") ? 0 : -1;
++    }
+ 
+     configFree(themeConfig); // all themeConfig reads are done now (last was use_settings_bg above)
+ 
