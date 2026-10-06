@@ -1,0 +1,369 @@
+diff --git a/include/ripps2.h b/include/ripps2.h
+index 046b088..7a1e9ae 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -122,6 +122,10 @@ void ripps2DrawHintBox(int x, int y, int w, int h); // the settings help text's
+ void ripps2DrawHintBoxA(int x, int y, int w, int h, float a); // build 70: the same, fading (0..1)
+ int ripps2HintText(int x, int y, const char *text, u64 colour); // build 70: a button hint in sentence case; returns the x after it
+ int ripps2HintWidth(const char *text);
++// build 85: what a PS1 handoff is about to do, written to mc0:/RIPPS2/LAUNCH.TXT for a tester to read back
++// in Memory Files (the file, its size and CRC, its argv, Sony's POPS files or Ember's BIOS beside it, the
++// cards' POPSTARTER folders, the settings that steer it). Best effort: never stops a launch.
++void ripps2LaunchReport(const char *what, const char *elf, int argc, char **argv);
+ void ripps2DrawPanelVeil(int x, int y, int w, int h, float amount); // deep glass over a panel, 0..1
+ // A screen switch between two panels: the pillars, and one glass panel p (0..1) of the way from a to b
+ void ripps2DrawPanelMorph(int ax, int ay, int aw, int ah, int bx, int by, int bw, int bh, float p);
+diff --git a/include/vcdsupport.h b/include/vcdsupport.h
+index d1ae96d..ff7f572 100644
+--- a/include/vcdsupport.h
++++ b/include/vcdsupport.h
+@@ -83,6 +83,7 @@ int vcdResolvePopstarterFor(const char *devPrefix, const char *prefix, const cha
+ void vcdDescribePopstarterLookup(const char *devPrefix, char *out, int outSize);
+ 
+ // Build the POPSTARTER argv[0] selector "<devPrefix>POPS/<prefix><name>.ELF" into out.
++int vcdConfirmPopsFiles(const char *devPrefix); // RIPPS2 build 85: 1 = go on
+ void vcdBuildSelector(const char *devPrefix, const char *prefix, const char *name, char *out, int outSize);
+ 
+ 
+diff --git a/src/bdmsupport.c b/src/bdmsupport.c
+index 83e123e..dd18a96 100644
+--- a/src/bdmsupport.c
++++ b/src/bdmsupport.c
+@@ -1820,6 +1820,8 @@ static void bdmLaunchVcd(item_list_t *itemList, const char *vcdName, config_set_
+     // vcdBuildSelector emits the BARE POPSTARTER label ("mass:/POPS/XX.<name>.ELF"), NOT this live
+     // unit-numbered mount -- POPSTARTER remounts under "mass:" after its own IOP reset (see the function).
+     vcdBuildSelector(vcdPrefix, VCD_PREFIX_MASS, vcdName, vcdSelector, sizeof(vcdSelector));
++    if (!vcdConfirmPopsFiles(vcdPrefix)) // RIPPS2 build 85: Sony's POPS files, before anything is written
++        return;
+ 
+     // ASK FIRST. Nothing above this point has written to the card or put anything on screen, and
+     // nothing below it asks the user a question -- which is the ordering Nathan asked for: the
+diff --git a/src/gui.c b/src/gui.c
+index fda884e..3078dca 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -1141,9 +1141,9 @@ void guiShowUIConfig(void)
+     int previousTheme, previousVMode;
+     const char *vmodeNames[] = {_l(_STR_AUTO), "PAL 640x512i @50Hz 24bit", "NTSC 640x448i @60Hz 24bit",
+                                 "EDTV 640x448p @60Hz 24bit", "EDTV 640x512p @50Hz 24bit", "VGA 640x480p @60Hz 24bit",
+-                                "PAL 704x576i @50Hz 24bit (HIRES)", "NTSC 704x480i @60Hz 24bit (HIRES)",
+-                                "EDTV 704x480p @60Hz 24bit (HIRES)", "EDTV 704x576p @50Hz 24bit (HIRES)",
+-                                "HDTV 1280x720p @60Hz 16bit (HIRES)", "HDTV 1920x1080i @60Hz 16bit (HIRES)",
++                                "PAL 704x576i @50Hz 16bit", "NTSC 704x480i @60Hz 16bit",
++                                "EDTV 704x480p @60Hz 16bit", "EDTV 704x576p @50Hz 16bit",
++                                "HDTV 1280x720p @60Hz 16bit", "HDTV 1920x1080i @60Hz 16bit",
+                                 "PAL 640x256p @50Hz 24bit", "NTSC 640x224p @60Hz 24bit",
+                                 "PAL 640x512i @50Hz 24bit (FLICKER-FREE)", "NTSC 640x448i @60Hz 24bit (FLICKER-FREE)", NULL};
+ 
+@@ -3136,9 +3136,9 @@ static int guiSettingsShowInterface(void)
+     const int skipIDs[] = {UICFG_VMODE};
+     const char *vmodeNames[] = {_l(_STR_AUTO), "PAL 640x512i @50Hz 24bit", "NTSC 640x448i @60Hz 24bit",
+                                 "EDTV 640x448p @60Hz 24bit", "EDTV 640x512p @50Hz 24bit", "VGA 640x480p @60Hz 24bit",
+-                                "PAL 704x576i @50Hz 24bit (HIRES)", "NTSC 704x480i @60Hz 24bit (HIRES)",
+-                                "EDTV 704x480p @60Hz 24bit (HIRES)", "EDTV 704x576p @50Hz 24bit (HIRES)",
+-                                "HDTV 1280x720p @60Hz 16bit (HIRES)", "HDTV 1920x1080i @60Hz 16bit (HIRES)",
++                                "PAL 704x576i @50Hz 16bit", "NTSC 704x480i @60Hz 16bit",
++                                "EDTV 704x480p @60Hz 16bit", "EDTV 704x576p @50Hz 16bit",
++                                "HDTV 1280x720p @60Hz 16bit", "HDTV 1920x1080i @60Hz 16bit",
+                                 "PAL 640x256p @50Hz 24bit", "NTSC 640x224p @60Hz 24bit",
+                                 "PAL 640x512i @50Hz 24bit (FLICKER-FREE)", "NTSC 640x448i @60Hz 24bit (FLICKER-FREE)", NULL};
+     // Video Mode stays in diaDisplayConfig for the legacy standalone Display editor, but the
+diff --git a/src/mmcesupport.c b/src/mmcesupport.c
+index 1de6275..b639df7 100644
+--- a/src/mmcesupport.c
++++ b/src/mmcesupport.c
+@@ -909,6 +909,8 @@ static void mmceLaunchVcd(item_list_t *itemList, const char *vcdName, config_set
+         return;
+     }
+     vcdBuildSelector(ps1Root, VCD_PREFIX_MASS, vcdName, vcdSelector, sizeof(vcdSelector));
++    if (!vcdConfirmPopsFiles(ps1Root)) // RIPPS2 build 85: Sony's POPS files, before anything is written
++        return;
+ 
+     // Source MC-side externals from this MMCE card's direct POPS/ folder; never overwrite card files.
+     (void)vcdInstallPopstarterMc(ps1Root);
+diff --git a/src/renderman.c b/src/renderman.c
+index 1309b31..01536de 100644
+--- a/src/renderman.c
++++ b/src/renderman.c
+@@ -57,11 +57,15 @@ static struct rm_mode rm_mode_table[NUM_RM_VMODES] = {
+     {GS_MODE_DTV_480P,   31,  640,  448,  1, 2, GS_NONINTERLACED, GS_FRAME, RM_ARATIO_4_3, 14, 15}, // DTV480P@60Hz
+     {GS_MODE_DTV_576P,   31,  640,  512,  1, 2, GS_NONINTERLACED, GS_FRAME, RM_ARATIO_4_3, 16, 15}, // DTV576P@50Hz
+     {GS_MODE_VGA_640_60, 31,  640,  480,  1, 2, GS_NONINTERLACED, GS_FRAME, RM_ARATIO_4_3,  1,  1}, // VGA640x480@60Hz
+-    // 24 bit color mode full screen, multi-pass (2 passes, HIRES)
+-    {GS_MODE_PAL,        16,  704,  576,  2, 4, GS_INTERLACED,    GS_FIELD, RM_ARATIO_4_3, 12, 11}, // PAL@50Hz
+-    {GS_MODE_NTSC,       16,  704,  480,  2, 4, GS_INTERLACED,    GS_FIELD, RM_ARATIO_4_3, 10, 11}, // NTSC@60Hz
+-    {GS_MODE_DTV_480P,   31,  704,  480,  2, 2, GS_NONINTERLACED, GS_FRAME, RM_ARATIO_4_3, 10, 11}, // DTV480P@60Hz
+-    {GS_MODE_DTV_576P,   31,  704,  576,  2, 2, GS_NONINTERLACED, GS_FRAME, RM_ARATIO_4_3, 12, 11}, // DTV576P@50Hz
++    // Full screen, 704 wide. RIPPS2 build 85: ONE pass, 16-bit dithered, like the HD rows below. They were
++    // gsKit's two-pass "hires" mode, the one that crashed RIPPS2 in HD (a busy frame of towers and orbs
++    // overruns its small persistent queue): confirming one of these, or letting the prompt time out,
++    // froze the console (FifthFox, SCPH-39001, build 72). A single 704 x 576 double buffer at 16 bits is
++    // 1.6 MB of VRAM, less than the 640 x 512 rows' 24-bit one.
++    {GS_MODE_PAL,        16,  704,  576,  1, 4, GS_INTERLACED,    GS_FIELD, RM_ARATIO_4_3, 12, 11}, // PAL@50Hz
++    {GS_MODE_NTSC,       16,  704,  480,  1, 4, GS_INTERLACED,    GS_FIELD, RM_ARATIO_4_3, 10, 11}, // NTSC@60Hz
++    {GS_MODE_DTV_480P,   31,  704,  480,  1, 2, GS_NONINTERLACED, GS_FRAME, RM_ARATIO_4_3, 10, 11}, // DTV480P@60Hz
++    {GS_MODE_DTV_576P,   31,  704,  576,  1, 2, GS_NONINTERLACED, GS_FRAME, RM_ARATIO_4_3, 12, 11}, // DTV576P@50Hz
+     // RIPPS2 build 75: HD in ONE pass. These were 1280x720 and 1920x1080 drawn by gsKit's hires mode:
+     // the whole frame replayed three times, band by band, from a 256 KB persistent queue (a quarter of
+     // the 1 MB every other mode draws into), with the menu thread raised above everything. RIPPS2's
+@@ -280,8 +284,9 @@ int rmSetMode(int force)
+         gsGlobal->PSM = GS_PSM_CT24;
+         // Higher resolution use too much VRAM
+         // so automatically switch back to 16bit color depth
+-        if ((gsGlobal->Width * gsGlobal->Height) > (704 * 576) || rm_mode_table[vmode].aratio == RM_ARATIO_16_9)
+-            gsGlobal->PSM = GS_PSM_CT16S; // build 75: and the HD rows, whose double buffer would not fit at 24-bit
++        if ((gsGlobal->Width * gsGlobal->Height) > (704 * 576) || rm_mode_table[vmode].aratio == RM_ARATIO_16_9 ||
++            gsGlobal->Width >= 704)
++            gsGlobal->PSM = GS_PSM_CT16S; // build 75: the HD rows; build 85: the 704-wide rows, now one pass too
+         gsGlobal->PSMZ = GS_PSMZ_16S;
+         gsGlobal->ZBuffering = GS_SETTING_OFF;
+         gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
+diff --git a/src/ripps2cd.c b/src/ripps2cd.c
+index c825f95..04719ad 100644
+--- a/src/ripps2cd.c
++++ b/src/ripps2cd.c
+@@ -630,16 +630,26 @@ static void cdTime(u32 sectors, char *out, int size)
+     snprintf(out, size, "%u:%02u", s / 60, s % 60);
+ }
+ 
++// build 85: the row stays inside the TV-safe 48..592 (CLOSE sat at the screen's very edge, its glyph
++// hardly visible on a set with overscan: FifthFox, build 72); a tight row says COPY for COPY TO AUDIO
++#define CD_HINT_ROOM 544
+ static void cdHints(void)
+ {
+-    static const char *const texts[] = {"PLAY", "STOP", "SEEK", "TRACK", "COPY TO AUDIO", "CLOSE"};
++    static const char *const longTexts[] = {"PLAY", "STOP", "SEEK", "TRACK", "COPY TO AUDIO", "CLOSE"};
++    static const char *const shortTexts[] = {"PLAY", "STOP", "SEEK", "TRACK", "COPY", "CLOSE"};
++    const char *const *texts = longTexts;
+     int icons[6] = {gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON, SQUARE_ICON, R1_ICON, RIGHT_ICON, TRIANGLE_ICON,
+                     gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON};
+     int i, w = 0, gap = 16, x;
+     for (i = 0; i < 6; i++)
+         w += 24 + ripps2HintWidth(texts[i]);
+-    if (w + gap * 5 > 600)
+-        gap = (600 - w) / 5;
++    if (w + gap * 5 > CD_HINT_ROOM) {
++        texts = shortTexts;
++        for (w = 0, i = 0; i < 6; i++)
++            w += 24 + ripps2HintWidth(texts[i]);
++    }
++    if (w + gap * 5 > CD_HINT_ROOM)
++        gap = (CD_HINT_ROOM - w) / 5 > 6 ? (CD_HINT_ROOM - w) / 5 : 6;
+     x = (640 - (w + gap * 5)) / 2;
+     for (i = 0; i < 6; i++) {
+         GSTEXTURE *t = icons[i] == RIGHT_ICON ? NULL : thmGetTexture(icons[i]);
+diff --git a/src/ripps2status.c b/src/ripps2status.c
+index dfec38f..d482595 100644
+--- a/src/ripps2status.c
++++ b/src/ripps2status.c
+@@ -21,6 +21,7 @@
+ #include <fcntl.h>
+ #include <unistd.h>
+ #include <dirent.h>
++#include <sys/stat.h> // build 85: mkdir for the launch report
+ 
+ #include "include/opl.h"
+ #include "include/gui.h"
+@@ -32,6 +33,8 @@
+ #include "include/sound.h"
+ #include "include/lang.h"
+ #include "include/ripps2.h"
++#include <zlib.h>                 // build 85: crc32 for the launch report
++#include "include/ripps2_build.h" // build 85: the launch report names its build
+ #include "include/ripps2tint.h" // RIPPSettings Color Theme: last, so every colour below goes through it
+ 
+ #define ST_LIT  GS_SETREG_RGBA(0x80, 0x80, 0x80, 0x80)
+@@ -404,3 +407,131 @@ void ripps2Status(void)
+         ripps2SaveSettingsInBackground();
+     readPads();
+ }
++
++/*
++  RIPPS2 build 85: the launch report. A PS1 game that will not start on a console says nothing about why,
++  and PCSX2 starts them fine, so the only witness is the console itself. Just before the handoff RIPPS2
++  writes what it is about to do to mc0:/RIPPS2/LAUNCH.TXT, where a tester can open it in Memory Files'
++  text editor (or a photo of it can be posted). Overwritten by each launch; best effort throughout.
++*/
++#define LR_CRC_MAX (512 * 1024)
++static unsigned char lrBuf[8192];
++
++// the file's size (-1: missing) and the CRC32 of up to its first 512 KB
++static int lrFile(const char *path, unsigned int *crc, int *partial)
++{
++    int fd = open(path, O_RDONLY), size, n, done = 0;
++    unsigned int c = crc32(0L, Z_NULL, 0);
++
++    if (fd < 0)
++        return -1;
++    size = (int)lseek(fd, 0, SEEK_END);
++    lseek(fd, 0, SEEK_SET);
++    if (crc != NULL) {
++        while (done < LR_CRC_MAX && (n = read(fd, lrBuf, sizeof(lrBuf))) > 0) {
++            c = crc32(c, lrBuf, n);
++            done += n;
++        }
++        *crc = c;
++        *partial = size > LR_CRC_MAX;
++    }
++    close(fd);
++    return size;
++}
++
++void ripps2LaunchReport(const char *what, const char *elf, int argc, char **argv)
++{
++    static char rep[3072];
++    char dir[256], path[320];
++    unsigned int crc = 0;
++    int len = 0, i, partial = 0, size, cut;
++    const char *slash, *bslash, *colon;
++    FILE *f;
++
++#define LR_ADD(...)                                                     \
++    do {                                                                \
++        if (len < (int)sizeof(rep))                                     \
++            len += snprintf(rep + len, sizeof(rep) - len, __VA_ARGS__); \
++    } while (0)
++
++    if (elf == NULL || what == NULL)
++        return;
++    LR_ADD("RIPPS2 build %d launch report: %s\r\n\r\n", RIPPS2_BUILD, what);
++    size = lrFile(elf, &crc, &partial);
++    if (size < 0)
++        LR_ADD("elf        %s\r\n           CANNOT BE OPENED\r\n", elf);
++    else
++        LR_ADD("elf        %s\r\n           %d bytes, crc32 %08x%s%s\r\n", elf, size, crc, partial ? " of the first 512 KB" : "",
++               (size == 167700 && crc == 0x59ebabb9u) ? " (the POPSTARTER RIPPS2 carries)" : (size == 1611956 ? " (the size of the Ember RIPPS2 carries)" : ""));
++    for (i = 0; argv != NULL && i < argc; i++)
++        LR_ADD("argv[%d]    %s\r\n", i, argv[i] != NULL ? argv[i] : "(null)");
++
++    // the folder the ELF sits in, with its separator
++    slash = strrchr(elf, '/');
++    bslash = strrchr(elf, '\\');
++    colon = strrchr(elf, ':');
++    cut = (int)((slash > bslash ? (slash > colon ? slash : colon) : (bslash > colon ? bslash : colon)) - elf) + 1;
++    if (cut <= 0 || cut >= (int)sizeof(dir))
++        cut = 0;
++    snprintf(dir, sizeof(dir), "%.*s", cut, elf);
++
++    LR_ADD("\r\nbeside it (%s)\r\n", dir);
++    if (!strcmp(what, "POPSTARTER")) {
++        static const char *const pops[] = {"POPS.ELF", "POPS_IOX.PAK"};
++        for (i = 0; i < 2; i++) {
++            snprintf(path, sizeof(path), "%s%s", dir, pops[i]);
++            size = lrFile(path, NULL, NULL);
++            if (size < 0)
++                LR_ADD("  %-13s MISSING\r\n", pops[i]);
++            else
++                LR_ADD("  %-13s %d bytes\r\n", pops[i], size);
++        }
++        for (i = 0; i < 2; i++) { // POPSTARTER reloads its block driver from here after its IOP reset
++            char mcDir[24];
++            DIR *d;
++            struct dirent *de;
++            int listed = 0;
++            snprintf(mcDir, sizeof(mcDir), "mc%d:/POPSTARTER", i);
++            d = opendir(mcDir);
++            if (d == NULL) {
++                LR_ADD("%s  (none)\r\n", mcDir);
++                continue;
++            }
++            LR_ADD("%s\r\n", mcDir);
++            while ((de = readdir(d)) != NULL && listed < 12) {
++                if (de->d_name[0] == '.')
++                    continue;
++                snprintf(path, sizeof(path), "%s/%s", mcDir, de->d_name);
++                LR_ADD("  %-24s %d\r\n", de->d_name, lrFile(path, NULL, NULL));
++                listed++;
++            }
++            closedir(d);
++            if (!listed)
++                LR_ADD("  (empty)\r\n");
++        }
++        LR_ADD("popstarter_path  %s\r\n", gPopstarterPath[0] ? gPopstarterPath : "(not set)");
++    } else {
++        static const char *const ember[] = {"bios.bin", "settings.txt"};
++        for (i = 0; i < 2; i++) {
++            snprintf(path, sizeof(path), "%s%s", dir, ember[i]);
++            size = lrFile(path, NULL, NULL);
++            if (size < 0)
++                LR_ADD("  %-13s missing\r\n", ember[i]);
++            else
++                LR_ADD("  %-13s %d bytes\r\n", ember[i], size);
++        }
++    }
++    LR_ADD("\r\nvideo mode %d", gVMode);
++#ifdef RETROACHIEVEMENTS
++    LR_ADD(", telemetry %s", gRATelemetry ? "ON (network stack in the launch)" : "off");
++#endif
++    LR_ADD("\r\n");
++#undef LR_ADD
++
++    mkdir("mc0:/RIPPS2", 0777);
++    f = fopen("mc0:/RIPPS2/LAUNCH.TXT", "wb");
++    if (f == NULL)
++        return;
++    fwrite(rep, 1, len < (int)sizeof(rep) ? len : (int)sizeof(rep) - 1, f);
++    fclose(f);
++}
+diff --git a/src/system.c b/src/system.c
+index 2b2d3a8..fe28942 100644
+--- a/src/system.c
++++ b/src/system.c
+@@ -2060,6 +2060,7 @@ void sysLaunchPopstarter(const char *popstarterElf, const char *selector)
+     char *argv[1];
+     argv[0] = (char *)selector;
+     LOG("[POPS] elf=%s argv0=%s\n", popstarterElf, selector);
++    ripps2LaunchReport("POPSTARTER", popstarterElf, 1, argv); // RIPPS2 build 85: mc0:/RIPPS2/LAUNCH.TXT
+ 
+     // Every POPSTARTER route depends on the selector remaining target argv[0]. The stock SDK
+     // partition loader replaces it with the ELF load path; use the argv-preserving loader
+@@ -2101,6 +2102,7 @@ void sysLaunchEmber(const char *emberElf, const char *gameFolder)
+         argv[argc++] = (char *)gameFolder;
+ 
+     LOG("[EMBER] elf=%s game=%s\n", emberElf, (argc > 1) ? argv[1] : "(none)");
++    ripps2LaunchReport("EMBER", emberElf, argc, argv); // RIPPS2 build 85: mc0:/RIPPS2/LAUNCH.TXT
+ 
+     // The kernel argv budget (15 strings / 256-byte pool, counting the child loader's own argv[0])
+     // is enforced inside sysLoadELFKeepIOP, which refuses rather than truncating. Callers keep the
+diff --git a/src/vcdsupport.c b/src/vcdsupport.c
+index 2bf1be3..a3f8da8 100644
+--- a/src/vcdsupport.c
++++ b/src/vcdsupport.c
+@@ -920,6 +920,37 @@ int vcdResolvePopstarterFor(const char *devPrefix, const char *prefix, const cha
+     return 0;
+ }
+ 
++// RIPPS2 build 85: POPSTARTER starts a PS1 game with Sony's emulator, POPS.ELF and POPS_IOX.PAK, from the
++// game's own POPS folder, and when they are not there it says nothing: a black screen, then the console's
++// browser. Ask first, while a dialog can still be drawn. START launches anyway (a set-up RIPPS2 cannot
++// see is still the user's), anything else goes back. Returns 1 to go on.
++int vcdConfirmPopsFiles(const char *devPrefix)
++{
++    static const char *const files[] = {"POPS.ELF", "POPS_IOX.PAK"};
++    char missing[64] = "", path[256], msg[320];
++    int i, n = 0;
++
++    if (devPrefix == NULL || devPrefix[0] == '\0')
++        return 1;
++    for (i = 0; i < 2; i++) {
++        snprintf(path, sizeof(path), "%s%s%c%s", devPrefix, POPS_FOLDER, vcdSep(devPrefix), files[i]);
++        int fd = open(path, O_RDONLY);
++        if (fd >= 0) {
++            close(fd);
++            continue;
++        }
++        snprintf(missing + strlen(missing), sizeof(missing) - strlen(missing), "%s%s", n ? " and " : "", files[i]);
++        n++;
++    }
++    if (n == 0)
++        return 1;
++    snprintf(msg, sizeof(msg), "%s %s missing from %s%s. POPSTARTER needs POPS.ELF and POPS_IOX.PAK, the PS1 emulator from "
++                               "your own console, beside the games to start one.",
++             missing, n == 1 ? "is" : "are", devPrefix, POPS_FOLDER);
++    guiMsgBoxStartOption("LAUNCH ANYWAY");
++    return guiMsgBox(msg, 0, NULL) == 2;
++}
++
+ void vcdDescribePopstarterLookup(const char *devPrefix, char *out, int outSize)
+ {
+     if (out == NULL || outSize <= 0)
