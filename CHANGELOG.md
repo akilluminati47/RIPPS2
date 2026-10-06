@@ -5,7 +5,7 @@
 ### Memory Files: the CARD MANAGER
 - **Square on a memory card** in the drive list opens the CARD MANAGER (as Square on the internal HDD opens the HDD MANAGER); a card image (VMC) has it in its Triangle actions. Every save with what it takes, the space left, and the card tools:
   - **Delete** a save.
-  - **Back up the card to a VMC** on a drive (`VMC/CARD1-01.bin` and on): an 8 MB copy of the whole card, made by OPL's own card-to-VMC copy. The card stays as it is.
+  - **Back up the card to a VMC** on a drive (`VMC/CARD1-01.bin` and on): a blank 8 MB card image with every folder on the card copied in, the way Memory Files copies saves. The card stays as it is.
   - **Write a card image's saves to memory card 1 or 2.** A save already on the card is left as it is.
   - **Erase every game save**, keeping the folders that are not saves: boot loaders (BOOT, PS2BBL, FMCB, OSDMENU), SYS-CONF, APPS, RIPPS2, POPSTARTER and the folder RIPPS2 was started from.
   - **Format the card** (never the card RIPPS2 was started from).

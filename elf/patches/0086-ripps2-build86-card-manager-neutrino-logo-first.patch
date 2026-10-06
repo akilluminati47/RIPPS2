@@ -25,10 +25,10 @@ index 7a1e9ae..c14a556 100644
  // ---- Boot swoop and launch light-up (ripps2bg.c) ----
 diff --git a/src/ripps2card.c b/src/ripps2card.c
 new file mode 100644
-index 0000000..2a07001
+index 0000000..72e26c1
 --- /dev/null
 +++ b/src/ripps2card.c
-@@ -0,0 +1,604 @@
+@@ -0,0 +1,615 @@
 +/*
 +  Copyright 2026, RIPPS2 contributors
 +  Licenced under Academic Free License version 3.0
@@ -40,7 +40,7 @@ index 0000000..2a07001
 +  tools and MC Annihilator were the reference for what is expected):
 +
 +    DELETE        one save, two screens (the second only START gets past)
-+    BACK UP       the whole card to a VMC on a drive: genvmc's own card copy (OPL's "VMC from a card")
++    BACK UP       the whole card to a VMC on a drive: a blank image by genvmc, every folder copied in
 +    WRITE         every save in a card image onto memory card 1 or 2 (one already there is left alone)
 +    ERASE         every game save, keeping the folders that are not saves (boot loaders, RIPPS2, APPS...)
 +    FORMAT        the card, blank (never the card RIPPS2 was started from)
@@ -309,13 +309,16 @@ index 0000000..2a07001
 +    return size;
 +}
 +
-+// The whole card into an 8 MB VMC, by genvmc, which reads the card itself
++// The whole card into an 8 MB VMC on a drive: genvmc makes a blank card image (the path OPL uses for every
++// game VMC), then every folder on the card goes in through the save tools. genvmc can also copy a card
++// itself (VMC_card_slot), but OPL never calls that path and in testing it left an empty file, so the
++// copy is RIPPS2's own, folder by folder, as the browser copies saves.
 +static void cmBackUp(char *toast, int tsize)
 +{
-+    char dev[16], path[128];
++    char dev[16], path[128], from[8], line[64];
 +    cm_create_t cp;
 +    cm_status_t st;
-+    int i, fd, frames, aborted = 0;
++    int i, fd, frames, aborted = 0, started = 0, copied = 0, failed = 0;
 +
 +    if (!cmPickDrive(dev, sizeof(dev)))
 +        return;
@@ -333,16 +336,13 @@ index 0000000..2a07001
 +    cp.VMC_size_mb = 8;
 +    cp.VMC_blocksize = 16;
 +    cp.VMC_thread_priority = 0x0f;
-+    cp.VMC_card_slot = cmSlot;
++    cp.VMC_card_slot = -1; // a blank, formatted card image
 +    ioBlockOps(1);
 +    fileXioDevctl("genvmc:", CM_GENVMC_CREATE, (void *)&cp, sizeof(cp), NULL, 0);
-+    // genvmc's create call returns BEFORE its worker marks itself busy, so "available" means done only
-+    // once the job has been seen running (or never started, after two seconds). Taking the first
-+    // "available" for the end left the copy running behind a "BACKED UP" (build 86 testing).
++    // genvmc's create call returns BEFORE its worker marks itself busy, so "available" means done only once
++    // the job has been seen running, or its new file is already whole (a fast drive), or never (3 s)
 +    memset(&st, 0, sizeof(st));
-+    int started = 0;
 +    for (frames = 0; frames < 60 * 300; frames++) {
-+        char line[64];
 +        if (fileXioDevctl("genvmc:", CM_GENVMC_STATUS, NULL, 0, (void *)&st, sizeof(st)) != 0)
 +            st.VMC_status = 1;
 +        if (st.VMC_status == 1)
@@ -350,7 +350,7 @@ index 0000000..2a07001
 +        else if (started)
 +            break;
 +        else if (st.VMC_progress == 100 && cmFileSize(path) == 8 * 1024 * 1024) {
-+            started = 1; // done before the first look (a fast card): the new file says so
++            started = 1;
 +            break;
 +        } else if (frames > 180)
 +            break;
@@ -359,25 +359,36 @@ index 0000000..2a07001
 +            fileXioDevctl("genvmc:", CM_GENVMC_ABORT, NULL, 0, NULL, 0); // genvmc removes its partial file
 +            aborted = 1;
 +        }
-+        snprintf(line, sizeof(line), "BACKING UP THE CARD  %d%%", st.VMC_progress);
++        snprintf(line, sizeof(line), "MAKING THE CARD IMAGE  %d%%", st.VMC_progress);
 +        cmStatus(line);
 +    }
-+    ioBlockOps(0);
-+    // and the file is the whole card: 8 MB
-+    int size = cmFileSize(path), ok = 0;
-+    if (aborted)
-+        snprintf(toast, tsize, "BACKUP STOPPED");
-+    else if (!started)
-+        snprintf(toast, tsize, "THE BACKUP DID NOT START");
-+    else if (st.VMC_status != 0 || st.VMC_error != 0)
-+        snprintf(toast, tsize, "THE BACKUP FAILED (%d)", st.VMC_error);
-+    else if (size != 8 * 1024 * 1024)
-+        snprintf(toast, tsize, "THE BACKUP CAME OUT %d BYTES, NOT 8 MB", size);
-+    else {
-+        snprintf(toast, tsize, "BACKED UP TO %s", path);
-+        ok = 1;
++    if (aborted || !started || st.VMC_error != 0 || cmFileSize(path) != 8 * 1024 * 1024) {
++        ioBlockOps(0);
++        if (!aborted)
++            remove(path);
++        if (aborted)
++            snprintf(toast, tsize, "BACKUP STOPPED");
++        else
++            snprintf(toast, tsize, "COULD NOT MAKE THE CARD IMAGE (%d)", st.VMC_error);
++        sfxPlay(SFX_ERROR);
++        return;
 +    }
-+    sfxPlay(ok ? SFX_SAVE : SFX_ERROR);
++    // every folder on the card, into the image
++    snprintf(from, sizeof(from), "mc%d:/", cmSlot);
++    for (i = 0; i < cmCount; i++) {
++        snprintf(line, sizeof(line), "COPYING %d OF %d", i + 1, cmCount);
++        cmStatus(line);
++        if (ripps2SaveCopy(RIPPS2_SAVE_FOLDER, from, cmSaves[i].name, RIPPS2_SAVE_VMC, path) == 1)
++            copied++;
++        else
++            failed++;
++    }
++    ioBlockOps(0);
++    if (failed)
++        snprintf(toast, tsize, "%d OF %d COPIED TO %s", copied, cmCount, path);
++    else
++        snprintf(toast, tsize, "BACKED UP %d TO %s", copied, path);
++    sfxPlay(failed ? SFX_ERROR : SFX_SAVE);
 +}
 +
 +// Every save in the image onto a card; one of the same name already there stays as it is

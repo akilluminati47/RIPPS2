@@ -22,8 +22,8 @@ if card.count('cmLastCheck(') < 4:
     fail.append('DELETE, ERASE and FORMAT must each end on a START-only last check')
 if 'cmBootedHere()' not in card or 'RIPPS2 WAS STARTED FROM THIS CARD' not in card:
     fail.append('FORMAT must refuse the card RIPPS2 was started from')
-if 'VMC_card_slot = cmSlot' not in card:
-    fail.append("BACK UP must use genvmc's own card copy")
+if 'VMC_card_slot = -1' not in card or 'RIPPS2_SAVE_FOLDER, from, cmSaves[i].name, RIPPS2_SAVE_VMC, path' not in card:
+    fail.append('BACK UP must make a blank image and copy every folder in')
 if 'ripps2SaveCopy(RIPPS2_SAVE_VMC, cmImage' not in card:
     fail.append('WRITE must copy a card image\'s saves with the save tools')
 if 'cmIsSystem' not in card or '"BOOT"' not in card:
