@@ -25,10 +25,10 @@ index 7a1e9ae..c14a556 100644
  // ---- Boot swoop and launch light-up (ripps2bg.c) ----
 diff --git a/src/ripps2card.c b/src/ripps2card.c
 new file mode 100644
-index 0000000..27a3c05
+index 0000000..3cb916a
 --- /dev/null
 +++ b/src/ripps2card.c
-@@ -0,0 +1,571 @@
+@@ -0,0 +1,593 @@
 +/*
 +  Copyright 2026, RIPPS2 contributors
 +  Licenced under Academic Free License version 3.0
@@ -277,7 +277,7 @@ index 0000000..27a3c05
 +static int cmPickDrive(char *dev, int size)
 +{
 +    static const char *const devs[] = {"mass0:/", "mass1:/", "mass2:/", "mass3:/", "mmce0:/", "mmce1:/", "pfs0:/"};
-+    static const char *const names[] = {"USB OR BDM 1", "USB OR BDM 2", "USB OR BDM 3", "USB OR BDM 4", "MMCE 1", "MMCE 2", "INTERNAL HDD"};
++    static const char *const names[] = {"MASS0:/", "MASS1:/", "MASS2:/", "MASS3:/", "MMCE0:/", "MMCE1:/", "PFS0:/ (INTERNAL HDD)"};
 +    const char *items[8];
 +    int idx[8], n = 0, i;
 +    for (i = 0; i < 7; i++) {
@@ -326,12 +326,19 @@ index 0000000..27a3c05
 +    cp.VMC_card_slot = cmSlot;
 +    ioBlockOps(1);
 +    fileXioDevctl("genvmc:", CM_GENVMC_CREATE, (void *)&cp, sizeof(cp), NULL, 0);
++    // genvmc's create call returns BEFORE its worker marks itself busy, so "available" means done only
++    // once the job has been seen running (or never started, after two seconds). Taking the first
++    // "available" for the end left the copy running behind a "BACKED UP" (build 86 testing).
 +    memset(&st, 0, sizeof(st));
-+    st.VMC_status = 1;
-+    for (frames = 0; st.VMC_status != 0 && frames < 60 * 300; frames++) {
++    int started = 0;
++    for (frames = 0; frames < 60 * 300; frames++) {
 +        char line[64];
 +        if (fileXioDevctl("genvmc:", CM_GENVMC_STATUS, NULL, 0, (void *)&st, sizeof(st)) != 0)
 +            st.VMC_status = 1;
++        if (st.VMC_status == 1)
++            started = 1;
++        else if (started || frames > 120)
++            break;
 +        readPads();
 +        if (!aborted && getKeyOn(gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE)) {
 +            fileXioDevctl("genvmc:", CM_GENVMC_ABORT, NULL, 0, NULL, 0); // genvmc removes its partial file
@@ -341,13 +348,25 @@ index 0000000..27a3c05
 +        cmStatus(line);
 +    }
 +    ioBlockOps(0);
++    // and the file is the whole card: 8 MB
++    fd = open(path, O_RDONLY);
++    int size = fd >= 0 ? (int)lseek(fd, 0, SEEK_END) : -1;
++    if (fd >= 0)
++        close(fd);
++    int ok = 0;
 +    if (aborted)
 +        snprintf(toast, tsize, "BACKUP STOPPED");
++    else if (!started)
++        snprintf(toast, tsize, "THE BACKUP DID NOT START");
 +    else if (st.VMC_status != 0 || st.VMC_error != 0)
 +        snprintf(toast, tsize, "THE BACKUP FAILED (%d)", st.VMC_error);
-+    else
++    else if (size != 8 * 1024 * 1024)
++        snprintf(toast, tsize, "THE BACKUP CAME OUT %d BYTES, NOT 8 MB", size);
++    else {
 +        snprintf(toast, tsize, "BACKED UP TO %s", path);
-+    sfxPlay(aborted || st.VMC_error ? SFX_ERROR : SFX_SAVE);
++        ok = 1;
++    }
++    sfxPlay(ok ? SFX_SAVE : SFX_ERROR);
 +}
 +
 +// Every save in the image onto a card; one of the same name already there stays as it is
@@ -431,8 +450,11 @@ index 0000000..27a3c05
 +        rmStartFrame();
 +        guiDrawBGPlasma();
 +        fntRenderString(gTheme->fonts[4], CM_X, 30, ALIGN_VCENTER, 0, 0, "CARD MANAGER", CM_LIT);
++        int games = 0;
++        for (i = 0; i < cmCount; i++)
++            games += !cmSaves[i].system;
 +        if (cmReady)
-+            snprintf(line, sizeof(line), "%s   %d SAVES   %u KB FREE", cmTitle, cmCount, cmFreeKb);
++            snprintf(line, sizeof(line), "%s   %d %s   %u KB FREE", cmTitle, games, games == 1 ? "SAVE" : "SAVES", cmFreeKb);
 +        else
 +            snprintf(line, sizeof(line), "%s   NOT FORMATTED", cmTitle);
 +        fntRenderStringFit(gTheme->fonts[4], CM_RIGHT - 400, 30, ALIGN_VCENTER, 400, line, CM_SOFT, 1);
