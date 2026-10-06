@@ -5,10 +5,10 @@
 **[Download RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/download/v0.0.81-alpha/RIPPS2.elf)**, the **[theme pack](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt, Adapt Rx, RIPgrid), and **[theme it yourself](https://github.com/akilluminati47/RIPPS2-themes)**: everything below is a theme key, no rebuild.
 
 ### New in 81
-- **The source name as a toast.** With Source Name on Pop In (the Adapt family's default), ALL GAMES, HDD GAMES and the rest play big in the middle of the page, like L3's ALL, on boot, on a source change and on coming back to Storage, then fade. No more static line over the list.
+- **The source name as a toast.** With Source Name on Pop In (the Adapt family's default), ALL GAMES, HDD GAMES and the rest play big in the middle of the page, like L3's ALL, on boot, on a source change and on coming back to Storage, then fade. No more static line over the list. L3's ALL / PS1 / PS2 and the toast now share RIPPS2's big Sleek face on every theme.
 - **Themes choose their own Colors and More** in `conf_theme.cfg`: colour theme, category bar, hints, D-pad glyphs, category order, source name. **Your settings always win**: a theme's choice only shows on a row you have never changed.
 - **RIPFLOW puts Memory Files first** on the category bar, unless you picked an order.
-- **Adapt Rx keeps its side bar on the left**: the list and the case swap sides, with even spacing (theme pack updated).
+- **Adapt and Adapt Rx** keep the disc right under LAUNCH DISC (Rx moves LAUNCH DISC to the right of the bar, over its disc) and Rx keeps its side bar on the left (theme pack updated).
 - **Lighter on the GS**: every built-in image and every theme pack image is an 8-bit palette PNG, a quarter of the VRAM; the ELF is 53 KB smaller.
 
 ### Your sounds
