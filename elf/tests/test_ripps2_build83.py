@@ -36,5 +36,12 @@ if 'fntRenderStringFit(gTheme->fonts[8], tx, 154, ALIGN_VCENTER, tw, g->title, R
 if re.search(r'fntRenderString\(gTheme->fonts\[8\][^;]*cw - 20, 70', acct):
     fail.append('the boxed title render (which read past a short title into old text) is back')
 
-print('\n'.join(fail) or 'build83: Star and Starred Games, YOUR ACCOUNT nothing cut off OK')
+# --- list titles centred on the highlight bar by the font's own centreline, not a hand-measured nudge
+fnt, th = rd('src/fntsys.c'), rd('src/themes.c')
+if 'int fntCenterOffset(int id, short aligned)' not in fnt or "fntCacheGlyph(font, 'H')" not in fnt:
+    fail.append('fntCenterOffset must measure the face (its capital H) for the centreline')
+if 'fntCenterOffset(elem->font, elem->aligned)' not in th or 'posY + textDy' not in th:
+    fail.append('drawItemsList must centre each title on its row with fntCenterOffset')
+
+print('\n'.join(fail) or 'build83: Star and Starred Games, YOUR ACCOUNT nothing cut off, titles centred on the bar OK')
 sys.exit(1 if fail else 0)
