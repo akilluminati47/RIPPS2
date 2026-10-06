@@ -1,19 +1,19 @@
-<p align="center"><img src="media/ripps2-test-me.png" alt="RIPPS2: Test me, build 81, the dead elf in its blue hat over the towers"></p>
+<p align="center"><img src="media/ripps2-test-me.png" alt="RIPPS2: Test me, build 82, the dead elf in its blue hat over the towers"></p>
 
 # RIPPS2
 
-> ### Kill it: RIPPS2 build 81 (alpha)
+> ### Kill it: RIPPS2 build 82 (alpha)
 > **RIP PS2, the ELF killer.** ELF-sufficient, never ELF-destructive: your other ELFs stay safe on the [shelf](https://akilluminati47.github.io/RIPPS2/) (nothing is deleted unless you ask), they just get a well-earned rest.
-> 1. **[Download RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/download/v0.0.81-alpha/RIPPS2.elf)** (one file, about 2.9 MB), and the **[theme pack](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** if you like (Adapt, Adapt Rx, RIPgrid).
+> 1. **[Download RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/download/v0.0.82-alpha/RIPPS2.elf)** (one file, about 2.9 MB), and the **[theme pack](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** if you like (Adapt, Adapt Rx, RIPgrid).
 > 2. Copy it to a USB stick or memory card, and launch it from FreeMcBoot, PS2BBL, wLaunchELF or whatever you already use to start homebrew. In PCSX2: **System > Start File** and pick `RIPPS2.elf`.
 > 3. Tell us how it went: [open an issue](https://github.com/akilluminati47/RIPPS2/issues) or find **#RIPPS2** on the developers' Discord, [discord.gg/ggkCDWqhE](https://discord.gg/ggkCDWqhE) (invite good for October 2026).
 >
-> [What's new in build 81](https://github.com/akilluminati47/RIPPS2/releases/tag/v0.0.81-alpha) | [Changelog](CHANGELOG.md) | [Watch the build 66 reel](https://youtu.be/jRbt9ScaBNw) | [Every release](https://github.com/akilluminati47/RIPPS2/releases)<br>
+> [What's new in build 82](https://github.com/akilluminati47/RIPPS2/releases/tag/v0.0.82-alpha) | [Changelog](CHANGELOG.md) | [Watch the build 66 reel](https://youtu.be/jRbt9ScaBNw) | [Every release](https://github.com/akilluminati47/RIPPS2/releases)<br>
 > [Theme RIPPS2](https://github.com/akilluminati47/RIPPS2-themes) (no rebuild, agent friendly) | [Fill your AUDIO folder](#the-sound-ripps2-was-made-with) with RIPPS2 Audio Studio
 
 RIPPS2 is a PS2 front end in a single `.elf`: a teardown and rebuild of [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader) (the Open PS2 Loader fork) with its own look, launchers, file browser and save tools. Glass towers stand behind your games and orbit formations behind your files, all drawn live by the PS2.
 
-- **LAUNCH DISC** boots PS2, PS1 and DVD video discs, says which game is in the drive before you start it, and plays audio CDs with the towers turned into a spectrum analyser.
+- **LAUNCH DISC** boots PS2, PS1 and DVD video discs, says which game is in the drive before you start it, and plays audio CDs with the towers turned into a spectrum analyzer.
 - **STORAGE** is your game library: every drive in one list, with art, an info page whose art crossfades with the screenshots, and per-game settings.
 - **MEMORY FILES** is a built-in file browser: copy, move and delete across memory cards, USB and HDD; open OPL's VMC card images like folders; export and import PSU saves; edit text files; Start opens its settings.
 
@@ -21,12 +21,12 @@ It is **alpha**. It runs in PCSX2, and it is being tested now by ripto, nuno6573
 
 ## Since the build 66 reel
 
-- **Themes you can make your own.** Frosted glass panels over each game's art, a cover **Grid** element, right-stick tilt that moves a whole page as one sheet, and the first pack, **[RIPPS2-themes](https://github.com/akilluminati47/RIPPS2-themes)**: Adapt, Adapt Rx and RIPgrid, with a checker, previewer and key reference for anyone (or any agent) making more. Hold **SELECT** for 4.2 seconds to step through your themes.
-- **RIPFLOW**, the built-in cover carousel, and **Colors and More**: six colour themes (RIPPS2, Ember, Blood, Ectoplasm, Amethyst, Bone), D-pad glyphs, fading hints and category bar, the source name as a toast in the middle of the page; themes can pick all of it for themselves, and your own settings always win.
+- **Themes you can make your own.** Frosted glass panels over each game's art, a cover **Grid** element, right-stick tilt that moves a whole page as one sheet, and the first pack, **[RIPPS2-themes](https://github.com/akilluminati47/RIPPS2-themes)**: Adapt, Adapt Rx and RIPgrid, with a checker, previewer and key reference for anyone (or any agent) making more. Hold **SELECT** for 4.2 seconds to step through your themes. On RIPgrid, hold the right stick to one side for 2 seconds and the chosen case turns over to its back cover, and the grid turns its pages with a slide.
+- **RIPFLOW**, the built-in cover carousel, and **Colors and More**: six color themes (RIPPS2, Ember, Blood, Ectoplasm, Amethyst, Bone), D-pad glyphs, fading hints and category bar, the source name as a toast in the middle of the page; themes can pick all of it for themselves, and your own settings always win.
 - **Everything it needs, on board.** Neutrino 1.8.0, POPSTARTER and Ember ride inside the one `.elf` and install themselves where your games are; **STATUS** on the START menu shows where each one is and installs or sets it up.
 - **BIBLE**: PS2BBL 1.2.0 set up for RIPPS2, on a memory card or the internal HDD, so the console boots straight into it. Boot Loader > Manage shows what each card starts.
 - **Achievements** (SpiritofRA): RetroAchievements telemetry through the xeRAbora client on your PC, badges on tracked games, the disc in the tray, and **YOUR ACCOUNT**, every game you have checked with what you have unlocked.
-- **Cover Art** fetched by the PS2 itself over HTTPS, **720p and 1080i** drawn in one pass at full detail, your **AUDIO** folder found on any drive, and towers and orbs that run all night at a steady 60 fps.
+- **Cover Art** fetched by the PS2 itself over HTTPS, **720p and 1080i** drawn in one pass at full detail (text the right size since build 82), your **AUDIO** folder found on any drive, and towers and orbs that run all night at a steady 60 fps.
 - **Guard rails**: every build runs RiptOPL's host checks and RIPPS2's own, and a new warning in a RIPPS2 file fails it.
 
 Build 55's [reel](media/ripps2-b55-reel.mp4) and short clips: [info page](media/ripps2-b55-info.mp4), [orbs](media/ripps2-b55-orbs.mp4), [card images and PSU](media/ripps2-b55-cards.mp4), [browser settings](media/ripps2-b55-grid.mp4), [launch disc](media/ripps2-b55-disc.mp4). Build 22's [demo reel](media/ripps2-b22-demo.mp4) is still there too.
@@ -74,7 +74,7 @@ RIPPS2 started life as a web theme, and that version is still here: **live demo*
 
 | Option | Opens |
 | --- | --- |
-| **Launch Disc** | The pillars, with a double blast fired into the centre of the field |
+| **Launch Disc** | The pillars, with a double blast fired into the center of the field |
 | **Storage** | The pillars |
 | **Memory Files** | The orbs |
 
@@ -100,15 +100,15 @@ RIPPS2 is designed and directed by akilluminati47 and built with Claude (Anthrop
 - [ESR](https://gitlab.com/ffgriever/esr/) by ffgriever: Launch Disc starts your own copy for ESR discs.
 - [Ember](https://github.com/Gageformer/Ember/releases) by Gageformer, the PS1 emulator for the PS2: from build 71 RIPPS2.elf carries its Beta-2 build unmodified, under the Ember Public Beta Testing Licence, and writes it into a drive's `EMBER` folder the first time an Ember game is launched from there ([`elf/ember`](elf/ember/README.md)). Bring your own PS1 BIOS.
 - [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/) by krHACKen starts PS1 games from your own copy, which RIPPS2 finds on your drives.
-- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) by El Isra (israpps) and [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) by saildot4k: BOOT LOCK edits their config so the console starts RIPPS2. From build 69, RIPPS2.elf carries El Isra's signed PS2BBL 1.2.0 unchanged, as data, for **Boot Loader > Manage** (BIBLE) to install on a memory card. PS2BBL is GPL-3.0: its licence and the exact source it was built from ([commit a063bb3](https://github.com/israpps/PlayStation2-Basic-BootLoader/tree/a063bb3)) are in [`elf/bible`](elf/bible/README.md). The card binding uses ps2sdk's open SECRMAN (AFL); no keys are involved.
-- [wLaunchELF](https://github.com/ps2homebrew/wLaunchELF) by the ps2homebrew team, and wLaunchELF R3Z by NathanNeurotic: the behaviour references for the Memory Files browser and its settings grid.
+- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) by El Isra (israpps) and [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) by saildot4k: BOOT LOCK edits their config so the console starts RIPPS2. From build 69, RIPPS2.elf carries El Isra's signed PS2BBL 1.2.0 unchanged, as data, for **Boot Loader > Manage** (BIBLE) to install on a memory card. PS2BBL is GPL-3.0: its license and the exact source it was built from ([commit a063bb3](https://github.com/israpps/PlayStation2-Basic-BootLoader/tree/a063bb3)) are in [`elf/bible`](elf/bible/README.md). The card binding uses ps2sdk's open SECRMAN (AFL); no keys are involved.
+- [wLaunchELF](https://github.com/ps2homebrew/wLaunchELF) by the ps2homebrew team, and wLaunchELF R3Z by NathanNeurotic: the behavior references for the Memory Files browser and its settings grid.
 - [Apollo Save Tool](https://github.com/bucanero/apollo-ps2) by bucanero: the reference for the save tools (PSU, card images). RIPPS2's own code, written from the formats.
 - [ps2sdk](https://github.com/ps2dev/ps2sdk) by the ps2dev team: the memory card file system (mcman) and the USB keyboard driver.
 - mymc by Ross Ridge and [mymcplus](https://github.com/thestr4ng3r/mymcplus) by Florian Maerkl: what RIPPS2's card image writes are checked against.
 - Planet N Compact by [Iconian Fonts](https://www.iconian.com) (`assets/master.ttf`). [RIPPS2 Sleek](https://github.com/akilluminati47/RIPPS2-fonts) (Regular, Bold, Bold Case) is drawn for RIPPS2; its own repo has the fonts as TTF and WOFF2 under the OFL.
 - Web version: [three.js](https://threejs.org) r160, MIT (see `vendor/LICENSE`); [Albert Sans](https://github.com/usted/Albert-Sans), SIL Open Font License (see `vendor/fonts/OFL.txt`).
 - The web mockup's elf shelf (Storage, [akilluminati47.github.io/RIPPS2](https://akilluminati47.github.io/RIPPS2/)) stands on the wooden plank from [uOPL](https://github.com/SlimPugGamer/uOPL) (`gfx/plank.png`, AFL-3.0).
-- The RIPPS2 mark, the dead elf in its blue hat, is original: rendered in three.js (MIT) from `media/deadelf/scene.html` (every angle and colour in `media/deadelf`), with a vector version in `assets/ripps2-deadelf.svg`.
+- The RIPPS2 mark, the dead elf in its blue hat, is original: rendered in three.js (MIT) from `media/deadelf/scene.html` (every angle and color in `media/deadelf`), with a vector version in `assets/ripps2-deadelf.svg`.
 - The build 66 reel (on YouTube) is set to Slideshow (Daytime) by Kazumi Totaka, from the Wii News Channel (Nintendo, 2006); the build 55 reel's music is original. Game art seen in testing came from the community OPL art database and is not part of RIPPS2.
 
 Unofficial fan project. PlayStation, PS1, PS2, the PlayStation logo and the PS2 logo are trademarks of Sony Interactive Entertainment. This project is not affiliated with or endorsed by Sony.

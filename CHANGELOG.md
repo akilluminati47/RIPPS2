@@ -8,9 +8,13 @@
 ### RIPgrid
 - **Turn the case over.** Hold the right stick to one side for 2 seconds and the chosen case flips to its back cover, the way you lean. It stays turned on the grid when you move on and when you come back; hold again to turn it home. The back cover is asked for as soon as the front is in, and the flip waits for it.
 - **Pages slide.** The grid moves by whole pages now, and a new page slides in as the old one slides away, eased like RIPFLOW's carousel (off when Coverflow's animation speed is 0).
+- Themes: a Grid's new `back_pattern` key picks what a turned case shows (`COV2`, the back cover, unless a theme says otherwise; `SCR` puts a screenshot there; `0` turns the flip off). The back covers get a cache of their own, a page and two deep.
+
+### Theme pack
+- **RIPPS2-themes for build 82**: everything since the build 80 pack in one download. Adapt's case shows the front, then the back; its info page sits opposite the list; Adapt Rx keeps its side bar on the left, and both keep the disc under LAUNCH DISC; RIPgrid is set in RIPPS2 Sleek with the Grunge theme's button glyphs; every image is an 8-bit PNG.
 
 ### US spellings
-- What the menus say is in US English: canceled, color, license, behavior, center.
+- What the menus say is in US English: canceled (the CD copy too), color, license, behavior, center.
 
 ## Build 81 (testing), changes since build 80
 

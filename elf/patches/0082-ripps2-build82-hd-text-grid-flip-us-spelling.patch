@@ -76,6 +76,19 @@ index 70dc0a7..fdde255 100644
      {'T', "Apollo Save Tool by bucanero"},
      {'S', "the save tool reference: PSU export and import, card images"},
      {'T', "ps2sdk by the ps2dev team"},
+diff --git a/src/ripps2cd.c b/src/ripps2cd.c
+index 4c19263..c825f95 100644
+--- a/src/ripps2cd.c
++++ b/src/ripps2cd.c
+@@ -613,7 +613,7 @@ static void cdCopy(int track)
+             guiMsgBoxSound(SFX_ERROR);
+             guiMsgBox("The copy stopped: the disc could not be read or the drive could not take more. Nothing was kept.", 0, NULL);
+         } else
+-            cdSay("COPY CANCELLED");
++            cdSay("COPY CANCELED");
+         return;
+     }
+     char done[200];
 diff --git a/src/ripps2files.c b/src/ripps2files.c
 index 6e1218f..f72e797 100644
 --- a/src/ripps2files.c

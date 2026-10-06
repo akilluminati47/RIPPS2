@@ -8,7 +8,7 @@ from pathlib import Path
 root = Path(os.environ.get('RIPTOPL_DIR', '.'))
 rd = lambda p: (root / p).read_text(encoding='utf-8')
 rm, th, ui, lng = rd('src/renderman.c'), rd('src/themes.c'), rd('src/ripps2ui.c'), rd('lng_tmpl/_base.yml')
-about, files = rd('src/ripps2about.c'), rd('src/ripps2files.c')
+about, files, cd = rd('src/ripps2about.c'), rd('src/ripps2files.c'), rd('src/ripps2cd.c')
 fail = []
 
 # --- HD: a glyph's width scale must be 0.75 of the frame's x scale (fntsys: ws = hs * PAR)
@@ -26,7 +26,7 @@ for mode, frame in (('GS_MODE_DTV_720P', False), ('GS_MODE_DTV_1080I', True)):
         fail.append('%s text width scale %.3f, wants %.3f (PAR %d/%d upside down?)' % (mode, ws, want, par2, par1))
 
 # --- US spellings on screen
-for text, where in (('Update cancelled.', lng), ('colour depth', lng), ('MIT licence', about), ('behaviour reference', about), ('"CENTRE"', files)):
+for text, where in (('Update cancelled.', lng), ('colour depth', lng), ('MIT licence', about), ('behaviour reference', about), ('"CENTRE"', files), ('"COPY CANCELLED"', cd)):
     if text in where:
         fail.append('UK spelling on screen: %s' % text)
 
