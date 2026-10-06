@@ -235,7 +235,9 @@ export function createElfShelf(canvas, { interactTarget = canvas, caption = null
 
   // ---- the carousel ----
   const n = hats.length;
-  let target = 0, pos = 0;                 // which hat is in the middle (pos eases after target)
+  // which hat is in the middle (pos eases after target): RIPPS2's blue on arrival, the mark's own colour
+  const start = Math.max(0, HATS.findIndex((h) => h.name === "RIPPS2"));
+  let target = start, pos = start;
   const wrap = (d) => ((d % n) + n + n / 2) % n - n / 2;   // the shortest way round
   function step(dir) { target += dir; if (caption) setCaption(); }
   function setCaption() {
