@@ -1,0 +1,704 @@
+diff --git a/Makefile b/Makefile
+index ec0c8ff..7eca4a8 100644
+--- a/Makefile
++++ b/Makefile
+@@ -133,7 +133,7 @@ ifneq ($(GIT_TAG),latest)
+ endif
+ endif
+ 
+-FRONTEND_OBJS = ripps2.o ripps2ui.o ripps2boot.o ripps2ra.o ripps2status.o ripps2ember.o ripps2art.o ripps2cd.o ripps2sfxpack.o ripps2bg.o ripps2files.o ripps2edit.o ripps2hdd.o ripps2kbd.o ripps2saves.o ripps2about.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o mixsupport.o metadb.o \
++FRONTEND_OBJS = ripps2.o ripps2ui.o ripps2boot.o ripps2ra.o ripps2status.o ripps2ember.o ripps2art.o ripps2cd.o ripps2sfxpack.o ripps2bg.o ripps2files.o ripps2edit.o ripps2hdd.o ripps2card.o ripps2kbd.o ripps2saves.o ripps2about.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o mixsupport.o metadb.o \
+ 		dia.o ioman.o texcache.o themes.o supportbase.o bdmsupport.o netsupport.o ethsupport.o httpcatalog.o httpsupport.o udpfssupport.o hddsupport.o zso.o lz4.o launchdiag.o \
+ 		appsupport.o mmcesupport.o artindex.o vcdsupport.o cuesupport.o libview.o retrogem.o folderbrowse.o gui.o guigame.o vmc_groups.o textures.o opl.o atlas.o nbns.o httpclient.o gsm.o cheatman.o cheatconfig.o sound.o ps2cnf.o tar.o
+ 
+diff --git a/include/ripps2.h b/include/ripps2.h
+index 7a1e9ae..c14a556 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -184,6 +184,7 @@ int ripps2VmcReadFile(const char *image, const char *save, const char *file, voi
+ int ripps2VmcExtractFile(const char *image, const char *save, const char *file, const char *dst);
+ int ripps2VmcDeleteSave(const char *image, const char *save);
+ int ripps2PickList(const char *const *items, int count); // ripps2edit.c: a small glass list; -1 = none
++void ripps2CardManager(int slot, const char *image); // ripps2card.c (build 86): memory card 1/2 (slot 0/1), or a card image (slot -1)
+ void ripps2SetOrbInput(int showPaths, int boost); // Memory Files: L2 shows the paths, R2 builds the orbs to 2x
+ 
+ // ---- Boot swoop and launch light-up (ripps2bg.c) ----
+diff --git a/src/ripps2card.c b/src/ripps2card.c
+new file mode 100644
+index 0000000..bf1352f
+--- /dev/null
++++ b/src/ripps2card.c
+@@ -0,0 +1,570 @@
++/*
++  Copyright 2026, RIPPS2 contributors
++  Licenced under Academic Free License version 3.0
++  Review OpenUsbLd README & LICENSE files for further details.
++
++  RIPPS2 build 86: the CARD MANAGER. Square on a memory card in the file browser (as Square on the HDD
++  opens the HDD MANAGER), or CARD MANAGER in a card image's actions: every save on the card or in the
++  image with what it takes, the space left, and the card tools people reach for (wLaunchELF's card
++  tools and MC Annihilator were the reference for what is expected):
++
++    DELETE        one save, two screens (the second only START gets past)
++    BACK UP       the whole card to a VMC on a drive: genvmc's own card copy (OPL's "VMC from a card")
++    WRITE         every save in a card image onto memory card 1 or 2 (one already there is left alone)
++    ERASE         every game save, keeping the folders that are not saves (boot loaders, RIPPS2, APPS...)
++    FORMAT        the card, blank (never the card RIPPS2 was started from)
++*/
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <strings.h>
++#include <fcntl.h>
++#include <unistd.h>
++#include <dirent.h>
++#include <sys/stat.h>
++#include <libmc.h>
++#include <fileXio_rpc.h> // fileXioDevctl: genvmc's devctls
++
++#include "include/opl.h"
++#include "include/gui.h"
++#include "include/renderman.h"
++#include "include/fntsys.h"
++#include "include/themes.h"
++#include "include/textures.h"
++#include "include/pad.h"
++#include "include/sound.h"
++#include "include/ioman.h" // ioBlockOps: nothing else touches the card while it changes
++#include "include/ripps2.h"
++#include "include/ripps2tint.h" // RIPPSettings Color Theme: last, so every colour below goes through it
++
++#define CM_MAX   128
++#define CM_ROWS  14
++#define CM_ROW_H 22
++#define CM_Y     84
++#define CM_X     30
++#define CM_RIGHT 610
++
++#define CM_LIT  GS_SETREG_RGBA(0x80, 0x80, 0x80, 0x80)
++#define CM_DIM  GS_SETREG_RGBA(0x4C, 0x52, 0x64, 0x80)
++#define CM_SOFT GS_SETREG_RGBA(0x67, 0x6C, 0x7A, 0x80)
++#define CM_PRIM(r, g, b, a) GS_SETREG_RGBAQ((r), (g), (b), (a), 0x00)
++
++// genvmc (modules/vmc/genvmc/genvmc.h): the devctls and their parameter blocks
++#define CM_GENVMC_CREATE 0xC0DE0001
++#define CM_GENVMC_ABORT  0xC0DE0002
++#define CM_GENVMC_STATUS 0xC0DE0003
++typedef struct
++{
++    char VMC_filename[1024];
++    int VMC_size_mb;
++    int VMC_blocksize;
++    int VMC_thread_priority;
++    int VMC_card_slot; // 0 = slot 1, 1 = slot 2, else a blank card
++} cm_create_t;
++typedef struct
++{
++    int VMC_status; // 0 = available, 1 = busy
++    int VMC_error;
++    int VMC_progress;
++    char VMC_msg[64];
++} cm_status_t;
++
++typedef struct
++{
++    char name[33];
++    unsigned int kb;
++    int system; // not a game save: ERASE leaves it
++} cm_save_t;
++
++static cm_save_t cmSaves[CM_MAX];
++static ripps2_vmc_ent_t cmEnts[CM_MAX];
++static int cmCount, cmSlot, cmReady;
++static unsigned int cmFreeKb, cmTotalKb;
++static char cmImage[256], cmTitle[64], cmBootDir[40];
++
++// Folders a card keeps that are not game saves: boot loaders and their configs, homebrew, RIPPS2's own,
++// and the folder RIPPS2 itself was started from
++static int cmIsSystem(const char *n)
++{
++    static const char *const keep[] = {"BOOT", "SYS-CONF", "SYS_CONF", "APPS", "PS2BBL", "FMCB", "OSDMENU", "OSDSYS", "RIPPS2", "POPSTARTER",
++                                       "NEUTRINO", "EMBER", "OPL", "BIBLE", "BOOTLOCK", "B?EXEC-SYSTEM", "BAEXEC-SYSTEM", "BEEXEC-SYSTEM",
++                                       "BIEXEC-SYSTEM", NULL};
++    int i;
++    for (i = 0; keep[i] != NULL; i++)
++        if (!strcasecmp(n, keep[i]))
++            return 1;
++    return cmBootDir[0] && !strcasecmp(n, cmBootDir);
++}
++
++static void cmHint(int icon, const char *text, int *x, int y)
++{
++    GSTEXTURE *t = thmGetTexture(icon);
++    if (t != NULL) {
++        rmDrawPixmap(t, *x, y - 10, ALIGN_NONE, 20, 20, SCALING_RATIO, CM_LIT, 0);
++        *x += 24;
++    }
++    *x = ripps2HintText(*x, y, text, CM_SOFT) + 18;
++}
++
++static void cmStatus(const char *text)
++{
++    rmStartFrame();
++    guiDrawBGPlasma();
++    fntRenderString(gTheme->fonts[4], CM_X, 30, ALIGN_VCENTER, 0, 0, "CARD MANAGER", CM_LIT);
++    rmDrawLine(CM_X, 46, CM_RIGHT, 46, CM_PRIM(0x4A, 0x72, 0xDC, 0x60));
++    fntRenderString(gTheme->fonts[4], 320, 240, ALIGN_CENTER, 0, 0, text, CM_SOFT);
++    rmEndFrame();
++}
++
++// stat() a path: 1 = a folder, 0 = a file (its size in *size), -1 = neither (the browser's own test)
++static int cmStat(const char *path, unsigned int *size)
++{
++    struct stat st;
++    if (stat(path, &st) != 0)
++        return -1;
++    if (size != NULL)
++        *size = S_ISDIR(st.st_mode) ? 0 : (unsigned int)st.st_size;
++    return S_ISDIR(st.st_mode) ? 1 : 0;
++}
++
++// a physical card's save: the KB its files take
++static unsigned int cmCardSaveKb(const char *save)
++{
++    char dir[64], path[128];
++    struct dirent *de;
++    unsigned int bytes = 0, size;
++    DIR *d;
++    snprintf(dir, sizeof(dir), "mc%d:/%s", cmSlot, save);
++    d = opendir(dir);
++    if (d == NULL)
++        return 0;
++    while ((de = readdir(d)) != NULL) {
++        if (de->d_name[0] == '.')
++            continue;
++        snprintf(path, sizeof(path), "%s/%s", dir, de->d_name);
++        if (cmStat(path, &size) == 0)
++            bytes += size;
++    }
++    closedir(d);
++    return (bytes + 1023) / 1024;
++}
++
++static void cmScan(void)
++{
++    int i, n;
++
++    cmStatus("READING THE CARD");
++    cmCount = 0;
++    cmReady = 0;
++    if (cmSlot >= 0) {
++        int type = 0, freeC = 0, format = 0, res = 0;
++        struct dirent *de;
++        char root[8], path[64];
++        DIR *d;
++        mcGetInfo(cmSlot, 0, &type, &freeC, &format);
++        mcSync(0, NULL, &res);
++        cmReady = res >= -1 && type == sceMcTypePS2 && format == MC_FORMATTED;
++        cmFreeKb = freeC > 0 ? (unsigned int)freeC : 0; // clusters of 1 KB
++        cmTotalKb = 8000;
++        snprintf(root, sizeof(root), "mc%d:/", cmSlot);
++        d = cmReady ? opendir(root) : NULL;
++        if (d != NULL) {
++            while (cmCount < CM_MAX && (de = readdir(d)) != NULL) {
++                if (de->d_name[0] == '.')
++                    continue;
++                snprintf(path, sizeof(path), "%s%s", root, de->d_name);
++                if (cmStat(path, NULL) != 1)
++                    continue; // a loose file at the top: not a save
++                cm_save_t *s = &cmSaves[cmCount++];
++                snprintf(s->name, sizeof(s->name), "%.32s", de->d_name);
++            }
++            closedir(d);
++        }
++        for (i = 0; i < cmCount; i++)
++            cmSaves[i].kb = cmCardSaveKb(cmSaves[i].name);
++    } else {
++        unsigned int freeKb = 0;
++        n = ripps2VmcList(cmImage, NULL, cmEnts, CM_MAX, &freeKb);
++        cmReady = n >= 0;
++        cmFreeKb = freeKb;
++        cmTotalKb = 8000;
++        for (i = 0; i < n && cmCount < CM_MAX; i++) {
++            if (!cmEnts[i].isDir)
++                continue;
++            cm_save_t *s = &cmSaves[cmCount++];
++            snprintf(s->name, sizeof(s->name), "%s", cmEnts[i].name);
++            s->kb = 0;
++        }
++        for (i = 0; i < cmCount; i++) { // what each save takes: its files, one listing each
++            int k, m = ripps2VmcList(cmImage, cmSaves[i].name, cmEnts, CM_MAX, NULL);
++            unsigned int bytes = 0;
++            for (k = 0; k < m; k++)
++                bytes += cmEnts[k].size;
++            cmSaves[i].kb = (bytes + 1023) / 1024;
++        }
++    }
++    for (i = 0; i < cmCount; i++)
++        cmSaves[i].system = cmIsSystem(cmSaves[i].name);
++    readPads();
++}
++
++// Delete one save: on a card its files then its folder, in an image through the save tools
++static int cmDelete(const char *name)
++{
++    if (cmSlot < 0)
++        return ripps2VmcDeleteSave(cmImage, name) ? 0 : -1;
++    char dir[64], path[128];
++    struct dirent *de;
++    DIR *d;
++    snprintf(dir, sizeof(dir), "mc%d:/%s", cmSlot, name);
++    d = opendir(dir);
++    if (d == NULL)
++        return -1;
++    while ((de = readdir(d)) != NULL) {
++        if (de->d_name[0] == '.')
++            continue;
++        snprintf(path, sizeof(path), "%s/%s", dir, de->d_name);
++        if (cmStat(path, NULL) == 0)
++            unlink(path);
++    }
++    closedir(d);
++    return rmdir(dir) == 0 ? 0 : -1;
++}
++
++static int cmBootedHere(void)
++{
++    char boot[256], pre[8];
++    if (cmSlot < 0 || !ripps2GetBootPath(boot, sizeof(boot)))
++        return 0;
++    snprintf(pre, sizeof(pre), "mc%d:", cmSlot);
++    return !strncmp(boot, pre, 4);
++}
++
++// A drive to put a card backup on: the started ones that open. 1 with dev filled ("mass0:/"), 0 = none chosen.
++static int cmPickDrive(char *dev, int size)
++{
++    static const char *const devs[] = {"mass0:/", "mass1:/", "mass2:/", "mass3:/", "mmce0:/", "mmce1:/", "pfs0:/"};
++    static const char *const names[] = {"USB OR BDM 1", "USB OR BDM 2", "USB OR BDM 3", "USB OR BDM 4", "MMCE 1", "MMCE 2", "INTERNAL HDD"};
++    const char *items[8];
++    int idx[8], n = 0, i;
++    for (i = 0; i < 7; i++) {
++        DIR *d = opendir(devs[i]);
++        if (d == NULL)
++            continue;
++        closedir(d);
++        idx[n] = i;
++        items[n++] = names[i];
++    }
++    if (n == 0) {
++        guiMsgBox("No drive is started to put the backup on. Start the drives first (START DRIVES in Memory Files).", 0, NULL);
++        return 0;
++    }
++    i = ripps2PickList(items, n);
++    if (i < 0)
++        return 0;
++    snprintf(dev, size, "%s", devs[idx[i]]);
++    return 1;
++}
++
++// The whole card into an 8 MB VMC, by genvmc, which reads the card itself
++static void cmBackUp(char *toast, int tsize)
++{
++    char dev[16], path[128];
++    cm_create_t cp;
++    cm_status_t st;
++    int i, fd, frames, aborted = 0;
++
++    if (!cmPickDrive(dev, sizeof(dev)))
++        return;
++    snprintf(path, sizeof(path), "%sVMC", dev);
++    mkdir(path, 0777);
++    for (i = 1; i < 100; i++) { // the first free CARDn-NN.bin
++        snprintf(path, sizeof(path), "%sVMC/CARD%d-%02d.bin", dev, cmSlot + 1, i);
++        fd = open(path, O_RDONLY);
++        if (fd < 0)
++            break;
++        close(fd);
++    }
++    memset(&cp, 0, sizeof(cp));
++    snprintf(cp.VMC_filename, sizeof(cp.VMC_filename), "%s", path);
++    cp.VMC_size_mb = 8;
++    cp.VMC_blocksize = 16;
++    cp.VMC_thread_priority = 0x0f;
++    cp.VMC_card_slot = cmSlot;
++    ioBlockOps(1);
++    fileXioDevctl("genvmc:", CM_GENVMC_CREATE, (void *)&cp, sizeof(cp), NULL, 0);
++    memset(&st, 0, sizeof(st));
++    st.VMC_status = 1;
++    for (frames = 0; st.VMC_status != 0 && frames < 60 * 300; frames++) {
++        char line[64];
++        if (fileXioDevctl("genvmc:", CM_GENVMC_STATUS, NULL, 0, (void *)&st, sizeof(st)) != 0)
++            st.VMC_status = 1;
++        readPads();
++        if (!aborted && getKeyOn(gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE)) {
++            fileXioDevctl("genvmc:", CM_GENVMC_ABORT, NULL, 0, NULL, 0); // genvmc removes its partial file
++            aborted = 1;
++        }
++        snprintf(line, sizeof(line), "BACKING UP THE CARD  %d%%", st.VMC_progress);
++        cmStatus(line);
++    }
++    ioBlockOps(0);
++    if (aborted)
++        snprintf(toast, tsize, "BACKUP STOPPED");
++    else if (st.VMC_status != 0 || st.VMC_error != 0)
++        snprintf(toast, tsize, "THE BACKUP FAILED (%d)", st.VMC_error);
++    else
++        snprintf(toast, tsize, "BACKED UP TO %s", path);
++    sfxPlay(aborted || st.VMC_error ? SFX_ERROR : SFX_SAVE);
++}
++
++// Every save in the image onto a card; one of the same name already there stays as it is
++static void cmWrite(int slot, char *toast, int tsize)
++{
++    char to[8], line[64];
++    int i, done = 0, kept = 0, failed = 0;
++    snprintf(to, sizeof(to), "mc%d:/", slot);
++    ioBlockOps(1);
++    for (i = 0; i < cmCount; i++) {
++        snprintf(line, sizeof(line), "WRITING %d OF %d", i + 1, cmCount);
++        cmStatus(line);
++        int r = ripps2SaveCopy(RIPPS2_SAVE_VMC, cmImage, cmSaves[i].name, RIPPS2_SAVE_FOLDER, to);
++        if (r == 1)
++            done++;
++        else if (r == -1)
++            kept++;
++        else
++            failed++;
++    }
++    ioBlockOps(0);
++    if (failed)
++        snprintf(toast, tsize, "%d WRITTEN, %d THERE, %d FAILED", done, kept, failed);
++    else
++        snprintf(toast, tsize, "%d WRITTEN, %d ALREADY THERE", done, kept);
++    sfxPlay(failed ? SFX_ERROR : SFX_SAVE);
++}
++
++// The last screen of every destructive step: START only
++static int cmLastCheck(const char *what, const char *startLabel)
++{
++    guiMsgBoxSound(SFX_ERROR);
++    guiMsgBoxStartOption(startLabel);
++    return guiMsgBox(what, 0, NULL) == 2;
++}
++
++void ripps2CardManager(int slot, const char *image)
++{
++    int cursor = 0, top = 0, i;
++    char line[128], toast[96] = "", boot[256];
++    const char *slash;
++
++    cmSlot = slot;
++    cmImage[0] = '\0';
++    if (image != NULL)
++        snprintf(cmImage, sizeof(cmImage), "%s", image);
++    if (slot >= 0)
++        snprintf(cmTitle, sizeof(cmTitle), "MEMORY CARD %d", slot + 1);
++    else {
++        slash = strrchr(cmImage, '/');
++        snprintf(cmTitle, sizeof(cmTitle), "%.60s", slash != NULL ? slash + 1 : cmImage);
++    }
++    // the folder RIPPS2 was started from, on this card: ERASE keeps it
++    cmBootDir[0] = '\0';
++    if (slot >= 0 && ripps2GetBootPath(boot, sizeof(boot)) && !strncmp(boot, slot ? "mc1:" : "mc0:", 4)) {
++        const char *b = boot + 4, *e;
++        while (*b == '/')
++            b++;
++        e = strchr(b, '/');
++        if (e != NULL && e - b < (int)sizeof(cmBootDir))
++            snprintf(cmBootDir, sizeof(cmBootDir), "%.*s", (int)(e - b), b);
++    }
++    cmScan();
++    if (!cmReady) {
++        guiMsgBox(slot >= 0 ? "That memory card is not ready: it may be unformatted, or not a PS2 card." : "That file is not a PS2 card image RIPPS2 can read.", 0, NULL);
++        if (slot < 0)
++            return;
++    }
++
++    while (1) {
++        readPads();
++        if (cursor >= cmCount)
++            cursor = cmCount - 1;
++        if (cursor < 0)
++            cursor = 0;
++        if (cursor < top)
++            top = cursor;
++        if (cursor >= top + CM_ROWS)
++            top = cursor - CM_ROWS + 1;
++
++        rmStartFrame();
++        guiDrawBGPlasma();
++        fntRenderString(gTheme->fonts[4], CM_X, 30, ALIGN_VCENTER, 0, 0, "CARD MANAGER", CM_LIT);
++        if (cmReady)
++            snprintf(line, sizeof(line), "%s   %d SAVES   %u KB FREE", cmTitle, cmCount, cmFreeKb);
++        else
++            snprintf(line, sizeof(line), "%s   NOT FORMATTED", cmTitle);
++        fntRenderStringFit(gTheme->fonts[4], CM_RIGHT - 400, 30, ALIGN_VCENTER, 400, line, CM_SOFT, 1);
++        rmDrawLine(CM_X, 46, CM_RIGHT, 46, CM_PRIM(0x4A, 0x72, 0xDC, 0x60));
++        if (cmReady && cmTotalKb > 0) {
++            int w = CM_RIGHT - CM_X, used = cmFreeKb >= cmTotalKb ? 0 : (int)((float)w * (float)(cmTotalKb - cmFreeKb) / (float)cmTotalKb);
++            rmDrawRect(CM_X, 56, w, 8, CM_PRIM(0x03, 0x08, 0x22, 0x80));
++            rmDrawRect(CM_X, 56, used, 8, CM_PRIM(0x4A, 0x8C, 0xF0, 0x80));
++        }
++        for (i = 0; i < CM_ROWS && top + i < cmCount; i++) {
++            cm_save_t *s = &cmSaves[top + i];
++            int y = CM_Y + i * CM_ROW_H, cur = top + i == cursor;
++            if (cur) {
++                rmDrawRect(CM_X - 6, y - 1, CM_RIGHT - CM_X + 12, CM_ROW_H - 2, CM_PRIM(0x1E, 0x3C, 0x96, 0x58));
++                rmDrawRect(CM_X - 6, y - 1, 3, CM_ROW_H - 2, CM_PRIM(0x6A, 0x9A, 0xFF, 0x80));
++            }
++            fntRenderStringFit(gTheme->fonts[8], CM_X + 6, y + 9, ALIGN_VCENTER, 360, s->name, cur ? CM_LIT : (s->system ? CM_DIM : CM_SOFT), cur);
++            if (s->system)
++                fntRenderString(gTheme->fonts[5], 420, y + 9, ALIGN_VCENTER, 0, 0, "KEPT BY ERASE", CM_DIM);
++            snprintf(line, sizeof(line), "%u KB", s->kb);
++            fntRenderString(gTheme->fonts[5], CM_RIGHT - rmUnScaleX(fntCalcDimensions(gTheme->fonts[5], line)), y + 9, ALIGN_VCENTER, 0, 0, line, CM_DIM);
++        }
++        if (cmCount == 0)
++            fntRenderString(gTheme->fonts[4], 320, 200, ALIGN_CENTER, 0, 0, cmReady ? "NO SAVES" : "FORMAT IT TO USE IT", CM_DIM);
++        if (toast[0])
++            fntRenderStringFit(gTheme->fonts[5], CM_X, 432, ALIGN_VCENTER, CM_RIGHT - CM_X, toast, CM_SOFT, 1);
++        int hx = 44;
++        cmHint(TRIANGLE_ICON, "ACTIONS", &hx, 448);
++        cmHint(SELECT_ICON, "REFRESH", &hx, 448);
++        cmHint(gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON, "BACK", &hx, 448);
++        rmEndFrame();
++
++        if (getKey(KEY_UP) && cursor > 0) {
++            cursor--;
++            sfxPlay(SFX_CURSOR);
++        } else if (getKey(KEY_DOWN) && cursor < cmCount - 1) {
++            cursor++;
++            sfxPlay(SFX_CURSOR);
++        } else if (getKeyOn(KEY_L1) && cursor > 0) {
++            cursor = cursor > CM_ROWS ? cursor - CM_ROWS : 0;
++            sfxPlay(SFX_CURSOR);
++        } else if (getKeyOn(KEY_R1) && cursor < cmCount - 1) {
++            cursor = cursor + CM_ROWS < cmCount ? cursor + CM_ROWS : cmCount - 1;
++            sfxPlay(SFX_CURSOR);
++        } else if (getKeyOn(KEY_SELECT)) {
++            sfxPlay(SFX_CONFIRM);
++            cmScan();
++            toast[0] = '\0';
++        } else if (getKeyOn(KEY_TRIANGLE)) {
++            enum { A_DELETE, A_BACKUP, A_WRITE1, A_WRITE2, A_ERASE, A_FORMAT };
++            const char *items[6];
++            int acts[6], n = 0, pick;
++            char delLabel[48];
++            sfxPlay(SFX_CONFIRM);
++            if (cmReady && cmCount > 0) {
++                snprintf(delLabel, sizeof(delLabel), "DELETE %.30s", cmSaves[cursor].name);
++                acts[n] = A_DELETE;
++                items[n++] = delLabel;
++            }
++            if (cmSlot >= 0 && cmReady) {
++                acts[n] = A_BACKUP;
++                items[n++] = "BACK UP THE CARD TO A VMC";
++            }
++            if (cmSlot < 0 && cmReady && cmCount > 0) {
++                acts[n] = A_WRITE1;
++                items[n++] = "WRITE THE SAVES TO MEMORY CARD 1";
++                acts[n] = A_WRITE2;
++                items[n++] = "WRITE THE SAVES TO MEMORY CARD 2";
++            }
++            if (cmReady && cmCount > 0) {
++                acts[n] = A_ERASE;
++                items[n++] = "ERASE EVERY GAME SAVE";
++            }
++            if (cmSlot >= 0) {
++                acts[n] = A_FORMAT;
++                items[n++] = "FORMAT THE CARD";
++            }
++            pick = n > 0 ? ripps2PickList(items, n) : -1;
++            if (pick < 0)
++                continue;
++            switch (acts[pick]) {
++                case A_DELETE: {
++                    char name[33], ask[200];
++                    snprintf(name, sizeof(name), "%s", cmSaves[cursor].name);
++                    snprintf(ask, sizeof(ask), "Delete the save %s from %s? It cannot be brought back.", name, cmTitle);
++                    if (guiMsgBox(ask, 1, NULL) == 1 && cmLastCheck("Last check. The save goes for good. Press START to delete it.", "DELETE")) {
++                        cmStatus("DELETING");
++                        ioBlockOps(1);
++                        int r = cmDelete(name);
++                        ioBlockOps(0);
++                        cmScan();
++                        if (r < 0)
++                            snprintf(toast, sizeof(toast), "COULD NOT DELETE %s", name);
++                        else
++                            snprintf(toast, sizeof(toast), "DELETED %s", name);
++                        sfxPlay(r < 0 ? SFX_ERROR : SFX_SAVE);
++                    } else
++                        snprintf(toast, sizeof(toast), "KEPT %s", name);
++                    break;
++                }
++                case A_BACKUP:
++                    if (guiMsgBox("Copy the whole card into an 8 MB VMC on a drive? The card stays as it is. It takes a minute or two.", 1, NULL) == 1)
++                        cmBackUp(toast, sizeof(toast));
++                    break;
++                case A_WRITE1:
++                case A_WRITE2: {
++                    char ask[200];
++                    int to = acts[pick] == A_WRITE1 ? 0 : 1;
++                    snprintf(ask, sizeof(ask), "Write the %d saves in %s to memory card %d? A save already on the card is left as it is.", cmCount, cmTitle, to + 1);
++                    if (guiMsgBox(ask, 1, NULL) == 1)
++                        cmWrite(to, toast, sizeof(toast));
++                    break;
++                }
++                case A_ERASE: {
++                    int game = 0, k, failed = 0;
++                    char ask[220];
++                    for (k = 0; k < cmCount; k++)
++                        game += !cmSaves[k].system;
++                    snprintf(ask, sizeof(ask), "Erase all %d game saves on %s? Boot loaders, RIPPS2 and other folders that are not saves stay.", game, cmTitle);
++                    if (game > 0 && guiMsgBox(ask, 1, NULL) == 1 && cmLastCheck("Last check. Every game save goes for good. Press START to erase them.", "ERASE")) {
++                        ioBlockOps(1);
++                        for (k = 0; k < cmCount; k++) {
++                            if (cmSaves[k].system)
++                                continue;
++                            snprintf(ask, sizeof(ask), "ERASING %.32s", cmSaves[k].name);
++                            cmStatus(ask);
++                            failed += cmDelete(cmSaves[k].name) < 0;
++                        }
++                        ioBlockOps(0);
++                        cmScan();
++                        if (failed)
++                            snprintf(toast, sizeof(toast), "ERASED, %d COULD NOT GO", failed);
++                        else
++                            snprintf(toast, sizeof(toast), "ERASED EVERY GAME SAVE");
++                        sfxPlay(failed ? SFX_ERROR : SFX_SAVE);
++                    } else if (game == 0)
++                        snprintf(toast, sizeof(toast), "NO GAME SAVES TO ERASE");
++                    break;
++                }
++                case A_FORMAT:
++                    if (cmBootedHere()) {
++                        sfxPlay(SFX_ERROR);
++                        snprintf(toast, sizeof(toast), "RIPPS2 WAS STARTED FROM THIS CARD: IT STAYS");
++                    } else if (guiMsgBox("Format the card? Everything on it goes: saves, boot loaders, homebrew.", 1, NULL) == 1 &&
++                               cmLastCheck("Last check. The card will be blank and nothing can bring it back. Press START to format it.", "FORMAT")) {
++                        int res = -1;
++                        cmStatus("FORMATTING");
++                        ioBlockOps(1);
++                        mcFormat(cmSlot, 0);
++                        mcSync(0, NULL, &res);
++                        ioBlockOps(0);
++                        cmScan();
++                        if (res == 0)
++                            snprintf(toast, sizeof(toast), "FORMATTED");
++                        else
++                            snprintf(toast, sizeof(toast), "COULD NOT FORMAT (%d)", res);
++                        sfxPlay(res == 0 ? SFX_SAVE : SFX_ERROR);
++                    }
++                    break;
++            }
++        } else if (getKeyOn(gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE)) {
++            sfxPlay(SFX_CANCEL);
++            break;
++        }
++    }
++    readPads();
++}
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index f72e797..b9a6fdf 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -139,8 +139,8 @@ static unsigned char fbDeleteIsDir[FB_CLIP_MAX];
+ static int fbDeleteCount = 0;
+ 
+ // the actions menu (Triangle)
+-enum { FB_ACT_EDIT = 0, FB_ACT_COPY, FB_ACT_CUT, FB_ACT_PASTE, FB_ACT_PASTE_PSU, FB_ACT_UNPACK, FB_ACT_DELETE, FB_ACT_RENAME, FB_ACT_NEWDIR, FB_ACT_MARKALL, FB_ACT_COUNT };
+-static const char *fbActName[FB_ACT_COUNT] = {"EDIT", "COPY", "CUT", "PASTE", "PASTE AS PSU", "UNPACK PSU HERE", "DELETE", "RENAME", "NEW FOLDER", "MARK ALL"};
++enum { FB_ACT_EDIT = 0, FB_ACT_COPY, FB_ACT_CUT, FB_ACT_PASTE, FB_ACT_PASTE_PSU, FB_ACT_UNPACK, FB_ACT_DELETE, FB_ACT_RENAME, FB_ACT_NEWDIR, FB_ACT_MARKALL, FB_ACT_CARDS, FB_ACT_COUNT };
++static const char *fbActName[FB_ACT_COUNT] = {"EDIT", "COPY", "CUT", "PASTE", "PASTE AS PSU", "UNPACK PSU HERE", "DELETE", "RENAME", "NEW FOLDER", "MARK ALL", "CARD MANAGER"};
+ static int fbMenuOpen = 0, fbMenuSel = 0, fbMenuItems[FB_ACT_COUNT], fbMenuCount = 0;
+ 
+ static const char *fbDevices[] = {"mc0:/", "mc1:/", "mass0:/", "mass1:/", "mass2:/", "mass3:/", "mass4:/", "mass5:/", "mass6:/",
+@@ -206,6 +206,14 @@ static int fbIsApaEntry(const fb_entry_t *e)
+     return e != NULL && e->kind == FB_KIND_DEVICE && (!strcmp(e->name, "pfs0:/") || !strcmp(e->name, "hdd0:"));
+ }
+ 
++// build 86: a memory card in the drive list, the CARD MANAGER's way in: its slot, or -1
++static int fbCardSlot(const fb_entry_t *e)
++{
++    if (e == NULL || e->kind != FB_KIND_DEVICE)
++        return -1;
++    return !strcmp(e->name, "mc0:/") ? 0 : !strcmp(e->name, "mc1:/") ? 1 : -1;
++}
++
+ // ---- reading ----
+ 
+ // Shift-JIS from an icon.sys title to plain ASCII: full-width letters, digits and common punctuation
+@@ -1293,6 +1301,8 @@ static void fbMenuBuild(void)
+         fbMenuItems[fbMenuCount++] = FB_ACT_NEWDIR;
+     if (inFolder && fbCount > 0)
+         fbMenuItems[fbMenuCount++] = FB_ACT_MARKALL;
++    if (haveItem && !inVmc && fbList[fbCursor].kind == FB_KIND_VMC)
++        fbMenuItems[fbMenuCount++] = FB_ACT_CARDS; // build 86: the card image under the cursor
+     fbMenuSel = 0;
+ }
+ 
+@@ -1371,6 +1381,12 @@ static void fbAction(int act)
+             sfxPlay(SFX_CURSOR);
+             break;
+         }
++        case FB_ACT_CARDS: // build 86
++            fbJoin(from, sizeof(from), fbPath, fbList[fbCursor].name);
++            sfxPlay(SFX_CONFIRM);
++            ripps2CardManager(-1, from);
++            fbRun(FB_OP_SCAN, "READING");
++            break;
+     }
+ }
+ 
+@@ -1835,6 +1851,11 @@ void ripps2HandleInputFiles(void)
+         } else if (!fbPath[0] && fbCount > 0 && fbIsApaEntry(&fbList[fbCursor])) {
+             sfxPlay(SFX_CONFIRM); // build 69: the HDD MANAGER, on the drive it manages
+             ripps2HddManager();
++        } else if (!fbPath[0] && fbCount > 0 && fbCardSlot(&fbList[fbCursor]) >= 0) {
++            sfxPlay(SFX_CONFIRM); // build 86: the CARD MANAGER, on the card it manages
++            ripps2CardManager(fbCardSlot(&fbList[fbCursor]), NULL);
++            fbDevForce = 1;
++            fbRun(FB_OP_SCAN, "READING");
+         }
+     } else if (getKeyOn(KEY_SELECT)) { // read the folder (or the drives) again
+         sfxPlay(SFX_CONFIRM);
+@@ -2087,6 +2108,9 @@ void ripps2RenderFiles(void)
+         } else if (fbIsApaEntry(e)) {
+             icons[n] = SQUARE_ICON;
+             texts[n++] = "HDD MANAGER";
++        } else if (fbCardSlot(e) >= 0) {
++            icons[n] = SQUARE_ICON;
++            texts[n++] = "CARD MANAGER";
+         }
+         icons[n] = SELECT_ICON;
+         texts[n++] = "REFRESH";
+diff --git a/src/system.c b/src/system.c
+index fe28942..769ab88 100644
+--- a/src/system.c
++++ b/src/system.c
+@@ -1804,6 +1804,13 @@ static int sysRunNeutrinoLaunch(const char *driver, const char *path, const char
+     if (argc < argvMax)
+         argv[argc++] = (char *)neutrinoPath;
+ 
++    // RIPPS2 build 86: the automatic -logo goes FIRST, NHDDL's order (docs/plans/neutrino-ilink-logo.md).
++    // Neutrino reads every option before it acts, so this is about matching NHDDL for FifthFox's iLink A/B
++    // test, not a fix: still exactly one -logo, a typed one wins, and mmce / udp* stay suppressed above.
++    if (EnablePS2Logo && argc < argvMax &&
++        !neutrinoArgHasActiveFlag(gNeutrinoArgs, "-logo") && !neutrinoArgHasActiveFlag(extraArgs, "-logo"))
++        argv[argc++] = "-logo";
++
+     if (!strcmp(deviceName, "apa")) {
+         snprintf(bsd, sizeof(bsd), "-bsd=ata");
+         if (argc < argvMax)
+@@ -1903,10 +1910,6 @@ static int sysRunNeutrinoLaunch(const char *driver, const char *path, const char
+         !neutrinoArgHasActiveFlag(gNeutrinoArgs, "-dbc") && !neutrinoArgHasActiveFlag(extraArgs, "-dbc"))
+         argv[argc++] = "-dbc";
+ 
+-    if (EnablePS2Logo && argc < argvMax &&
+-        !neutrinoArgHasActiveFlag(gNeutrinoArgs, "-logo") && !neutrinoArgHasActiveFlag(extraArgs, "-logo"))
+-        argv[argc++] = "-logo";
+-
+     // Per-game Neutrino video mode (-gsm): 1=fp1 (240p), 2=fp2 (480p), 3=1080ix1 (1080i); 0/out-of-range
+     // = no -gsm. Neutrino is LAST-wins on -gsm and ABORTS the boot on a malformed value, so emit exactly
+     // ONE: skip the structured token when the user already typed a -gsm into the global or per-game args,

@@ -28,6 +28,11 @@ Arguments beyond the budget (14 entries / 256 bytes) are **refused** now; nothin
 
 **Already there:** Game Launching > Neutrino Defaults > **Show Launch Arguments** (build 75). It shows the exact argument list before each launch ("Neutrino will start with these arguments. Launch?"). FifthFox can use it today.
 
+## Status (build 86)
+- **Step 1 is covered by RiptOPL's own argument preview** (merged in build 84; Game Launching > Neutrino Defaults > Show Launch Arguments shows the exact list before every launch), so the per-game button was not built.
+- **Step 2 is done in build 86:** the automatic `-logo` goes right after `neutrino.elf`. Still exactly one; a typed one wins; mmce/udp* stay suppressed.
+- **Steps 3 to 5 wait on FifthFox's hardware A/B** (PS2 Logo on vs off, iLink, same game, several cold boots).
+
 ## Plan (recommended order)
 1. **Per-game "Launch Arguments" preview** (no hardware risk; answers request 1).
    - Add a button after "Neutrino Launch Args" in the per-game Compatibility dialog (`diaCompatConfig`, `src/dialogs.c:1209`). It is greyed when the game does not start through Neutrino, exactly like that button (`guiGameSetCoreAwareState`, `src/guigame.c:1157`). Its popup shows the full argument string.
@@ -44,7 +49,7 @@ Arguments beyond the budget (14 entries / 256 bytes) are **refused** now; nothin
 - a `DelayThread` before the handoff: it runs before Neutrino's reset, with RIPPS2's iLink stack still live;
 - per-game custom ordering: Neutrino ignores order, so it would be UI for no effect.
 
-## Files (as patch 0084; build 81 went to the Pop In toast, 82 to HD text and the RIPgrid flip, 83 to Star and YOUR ACCOUNT)
+## Files (step 2 landed as patch 0086, build 86)
 - `src/system.c`, `include/system.h`: the composer, `sysNeutrinoFormatArgs`, the `-logo` move.
 - `include/iosupport.h`: the callback.
 - the bdm / hdd / mmce / udpfs supports, with fav / mix passing it through.

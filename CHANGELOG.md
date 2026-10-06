@@ -1,5 +1,19 @@
 # RIPPS2 changelog
 
+## Build 86 (testing), changes since build 85
+
+### Memory Files: the CARD MANAGER
+- **Square on a memory card** in the drive list opens the CARD MANAGER (as Square on the internal HDD opens the HDD MANAGER); a card image (VMC) has it in its Triangle actions. Every save with what it takes, the space left, and the card tools:
+  - **Delete** a save.
+  - **Back up the card to a VMC** on a drive (`VMC/CARD1-01.bin` and on): an 8 MB copy of the whole card, made by OPL's own card-to-VMC copy. The card stays as it is.
+  - **Write a card image's saves to memory card 1 or 2.** A save already on the card is left as it is.
+  - **Erase every game save**, keeping the folders that are not saves: boot loaders (BOOT, PS2BBL, FMCB, OSDMENU), SYS-CONF, APPS, RIPPS2, POPSTARTER and the folder RIPPS2 was started from.
+  - **Format the card** (never the card RIPPS2 was started from).
+- Delete, erase and format each take two screens, and the last one only START gets past.
+
+### Neutrino
+- The automatic `-logo` is sent first, right after `neutrino.elf`, NHDDL's order (for FifthFox's iLink test; Neutrino reads every option before it acts, so it is not a fix in itself).
+
 ## Build 85 (testing), changes since build 84
 
 ### PS1 games on a real console
