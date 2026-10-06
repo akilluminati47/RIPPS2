@@ -105,7 +105,7 @@ RIPPS2 is designed and directed by akilluminati47 and built with Claude (Anthrop
 - [Apollo Save Tool](https://github.com/bucanero/apollo-ps2) by bucanero: the reference for the save tools (PSU, card images). RIPPS2's own code, written from the formats.
 - [ps2sdk](https://github.com/ps2dev/ps2sdk) by the ps2dev team: the memory card file system (mcman) and the USB keyboard driver.
 - mymc by Ross Ridge and [mymcplus](https://github.com/thestr4ng3r/mymcplus) by Florian Maerkl: what RIPPS2's card image writes are checked against.
-- Planet N Compact by [Iconian Fonts](https://www.iconian.com) (`assets/master.ttf`). RIPPS2 Sleek and Sleek Bold are drawn for RIPPS2.
+- Planet N Compact by [Iconian Fonts](https://www.iconian.com) (`assets/master.ttf`). [RIPPS2 Sleek](https://github.com/akilluminati47/RIPPS2-fonts) (Regular, Bold, Bold Case) is drawn for RIPPS2; its own repo has the fonts as TTF and WOFF2 under the OFL.
 - Web version: [three.js](https://threejs.org) r160, MIT (see `vendor/LICENSE`); [Albert Sans](https://github.com/usted/Albert-Sans), SIL Open Font License (see `vendor/fonts/OFL.txt`).
 - The web mockup's elf shelf (Storage, [akilluminati47.github.io/RIPPS2](https://akilluminati47.github.io/RIPPS2/)) stands on the wooden plank from [uOPL](https://github.com/SlimPugGamer/uOPL) (`gfx/plank.png`, AFL-3.0).
 - The RIPPS2 mark, the dead elf in its blue hat, is original: rendered in three.js (MIT) from `media/deadelf/scene.html` (every angle and colour in `media/deadelf`), with a vector version in `assets/ripps2-deadelf.svg`.
