@@ -36,6 +36,35 @@ Build 55's [reel](media/ripps2-b55-reel.mp4) and short clips: [info page](media/
 
 Put an `AUDIO` folder beside `RIPPS2.elf`. It takes sound effects as `.adp` files named for their events (RiptOPL's `boot`, `cancel`, `confirm`, `cursor`, `message`, `transition`, `bd_connect`, `bd_disconnect`, and RIPPS2's `page_in`, `page_out`, `error`, `save`, `launch`, `disc`, `random`), and music as `bgm_01 Title.ogg`, `bgm_02 Title.ogg` and so on (Ogg Vorbis without tags, or 16-bit WAV). Settings > Audio Settings > Music picks the track. **[RIPPS2 Audio Studio](tools/audio-studio)** does all of it on your PC: browse to any sound or song, hear it as it is and as the PS2 will play it, convert it (or a whole folder) into `output/AUDIO`, and copy that folder beside `RIPPS2.elf` with a USB stick and RIPPS2's Memory Files. Point it at the BIOS dump of your own PS2 and it renders the console's own menu sounds and system music from it, ready to use. (`elf/theme/tools/make_adp.py` and `make_sound_pack.py` still do the same from the command line.) RIPPS2 ships no one else's sounds or music.
 
+### The sound RIPPS2 was made with
+
+RIPPS2 is voiced like a PS2 that never left the living room: **Sony's own console sounds**, Sony system music, and **one Nintendo track** to browse by (the RIPPS2 designer's own picks). None of it ships with RIPPS2; **[RIPPS2 Audio Studio](tools/audio-studio)** gets you there from the [BIOS dump of your own PS2](https://pcsx2.net/docs/setup/bios/) (the file PCSX2 uses) and your own copies of the music. Its **Start** rips the console's sounds into a full `AUDIO` folder; this is the map they go into.
+
+| | Moment | `AUDIO` file | Sony's sound, from your own PS2 (Audio Studio > Your BIOS) |
+|:-:|---|---|---|
+| ▶ | Boot, as the towers rise | `boot.adp` | the **boot** ("Bootup") |
+| ◆ | Into an info page or Settings | `page_in.adp` | **Menu sound 3** |
+| ◇ | Back out to the list | `page_out.adp` | **Menu sound 2** |
+| ↕ | Cursor | `cursor.adp` | **Menu sound 7** |
+| ✕ | Confirm | `confirm.adp` | **Menu sound 5** |
+| ○ | Cancel | `cancel.adp` | **Menu sound 13** |
+| ⇄ | Launch Disc, Storage, Memory Files | `transition.adp` | **Menu sound 10** |
+| ✉ | A message, a disc read | `message.adp`, `disc.adp` | **Menu sound 11** |
+| ✓ | Save | `save.adp` | **Menu sound 12** |
+| ! | Error | `error.adp` | **Menu sound 4** |
+| ★ | Game launch | `launch.adp` | the **PS2 logo** ("Game Boot") |
+| ◀ | Drive plugged in | `bd_connect.adp` | **Menu sound 8** |
+| ▷ | Drive removed | `bd_disconnect.adp` | **Menu sound 9** |
+| ⚄ | Random game (L2 + R2) | `random.adp` | **Menu sound 6** |
+
+<sub>Menu sounds are numbered as Audio Studio lists an SCPH-39001 dump. Start already puts most of them in place; for this map, convert save, error, random and the two drive sounds from the menu sounds named here.</sub>
+
+| Music | Track | From | Get it |
+|---|---|---|---|
+| `bgm_01 Slideshow.ogg` | **Slideshow (Daytime)** | the Wii's [News Channel](https://en.wikipedia.org/wiki/News_Channel_(Wii)), by [Kazumi Totaka](https://en.wikipedia.org/wiki/Kazumi_Totaka) (Nintendo, 2006): the suggestion RIPPS2 was paced to | your own copy, converted in Audio Studio |
+| `bgm_02 Details.ogg` | **Details** | x-Radar Portable, [PSP system music](https://en.wikipedia.org/wiki/PlayStation_Portable_system_software) (Sony, 2010) | your own copy, converted in Audio Studio |
+| `bgm_03 Menu.ogg` | **Menu** | PS2 system music (Sony), the console's menu theme | your own copy, converted in Audio Studio |
+
 ## How it is built
 
 `elf/build.sh` takes RiptOPL at the commit named in `elf/RIPTOPL_REF`, applies the patch series in `elf/patches`, adds the RIPPS2 theme, fonts and art from `elf/theme`, and builds `RIPPS2.elf`. GitHub Actions runs it on every push ("Build RIPPS2.elf"); the ELF is the run's artifact.
