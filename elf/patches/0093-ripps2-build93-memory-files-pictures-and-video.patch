@@ -76,10 +76,10 @@ index 25a1f91..f4fad92 100644
      }
 diff --git a/src/ripps2media.c b/src/ripps2media.c
 new file mode 100644
-index 0000000..4a40f8d
+index 0000000..580afb4
 --- /dev/null
 +++ b/src/ripps2media.c
-@@ -0,0 +1,465 @@
+@@ -0,0 +1,466 @@
 +/*
 +  RIPPS2 build 93: pictures and video in Memory Files.
 +
@@ -104,6 +104,7 @@ index 0000000..4a40f8d
 +#include <setjmp.h>
 +#include <time.h>
 +#include <kernel.h>
++#include <delaythread.h>
 +#include <png.h>
 +#include <jpeglib.h>
 +
