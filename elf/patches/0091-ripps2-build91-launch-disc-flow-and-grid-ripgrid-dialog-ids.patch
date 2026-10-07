@@ -1124,7 +1124,7 @@ index b9a6fdf..25a1f91 100644
          }
          return;
 diff --git a/src/ripps2ui.c b/src/ripps2ui.c
-index ec6796b..7cd47c4 100644
+index ec6796b..12152a5 100644
 --- a/src/ripps2ui.c
 +++ b/src/ripps2ui.c
 @@ -32,6 +32,8 @@
@@ -1136,7 +1136,7 @@ index ec6796b..7cd47c4 100644
  #include <libcdvd.h>
  #include <fcntl.h>
  #include <unistd.h>
-@@ -536,6 +538,127 @@ static u64 withAlpha(u64 c, int a)
+@@ -536,6 +538,128 @@ static u64 withAlpha(u64 c, int a)
      return (c & ~(0xFFULL << 24)) | ((u64)(a < 0 ? 0 : a > 0x80 ? 0x80 : a) << 24);
  }
  
@@ -1250,9 +1250,10 @@ index ec6796b..7cd47c4 100644
 +        angle = revs * 6.2831853f;
 +    }
 +
-+    // a dark band keeps it clear of whatever is behind, as under the L3 word
++    // a faint dark halo keeps it clear of whatever is behind (kept small and soft: on the launch's white
++    // flash a stronger one read as a grey square)
 +    int bandA = (int)(fminf(1.0f, li * 2.0f) * keep * 0x80);
-+    viewWordBand(320.0f, (float)DISC_Y, w * s / 2.0f + 18.0f, h * s / 2.0f + 6.0f, 48.0f, 0x01, 0x02, 0x0A, bandA * 3 / 5);
++    viewWordBand(320.0f, (float)DISC_Y, w * s / 2.0f * 0.6f, h * s / 2.0f * 0.6f, w * s * 0.55f, 0x01, 0x02, 0x0A, bandA / 4);
 +    rmSetBlendAdditive(1); // the glow: a larger copy, brightest as it lands
 +    rmDrawPixmapRotated(tex, 320, DISC_Y, (int)(w * s * 1.08f), (int)(h * s * 1.08f), angle,
 +                        GS_SETREG_RGBAQ(0x80, 0x80, 0x80, (int)((0x10 + 0x40 * flare) * keep), 0x00));
