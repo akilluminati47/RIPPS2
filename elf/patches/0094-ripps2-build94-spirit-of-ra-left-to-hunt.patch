@@ -802,7 +802,7 @@ index 53ceca1..9206026 100644
  
      return 0;
 diff --git a/src/ripps2ra.c b/src/ripps2ra.c
-index 48bfb86..0eff5b0 100644
+index 48bfb86..cb2c82c 100644
 --- a/src/ripps2ra.c
 +++ b/src/ripps2ra.c
 @@ -35,6 +35,7 @@
@@ -854,21 +854,21 @@ index 48bfb86..0eff5b0 100644
 +    return t;
 +}
 +
-+// how many it has locked: its lines that start "0" (-1: no file)
-+static int raHuntLeft(const ra_game_t *g)
++// how many it has locked (-1: no file, or not one), read with the page's own parser into list, so the card
++// and LEFT TO HUNT agree (a strchr walk counted one short on the console)
++static int raHuntLeft(const ra_game_t *g, ra_hunt_t *list)
 +{
-+    int len, n = 0;
-+    char *t = raHuntText(g, &len), *p;
++    int len, n, i, left = 0;
++    char *t = raHuntText(g, &len);
 +    if (t == NULL)
 +        return -1;
-+    if (strncmp(t, "RIPPS2 ACH 1", 12) != 0)
-+        n = -1;
-+    else
-+        for (p = strchr(t, '\n'); p != NULL; p = strchr(p + 1, '\n'))
-+            if (p[1] == '0' && p[2] == '\t')
-+                n++;
++    n = raHuntRead(t, len, list, RA_HUNT_MAX);
 +    free(t);
-+    return n;
++    if (n < 0)
++        return -1;
++    for (i = 0; i < n; i++)
++        left += !list[i].unlocked;
++    return left;
 +}
 +
  static int raAcctLoad(ra_game_t *games)
@@ -877,7 +877,7 @@ index 48bfb86..0eff5b0 100644
      static const char *const names[] = {"USB", "USB 2", "MMCE 1", "MMCE 2", "HDD", "SMB"};
      int d, n = 0, i;
  
-@@ -159,11 +206,14 @@ static int raAcctLoad(ra_game_t *games)
+@@ -159,11 +206,18 @@ static int raAcctLoad(ra_game_t *games)
                  g->unsupported = atoi(line);
              fclose(f);
              snprintf(g->where, sizeof(g->where), "%s", names[d]);
@@ -887,12 +887,16 @@ index 48bfb86..0eff5b0 100644
          }
          closedir(dir);
      }
-+    for (i = 0; i < n; i++) // build 94: with the folders closed again
-+        games[i].hunt = raHuntLeft(&games[i]);
++    { // build 94: with the folders closed again
++        ra_hunt_t *list = malloc(sizeof(ra_hunt_t) * RA_HUNT_MAX);
++        for (i = 0; i < n; i++)
++            games[i].hunt = list != NULL ? raHuntLeft(&games[i], list) : -1;
++        free(list);
++    }
      qsort(games, n, sizeof(ra_game_t), raAcctCmp);
      return n;
  }
-@@ -179,6 +229,148 @@ static void raAcctBar(int x, int y, int w, int h, int done, int total, int a)
+@@ -179,6 +233,148 @@ static void raAcctBar(int x, int y, int w, int h, int done, int total, int a)
      }
  }
  
@@ -1041,7 +1045,7 @@ index 48bfb86..0eff5b0 100644
  static void raAccount(void)
  {
      int openKey = gSelectButton == KEY_CIRCLE ? KEY_CIRCLE : KEY_CROSS, backKey = gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE;
-@@ -286,15 +478,23 @@ static void raAccount(void)
+@@ -286,15 +482,23 @@ static void raAccount(void)
                  raAcctBar(tx, 258, tw, 8, 0, g->total, a);
                  raWrap(RIPPS2_CASE_FONT, tx, 282, tw, 18, "Update xeRAbora on your PC to see what you have unlocked.", RA_SOFT);
              }
@@ -1066,7 +1070,7 @@ index 48bfb86..0eff5b0 100644
              if (n > RA_ACCT_ROWS) {
                  raHint(L1_ICON, "PAGE", &hx, hy);
                  raHint(R1_ICON, "PAGE", &hx, hy);
-@@ -306,6 +506,10 @@ static void raAccount(void)
+@@ -306,6 +510,10 @@ static void raAccount(void)
              sfxPlay(SFX_CANCEL);
              break;
          }

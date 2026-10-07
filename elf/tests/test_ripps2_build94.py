@@ -32,7 +32,7 @@ if 'free(state)' not in net or 'free(ach)' not in net:
 # YOUR ACCOUNT
 if 'static void raHuntPage(const ra_game_t *g)' not in ra or '"LEFT TO HUNT"' not in ra:
     fail.append('YOUR ACCOUNT must open LEFT TO HUNT')
-if 'games[i].hunt = raHuntLeft(&games[i])' not in ra or 'left to hunt' not in ra:
+if 'raHuntLeft(&games[i], list)' not in ra or 'left to hunt' not in ra:
     fail.append("YOUR ACCOUNT's card must say how many are left")
 if 'free(all)' not in ra or 'free(lockedAt)' not in ra:
     fail.append('LEFT TO HUNT must let go of its list when it closes')
