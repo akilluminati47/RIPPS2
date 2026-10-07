@@ -345,10 +345,10 @@ index 2617044..cab7c67 100644
          configSetStr(configOPL, CONFIG_OPL_LANGUAGE, lngGetValue());
 diff --git a/src/ripps2hints.c b/src/ripps2hints.c
 new file mode 100644
-index 0000000..b584544
+index 0000000..2a52553
 --- /dev/null
 +++ b/src/ripps2hints.c
-@@ -0,0 +1,344 @@
+@@ -0,0 +1,346 @@
 +/*
 +  RIPPS2 build 90: the button hints and glyphs, as a theme sets them and as the user overrides them.
 +
@@ -640,11 +640,13 @@ index 0000000..b584544
 +        diaSetInt(diaHintsConfig, pickRows[i], gRipps2HintPick[pickHints[i]]);
 +    }
 +
++    int focus = -1;
 +    for (;;) {
-+        ret = diaExecuteDialog(diaHintsConfig, -1, 1, &hintsUpdater);
++        ret = diaExecuteDialog(diaHintsConfig, focus, 1, &hintsUpdater);
 +        if (ret == RIPPS2_HINT_ORDER_BUTTON) {
 +            hintsRead();
 +            showOrder();
++            focus = RIPPS2_HINT_ORDER_BUTTON; // back on the page with the cursor where it was
 +            continue;
 +        }
 +        break;
