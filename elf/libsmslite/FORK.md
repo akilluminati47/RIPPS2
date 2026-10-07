@@ -17,3 +17,5 @@ family (MPEG-1 layer II and III). The copy here is RIPPS2's fork of it.
 
 - smsLitePause(int on): holds the picture and stops feeding the sound until called with 0; the host reads the
   pad itself (START pauses, the cancel button or SELECT stops), so nothing in the player takes input.
+- smsLiteClearDecodeInfo / smsLiteClearDecoderInfo / smsLiteClearPacketInfo: called by smsLiteInit and
+  smsLitePlayFullscreen but defined nowhere in this copy; RIPPS2 gives them empty bodies (nothing to reset).

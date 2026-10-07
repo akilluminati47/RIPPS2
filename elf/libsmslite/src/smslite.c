@@ -39,6 +39,11 @@
 #endif
 
 static volatile int s_smsLitePaused = 0; /* RIPPS2: smsLitePause() */
+/* RIPPS2: called below but defined nowhere in this copy (the diagnostic counters they reset are not in it):
+   nothing to clear. Without them the library only links in a build that never calls smsLiteInit. */
+static void smsLiteClearDecodeInfo(void) {}
+static void smsLiteClearDecoderInfo(void) {}
+static void smsLiteClearPacketInfo(void) {}
 
 static void smsLiteVU0Sync(void)
 {
