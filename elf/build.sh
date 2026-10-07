@@ -86,6 +86,15 @@ done
 "$BR_AR" rcs "$SRC/lib/libbearssl.a" "$SRC"/bearssl-obj/*.o
 echo "BearSSL: $(ls "$SRC"/bearssl-obj/*.o | wc -l) objects"
 
+# RIPPS2 build 93: libsmslite (AVI video in Memory Files), RIPPS2's fork in elf/libsmslite, built as its own
+# library: its core is AFL 2.0, its MPEG-4 and MP3 decoders LGPL 2.1 (elf/libsmslite/FORK.md)
+rm -rf "$SRC/thirdparty/libsmslite"
+mkdir -p "$SRC/thirdparty"
+cp -r "$HERE/libsmslite" "$SRC/thirdparty/libsmslite"
+make -C "$SRC/thirdparty/libsmslite" all
+cp -f "$SRC/thirdparty/libsmslite/lib/libsmslite.a" "$SRC/lib/libsmslite.a"
+echo "libsmslite: $(du -k "$SRC/lib/libsmslite.a" | cut -f1) KB"
+
 cd "$SRC"
 sh .github/scripts/install_coherent_mmce.sh
 make clean

@@ -1,0 +1,547 @@
+diff --git a/Makefile b/Makefile
+index a1ce287..3a965cb 100644
+--- a/Makefile
++++ b/Makefile
+@@ -133,7 +133,7 @@ ifneq ($(GIT_TAG),latest)
+ endif
+ endif
+ 
+-FRONTEND_OBJS = ripps2.o ripps2ui.o ripps2boot.o ripps2ra.o ripps2status.o ripps2ember.o ripps2art.o ripps2cd.o ripps2sfxpack.o ripps2bg.o ripps2files.o ripps2edit.o ripps2hdd.o ripps2card.o ripps2biossnd.o ripps2hints.o ripps2kbd.o ripps2saves.o ripps2about.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o mixsupport.o metadb.o \
++FRONTEND_OBJS = ripps2.o ripps2ui.o ripps2boot.o ripps2ra.o ripps2status.o ripps2ember.o ripps2art.o ripps2cd.o ripps2sfxpack.o ripps2bg.o ripps2files.o ripps2edit.o ripps2hdd.o ripps2card.o ripps2biossnd.o ripps2hints.o ripps2media.o ripps2kbd.o ripps2saves.o ripps2about.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o mixsupport.o metadb.o \
+ 		dia.o ioman.o texcache.o themes.o supportbase.o bdmsupport.o netsupport.o ethsupport.o httpcatalog.o httpsupport.o udpfssupport.o hddsupport.o zso.o lz4.o launchdiag.o \
+ 		appsupport.o mmcesupport.o artindex.o vcdsupport.o cuesupport.o libview.o retrogem.o folderbrowse.o gui.o guigame.o vmc_groups.o textures.o opl.o atlas.o nbns.o httpclient.o gsm.o cheatman.o cheatconfig.o sound.o ps2cnf.o tar.o
+ 
+@@ -223,7 +223,14 @@ MMCE_ASSETS_DIR = $(PS2SDK)/iop/irx
+ MAPFILE = opl.map
+ EE_LDFLAGS += -Wl,-Map,$(MAPFILE)
+ 
+-EE_LIBS = -L$(PS2SDK)/ports/lib -L$(GSKIT)/lib -L./lib -lbearssl -lgskit -ldmakit -lpoweroff -lfileXio -liopreboot -lpatches -lpng -ljpeg -lz -lmc -lfreetype -lvux -lcdvd -lnetman -lps2ips -laudsrv -lvorbisfile -lvorbis -logg -lpadx -lelf-loader-nocolour -lkbd -lsecr
++# RIPPS2 build 93: libsmslite plays AVI video in Memory Files. RIPPS2's build.sh builds it (its fork, from
++# ps2-pillars elf/libsmslite) into lib/; without it Memory Files opens pictures only.
++ifneq ($(wildcard lib/libsmslite.a),)
++  RIPPS2_SMSLITE_LIBS = -lsmslite
++  EE_CFLAGS += -DRIPPS2_SMSLITE
++  EE_INCS += -Ithirdparty/libsmslite/include
++endif
++EE_LIBS = -L$(PS2SDK)/ports/lib -L$(GSKIT)/lib -L./lib $(RIPPS2_SMSLITE_LIBS) -lbearssl -lgskit -ldmakit -lpoweroff -lfileXio -liopreboot -lpatches -lpng -ljpeg -lz -lmc -lfreetype -lvux -lcdvd -lnetman -lps2ips -laudsrv -lvorbisfile -lvorbis -logg -lpadx -lelf-loader-nocolour -lkbd -lsecr
+ EE_INCS += -Ibearssl-0.6/inc -I$(PS2SDK)/ports/include -I$(PS2SDK)/ports/include/freetype2 -I$(GSKIT)/include -I$(GSKIT)/ee/dma/include -I$(GSKIT)/ee/gs/include -Imodules/iopcore/common -Imodules/network/common -Imodules/hdd/common -Iinclude
+ BIN2C = $(PS2SDK)/bin/bin2c
+ 
+diff --git a/include/ripps2.h b/include/ripps2.h
+index 43c57e0..42d3615 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -212,6 +212,12 @@ int ripps2VmcExtractFile(const char *image, const char *save, const char *file,
+ int ripps2VmcDeleteSave(const char *image, const char *save);
+ int ripps2PickList(const char *const *items, int count); // ripps2edit.c: a small glass list; -1 = none
+ void ripps2CardManager(int slot, const char *image); // ripps2card.c (build 86): memory card 1/2 (slot 0/1), or a card image (slot -1)
++// ripps2media.c (build 93): Memory Files opens pictures (PNG, JPG) and video (AVI, with libsmslite)
++enum { RIPPS2_MEDIA_NONE = 0, RIPPS2_MEDIA_PICTURE, RIPPS2_MEDIA_VIDEO };
++int ripps2MediaKind(const char *name);
++void ripps2ViewPicture(const char *path);
++void ripps2PlayVideo(const char *path);
++void ripps2OpenMedia(const char *path);
+ void ripps2SetOrbInput(int showPaths, int boost); // Memory Files: L2 shows the paths, R2 builds the orbs to 2x
+ 
+ // ---- Boot swoop and launch light-up (ripps2bg.c) ----
+diff --git a/src/ripps2about.c b/src/ripps2about.c
+index b925b3f..0884d55 100644
+--- a/src/ripps2about.c
++++ b/src/ripps2about.c
+@@ -131,6 +131,9 @@ static const ab_row_t abRows[] = {
+     {'S', "mcman's card file system, the USB keyboard driver"},
+     {'T', "mymc by Ross Ridge, mymcplus by Florian Maerkl"},
+     {'S', "what RIPPS2's card image writes are checked against"},
++    {'T', "libsmslite: SMS by Eugene Plotnikov and contributors"},
++    {'S', "AVI video in Memory Files, RIPPS2's fork (AFL 2.0)"},
++    {'S', "its MPEG-4 and MP3 decoders: ffmpeg, mpg123 (LGPL 2.1)"},
+     {'G', NULL},
+     {'H', "LOOK AND TYPE"},
+     {'T', "Planet N Compact by Iconian Fonts"},
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index 25a1f91..f4fad92 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -1300,6 +1300,11 @@ static void fbOpen(void)
+             if (fbIsText(e->name)) {
+                 sfxPlay(SFX_CONFIRM);
+                 fbEdit(e->name);
++            } else if (ripps2MediaKind(e->name) != RIPPS2_MEDIA_NONE && !fbVmcPath(fbVmc, fbPath, NULL, 0)) {
++                // build 93: a picture or a video, full screen (not from inside a card image: no file path there)
++                sfxPlay(SFX_CONFIRM);
++                fbJoin(path, sizeof(path), fbPath, e->name);
++                ripps2OpenMedia(path);
+             }
+             break;
+     }
+diff --git a/src/ripps2media.c b/src/ripps2media.c
+new file mode 100644
+index 0000000..4a40f8d
+--- /dev/null
++++ b/src/ripps2media.c
+@@ -0,0 +1,465 @@
++/*
++  RIPPS2 build 93: pictures and video in Memory Files.
++
++  Pictures (PNG, JPG): Cross on one opens it full screen, fitted to the screen. R2 zooms in and L2 out, smoothly
++  while held; the D-pad (or the left stick) moves round a zoomed picture; the right stick tilts it, as it tilts the
++  Grid's cases; Triangle fits it again; the cancel button goes back. A picture bigger than the screen is made
++  smaller as it is read, a row at a time (each pixel the average of the ones it covers; a JPG first takes
++  libjpeg's own 1/2, 1/4 or 1/8), so any size opens in a little memory: at most 720 x 512 is kept, as a 32-bit
++  texture.
++
++  Video (AVI: XviD or DivX, with MP3 or MP2 sound), played by libsmslite (elf/libsmslite, RIPPS2's fork of the
++  SMS player's core): full screen, the picture letterboxed to its own shape. START pauses and carries on; the
++  cancel button or SELECT stops. Nothing else on the pad is taken, so a player that needs the pad (DVD menus)
++  can have the rest of it. The menu's music stops for it and comes back after, and RIPPS2's display is set up
++  again when it ends.
++*/
++
++#include <stdio.h>
++#include <string.h>
++#include <strings.h>
++#include <malloc.h>
++#include <setjmp.h>
++#include <time.h>
++#include <kernel.h>
++#include <png.h>
++#include <jpeglib.h>
++
++#include "include/opl.h"
++#include "include/gui.h"
++#include "include/renderman.h"
++#include "include/fntsys.h"
++#include "include/themes.h"
++#include "include/textures.h"
++#include "include/pad.h"
++#include "include/sound.h"
++#include "include/ripps2.h"
++#ifdef RIPPS2_SMSLITE
++#include <smslite.h>
++#endif
++
++#define VIEW_MAX_W 720
++#define VIEW_MAX_H 512
++
++int ripps2MediaKind(const char *name)
++{
++    const char *dot = name != NULL ? strrchr(name, '.') : NULL;
++    if (dot == NULL)
++        return RIPPS2_MEDIA_NONE;
++    if (!strcasecmp(dot, ".png") || !strcasecmp(dot, ".jpg") || !strcasecmp(dot, ".jpeg"))
++        return RIPPS2_MEDIA_PICTURE;
++#ifdef RIPPS2_SMSLITE
++    if (!strcasecmp(dot, ".avi"))
++        return RIPPS2_MEDIA_VIDEO;
++#endif
++    return RIPPS2_MEDIA_NONE;
++}
++
++// ---- reading a picture smaller, a row at a time ----
++// Each target pixel is the average of the source pixels that map onto it: a source row adds into the target
++// row it falls in, and that row is written out when the source moves past it.
++typedef struct
++{
++    int sw, sh, tw, th, cur;
++    unsigned int *acc, *cnt;
++    unsigned char *out;
++} view_shrink_t;
++
++static int shrinkBegin(view_shrink_t *s, int sw, int sh)
++{
++    memset(s, 0, sizeof(*s));
++    s->sw = sw;
++    s->sh = sh;
++    s->tw = sw;
++    s->th = sh;
++    if (s->tw > VIEW_MAX_W) {
++        s->th = (int)((long long)s->th * VIEW_MAX_W / s->tw);
++        s->tw = VIEW_MAX_W;
++    }
++    if (s->th > VIEW_MAX_H) {
++        s->tw = (int)((long long)s->tw * VIEW_MAX_H / s->th);
++        s->th = VIEW_MAX_H;
++    }
++    if (s->tw < 1)
++        s->tw = 1;
++    if (s->th < 1)
++        s->th = 1;
++    s->cur = -1;
++    s->acc = calloc(s->tw * 4, sizeof(unsigned int));
++    s->cnt = calloc(s->tw, sizeof(unsigned int));
++    s->out = memalign(128, s->tw * s->th * 4);
++    if (s->out != NULL)
++        memset(s->out, 0, s->tw * s->th * 4);
++    return s->acc != NULL && s->cnt != NULL && s->out != NULL;
++}
++
++static void shrinkFlush(view_shrink_t *s)
++{
++    int x, c;
++    if (s->cur < 0 || s->cur >= s->th)
++        return;
++    for (x = 0; x < s->tw; x++) {
++        unsigned int n = s->cnt[x] ? s->cnt[x] : 1;
++        for (c = 0; c < 4; c++)
++            s->out[(s->cur * s->tw + x) * 4 + c] = (unsigned char)((s->acc[x * 4 + c] + n / 2) / n);
++        s->out[(s->cur * s->tw + x) * 4 + 3] >>= 1; // the GS's alpha runs to 0x80
++    }
++    memset(s->acc, 0, s->tw * 4 * sizeof(unsigned int));
++    memset(s->cnt, 0, s->tw * sizeof(unsigned int));
++}
++
++// one source row, RGBA, row y of sh
++static void shrinkRow(view_shrink_t *s, const unsigned char *row, int y)
++{
++    int ty = (int)((long long)y * s->th / s->sh), x, c;
++    if (ty != s->cur) {
++        shrinkFlush(s);
++        s->cur = ty;
++    }
++    for (x = 0; x < s->sw; x++) {
++        int tx = (int)((long long)x * s->tw / s->sw);
++        for (c = 0; c < 4; c++)
++            s->acc[tx * 4 + c] += row[x * 4 + c];
++        s->cnt[tx]++;
++    }
++}
++
++static void shrinkFree(view_shrink_t *s)
++{
++    free(s->acc);
++    free(s->cnt);
++    s->acc = s->cnt = NULL;
++}
++
++static jmp_buf viewJmp;
++
++static int viewPng(FILE *f, view_shrink_t *s, const char **why)
++{
++    static png_structp png;
++    static png_infop info;
++    static unsigned char *row;
++    png_uint_32 w, h;
++    int depth, type, y;
++
++    png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
++    info = png != NULL ? png_create_info_struct(png) : NULL;
++    row = NULL;
++    if (info == NULL) {
++        png_destroy_read_struct(&png, NULL, NULL);
++        return 0;
++    }
++    if (setjmp(png_jmpbuf(png))) {
++        png_destroy_read_struct(&png, &info, NULL);
++        free(row);
++        return 0;
++    }
++    png_init_io(png, f);
++    png_read_info(png, info);
++    png_get_IHDR(png, info, &w, &h, &depth, &type, NULL, NULL, NULL);
++    if (png_get_interlace_type(png, info) != PNG_INTERLACE_NONE) { // its rows come in passes: no row at a time
++        *why = "This PNG is interlaced. Save it without interlacing to see it here.";
++        png_destroy_read_struct(&png, &info, NULL);
++        return 0;
++    }
++    png_set_expand(png);
++    png_set_strip_16(png);
++    if (type == PNG_COLOR_TYPE_GRAY || type == PNG_COLOR_TYPE_GRAY_ALPHA)
++        png_set_gray_to_rgb(png);
++    png_set_filler(png, 0xFF, PNG_FILLER_AFTER);
++    png_read_update_info(png, info);
++    if (!shrinkBegin(s, (int)w, (int)h) || (row = malloc(w * 4)) == NULL) {
++        *why = "Not enough memory to open this picture.";
++        png_destroy_read_struct(&png, &info, NULL);
++        free(row);
++        return 0;
++    }
++    for (y = 0; y < (int)h; y++) {
++        png_read_row(png, row, NULL);
++        shrinkRow(s, row, y);
++    }
++    shrinkFlush(s);
++    png_destroy_read_struct(&png, &info, NULL);
++    free(row);
++    return 1;
++}
++
++struct viewJpegErr
++{
++    struct jpeg_error_mgr pub;
++};
++
++static void viewJpegFail(j_common_ptr c)
++{
++    (void)c;
++    longjmp(viewJmp, 1);
++}
++
++static int viewJpg(FILE *f, view_shrink_t *s, const char **why)
++{
++    static struct jpeg_decompress_struct d;
++    static struct viewJpegErr je;
++    static unsigned char *rgb, *row;
++    unsigned int x, fw, fh;
++
++    rgb = row = NULL;
++    d.err = jpeg_std_error(&je.pub);
++    je.pub.error_exit = viewJpegFail;
++    if (setjmp(viewJmp)) {
++        jpeg_destroy_decompress(&d);
++        free(rgb);
++        free(row);
++        return 0;
++    }
++    jpeg_create_decompress(&d);
++    jpeg_stdio_src(&d, f);
++    jpeg_read_header(&d, TRUE);
++    d.out_color_space = JCS_RGB;
++    // libjpeg's own 1/2, 1/4 or 1/8 first, as far as still covers the size the picture ends up at
++    fw = d.image_width;
++    fh = d.image_height;
++    if (fw > VIEW_MAX_W) {
++        fh = fh * VIEW_MAX_W / fw;
++        fw = VIEW_MAX_W;
++    }
++    if (fh > VIEW_MAX_H) {
++        fw = fw * VIEW_MAX_H / fh;
++        fh = VIEW_MAX_H;
++    }
++    d.scale_num = 1;
++    d.scale_denom = 1;
++    while (d.scale_denom < 8 && d.image_width / (d.scale_denom * 2) >= fw && d.image_height / (d.scale_denom * 2) >= fh)
++        d.scale_denom *= 2;
++    jpeg_start_decompress(&d);
++    if (d.output_components != 3 || !shrinkBegin(s, (int)d.output_width, (int)d.output_height) ||
++        (rgb = malloc(d.output_width * 3)) == NULL || (row = malloc(d.output_width * 4)) == NULL) {
++        *why = "Not enough memory to open this picture.";
++        longjmp(viewJmp, 1);
++    }
++    while (d.output_scanline < d.output_height) {
++        int y = (int)d.output_scanline;
++        JSAMPROW r = rgb;
++        jpeg_read_scanlines(&d, &r, 1);
++        for (x = 0; x < d.output_width; x++) {
++            row[x * 4] = rgb[x * 3];
++            row[x * 4 + 1] = rgb[x * 3 + 1];
++            row[x * 4 + 2] = rgb[x * 3 + 2];
++            row[x * 4 + 3] = 0xFF;
++        }
++        shrinkRow(s, row, y);
++    }
++    shrinkFlush(s);
++    jpeg_finish_decompress(&d);
++    jpeg_destroy_decompress(&d);
++    free(rgb);
++    free(row);
++    return 1;
++}
++
++// The picture as a texture, at most VIEW_MAX_W x VIEW_MAX_H; its own size in sw x sh. NULL on success, else why not.
++static const char *viewLoad(const char *path, GSTEXTURE *t, int *sw, int *sh)
++{
++    view_shrink_t s;
++    const char *why = NULL, *dot = strrchr(path, '.');
++    FILE *f = fopen(path, "rb");
++    int ok;
++
++    memset(&s, 0, sizeof(s));
++    if (f == NULL)
++        return "This picture could not be opened.";
++    ok = (dot != NULL && !strcasecmp(dot, ".png")) ? viewPng(f, &s, &why) : viewJpg(f, &s, &why);
++    fclose(f);
++    shrinkFree(&s);
++    if (!ok) {
++        free(s.out);
++        return why != NULL ? why : "This picture could not be read. RIPPS2 opens PNG and JPG pictures.";
++    }
++    memset(t, 0, sizeof(*t));
++    t->Width = s.tw;
++    t->Height = s.th;
++    t->PSM = GS_PSM_CT32;
++    t->Mem = (u32 *)s.out;
++    t->Filter = GS_FILTER_LINEAR;
++    *sw = s.sw;
++    *sh = s.sh;
++    return NULL;
++}
++
++void ripps2ViewPicture(const char *path)
++{
++    GSTEXTURE tex;
++    int sw = 0, sh = 0, scrW, scrH;
++    char info[160];
++    const char *name = strrchr(path, '/'), *why;
++
++    guiRenderTextScreen("Opening the picture");
++    if ((why = viewLoad(path, &tex, &sw, &sh)) != NULL) {
++        guiMsgBox(why, 0, NULL);
++        return;
++    }
++    name = name != NULL ? name + 1 : path;
++    rmGetScreenExtents(&scrW, &scrH);
++
++    // fitted: as large as the page allows (a margin round it), its own shape on the screen whatever the
++    // display's (sizes in the 4:3 page's square units; drawing squeezes them on a 16:9 one)
++    float squeeze = rmWideScale(1000) / 1000.0f, aspect = (float)sw / (float)sh;
++    float fitH = 430.0f, fitW = fitH * aspect;
++    if (fitW * squeeze > 600.0f) {
++        fitW = 600.0f / squeeze;
++        fitH = fitW / aspect;
++    }
++    float zoom = 1.0f, px = 0.0f, py = 0.0f;
++    clock_t infoAt = clock();
++
++    for (;;) {
++        int rx, ry;
++        float w = fitW * zoom, h = fitH * zoom;
++        float t = (float)(clock() - infoAt) / (float)CLOCKS_PER_SEC;
++        int infoA = t < 3.0f ? 0x80 : t < 4.0f ? (int)(0x80 * (4.0f - t)) : 0;
++
++        guiStartFrame();
++        rmDrawRect(0, 0, scrW, scrH, GS_SETREG_RGBA(0x02, 0x03, 0x0A, 0x80));
++        padGetRightStick(&rx, &ry);
++        int tilt = rx > 24 || rx < -24 || ry > 24 || ry < -24;
++        if (tilt) // RIPPS2's tilt, about the picture's centre
++            rmSetTilt(1, (int)(320 + px), (int)(240 + py), rx / 127.0f * 0.35f, -ry / 127.0f * 0.30f);
++        rmDrawPixmap(&tex, (int)(320 + px), (int)(240 + py), ALIGN_CENTER, (int)w, (int)h, SCALING_RATIO,
++                     GS_SETREG_RGBA(0x80, 0x80, 0x80, 0x80), 0);
++        if (tilt)
++            rmSetTilt(0, 0, 0, 0.0f, 0.0f);
++        if (infoA > 0) {
++            snprintf(info, sizeof(info), "%s   %d x %d   %d%%", name, sw, sh, (int)(zoom * 100.0f * fitH / (float)sh + 0.5f));
++            fntRenderString(gTheme->fonts[0], 320, 22, ALIGN_CENTER, 0, 0, info, GS_SETREG_RGBA(0xE0, 0xE8, 0xFF, infoA));
++            fntRenderString(gTheme->fonts[0], 320, 458, ALIGN_CENTER, 0, 0, "R2 zoom in   L2 zoom out   D-pad move   right stick tilt   Triangle fit",
++                            GS_SETREG_RGBA(0xA0, 0xB0, 0xE0, infoA));
++        }
++        guiEndFrame();
++
++        readPads();
++        if (getKeyOn(guiCancelKey()))
++            break;
++        if (getKeyPressed(KEY_R2))
++            zoom *= 1.035f;
++        if (getKeyPressed(KEY_L2))
++            zoom /= 1.035f;
++        if (zoom > 8.0f)
++            zoom = 8.0f;
++        if (zoom < 0.25f)
++            zoom = 0.25f;
++        if (getKeyOn(KEY_TRIANGLE)) {
++            zoom = 1.0f;
++            px = py = 0.0f;
++        }
++        // the D-pad moves the view round a picture larger than the page, which goes the other way
++        float step = 6.0f + 2.0f * zoom;
++        if (getKeyPressed(KEY_LEFT))
++            px += step;
++        if (getKeyPressed(KEY_RIGHT))
++            px -= step;
++        if (getKeyPressed(KEY_UP))
++            py += step;
++        if (getKeyPressed(KEY_DOWN))
++            py -= step;
++        float mx = (w * squeeze - 600.0f) / 2.0f / squeeze, my = (h - 430.0f) / 2.0f;
++        mx = mx > 0.0f ? mx : 0.0f;
++        my = my > 0.0f ? my : 0.0f;
++        px = px > mx ? mx : px < -mx ? -mx : px;
++        py = py > my ? my : py < -my ? -my : py;
++        if (getKeyOn(KEY_R2) || getKeyOn(KEY_L2) || getKeyOn(KEY_TRIANGLE))
++            infoAt = clock(); // the size shows again as it changes
++    }
++    rmUnloadTexture(&tex);
++    texFree(&tex);
++}
++
++#ifdef RIPPS2_SMSLITE
++// ---- video ----
++static volatile int videoPadRun = 0, videoPadDone = 0;
++static u8 videoPadStack[0x2000] __attribute__((aligned(16)));
++
++// The pad while the player has the screen: START pauses and carries on, the cancel button or SELECT stops.
++static void videoPadThread(void *arg)
++{
++    int paused = 0;
++    (void)arg;
++    while (videoPadRun) {
++        readPads();
++        if (getKeyOn(KEY_START)) {
++            paused = !paused;
++            smsLitePause(paused);
++        }
++        if (getKeyOn(guiCancelKey()) || getKeyOn(KEY_SELECT)) {
++            smsLitePause(0);
++            smsLiteStop();
++        }
++        DelayThread(16 * 1000);
++    }
++    videoPadDone = 1;
++    ExitDeleteThread();
++}
++
++void ripps2PlayVideo(const char *path)
++{
++    static int ready = 0;
++    extern void *_gp;
++    ee_thread_t th;
++    int tid, music = isBgmPlaying(), r;
++
++    if (!ready && smsLiteInit() != SMSLITE_OK) {
++        guiMsgBox("The video player could not start.", 0, NULL);
++        return;
++    }
++    ready = 1;
++    guiRenderTextScreen("Opening the video");
++    if (music)
++        bgmStop();
++
++    rmEnd(); // the player sets the screen up its own way; RIPPS2's goes again after
++
++    memset(&th, 0, sizeof(th));
++    th.func = (void *)videoPadThread;
++    th.stack = videoPadStack;
++    th.stack_size = sizeof(videoPadStack);
++    th.gp_reg = &_gp;
++    th.initial_priority = 30;
++    videoPadRun = 1;
++    videoPadDone = 0;
++    tid = CreateThread(&th);
++    if (tid >= 0)
++        StartThread(tid, NULL);
++
++    r = smsLitePlayFullscreen(path);
++
++    videoPadRun = 0;
++    while (tid >= 0 && !videoPadDone)
++        DelayThread(5000);
++    smsLitePause(0);
++
++    rmSetMode(1);
++    thmReloadScreenExtents();
++    if (music)
++        bgmStart();
++    if (r != SMSLITE_OK)
++        guiMsgBox(r == SMSLITE_ERR_OPEN ? "This video could not be opened." :
++                                          "RIPPS2 plays AVI video in XviD or DivX, with MP3 or MP2 sound. This one is not.",
++                  0, NULL);
++}
++#else
++void ripps2PlayVideo(const char *path)
++{
++    (void)path;
++}
++#endif
++
++void ripps2OpenMedia(const char *path)
++{
++    switch (ripps2MediaKind(path)) {
++        case RIPPS2_MEDIA_PICTURE:
++            ripps2ViewPicture(path);
++            break;
++        case RIPPS2_MEDIA_VIDEO:
++            ripps2PlayVideo(path);
++            break;
++        default:
++            break;
++    }
++}

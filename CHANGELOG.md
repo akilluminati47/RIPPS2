@@ -1,5 +1,13 @@
 # RIPPS2 changelog
 
+## Build 93 (testing), changes since build 92
+
+### Memory Files opens pictures and video
+- **Pictures (PNG and JPG):** Cross opens one full screen, fitted to the screen. Hold R2 to zoom in and L2 to zoom out, move round with the D-pad, tilt it with the right stick, Triangle fits it again, Back closes it. A picture of any size opens: a big one is made smaller as it is read (up to 720 x 512 is kept), a row at a time, so it needs little memory. (Interlaced PNGs are the exception: save them without interlacing.)
+- **Video (AVI, XviD or DivX, with MP3 or MP2 sound):** Cross plays it full screen, letterboxed to its own shape. **START pauses** and carries on; Back or SELECT stops. Nothing else on the pad is taken. The menu music stops for it and comes back after.
+- The video player is **libsmslite**, the SMS player's core (Eugene Plotnikov and contributors), in RIPPS2's own fork (elf/libsmslite) with the pause added. Its core is AFL 2.0; its MPEG-4 and MP3 decoders come from ffmpeg and mpg123 under the LGPL 2.1, and it is built as a library of its own. About credits it.
+- To make a video it plays: `ffmpeg -i in.mp4 -c:v libxvid -vf scale=640:-2 -r 25 -c:a libmp3lame -ar 48000 -b:a 128k out.avi`.
+
 ## Build 92 (testing), changes since build 91
 
 ### The category bar
