@@ -1285,7 +1285,7 @@ index 0e2f45c..96c3875 100644
      // Positional: guarded by the same #ifdef as RA_MARK in enum INTERNAL_TEXTURE. Without
      // this row TEXTURES_COUNT grows but the initialiser does not, leaving the last slot
 diff --git a/src/themes.c b/src/themes.c
-index e702ff2..fd3a227 100644
+index e702ff2..60b25b6 100644
 --- a/src/themes.c
 +++ b/src/themes.c
 @@ -57,12 +57,15 @@ extern const char conf_theme_OPL_cfg;
@@ -1304,7 +1304,7 @@ index e702ff2..fd3a227 100644
  
  static int screenWidth;
  static int screenHeight;
-@@ -78,7 +81,9 @@ static const char **guiThemesNames = NULL;
+@@ -78,7 +81,10 @@ static const char **guiThemesNames = NULL;
  int gCoverflowCount = 3;        // 3 or 5 only (clamped on load AND at draw)
  int gCoverflowCenterScale = 30; // px added to the center cover (UI 0/15/30/45)
  int gCoverflowAnimSpeed = 200;  // ms (UI 0/100/200/400; 0 = instant, no anim)
@@ -1312,10 +1312,11 @@ index e702ff2..fd3a227 100644
 +int gCoverflowDimCovers = 0;    // bool (RIPPS2 build 91: kept in the settings, drawn as the vignette below)
 +int gRipps2Vignette = 1;        // RIPPS2 build 91: Flow and Grid > Vignette Other Covers
 +int gRipps2GridLayout = 0;      // RIPPS2 build 91: Flow and Grid > Grid Layout, 0 = the theme's
++static void drawCoverVignette(int cx, int cy, int w, int h, float fade); // build 91: Flow and Grid both draw it
  
  // Coverflow slide animation (cubic ease-out); armed by thmTriggerCoverflowAnim().
  static int cfIsAnimating = 0;
-@@ -2304,7 +2309,8 @@ static void drawCoverFlow(struct menu_list *menu, struct submenu_list *item, con
+@@ -2304,7 +2310,8 @@ static void drawCoverFlow(struct menu_list *menu, struct submenu_list *item, con
          int pageDrawH = ((elem->height > 0) ? elem->height : csh) * drawW / pageW;
          int posY = elem->posY + (pageDrawH - drawH) / 2 + recenterY * drawH / csh;
  
@@ -1325,7 +1326,7 @@ index e702ff2..fd3a227 100644
  
          if (cimg->overlayTexture) {
              // Scale the inlay (cover) corner offsets to the drawn overlay size so the case
-@@ -2318,6 +2324,8 @@ static void drawCoverFlow(struct menu_list *menu, struct submenu_list *item, con
+@@ -2318,6 +2325,8 @@ static void drawCoverFlow(struct menu_list *menu, struct submenu_list *item, con
          } else {
              rmDrawPixmap(texture, posX, posY, ALIGN_CENTER, drawW, drawH, SCALING_RATIO, coverColor, elem->reflection);
          }
@@ -1334,7 +1335,7 @@ index e702ff2..fd3a227 100644
      }
  
      rmSetReflectionYOffset(0); // don't leak the offset to any other reflection draw
-@@ -2482,6 +2490,24 @@ static float gridFadeIn(const void *item, const void *tex)
+@@ -2482,6 +2491,24 @@ static float gridFadeIn(const void *item, const void *tex)
      return 0.0f;
  }
  
@@ -1359,7 +1360,7 @@ index e702ff2..fd3a227 100644
  static void drawGridCover(struct menu_list *menu, struct submenu_list *it, struct theme_element *elem, item_list_t *src,
                            int cx, int cy, int w, int h, int selected, GSTEXTURE *back)
  {
-@@ -2516,7 +2542,9 @@ static void drawGridCover(struct menu_list *menu, struct submenu_list *it, struc
+@@ -2516,7 +2543,9 @@ static void drawGridCover(struct menu_list *menu, struct submenu_list *it, struc
      int a = (int)(0x80 * in);
      if (a <= 0)
          return;
@@ -1370,7 +1371,7 @@ index e702ff2..fd3a227 100644
      if (img->overlayTexture) {
          image_texture_t *ov = img->overlayTexture;
          int csw = coverElem->width > 0 ? coverElem->width : 1, csh = coverElem->height > 0 ? coverElem->height : 1;
-@@ -2525,6 +2553,8 @@ static void drawGridCover(struct menu_list *menu, struct submenu_list *it, struc
+@@ -2525,6 +2554,8 @@ static void drawGridCover(struct menu_list *menu, struct submenu_list *it, struc
                              ov->lowerLeft_x * w / csw, ov->lowerLeft_y * h / csh, ov->lowerRight_x * w / csw, ov->lowerRight_y * h / csh, elem->reflection);
      } else
          rmDrawPixmap(texture, cx, cy, ALIGN_CENTER, w, h, SCALING_RATIO, col, elem->reflection && selected);
@@ -1379,7 +1380,7 @@ index e702ff2..fd3a227 100644
  }
  
  // build 79: the selection breathes -- a soft glow in the theme's selection colour, swelling and easing
-@@ -2728,6 +2758,25 @@ static void initGrid(const char *themePath, config_set_t *themeConfig, theme_t *
+@@ -2728,6 +2759,25 @@ static void initGrid(const char *themePath, config_set_t *themeConfig, theme_t *
          rows = 2;
      if (gap < 0 || gap > 64)
          gap = 14;
@@ -1405,7 +1406,7 @@ index e702ff2..fd3a227 100644
  
      // build 82: enough cache slots for two pages (one slides out as the next slides in)
      int slots = 2 * cols * rows;
-@@ -4690,7 +4739,9 @@ static int thmLoad(const char *themePath)
+@@ -4690,7 +4740,9 @@ static int thmLoad(const char *themePath)
      if (!themePath) {
          // No theme specified. Prepare and load the default theme.
          themeConfig = configAlloc(0, NULL, NULL);
@@ -1416,7 +1417,7 @@ index e702ff2..fd3a227 100644
              configReadBuffer(themeConfig, &theme_coverflow_cfg, size_theme_coverflow_cfg);
          else
              configReadBuffer(themeConfig, &conf_theme_OPL_cfg, size_conf_theme_OPL_cfg);
-@@ -4953,6 +5004,7 @@ static int thmLoad(const char *themePath)
+@@ -4953,6 +5005,7 @@ static int thmLoad(const char *themePath)
      // RIPPS2 build 90: the D-pad glyphs (Coverflow's drive glyphs, a glyph set's Up and Down) load like the others
      thmLoadResource(&newT->textures[RIPPS2_DPAD_UP], RIPPS2_DPAD_UP, themePath, GS_PSM_CT32, newT->useDefault);
      thmLoadResource(&newT->textures[RIPPS2_DPAD_DOWN], RIPPS2_DPAD_DOWN, themePath, GS_PSM_CT32, newT->useDefault);
@@ -1424,7 +1425,7 @@ index e702ff2..fd3a227 100644
      snprintf(newT->glyphPath, sizeof(newT->glyphPath), "%s", themePath != NULL ? themePath : "");
      newT->glyphSetLoaded = RIPPS2_GLYPHSET_THEME;
  
-@@ -5037,6 +5089,10 @@ static int thmLoad(const char *themePath)
+@@ -5037,6 +5090,10 @@ static int thmLoad(const char *themePath)
          if (configGetInt(themeConfig, "hints_spacing", &intValue) && intValue >= 12 && intValue <= 96)
              newT->hintsSpacing = intValue;
          newT->glyphSetDef = configGetStr(themeConfig, "glyph_set", &v) ? ripps2GlyphSetParse(v) : RIPPS2_GLYPHSET_THEME;
@@ -1435,7 +1436,7 @@ index e702ff2..fd3a227 100644
          if (ripps2GlyphSetFor(newT->glyphSetDef) != RIPPS2_GLYPHSET_THEME)
              thmGlyphSetLoad(newT, ripps2GlyphSetFor(newT->glyphSetDef), 0); // never drawn yet: no VRAM to drop
      }
-@@ -5070,8 +5126,8 @@ static void thmRebuildGuiNames(void)
+@@ -5070,8 +5127,8 @@ static void thmRebuildGuiNames(void)
      if (guiThemesNames)
          free(guiThemesNames);
  
@@ -1446,7 +1447,7 @@ index e702ff2..fd3a227 100644
  
      // add default internal
      guiThemesNames[0] = "<RIPPS2>"; // RIPPS2: the built-in look is RIPPS2's own (was "<OPL>")
-@@ -5083,7 +5139,8 @@ static void thmRebuildGuiNames(void)
+@@ -5083,7 +5140,8 @@ static void thmRebuildGuiNames(void)
  
      // built-in coverflow theme occupies the slot right after the disk themes
      guiThemesNames[nThemes + 1] = "<RIPFLOW>"; // RIPPS2 build 70: the built-in coverflow theme is RIPFLOW
@@ -1456,7 +1457,7 @@ index e702ff2..fd3a227 100644
  }
  
  int thmAddElements(char *path, const char *separator, int forceRefresh)
-@@ -5100,6 +5157,8 @@ int thmAddElements(char *path, const char *separator, int forceRefresh)
+@@ -5100,6 +5158,8 @@ int thmAddElements(char *path, const char *separator, int forceRefresh)
          snprintf(activeName, sizeof(activeName), "%s", themes[guiThemeID - 1].name);
      else if (guiThemeID == nThemes + 1)
          snprintf(activeName, sizeof(activeName), "<RIPFLOW>");
@@ -1465,7 +1466,7 @@ index e702ff2..fd3a227 100644
      const char *temp = NULL;
      int savedMissing = configGetStr(configGetByType(CONFIG_OPL), "theme", &temp) && thmFindGuiID(temp) == 0;
  
-@@ -5153,6 +5212,8 @@ void thmReinit(const char *path)
+@@ -5153,6 +5213,8 @@ void thmReinit(const char *path)
          activeOnDevice = strncmp(themes[guiThemeID - 1].filePath, path, strlen(path)) == 0;
      } else if (guiThemeID == nThemes + 1) {
          snprintf(activeName, sizeof(activeName), "<RIPFLOW>"); // built-in; its id (nThemes+1) shifts as themes are removed
@@ -1474,7 +1475,7 @@ index e702ff2..fd3a227 100644
      }
  
      // One guiLock section across the removal loop AND the rebuild: the frees below invalidate
-@@ -5211,6 +5272,10 @@ int thmSetGuiValue(int themeID, int reload)
+@@ -5211,6 +5273,10 @@ int thmSetGuiValue(int themeID, int reload)
                  gLoadCoverflowBuiltin = 1;
                  loadResult = thmLoad(NULL);
                  gLoadCoverflowBuiltin = 0;
@@ -1485,7 +1486,7 @@ index e702ff2..fd3a227 100644
              } else
                  loadResult = thmLoad(themeID != 0 ? themes[themeID - 1].filePath : NULL);
  
-@@ -5250,6 +5315,8 @@ int thmFindGuiID(const char *theme)
+@@ -5250,6 +5316,8 @@ int thmFindGuiID(const char *theme)
      if (theme) {
          if (strcasecmp(theme, "<RIPFLOW>") == 0 || strcasecmp(theme, "<Coverflow>") == 0)
              return nThemes + 1; // built-in coverflow theme (RIPPS2 build 70: RIPFLOW; <Coverflow> in older settings)
