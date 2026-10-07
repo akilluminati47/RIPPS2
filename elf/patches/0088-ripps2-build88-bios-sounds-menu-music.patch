@@ -134,7 +134,7 @@ index e7aab99..80e3896 100644
  }
 diff --git a/src/ripps2biossnd.c b/src/ripps2biossnd.c
 new file mode 100644
-index 0000000..43a4f29
+index 0000000..8371c40
 --- /dev/null
 +++ b/src/ripps2biossnd.c
 @@ -0,0 +1,534 @@
@@ -186,7 +186,7 @@ index 0000000..43a4f29
 +    const char *file;
 +    int entry;
 +} rbsMap[] = {
-+    {"cursor.adp", 6}, {"confirm.adp", 4}, {"cancel.adp", 12}, {"page_in.adp", 2}, {"page_out.adp", 0},
++    {"cursor.adp", 6}, {"confirm.adp", 4}, {"cancel.adp", 12}, {"page_in.adp", 2}, {"page_out.adp", 1},
 +    {"transition.adp", 9}, {"message.adp", 10}, {"disc.adp", 10}, {"error.adp", 3}, {"save.adp", 11},
 +    {"bd_connect.adp", 7}, {"bd_disconnect.adp", 8}, {"random.adp", 5},
 +};
