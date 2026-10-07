@@ -87,6 +87,7 @@ int main(void)
     if (raHuntFromState("{\"game\":{}}", 11, "", ach, sizeof(ach)) != -1) return 3;
     raHuntFromState(state, (int)strlen(state), "SLUS_204.82", ach, sizeof(ach));
     n = raHuntRead(ach, (int)strlen(ach), list, 8);
+    printf("%s", ach); /* shown when a check fails */
     if (n != 3 || list[0].unlocked != 1 || list[1].unlocked != 0 || list[1].points != 10) return 4;
     /* UTF-8 kept for the menus' fonts; marks they lack made plain */
     if (strcmp(list[0].desc, "Cause a \"takedown\" in any race") || strcmp(list[1].title, "CafÃ© Racer")) return 5;
@@ -130,7 +131,7 @@ int main(void)
         else:
             r = subprocess.run([str(exe)], capture_output=True, text=True)
             if r.returncode:
-                fail.append('rahunt.c failed check %d' % r.returncode)
+                fail.append('rahunt.c failed check %d: %r' % (r.returncode, r.stdout[-600:]))
 
         # the menu's page on the PC
         (td / 'tamtypes.h').write_text('typedef unsigned char u8; typedef unsigned short u16; typedef unsigned int u32; typedef unsigned long long u64;\n')
