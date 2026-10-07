@@ -28,7 +28,7 @@ if 'unsigned long long pos = 0, step' not in rip:
 if '0xBFC00000' not in ember or '"System ROM Version"' not in ember:
     fail.append('the PS1 BIOS must come from the ROM and be checked by its version string')
 for f in ('src/bdmsupport.c', 'src/ethsupport.c', 'src/mmcesupport.c', 'src/udpfssupport.c'):
-    if '!ripps2EmberBiosOffer(biosPath)' not in rd(f):
+    if 'int made = ripps2EmberBiosOffer(biosPath);' not in rd(f):
         fail.append('%s must offer to make bios.bin' % f)
 
 # RIPPOPS

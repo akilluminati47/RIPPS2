@@ -1,33 +1,35 @@
 diff --git a/include/cuesupport.h b/include/cuesupport.h
-index 298f750..b186599 100644
+index 298f750..577e8dd 100644
 --- a/include/cuesupport.h
 +++ b/include/cuesupport.h
-@@ -118,6 +118,8 @@ int cueEnsureEmber(const char *devPrefix, char *out, int outSize); // RIPPS2 bui
+@@ -118,6 +118,9 @@ int cueEnsureEmber(const char *devPrefix, char *out, int outSize); // RIPPS2 bui
  // As cueResolveEmber, for the user-supplied bios.bin Ember needs at launch. A missing BIOS drops
  // Ember to the PS1 shell with no explanation, so callers check this BEFORE deinit and say so.
  int cueResolveEmberBios(const char *devPrefix, char *out, int outSize);
-+// RIPPS2 build 89 (ripps2ember.c): no bios.bin: offer to make it from the console's own ROM (its PS1 BIOS). 1 = made
++// RIPPS2 build 89 (ripps2ember.c): no bios.bin: offer to make it from the console's own ROM (its PS1 BIOS).
++// 1 = made, 0 = declined, -1 = could not be made (the caller says what is missing)
 +int ripps2EmberBiosOffer(const char *biosPath);
  
  // Build "<devPrefix><EmberFolder><sep>games" into out (no trailing separator, ready for opendir).
  void cueBuildGamesDir(const char *devPrefix, char *out, int outSize);
 diff --git a/src/bdmsupport.c b/src/bdmsupport.c
-index dd18a96..b7fa9df 100644
+index dd18a96..c7fc5c8 100644
 --- a/src/bdmsupport.c
 +++ b/src/bdmsupport.c
-@@ -1760,10 +1760,9 @@ static void bdmLaunchCue(item_list_t *itemList, const char *cueName, config_set_
-     }
+@@ -1761,8 +1761,11 @@ static void bdmLaunchCue(item_list_t *itemList, const char *cueName, config_set_
      // Ember needs a user-supplied bios.bin beside it and says nothing useful when it is missing --
      // it just runs the PS1 BIOS shell. Check while we can still explain.
--    if (!cueResolveEmberBios(ps1Prefix, biosPath, sizeof(biosPath))) {
+     if (!cueResolveEmberBios(ps1Prefix, biosPath, sizeof(biosPath))) {
 -        guiMsgBoxMissing(_l(_STR_EMBER_BIOS_MISSING), biosPath);
-+    if (!cueResolveEmberBios(ps1Prefix, biosPath, sizeof(biosPath)) &&
-+        !ripps2EmberBiosOffer(biosPath)) // RIPPS2 build 89: or made from this console's own ROM
-         return;
--    }
+-        return;
++        int made = ripps2EmberBiosOffer(biosPath); // RIPPS2 build 89: or made from this console's own ROM
++        if (made < 0)
++            guiMsgBoxMissing(_l(_STR_EMBER_BIOS_MISSING), biosPath);
++        if (made <= 0)
++            return;
+     }
      // The scan lists folders without reading inside them -- that would be a directory read per row
      // on every refresh. Pay for it once, HERE, while a dialog can still be drawn: an empty or
-     // mis-filled folder otherwise drops the user into the PS1 BIOS shell with no explanation.
 diff --git a/src/dia.c b/src/dia.c
 index 473e319..8c55bdd 100644
 --- a/src/dia.c
@@ -167,39 +169,41 @@ index 473e319..8c55bdd 100644
                  sfxPlay(SFX_CONFIRM);
  
 diff --git a/src/ethsupport.c b/src/ethsupport.c
-index 071d03e..6cc60b4 100644
+index 071d03e..fc0c1f5 100644
 --- a/src/ethsupport.c
 +++ b/src/ethsupport.c
-@@ -692,10 +692,9 @@ static void ethLaunchCue(item_list_t *itemList, const char *cueName, config_set_
-         guiMsgBoxMissing(_l(_STR_EMBER_NOT_FOUND), emberElf);
+@@ -693,8 +693,11 @@ static void ethLaunchCue(item_list_t *itemList, const char *cueName, config_set_
          return;
      }
--    if (!cueResolveEmberBios(ethPrefix, biosPath, sizeof(biosPath))) {
+     if (!cueResolveEmberBios(ethPrefix, biosPath, sizeof(biosPath))) {
 -        guiMsgBoxMissing(_l(_STR_EMBER_BIOS_MISSING), biosPath);
-+    if (!cueResolveEmberBios(ethPrefix, biosPath, sizeof(biosPath)) &&
-+        !ripps2EmberBiosOffer(biosPath)) // RIPPS2 build 89: or made from this console's own ROM
-         return;
--    }
+-        return;
++        int made = ripps2EmberBiosOffer(biosPath); // RIPPS2 build 89: or made from this console's own ROM
++        if (made < 0)
++            guiMsgBoxMissing(_l(_STR_EMBER_BIOS_MISSING), biosPath);
++        if (made <= 0)
++            return;
+     }
      cueApplySettings(ethPrefix, cueName, configSet); // best-effort marker, never a launch gate
      if (!cueGameHasImage(ethPrefix, cueName)) {
-         guiMsgBox(_l(_STR_EMBER_NO_DISC), 0, NULL);
 diff --git a/src/mmcesupport.c b/src/mmcesupport.c
-index b639df7..af4956f 100644
+index b639df7..aeb4545 100644
 --- a/src/mmcesupport.c
 +++ b/src/mmcesupport.c
-@@ -860,10 +860,9 @@ static void mmceLaunchCue(item_list_t *itemList, const char *cueName, config_set
-         guiMsgBoxMissing(_l(_STR_EMBER_NOT_FOUND), emberElf);
+@@ -861,8 +861,11 @@ static void mmceLaunchCue(item_list_t *itemList, const char *cueName, config_set
          return;
      }
--    if (!cueResolveEmberBios(ps1Root, biosPath, sizeof(biosPath))) {
+     if (!cueResolveEmberBios(ps1Root, biosPath, sizeof(biosPath))) {
 -        guiMsgBoxMissing(_l(_STR_EMBER_BIOS_MISSING), biosPath);
-+    if (!cueResolveEmberBios(ps1Root, biosPath, sizeof(biosPath)) &&
-+        !ripps2EmberBiosOffer(biosPath)) // RIPPS2 build 89: or made from this console's own ROM
-         return;
--    }
+-        return;
++        int made = ripps2EmberBiosOffer(biosPath); // RIPPS2 build 89: or made from this console's own ROM
++        if (made < 0)
++            guiMsgBoxMissing(_l(_STR_EMBER_BIOS_MISSING), biosPath);
++        if (made <= 0)
++            return;
+     }
      // The scan lists folders without reading inside them -- that would be a directory read per row
      // on every refresh. Pay for it once, HERE, while a dialog can still be drawn: an empty or
-     // mis-filled folder otherwise drops the user into the PS1 BIOS shell with no explanation.
 diff --git a/src/ripps2about.c b/src/ripps2about.c
 index fdde255..942790f 100644
 --- a/src/ripps2about.c
@@ -891,7 +895,7 @@ index 8371c40..a527c48 100644
      free(img);
      if (n <= 0) {
 diff --git a/src/ripps2ember.c b/src/ripps2ember.c
-index ca8e866..faccb8c 100644
+index ca8e866..708de30 100644
 --- a/src/ripps2ember.c
 +++ b/src/ripps2ember.c
 @@ -25,6 +25,7 @@
@@ -902,7 +906,7 @@ index ca8e866..faccb8c 100644
  
  extern void *ember_elf_gz; // misc/ember_elf.gz: elf/ember/ember.elf, gzip -9 by RIPPS2's build.sh
  extern int size_ember_elf_gz;
-@@ -326,3 +327,62 @@ int ripps2NeutrinoOffer(const char *activePrefix, char *out, int outSize)
+@@ -326,3 +327,58 @@ int ripps2NeutrinoOffer(const char *activePrefix, char *out, int outSize)
      }
      return snprintf(out, outSize, "%s/neutrino.elf", dirs[pick]) < outSize;
  }
@@ -954,12 +958,8 @@ index ca8e866..faccb8c 100644
 +    if (guiMsgBox(msg, 0, NULL) != 2)
 +        return 0;
 +    guiRenderTextScreen("Making bios.bin from this console's BIOS");
-+    if (!ripps2RipPs1Bios(biosPath, version, sizeof(version))) {
-+        snprintf(msg, sizeof(msg), "bios.bin could not be made at %s. Is the drive full or write-protected? Or put a PS1 "
-+                                   "console's BIOS there yourself.", biosPath);
-+        guiMsgBox(msg, 0, NULL);
-+        return 0;
-+    }
++    if (!ripps2RipPs1Bios(biosPath, version, sizeof(version)))
++        return -1; // the drive would not take it, or the ROM is not one RIPPS2 knows: the launch says what is missing
 +    snprintf(msg, sizeof(msg), "Made %s from this console's BIOS (%s). If a game will not start with it, put a PS1 "
 +                               "console's BIOS there instead.", biosPath, version);
 +    guiMsgBox(msg, 0, NULL);
@@ -1006,22 +1006,23 @@ index 3a0fda0..ce052d3 100644
              argv[argc++] = filePath;
  
 diff --git a/src/udpfssupport.c b/src/udpfssupport.c
-index 141ba6f..337addf 100644
+index 141ba6f..4b0bfb9 100644
 --- a/src/udpfssupport.c
 +++ b/src/udpfssupport.c
-@@ -476,10 +476,9 @@ static void udpfsLaunchCue(item_list_t *itemList, const char *cueName, config_se
-         guiMsgBoxMissing(_l(_STR_EMBER_NOT_FOUND), emberElf);
+@@ -477,8 +477,11 @@ static void udpfsLaunchCue(item_list_t *itemList, const char *cueName, config_se
          return;
      }
--    if (!cueResolveEmberBios(udpfsPrefix, biosPath, sizeof(biosPath))) {
+     if (!cueResolveEmberBios(udpfsPrefix, biosPath, sizeof(biosPath))) {
 -        guiMsgBoxMissing(_l(_STR_EMBER_BIOS_MISSING), biosPath);
-+    if (!cueResolveEmberBios(udpfsPrefix, biosPath, sizeof(biosPath)) &&
-+        !ripps2EmberBiosOffer(biosPath)) // RIPPS2 build 89: or made from this console's own ROM
-         return;
--    }
+-        return;
++        int made = ripps2EmberBiosOffer(biosPath); // RIPPS2 build 89: or made from this console's own ROM
++        if (made < 0)
++            guiMsgBoxMissing(_l(_STR_EMBER_BIOS_MISSING), biosPath);
++        if (made <= 0)
++            return;
+     }
  
      cueApplySettings(udpfsPrefix, cueName, configSet); // best-effort marker, never a launch gate
-     if (!cueGameHasImage(udpfsPrefix, cueName)) {
 diff --git a/src/vcdsupport.c b/src/vcdsupport.c
 index a3f8da8..02781cb 100644
 --- a/src/vcdsupport.c
