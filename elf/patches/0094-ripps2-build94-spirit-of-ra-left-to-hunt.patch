@@ -285,10 +285,10 @@ index 4bc5532..7f3b384 100644
  #endif
 diff --git a/src/rahunt.c b/src/rahunt.c
 new file mode 100644
-index 0000000..d4ed223
+index 0000000..1dc166d
 --- /dev/null
 +++ b/src/rahunt.c
-@@ -0,0 +1,285 @@
+@@ -0,0 +1,385 @@
 +/*
 +  RIPPS2 build 94: what is left to hunt in a game, and how each one is earned.
 +
@@ -316,32 +316,110 @@ index 0000000..d4ed223
 +
 +// ---- reading xeRAbora's /state ----
 +
-+// The JSON string starting at p (on its opening quote) into out, escapes undone; non-ASCII becomes '?', and
-+// tabs and line ends spaces (the .ach line is TAB separated). Returns the character after the closing quote.
++// The code point of the UTF-8 sequence at *pp, which moves past it; a broken one is '?'
++static unsigned huntUtf8(const char **pp, const char *end)
++{
++    const unsigned char *p = (const unsigned char *)*pp;
++    unsigned u = *p++;
++    int more = u >= 0xF0 ? 3 : u >= 0xE0 ? 2 : u >= 0xC0 ? 1 : 0;
++
++    if (u >= 0x80 && more == 0)
++        u = '?'; // a stray continuation byte
++    else if (more)
++        u &= 0x3F >> more;
++    while (more-- > 0) {
++        if ((const char *)p >= end || (*p & 0xC0) != 0x80) {
++            u = '?';
++            break;
++        }
++        u = u << 6 | (*p++ & 0x3F);
++    }
++    *pp = (const char *)p;
++    return u;
++}
++
++// marks the PS2's fonts do not have, as plain ones; control characters as spaces (the .ach is TAB separated)
++static unsigned huntPlain(unsigned u)
++{
++    if (u == 0x2018 || u == 0x2019 || u == 0x2032)
++        return '\'';
++    if (u == 0x201C || u == 0x201D)
++        return '"';
++    if (u == 0x2013 || u == 0x2014 || u == 0x2212)
++        return '-';
++    if (u < 0x20 || u == 0xA0)
++        return ' ';
++    if ((u >= 0xD800 && u < 0xE000) || u > 0x10FFFF)
++        return '?';
++    return u;
++}
++
++static int huntHex(const char *p)
++{
++    int v = 0, i;
++    for (i = 0; i < 4; i++) {
++        int c = (unsigned char)p[i] | 0x20;
++        v = v * 16 + (c >= '0' && c <= '9' ? c - '0' : c >= 'a' && c <= 'f' ? c - 'a' + 10 : 0);
++    }
++    return v;
++}
++
++// The JSON string starting at p (on its opening quote) into out as UTF-8, escapes undone, whole characters
++// only (a long one is cut short, never mid-character). Returns the character after the closing quote.
 +static const char *huntString(const char *p, const char *end, char *out, int size)
 +{
-+    int o = 0;
++    int o = 0, full = 0;
 +    if (p >= end || *p != '"')
 +        return NULL;
-+    for (p++; p < end && *p != '"'; p++) {
-+        char c = *p;
-+        if (c == '\\' && p + 1 < end) {
-+            c = *++p;
-+            if (c == 'n' || c == 't' || c == 'r')
-+                c = ' ';
-+            else if (c == 'u') { // \uXXXX: one character the PS2's fonts may not have
-+                p += (p + 4 < end) ? 4 : 0;
-+                c = '?';
-+            } else if (c != '"' && c != '\\' && c != '/')
-+                c = ' ';
-+        } else if ((unsigned char)c >= 0x80) { // a UTF-8 sequence: one '?' for it
-+            while (p + 1 < end && ((unsigned char)p[1] & 0xC0) == 0x80)
-+                p++;
-+            c = '?';
-+        } else if (c == '\t' || c == '\r' || c == '\n')
-+            c = ' ';
-+        if (o < size - 1)
-+            out[o++] = c;
++    for (p++; p < end && *p != '"';) {
++        unsigned u;
++        char seq[4];
++        int k;
++        if (*p == '\\' && p + 1 < end) {
++            char c = p[1];
++            p += 2;
++            if (c == 'u' && p + 4 <= end) {
++                u = huntHex(p);
++                p += 4;
++                if (u >= 0xD800 && u < 0xDC00 && p + 6 <= end && p[0] == '\\' && p[1] == 'u') { // a pair
++                    unsigned lo = huntHex(p + 2);
++                    if (lo >= 0xDC00 && lo < 0xE000) {
++                        u = 0x10000 + ((u - 0xD800) << 10) + (lo - 0xDC00);
++                        p += 6;
++                    }
++                }
++            } else
++                u = (c == '"' || c == '\\' || c == '/') ? (unsigned char)c : ' ';
++        } else
++            u = huntUtf8(&p, end);
++        if (u == 0x2026) { // an ellipsis
++            seq[0] = seq[1] = seq[2] = '.';
++            k = 3;
++        } else if ((u = huntPlain(u)) < 0x80) {
++            seq[0] = (char)u;
++            k = 1;
++        } else if (u < 0x800) {
++            seq[0] = (char)(0xC0 | u >> 6);
++            seq[1] = (char)(0x80 | (u & 0x3F));
++            k = 2;
++        } else if (u < 0x10000) {
++            seq[0] = (char)(0xE0 | u >> 12);
++            seq[1] = (char)(0x80 | ((u >> 6) & 0x3F));
++            seq[2] = (char)(0x80 | (u & 0x3F));
++            k = 3;
++        } else {
++            seq[0] = (char)(0xF0 | u >> 18);
++            seq[1] = (char)(0x80 | ((u >> 12) & 0x3F));
++            seq[2] = (char)(0x80 | ((u >> 6) & 0x3F));
++            seq[3] = (char)(0x80 | (u & 0x3F));
++            k = 4;
++        }
++        if (full || o + k > size - 1) {
++            full = 1;
++            continue;
++        }
++        memcpy(out + o, seq, k);
++        o += k;
 +    }
 +    out[o] = '\0';
 +    return p < end ? p + 1 : NULL;
@@ -511,13 +589,37 @@ index 0000000..d4ed223
 +
 +// ---- for the in-game menu ----
 +
++// UTF-8 text in the menu's characters: capitals and ASCII 32..95. Latin-1 letters lose their accents, '"'
++// (which its font lacks) becomes '\'', anything else '?'.
++static void huntMenuText(const char *s, char *out, int size)
++{
++    static const char fold[] = "AAAAAAACEEEEIIIIDNOOOOOXOUUUUYTSAAAAAAACEEEEIIIIDNOOOOO/OUUUUYTY"; // U+00C0..U+00FF
++    const char *end = s + strlen(s);
++    int o = 0;
++
++    while (s < end && o < size - 1) {
++        unsigned u = huntUtf8(&s, end);
++        int c;
++        if (u >= 0xC0 && u <= 0xFF)
++            u = (unsigned char)fold[u - 0xC0];
++        c = u < 0x80 ? toupper((int)u) : '?';
++        if (c == '"')
++            c = '\'';
++        out[o++] = (char)((c >= 32 && c <= 95) ? c : '?');
++    }
++    out[o] = '\0';
++}
++
 +// s in lines of RA_HUNT_COLS broken at spaces (a word too long for one is broken where it must be), at most
 +// max of them, each NUL ended into blob at *o; a last line with more to say ends "...". The lines, -1 when
 +// cap ran out.
-+static int huntLines(const char *s, int max, unsigned char *blob, int *o, int cap)
++static int huntLines(const char *text, int max, unsigned char *blob, int *o, int cap)
 +{
++    char menu[RA_HUNT_DESC];
++    const char *s = menu;
 +    int n = 0, len, cut, k, i, dots;
 +
++    huntMenuText(text, menu, sizeof(menu));
 +    for (;;) {
 +        while (*s == ' ')
 +            s++;
@@ -539,10 +641,8 @@ index 0000000..d4ed223
 +            k = RA_HUNT_COLS - 3;
 +        if (*o + k + 3 * dots + 1 > cap)
 +            return -1;
-+        for (i = 0; i < k; i++) { // the menu's font has capitals and ASCII 32..95 only
-+            unsigned char c = (unsigned char)toupper((unsigned char)s[i]);
-+            blob[(*o)++] = (c >= 32 && c <= 95) ? c : '?';
-+        }
++        for (i = 0; i < k; i++)
++            blob[(*o)++] = (unsigned char)s[i];
 +        for (i = 0; i < 3 * dots; i++)
 +            blob[(*o)++] = '.';
 +        blob[(*o)++] = '\0';
@@ -702,7 +802,7 @@ index 53ceca1..9206026 100644
  
      return 0;
 diff --git a/src/ripps2ra.c b/src/ripps2ra.c
-index 48bfb86..12a5887 100644
+index 48bfb86..0eff5b0 100644
 --- a/src/ripps2ra.c
 +++ b/src/ripps2ra.c
 @@ -35,6 +35,7 @@
@@ -721,7 +821,7 @@ index 48bfb86..12a5887 100644
  } ra_game_t;
  
  #define RA_ACCT_MAX  256
-@@ -117,9 +119,49 @@ static int raAcctCmp(const void *a, const void *b)
+@@ -117,9 +119,54 @@ static int raAcctCmp(const void *a, const void *b)
      return strcasecmp(x->title, y->title);
  }
  
@@ -743,7 +843,12 @@ index 48bfb86..12a5887 100644
 +        fclose(f);
 +        return NULL;
 +    }
-+    *len = (int)fread(t, 1, *len, f);
++    { // to its end: a read may come back short
++        int got = 0, r;
++        while (got < *len && (r = (int)fread(t + got, 1, *len - got, f)) > 0)
++            got += r;
++        *len = got;
++    }
 +    t[*len] = '\0';
 +    fclose(f);
 +    return t;
@@ -772,16 +877,22 @@ index 48bfb86..12a5887 100644
      static const char *const names[] = {"USB", "USB 2", "MMCE 1", "MMCE 2", "HDD", "SMB"};
      int d, n = 0, i;
  
-@@ -159,6 +201,8 @@ static int raAcctLoad(ra_game_t *games)
+@@ -159,11 +206,14 @@ static int raAcctLoad(ra_game_t *games)
                  g->unsupported = atoi(line);
              fclose(f);
              snprintf(g->where, sizeof(g->where), "%s", names[d]);
 +            g->dir = d;
-+            g->hunt = raHuntLeft(g); // build 94
              if (g->title[0])
                  n++;
          }
-@@ -179,6 +223,143 @@ static void raAcctBar(int x, int y, int w, int h, int done, int total, int a)
+         closedir(dir);
+     }
++    for (i = 0; i < n; i++) // build 94: with the folders closed again
++        games[i].hunt = raHuntLeft(&games[i]);
+     qsort(games, n, sizeof(ra_game_t), raAcctCmp);
+     return n;
+ }
+@@ -179,6 +229,148 @@ static void raAcctBar(int x, int y, int w, int h, int done, int total, int a)
      }
  }
  
@@ -816,6 +927,11 @@ index 48bfb86..12a5887 100644
 +        lines++;
 +    }
 +    return lines;
++}
++
++static const char *raHuntDesc(const ra_hunt_t *h)
++{
++    return h->desc[0] ? h->desc : "No description in this set.";
 +}
 +
 +// build 94: LEFT TO HUNT, a game's locked achievements as xeRAbora had them at the last CHECK GAME SUPPORT:
@@ -859,7 +975,7 @@ index 48bfb86..12a5887 100644
 +                top = sel;
 +            for (;;) {
 +                for (y = 86, k = top; k < left; k++) {
-+                    int h = 22 + 18 * raWrapLines(RIPPS2_CASE_FONT, 0, 0, 540, 18, all[lockedAt[k]].desc, 0, 0) + 10;
++                    int h = 22 + 18 * raWrapLines(RIPPS2_CASE_FONT, 0, 0, 540, 18, raHuntDesc(&all[lockedAt[k]]), 0, 0) + 10;
 +                    if (y + h > 440)
 +                        break;
 +                    y += h;
@@ -870,7 +986,7 @@ index 48bfb86..12a5887 100644
 +            }
 +            for (y = 86, k = top; k < left; k++) {
 +                ra_hunt_t *h = &all[lockedAt[k]];
-+                int lines = raWrapLines(RIPPS2_CASE_FONT, 0, 0, 540, 18, h->desc, 0, 0), eh = 22 + 18 * lines + 10, cur = k == sel;
++                int lines = raWrapLines(RIPPS2_CASE_FONT, 0, 0, 540, 18, raHuntDesc(h), 0, 0), eh = 22 + 18 * lines + 10, cur = k == sel;
 +                if (y + eh > 440)
 +                    break;
 +                if (cur) {
@@ -881,7 +997,7 @@ index 48bfb86..12a5887 100644
 +                int pw = rmUnScaleX(fntCalcDimensions(RIPPS2_CASE_FONT, buf));
 +                fntRenderStringFit(gTheme->fonts[8], 40, y + 8, ALIGN_VCENTER, 560 - pw - 50, h->title, cur ? RA_LIT : RA_SOFT, cur);
 +                fntRenderString(RIPPS2_CASE_FONT, 600 - pw, y + 8, ALIGN_VCENTER, 0, 0, buf, RA_GOLD);
-+                raWrapLines(RIPPS2_CASE_FONT, 40, y + 28, 540, 18, h->desc[0] ? h->desc : "(no description)", cur ? RA_SOFT : RA_DIM, 1);
++                raWrapLines(RIPPS2_CASE_FONT, 40, y + 28, 540, 18, raHuntDesc(h), h->desc[0] ? (cur ? RA_SOFT : RA_DIM) : RA_DIM, 1);
 +                y += eh;
 +                shown++;
 +            }
@@ -925,7 +1041,7 @@ index 48bfb86..12a5887 100644
  static void raAccount(void)
  {
      int openKey = gSelectButton == KEY_CIRCLE ? KEY_CIRCLE : KEY_CROSS, backKey = gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE;
-@@ -286,15 +467,23 @@ static void raAccount(void)
+@@ -286,15 +478,23 @@ static void raAccount(void)
                  raAcctBar(tx, 258, tw, 8, 0, g->total, a);
                  raWrap(RIPPS2_CASE_FONT, tx, 282, tw, 18, "Update xeRAbora on your PC to see what you have unlocked.", RA_SOFT);
              }
@@ -950,7 +1066,7 @@ index 48bfb86..12a5887 100644
              if (n > RA_ACCT_ROWS) {
                  raHint(L1_ICON, "PAGE", &hx, hy);
                  raHint(R1_ICON, "PAGE", &hx, hy);
-@@ -306,6 +495,10 @@ static void raAccount(void)
+@@ -306,6 +506,10 @@ static void raAccount(void)
              sfxPlay(SFX_CANCEL);
              break;
          }

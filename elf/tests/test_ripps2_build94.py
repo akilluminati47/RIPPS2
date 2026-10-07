@@ -32,7 +32,7 @@ if 'free(state)' not in net or 'free(ach)' not in net:
 # YOUR ACCOUNT
 if 'static void raHuntPage(const ra_game_t *g)' not in ra or '"LEFT TO HUNT"' not in ra:
     fail.append('YOUR ACCOUNT must open LEFT TO HUNT')
-if 'g->hunt = raHuntLeft(g)' not in ra or 'left to hunt' not in ra:
+if 'games[i].hunt = raHuntLeft(&games[i])' not in ra or 'left to hunt' not in ra:
     fail.append("YOUR ACCOUNT's card must say how many are left")
 if 'free(all)' not in ra or 'free(lockedAt)' not in ra:
     fail.append('LEFT TO HUNT must let go of its list when it closes')
@@ -72,7 +72,8 @@ static const char *state =
     "{\"id\":11,\"title\":\"First Crash\",\"description\":\"Cause a \\\"takedown\\\" in any race\",\"points\":5,"
     "\"state\":2,\"percent\":0.0,\"type\":0},"
     "{\"id\":12,\"title\":\"Caf\xc3\xa9 Racer\",\"description\":\"Win\\nthe\\tcup\",\"points\":10,\"state\":1,"
-    "\"badge\":{\"url\":\"x\",\"sizes\":[1,2]}}"
+    "\"badge\":{\"url\":\"x\",\"sizes\":[1,2]}},"
+    "{\"id\":13,\"title\":\"Pok\u00e9mon\u2019s Rival\",\"description\":\"Beat \u201cBlue\u201d\u2026\",\"points\":15,\"state\":0}"
     "],\"subsets\":[],\"tracking\":[]}";
 int main(void)
 {
@@ -81,20 +82,23 @@ int main(void)
     unsigned char blob[256];
     int n, count, bytes;
     n = raHuntFromState(state, (int)strlen(state), "SLUS_204.82", ach, sizeof(ach));
-    if (n != 2) return 1;
+    if (n != 3) return 1;
     if (raHuntFromState(state, (int)strlen(state), "SLES_111.11", ach, sizeof(ach)) != -2) return 2;
     if (raHuntFromState("{\"game\":{}}", 11, "", ach, sizeof(ach)) != -1) return 3;
     raHuntFromState(state, (int)strlen(state), "SLUS_204.82", ach, sizeof(ach));
     n = raHuntRead(ach, (int)strlen(ach), list, 8);
-    if (n != 2 || list[0].unlocked != 1 || list[1].unlocked != 0 || list[1].points != 10) return 4;
-    if (strcmp(list[0].desc, "Cause a \"takedown\" in any race") || strcmp(list[1].title, "Caf? Racer")) return 5;
+    if (n != 3 || list[0].unlocked != 1 || list[1].unlocked != 0 || list[1].points != 10) return 4;
+    /* UTF-8 kept for the menus' fonts; marks they lack made plain */
+    if (strcmp(list[0].desc, "Cause a \"takedown\" in any race") || strcmp(list[1].title, "CafÃ© Racer")) return 5;
     if (strcmp(list[1].desc, "Win the cup")) return 6;
+    if (strcmp(list[2].title, "PokÃ©mon's Rival") || strcmp(list[2].desc, "Beat \"Blue\"...")) return 15;
     if (raHuntRead("nope", 4, list, 8) != -1) return 7;
     bytes = raHuntBlob(list, n, blob, sizeof(blob), &count);
-    /* the locked one, in the menu's lines: points, 1 title line, 1 description line */
-    if (count != 1 || blob[0] != 10 || blob[1] != 1 || blob[2] != 1) return 8;
-    if (strcmp((char *)blob + 3, "CAF? RACER") || strcmp((char *)blob + 14, "WIN THE CUP")) return 9;
-    if (bytes != 3 + 11 + 12) return 10;
+    /* the locked ones, in the menu's lines: points, 1 title line, 1 description line; accents folded */
+    if (count != 2 || blob[0] != 10 || blob[1] != 1 || blob[2] != 1) return 8;
+    if (strcmp((char *)blob + 3, "CAFE RACER") || strcmp((char *)blob + 14, "WIN THE CUP")) return 9;
+    if (strcmp((char *)blob + 29, "POKEMON'S RIVAL") || strcmp((char *)blob + 45, "BEAT 'BLUE'...")) return 16;
+    if (bytes != 3 + 11 + 12 + 3 + 16 + 15) return 10;
     bytes = raHuntBlob(list, n, blob, 20, &count); /* no room: nothing half written */
     if (count != 0 || bytes != 0) return 11;
     /* a long one: the title in two lines at most, every line in 24, the description cut with "..." */
