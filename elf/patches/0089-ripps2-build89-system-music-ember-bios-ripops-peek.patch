@@ -31,7 +31,7 @@ index dd18a96..c7fc5c8 100644
      // The scan lists folders without reading inside them -- that would be a directory read per row
      // on every refresh. Pay for it once, HERE, while a dialog can still be drawn: an empty or
 diff --git a/src/dia.c b/src/dia.c
-index 473e319..8c55bdd 100644
+index 473e319..983a7d8 100644
 --- a/src/dia.c
 +++ b/src/dia.c
 @@ -15,6 +15,7 @@
@@ -58,16 +58,19 @@ index 473e319..8c55bdd 100644
  void diaSetSettingsShell(struct UIItem *ui, const char *indicator)
  {
      diaSettingsShellUI = ui;
-@@ -1140,7 +1150,7 @@ void diaRenderUI(struct UIItem *ui, short inMenu, struct UIItem *cur, int haveFo
+@@ -1140,7 +1150,10 @@ void diaRenderUI(struct UIItem *ui, short inMenu, struct UIItem *cur, int haveFo
          // cursor-follow clamp keeps it inside the viewport by construction), so cursor tracking is exact.
          int rowH = diaItemHeight(rc, spacingH);
          int viewBottom = gTheme->usedHeight - 40; // the same bound the scroll clamp below uses
 -        if (rc != cur && (y + rowH <= y0 || y >= viewBottom)) {
-+        if ((rc != cur || diaPeek) && (y + rowH <= y0 || y >= viewBottom)) { // build 89: a peek may leave it off screen
++        // build 89: a row is drawn whole or not at all. The right stick slides the page by the pixel, and a row
++        // only partly in view drew over the page's header (or the hints below), the chosen row looking as if it
++        // had moved. A peek may also leave the chosen row out of view, so it is culled like the rest then.
++        if ((rc != cur || diaPeek) && (y < y0 || y + rowH > viewBottom)) {
              w = 0;
              h = rowH;
          } else {
-@@ -1175,14 +1185,20 @@ void diaRenderUI(struct UIItem *ui, short inMenu, struct UIItem *cur, int haveFo
+@@ -1175,14 +1188,20 @@ void diaRenderUI(struct UIItem *ui, short inMenu, struct UIItem *cur, int haveFo
  
      // Cursor-follow scroll: re-clamp the offset so the focused row stays on-screen, above the
      // bottom hint bar. Self-correcting each frame; remains 0 for dialogs that fit (no scroll).
@@ -96,7 +99,7 @@ index 473e319..8c55bdd 100644
          // Only scroll when a real viewport exists; guards degenerate small-usedHeight themes
          // where visibleBottom <= y0 would let the two edge corrections fight (jitter).
          if (cur == diaGetFirstControl(ui)) {
-@@ -1203,6 +1219,18 @@ void diaRenderUI(struct UIItem *ui, short inMenu, struct UIItem *cur, int haveFo
+@@ -1203,6 +1222,18 @@ void diaRenderUI(struct UIItem *ui, short inMenu, struct UIItem *cur, int haveFo
              diaScrollOffset = 0;
      }
  
@@ -115,7 +118,7 @@ index 473e319..8c55bdd 100644
      if ((cur != NULL) && (!haveFocus) && (cur->hintId != -1)) {
          diaDrawHint(cur);
      }
-@@ -1589,6 +1617,8 @@ int diaExecuteDialog(struct UIItem *ui, int uiId, short inMenu, int (*updater)(i
+@@ -1589,6 +1620,8 @@ int diaExecuteDialog(struct UIItem *ui, int uiId, short inMenu, int (*updater)(i
      setButtonDelay(KEY_RIGHT, diaScrollDelay());
  
      diaScrollOffset = 0; // start each dialog scrolled to the top
@@ -124,7 +127,7 @@ index 473e319..8c55bdd 100644
  
      // okay, we have the first selectable item
      // we can proceed with rendering etc. etc.
-@@ -1628,6 +1658,24 @@ int diaExecuteDialog(struct UIItem *ui, int uiId, short inMenu, int (*updater)(i
+@@ -1628,6 +1661,24 @@ int diaExecuteDialog(struct UIItem *ui, int uiId, short inMenu, int (*updater)(i
                  return DIA_RESULT_NEXT;
              }
  
@@ -149,7 +152,7 @@ index 473e319..8c55bdd 100644
              if (getKey(KEY_LEFT)) {
                  newf = diaGetPrevControl(cur, ui);
                  if (newf == cur)
-@@ -1656,6 +1704,7 @@ int diaExecuteDialog(struct UIItem *ui, int uiId, short inMenu, int (*updater)(i
+@@ -1656,6 +1707,7 @@ int diaExecuteDialog(struct UIItem *ui, int uiId, short inMenu, int (*updater)(i
                  // Navigation change detected
                  sfxPlay(SFX_CURSOR);
                  cur = newf;
@@ -157,7 +160,7 @@ index 473e319..8c55bdd 100644
              }
  
              // Circle on a Settings PAGE goes back to the Settings Index KEEPING what was changed, the
-@@ -1677,7 +1726,9 @@ int diaExecuteDialog(struct UIItem *ui, int uiId, short inMenu, int (*updater)(i
+@@ -1677,7 +1729,9 @@ int diaExecuteDialog(struct UIItem *ui, int uiId, short inMenu, int (*updater)(i
              }
  
              // see what key events we have
