@@ -1,0 +1,905 @@
+diff --git a/Makefile b/Makefile
+index 6e8caa0..4cbfa5a 100644
+--- a/Makefile
++++ b/Makefile
+@@ -133,7 +133,7 @@ ifneq ($(GIT_TAG),latest)
+ endif
+ endif
+ 
+-FRONTEND_OBJS = ripps2.o ripps2ui.o ripps2boot.o ripps2ra.o ripps2status.o ripps2ember.o ripps2art.o ripps2cd.o ripps2sfxpack.o ripps2bg.o ripps2files.o ripps2edit.o ripps2hdd.o ripps2card.o ripps2biossnd.o ripps2kbd.o ripps2saves.o ripps2about.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o mixsupport.o metadb.o \
++FRONTEND_OBJS = ripps2.o ripps2ui.o ripps2boot.o ripps2ra.o ripps2status.o ripps2ember.o ripps2art.o ripps2cd.o ripps2sfxpack.o ripps2bg.o ripps2files.o ripps2edit.o ripps2hdd.o ripps2card.o ripps2biossnd.o ripps2hints.o ripps2kbd.o ripps2saves.o ripps2about.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o mixsupport.o metadb.o \
+ 		dia.o ioman.o texcache.o themes.o supportbase.o bdmsupport.o netsupport.o ethsupport.o httpcatalog.o httpsupport.o udpfssupport.o hddsupport.o zso.o lz4.o launchdiag.o \
+ 		appsupport.o mmcesupport.o artindex.o vcdsupport.o cuesupport.o libview.o retrogem.o folderbrowse.o gui.o guigame.o vmc_groups.o textures.o opl.o atlas.o nbns.o httpclient.o gsm.o cheatman.o cheatconfig.o sound.o ps2cnf.o tar.o
+ 
+@@ -167,6 +167,9 @@ PNG_ASSETS = load0 load1 load2 load3 load4 load5 load6 load7 usb usb_bd ilk_bd \
+ 
+ # RIPPS2: glass info panel and PS2 selector mark (gfx/ripps2_*.png, copied in by RIPPS2's build.sh)
+ PNG_ASSETS += ripps2_glass ripps2_mark ripps2_mark_glow L2R2 ripps2_ps1logo ripps2_ps2logo ripps2_grid_icons ripps2_up ripps2_down
++# RIPPS2 build 90: the Standard and White glyph sets (glyph_set=, Controller Settings > Hints and Glyphs)
++PNG_ASSETS += glyph_standard_cross glyph_standard_circle glyph_standard_square glyph_standard_triangle glyph_standard_start glyph_standard_select glyph_standard_L1 glyph_standard_R1 glyph_standard_L2R2 glyph_standard_L3 glyph_standard_R3 glyph_standard_up glyph_standard_down glyph_standard_left glyph_standard_right \
++	glyph_white_cross glyph_white_circle glyph_white_square glyph_white_triangle glyph_white_start glyph_white_select glyph_white_L1 glyph_white_R1 glyph_white_L2R2 glyph_white_L3 glyph_white_R3 glyph_white_up glyph_white_down glyph_white_left glyph_white_right
+ 
+ # The RA cover mark is embedded ONLY in the RA flavour: the default build has no
+ # RA_MARK enum member and no table row for it, so embedding the bitmap there would
+diff --git a/include/dialogs.h b/include/dialogs.h
+index 56a0719..4f259f1 100644
+--- a/include/dialogs.h
++++ b/include/dialogs.h
+@@ -44,6 +44,22 @@ enum UI_ITEMS {
+     UICFG_RIPPS2_CATSWAP,
+     UICFG_RIPPS2_SRCNAME, // build 71
+     UICFG_RIPPS2_RECENTS,
++    UICFG_RIPPS2_HINT_LAYOUT, // build 90: Controller Settings > Hints and Glyphs
++    UICFG_RIPPS2_HINT_LABELS,
++    UICFG_RIPPS2_HINT_MENU,
++    UICFG_RIPPS2_HINT_REFRESH,
++    UICFG_RIPPS2_HINT_STAR,
++    UICFG_RIPPS2_HINT_VIEW,
++    UICFG_RIPPS2_GLYPH_SET,
++    UICFG_RIPPS2_HINT_FOLLOW, // the Hint Order page: Theme or Your Order, then the eight places in a row
++    UICFG_RIPPS2_HINT_SLOT0,
++    UICFG_RIPPS2_HINT_SLOT1,
++    UICFG_RIPPS2_HINT_SLOT2,
++    UICFG_RIPPS2_HINT_SLOT3,
++    UICFG_RIPPS2_HINT_SLOT4,
++    UICFG_RIPPS2_HINT_SLOT5,
++    UICFG_RIPPS2_HINT_SLOT6,
++    UICFG_RIPPS2_HINT_SLOT7,
+ 
+     CFG_DEBUG,
+     CFG_PS2LOGO,
+@@ -317,6 +333,8 @@ enum UI_ITEMS {
+     GENERAL_GSM_DEFAULTS_BUTTON,
+     RIPPS2_BIBLE_BUTTON, // RIPPS2: BOOT LOADER > MANAGE (BIBLE)
+     RIPPS2_RIP_BIOS_BUTTON, // RIPPS2 build 88: Audio settings > BIOS Sounds > RIP
++    RIPPS2_HINTS_BUTTON,      // RIPPS2 build 90: Controller Settings > Hints and Glyphs
++    RIPPS2_HINT_ORDER_BUTTON, // and its Hint Order
+     LAUNCH_GSM_DEFAULTS_BUTTON,
+ 
+ #ifdef PADEMU
+@@ -385,6 +403,8 @@ extern struct UIItem diaNetConfig[];
+ extern struct UIItem diaUIConfig[];
+ extern struct UIItem diaAudioConfig[];
+ extern struct UIItem diaControllerConfig[];
++extern struct UIItem diaHintsConfig[]; // RIPPS2 build 90
++extern struct UIItem diaHintOrder[];
+ extern struct UIItem diaCompatConfig[];
+ extern struct UIItem diaVMCConfig[];
+ extern struct UIItem diaGSConfig[];
+diff --git a/include/ripps2.h b/include/ripps2.h
+index a3e6a17..1728c5a 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -93,6 +93,28 @@ float ripps2GlyphsAlpha(int which); // 0..1 this frame; call once a frame while
+ float ripps2HintsAlpha(void);       // 0..1
+ float ripps2CatBarAlpha(void);      // 0..1
+ 
++// RIPPS2 build 90: Controller Settings > Hints and Glyphs and the theme keys behind it (ripps2hints.c). Every
++// row's first choice (0) is Theme: what the theme says (conf_theme.cfg hints_hide, hints_order, hints_labels,
++// hints_layout, hints_spacing, glyph_set). Any other choice is the user's and wins over every theme.
++enum { RIPPS2_HINT_MENU = 0, RIPPS2_HINT_RUN, RIPPS2_HINT_INFO, RIPPS2_HINT_OPTIONS, RIPPS2_HINT_REFRESH,
++       RIPPS2_HINT_STAR, RIPPS2_HINT_VIEW, RIPPS2_HINT_SOURCE, RIPPS2_HINT_COUNT };
++enum { RIPPS2_GLYPHSET_THEME = 0, RIPPS2_GLYPHSET_RIPPS2, RIPPS2_GLYPHSET_STANDARD, RIPPS2_GLYPHSET_WHITE, RIPPS2_GLYPHSET_COUNT };
++enum { RIPPS2_PICK_THEME = 0, RIPPS2_PICK_SHOWN, RIPPS2_PICK_HIDDEN }; // a hint's own row
++extern int gRipps2HintLayout;  // 0 Theme, 1 Row, 2 Column
++extern int gRipps2HintLabels;  // 0 Theme, 1 Glyph and Label, 2 Glyph Only
++extern int gRipps2HintPick[RIPPS2_HINT_COUNT]; // RIPPS2_PICK_*; rows for Menu, Refresh, Star and View
++extern char gRipps2HintOrder[48]; // "" follows the theme; else hint names, comma separated, first to last
++extern int gRipps2GlyphSet;    // RIPPS2_GLYPHSET_*
++int ripps2HintToken(int textId, int iconId);              // which hint a hint bar entry is (RIPPS2_HINT_*)
++int ripps2HintShown(int token);                           // the user's pick, else the theme's hints_hide
++int ripps2HintLabels(void);                               // 1: glyph and label, 0: glyph only
++int ripps2HintColumn(void);                               // 1: one hint a line
++int ripps2HintRank(int token);                            // its place in the order in effect (lower first)
++int ripps2HintParse(const char *list, int *out, int max); // hint names -> RIPPS2_HINT_* in order, each once
++int ripps2GlyphSetParse(const char *name);                // theme | ripps2 | standard | white
++int ripps2GlyphSetFor(int themeSet);                      // the set in effect: the user's, else the theme's
++int ripps2ShowHintsConfig(void);                          // the page; 1 when anything changed (save it)
++
+ void ripps2SetCategory(int cat);    // switch screens and fly the PS2 mark
+ void ripps2StepCategory(int dir);   // -1 / +1, clamped at the ends
+ void ripps2RenderCategoryBar(void); // the three labels plus the mark
+@@ -153,6 +175,8 @@ int ripps2KbdPoll(void);
+ 
+ // The editor (ripps2edit.c): a text file, or a game's metadata as a form
+ #include "include/config.h"
++void ripps2HintsLoadConfig(config_set_t *config); // build 90: the Hints and Glyphs rows, in the settings
++void ripps2HintsSaveConfig(config_set_t *config);
+ int ripps2EditFile(const char *path);                              // 1 when it saved
+ int ripps2EditMetadata(config_set_t *config, const char *gameName); // 1 when SAVE was chosen (values set, not written)
+ 
+diff --git a/include/themes.h b/include/themes.h
+index 148e2d7..8e4b271 100644
+--- a/include/themes.h
++++ b/include/themes.h
+@@ -229,6 +229,15 @@ typedef struct theme
+     // RIPPS2 build 81: the theme's defaults for Colors and More (-1: none), each standing in while the
+     // setting is at its own default: color_theme, category_bar, button_hints, dpad_glyphs, source_name
+     int paletteDef, catBarDef, hintsDef, glyphsDef, srcNameDef, catSwapDef; // catSwapDef: category_order
++    // RIPPS2 build 90: the hint bar and the glyphs as the theme sets them (ripps2hints.c reads these)
++    int hintsHide;                      // hints_hide: bits 1 << RIPPS2_HINT_*
++    int hintsOrder[8], hintsOrderCount; // hints_order (8 = RIPPS2_HINT_COUNT)
++    int hintsLabelsDef;                 // hints_labels: -1 not set, 0 glyph only, 1 glyph and label
++    int hintsColumnDef;                 // hints_layout: -1 not set, 0 row, 1 column
++    int hintsSpacing;                   // hints_spacing: a column's line pitch
++    int glyphSetDef;                    // glyph_set: RIPPS2_GLYPHSET_* (THEME: its own PNGs)
++    int glyphSetLoaded;                 // the set its glyph textures hold now
++    char glyphPath[192];                // where its own glyph PNGs load from ("" for a built-in theme)
+     theme_element_t *grid; // RIPPS2 build 78: the first Grid element (a page of covers in rows), NULL if none
+     int gridColumns, gridRows, gridSpacing;
+ 
+@@ -259,6 +268,7 @@ int thmCoverflowIsAnimating(void);
+ 
+ void thmInit(void);
+ void thmReinit(const char *path);
++void thmGlyphSetRefresh(void); // RIPPS2 build 90: load the glyph set in effect if it changed (GUI thread, frame start)
+ void thmReloadScreenExtents(void);
+ int thmGridColumns(void); // RIPPS2 build 78: the active Grid element's columns, 0 without one
+ void thmDrawBackdrop(void); // RIPPS2 build 70: the theme's backdrop images (RIPFLOW's frame) on the other tabs
+diff --git a/lng_tmpl/_base.yml b/lng_tmpl/_base.yml
+index 2f3140c..76deaa3 100644
+--- a/lng_tmpl/_base.yml
++++ b/lng_tmpl/_base.yml
+@@ -1471,6 +1471,40 @@ gui_strings:
+   string: "Writes this console's own menu sounds from its BIOS into the AUDIO folder as RIPPS2's sounds."
+ - label: RIPPS2_RIP
+   string: Rip
++- label: RIPPS2_HINTS_GLYPHS
++  string: Hints and Glyphs
++- label: HINT_RIPPS2_HINTS_GLYPHS
++  string: "How the button hints and glyphs look. Every row starts on Theme, what the theme chose; any other choice is yours and wins over every theme."
++- label: RIPPS2_HINT_LAYOUT
++  string: Hint Layout
++- label: HINT_RIPPS2_HINT_LAYOUT
++  string: "Row: the hints in one line. Column: one hint a line, a list down the side, starting where the theme puts its hints."
++- label: RIPPS2_HINT_LABELS
++  string: Hint Labels
++- label: HINT_RIPPS2_HINT_LABELS
++  string: "Glyph Only draws just the buttons, for glyphs that carry their own words. A hint whose glyph the theme lacks keeps its label."
++- label: RIPPS2_HINT_MENU
++  string: Menu Hint (START)
++- label: RIPPS2_HINT_REFRESH
++  string: Refresh Hint (SELECT)
++- label: RIPPS2_HINT_STAR
++  string: Star Hint (R3)
++- label: RIPPS2_HINT_VIEW
++  string: View Hint (L3)
++- label: HINT_RIPPS2_HINT_SHOW
++  string: "Shows or hides this hint. Its button works either way."
++- label: RIPPS2_GLYPH_SET
++  string: Glyph Set
++- label: HINT_RIPPS2_GLYPH_SET
++  string: "The button glyphs on every page: the theme's own, RIPPS2's, Standard (dark buttons, coloured symbols) or White (solid white)."
++- label: RIPPS2_HINT_ORDER
++  string: Hint Order
++- label: HINT_RIPPS2_HINT_ORDER
++  string: "Arranges the hints. Theme keeps the theme's order; Your Order is the one set here."
++- label: RIPPS2_HINT_ORDER_FOLLOW
++  string: Order
++- label: HINT_RIPPS2_HINT_SLOT
++  string: "The hint in this place. The hint that was here moves to the picked hint's old place."
+ - label: PS1_SAVE_GUIDANCE
+   string: "PS1 saves depend on Ember or POPSTARTER; PS2 VMC settings do not apply."
+ - label: NEUTRINO_SHOW_ARGS
+diff --git a/src/dialogs.c b/src/dialogs.c
+index da3a0cd..7617c95 100644
+--- a/src/dialogs.c
++++ b/src/dialogs.c
+@@ -1888,6 +1888,8 @@ struct UIItem diaControllerConfig[] = {
+     {UI_SPACER},
+     {UI_BOOL, CFG_RUMBLE, 1, 1, _STR_HINT_RUMBLE, 0, 0, {.intvalue = {0, 0}}},
+     {UI_BREAK},
++    {UI_BUTTON, RIPPS2_HINTS_BUTTON, 1, 1, _STR_HINT_RIPPS2_HINTS_GLYPHS, 0, 0, {.label = {NULL, _STR_RIPPS2_HINTS_GLYPHS}}}, // build 90
++    {UI_BREAK},
+ #ifdef PADEMU
+     {UI_BUTTON, PADEMU_GLOBAL_BUTTON, 1, 1, -1, 0, 0, {.label = {NULL, _STR_CONTROLLER_EMULATION}}},
+     {UI_BREAK},
+@@ -1899,6 +1901,90 @@ struct UIItem diaControllerConfig[] = {
+     // end of dialog
+     {UI_TERMINATOR}};
+ 
++// RIPPS2 build 90: Controller Settings > Hints and Glyphs (ripps2hints.c). Every row starts on Theme.
++struct UIItem diaHintsConfig[] = {
++    {UI_HEADER, 0, 1, 1, -1, 0, 0, {.label = {NULL, _STR_RIPPS2_HINTS_GLYPHS}}},
++    {UI_SPLITTER},
++
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_HINT_LAYOUT}}},
++    {UI_SPACER},
++    {UI_ENUM, UICFG_RIPPS2_HINT_LAYOUT, 1, 1, _STR_HINT_RIPPS2_HINT_LAYOUT, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BREAK},
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_HINT_LABELS}}},
++    {UI_SPACER},
++    {UI_ENUM, UICFG_RIPPS2_HINT_LABELS, 1, 1, _STR_HINT_RIPPS2_HINT_LABELS, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BREAK},
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_HINT_MENU}}},
++    {UI_SPACER},
++    {UI_ENUM, UICFG_RIPPS2_HINT_MENU, 1, 1, _STR_HINT_RIPPS2_HINT_SHOW, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BREAK},
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_HINT_REFRESH}}},
++    {UI_SPACER},
++    {UI_ENUM, UICFG_RIPPS2_HINT_REFRESH, 1, 1, _STR_HINT_RIPPS2_HINT_SHOW, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BREAK},
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_HINT_STAR}}},
++    {UI_SPACER},
++    {UI_ENUM, UICFG_RIPPS2_HINT_STAR, 1, 1, _STR_HINT_RIPPS2_HINT_SHOW, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BREAK},
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_HINT_VIEW}}},
++    {UI_SPACER},
++    {UI_ENUM, UICFG_RIPPS2_HINT_VIEW, 1, 1, _STR_HINT_RIPPS2_HINT_SHOW, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BREAK},
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_GLYPH_SET}}},
++    {UI_SPACER},
++    {UI_ENUM, UICFG_RIPPS2_GLYPH_SET, 1, 1, _STR_HINT_RIPPS2_GLYPH_SET, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BREAK},
++    {UI_BUTTON, RIPPS2_HINT_ORDER_BUTTON, 1, 1, _STR_HINT_RIPPS2_HINT_ORDER, 0, 0, {.label = {NULL, _STR_RIPPS2_HINT_ORDER}}},
++    {UI_BREAK},
++
++    {UI_OK, 0, 1, 1, -1, 0, 0, {.label = {NULL, _STR_OK}}},
++    {UI_TERMINATOR}};
++
++// its Hint Order page: Theme or Your Order, then the hint in each of the eight places
++struct UIItem diaHintOrder[] = {
++    {UI_HEADER, 0, 1, 1, -1, 0, 0, {.label = {NULL, _STR_RIPPS2_HINT_ORDER}}},
++    {UI_SPLITTER},
++
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_HINT_ORDER_FOLLOW}}},
++    {UI_SPACER},
++    {UI_ENUM, UICFG_RIPPS2_HINT_FOLLOW, 1, 1, _STR_HINT_RIPPS2_HINT_ORDER, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BREAK},
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {"First", -1}}},
++    {UI_SPACER},
++    {UI_ENUM, UICFG_RIPPS2_HINT_SLOT0, 1, 1, _STR_HINT_RIPPS2_HINT_SLOT, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BREAK},
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {"Second", -1}}},
++    {UI_SPACER},
++    {UI_ENUM, UICFG_RIPPS2_HINT_SLOT1, 1, 1, _STR_HINT_RIPPS2_HINT_SLOT, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BREAK},
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {"Third", -1}}},
++    {UI_SPACER},
++    {UI_ENUM, UICFG_RIPPS2_HINT_SLOT2, 1, 1, _STR_HINT_RIPPS2_HINT_SLOT, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BREAK},
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {"Fourth", -1}}},
++    {UI_SPACER},
++    {UI_ENUM, UICFG_RIPPS2_HINT_SLOT3, 1, 1, _STR_HINT_RIPPS2_HINT_SLOT, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BREAK},
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {"Fifth", -1}}},
++    {UI_SPACER},
++    {UI_ENUM, UICFG_RIPPS2_HINT_SLOT4, 1, 1, _STR_HINT_RIPPS2_HINT_SLOT, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BREAK},
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {"Sixth", -1}}},
++    {UI_SPACER},
++    {UI_ENUM, UICFG_RIPPS2_HINT_SLOT5, 1, 1, _STR_HINT_RIPPS2_HINT_SLOT, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BREAK},
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {"Seventh", -1}}},
++    {UI_SPACER},
++    {UI_ENUM, UICFG_RIPPS2_HINT_SLOT6, 1, 1, _STR_HINT_RIPPS2_HINT_SLOT, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BREAK},
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {"Eighth", -1}}},
++    {UI_SPACER},
++    {UI_ENUM, UICFG_RIPPS2_HINT_SLOT7, 1, 1, _STR_HINT_RIPPS2_HINT_SLOT, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BREAK},
++
++    {UI_OK, 0, 1, 1, -1, 0, 0, {.label = {NULL, _STR_OK}}},
++    {UI_TERMINATOR}};
++
+ struct UIItem diaCoverflowConfig[] = {
+     {UI_HEADER, 0, 1, 1, -1, 0, 0, {.label = {NULL, _STR_COVERFLOW_SETTINGS}}},
+     {UI_SPLITTER},
+diff --git a/src/gui.c b/src/gui.c
+index 80e3896..1c057f7 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -295,6 +295,7 @@ void guiUnlock(void)
+ void guiStartFrame(void)
+ {
+     guiLock();
++    thmGlyphSetRefresh(); // RIPPS2 build 90: a glyph set picked or a theme's glyph_set, between frames
+     rmStartFrame();
+     guiFrameId++;
+ }
+@@ -2724,6 +2725,11 @@ reshow_controller:
+             gSelectButton = value == 0 ? KEY_CIRCLE : KEY_CROSS;
+         else
+             gSelectButton = KEY_CIRCLE;
++        if (result == RIPPS2_HINTS_BUTTON) { // build 90: Hints and Glyphs
++            if (ripps2ShowHintsConfig())
++                guiSettingsSavePending = 1; // saved with the rest when Settings closes
++            goto reshow_controller;
++        }
+ #ifdef PADEMU
+         if (result == PADEMU_GLOBAL_BUTTON) {
+             guiGameShowPadEmuConfig(1);
+diff --git a/src/opl.c b/src/opl.c
+index 2617044..cab7c67 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -3397,6 +3397,7 @@ static void _loadConfig()
+                 gRipps2Recents = value;
+             if (configGetInt(configOPL, "ripps2_userset", &value) && value >= 0)
+                 gRipps2UserSet = value; // build 81: the rows a theme's defaults never touch
++            ripps2HintsLoadConfig(configOPL); // build 90: Hints and Glyphs
+             configGetColor(configOPL, CONFIG_OPL_BGCOLOR, gDefaultBgColor);
+             configGetColor(configOPL, CONFIG_OPL_TEXTCOLOR, gDefaultTextColor);
+             configGetColor(configOPL, CONFIG_OPL_UI_TEXTCOLOR, gDefaultUITextColor);
+@@ -4096,6 +4097,7 @@ static void _saveConfig()
+         configSetInt(configOPL, "ripps2_srcname", gRipps2SrcName); // build 71
+         configSetInt(configOPL, "ripps2_recents", gRipps2Recents);
+         configSetInt(configOPL, "ripps2_userset", gRipps2UserSet); // build 81
++        ripps2HintsSaveConfig(configOPL);                          // build 90: Hints and Glyphs
+         ripps2QuietBootMark(gEnableSFX && gEnableBootSND); // build 75: what an HDD launch knows before its settings
+         configSetStr(configOPL, CONFIG_OPL_THEME, thmGetValue());
+         configSetStr(configOPL, CONFIG_OPL_LANGUAGE, lngGetValue());
+diff --git a/src/ripps2hints.c b/src/ripps2hints.c
+new file mode 100644
+index 0000000..b011380
+--- /dev/null
++++ b/src/ripps2hints.c
+@@ -0,0 +1,342 @@
++/*
++  RIPPS2 build 90: the button hints and glyphs, as a theme sets them and as the user overrides them.
++
++  Theme keys (conf_theme.cfg, top level, all optional):
++    hints_hide=star,view        hints a theme leaves off the hint bar
++    hints_order=run,info,menu   the hints named come first, in that order; the rest follow as the page adds them
++    hints_labels=0              glyphs only (1, the default: glyph and label)
++    hints_layout=column         one hint a line, from the hint element's x/y down (row, the default: one line)
++    hints_spacing=28            a column's line pitch
++    glyph_set=standard          the glyphs every page draws: theme (its own PNGs, the default), ripps2, standard, white
++  Hint names: menu run info options refresh star view source (start, select, r3, l3, cross, circle, square and
++  triangle name the same hints by their buttons).
++
++  Controller Settings > Hints and Glyphs: every row's first choice is Theme, which shows what the theme says. Any
++  other choice is the user's and wins over every theme. Hint Order opens its own page: pick a hint for a place
++  and the one that was there takes the picked hint's old place, so the list is always every hint once.
++*/
++
++#include <stdio.h>
++#include <string.h>
++#include <strings.h>
++
++#ifdef RIPPS2_HINTS_HOST_TEST
++#include "ripps2hints_host.h" // the PC test's stand-ins for the theme, the ids and the settings (elf/tests)
++#else
++#include "include/opl.h"
++#include "include/gui.h"
++#include "include/dia.h"
++#include "include/dialogs.h"
++#include "include/lang.h"
++#include "include/themes.h"
++#include "include/textures.h"
++#include "include/ripps2.h"
++#endif
++
++int gRipps2HintLayout = 0, gRipps2HintLabels = 0, gRipps2GlyphSet = RIPPS2_GLYPHSET_THEME;
++int gRipps2HintPick[RIPPS2_HINT_COUNT] = {0};
++char gRipps2HintOrder[48] = "";
++
++static const char *const hintNames[RIPPS2_HINT_COUNT] = {"menu", "run", "info", "options", "refresh", "star", "view", "source"};
++static const char *hintTitles[RIPPS2_HINT_COUNT + 1] = {"Menu", "Run", "Info", "Options", "Refresh", "Star", "View", "Source", NULL};
++static const struct
++{
++    const char *name;
++    int token;
++} hintAliases[] = {{"start", RIPPS2_HINT_MENU}, {"select", RIPPS2_HINT_REFRESH}, {"r3", RIPPS2_HINT_STAR}, {"l3", RIPPS2_HINT_VIEW},
++                   {"cross", RIPPS2_HINT_RUN}, {"circle", RIPPS2_HINT_RUN}, {"square", RIPPS2_HINT_INFO}, {"triangle", RIPPS2_HINT_OPTIONS}};
++static const char *const glyphSetNames[RIPPS2_GLYPHSET_COUNT] = {"theme", "ripps2", "standard", "white"};
++
++int ripps2HintToken(int textId, int iconId)
++{
++    if (textId == _STR_RIPPS2_SOURCE)
++        return RIPPS2_HINT_SOURCE;
++    switch (iconId) {
++        case START_ICON:
++            return RIPPS2_HINT_MENU;
++        case SQUARE_ICON:
++            return RIPPS2_HINT_INFO;
++        case TRIANGLE_ICON:
++            return RIPPS2_HINT_OPTIONS;
++        case SELECT_ICON:
++            return RIPPS2_HINT_REFRESH;
++        case R3_ICON:
++            return RIPPS2_HINT_STAR;
++        case L3_ICON:
++            return RIPPS2_HINT_VIEW;
++        default:
++            return RIPPS2_HINT_RUN; // the confirm button: Run, or Start Device
++    }
++}
++
++static int hintByName(const char *s, int len)
++{
++    int i;
++    for (i = 0; i < RIPPS2_HINT_COUNT; i++)
++        if ((int)strlen(hintNames[i]) == len && !strncasecmp(s, hintNames[i], len))
++            return i;
++    for (i = 0; i < (int)(sizeof(hintAliases) / sizeof(hintAliases[0])); i++)
++        if ((int)strlen(hintAliases[i].name) == len && !strncasecmp(s, hintAliases[i].name, len))
++            return hintAliases[i].token;
++    return -1;
++}
++
++int ripps2HintParse(const char *list, int *out, int max)
++{
++    int n = 0, seen = 0;
++    while (list != NULL && *list && n < max) {
++        while (*list == ',' || *list == ' ')
++            list++;
++        const char *end = list;
++        while (*end && *end != ',' && *end != ' ')
++            end++;
++        int t = hintByName(list, end - list);
++        if (t >= 0 && !(seen & (1 << t))) { // a name twice keeps its first place
++            seen |= 1 << t;
++            out[n++] = t;
++        }
++        list = end;
++    }
++    return n;
++}
++
++int ripps2GlyphSetParse(const char *name)
++{
++    int i;
++    for (i = 0; i < RIPPS2_GLYPHSET_COUNT; i++)
++        if (name != NULL && !strcasecmp(name, glyphSetNames[i]))
++            return i;
++    return RIPPS2_GLYPHSET_THEME;
++}
++
++int ripps2GlyphSetFor(int themeSet)
++{
++    return gRipps2GlyphSet != RIPPS2_GLYPHSET_THEME ? gRipps2GlyphSet : themeSet;
++}
++
++int ripps2HintShown(int token)
++{
++    if (token < 0 || token >= RIPPS2_HINT_COUNT)
++        return 1;
++    if (gRipps2HintPick[token] == RIPPS2_PICK_SHOWN)
++        return 1;
++    if (gRipps2HintPick[token] == RIPPS2_PICK_HIDDEN)
++        return 0;
++    return gTheme == NULL || !(gTheme->hintsHide & (1 << token));
++}
++
++int ripps2HintLabels(void)
++{
++    if (gRipps2HintLabels)
++        return gRipps2HintLabels == 1;
++    return gTheme == NULL || gTheme->hintsLabelsDef != 0;
++}
++
++int ripps2HintColumn(void)
++{
++    if (gRipps2HintLayout)
++        return gRipps2HintLayout == 2;
++    return gTheme != NULL && gTheme->hintsColumnDef > 0;
++}
++
++int ripps2HintRank(int token)
++{
++    // the user's order, parsed again only when it changes; else the theme's. Unnamed hints share one rank
++    // after the named ones, so a stable sort leaves them in the order the page added them.
++    static char parsed[sizeof(gRipps2HintOrder)] = "";
++    static int userOrder[RIPPS2_HINT_COUNT], userCount = 0;
++    const int *order;
++    int count, i;
++
++    if (gRipps2HintOrder[0] != '\0') {
++        if (strcmp(parsed, gRipps2HintOrder)) {
++            snprintf(parsed, sizeof(parsed), "%s", gRipps2HintOrder);
++            userCount = ripps2HintParse(parsed, userOrder, RIPPS2_HINT_COUNT);
++        }
++        order = userOrder;
++        count = userCount;
++    } else if (gTheme != NULL) {
++        order = gTheme->hintsOrder;
++        count = gTheme->hintsOrderCount;
++    } else
++        return RIPPS2_HINT_COUNT;
++    for (i = 0; i < count; i++)
++        if (order[i] == token)
++            return i;
++    return RIPPS2_HINT_COUNT;
++}
++
++#ifndef RIPPS2_HINTS_HOST_TEST
++// ---- Controller Settings > Hints and Glyphs ----
++
++static const char *pickLayout[] = {"Theme", "Row", "Column", NULL};
++static const char *pickLabels[] = {"Theme", "Glyph and Label", "Glyph Only", NULL};
++static const char *pickShow[] = {"Theme", "Shown", "Hidden", NULL};
++static const char *pickGlyphs[] = {"Theme", "RIPPS2", "Standard", "White", NULL};
++static const char *pickFollow[] = {"Theme", "Your Order", NULL};
++
++// the four hints with a row of their own, and those rows
++static const int pickHints[4] = {RIPPS2_HINT_MENU, RIPPS2_HINT_REFRESH, RIPPS2_HINT_STAR, RIPPS2_HINT_VIEW};
++static const int pickRows[4] = {UICFG_RIPPS2_HINT_MENU, UICFG_RIPPS2_HINT_REFRESH, UICFG_RIPPS2_HINT_STAR, UICFG_RIPPS2_HINT_VIEW};
++
++static void hintsRead(void)
++{
++    int v, i;
++    if (diaGetInt(diaHintsConfig, UICFG_RIPPS2_HINT_LAYOUT, &v) && v >= 0 && v < 3)
++        gRipps2HintLayout = v;
++    if (diaGetInt(diaHintsConfig, UICFG_RIPPS2_HINT_LABELS, &v) && v >= 0 && v < 3)
++        gRipps2HintLabels = v;
++    for (i = 0; i < 4; i++)
++        if (diaGetInt(diaHintsConfig, pickRows[i], &v) && v >= 0 && v < 3)
++            gRipps2HintPick[pickHints[i]] = v;
++    if (diaGetInt(diaHintsConfig, UICFG_RIPPS2_GLYPH_SET, &v) && v >= 0 && v < RIPPS2_GLYPHSET_COUNT)
++        gRipps2GlyphSet = v; // the next frame loads it (thmGlyphSetRefresh), so the page behind shows it
++}
++
++static int hintsUpdater(int modified)
++{
++    if (modified)
++        hintsRead();
++    return 0;
++}
++
++// the order page: eight places, each one hint; changing a place swaps the two hints
++static int orderShown[RIPPS2_HINT_COUNT];
++
++static void orderInEffect(int *out)
++{
++    int i, j;
++    for (i = 0; i < RIPPS2_HINT_COUNT; i++)
++        out[i] = i;
++    for (i = 1; i < RIPPS2_HINT_COUNT; i++) { // stable insertion sort by rank
++        int t = out[i], r = ripps2HintRank(t);
++        for (j = i; j > 0 && ripps2HintRank(out[j - 1]) > r; j--)
++            out[j] = out[j - 1];
++        out[j] = t;
++    }
++}
++
++static int orderUpdater(int modified)
++{
++    int now[RIPPS2_HINT_COUNT], i, j, follow = 0;
++    if (!modified)
++        return 0;
++    diaGetInt(diaHintOrder, UICFG_RIPPS2_HINT_FOLLOW, &follow);
++    for (i = 0; i < RIPPS2_HINT_COUNT; i++)
++        if (!diaGetInt(diaHintOrder, UICFG_RIPPS2_HINT_SLOT0 + i, &now[i]))
++            now[i] = orderShown[i];
++    for (i = 0; i < RIPPS2_HINT_COUNT; i++) {
++        if (now[i] == orderShown[i])
++            continue;
++        for (j = 0; j < RIPPS2_HINT_COUNT; j++)
++            if (j != i && now[j] == now[i]) {
++                now[j] = orderShown[i];
++                diaSetInt(diaHintOrder, UICFG_RIPPS2_HINT_SLOT0 + j, now[j]);
++            }
++        follow = 1; // a hint moved: the order is the user's now
++        diaSetInt(diaHintOrder, UICFG_RIPPS2_HINT_FOLLOW, 1);
++        break;
++    }
++    memcpy(orderShown, now, sizeof(orderShown));
++    if (follow) {
++        char s[sizeof(gRipps2HintOrder)] = "";
++        for (i = 0; i < RIPPS2_HINT_COUNT; i++)
++            snprintf(s + strlen(s), sizeof(s) - strlen(s), "%s%s", i ? "," : "", hintNames[now[i]]);
++        snprintf(gRipps2HintOrder, sizeof(gRipps2HintOrder), "%s", s);
++    } else {
++        gRipps2HintOrder[0] = '\0';
++        orderInEffect(orderShown); // back on the theme's: show it
++        for (i = 0; i < RIPPS2_HINT_COUNT; i++)
++            diaSetInt(diaHintOrder, UICFG_RIPPS2_HINT_SLOT0 + i, orderShown[i]);
++    }
++    return 0;
++}
++
++static void showOrder(void)
++{
++    char keep[sizeof(gRipps2HintOrder)];
++    int i;
++    snprintf(keep, sizeof(keep), "%s", gRipps2HintOrder);
++    diaSetEnum(diaHintOrder, UICFG_RIPPS2_HINT_FOLLOW, pickFollow);
++    diaSetInt(diaHintOrder, UICFG_RIPPS2_HINT_FOLLOW, gRipps2HintOrder[0] != '\0');
++    orderInEffect(orderShown);
++    for (i = 0; i < RIPPS2_HINT_COUNT; i++) {
++        diaSetEnum(diaHintOrder, UICFG_RIPPS2_HINT_SLOT0 + i, hintTitles);
++        diaSetInt(diaHintOrder, UICFG_RIPPS2_HINT_SLOT0 + i, orderShown[i]);
++    }
++    if (!diaExecuteDialog(diaHintOrder, -1, 1, &orderUpdater))
++        snprintf(gRipps2HintOrder, sizeof(gRipps2HintOrder), "%s", keep); // Back puts the order back
++}
++
++int ripps2ShowHintsConfig(void)
++{
++    int keepLayout = gRipps2HintLayout, keepLabels = gRipps2HintLabels, keepSet = gRipps2GlyphSet, keepPick[RIPPS2_HINT_COUNT];
++    char keepOrder[sizeof(gRipps2HintOrder)];
++    int i, ret;
++
++    memcpy(keepPick, gRipps2HintPick, sizeof(keepPick));
++    snprintf(keepOrder, sizeof(keepOrder), "%s", gRipps2HintOrder);
++    diaSetEnum(diaHintsConfig, UICFG_RIPPS2_HINT_LAYOUT, pickLayout);
++    diaSetEnum(diaHintsConfig, UICFG_RIPPS2_HINT_LABELS, pickLabels);
++    diaSetEnum(diaHintsConfig, UICFG_RIPPS2_GLYPH_SET, pickGlyphs);
++    diaSetInt(diaHintsConfig, UICFG_RIPPS2_HINT_LAYOUT, gRipps2HintLayout);
++    diaSetInt(diaHintsConfig, UICFG_RIPPS2_HINT_LABELS, gRipps2HintLabels);
++    diaSetInt(diaHintsConfig, UICFG_RIPPS2_GLYPH_SET, gRipps2GlyphSet);
++    for (i = 0; i < 4; i++) {
++        diaSetEnum(diaHintsConfig, pickRows[i], pickShow);
++        diaSetInt(diaHintsConfig, pickRows[i], gRipps2HintPick[pickHints[i]]);
++    }
++
++    for (;;) {
++        ret = diaExecuteDialog(diaHintsConfig, -1, 1, &hintsUpdater);
++        if (ret == RIPPS2_HINT_ORDER_BUTTON) {
++            hintsRead();
++            showOrder();
++            continue;
++        }
++        break;
++    }
++    if (ret)
++        hintsRead();
++    else { // Back: everything as it was
++        gRipps2HintLayout = keepLayout;
++        gRipps2HintLabels = keepLabels;
++        gRipps2GlyphSet = keepSet;
++        memcpy(gRipps2HintPick, keepPick, sizeof(keepPick));
++        snprintf(gRipps2HintOrder, sizeof(gRipps2HintOrder), "%s", keepOrder);
++    }
++    return gRipps2HintLayout != keepLayout || gRipps2HintLabels != keepLabels || gRipps2GlyphSet != keepSet ||
++           memcmp(gRipps2HintPick, keepPick, sizeof(keepPick)) || strcmp(gRipps2HintOrder, keepOrder);
++}
++
++// ---- saved with the settings ----
++
++void ripps2HintsLoadConfig(config_set_t *config)
++{
++    static const char *const keys[4] = {"ripps2_hint_menu", "ripps2_hint_refresh", "ripps2_hint_star", "ripps2_hint_view"};
++    int v, i;
++    if (configGetInt(config, "ripps2_hint_layout", &v) && v >= 0 && v < 3)
++        gRipps2HintLayout = v;
++    if (configGetInt(config, "ripps2_hint_labels", &v) && v >= 0 && v < 3)
++        gRipps2HintLabels = v;
++    for (i = 0; i < 4; i++)
++        if (configGetInt(config, keys[i], &v) && v >= 0 && v < 3)
++            gRipps2HintPick[pickHints[i]] = v;
++    if (configGetInt(config, "ripps2_glyph_set", &v) && v >= 0 && v < RIPPS2_GLYPHSET_COUNT)
++        gRipps2GlyphSet = v;
++    if (!configGetStrCopy(config, "ripps2_hint_order", gRipps2HintOrder, sizeof(gRipps2HintOrder)))
++        gRipps2HintOrder[0] = '\0';
++}
++
++void ripps2HintsSaveConfig(config_set_t *config)
++{
++    static const char *const keys[4] = {"ripps2_hint_menu", "ripps2_hint_refresh", "ripps2_hint_star", "ripps2_hint_view"};
++    int i;
++    configSetInt(config, "ripps2_hint_layout", gRipps2HintLayout);
++    configSetInt(config, "ripps2_hint_labels", gRipps2HintLabels);
++    for (i = 0; i < 4; i++)
++        configSetInt(config, keys[i], gRipps2HintPick[pickHints[i]]);
++    configSetInt(config, "ripps2_glyph_set", gRipps2GlyphSet);
++    configSetStr(config, "ripps2_hint_order", gRipps2HintOrder);
++}
++#endif // RIPPS2_HINTS_HOST_TEST
+diff --git a/src/themes.c b/src/themes.c
+index ab5adeb..a4530e5 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -3391,6 +3391,32 @@ static u64 hintFade(u64 color, float k)
+     return (color & ~(0xFFULL << 24)) | ((u64)(int)(((color >> 24) & 0xFF) * k) << 24);
+ }
+ 
++// RIPPS2 build 90: one hint bar entry, glyph and label, or the glyph alone (a hint whose glyph the theme
++// does not have keeps its label, or it would vanish). Returns the x after it.
++static int hintGlyphOnly(menu_hint_item_t *h, int labels)
++{
++    GSTEXTURE *t = thmGetTexture(h->icon_id);
++    return !labels && t != NULL && t->Mem != NULL;
++}
++
++static int hintEntryWidth(menu_hint_item_t *h, int labels, int font)
++{
++    GSTEXTURE *t = thmGetTexture(h->icon_id);
++    int iconW = (t && t->Mem) ? rmWideScale((t->Width * 20) / t->Height) + 2 : 0;
++    return hintGlyphOnly(h, labels) ? iconW : iconW + rmUnScaleX(fntCalcDimensions(font, _l(h->text_id)));
++}
++
++static int drawHintEntry(menu_hint_item_t *h, int labels, int font, int x, int y, u64 col, u64 iconCol)
++{
++    if (hintGlyphOnly(h, labels)) {
++        GSTEXTURE *t = thmGetTexture(h->icon_id);
++        int w = (t->Width * 20) / t->Height;
++        rmDrawPixmap(t, x, y + 10, ALIGN_VCENTER, w, 20, SCALING_RATIO, iconCol, 0);
++        return x + rmWideScale(w) + 2;
++    }
++    return guiDrawIconAndTextA(h->icon_id, h->text_id, font, x, y, col, iconCol);
++}
++
+ static void drawHintText(struct menu_list *menu, struct submenu_list *item, config_set_t *config, struct theme_element *elem)
+ {
+     if (thmElemSkipsDevice(elem, menu->item->icon_id))
+@@ -3419,29 +3445,50 @@ static void drawHintText(struct menu_list *menu, struct submenu_list *item, conf
+         last->next = &sourceHint; // unlinked again below, before the lock is let go
+     }
+     if (hint) {
+-        // RIPPS2: fit the row between the screen margins. A full row (Menu, Run, Info, Options,
+-        // Refresh, Favorite, PS1) is wider than a gap of elem->width allows, so the gap tightens
+-        // (never below 4) and the row is placed from the measured width, left or centred.
+-        int count = 0, total = 0, gap = elem->width;
+-        int margin = elem->aligned ? 24 : elem->posX;
+-        menu_hint_item_t *h;
+-        for (h = hint; h; h = h->next) {
+-            GSTEXTURE *iconTex = thmGetTexture(h->icon_id);
+-            int iconW = (iconTex && iconTex->Mem) ? rmWideScale((iconTex->Width * 20) / iconTex->Height) + 2 : 0;
+-            total += iconW + rmUnScaleX(fntCalcDimensions(elem->font, _l(h->text_id)));
+-            count++;
++        // RIPPS2 build 90: the hints the theme and the user keep, in the order in effect (Hints and Glyphs);
++        // a stable sort, so hints of one rank stay in the order the page added them
++        menu_hint_item_t *row[16], *h;
++        int n = 0, i, j, labels = ripps2HintLabels();
++        for (h = hint; h != NULL && n < 16; h = h->next)
++            if (ripps2HintShown(ripps2HintToken(h->text_id, h->icon_id)))
++                row[n++] = h;
++        for (i = 1; i < n; i++) {
++            menu_hint_item_t *k = row[i];
++            int r = ripps2HintRank(ripps2HintToken(k->text_id, k->icon_id));
++            for (j = i; j > 0 && ripps2HintRank(ripps2HintToken(row[j - 1]->text_id, row[j - 1]->icon_id)) > r; j--)
++                row[j] = row[j - 1];
++            row[j] = k;
+         }
+-        int avail = screenWidth - 2 * margin;
+-        if (count > 1 && total + gap * (count - 1) > avail) {
+-            gap = (avail - total) / (count - 1);
+-            if (gap < 4)
+-                gap = 4;
+-        }
+-        int x = elem->aligned ? (screenWidth - (total + gap * (count - 1))) / 2 : elem->posX;
++        u64 col = hintFade(elem->color, hintA), iconCol = hintFade(gDefaultCol, hintA);
++
++        if (ripps2HintColumn()) {
++            // one hint a line from the element's x/y down; a column that would run off the bottom (the
++            // default hint element sits on the last line) ends on that line instead
++            int pitch = gTheme->hintsSpacing, x = elem->aligned ? 24 : elem->posX, y = elem->posY;
++            if (y + (n - 1) * pitch > gTheme->usedHeight - HINT_HEIGHT)
++                y = gTheme->usedHeight - HINT_HEIGHT - (n - 1) * pitch;
++            if (y < 0)
++                y = 0;
++            for (i = 0; i < n; i++)
++                drawHintEntry(row[i], labels, elem->font, x, y + i * pitch, col, iconCol);
++        } else {
++            // RIPPS2: fit the row between the screen margins. A full row (Menu, Run, Info, Options,
++            // Refresh, Favorite, PS1) is wider than a gap of elem->width allows, so the gap tightens
++            // (never below 4) and the row is placed from the measured width, left or centred.
++            int total = 0, gap = elem->width;
++            int margin = elem->aligned ? 24 : elem->posX;
++            for (i = 0; i < n; i++)
++                total += hintEntryWidth(row[i], labels, elem->font);
++            int avail = screenWidth - 2 * margin;
++            if (n > 1 && total + gap * (n - 1) > avail) {
++                gap = (avail - total) / (n - 1);
++                if (gap < 4)
++                    gap = 4;
++            }
++            int x = elem->aligned ? (screenWidth - (total + gap * (n - 1))) / 2 : elem->posX;
+ 
+-        for (; hint; hint = hint->next) {
+-            x = guiDrawIconAndTextA(hint->icon_id, hint->text_id, elem->font, x, elem->posY, hintFade(elem->color, hintA), hintFade(gDefaultCol, hintA));
+-            x += gap;
++            for (i = 0; i < n; i++)
++                x = drawHintEntry(row[i], labels, elem->font, x, elem->posY, col, iconCol) + gap;
+         }
+         if (showSource) {
+             menu_hint_item_t *h2 = menu->item->hints;
+@@ -4390,6 +4437,72 @@ static int thmLoadResource(GSTEXTURE *texture, int texId, const char *themePath,
+     return success;
+ }
+ 
++/*
++  RIPPS2 build 90: glyph sets. The slots below are every button glyph RIPPS2 draws. A set fills all of them:
++  theme (the theme's own PNGs, RIPPS2's where it has none and use_default allows), ripps2 (RIPPS2's own),
++  standard (the Adapt theme's) or white (the Grunge theme's), the last two built in from
++  elf/theme/gfx/glyph_<set>_<name>.png (elf/theme/tools/make_glyph_sets.py).
++*/
++#define GLYPH_PNG(set, n)            \
++    extern void *glyph_##set##_##n##_png; \
++    extern int size_glyph_##set##_##n##_png;
++#define GLYPH_SET_PNGS(set)                                                                                       \
++    GLYPH_PNG(set, cross)                                                                                         \
++    GLYPH_PNG(set, circle) GLYPH_PNG(set, square) GLYPH_PNG(set, triangle) GLYPH_PNG(set, start)                 \
++        GLYPH_PNG(set, select) GLYPH_PNG(set, L1) GLYPH_PNG(set, R1) GLYPH_PNG(set, L2R2) GLYPH_PNG(set, L3)      \
++            GLYPH_PNG(set, R3) GLYPH_PNG(set, up) GLYPH_PNG(set, down) GLYPH_PNG(set, left) GLYPH_PNG(set, right)
++GLYPH_SET_PNGS(standard)
++GLYPH_SET_PNGS(white)
++
++static const int glyphSlots[] = {CROSS_ICON, CIRCLE_ICON, SQUARE_ICON, TRIANGLE_ICON, START_ICON, SELECT_ICON, L1_ICON, R1_ICON,
++                                 R2_ICON, L3_ICON, R3_ICON, RIPPS2_DPAD_UP, RIPPS2_DPAD_DOWN, LEFT_ICON, RIGHT_ICON};
++#define GLYPH_SLOTS ((int)(sizeof(glyphSlots) / sizeof(glyphSlots[0])))
++#define GLYPH_ROW(set)                                                                                                          \
++    {                                                                                                                           \
++        {&glyph_##set##_cross_png, &size_glyph_##set##_cross_png}, {&glyph_##set##_circle_png, &size_glyph_##set##_circle_png}, \
++            {&glyph_##set##_square_png, &size_glyph_##set##_square_png},                                                        \
++            {&glyph_##set##_triangle_png, &size_glyph_##set##_triangle_png},                                                    \
++            {&glyph_##set##_start_png, &size_glyph_##set##_start_png}, {&glyph_##set##_select_png, &size_glyph_##set##_select_png}, \
++            {&glyph_##set##_L1_png, &size_glyph_##set##_L1_png}, {&glyph_##set##_R1_png, &size_glyph_##set##_R1_png},           \
++            {&glyph_##set##_L2R2_png, &size_glyph_##set##_L2R2_png}, {&glyph_##set##_L3_png, &size_glyph_##set##_L3_png},       \
++            {&glyph_##set##_R3_png, &size_glyph_##set##_R3_png}, {&glyph_##set##_up_png, &size_glyph_##set##_up_png},           \
++            {&glyph_##set##_down_png, &size_glyph_##set##_down_png}, {&glyph_##set##_left_png, &size_glyph_##set##_left_png},   \
++            {&glyph_##set##_right_png, &size_glyph_##set##_right_png}                                                          \
++    }
++static const struct
++{
++    void *png;
++    int *size;
++} glyphSetPng[2][GLYPH_SLOTS] = {GLYPH_ROW(standard), GLYPH_ROW(white)}; // [set - RIPPS2_GLYPHSET_STANDARD][slot]
++
++// Fill a theme's glyph slots from a set. onGui: the textures may have been drawn (VRAM copies to drop),
++// which is only ever done on the GUI thread; a theme still being built has never been drawn.
++static void thmGlyphSetLoad(theme_t *theme, int set, int onGui)
++{
++    int i;
++    for (i = 0; i < GLYPH_SLOTS; i++) {
++        GSTEXTURE *tex = &theme->textures[glyphSlots[i]];
++        if (tex->Mem != NULL) {
++            if (onGui)
++                rmUnloadTexture(tex);
++            texFree(tex);
++        }
++        if (set == RIPPS2_GLYPHSET_STANDARD || set == RIPPS2_GLYPHSET_WHITE)
++            texLoadFromMemory(tex, glyphSetPng[set - RIPPS2_GLYPHSET_STANDARD][i].png, *glyphSetPng[set - RIPPS2_GLYPHSET_STANDARD][i].size);
++        else if (set == RIPPS2_GLYPHSET_RIPPS2)
++            texLoadInternal(tex, glyphSlots[i]);
++        else
++            thmLoadResource(tex, glyphSlots[i], theme->glyphPath[0] ? theme->glyphPath : NULL, GS_PSM_CT32, theme->useDefault);
++    }
++    theme->glyphSetLoaded = set;
++}
++
++void thmGlyphSetRefresh(void)
++{
++    if (gTheme != NULL && ripps2GlyphSetFor(gTheme->glyphSetDef) != gTheme->glyphSetLoaded)
++        thmGlyphSetLoad(gTheme, ripps2GlyphSetFor(gTheme->glyphSetDef), 1);
++}
++
+ static void thmSetColors(theme_t *theme)
+ {
+     memcpy(theme->bgColor, gDefaultBgColor, 3);
+@@ -4809,6 +4922,11 @@ static int thmLoad(const char *themePath)
+     thmLoadResource(&newT->textures[RIPPS2_PS2_LOGO], RIPPS2_PS2_LOGO, themePath, GS_PSM_CT32, 1);
+     thmLoadResource(&newT->textures[RIPPS2_GRID_ICONS], RIPPS2_GRID_ICONS, themePath, GS_PSM_CT32, 1); // RIPPS2: grid icons
+     thmLoadResource(&newT->textures[R2_ICON], R2_ICON, themePath, GS_PSM_CT32, newT->useDefault); // RIPPS2: L2+R2 Random
++    // RIPPS2 build 90: the D-pad glyphs (Coverflow's drive glyphs, a glyph set's Up and Down) load like the others
++    thmLoadResource(&newT->textures[RIPPS2_DPAD_UP], RIPPS2_DPAD_UP, themePath, GS_PSM_CT32, newT->useDefault);
++    thmLoadResource(&newT->textures[RIPPS2_DPAD_DOWN], RIPPS2_DPAD_DOWN, themePath, GS_PSM_CT32, newT->useDefault);
++    snprintf(newT->glyphPath, sizeof(newT->glyphPath), "%s", themePath != NULL ? themePath : "");
++    newT->glyphSetLoaded = RIPPS2_GLYPHSET_THEME;
+ 
+     // Embedded attribute glyphs (#Format/#Media/Aspect/Rating/Scan/Vmode values): BUILT-IN theme
+     // ONLY. a1ae5e5e decoded these for every theme so badges could fall back to them on disk themes
+@@ -4869,6 +4987,31 @@ static int thmLoad(const char *themePath)
+         if (configGetStr(themeConfig, "category_order", &v) && v != NULL) // launch_disc_first | memory_files_first
+             newT->catSwapDef = !strcasecmp(v, "memory_files_first") ? 1 : !strcasecmp(v, "launch_disc_first") ? 0 : -1;
+     }
++    // RIPPS2 build 90: the hint bar and the glyphs (ripps2hints.c has the whole list): hints_hide=star,view
++    // hints_order=run,info,menu hints_labels=0|1 hints_layout=row|column hints_spacing=28
++    // glyph_set=theme|ripps2|standard|white. Controller Settings > Hints and Glyphs overrides each.
++    {
++        const char *v = NULL;
++        int hidden[RIPPS2_HINT_COUNT], n, i;
++        newT->hintsLabelsDef = newT->hintsColumnDef = -1;
++        newT->hintsSpacing = 28;
++        if (configGetStr(themeConfig, "hints_hide", &v) && v != NULL) {
++            n = ripps2HintParse(v, hidden, RIPPS2_HINT_COUNT);
++            for (i = 0; i < n; i++)
++                newT->hintsHide |= 1 << hidden[i];
++        }
++        if (configGetStr(themeConfig, "hints_order", &v) && v != NULL)
++            newT->hintsOrderCount = ripps2HintParse(v, newT->hintsOrder, RIPPS2_HINT_COUNT);
++        if (configGetInt(themeConfig, "hints_labels", &intValue))
++            newT->hintsLabelsDef = intValue ? 1 : 0;
++        if (configGetStr(themeConfig, "hints_layout", &v) && v != NULL)
++            newT->hintsColumnDef = !strcasecmp(v, "column") ? 1 : !strcasecmp(v, "row") ? 0 : -1;
++        if (configGetInt(themeConfig, "hints_spacing", &intValue) && intValue >= 12 && intValue <= 96)
++            newT->hintsSpacing = intValue;
++        newT->glyphSetDef = configGetStr(themeConfig, "glyph_set", &v) ? ripps2GlyphSetParse(v) : RIPPS2_GLYPHSET_THEME;
++        if (ripps2GlyphSetFor(newT->glyphSetDef) != RIPPS2_GLYPHSET_THEME)
++            thmGlyphSetLoad(newT, ripps2GlyphSetFor(newT->glyphSetDef), 0); // never drawn yet: no VRAM to drop
++    }
+ 
+     configFree(themeConfig); // all themeConfig reads are done now (last was use_settings_bg above)
+ 
