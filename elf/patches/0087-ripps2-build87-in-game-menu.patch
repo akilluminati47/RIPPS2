@@ -1291,7 +1291,7 @@ index b914c9c..333fdb6 100644
    string: Boot Loader
  - label: HINT_RIPPS2_BOOT_LOADER
 diff --git a/src/dialogs.c b/src/dialogs.c
-index e46cc3f..b328a7b 100644
+index e46cc3f..6a9326d 100644
 --- a/src/dialogs.c
 +++ b/src/dialogs.c
 @@ -341,6 +341,11 @@ struct UIItem diaConfig[] = {
@@ -1300,7 +1300,7 @@ index e46cc3f..b328a7b 100644
  
 +    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_IGR_MENU}}},
 +    {UI_SPACER},
-+    {UI_BOOL, CFG_RIPPS2_IGRMENU, 1, 1, _STR_HINT_RIPPS2_IGR_MENU, 0, 0, {.intvalue = {1, 1}}},
++    {UI_BOOL, CFG_RIPPS2_IGRMENU, 1, 1, _STR_HINT_RIPPS2_IGR_MENU, 0, 0, {.intvalue = {0, 0}}},
 +    {UI_BREAK},
 +
      {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_CUSTOM_SETTINGS_PATH}}},
@@ -1364,14 +1364,14 @@ index 0717b69..2617044 100644
          configSetInt(configOPL, "ripps2_orb_cycle", gRipps2OrbCycle);
          configSetInt(configOPL, "ripps2_orb_speed", gRipps2OrbSpeed);
 diff --git a/src/ripps2ui.c b/src/ripps2ui.c
-index 8fc178e..040f7fd 100644
+index 8fc178e..ec6796b 100644
 --- a/src/ripps2ui.c
 +++ b/src/ripps2ui.c
 @@ -62,6 +62,7 @@ static const char *formationName[] = {
  #define FORMATION_COUNT ((int)(sizeof(formationName) / sizeof(formationName[0])))
  int gRipps2Formation = 0;
  int gRipps2Random = RIPPS2_RANDOM_ON;
-+int gRipps2IgrMenu = 1; // build 87: In-Game Menu (General)
++int gRipps2IgrMenu = 0; // build 87: In-Game Menu (General); off until consoles have shown it safe (PCSX2 cannot run it)
  int gRipps2OrbOff = 0, gRipps2OrbCycle = 0, gRipps2OrbSpeed = 1, gRipps2OrbPaths = 0, gRipps2OrbHeight = 0;
  
  int ripps2FormationCount(void)

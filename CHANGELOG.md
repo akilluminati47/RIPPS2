@@ -3,12 +3,11 @@
 ## Build 87 (testing), changes since build 86
 
 ### In-game menu
-- **L1+L2+R1+R2+SELECT+START pauses the game** under a plain panel (no animation) instead of leaving it at once:
+- **Settings > General > In-Game Menu** (off until consoles have shown it safe: turn it on to test). With it on, **L1+L2+R1+R2+SELECT+START pauses the game** under a plain panel (no animation) instead of leaving it at once:
   - **Resume** goes back to the game.
   - **Achievements** is SpiritofRA for the game you are in: how many achievements you have (as your last CHECK GAME SUPPORT left them, plus the ones unlocked this session) and whether tracking is on.
   - **Exit Game** leaves for your Exit To path, as the combo always did: RIPPS2, the boot lock's loader or the browser. It takes a second press, so a slip does not cost your progress.
 - Up and down choose, confirm picks, and the other face button or START resumes. The power button and L1+L2+R1+R2+L3+R3 (power off) work as before.
-- **Settings > General > In-Game Menu** turns it off; the combo then leaves at once, as before.
 - For games RIPPS2 starts with its own loader (USB, internal HDD, SMB, MMCE, iLink, MX4SIO, and discs from Launch Disc with achievements). Neutrino games keep the old combo for now.
 - The panel is drawn into the frame the game is showing. A game that shows its frame in a way RIPPS2 cannot see gets the old behavior: the combo leaves it. PCSX2 cannot show the menu (it has no data breakpoints), so this is for real consoles.
 
