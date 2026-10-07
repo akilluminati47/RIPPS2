@@ -1,5 +1,10 @@
 ﻿# Drives PCSX2 for RIPPS2 testing: launch an ELF, press pad buttons (via the keyboard
-# bindings added to [Pad1]), and take F8 screenshots into Documents\PCSX2\snaps.
+# bindings added to [Pad1]), and take F8 screenshots into the lab's snaps folder.
+#
+# It drives the RIPPS2 lab, a portable PCSX2 (portable.txt) with its own inis, memory cards
+# (RIPPS2-CM1/CM2 only) and snaps, so a test never touches the user's own PCSX2 settings or
+# cards. Point the lab at a test disk with HddFile in the lab's inis\PCSX2.ini. PINE is on
+# (slot 28012) for scripts that read memory or save states without the window in front.
 #
 #   ps2drive.ps1 -Elf <path> -Steps "wait:12,shot,down,down,shot,cross,wait:3,shot" [-Keep]
 #
@@ -14,8 +19,9 @@ param(
   [switch]$Attach   # drive the PCSX2 that is already running instead of launching
 )
 
-$exe = "B:\Emulation\PlayStation\PCSX2\pcsx2-v2.9.92-windows-x64-Qt\pcsx2-qt.exe"
-$snaps = "$env:USERPROFILE\Documents\PCSX2\snaps"
+$lab = "B:\Emulation\PlayStation\PCSX2\ripps2-lab"
+$exe = "$lab\pcsx2-qt.exe"
+$snaps = "$lab\snaps"
 
 Add-Type @"
 using System;
@@ -96,8 +102,8 @@ function Press([int]$code, [int]$ms = 100) {
 
 $before = @(Get-ChildItem $snaps -Filter *.png -ErrorAction SilentlyContinue | ForEach-Object FullName)
 if ($Attach) {
-  $p = Get-Process pcsx2-qt -ErrorAction SilentlyContinue | Select-Object -First 1
-  if (-not $p) { "no running PCSX2 to attach to"; return }
+  $p = Get-Process pcsx2-qt -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq $exe } | Select-Object -First 1
+  if (-not $p) { "no running lab PCSX2 to attach to"; return }
   "attached to pid $($p.Id)"
 } else {
   $launchArgs = @("-fastboot", "-elf", "`"$Elf`"")
@@ -144,18 +150,4 @@ if (-not $Keep -and -not $p.HasExited) {
   if (-not $p.HasExited -and (Focus $p)) { Press 0x0D }
   for ($i = 0; $i -lt 16 -and -not $p.HasExited; $i++) { Start-Sleep -Milliseconds 500; $p.Refresh() }
   if ($p.HasExited) { "PCSX2 closed" } else { "PCSX2 still open" }
-}
-
-# PCSX2 saves its window position on exit: put the user's own geometry back from the backup
-$p.Refresh()
-if ($p.HasExited) {
-  $ini = "$env:USERPROFILE\Documents\PCSX2\inis\PCSX2.ini"
-  $bak = "$ini.ripps2-backup"
-  if (Test-Path $bak) {
-    $orig = @{}
-    foreach ($k in 'MainWindowGeometry', 'MainWindowState') { $orig[$k] = (Select-String -Path $bak -Pattern "^$k = " | Select-Object -First 1).Line }
-    $c = Get-Content $ini | ForEach-Object { $l = $_; foreach ($k in $orig.Keys) { if ($orig[$k] -and $l -match "^$k = ") { $l = $orig[$k] } }; $l }
-    [IO.File]::WriteAllText($ini, (($c -join "`r`n") + "`r`n"), (New-Object Text.UTF8Encoding $false)) # no BOM: the file never had one
-    "restored your PCSX2 window geometry"
-  }
 }

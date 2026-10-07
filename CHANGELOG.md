@@ -6,7 +6,6 @@
 - **BIOS Sounds > Rip now makes the boot and the game launch too.** On the console those are system music: notes played on the BIOS's own instruments. RIPPS2 plays them the way the console does (every instrument layer, its envelope, the noise voices, each channel's volume and pan, then a hall) and saves them as `boot.adp` and `launch.adp`. Fifteen sounds in all; a few seconds of work, with the progress on screen.
 
 ### PS1 games
-- **Ember's BIOS from your own console.** Every PS2 carries a PS1 BIOS at the start of its own (the part it runs PS1 discs with). When an Ember game finds no `bios.bin`, RIPPS2 offers to make it from that, checked first, and starts the game. If a game will not run with it, a PS1 console's BIOS still goes in the same place.
 - **RIPPOPS.** Sony's `POPS.ELF` and `POPS_IOX.PAK` are not in any PS2's BIOS, so they cannot be ripped from the console. When POPSTARTER finds them missing beside your games but you have them in a `POPS` folder on another drive (USB, MMCE, the HDD or a memory card), RIPPS2 offers to copy them over and start the game.
 
 ### Settings

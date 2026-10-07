@@ -1,6 +1,6 @@
-"""Build 89: BIOS Sounds > Rip also plays the boot and the PS2 logo sequences; Ember's bios.bin from the console's
-own ROM; RIPPOPS; Neutrino's automatic -logo after -bsd; the About credits (MCKILLA); the Settings scroll bar and
-the right stick's peek.
+"""Build 89: BIOS Sounds > Rip also plays the boot and the PS2 logo sequences; RIPPOPS; Neutrino's automatic -logo
+after -bsd; the About credits (MCKILLA); the Settings scroll bar and the right stick's peek. Ember's bios.bin is
+never made from the PS2's ROM (tested: Ember garbles with it).
 
 Static checks on the patched tree; then, with a C compiler, the ripper run on a made-up SNDIMAGE that carries a
 one-note sequence on a one-instrument bank (no BIOS needed), which must give 15 sounds."""
@@ -24,12 +24,14 @@ if '{"SNDBOOTS", "boot.adp"}' not in rip or '{"SNDLOGOS", "launch.adp"}' not in 
 if 'unsigned long long pos = 0, step' not in rip:
     fail.append('the sequence voices must read their samples in fixed point (float drift detunes them)')
 
-# Ember's BIOS from the ROM, offered where a launch finds none
-if '0xBFC00000' not in ember or '"System ROM Version"' not in ember:
-    fail.append('the PS1 BIOS must come from the ROM and be checked by its version string')
+# Ember's bios.bin is never made from the PS2's ROM. Tested in PCSX2 with Digimon World: a PS1 console's BIOS
+# (SCPH-1001) boots it; the PS1 part of a PS2 ROM (ripped, or the exact first 512 KB of a dump) shows a garbled
+# text screen. A launch with no bios.bin names the missing file, as in build 88.
+if '0xBFC00000' in ember or 'ripps2EmberBiosOffer' in rd('include/cuesupport.h'):
+    fail.append('Ember must not be offered a bios.bin made from the PS2 ROM (Ember garbles with it)')
 for f in ('src/bdmsupport.c', 'src/ethsupport.c', 'src/mmcesupport.c', 'src/udpfssupport.c'):
-    if 'int made = ripps2EmberBiosOffer(biosPath);' not in rd(f):
-        fail.append('%s must offer to make bios.bin' % f)
+    if 'guiMsgBoxMissing(_l(_STR_EMBER_BIOS_MISSING), biosPath);' not in rd(f):
+        fail.append('%s must name the missing bios.bin' % f)
 
 # RIPPOPS
 if 'vcdFindPopsElsewhere(devPrefix)' not in vcd or 'vcdCopyFile(src, path)' not in vcd:
@@ -159,5 +161,5 @@ int main(int argc, char **argv)
             if r.returncode:
                 fail.append('the ripper must play a made-up sequence too (%d): %s' % (r.returncode, r.stdout.strip()))
 
-print('\n'.join(fail) or 'build89: boot and launch ripped, Ember BIOS, RIPPOPS, -logo after -bsd, MCKILLA credited, scroll bar and peek OK')
+print('\n'.join(fail) or 'build89: boot and launch ripped, no ROM bios.bin for Ember, RIPPOPS, -logo after -bsd, MCKILLA credited, scroll bar and peek OK')
 sys.exit(1 if fail else 0)
