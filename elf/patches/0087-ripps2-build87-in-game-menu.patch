@@ -254,10 +254,10 @@ index 6cd80e0..34ecf08 100644
  .ent Disable_GSBreakpoint
 diff --git a/ee_core/src/igrmenu.c b/ee_core/src/igrmenu.c
 new file mode 100644
-index 0000000..2338f23
+index 0000000..2ae7ac2
 --- /dev/null
 +++ b/ee_core/src/igrmenu.c
-@@ -0,0 +1,720 @@
+@@ -0,0 +1,724 @@
 +/*
 +  igrmenu.c RIPPS2's in-game menu (build 87)
 +
@@ -421,7 +421,7 @@ index 0000000..2338f23
 +    u8 colour;
 +    u8 glyph[IGRM_CHARS];
 +} igrm_line_t;
-+static igrm_line_t igrmLine[IGRM_LINES];
++static igrm_line_t *igrmLine; // on the IGR thread's stack while the menu is open: ee_core has no room in .bss
 +static int igrmLines;
 +static int igrmBarY;               // the selected row's bar, in panel units
 +static int igrmSx, igrmSy, igrmBpp; // scale, and the shown frame's bytes per pixel
@@ -685,8 +685,10 @@ index 0000000..2338f23
 +// elf/tests: the panel as RGB rows at the scale given; returns its height
 +int igrmTestRender(const igrm_info_t *in, int sel, int armed, int sx, int sy, u8 *rgb)
 +{
++    static igrm_line_t lines[IGRM_LINES];
 +    int y;
 +
++    igrmLine = lines;
 +    igrmSx = sx;
 +    igrmSy = sy;
 +    igrmBpp = 3;
@@ -872,8 +874,10 @@ index 0000000..2338f23
 +    u16 held, now, pressed, ok, back;
 +    int sel = 0, armed = 0, result = IGR_MENU_RESUME, presses = 0, power = 1, i;
 +    char gameId[CORE_GAME_ID_MAX_LEN + 1];
++    igrm_line_t lines[IGRM_LINES];
 +    igrm_info_t info;
 +
++    igrmLine = lines;
 +    if (!igrmFindFrame())
 +        return IGR_MENU_CANNOT_DRAW;
 +    // the game's own transfers finish first; a VIF1 stalled on an interrupt the pause holds cannot take ours
@@ -993,7 +997,7 @@ index a911ef2..29a5cd8 100644
      set_ipconfig();
  
 diff --git a/ee_core/src/padhook.c b/ee_core/src/padhook.c
-index 798123e..870be65 100644
+index 798123e..414aa9a 100644
 --- a/ee_core/src/padhook.c
 +++ b/ee_core/src/padhook.c
 @@ -38,6 +38,7 @@
@@ -1004,10 +1008,17 @@ index 798123e..870be65 100644
  
  /* scePadPortOpen & scePad2CreateSocket prototypes */
  static int (*scePadPortOpen)(int port, int slot, void *addr);
-@@ -57,6 +58,102 @@ static int IGR_Intc_ID = -1;
- #define IGR_STACK_SIZE (4 * 1024)
- static u8 IGR_Stack[IGR_STACK_SIZE] __attribute__((aligned(16)));
+@@ -55,7 +56,107 @@ static int IGR_Intc_ID = -1;
  
+ /* IGR thread stack & stack size */
+ #define IGR_STACK_SIZE (4 * 1024)
+-static u8 IGR_Stack[IGR_STACK_SIZE] __attribute__((aligned(16)));
++// RIPPS2 build 87: not in .bss any more. ee_core's stack is what ram84 leaves above .bss (linkfile) and the
++// in-game menu needed the room, so the thread runs on the top of ee_core's own main stack instead, as
++// ORBIT's IGR does: ee_core's main thread only uses it before the game starts (the game's ExecPS2 ends
++// that thread), and this thread is first created on a game's IOP reset, so the two never meet.
++#define IGR_Stack ((u8 *)&_end - IGR_STACK_SIZE) // _end (declared below): linkfile's 0x00097000
++
 +/*
 +  RIPPS2 build 87: the in-game menu (igrmenu.c). The pause is ORBIT's (danielnuld/ps2-launcher,
 +  third_party/neutrino-igr/igr.c, AFL-3.0): the game's threads stop and its interrupts are held, and
@@ -1103,11 +1114,10 @@ index 798123e..870be65 100644
 +    while (*R_EE_GS_CSR & 0x100) {
 +    };
 +}
-+
+ 
  /* Extern symbol */
  extern void *_gp;
- extern void *_end;
-@@ -142,9 +239,32 @@ static void IGR_Thread(void *arg)
+@@ -142,9 +243,32 @@ static void IGR_Thread(void *arg)
      USE_LOCAL_EECORE_CONFIG;
      u32 Cop0_Perf;
  
@@ -1143,7 +1153,7 @@ index 798123e..870be65 100644
  
      DPRINTF("IGR thread woken up!\n");
  
-@@ -207,7 +327,8 @@ static void IGR_Thread(void *arg)
+@@ -207,7 +331,8 @@ static void IGR_Thread(void *arg)
                  DBGCOL(0x00FF00, IGR, "Stopping GSM");
              DPRINTF("Stopping GSM...\n");
              DisableGSM();
@@ -1153,7 +1163,7 @@ index 798123e..870be65 100644
  
          if (config->gCheatList) {
              if (EnableDebug)
-@@ -372,6 +493,20 @@ static int IGR_Intc_Handler(int cause)
+@@ -372,6 +497,20 @@ static int IGR_Intc_Handler(int cause)
          ee_kmode_exit();
      }
  
@@ -1174,7 +1184,7 @@ index 798123e..870be65 100644
      // If power button or combo is press
      // Disable all interrupts & reset some peripherals.
      // Suspend and Change priority of all threads other then our IGR thread
-@@ -470,6 +605,7 @@ void Install_IGR(void)
+@@ -470,6 +609,7 @@ void Install_IGR(void)
      Power_Button.vb_count = 0;
  
      // Init runtime Pad_Data information

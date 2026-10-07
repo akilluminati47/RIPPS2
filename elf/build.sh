@@ -93,7 +93,11 @@ make clean
 # RIPPS2_MAKE_FLAGS: extra make flags, e.g. DEBUG=1 EESIO_DEBUG=1 for a build that logs over EE SIO
 # RETROACHIEVEMENTS=1 (build 70, SpiritofRA): RiptOPL's RetroAchievements flavour, the shipping loader
 # plus achievements; telemetry stays off until the user turns it on (Achievements in the main menu)
-make LOCALVERSION=RIPPS2 DIRTY= RETROACHIEVEMENTS=1 ${RIPPS2_MAKE_FLAGS:-} release
+make LOCALVERSION=RIPPS2 DIRTY= RETROACHIEVEMENTS=1 ${RIPPS2_MAKE_FLAGS:-} release || {
+  # build 87: an ee_core over its stack floor still leaves its map: say by how much
+  [ -f ee_core/ee_core.map ] && grep -E '(_end_bss|_stack_size|_stack) = ' ee_core/ee_core.map | sed 's/^ */ee_core: /'
+  exit 1
+}
 
 # build 87: ee_core's room. Its stack is what ram84 leaves above .bss (ee_core/linkfile refuses under 3 KB);
 # the log shows how much a change to the in-game code took
