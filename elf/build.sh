@@ -91,7 +91,9 @@ echo "BearSSL: $(ls "$SRC"/bearssl-obj/*.o | wc -l) objects"
 rm -rf "$SRC/thirdparty/libsmslite"
 mkdir -p "$SRC/thirdparty"
 cp -r "$HERE/libsmslite" "$SRC/thirdparty/libsmslite"
-make -C "$SRC/thirdparty/libsmslite" all
+# a DEBUG=1 build (RIPPS2_MAKE_FLAGS) gets the player's own log lines too
+case "${RIPPS2_MAKE_FLAGS:-}" in *DEBUG=1*) SMS_CF=-DSMSLITE_DEBUG ;; *) SMS_CF= ;; esac
+make -C "$SRC/thirdparty/libsmslite" all SMSLITE_CFLAGS="$SMS_CF"
 cp -f "$SRC/thirdparty/libsmslite/lib/libsmslite.a" "$SRC/lib/libsmslite.a"
 echo "libsmslite: $(du -k "$SRC/lib/libsmslite.a" | cut -f1) KB"
 

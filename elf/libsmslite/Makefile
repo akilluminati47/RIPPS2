@@ -62,6 +62,9 @@ EE_CFLAGS += \
 	-Wall \
 	-mno-check-zero-division
 
+# RIPPS2: extra flags from the host build (elf/build.sh passes -DSMSLITE_DEBUG for a DEBUG=1 build)
+EE_CFLAGS += $(SMSLITE_CFLAGS)
+
 # --- object lists -----------------------------------------------------
 
 CORE_OBJS := \

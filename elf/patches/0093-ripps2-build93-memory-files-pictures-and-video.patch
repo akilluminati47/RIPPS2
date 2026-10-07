@@ -76,10 +76,10 @@ index 25a1f91..f4fad92 100644
      }
 diff --git a/src/ripps2media.c b/src/ripps2media.c
 new file mode 100644
-index 0000000..a4d10f3
+index 0000000..18f24a3
 --- /dev/null
 +++ b/src/ripps2media.c
-@@ -0,0 +1,471 @@
+@@ -0,0 +1,476 @@
 +/*
 +  RIPPS2 build 93: pictures and video in Memory Files.
 +
@@ -476,6 +476,7 @@ index 0000000..a4d10f3
 +            smsLitePause(paused);
 +        }
 +        if (getKeyOn(guiCancelKey()) || getKeyOn(KEY_SELECT)) {
++            LOG("MEDIA: video stop asked\n");
 +            smsLitePause(0);
 +            smsLiteStop();
 +        }
@@ -515,15 +516,19 @@ index 0000000..a4d10f3
 +    if (tid >= 0)
 +        StartThread(tid, NULL);
 +
++    LOG("MEDIA: video %s\n", path);
 +    r = smsLitePlayFullscreen(path);
++    LOG("MEDIA: video returned %d\n", r);
 +
 +    videoPadRun = 0;
 +    while (tid >= 0 && !videoPadDone)
 +        DelayThread(5000);
 +    smsLitePause(0);
++    LOG("MEDIA: pad thread done\n");
 +
 +    rmSetMode(1);
 +    thmReloadScreenExtents();
++    LOG("MEDIA: display back\n");
 +    if (music)
 +        bgmStart();
 +    if (r != SMSLITE_OK)
