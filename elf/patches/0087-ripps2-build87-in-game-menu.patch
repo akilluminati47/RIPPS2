@@ -1,0 +1,1435 @@
+diff --git a/Makefile b/Makefile
+index 7eca4a8..94b5739 100644
+--- a/Makefile
++++ b/Makefile
+@@ -309,6 +309,12 @@ endif
+ ifeq ($(RIPPS2_CD_TEST),1)
+   EE_CFLAGS += -DRIPPS2_CD_TEST
+ endif
++# RIPPS2 build 87: a test build whose in-game menu shows its own frame when GSM saw none. PCSX2 has no
++# data breakpoints, so there it never does, and the pause, the panel, RESUME and EXIT GAME could not be
++# tried otherwise. Never for a release.
++ifeq ($(RIPPS2_IGR_TEST),1)
++  EECORE_EXTRA_FLAGS += IGR_MENU_TEST=1
++endif
+ # RIPPS2: a test build whose IO worker is not woken for a deferred save (the stall seen on consoles),
+ # to prove the save still runs. Never for a release.
+ ifeq ($(RIPPS2_PERF_HUD),1)
+diff --git a/ee_core/Makefile b/ee_core/Makefile
+index df1c7f8..a23b94a 100644
+--- a/ee_core/Makefile
++++ b/ee_core/Makefile
+@@ -18,7 +18,7 @@ IGSCORE_EE_OBJS = igs_api.o
+ CHEATCORE_EE_OBJS = cheat_engine.o cheat_api.o
+ 
+ EE_OBJS = main.o syshook.o iopmgr.o modmgr.o util.o patches.o patches_asm.o \
+-	  padhook.o cd_igr_rpc.o tlb.o asm.o crt0.o $(GSMCORE_EE_OBJS) $(CHEATCORE_EE_OBJS)
++	  padhook.o igrmenu.o cd_igr_rpc.o tlb.o asm.o crt0.o $(GSMCORE_EE_OBJS) $(CHEATCORE_EE_OBJS)
+ MAPFILE = ee_core.map
+ 
+ EE_INCS := -I$(PS2SDK)/ee/include -I$(PS2SDK)/common/include -I$(PS2SDK)/ports/include -Iinclude -I.
+@@ -64,6 +64,11 @@ EE_OBJS += ra.o ra_overlay.o
+ EE_CFLAGS += -DRETROACHIEVEMENTS
+ endif
+ 
++# RIPPS2 build 87: the in-game menu's PCSX2 test flavour (igrmenu.c). Never for a release.
++ifeq ($(IGR_MENU_TEST),1)
++EE_CFLAGS += -DIGR_MENU_TEST
++endif
++
+ EE_OBJS := $(EE_OBJS:%=$(EE_OBJS_DIR)%)
+ 
+ EE_LDFLAGS = -nostartfiles -nostdlib -Tlinkfile -L$(PS2SDK)/ee/lib -s -Wl,-Map,$(MAPFILE)
+diff --git a/ee_core/include/coreconfig.h b/ee_core/include/coreconfig.h
+index cd2a3b7..3358490 100644
+--- a/ee_core/include/coreconfig.h
++++ b/ee_core/include/coreconfig.h
+@@ -103,6 +103,17 @@ struct EECoreConfig_t
+        user memory only from ModuleStorageEnd up. */
+     void *raWorkArea;
+ #endif
++
++    /* RIPPS2 build 87: the in-game menu (igrmenu.c). APPENDED, like the block above.
++       IgrMenu: the IGR combo pauses the game under the menu (0: it leaves at once, as OPL's did).
++       IgrConfirmCircle: RIPPS2's confirm button is Circle (Cross otherwise).
++       RaKnown, RaTotal, RaUnlocked: RA/<serial>.inf as the launch found it, the numbers YOUR ACCOUNT
++       shows (RaUnlocked -1: a PC client too old to say). */
++    int IgrMenu;
++    int IgrConfirmCircle;
++    int RaKnown;
++    int RaTotal;
++    int RaUnlocked;
+ };
+ 
+ #define USE_LOCAL_EECORE_CONFIG struct EECoreConfig_t *config = &g_ee_core_config;
+diff --git a/ee_core/include/gsm_api.h b/ee_core/include/gsm_api.h
+index 129986d..c5caca3 100644
+--- a/ee_core/include/gsm_api.h
++++ b/ee_core/include/gsm_api.h
+@@ -16,4 +16,6 @@ void Enable_GSBreakpoint(void);
+ void Disable_GSBreakpoint(void);
+ void EnableGSM(void);
+ void DisableGSM(void);
++void EnableGSMCapture(void);  // RIPPS2 build 87: the in-game menu's record of the shown frame, nothing forced
++void DisableGSMCapture(void); // a no-op when it was never armed
+ void setdve_576P(void);
+diff --git a/ee_core/include/igrmenu.h b/ee_core/include/igrmenu.h
+new file mode 100644
+index 0000000..d260ad8
+--- /dev/null
++++ b/ee_core/include/igrmenu.h
+@@ -0,0 +1,23 @@
++/*
++  igrmenu.h RIPPS2's in-game menu (build 87); see src/igrmenu.c.
++  Licenced under Academic Free License version 3.0
++  Review OpenUsbLd README & LICENSE files for further details.
++*/
++
++#ifndef IGRMENU_H
++#define IGRMENU_H
++
++#include <tamtypes.h>
++
++enum {
++    IGR_MENU_RESUME = 0,  // back to the game
++    IGR_MENU_EXIT,        // EXIT GAME, or the power button twice: the Exit To path, as the combo always did
++    IGR_MENU_POWEROFF,    // the power button once
++    IGR_MENU_CANNOT_DRAW, // no frame to draw on (GSM saw none, or a format the panel cannot write): leave as before
++};
++
++// Draws the panel over the paused game and reads the pad until a choice is made. The caller has
++// stopped every game thread and held the game's interrupts; buttons() returns libpad's mask (1 = held).
++int IGR_MenuRun(u16 (*buttons)(void));
++
++#endif
+diff --git a/ee_core/include/ra.h b/ee_core/include/ra.h
+index 4382134..b10a9a5 100644
+--- a/ee_core/include/ra.h
++++ b/ee_core/include/ra.h
+@@ -17,4 +17,7 @@ void RA_SetupWatchList(void);
+ /* Per-frame hook, called from the VBLANK_END interrupt handler. */
+ void RA_OnVblank(void);
+ 
++/* RIPPS2 build 87, for the in-game menu: 1 while a watch list streams to the PC. */
++int RA_Tracking(void);
++
+ #endif
+diff --git a/ee_core/include/ra_overlay.h b/ee_core/include/ra_overlay.h
+index e0d397c..01b4868 100644
+--- a/ee_core/include/ra_overlay.h
++++ b/ee_core/include/ra_overlay.h
+@@ -18,4 +18,7 @@ void *RA_OverlayBadgeBuffer(void);
+    only. */
+ void RA_OverlayOnVblank(unsigned int frames);
+ 
++/* RIPPS2 build 87: the unlocks the PC reported this session, for the in-game menu. */
++unsigned int RA_OverlayUnlocks(void);
++
+ #endif
+diff --git a/ee_core/src/gsm_api.c b/ee_core/src/gsm_api.c
+index 16b474f..58342c5 100644
+--- a/ee_core/src/gsm_api.c
++++ b/ee_core/src/gsm_api.c
+@@ -211,6 +211,44 @@ void DisableGSM(void)
+     Remove_GSHandler();
+ }
+ 
++/*
++  RIPPS2 build 87: capture only, for the in-game menu (igrmenu.c). It must know which frame the game
++  shows, and the GS registers that say so are write-only: GSHandler records the game's PMODE, SMODE2,
++  DISPFB and DISPLAY writes in GSMSourceGSRegs and lets every write through unchanged (GSMCaptureOnly in
++  gsm_engine.S). No SetGsCrt hook and no forced mode; writes only, so reads such as CSR polling stay
++  untrapped. Armed by ee_core's init when In-Game Menu is on and GSM itself is not.
++*/
++extern unsigned char GSMCaptureOnly;
++extern void Enable_GSCapture(void);
++static int GSMCaptureArmed;
++
++void EnableGSMCapture(void)
++{
++    GSMCaptureOnly = 1;
++
++    DI();
++    ee_kmode_enter();
++    KSEG_backup[0] = *(volatile u32 *)0x80000100;
++    KSEG_backup[1] = *(volatile u32 *)0x80000104;
++    *(volatile u32 *)0x80000100 = MAKE_J((int)GSHandler);
++    *(volatile u32 *)0x80000104 = NOP;
++    ee_kmode_exit();
++    Enable_GSCapture();
++    EI();
++
++    FlushCache(0);
++    FlushCache(2);
++    GSMCaptureArmed = 1;
++}
++
++void DisableGSMCapture(void)
++{
++    if (!GSMCaptureArmed)
++        return;
++    Remove_GSHandler();
++    GSMCaptureArmed = 0;
++}
++
+ /*--------------------------------------------*/
+ /* Set up the DVE for 576P mode               */
+ /*--------------------------------------------*/
+diff --git a/ee_core/src/gsm_engine.S b/ee_core/src/gsm_engine.S
+index 6cd80e0..34ecf08 100644
+--- a/ee_core/src/gsm_engine.S
++++ b/ee_core/src/gsm_engine.S
+@@ -68,6 +68,9 @@ GSMFlags: .space 19
+ 
+ GSMAdapts:          .space 18
+ 
++.globl GSMCaptureOnly                               # RIPPS2 build 87: 1 = record the shown frame, change nothing
++GSMCaptureOnly:     .byte 0
++
+ .p2align 4                                          # align 16 bytes (IMPORTANT!!!)
+ 
+ ###############################
+@@ -478,6 +481,34 @@ have_some_write:                                    # Opcode is a write, so we m
+     nop
+     ld      $a1, 0($a1)                             # a1 = value in rt
+ 
++# RIPPS2 build 87: capture only, for the in-game menu (igrmenu.c). Remember what the game shows and let
++# every write through unchanged; nothing below runs (no forced mode, no adaptation)
++    la      $v1, GSMCaptureOnly
++    lbu     $v1, 0($v1)
++    beqz    $v1, gsm_full_write
++    nop
++    addi    $v1, $v0, -GS_PMODE
++    beql    $v1, $zero, not_wanted_reg
++    sd      $a1, Source_PMODE($s0)
++    addi    $v1, $v0, -GS_SMODE2
++    beql    $v1, $zero, not_wanted_reg
++    sd      $a1, Source_SMODE2($s0)
++    addi    $v1, $v0, -GS_DISPFB1
++    beql    $v1, $zero, not_wanted_reg
++    sd      $a1, Source_DISPFB1($s0)
++    addi    $v1, $v0, -GS_DISPFB2
++    beql    $v1, $zero, not_wanted_reg
++    sd      $a1, Source_DISPFB2($s0)
++    addi    $v1, $v0, -GS_DISPLAY1
++    beql    $v1, $zero, not_wanted_reg
++    sd      $a1, Source_DISPLAY1($s0)
++    addi    $v1, $v0, -GS_DISPLAY2
++    beql    $v1, $zero, not_wanted_reg
++    sd      $a1, Source_DISPLAY2($s0)
++    b       not_wanted_reg
++    nop
++
++gsm_full_write:
+     addi    $v1, $v0, -GS_PMODE
+     beqz    $v1, have_PMODE_write                   # in case of  dest == GS_reg_PMODE
+     addi    $v1, $v0, -GS_SMODE1
+@@ -1240,6 +1271,27 @@ Enable_GSBreakpoint:
+     nop
+ .end Enable_GSBreakpoint
+ 
++# RIPPS2 build 87: the in-game menu's capture-only trap. Writes only (DWE, DUE, DKE): the game's CSR
++# polling and every other read run untrapped. Must be executed with interrupts disabled.
++.globl Enable_GSCapture
++.ent Enable_GSCapture
++Enable_GSCapture:
++    li      $a0, TRAP_BASE
++    li      $a1, TRAP_MASK
++    sync.l
++    li      $a2, 0x8000
++    mtbpc   $a2                                     # All breakpoints off (BED = 1)
++    sync.p
++    mtdab   $a0
++    mtdabm  $a1
++    sync.p
++    li      $a2, 0x20280000                         # Data write breakpoint on (DWE, DUE, DKE = 1)
++    mtbpc   $a2
++    sync.p
++    jr      $ra
++    nop
++.end Enable_GSCapture
++
+ # Must be executed with interrupts disabled.
+ .globl Disable_GSBreakpoint
+ .ent Disable_GSBreakpoint
+diff --git a/ee_core/src/igrmenu.c b/ee_core/src/igrmenu.c
+new file mode 100644
+index 0000000..2338f23
+--- /dev/null
++++ b/ee_core/src/igrmenu.c
+@@ -0,0 +1,720 @@
++/*
++  igrmenu.c RIPPS2's in-game menu (build 87)
++
++  Copyright 2026, RIPPS2 contributors
++  Licenced under Academic Free License version 3.0
++  Review OpenUsbLd README & LICENSE files for further details.
++
++  L1+L2+R1+R2+SELECT+START used to leave the game at once. With In-Game Menu on (Settings > General)
++  it pauses the game under a plain panel: RESUME, ACHIEVEMENTS (SpiritofRA: what the console knows
++  about this game's achievements) and EXIT GAME (the Exit To path, so RIPPS2 itself, the boot lock's
++  loader or the browser, as before). No animation: the panel is drawn when it opens and when the
++  choice moves, and nothing in between.
++
++  The method is ORBIT's in-game menu for its Neutrino fork (danielnuld/ps2-launcher,
++  third_party/neutrino-igr/menu.c and igr.c, AFL-3.0), brought over to OPL's core. The game's GS
++  drawing state is write-only, so it is never touched: the panel is rendered here in the shown
++  frame's own pixel format and uploaded into that frame with image transfers through VIF1 DIRECT
++  (PATH2), after a FLUSHA, leaving the game's PATH3 mask alone. The pixels under it are not saved;
++  the game's next frames draw over them. Which frame is shown comes from GSM, which records the
++  game's PMODE, SMODE2, DISPFB and DISPLAY writes (gsm_engine.S; capture only when GSM itself is off).
++
++  IGR_MENU_HOST_TEST builds only the renderer, for elf/tests (a picture of the panel on the PC).
++*/
++
++#ifndef IGR_MENU_HOST_TEST
++#include "ee_core.h"
++#include "coreconfig.h"
++#include "padhook.h"
++#ifdef RETROACHIEVEMENTS
++#include "ra.h"
++#include "ra_overlay.h"
++#endif
++#endif
++#include "igrmenu.h"
++
++// ---- the panel, in its own units (one font pixel at scale 1): 160 x 106, or 320 x 212 at scale 2
++#define PW         160
++#define PH         106
++#define ROW_TITLE  4
++#define ROW_SEP1   14
++#define ROW_ITEM0  18
++#define ITEM_STEP  10
++#define ROW_SEP2   49
++#define ROW_INFO0  53
++#define INFO_STEP  10
++#define ROW_HINT   95
++#define TEXT_X     8
++#define ITEM_X     20
++#define TEXT_CHARS 24 // (PW - 2 * TEXT_X) / 6
++
++enum { C_PANEL, C_BORDER, C_SEP, C_BAR, C_TITLE, C_DIM, C_ITEM, C_SEL, C_TEXT, C_GOLD, C_WARN, C_CROSS, C_CIRCLE, C_COUNT };
++static const u8 igrmRgb[C_COUNT][3] = {
++    {12, 16, 36},    // panel: RIPPS2's night navy
++    {72, 96, 168},   // border
++    {36, 46, 88},    // separators
++    {30, 44, 100},   // the selected row's bar
++    {232, 236, 250}, // title
++    {112, 122, 152}, // quiet text
++    {150, 160, 190}, // items
++    {255, 255, 255}, // the selected item
++    {196, 204, 226}, // page text
++    {255, 204, 96},  // SpiritofRA
++    {255, 150, 120}, // what EXIT GAME costs
++    {124, 178, 240}, // the pad's cross
++    {240, 110, 110}, // the pad's circle
++};
++
++// 5x7 glyphs in 6x8 cells, bit 4 = the left column: ASCII 32..95, then the pad's cross and circle
++// and the selection pointer (codes 1, 2, 3). Lower case draws as upper case, anything else as '?'
++#define G_CROSS   64
++#define G_CIRCLE  65
++#define G_POINTER 66
++static const u8 igrmFont[67][7] = {
++    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, // space
++    {0x04, 0x04, 0x04, 0x04, 0x04, 0x00, 0x04}, // !
++    {0x0e, 0x11, 0x01, 0x02, 0x04, 0x00, 0x04}, // "
++    {0x0e, 0x11, 0x01, 0x02, 0x04, 0x00, 0x04}, // #
++    {0x0e, 0x11, 0x01, 0x02, 0x04, 0x00, 0x04}, // $
++    {0x18, 0x19, 0x02, 0x04, 0x08, 0x13, 0x03}, // %
++    {0x0c, 0x12, 0x14, 0x08, 0x15, 0x12, 0x0d}, // &
++    {0x04, 0x04, 0x08, 0x00, 0x00, 0x00, 0x00}, // '
++    {0x02, 0x04, 0x08, 0x08, 0x08, 0x04, 0x02}, // (
++    {0x08, 0x04, 0x02, 0x02, 0x02, 0x04, 0x08}, // )
++    {0x0e, 0x11, 0x01, 0x02, 0x04, 0x00, 0x04}, // *
++    {0x00, 0x04, 0x04, 0x1f, 0x04, 0x04, 0x00}, // +
++    {0x00, 0x00, 0x00, 0x00, 0x0c, 0x04, 0x08}, // ,
++    {0x00, 0x00, 0x00, 0x1f, 0x00, 0x00, 0x00}, // -
++    {0x00, 0x00, 0x00, 0x00, 0x00, 0x0c, 0x0c}, // .
++    {0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x00}, // /
++    {0x0e, 0x11, 0x13, 0x15, 0x19, 0x11, 0x0e}, // 0
++    {0x04, 0x0c, 0x04, 0x04, 0x04, 0x04, 0x0e}, // 1
++    {0x0e, 0x11, 0x01, 0x02, 0x04, 0x08, 0x1f}, // 2
++    {0x1f, 0x02, 0x04, 0x02, 0x01, 0x11, 0x0e}, // 3
++    {0x02, 0x06, 0x0a, 0x12, 0x1f, 0x02, 0x02}, // 4
++    {0x1f, 0x10, 0x1e, 0x01, 0x01, 0x11, 0x0e}, // 5
++    {0x06, 0x08, 0x10, 0x1e, 0x11, 0x11, 0x0e}, // 6
++    {0x1f, 0x01, 0x02, 0x04, 0x08, 0x08, 0x08}, // 7
++    {0x0e, 0x11, 0x11, 0x0e, 0x11, 0x11, 0x0e}, // 8
++    {0x0e, 0x11, 0x11, 0x0f, 0x01, 0x02, 0x0c}, // 9
++    {0x00, 0x0c, 0x0c, 0x00, 0x0c, 0x0c, 0x00}, // :
++    {0x0e, 0x11, 0x01, 0x02, 0x04, 0x00, 0x04}, // ;
++    {0x02, 0x04, 0x08, 0x10, 0x08, 0x04, 0x02}, // <
++    {0x00, 0x00, 0x1f, 0x00, 0x1f, 0x00, 0x00}, // =
++    {0x08, 0x04, 0x02, 0x01, 0x02, 0x04, 0x08}, // >
++    {0x0e, 0x11, 0x01, 0x02, 0x04, 0x00, 0x04}, // ?
++    {0x0e, 0x11, 0x01, 0x02, 0x04, 0x00, 0x04}, // @
++    {0x0e, 0x11, 0x11, 0x1f, 0x11, 0x11, 0x11}, // A
++    {0x1e, 0x11, 0x11, 0x1e, 0x11, 0x11, 0x1e}, // B
++    {0x0e, 0x11, 0x10, 0x10, 0x10, 0x11, 0x0e}, // C
++    {0x1e, 0x11, 0x11, 0x11, 0x11, 0x11, 0x1e}, // D
++    {0x1f, 0x10, 0x10, 0x1e, 0x10, 0x10, 0x1f}, // E
++    {0x1f, 0x10, 0x10, 0x1e, 0x10, 0x10, 0x10}, // F
++    {0x0e, 0x11, 0x10, 0x17, 0x11, 0x11, 0x0f}, // G
++    {0x11, 0x11, 0x11, 0x1f, 0x11, 0x11, 0x11}, // H
++    {0x0e, 0x04, 0x04, 0x04, 0x04, 0x04, 0x0e}, // I
++    {0x07, 0x02, 0x02, 0x02, 0x02, 0x12, 0x0c}, // J
++    {0x11, 0x12, 0x14, 0x18, 0x14, 0x12, 0x11}, // K
++    {0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x1f}, // L
++    {0x11, 0x1b, 0x15, 0x15, 0x11, 0x11, 0x11}, // M
++    {0x11, 0x11, 0x19, 0x15, 0x13, 0x11, 0x11}, // N
++    {0x0e, 0x11, 0x11, 0x11, 0x11, 0x11, 0x0e}, // O
++    {0x1e, 0x11, 0x11, 0x1e, 0x10, 0x10, 0x10}, // P
++    {0x0e, 0x11, 0x11, 0x11, 0x15, 0x12, 0x0d}, // Q
++    {0x1e, 0x11, 0x11, 0x1e, 0x14, 0x12, 0x11}, // R
++    {0x0f, 0x10, 0x10, 0x0e, 0x01, 0x01, 0x1e}, // S
++    {0x1f, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04}, // T
++    {0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x0e}, // U
++    {0x11, 0x11, 0x11, 0x11, 0x11, 0x0a, 0x04}, // V
++    {0x11, 0x11, 0x11, 0x15, 0x15, 0x15, 0x0a}, // W
++    {0x11, 0x11, 0x0a, 0x04, 0x0a, 0x11, 0x11}, // X
++    {0x11, 0x11, 0x11, 0x0a, 0x04, 0x04, 0x04}, // Y
++    {0x1f, 0x01, 0x02, 0x04, 0x08, 0x10, 0x1f}, // Z
++    {0x0e, 0x08, 0x08, 0x08, 0x08, 0x08, 0x0e}, // [
++    {0x00, 0x10, 0x08, 0x04, 0x02, 0x01, 0x00}, // backslash
++    {0x0e, 0x02, 0x02, 0x02, 0x02, 0x02, 0x0e}, // ]
++    {0x0e, 0x11, 0x01, 0x02, 0x04, 0x00, 0x04}, // ^
++    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1f}, // _
++    {0x00, 0x11, 0x0a, 0x04, 0x0a, 0x11, 0x00}, // cross
++    {0x00, 0x0e, 0x11, 0x11, 0x11, 0x0e, 0x00}, // circle
++    {0x10, 0x18, 0x1c, 0x1e, 0x1c, 0x18, 0x10}, // pointer
++};
++
++// what the pages say, gathered by IGR_MenuRun (or a test)
++typedef struct
++{
++    int confirmCircle;    // RIPPS2's confirm button is Circle
++    const char *gameId;   // "" = none
++    const char *exitPath; // "" = the browser
++    int raBuilt;          // a RetroAchievements build
++    int raKnown;          // RA/<serial>.inf was found at launch
++    int raTotal, raUnlocked;
++    int tracking; // telemetry streams this game
++    int unlocks;  // unlocks the PC reported this session
++} igrm_info_t;
++
++#define IGRM_LINES 14
++#define IGRM_CHARS (TEXT_CHARS + 2)
++typedef struct
++{
++    short y, x, len;
++    u8 colour;
++    u8 glyph[IGRM_CHARS];
++} igrm_line_t;
++static igrm_line_t igrmLine[IGRM_LINES];
++static int igrmLines;
++static int igrmBarY;               // the selected row's bar, in panel units
++static int igrmSx, igrmSy, igrmBpp; // scale, and the shown frame's bytes per pixel
++
++static int igrmGlyph(unsigned char c)
++{
++    if (c >= 1 && c <= 3)
++        return G_CROSS + c - 1;
++    if (c >= 'a' && c <= 'z')
++        c -= 'a' - 'A';
++    if (c < 32 || c > 95)
++        c = '?';
++    return c - 32;
++}
++
++static int igrmLen(const char *s)
++{
++    int n = 0;
++    while (s[n])
++        n++;
++    return n;
++}
++
++static void igrmText(int y, int x, int colour, const char *s)
++{
++    igrm_line_t *l;
++    int i;
++
++    if (igrmLines >= IGRM_LINES)
++        return;
++    l = &igrmLine[igrmLines++];
++    l->y = y;
++    l->x = x;
++    l->colour = colour;
++    for (i = 0; i < IGRM_CHARS && s[i]; i++)
++        l->glyph[i] = igrmGlyph((unsigned char)s[i]);
++    l->len = i;
++}
++
++static char *igrmCat(char *d, const char *s)
++{
++    while (*s)
++        *d++ = *s++;
++    *d = '\0';
++    return d;
++}
++
++static char *igrmNum(char *d, int n)
++{
++    char t[12];
++    int i = 0;
++
++    if (n < 0)
++        n = 0;
++    do {
++        t[i++] = '0' + n % 10;
++        n /= 10;
++    } while (n && i < 11);
++    while (i)
++        *d++ = t[--i];
++    *d = '\0';
++    return d;
++}
++
++static int igrmEndsWith(const char *s, const char *tail) // case-insensitive
++{
++    int n = igrmLen(s), m = igrmLen(tail), i;
++
++    if (n < m)
++        return 0;
++    for (i = 0; i < m; i++) {
++        char a = s[n - m + i], b = tail[i];
++        if (a >= 'a' && a <= 'z')
++            a -= 'a' - 'A';
++        if (a != b)
++            return 0;
++    }
++    return 1;
++}
++
++// a path in two lines of the page at most, broken after a '/' or a space when one is near the end of the
++// first; a longer one keeps its end, after "..."
++static void igrmPath(int y, const char *path)
++{
++    char a[TEXT_CHARS + 1], b[TEXT_CHARS + 1];
++    int n = igrmLen(path), i, cut = TEXT_CHARS, start = 0, rest;
++
++    if (n > 2 * TEXT_CHARS - 3) {
++        path += n - (2 * TEXT_CHARS - 6);
++        igrmCat(a, "...");
++        start = 3;
++    }
++    rest = igrmLen(path);
++    if (rest + start > TEXT_CHARS) // i: the path's characters on the first line; the second holds the rest
++        for (i = TEXT_CHARS - start; i >= rest - TEXT_CHARS && i > 4; i--)
++            if (path[i - 1] == '/' || path[i - 1] == ' ') {
++                cut = start + i;
++                break;
++            }
++    for (i = start; i < cut && *path; i++)
++        a[i] = *path++;
++    a[i] = '\0';
++    if (*path == ' ')
++        path++;
++    for (i = 0; i < TEXT_CHARS && *path; i++)
++        b[i] = *path++;
++    b[i] = '\0';
++    igrmText(y, TEXT_X, C_TITLE, a);
++    if (b[0])
++        igrmText(y + INFO_STEP, TEXT_X, C_TITLE, b);
++}
++
++static const char *const igrmItem[3] = {"RESUME", "ACHIEVEMENTS", "EXIT GAME"};
++
++static void igrmCompose(const igrm_info_t *in, int sel, int armed)
++{
++    char s[40], *p, ok[2] = {in->confirmCircle ? 2 : 1, 0}, back[2] = {in->confirmCircle ? 1 : 2, 0};
++    const char *id = in->gameId[0] ? in->gameId : "PAUSED";
++    int i, y = ROW_INFO0;
++
++    igrmLines = 0;
++    igrmBarY = ROW_ITEM0 + sel * ITEM_STEP - 2;
++    igrmText(ROW_TITLE, TEXT_X, C_TITLE, "RIPPS2");
++    igrmText(ROW_TITLE, PW - TEXT_X - (igrmLen(id) * 6 - 1), C_DIM, id);
++    for (i = 0; i < 3; i++) {
++        if (i == sel)
++            igrmText(ROW_ITEM0 + i * ITEM_STEP, TEXT_X, C_SEL, "\x03");
++        igrmText(ROW_ITEM0 + i * ITEM_STEP, ITEM_X, i == sel ? C_SEL : C_ITEM, igrmItem[i]);
++    }
++
++    switch (sel) {
++        case 0:
++            igrmText(y, TEXT_X, C_TEXT, "BACK TO THE GAME");
++            igrmText(y + 2 * INFO_STEP, TEXT_X, C_DIM, "L1+L2+R1+R2+SELECT+START");
++            igrmText(y + 3 * INFO_STEP, TEXT_X, C_DIM, "OPENS THIS MENU AGAIN");
++            break;
++        case 1: // SpiritofRA
++            igrmText(y, TEXT_X, C_GOLD, "SPIRIT OF RA");
++            if (!in->raBuilt) {
++                igrmText(y + INFO_STEP, TEXT_X, C_TEXT, "NOT IN THIS BUILD");
++                break;
++            }
++            if (!in->raKnown)
++                igrmText(y + INFO_STEP, TEXT_X, C_TEXT, "NOT CHECKED YET");
++            else if (in->raTotal <= 0)
++                igrmText(y + INFO_STEP, TEXT_X, C_TEXT, "NO ACHIEVEMENTS SET");
++            else if (in->raUnlocked < 0) {
++                p = igrmNum(s, in->raTotal);
++                igrmCat(p, " ACHIEVEMENTS");
++                igrmText(y + INFO_STEP, TEXT_X, C_TEXT, s);
++            } else {
++                int u = in->raUnlocked + (in->tracking ? in->unlocks : 0);
++                p = igrmNum(s, u < in->raTotal ? u : in->raTotal);
++                p = igrmCat(p, " OF ");
++                p = igrmNum(p, in->raTotal);
++                igrmCat(p, " UNLOCKED");
++                igrmText(y + INFO_STEP, TEXT_X, C_TEXT, s);
++            }
++            if (in->tracking) {
++                if (in->unlocks <= 0)
++                    igrmCat(s, "NO NEW ONES THIS SESSION");
++                else
++                    igrmCat(igrmNum(s, in->unlocks), " NEW THIS SESSION");
++                igrmText(y + 2 * INFO_STEP, TEXT_X, C_TEXT, s);
++                igrmText(y + 3 * INFO_STEP, TEXT_X, C_DIM, "TRACKING ON");
++            } else {
++                igrmText(y + 2 * INFO_STEP, TEXT_X, C_TEXT, "TRACKING OFF");
++                igrmText(y + 3 * INFO_STEP, TEXT_X, C_DIM, "SET IN ACHIEVEMENTS");
++            }
++            break;
++        default: // EXIT GAME
++            if (armed) {
++                igrmCat(igrmCat(igrmCat(s, "PRESS "), ok), " AGAIN TO LEAVE");
++                igrmText(y, TEXT_X, C_WARN, s);
++            } else
++                igrmText(y, TEXT_X, C_TEXT, "LEAVE THE GAME FOR");
++            if (!in->exitPath[0])
++                igrmText(y + INFO_STEP, TEXT_X, C_TITLE, "THE PS2 BROWSER");
++            else if (igrmEndsWith(in->exitPath, "RIPPS2.ELF")) {
++                const char *e = in->exitPath;
++                int n = igrmLen(e);
++                igrmText(y + INFO_STEP, TEXT_X, C_TITLE, "RIPPS2");
++                if (n > TEXT_CHARS) {
++                    igrmCat(igrmCat(s, "..."), e + n - (TEXT_CHARS - 3));
++                    e = s;
++                }
++                igrmText(y + 2 * INFO_STEP, TEXT_X, C_DIM, e);
++            } else
++                igrmPath(y + INFO_STEP, in->exitPath);
++            igrmText(y + 3 * INFO_STEP, TEXT_X, C_WARN, "UNSAVED PROGRESS IS LOST");
++            break;
++    }
++
++    if (sel == 1)
++        p = igrmCat(s, "");
++    else
++        p = igrmCat(igrmCat(s, ok), " SELECT   ");
++    igrmCat(igrmCat(p, back), " RESUME");
++    igrmText(ROW_HINT, TEXT_X, C_DIM, s);
++}
++
++static int igrmBase(int ux, int uy)
++{
++    if (ux == 0 || uy == 0 || ux == PW - 1 || uy == PH - 1)
++        return C_BORDER;
++    if (ux < 4 || ux >= PW - 4)
++        return C_PANEL;
++    if (uy == ROW_SEP1 || uy == ROW_SEP2)
++        return C_SEP;
++    if (uy >= igrmBarY && uy < igrmBarY + 11)
++        return C_BAR;
++    return C_PANEL;
++}
++
++static void igrmPut(u8 *d, int colour)
++{
++    const u8 *c = igrmRgb[colour];
++
++    if (igrmBpp == 2) { // CT16 / CT16S: A1 B5 G5 R5
++        u32 p = (c[0] >> 3) | ((c[1] >> 3) << 5) | ((c[2] >> 3) << 10) | 0x8000;
++        d[0] = p;
++        d[1] = p >> 8;
++    } else {
++        d[0] = c[0];
++        d[1] = c[1];
++        d[2] = c[2];
++        if (igrmBpp == 4)
++            d[3] = 0x80;
++    }
++}
++
++// line y of the panel (frame lines) into d, in the frame's format
++static void igrmRenderLine(u8 *d, int y)
++{
++    const igrm_line_t *act[4];
++    int uy = y >> (igrmSy - 1), w = PW * igrmSx, n = 0, i, x;
++
++    for (i = 0; i < igrmLines && n < 4; i++)
++        if (uy >= igrmLine[i].y && uy < igrmLine[i].y + 7)
++            act[n++] = &igrmLine[i];
++    for (x = 0; x < w; x++, d += igrmBpp) {
++        int ux = x >> (igrmSx - 1), colour = -1, k;
++        for (k = 0; k < n && colour < 0; k++) {
++            const igrm_line_t *l = act[k];
++            int gx = ux - l->x, c, g;
++            if (gx < 0)
++                continue;
++            c = gx / 6;
++            gx -= c * 6;
++            if (c >= l->len || gx == 5)
++                continue;
++            g = l->glyph[c];
++            if (igrmFont[g][uy - l->y] & (0x10 >> gx))
++                colour = g == G_CROSS ? C_CROSS : g == G_CIRCLE ? C_CIRCLE : l->colour;
++        }
++        igrmPut(d, colour >= 0 ? colour : igrmBase(ux, uy));
++    }
++}
++
++#ifdef IGR_MENU_HOST_TEST
++// elf/tests: the panel as RGB rows at the scale given; returns its height
++int igrmTestRender(const igrm_info_t *in, int sel, int armed, int sx, int sy, u8 *rgb)
++{
++    int y;
++
++    igrmSx = sx;
++    igrmSy = sy;
++    igrmBpp = 3;
++    igrmCompose(in, sel, armed);
++    for (y = 0; y < PH * sy; y++)
++        igrmRenderLine(rgb + y * PW * sx * 3, y);
++    return PH * sy;
++}
++#else
++
++// ---- on the console
++
++// the game's own GS writes as GSM recorded them (gsm_engine.S, gsm_defines.h Source_*): 0 = none seen
++extern u64 GSMSourceGSRegs[11];
++#define SRC_PMODE    0
++#define SRC_SMODE2   2
++#define SRC_DISPFB1  7
++#define SRC_DISPLAY1 8
++#define SRC_DISPFB2  9
++#define SRC_DISPLAY2 10
++
++#define IGRM_D1_CHCR   ((vu32 *)0x10009000)
++#define IGRM_D1_MADR   ((vu32 *)0x10009010)
++#define IGRM_D1_QWC    ((vu32 *)0x10009020)
++#define IGRM_D1_TADR   ((vu32 *)0x10009030)
++#define IGRM_D2_CHCR   ((vu32 *)0x1000a000)
++#define IGRM_D_STAT    ((vu32 *)0x1000e010)
++#define IGRM_GIF_STAT  ((vu32 *)0x10003020)
++#define IGRM_VIF1_STAT ((vu32 *)0x10003c00)
++#define CHCR_STR       0x100
++#define VIF_FQC        0x1f000000
++#define VIF_STALLED    0x00800f00 // FDR (the FIFO turned towards the EE), VSS, VFS, VIS, INT
++#define GIF_BUSY       0x1f000c00 // FQC and APATH
++
++#define VIF_NOP                       0
++#define VIF_FLUSHA                    (0x13 << 24)
++#define VIF_DIRECT(n)                 ((0x50 << 24) | (n))
++#define GIFTAG(nloop, eop, flg, nreg) ((u64)(nloop) | (u64)(eop) << 15 | (u64)(flg) << 58 | (u64)(nreg) << 60)
++#define GIF_AD                        0xe
++#define GS_BITBLTBUF                  0x50
++#define GS_TRXPOS                     0x51
++#define GS_TRXREG                     0x52
++#define GS_TRXDIR                     0x53
++
++#define PAD_START  0x0008
++#define PAD_UP     0x0010
++#define PAD_DOWN   0x0040
++#define PAD_CIRCLE 0x2000
++#define PAD_CROSS  0x4000
++
++#define IGRM_SECOND 294912000u // COP0 Count ticks: the EE's clock
++
++static u32 igrmBp, igrmBw, igrmPsm, igrmX, igrmY;
++
++static inline u32 igrmCount(void)
++{
++    u32 c;
++    __asm__ __volatile__("mfc0 %0, $9" : "=r"(c));
++    return c;
++}
++
++static int igrmWaitClear(vu32 *reg, u32 bits) // bounded: a stuck path must not hold the pause forever
++{
++    int i;
++    for (i = 0; i < 10000000; i++)
++        if (!(*reg & bits))
++            return 1;
++    return 0;
++}
++
++// The frame the PCRTC shows, as the game set it up: circuit 1 first (it is on top), else circuit 2
++static int igrmFindFrame(void)
++{
++    u64 pmode = GSMSourceGSRegs[SRC_PMODE], fb1 = GSMSourceGSRegs[SRC_DISPFB1], fb2 = GSMSourceGSRegs[SRC_DISPFB2];
++    int c1 = (pmode & 1) || (!(pmode & 2) && fb1 != 0);
++    u64 fb = c1 ? fb1 : fb2, disp = GSMSourceGSRegs[c1 ? SRC_DISPLAY1 : SRC_DISPLAY2];
++    u32 wv, hv;
++
++#ifdef IGR_MENU_TEST
++    // PCSX2 has no data breakpoints, so GSM never sees a DISPFB there: show a frame of our own, FBP 0 as
++    // 640 wide CT32 on both circuits. The game's next flip puts its own back
++    if (fb == 0) {
++        fb = (u64)10 << 9;
++        *(vu64 *)0x12000070 = fb; // DISPFB1
++        *(vu64 *)0x12000090 = fb; // DISPFB2
++        disp = 0;
++    }
++#endif
++    if (fb == 0)
++        return 0; // GSM saw no DISPFB write (the game turned the breakpoint off, or wrote it some other way)
++    igrmPsm = (fb >> 15) & 0x1f;
++    igrmBpp = igrmPsm == 0 ? 4 : igrmPsm == 1 ? 3 : (igrmPsm == 2 || igrmPsm == 10) ? 2 : 0;
++    igrmBw = (fb >> 9) & 0x3f;
++    if (!igrmBpp || !igrmBw)
++        return 0;
++    igrmBp = (fb & 0x1ff) * 32; // pages of 2048 words, in BITBLTBUF's 64-word blocks
++    wv = igrmBw * 64;
++    hv = 224;
++    if (disp) { // shown size: DW over MAGH, DH over MAGV (u32: a u64 divide pulls in libgcc)
++        u32 dw = (((u32)(disp >> 32) & 0xfff) + 1) / (((u32)(disp >> 23) & 0xf) + 1);
++        u32 dh = (((u32)(disp >> 44) & 0x7ff) + 1) / (((u32)(disp >> 27) & 3) + 1);
++        if (dw > 0 && dw < wv)
++            wv = dw;
++        if (dh > 0 && dh <= 1024)
++            hv = dh;
++    }
++    if ((GSMSourceGSRegs[SRC_SMODE2] & 3) == 3) // interlaced FRAME mode: the buffer holds one field
++        hv /= 2;
++    if (wv < PW + 8 || hv < PH + 4)
++        return 0;
++    igrmSx = wv >= PW * 2 + 16 ? 2 : 1;
++    igrmSy = hv >= PH * 2 + 16 ? 2 : 1;
++    igrmX = ((fb >> 32) & 0x7ff) + (wv - PW * igrmSx) / 2;
++    igrmY = ((fb >> 43) & 0x7ff) + (hv - PH * igrmSy) / 2;
++    return 1;
++}
++
++// One line of the panel into the frame: VIF codes, the GIF A+D setup of a host -> local transfer, the pixels
++static int igrmUploadLine(u32 *pkt, int line)
++{
++    u32 qw = PW * igrmSx * igrmBpp / 16; // a whole number for every format: PW * igrmSx is a multiple of 16
++    u64 *q = (u64 *)(pkt + 4);
++
++    pkt[0] = VIF_NOP;
++    pkt[1] = VIF_NOP; // no MSKPATH3: the game's PATH3 mask is its own state (its GIF DMA is idle; FLUSHA waits)
++    pkt[2] = VIF_FLUSHA;
++    pkt[3] = VIF_DIRECT(6 + qw);
++    q[0] = GIFTAG(4, 0, 0, 1);
++    q[1] = GIF_AD;
++    q[2] = (u64)igrmBp << 32 | (u64)igrmBw << 48 | (u64)igrmPsm << 56;
++    q[3] = GS_BITBLTBUF;
++    q[4] = (u64)igrmX << 32 | (u64)(igrmY + line) << 48; // TRXPOS: destination
++    q[5] = GS_TRXPOS;
++    q[6] = (u64)(PW * igrmSx) | (u64)1 << 32;
++    q[7] = GS_TRXREG;
++    q[8] = 0; // host -> local
++    q[9] = GS_TRXDIR;
++    q[10] = GIFTAG(qw, 1, 2, 0); // IMAGE
++    q[11] = 0;
++    igrmRenderLine((u8 *)(pkt + 28), line);
++
++    FlushCache(0);
++    *IGRM_D1_QWC = 7 + qw;
++    *IGRM_D1_MADR = (u32)pkt;
++    *IGRM_D1_CHCR = 0x101; // from memory, normal mode, start
++    asm volatile("sync.l");
++    return igrmWaitClear(IGRM_D1_CHCR, CHCR_STR);
++}
++
++static int igrmDraw(u32 *pkt)
++{
++    int line;
++
++    for (line = 0; line < PH * igrmSy; line++)
++        if (!igrmUploadLine(pkt, line)) {
++            *IGRM_D1_CHCR = 0; // stop it: a VIF1 that will not take data must not keep our transfer
++            return 0;
++        }
++    return 1;
++}
++
++// The power button, read as the VBLANK handler reads it (that handler is held while the game is paused)
++static int igrmPowerButton(void)
++{
++    int pressed = 0;
++
++    ee_kmode_enter();
++    if ((*CDVD_R_NDIN & 0x20) && (*CDVD_R_POFF & 0x04)) {
++        *CDVD_R_SDIN = 0x00;
++        *CDVD_R_SCMD = 0x1B; // cancel the power off, to catch a second press
++        pressed = 1;
++    }
++    ee_kmode_exit();
++    return pressed;
++}
++
++int IGR_MenuRun(u16 (*buttons)(void))
++{
++    USE_LOCAL_EECORE_CONFIG;
++    u32 raw[(112 + PW * 2 * 4 + 64) / 4]; // one line of the panel at its widest (the IGR thread's stack)
++    u32 *pkt = (u32 *)(((u32)raw + 63) & ~63);
++    u32 d1chcr, d1madr, d1qwc, d1tadr, gameDone, t, pressT = 0, firstT = 0;
++    u16 held, now, pressed, ok, back;
++    int sel = 0, armed = 0, result = IGR_MENU_RESUME, presses = 0, power = 1, i;
++    char gameId[CORE_GAME_ID_MAX_LEN + 1];
++    igrm_info_t info;
++
++    if (!igrmFindFrame())
++        return IGR_MENU_CANNOT_DRAW;
++    // the game's own transfers finish first; a VIF1 stalled on an interrupt the pause holds cannot take ours
++    if (!igrmWaitClear(IGRM_D1_CHCR, CHCR_STR) || !igrmWaitClear(IGRM_D2_CHCR, CHCR_STR) || (*IGRM_VIF1_STAT & VIF_STALLED))
++        return IGR_MENU_CANNOT_DRAW;
++    gameDone = *IGRM_D_STAT & 2; // a channel 1 completion the game has not handled yet stays for its handler
++    d1chcr = *IGRM_D1_CHCR;
++    d1madr = *IGRM_D1_MADR;
++    d1qwc = *IGRM_D1_QWC;
++    d1tadr = *IGRM_D1_TADR;
++
++    for (i = 0; i < CORE_GAME_ID_MAX_LEN && config->GameID[i]; i++)
++        gameId[i] = config->GameID[i];
++    gameId[i] = '\0';
++    config->ExitPath[CORE_EXIT_PATH_MAX_LEN - 1] = '\0';
++    info.confirmCircle = config->IgrConfirmCircle;
++    info.gameId = gameId;
++    info.exitPath = config->ExitPath;
++#ifdef RETROACHIEVEMENTS
++    info.raBuilt = 1;
++    info.raKnown = config->RaKnown;
++    info.raTotal = config->RaTotal;
++    info.raUnlocked = config->RaUnlocked;
++    info.tracking = RA_Tracking();
++    info.unlocks = (int)RA_OverlayUnlocks();
++    if (config->GameMode == DISC_MODE)
++        power = 0; // the ROM's CDVDMAN keeps the power button there, as the VBLANK handler leaves it
++#else
++    info.raBuilt = info.raKnown = info.raTotal = info.raUnlocked = info.tracking = info.unlocks = 0;
++#endif
++    ok = info.confirmCircle ? PAD_CIRCLE : PAD_CROSS;
++    back = info.confirmCircle ? PAD_CROSS : PAD_CIRCLE;
++
++    igrmCompose(&info, sel, armed);
++    if (!igrmDraw(pkt)) {
++        result = IGR_MENU_CANNOT_DRAW;
++        goto done;
++    }
++
++    held = buttons(); // the combo is still held: only new presses count
++    for (;;) {
++        int dirty = 0;
++
++        now = buttons();
++        pressed = now & ~held;
++        held = now;
++        if (pressed & (PAD_UP | PAD_DOWN)) {
++            sel = (sel + ((pressed & PAD_UP) ? 2 : 1)) % 3;
++            armed = 0;
++            dirty = 1;
++        } else if (pressed & ok) {
++            if (sel == 0)
++                break;
++            if (sel == 2) { // EXIT GAME takes a second press: progress is lost
++                if (armed) {
++                    result = IGR_MENU_EXIT;
++                    break;
++                }
++                armed = dirty = 1;
++            } // ACHIEVEMENTS: its page is what the panel already shows
++        } else if (pressed & (back | PAD_START))
++            break;
++
++        if (power) { // once = power off, twice = leave, decided a second after the first press (as OPL)
++            t = igrmCount();
++            if ((presses == 0 || t - pressT > IGRM_SECOND / 8) && igrmPowerButton()) {
++                if (presses++ == 0)
++                    firstT = t;
++                pressT = t;
++            }
++            if (presses && t - firstT > IGRM_SECOND) {
++                result = presses == 1 ? IGR_MENU_POWEROFF : IGR_MENU_EXIT;
++                break;
++            }
++        }
++
++        if (dirty) {
++            igrmCompose(&info, sel, armed);
++            igrmDraw(pkt); // a frame that took the first drawing takes this one; if not, the choice still works
++        }
++    }
++
++    if (result == IGR_MENU_RESUME) { // the button that closed the menu must not reach the game
++        t = igrmCount();
++        while (buttons() && igrmCount() - t < 3 * IGRM_SECOND)
++            ;
++    }
++
++done:
++    // DMA done is not the end: the VIF1 FIFO and the GIF may still be moving the last line
++    igrmWaitClear(IGRM_VIF1_STAT, VIF_FQC);
++    igrmWaitClear(IGRM_GIF_STAT, GIF_BUSY);
++    *IGRM_D1_MADR = d1madr;
++    *IGRM_D1_QWC = d1qwc;
++    *IGRM_D1_TADR = d1tadr;
++    *IGRM_D1_CHCR = d1chcr;
++    // our transfers flagged channel 1 done; left set, the game's VIF1 handler would run for a transfer it
++    // never started. Write 1 clears it (the mask bits stay)
++    if (!gameDone)
++        *IGRM_D_STAT = 2;
++    asm volatile("sync.l");
++    return result;
++}
++#endif
+diff --git a/ee_core/src/main.c b/ee_core/src/main.c
+index a911ef2..29a5cd8 100644
+--- a/ee_core/src/main.c
++++ b/ee_core/src/main.c
+@@ -127,7 +127,8 @@ static int eecoreInit(int argc, char **argv)
+             config->GsmConfig.kGsDxDyOffsetSupported,
+             config->GsmConfig.FIELD_fix);
+         EnableGSM();
+-    }
++    } else if (config->IgrMenu && !(g_compat_mask & COMPAT_MODE_6))
++        EnableGSMCapture(); // RIPPS2 build 87: the in-game menu draws on the frame the game shows
+ 
+     set_ipconfig();
+ 
+diff --git a/ee_core/src/padhook.c b/ee_core/src/padhook.c
+index 798123e..870be65 100644
+--- a/ee_core/src/padhook.c
++++ b/ee_core/src/padhook.c
+@@ -38,6 +38,7 @@
+ #include "cheat_api.h"
+ #include "cd_igr_rpc.h"
+ #include "coreconfig.h"
++#include "igrmenu.h" // RIPPS2 build 87
+ 
+ /* scePadPortOpen & scePad2CreateSocket prototypes */
+ static int (*scePadPortOpen)(int port, int slot, void *addr);
+@@ -57,6 +58,102 @@ static int IGR_Intc_ID = -1;
+ #define IGR_STACK_SIZE (4 * 1024)
+ static u8 IGR_Stack[IGR_STACK_SIZE] __attribute__((aligned(16)));
+ 
++/*
++  RIPPS2 build 87: the in-game menu (igrmenu.c). The pause is ORBIT's (danielnuld/ps2-launcher,
++  third_party/neutrino-igr/igr.c, AFL-3.0): the game's threads stop and its interrupts are held, and
++  nothing is reset. The SIF stays up (SBUS, DMA channels 5-7), so padman keeps filling the pad buffer
++  the menu reads. RESUME gives everything back; any other way out goes on to OPL's own, below.
++*/
++#define IGR_I_MASK    ((vu32 *)0x1000f010)
++#define IGR_INTC_SBUS 1
++static volatile int IGR_MenuOpen = 0;
++static int IGR_MenuRearm = 1;
++static u32 IGR_PausedThreads[8], IGR_HeldIntc, IGR_HeldDmac;
++static const u8 IGR_DmacHeld[] = {0, 1, 2, 3, 4, 8, 9}; // never SIF 5-7
++
++// libpad's buttons, 1 = held (its buffer is active-low), or 0 while the pad is not stable
++static u16 IGR_PadButtons(void)
++{
++    const u8 *b;
++    u8 state;
++
++    if (Pad_Data.pad_buf == NULL)
++        return 0;
++    b = (const u8 *)UNCACHED_SEG(Pad_Data.pad_buf); // the IOP's padman fills it over SIF DMA, behind the cache
++    state = b[Pad_Data.pos_state];
++    if (!((Pad_Data.libpad == IGR_LIBPAD && state == IGR_PAD_STABLE_V1) || (Pad_Data.libpad == IGR_LIBPAD2 && state == IGR_PAD_STABLE_V2)))
++        return 0;
++    return ~(b[Pad_Data.pos_combo2] | b[Pad_Data.pos_combo1] << 8) & 0xFFFF;
++}
++
++// interrupt handler context: the game's interrupts and DMA completions wait, the SIF's do not
++static void IGR_HoldInterrupts(void)
++{
++    int i;
++
++    IGR_HeldIntc = *IGR_I_MASK;
++    for (i = 0; i <= 14; i++)
++        if (i != IGR_INTC_SBUS && (IGR_HeldIntc & (1 << i)))
++            iDisableIntc(i);
++    IGR_HeldDmac = (*R_EE_D_STAT >> 16) & 0x3ff;
++    for (i = 0; i < (int)sizeof(IGR_DmacHeld); i++)
++        if (IGR_HeldDmac & (1 << IGR_DmacHeld[i]))
++            iDisableDmac(IGR_DmacHeld[i]);
++}
++
++// From the IGR thread at priority 0, while no game thread runs. Suspending the interrupted thread from
++// the handler left it READY but never scheduled again after ResumeThread (ORBIT): so here, not there
++static void IGR_PauseThreads(void)
++{
++    int i;
++
++    for (i = 1; i < 256; i++) {
++        IGR_PausedThreads[i / 32] &= ~(1 << (i % 32));
++        if (i != IGR_Thread_ID && SuspendThread(i) >= 0)
++            IGR_PausedThreads[i / 32] |= 1 << (i % 32);
++    }
++}
++
++static void IGR_ResumeGame(void) // the pause, undone in reverse
++{
++    int i;
++
++    for (i = 0; i < (int)sizeof(IGR_DmacHeld); i++)
++        if (IGR_HeldDmac & (1 << IGR_DmacHeld[i]))
++            EnableDmac(IGR_DmacHeld[i]);
++    for (i = 0; i <= 14; i++)
++        if (i != IGR_INTC_SBUS && (IGR_HeldIntc & (1 << i)))
++            EnableIntc(i);
++    for (i = 1; i < 256; i++)
++        if (IGR_PausedThreads[i / 32] & (1 << (i % 32)))
++            ResumeThread(i);
++}
++
++// Leaving from the menu: what the VBLANK handler does before it wakes this thread for the combo
++static void IGR_StopDmaAndGs(void)
++{
++    u32 dmaEnableR;
++
++    asm volatile("sync.l\n");
++    dmaEnableR = *R_EE_D_ENABLER;
++    *R_EE_D_ENABLEW = dmaEnableR | 0x10000;
++    *R_EE_D_CTRL;
++    *R_EE_D_STAT;
++    *R_EE_D0_CHCR = 0;
++    *R_EE_D1_CHCR = 0;
++    *R_EE_D2_CHCR = 0;
++    *R_EE_D3_CHCR = 0;
++    *R_EE_D4_CHCR = 0;
++    *R_EE_D8_CHCR = 0;
++    *R_EE_D9_CHCR = 0;
++    *R_EE_D_ENABLEW = dmaEnableR;
++    asm volatile("sync.l\n");
++    *R_EE_GS_CSR = 0x100; // Reset GS
++    asm volatile("sync.l\n");
++    while (*R_EE_GS_CSR & 0x100) {
++    };
++}
++
+ /* Extern symbol */
+ extern void *_gp;
+ extern void *_end;
+@@ -142,9 +239,32 @@ static void IGR_Thread(void *arg)
+     USE_LOCAL_EECORE_CONFIG;
+     u32 Cop0_Perf;
+ 
+-    // Place our IGR thread in WAIT state
+-    // It will be woken up by our IGR interrupt handler
+-    SleepThread();
++    // RIPPS2 build 87: the in-game menu wakes this thread too, and RESUME sends it back to sleep. Any other
++    // way out goes on below, OPL's own, with the game's threads stopped and its interrupts held.
++    for (;;) {
++        int choice;
++
++        // Place our IGR thread in WAIT state
++        // It will be woken up by our IGR interrupt handler
++        SleepThread();
++        if (!IGR_MenuOpen)
++            break; // the power button, or In-Game Menu off: as OPL always did
++
++        IGR_PauseThreads();
++        choice = IGR_MenuRun(IGR_PadButtons);
++        if (choice == IGR_MENU_RESUME) {
++            IGR_ResumeGame();
++            IGR_MenuOpen = 0;
++            ChangeThreadPriority(IGR_Thread_ID, 127);
++            continue;
++        }
++        // EXIT GAME, the power button, or a frame the menu could not draw on: what the combo did before.
++        // ResetEE leaves the DMAC alone (0x7E, not 0x7F): a SIF transfer in flight would stick (ORBIT)
++        IGR_StopDmaAndGs();
++        ResetEE(0x7E);
++        Pad_Data.combo_type = choice == IGR_MENU_POWEROFF ? IGR_COMBO_R3_L3 : IGR_COMBO_START_SELECT;
++        break;
++    }
+ 
+     DPRINTF("IGR thread woken up!\n");
+ 
+@@ -207,7 +327,8 @@ static void IGR_Thread(void *arg)
+                 DBGCOL(0x00FF00, IGR, "Stopping GSM");
+             DPRINTF("Stopping GSM...\n");
+             DisableGSM();
+-        }
++        } else
++            DisableGSMCapture(); // RIPPS2 build 87: the in-game menu's trap, when it was armed
+ 
+         if (config->gCheatList) {
+             if (EnableDebug)
+@@ -372,6 +493,20 @@ static int IGR_Intc_Handler(int cause)
+         ee_kmode_exit();
+     }
+ 
++    // RIPPS2 build 87: with In-Game Menu on, the reset combo pauses the game under the menu (igrmenu.c)
++    // instead. The power button pressed twice still leaves at once.
++    if (Pad_Data.combo_type == IGR_COMBO_START_SELECT && config->IgrMenu && !Power_Button.press) {
++        Pad_Data.combo_type = 0x00;
++        if (IGR_MenuRearm && !IGR_MenuOpen) { // once per press: a menu closed at once must not reopen
++            IGR_MenuOpen = 1;
++            IGR_MenuRearm = 0;
++            IGR_HoldInterrupts(); // this handler's VBLANK too: the menu reads the pad itself
++            iChangeThreadPriority(IGR_Thread_ID, 0);
++            iWakeupThread(IGR_Thread_ID);
++        }
++    } else if (Pad_Data.combo_type == 0x00)
++        IGR_MenuRearm = 1;
++
+     // If power button or combo is press
+     // Disable all interrupts & reset some peripherals.
+     // Suspend and Change priority of all threads other then our IGR thread
+@@ -470,6 +605,7 @@ void Install_IGR(void)
+     Power_Button.vb_count = 0;
+ 
+     // Init runtime Pad_Data information
++    IGR_MenuRearm = 1; // RIPPS2 build 87
+     Pad_Data.vb_count = 0;
+     Pad_Data.combo_type = 0x00;
+     Pad_Data.prev_frame = 0x00;
+diff --git a/ee_core/src/ra.c b/ee_core/src/ra.c
+index b343ddb..af02144 100644
+--- a/ee_core/src/ra.c
++++ b/ee_core/src/ra.c
+@@ -322,6 +322,12 @@ static void ra_snap_send(void)
+ }
+ 
+ 
++/* RIPPS2 build 87: the in-game menu's TRACKING ON */
++int RA_Tracking(void)
++{
++    return ra_snap_buf != NULL && ra_watch_count > 0;
++}
++
+ void RA_OnVblank(void)
+ {
+     ra_frames++;
+diff --git a/ee_core/src/ra_overlay.c b/ee_core/src/ra_overlay.c
+index 75101af..26706e0 100644
+--- a/ee_core/src/ra_overlay.c
++++ b/ee_core/src/ra_overlay.c
+@@ -40,6 +40,12 @@ static struct ra_event ra_ovl_event __attribute__((aligned(64)));
+ static unsigned int ra_ovl_seen = 0;  /* last event seq acted on */
+ static unsigned int ra_ovl_start = 0; /* frame the running flash began */
+ static int ra_ovl_running = 0;
++static unsigned int ra_ovl_unlocks = 0; /* RIPPS2 build 87: this session's, for the in-game menu */
++
++unsigned int RA_OverlayUnlocks(void)
++{
++    return ra_ovl_unlocks;
++}
+ 
+ void *RA_OverlayEventBuffer(void)
+ {
+@@ -81,6 +87,9 @@ void RA_OverlayOnVblank(unsigned int frames)
+     /* A new event restarts the flash, even mid-flash: two unlocks close
+        together read as two pulses, not one long one. */
+     if (e->magic == RA_EVENT_MAGIC && e->seq != ra_ovl_seen) {
++        unsigned int d = e->seq - ra_ovl_seen; /* two unlocks between frames count as two */
++        if (e->kind == RA_EVENT_UNLOCK)
++            ra_ovl_unlocks += (d >= 1 && d <= 16) ? d : 1;
+         ra_ovl_seen = e->seq;
+         ra_ovl_start = frames;
+         ra_ovl_running = 1;
+diff --git a/include/dialogs.h b/include/dialogs.h
+index bcd80d3..e31d37d 100644
+--- a/include/dialogs.h
++++ b/include/dialogs.h
+@@ -35,6 +35,7 @@ enum UI_ITEMS {
+     UICFG_APPSVIEW,
+     UICFG_RIPPS2_RANDOM, // RIPPS2: Random Game (Off / On / Boot)
+     CFG_RIPPS2_BOOTLOCK, // RIPPS2: BOOT LOCK (PS2BBL starts RIPPS2 at power on)
++    CFG_RIPPS2_IGRMENU,  // RIPPS2 build 87: In-Game Menu
+     UICFG_RIPPS2_MUSIC,  // RIPPS2: Music (a track from MUSIC/ beside RIPPS2)
+     UICFG_RIPPS2_GLYPHS,  // RIPPS2 build 70: Colors and More's RIPPS2 rows
+     UICFG_RIPPS2_PALETTE,
+diff --git a/include/rawatch.h b/include/rawatch.h
+index 4c611ce..4bc5532 100644
+--- a/include/rawatch.h
++++ b/include/rawatch.h
+@@ -26,4 +26,8 @@ void ClearWatchList(void);
+    unless this is an __OPLDIAG build. */
+ void raLaunchNote(const char *what, int a, int b);
+ 
++/* RIPPS2 build 87: what the launched game's RA/<serial>.inf said (1 = found), read by
++   sbLoadWatchList (supportbase.c) for the in-game menu's Achievements page. */
++int sbGetRaInfo(int *total, int *unlocked);
++
+ #endif
+diff --git a/include/ripps2.h b/include/ripps2.h
+index c14a556..a3e6a17 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -55,6 +55,9 @@ void ripps2SaveSettingsInBackground(void); // opl.c: a quiet settings save on th
+ // game list on a random game at startup, ahead of the last played one
+ enum { RIPPS2_RANDOM_OFF = 0, RIPPS2_RANDOM_ON, RIPPS2_RANDOM_BOOT };
+ extern int gRipps2Random;
++// build 87: In-Game Menu (Settings > General): the IGR combo pauses a game under Resume / Achievements /
++// Exit Game (ee_core igrmenu.c) instead of leaving it at once
++extern int gRipps2IgrMenu;
+ 
+ // RIPPSettings (Controller Settings > RIPPSettings, build 70): how RIPPS2's own pages look, saved in
+ // the settings
+diff --git a/lng_tmpl/_base.yml b/lng_tmpl/_base.yml
+index b914c9c..333fdb6 100644
+--- a/lng_tmpl/_base.yml
++++ b/lng_tmpl/_base.yml
+@@ -1405,6 +1405,10 @@ gui_strings:
+   string: Boot Lock
+ - label: HINT_RIPPS2_BOOT_LOCK
+   string: "Starts RIPPS2 at power on through PS2BBL. Off puts back what PS2BBL started before. No PS2BBL yet? Boot Loader installs BIBLE."
++- label: RIPPS2_IGR_MENU
++  string: In-Game Menu
++- label: HINT_RIPPS2_IGR_MENU
++  string: "L1+L2+R1+R2+SELECT+START in a game pauses it under Resume, Achievements and Exit Game. Off: the combo leaves the game at once."
+ - label: RIPPS2_BOOT_LOADER
+   string: Boot Loader
+ - label: HINT_RIPPS2_BOOT_LOADER
+diff --git a/src/dialogs.c b/src/dialogs.c
+index e46cc3f..b328a7b 100644
+--- a/src/dialogs.c
++++ b/src/dialogs.c
+@@ -341,6 +341,11 @@ struct UIItem diaConfig[] = {
+     {UI_STRING, CFG_EXITTO, 1, 1, _STR_HINT_EXITPATH, 0, 0, {.stringvalue = {"", "", &guiExitPathHandler}}},
+     {UI_BREAK},
+ 
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_IGR_MENU}}},
++    {UI_SPACER},
++    {UI_BOOL, CFG_RIPPS2_IGRMENU, 1, 1, _STR_HINT_RIPPS2_IGR_MENU, 0, 0, {.intvalue = {1, 1}}},
++    {UI_BREAK},
++
+     {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_CUSTOM_SETTINGS_PATH}}},
+     {UI_SPACER},
+     {UI_STRING, CFG_CUSTOMCFGPATH, 1, 1, _STR_HINT_CUSTOM_SETTINGS_PATH, 0, 0, {.stringvalue = {"", "", NULL}}},
+diff --git a/src/gui.c b/src/gui.c
+index 3078dca..e7aab99 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -663,6 +663,7 @@ void guiShowConfig()
+     // rather than "<not set>" -- the empty value (and thus the fallback) is kept.
+     guiExitPathBegin(diaConfig);
+     guiBootLockBegin(diaConfig); // RIPPS2
++    diaSetInt(diaConfig, CFG_RIPPS2_IGRMENU, gRipps2IgrMenu); // RIPPS2 build 87
+     // Custom Settings Path: blank = the normal boot-dir/discovery home, so it gets the same dim
+     // "Default" placeholder treatment rather than "<not set>".
+     diaSetShowDefaultWhenEmpty(diaConfig, CFG_CUSTOMCFGPATH, 1);
+@@ -698,6 +699,7 @@ reshow_config:
+         diaGetInt(diaConfig, CFG_LASTPLAYED, &gRememberLastPlayed);
+         diaGetInt(diaConfig, CFG_FOLDERNAV, &gEnableFolderNav);
+         diaGetInt(diaConfig, CFG_AUTOSTARTLAST, &gAutoStartLastPlayed);
++        diaGetInt(diaConfig, CFG_RIPPS2_IGRMENU, &gRipps2IgrMenu); // RIPPS2 build 87
+         guiBootLockEnd(diaConfig); // RIPPS2
+ 
+         DisableCron = 1; // Disable Auto Start Last Played counter (we don't want to call it right after enable it on GUI)
+@@ -2941,6 +2943,7 @@ static int guiSettingsShowGeneral(void)
+ 
+     guiExitPathBegin(ui);
+     guiBootLockBegin(ui); // RIPPS2
++    diaSetInt(ui, CFG_RIPPS2_IGRMENU, gRipps2IgrMenu); // RIPPS2 build 87
+     diaSetShowDefaultWhenEmpty(ui, CFG_CUSTOMCFGPATH, 1);
+     diaSetString(ui, CFG_CUSTOMCFGPATH, gCustomSettingsPath);
+     diaSetInt(ui, CFG_LASTPLAYED, gRememberLastPlayed);
+@@ -2974,6 +2977,7 @@ reshow_general:
+         diaGetInt(ui, CFG_LASTPLAYED, &gRememberLastPlayed);
+         diaGetInt(ui, CFG_FOLDERNAV, &gEnableFolderNav);
+         diaGetInt(ui, CFG_AUTOSTARTLAST, &gAutoStartLastPlayed);
++        diaGetInt(ui, CFG_RIPPS2_IGRMENU, &gRipps2IgrMenu); // RIPPS2 build 87
+         diaGetInt(ui, CFG_ENWRITEOP, &gEnableWrite);
+         diaGetInt(ui, CFG_DEBUG, &gEnableDebug);
+         guiSaveParentalLockValue(ui);
+diff --git a/src/opl.c b/src/opl.c
+index 0717b69..2617044 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -3363,6 +3363,8 @@ static void _loadConfig()
+                 gRipps2Formation = value; // RIPPS2: the Memory Files formation last left on
+             if (configGetInt(configOPL, "ripps2_random", &value) && value >= RIPPS2_RANDOM_OFF && value <= RIPPS2_RANDOM_BOOT)
+                 gRipps2Random = value; // RIPPS2: Random Game
++            if (configGetInt(configOPL, "ripps2_igr_menu", &value))
++                gRipps2IgrMenu = value != 0; // RIPPS2 build 87: In-Game Menu
+             // RIPPS2 build 69: Memory Files ORBITS
+             if (configGetInt(configOPL, "ripps2_orb_off", &value) && value >= 0 && value < (1 << 12) - 1)
+                 gRipps2OrbOff = value;
+@@ -4080,6 +4082,7 @@ static void _saveConfig()
+         configSetInt(configOPL, CONFIG_OPL_SCROLLING, gScrollSpeed);
+         configSetInt(configOPL, "ripps2_formation", gRipps2Formation); // RIPPS2
+         configSetInt(configOPL, "ripps2_random", gRipps2Random);       // RIPPS2
++        configSetInt(configOPL, "ripps2_igr_menu", gRipps2IgrMenu);    // RIPPS2 build 87: In-Game Menu
+         configSetInt(configOPL, "ripps2_orb_off", gRipps2OrbOff);      // RIPPS2 build 69: ORBITS
+         configSetInt(configOPL, "ripps2_orb_cycle", gRipps2OrbCycle);
+         configSetInt(configOPL, "ripps2_orb_speed", gRipps2OrbSpeed);
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index 8fc178e..040f7fd 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -62,6 +62,7 @@ static const char *formationName[] = {
+ #define FORMATION_COUNT ((int)(sizeof(formationName) / sizeof(formationName[0])))
+ int gRipps2Formation = 0;
+ int gRipps2Random = RIPPS2_RANDOM_ON;
++int gRipps2IgrMenu = 1; // build 87: In-Game Menu (General)
+ int gRipps2OrbOff = 0, gRipps2OrbCycle = 0, gRipps2OrbSpeed = 1, gRipps2OrbPaths = 0, gRipps2OrbHeight = 0;
+ 
+ int ripps2FormationCount(void)
+diff --git a/src/supportbase.c b/src/supportbase.c
+index df4570c..4c70ee1 100644
+--- a/src/supportbase.c
++++ b/src/supportbase.c
+@@ -2388,6 +2388,34 @@ void sbBuildVmcNeutrinoArgs(config_set_t *configSet, const char *vmcPrefix, neut
+ }
+ 
+ #ifdef RETROACHIEVEMENTS
++/* RIPPS2 build 87: the game's RA progress as the last check left it (RA/<serial>.inf beside the list,
++   ranet.c: title, total, unlocked, unsupported, one a line), for the in-game menu's Achievements page */
++static int sbRaInfoKnown, sbRaInfoTotal, sbRaInfoUnlocked;
++
++int sbGetRaInfo(int *total, int *unlocked)
++{
++    *total = sbRaInfoKnown ? sbRaInfoTotal : 0;
++    *unlocked = sbRaInfoKnown ? sbRaInfoUnlocked : -1;
++    return sbRaInfoKnown;
++}
++
++static void sbLoadRaInfo(const char *path, const char *file)
++{
++    char infPath[256], line[128];
++    FILE *f;
++
++    sbRaInfoKnown = 0;
++    if (snprintf(infPath, sizeof(infPath), "%sRA/%s.inf", path, file) >= (int)sizeof(infPath) ||
++        (f = fopen(infPath, "rb")) == NULL)
++        return;
++    if (fgets(line, sizeof(line), f) != NULL && fgets(line, sizeof(line), f) != NULL) {
++        sbRaInfoTotal = atoi(line);
++        sbRaInfoUnlocked = fgets(line, sizeof(line), f) != NULL ? atoi(line) : -1;
++        sbRaInfoKnown = 1;
++    }
++    fclose(f);
++}
++
+ /*
+   RA: load this game's watch list from <path>RA/<file>.wl.
+ 
+@@ -2414,8 +2442,10 @@ int sbLoadWatchList(const char *path, const char *file)
+     unsigned int ext;
+     int result = -1;
+ 
++    sbRaInfoKnown = 0;
+     if (path == NULL || file == NULL)
+         return -1;
++    sbLoadRaInfo(path, file); // RIPPS2 build 87
+ 
+     for (ext = 0; ext < sizeof(wlExt) / sizeof(wlExt[0]); ext++) {
+         char wlPath[256];
+diff --git a/src/system.c b/src/system.c
+index 769ab88..3a0fda0 100644
+--- a/src/system.c
++++ b/src/system.c
+@@ -2321,6 +2321,13 @@ void sysLaunchLoaderElf(const char *filename, const char *mode_str, int size_cdv
+     //MMCEIGR Settings
+     config->MMCEIGRSettings = gMMCEIGRSlot;
+ 
++    // RIPPS2 build 87: the in-game menu, and its Achievements page's numbers as YOUR ACCOUNT has them
++    config->IgrMenu = gRipps2IgrMenu;
++    config->IgrConfirmCircle = gSelectButton == KEY_CIRCLE;
++#ifdef RETROACHIEVEMENTS
++    config->RaKnown = sbGetRaInfo(&config->RaTotal, &config->RaUnlocked);
++#endif
++
+ #ifdef __DEBUG
+ 
+     sysPrintEECoreConfig(config);
