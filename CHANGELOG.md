@@ -5,7 +5,7 @@
 ### Hints and Glyphs (Controller Settings)
 - **A new page for the button hints and glyphs.** Every row starts on **Theme**, which shows what the theme chose. Pick anything else and it is yours, and it wins over every theme.
 - **Hint Layout:** Row (one line, as before) or Column (one hint a line, a list down the side).
-- **Hint Labels:** Glyph and Label, or Glyph Only for glyphs that carry their own words. A hint whose glyph the theme does not have keeps its label.
+- **Hint Labels:** Glyph and Label, Glyph Only for glyphs that carry their own words (a hint whose glyph the theme does not have keeps its label), or **Badges**: each hint's glyph and title together on one pill, in the glyph set's style. Badges are never on unless a theme asks for them or you pick them.
 - **Menu (START), Refresh (SELECT), Star (R3) and View (L3)** each get a row to show or hide that hint. The buttons work either way.
 - **Hint Order:** Theme, or your own order. Pick a hint for a place and the one that was there swaps into the picked hint's old place, so every hint is always there once.
 - **Glyph Set:** the theme's own glyphs, RIPPS2's, **Standard** or **White**, on every page.
@@ -14,12 +14,13 @@
 - **Standard** is the Adapt theme's glyphs: dark glossy buttons with coloured symbols.
 - **White** is the Grunge theme's: solid white with the symbols cut out.
 - Both now have everything RIPPS2 draws, made to match their set: L1, R1, L2+R2, L3, R3 and the four D-pad directions.
+- Every set, RIPPS2's own included, has a badge pill for Badges.
 
 ### For theme makers
 - New `conf_theme.cfg` keys, each a default the user can override in Hints and Glyphs:
   - `hints_hide=star,view` leaves hints off the bar;
   - `hints_order=run,info,menu` puts the named hints first, with the rest after;
-  - `hints_labels=0` shows glyphs only;
+  - `hints_labels=0` shows glyphs only, and `hints_labels=badge` draws each hint as one badge (ship a `hint_badge.png` to give the pill your own look);
   - `hints_layout=column` (with `hints_spacing=28`) gives one hint a line from the hint element's x and y;
   - `glyph_set=theme|ripps2|standard|white` picks the glyphs.
 - Hint names are `menu run info options refresh star view source`; the buttons' own names (`start select r3 l3 cross circle square triangle`) work too.

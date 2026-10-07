@@ -9,7 +9,7 @@
 #   ps2drive.ps1 -Elf <path> -Steps "wait:12,shot,down,down,shot,cross,wait:3,shot" [-Keep]
 #
 # Step tokens: wait:<sec>, shot, up, down, left, right, cross, circle, square, triangle,
-#              start, select, l1, r1, l2, r2, rup/rdown/rleft/rright (right stick), hold:<button>:<ms>,
+#              start, select, l1, r1, l2, r2, rup/rdown/rleft/rright (right stick), pause (PCSX2's Space), hold:<button>:<ms>,
 #              kdown:<button> / kup:<button> (hold across other steps)
 param(
   [string]$Elf,
@@ -62,7 +62,7 @@ function Grab($p) {
 # Virtual-key codes for the keyboard bindings in [Pad1] plus the F8 screenshot hotkey
 $vk = @{ up=0x26; down=0x28; left=0x25; right=0x27; cross=0x58; circle=0x43; square=0x5A; triangle=0x53;
          start=0x0D; select=0x08; l1=0x51; r1=0x45; l2=0x31; r2=0x33; f8=0x77;
-         rup=0x49; rdown=0x4B; rleft=0x4A; rright=0x4C; rec=0x7A; l3=0x56; r3=0x42 }  # l3: V, r3: B  # rec: F11, PCSX2 video capture on/off  # right stick on I/K/J/L (Pad1 keyboard binds)
+         rup=0x49; rdown=0x4B; rleft=0x4A; rright=0x4C; rec=0x7A; l3=0x56; r3=0x42; pause=0x20 }  # l3: V, r3: B  # rec: F11, PCSX2 video capture on/off  # right stick on I/K/J/L (Pad1 keyboard binds)
 $extended = @(0x25, 0x26, 0x27, 0x28)
 
 # Bring PCSX2 to the front. Windows can refuse a plain SetForegroundWindow, so if it does,

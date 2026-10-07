@@ -7,7 +7,8 @@ Standard is the Adapt theme's glyphs (dark glossy buttons, coloured symbols). Wh
 theme's (solid white, symbols cut out). Both themes are the user's own work. Their face buttons and
 START / SELECT are taken as they are; everything the themes never drew (L1, R1, L2+R2, L3, R3 and the
 four D-pad directions) is drawn here in each set's own style, at the same sizes as RIPPS2's glyphs
-(Standard) or half again as big, like Grunge's face buttons (White).
+(Standard) or half again as big, like Grunge's face buttons (White). Each set, RIPPS2's own included
+(hint_badge.png), also gets the pill a hint badge sits on (hints_labels=badge).
 
     python elf/theme/tools/make_glyph_sets.py --standard <thm_Adapt folder> --white <thm_Grunge folder> --font <ttf>
 
@@ -30,7 +31,7 @@ SS = 4
 COPIED = ('cross', 'circle', 'square', 'triangle', 'start', 'select')
 PILLS = ('L1', 'R1', 'L3', 'R3')
 ARMS = ('up', 'down', 'left', 'right')
-NAMES = COPIED + PILLS + ('L2R2',) + ARMS  # every glyph a set carries, in the order the ELF lists them
+NAMES = COPIED + PILLS + ('L2R2',) + ARMS + ('badge',)  # every glyph a set carries, in the order the ELF lists them
 
 
 def canvas(w, h):
@@ -162,6 +163,42 @@ def white_dpad(arm):
     return im
 
 
+# ---- hint badges (hints_labels=badge): the pill each hint's glyph and title sit on together. The engine keeps
+# each end's half round and stretches the middle column, so a pill is 40 x 28 with a flat middle.
+BADGE_W, BADGE_H = 40, 28
+
+
+def badge_mask():
+    m = Image.new('L', (BADGE_W * SS, BADGE_H * SS), 0)
+    ImageDraw.Draw(m).rounded_rectangle((1 * SS, 1 * SS, (BADGE_W - 1) * SS, (BADGE_H - 1) * SS), radius=13 * SS, fill=255)
+    return m
+
+
+def ripps2_badge():
+    """RIPPS2's own: its glyphs' faint navy fill and light blue outline."""
+    im, d = canvas(BADGE_W, BADGE_H)
+    d.rounded_rectangle((1.5 * SS, 1.5 * SS, (BADGE_W - 1.5) * SS, (BADGE_H - 1.5) * SS), radius=12.5 * SS,
+                        fill=(6, 14, 44, 170), outline=(178, 198, 248, 240), width=round(2.0 * SS))
+    return im
+
+
+def std_badge():
+    """Standard: the glossy grey of its buttons, with their darker rim."""
+    im = Image.new('RGBA', (BADGE_W * SS, BADGE_H * SS), (0, 0, 0, 0))
+    im.paste(std_fill(BADGE_W, BADGE_H), (0, 0), badge_mask())
+    ImageDraw.Draw(im).rounded_rectangle((1 * SS, 1 * SS, (BADGE_W - 1) * SS, (BADGE_H - 1) * SS), radius=13 * SS,
+                                         outline=STD_RIM, width=round(1.6 * SS))
+    return im
+
+
+def white_badge():
+    """White: a white outline round a dark fill, so the solid white glyphs keep their cut out symbols."""
+    im, d = canvas(BADGE_W, BADGE_H)
+    d.rounded_rectangle((1.5 * SS, 1.5 * SS, (BADGE_W - 1.5) * SS, (BADGE_H - 1.5) * SS), radius=12.5 * SS,
+                        fill=(10, 10, 12, 175), outline=WHITE, width=round(2.0 * SS))
+    return im
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--standard', required=True, help="the Adapt theme's folder (cross.png ... select.png)")
@@ -184,6 +221,9 @@ def main():
     for arm in ARMS:
         written.append(write(std_dpad(arm), 'glyph_standard_' + arm))
         written.append(write(white_dpad(arm), 'glyph_white_' + arm))
+    written.append(write(ripps2_badge(), 'hint_badge'))
+    written.append(write(std_badge(), 'glyph_standard_badge'))
+    written.append(write(white_badge(), 'glyph_white_badge'))
     print('wrote', len(written), 'glyphs to', OUT)
 
 

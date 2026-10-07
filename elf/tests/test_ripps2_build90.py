@@ -20,7 +20,7 @@ thm, gui, mk, dia, opl, hints, hdr = (rd('src/themes.c'), rd('src/gui.c'), rd('M
                                       rd('src/ripps2hints.c'), rd('include/ripps2.h'))
 fail = []
 
-GLYPHS = ('cross', 'circle', 'square', 'triangle', 'start', 'select', 'L1', 'R1', 'L2R2', 'L3', 'R3', 'up', 'down', 'left', 'right')
+GLYPHS = ('cross', 'circle', 'square', 'triangle', 'start', 'select', 'L1', 'R1', 'L2R2', 'L3', 'R3', 'up', 'down', 'left', 'right', 'badge')
 
 # the glyph sets: built in, every glyph present and 8-bit
 if 'ripps2hints.o' not in mk:
@@ -37,6 +37,10 @@ for s in ('standard', 'white'):
             fail.append('%s.png must be an 8-bit palette PNG' % name)
 if 'thmGlyphSetLoad(newT, ripps2GlyphSetFor(newT->glyphSetDef), 0)' not in thm or 'thmGlyphSetRefresh();' not in gui:
     fail.append('the glyph set in effect must load with the theme and when it changes')
+if not (pillars / 'theme' / 'gfx' / 'hint_badge.png').exists() or 'hint_badge' not in mk or '"hint_badge"' not in rd('src/textures.c'):
+    fail.append("RIPPS2's own hint badge must be built in and replaceable by a theme (hint_badge)")
+if '!strcasecmp(v, "badge")' not in thm or 'pickLabels[] = {"Theme", "Glyph and Label", "Glyph Only", "Badges"' not in hints:
+    fail.append('badges must come from hints_labels=badge (and the Hint Labels row)')
 if 'RIPPS2_DPAD_UP], RIPPS2_DPAD_UP, themePath' not in thm:
     fail.append('the D-pad glyphs must load with the theme')
 
@@ -109,7 +113,13 @@ int main(void)
     gRipps2HintOrder[0] = '\0';
     CHECK(ripps2HintRank(RIPPS2_HINT_RUN) == 0);
 
-    CHECK(ripps2HintLabels() == 1);
+    CHECK(ripps2HintLabels() == 1); // badges only when asked for: glyph and label by default
+    th.hintsLabelsDef = 2;
+    CHECK(ripps2HintLabels() == 2);
+    gRipps2HintLabels = 3;
+    th.hintsLabelsDef = 1;
+    CHECK(ripps2HintLabels() == 2);
+    gRipps2HintLabels = 0;
     th.hintsLabelsDef = 0;
     CHECK(ripps2HintLabels() == 0);
     gRipps2HintLabels = 1;
@@ -160,5 +170,5 @@ if cc and not fail:
                 if r.returncode:
                     fail.append('the hint rules: ' + r.stdout.strip())
 
-print('\n'.join(fail) or 'build90: hint keys, Hints and Glyphs (Theme first, the user wins), Hint Order, Standard and White glyph sets OK')
+print('\n'.join(fail) or 'build90: hint keys, Hints and Glyphs (Theme first, the user wins), Hint Order, badges, Standard and White glyph sets OK')
 sys.exit(1 if fail else 0)

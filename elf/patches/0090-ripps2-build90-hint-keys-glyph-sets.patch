@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index 6e8caa0..4cbfa5a 100644
+index 6e8caa0..073330d 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -133,7 +133,7 @@ ifneq ($(GIT_TAG),latest)
@@ -11,13 +11,15 @@ index 6e8caa0..4cbfa5a 100644
  		dia.o ioman.o texcache.o themes.o supportbase.o bdmsupport.o netsupport.o ethsupport.o httpcatalog.o httpsupport.o udpfssupport.o hddsupport.o zso.o lz4.o launchdiag.o \
  		appsupport.o mmcesupport.o artindex.o vcdsupport.o cuesupport.o libview.o retrogem.o folderbrowse.o gui.o guigame.o vmc_groups.o textures.o opl.o atlas.o nbns.o httpclient.o gsm.o cheatman.o cheatconfig.o sound.o ps2cnf.o tar.o
  
-@@ -167,6 +167,9 @@ PNG_ASSETS = load0 load1 load2 load3 load4 load5 load6 load7 usb usb_bd ilk_bd \
+@@ -166,7 +166,10 @@ PNG_ASSETS = load0 load1 load2 load3 load4 load5 load6 load7 usb usb_bd ilk_bd \
+ 	# unused icons - up down l2 r2
  
  # RIPPS2: glass info panel and PS2 selector mark (gfx/ripps2_*.png, copied in by RIPPS2's build.sh)
- PNG_ASSETS += ripps2_glass ripps2_mark ripps2_mark_glow L2R2 ripps2_ps1logo ripps2_ps2logo ripps2_grid_icons ripps2_up ripps2_down
+-PNG_ASSETS += ripps2_glass ripps2_mark ripps2_mark_glow L2R2 ripps2_ps1logo ripps2_ps2logo ripps2_grid_icons ripps2_up ripps2_down
++PNG_ASSETS += ripps2_glass ripps2_mark ripps2_mark_glow L2R2 ripps2_ps1logo ripps2_ps2logo ripps2_grid_icons ripps2_up ripps2_down hint_badge
 +# RIPPS2 build 90: the Standard and White glyph sets (glyph_set=, Controller Settings > Hints and Glyphs)
-+PNG_ASSETS += glyph_standard_cross glyph_standard_circle glyph_standard_square glyph_standard_triangle glyph_standard_start glyph_standard_select glyph_standard_L1 glyph_standard_R1 glyph_standard_L2R2 glyph_standard_L3 glyph_standard_R3 glyph_standard_up glyph_standard_down glyph_standard_left glyph_standard_right \
-+	glyph_white_cross glyph_white_circle glyph_white_square glyph_white_triangle glyph_white_start glyph_white_select glyph_white_L1 glyph_white_R1 glyph_white_L2R2 glyph_white_L3 glyph_white_R3 glyph_white_up glyph_white_down glyph_white_left glyph_white_right
++PNG_ASSETS += glyph_standard_cross glyph_standard_circle glyph_standard_square glyph_standard_triangle glyph_standard_start glyph_standard_select glyph_standard_L1 glyph_standard_R1 glyph_standard_L2R2 glyph_standard_L3 glyph_standard_R3 glyph_standard_up glyph_standard_down glyph_standard_left glyph_standard_right glyph_standard_badge \
++	glyph_white_cross glyph_white_circle glyph_white_square glyph_white_triangle glyph_white_start glyph_white_select glyph_white_L1 glyph_white_R1 glyph_white_L2R2 glyph_white_L3 glyph_white_R3 glyph_white_up glyph_white_down glyph_white_left glyph_white_right glyph_white_badge
  
  # The RA cover mark is embedded ONLY in the RA flavour: the default build has no
  # RA_MARK enum member and no table row for it, so embedding the bitmap there would
@@ -67,7 +69,7 @@ index 56a0719..4f259f1 100644
  extern struct UIItem diaVMCConfig[];
  extern struct UIItem diaGSConfig[];
 diff --git a/include/ripps2.h b/include/ripps2.h
-index a3e6a17..1728c5a 100644
+index a3e6a17..1a2c65e 100644
 --- a/include/ripps2.h
 +++ b/include/ripps2.h
 @@ -93,6 +93,28 @@ float ripps2GlyphsAlpha(int which); // 0..1 this frame; call once a frame while
@@ -82,13 +84,13 @@ index a3e6a17..1728c5a 100644
 +enum { RIPPS2_GLYPHSET_THEME = 0, RIPPS2_GLYPHSET_RIPPS2, RIPPS2_GLYPHSET_STANDARD, RIPPS2_GLYPHSET_WHITE, RIPPS2_GLYPHSET_COUNT };
 +enum { RIPPS2_PICK_THEME = 0, RIPPS2_PICK_SHOWN, RIPPS2_PICK_HIDDEN }; // a hint's own row
 +extern int gRipps2HintLayout;  // 0 Theme, 1 Row, 2 Column
-+extern int gRipps2HintLabels;  // 0 Theme, 1 Glyph and Label, 2 Glyph Only
++extern int gRipps2HintLabels;  // 0 Theme, 1 Glyph and Label, 2 Glyph Only, 3 Badges
 +extern int gRipps2HintPick[RIPPS2_HINT_COUNT]; // RIPPS2_PICK_*; rows for Menu, Refresh, Star and View
 +extern char gRipps2HintOrder[48]; // "" follows the theme; else hint names, comma separated, first to last
 +extern int gRipps2GlyphSet;    // RIPPS2_GLYPHSET_*
 +int ripps2HintToken(int textId, int iconId);              // which hint a hint bar entry is (RIPPS2_HINT_*)
 +int ripps2HintShown(int token);                           // the user's pick, else the theme's hints_hide
-+int ripps2HintLabels(void);                               // 1: glyph and label, 0: glyph only
++int ripps2HintLabels(void);                               // 1: glyph and label, 0: glyph only, 2: badges
 +int ripps2HintColumn(void);                               // 1: one hint a line
 +int ripps2HintRank(int token);                            // its place in the order in effect (lower first)
 +int ripps2HintParse(const char *list, int *out, int max); // hint names -> RIPPS2_HINT_* in order, each once
@@ -108,8 +110,20 @@ index a3e6a17..1728c5a 100644
  int ripps2EditFile(const char *path);                              // 1 when it saved
  int ripps2EditMetadata(config_set_t *config, const char *gameName); // 1 when SAVE was chosen (values set, not written)
  
+diff --git a/include/textures.h b/include/textures.h
+index 3f6db0a..95536c7 100644
+--- a/include/textures.h
++++ b/include/textures.h
+@@ -129,6 +129,7 @@ enum INTERNAL_TEXTURE {
+     RIPPS2_GRID_ICONS, // RIPPS2: the file browser settings grid's line icons and their glows, one atlas
+     RIPPS2_DPAD_UP,    // RIPPS2 build 70: the D-pad glyph, Up lit (Coverflow's drive glyphs; image ripps2_up)
+     RIPPS2_DPAD_DOWN,  // RIPPS2 build 70: the D-pad glyph, Down lit (image ripps2_down)
++    RIPPS2_HINT_BADGE, // RIPPS2 build 90: the pill a hint badge is drawn on, stretched across its middle (image hint_badge)
+ #ifdef RETROACHIEVEMENTS
+     // RA mark over a tracked game's cover (theme override "ra_mark"). Appended last:
+     // texId is positional.
 diff --git a/include/themes.h b/include/themes.h
-index 148e2d7..8e4b271 100644
+index 148e2d7..6473a0a 100644
 --- a/include/themes.h
 +++ b/include/themes.h
 @@ -229,6 +229,15 @@ typedef struct theme
@@ -119,7 +133,7 @@ index 148e2d7..8e4b271 100644
 +    // RIPPS2 build 90: the hint bar and the glyphs as the theme sets them (ripps2hints.c reads these)
 +    int hintsHide;                      // hints_hide: bits 1 << RIPPS2_HINT_*
 +    int hintsOrder[8], hintsOrderCount; // hints_order (8 = RIPPS2_HINT_COUNT)
-+    int hintsLabelsDef;                 // hints_labels: -1 not set, 0 glyph only, 1 glyph and label
++    int hintsLabelsDef;                 // hints_labels: -1 not set, 0 glyph only, 1 glyph and label, 2 badge
 +    int hintsColumnDef;                 // hints_layout: -1 not set, 0 row, 1 column
 +    int hintsSpacing;                   // hints_spacing: a column's line pitch
 +    int glyphSetDef;                    // glyph_set: RIPPS2_GLYPHSET_* (THEME: its own PNGs)
@@ -137,7 +151,7 @@ index 148e2d7..8e4b271 100644
  int thmGridColumns(void); // RIPPS2 build 78: the active Grid element's columns, 0 without one
  void thmDrawBackdrop(void); // RIPPS2 build 70: the theme's backdrop images (RIPFLOW's frame) on the other tabs
 diff --git a/lng_tmpl/_base.yml b/lng_tmpl/_base.yml
-index 2f3140c..76deaa3 100644
+index 2f3140c..498b5e9 100644
 --- a/lng_tmpl/_base.yml
 +++ b/lng_tmpl/_base.yml
 @@ -1471,6 +1471,40 @@ gui_strings:
@@ -155,7 +169,7 @@ index 2f3140c..76deaa3 100644
 +- label: RIPPS2_HINT_LABELS
 +  string: Hint Labels
 +- label: HINT_RIPPS2_HINT_LABELS
-+  string: "Glyph Only draws just the buttons, for glyphs that carry their own words. A hint whose glyph the theme lacks keeps its label."
++  string: "Glyph Only draws just the buttons, for glyphs that carry their own words. Badges puts each hint's glyph and title together on one badge."
 +- label: RIPPS2_HINT_MENU
 +  string: Menu Hint (START)
 +- label: RIPPS2_HINT_REFRESH
@@ -331,17 +345,18 @@ index 2617044..cab7c67 100644
          configSetStr(configOPL, CONFIG_OPL_LANGUAGE, lngGetValue());
 diff --git a/src/ripps2hints.c b/src/ripps2hints.c
 new file mode 100644
-index 0000000..b011380
+index 0000000..b584544
 --- /dev/null
 +++ b/src/ripps2hints.c
-@@ -0,0 +1,342 @@
+@@ -0,0 +1,344 @@
 +/*
 +  RIPPS2 build 90: the button hints and glyphs, as a theme sets them and as the user overrides them.
 +
 +  Theme keys (conf_theme.cfg, top level, all optional):
 +    hints_hide=star,view        hints a theme leaves off the hint bar
 +    hints_order=run,info,menu   the hints named come first, in that order; the rest follow as the page adds them
-+    hints_labels=0              glyphs only (1, the default: glyph and label)
++    hints_labels=0              glyphs only (1, the default: glyph and label; badge: each hint one badge, its glyph
++                                and title together on the glyph set's pill, hint_badge.png)
 +    hints_layout=column         one hint a line, from the hint element's x/y down (row, the default: one line)
 +    hints_spacing=28            a column's line pitch
 +    glyph_set=standard          the glyphs every page draws: theme (its own PNGs, the default), ripps2, standard, white
@@ -464,9 +479,10 @@ index 0000000..b011380
 +
 +int ripps2HintLabels(void)
 +{
-+    if (gRipps2HintLabels)
-+        return gRipps2HintLabels == 1;
-+    return gTheme == NULL || gTheme->hintsLabelsDef != 0;
++    static const int fromRow[4] = {1, 1, 0, 2}; // Theme (unused), Glyph and Label, Glyph Only, Badges
++    if (gRipps2HintLabels > 0 && gRipps2HintLabels < 4)
++        return fromRow[gRipps2HintLabels];
++    return gTheme == NULL || gTheme->hintsLabelsDef < 0 ? 1 : gTheme->hintsLabelsDef;
 +}
 +
 +int ripps2HintColumn(void)
@@ -507,7 +523,7 @@ index 0000000..b011380
 +// ---- Controller Settings > Hints and Glyphs ----
 +
 +static const char *pickLayout[] = {"Theme", "Row", "Column", NULL};
-+static const char *pickLabels[] = {"Theme", "Glyph and Label", "Glyph Only", NULL};
++static const char *pickLabels[] = {"Theme", "Glyph and Label", "Glyph Only", "Badges", NULL};
 +static const char *pickShow[] = {"Theme", "Shown", "Hidden", NULL};
 +static const char *pickGlyphs[] = {"Theme", "RIPPS2", "Standard", "White", NULL};
 +static const char *pickFollow[] = {"Theme", "Your Order", NULL};
@@ -521,7 +537,7 @@ index 0000000..b011380
 +    int v, i;
 +    if (diaGetInt(diaHintsConfig, UICFG_RIPPS2_HINT_LAYOUT, &v) && v >= 0 && v < 3)
 +        gRipps2HintLayout = v;
-+    if (diaGetInt(diaHintsConfig, UICFG_RIPPS2_HINT_LABELS, &v) && v >= 0 && v < 3)
++    if (diaGetInt(diaHintsConfig, UICFG_RIPPS2_HINT_LABELS, &v) && v >= 0 && v < 4)
 +        gRipps2HintLabels = v;
 +    for (i = 0; i < 4; i++)
 +        if (diaGetInt(diaHintsConfig, pickRows[i], &v) && v >= 0 && v < 3)
@@ -654,7 +670,7 @@ index 0000000..b011380
 +    int v, i;
 +    if (configGetInt(config, "ripps2_hint_layout", &v) && v >= 0 && v < 3)
 +        gRipps2HintLayout = v;
-+    if (configGetInt(config, "ripps2_hint_labels", &v) && v >= 0 && v < 3)
++    if (configGetInt(config, "ripps2_hint_labels", &v) && v >= 0 && v < 4)
 +        gRipps2HintLabels = v;
 +    for (i = 0; i < 4; i++)
 +        if (configGetInt(config, keys[i], &v) && v >= 0 && v < 3)
@@ -677,31 +693,77 @@ index 0000000..b011380
 +    configSetStr(config, "ripps2_hint_order", gRipps2HintOrder);
 +}
 +#endif // RIPPS2_HINTS_HOST_TEST
+diff --git a/src/textures.c b/src/textures.c
+index bd00401..0e2f45c 100644
+--- a/src/textures.c
++++ b/src/textures.c
+@@ -118,6 +118,7 @@ extern void *ripps2_ps2logo_png;
+ extern void *ripps2_grid_icons_png; // RIPPS2: made by ps2-pillars elf/theme/make_grid_icons.py
+ extern void *ripps2_up_png;   // RIPPS2 build 70: D-pad glyphs, ps2-pillars elf/theme/tools/make_glyphs.py
+ extern void *ripps2_down_png;
++extern void *hint_badge_png; // RIPPS2 build 90: hint badges (hints_labels=badge)
+ #ifdef RETROACHIEVEMENTS
+ extern void *ra_mark_png;
+ #endif
+@@ -291,6 +292,7 @@ static texture_t internalDefault[TEXTURES_COUNT] = {
+     {RIPPS2_GRID_ICONS, "ripps2_grid_icons", &ripps2_grid_icons_png},
+     {RIPPS2_DPAD_UP, "ripps2_up", &ripps2_up_png},
+     {RIPPS2_DPAD_DOWN, "ripps2_down", &ripps2_down_png},
++    {RIPPS2_HINT_BADGE, "hint_badge", &hint_badge_png},
+ #ifdef RETROACHIEVEMENTS
+     // Positional: guarded by the same #ifdef as RA_MARK in enum INTERNAL_TEXTURE. Without
+     // this row TEXTURES_COUNT grows but the initialiser does not, leaving the last slot
 diff --git a/src/themes.c b/src/themes.c
-index ab5adeb..a4530e5 100644
+index ab5adeb..e702ff2 100644
 --- a/src/themes.c
 +++ b/src/themes.c
-@@ -3391,6 +3391,32 @@ static u64 hintFade(u64 color, float k)
+@@ -3391,6 +3391,58 @@ static u64 hintFade(u64 color, float k)
      return (color & ~(0xFFULL << 24)) | ((u64)(int)(((color >> 24) & 0xFF) * k) << 24);
  }
  
-+// RIPPS2 build 90: one hint bar entry, glyph and label, or the glyph alone (a hint whose glyph the theme
-+// does not have keeps its label, or it would vanish). Returns the x after it.
++// RIPPS2 build 90: one hint bar entry: glyph and label (labels 1), the glyph alone (0; a hint whose glyph the
++// theme does not have keeps its label, or it would vanish), or a badge (2: glyph and label together on the
++// glyph set's pill, hint_badge). Returns the x after it.
++#define HINT_BADGE_H     26 // the pill: 3 above and below the 20 px glyph
++#define HINT_BADGE_PAD_L 4
++#define HINT_BADGE_PAD_R 9
++
 +static int hintGlyphOnly(menu_hint_item_t *h, int labels)
 +{
 +    GSTEXTURE *t = thmGetTexture(h->icon_id);
 +    return !labels && t != NULL && t->Mem != NULL;
 +}
 +
++static GSTEXTURE *hintBadge(int labels)
++{
++    GSTEXTURE *b = labels == 2 ? thmGetTexture(RIPPS2_HINT_BADGE) : NULL;
++    return b != NULL && b->Width >= 4 ? b : NULL; // no pill (a theme without one, use_default=0): plain glyph and label
++}
++
 +static int hintEntryWidth(menu_hint_item_t *h, int labels, int font)
 +{
 +    GSTEXTURE *t = thmGetTexture(h->icon_id);
 +    int iconW = (t && t->Mem) ? rmWideScale((t->Width * 20) / t->Height) + 2 : 0;
-+    return hintGlyphOnly(h, labels) ? iconW : iconW + rmUnScaleX(fntCalcDimensions(font, _l(h->text_id)));
++    if (hintGlyphOnly(h, labels))
++        return iconW;
++    return iconW + rmUnScaleX(fntCalcDimensions(font, _l(h->text_id))) + (hintBadge(labels) ? HINT_BADGE_PAD_L + HINT_BADGE_PAD_R : 0);
 +}
 +
 +static int drawHintEntry(menu_hint_item_t *h, int labels, int font, int x, int y, u64 col, u64 iconCol)
 +{
++    GSTEXTURE *badge = hintBadge(labels);
++    if (badge != NULL) {
++        int w = hintEntryWidth(h, labels, font);
++        float half = badge->Width / 2.0f;
++        int capW = (int)(half * HINT_BADGE_H / badge->Height), cap = rmWideScale(capW), mid = w - 2 * cap;
++        int by = y + 10 - HINT_BADGE_H / 2;
++        rmDrawPixmapPart(badge, x, by, ALIGN_NONE, capW, HINT_BADGE_H, SCALING_RATIO, iconCol, 0, 0, half, badge->Height);
++        if (mid > 0)
++            rmDrawPixmapPart(badge, x + cap, by, ALIGN_NONE, mid, HINT_BADGE_H, SCALING_NONE, iconCol, half - 0.5f, 0, half + 0.5f, badge->Height);
++        rmDrawPixmapPart(badge, x + cap + (mid > 0 ? mid : 0), by, ALIGN_NONE, capW, HINT_BADGE_H, SCALING_RATIO, iconCol, half, 0, badge->Width, badge->Height);
++        guiDrawIconAndTextA(h->icon_id, h->text_id, font, x + HINT_BADGE_PAD_L, y, col, iconCol);
++        return x + w;
++    }
 +    if (hintGlyphOnly(h, labels)) {
 +        GSTEXTURE *t = thmGetTexture(h->icon_id);
 +        int w = (t->Width * 20) / t->Height;
@@ -714,7 +776,7 @@ index ab5adeb..a4530e5 100644
  static void drawHintText(struct menu_list *menu, struct submenu_list *item, config_set_t *config, struct theme_element *elem)
  {
      if (thmElemSkipsDevice(elem, menu->item->icon_id))
-@@ -3419,29 +3445,50 @@ static void drawHintText(struct menu_list *menu, struct submenu_list *item, conf
+@@ -3419,29 +3471,50 @@ static void drawHintText(struct menu_list *menu, struct submenu_list *item, conf
          last->next = &sourceHint; // unlinked again below, before the lock is let go
      }
      if (hint) {
@@ -729,6 +791,12 @@ index ab5adeb..a4530e5 100644
 -            int iconW = (iconTex && iconTex->Mem) ? rmWideScale((iconTex->Width * 20) / iconTex->Height) + 2 : 0;
 -            total += iconW + rmUnScaleX(fntCalcDimensions(elem->font, _l(h->text_id)));
 -            count++;
+-        }
+-        int avail = screenWidth - 2 * margin;
+-        if (count > 1 && total + gap * (count - 1) > avail) {
+-            gap = (avail - total) / (count - 1);
+-            if (gap < 4)
+-                gap = 4;
 +        // RIPPS2 build 90: the hints the theme and the user keep, in the order in effect (Hints and Glyphs);
 +        // a stable sort, so hints of one rank stay in the order the page added them
 +        menu_hint_item_t *row[16], *h;
@@ -743,12 +811,6 @@ index ab5adeb..a4530e5 100644
 +                row[j] = row[j - 1];
 +            row[j] = k;
          }
--        int avail = screenWidth - 2 * margin;
--        if (count > 1 && total + gap * (count - 1) > avail) {
--            gap = (avail - total) / (count - 1);
--            if (gap < 4)
--                gap = 4;
--        }
 -        int x = elem->aligned ? (screenWidth - (total + gap * (count - 1))) / 2 : elem->posX;
 +        u64 col = hintFade(elem->color, hintA), iconCol = hintFade(gDefaultCol, hintA);
 +
@@ -786,7 +848,7 @@ index ab5adeb..a4530e5 100644
          }
          if (showSource) {
              menu_hint_item_t *h2 = menu->item->hints;
-@@ -4390,6 +4437,72 @@ static int thmLoadResource(GSTEXTURE *texture, int texId, const char *themePath,
+@@ -4390,6 +4463,74 @@ static int thmLoadResource(GSTEXTURE *texture, int texId, const char *themePath,
      return success;
  }
  
@@ -803,12 +865,13 @@ index ab5adeb..a4530e5 100644
 +    GLYPH_PNG(set, cross)                                                                                         \
 +    GLYPH_PNG(set, circle) GLYPH_PNG(set, square) GLYPH_PNG(set, triangle) GLYPH_PNG(set, start)                 \
 +        GLYPH_PNG(set, select) GLYPH_PNG(set, L1) GLYPH_PNG(set, R1) GLYPH_PNG(set, L2R2) GLYPH_PNG(set, L3)      \
-+            GLYPH_PNG(set, R3) GLYPH_PNG(set, up) GLYPH_PNG(set, down) GLYPH_PNG(set, left) GLYPH_PNG(set, right)
++            GLYPH_PNG(set, R3) GLYPH_PNG(set, up) GLYPH_PNG(set, down) GLYPH_PNG(set, left) GLYPH_PNG(set, right) \
++                GLYPH_PNG(set, badge)
 +GLYPH_SET_PNGS(standard)
 +GLYPH_SET_PNGS(white)
 +
 +static const int glyphSlots[] = {CROSS_ICON, CIRCLE_ICON, SQUARE_ICON, TRIANGLE_ICON, START_ICON, SELECT_ICON, L1_ICON, R1_ICON,
-+                                 R2_ICON, L3_ICON, R3_ICON, RIPPS2_DPAD_UP, RIPPS2_DPAD_DOWN, LEFT_ICON, RIGHT_ICON};
++                                 R2_ICON, L3_ICON, R3_ICON, RIPPS2_DPAD_UP, RIPPS2_DPAD_DOWN, LEFT_ICON, RIGHT_ICON, RIPPS2_HINT_BADGE};
 +#define GLYPH_SLOTS ((int)(sizeof(glyphSlots) / sizeof(glyphSlots[0])))
 +#define GLYPH_ROW(set)                                                                                                          \
 +    {                                                                                                                           \
@@ -820,7 +883,8 @@ index ab5adeb..a4530e5 100644
 +            {&glyph_##set##_L2R2_png, &size_glyph_##set##_L2R2_png}, {&glyph_##set##_L3_png, &size_glyph_##set##_L3_png},       \
 +            {&glyph_##set##_R3_png, &size_glyph_##set##_R3_png}, {&glyph_##set##_up_png, &size_glyph_##set##_up_png},           \
 +            {&glyph_##set##_down_png, &size_glyph_##set##_down_png}, {&glyph_##set##_left_png, &size_glyph_##set##_left_png},   \
-+            {&glyph_##set##_right_png, &size_glyph_##set##_right_png}                                                          \
++            {&glyph_##set##_right_png, &size_glyph_##set##_right_png},                                                         \
++            {&glyph_##set##_badge_png, &size_glyph_##set##_badge_png}                                                          \
 +    }
 +static const struct
 +{
@@ -859,7 +923,7 @@ index ab5adeb..a4530e5 100644
  static void thmSetColors(theme_t *theme)
  {
      memcpy(theme->bgColor, gDefaultBgColor, 3);
-@@ -4809,6 +4922,11 @@ static int thmLoad(const char *themePath)
+@@ -4809,6 +4950,11 @@ static int thmLoad(const char *themePath)
      thmLoadResource(&newT->textures[RIPPS2_PS2_LOGO], RIPPS2_PS2_LOGO, themePath, GS_PSM_CT32, 1);
      thmLoadResource(&newT->textures[RIPPS2_GRID_ICONS], RIPPS2_GRID_ICONS, themePath, GS_PSM_CT32, 1); // RIPPS2: grid icons
      thmLoadResource(&newT->textures[R2_ICON], R2_ICON, themePath, GS_PSM_CT32, newT->useDefault); // RIPPS2: L2+R2 Random
@@ -871,7 +935,7 @@ index ab5adeb..a4530e5 100644
  
      // Embedded attribute glyphs (#Format/#Media/Aspect/Rating/Scan/Vmode values): BUILT-IN theme
      // ONLY. a1ae5e5e decoded these for every theme so badges could fall back to them on disk themes
-@@ -4869,6 +4987,31 @@ static int thmLoad(const char *themePath)
+@@ -4869,6 +5015,31 @@ static int thmLoad(const char *themePath)
          if (configGetStr(themeConfig, "category_order", &v) && v != NULL) // launch_disc_first | memory_files_first
              newT->catSwapDef = !strcasecmp(v, "memory_files_first") ? 1 : !strcasecmp(v, "launch_disc_first") ? 0 : -1;
      }
@@ -890,8 +954,8 @@ index ab5adeb..a4530e5 100644
 +        }
 +        if (configGetStr(themeConfig, "hints_order", &v) && v != NULL)
 +            newT->hintsOrderCount = ripps2HintParse(v, newT->hintsOrder, RIPPS2_HINT_COUNT);
-+        if (configGetInt(themeConfig, "hints_labels", &intValue))
-+            newT->hintsLabelsDef = intValue ? 1 : 0;
++        if (configGetStr(themeConfig, "hints_labels", &v) && v != NULL) // 0 glyph only, 1 glyph and label, badge
++            newT->hintsLabelsDef = !strcasecmp(v, "badge") || !strcmp(v, "2") ? 2 : !strcmp(v, "0") ? 0 : 1;
 +        if (configGetStr(themeConfig, "hints_layout", &v) && v != NULL)
 +            newT->hintsColumnDef = !strcasecmp(v, "column") ? 1 : !strcasecmp(v, "row") ? 0 : -1;
 +        if (configGetInt(themeConfig, "hints_spacing", &intValue) && intValue >= 12 && intValue <= 96)
