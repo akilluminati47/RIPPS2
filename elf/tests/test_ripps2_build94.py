@@ -90,9 +90,9 @@ int main(void)
     printf("%s", ach); /* shown when a check fails */
     if (n != 3 || list[0].unlocked != 1 || list[1].unlocked != 0 || list[1].points != 10) return 4;
     /* UTF-8 kept for the menus' fonts; marks they lack made plain */
-    if (strcmp(list[0].desc, "Cause a \"takedown\" in any race") || strcmp(list[1].title, "CafÃ© Racer")) return 5;
+    if (strcmp(list[0].desc, "Cause a \"takedown\" in any race") || strcmp(list[1].title, "Caf\xc3\xa9 Racer")) return 5;
     if (strcmp(list[1].desc, "Win the cup")) return 6;
-    if (strcmp(list[2].title, "PokÃ©mon's Rival") || strcmp(list[2].desc, "Beat \"Blue\"...")) return 15;
+    if (strcmp(list[2].title, "Pok\xc3\xa9mon's Rival") || strcmp(list[2].desc, "Beat \"Blue\"...")) return 15;
     if (raHuntRead("nope", 4, list, 8) != -1) return 7;
     bytes = raHuntBlob(list, n, blob, sizeof(blob), &count);
     /* the locked ones, in the menu's lines: points, 1 title line, 1 description line; accents folded */
