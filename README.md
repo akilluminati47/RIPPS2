@@ -1,21 +1,21 @@
-<p align="center"><img src="media/ripps2-test-me.png" alt="RIPPS2: Test me, build 83, the dead elf in its blue hat over the towers"></p>
+<p align="center"><img src="media/ripps2-test-me.png" alt="RIPPS2: Test me, build 88, the dead elf in its blue hat over the towers"></p>
 
 # RIPPS2
 
-> ### Kill it: RIPPS2 build 83 (alpha)
+> ### Kill it: RIPPS2 build 88 (alpha)
 > **RIP PS2, the ELF killer.** ELF-sufficient, never ELF-destructive: your other ELFs stay safe on the [shelf](https://akilluminati47.github.io/RIPPS2/) (nothing is deleted unless you ask), they just get a well-earned rest.
-> 1. **[Download RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/download/v0.0.83-alpha/RIPPS2.elf)** (one file, about 2.9 MB), and the **[theme pack](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** if you like (Adapt, Adapt Rx, RIPgrid).
+> 1. **[Download RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/download/v0.0.88-alpha/RIPPS2.elf)** (one file, about 2.9 MB), and the **[theme pack](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** if you like (Adapt, Adapt Rx, RIPgrid).
 > 2. Copy it to a USB stick or memory card, and launch it from FreeMcBoot, PS2BBL, wLaunchELF or whatever you already use to start homebrew. In PCSX2: **System > Start File** and pick `RIPPS2.elf`.
 > 3. Tell us how it went: [open an issue](https://github.com/akilluminati47/RIPPS2/issues) or find **#RIPPS2** on the developers' Discord, [discord.gg/ggkCDWqhE](https://discord.gg/ggkCDWqhE) (invite good for October 2026).
 >
-> [What's new in build 83](https://github.com/akilluminati47/RIPPS2/releases/tag/v0.0.83-alpha) | [Changelog](CHANGELOG.md) | [Watch the build 83 reel](https://youtu.be/A27N9s6tumk) ([60-second Short](https://youtube.com/shorts/4QBe5UO2KxM)) | [Every release](https://github.com/akilluminati47/RIPPS2/releases)<br>
+> [What's new in build 88](https://github.com/akilluminati47/RIPPS2/releases/tag/v0.0.88-alpha) | [Changelog](CHANGELOG.md) | [Watch the build 83 reel](https://youtu.be/A27N9s6tumk) ([60-second Short](https://youtube.com/shorts/4QBe5UO2KxM)) | [Every release](https://github.com/akilluminati47/RIPPS2/releases)<br>
 > [Theme RIPPS2](https://github.com/akilluminati47/RIPPS2-themes) (no rebuild, agent friendly) | [Fill your AUDIO folder](#the-sound-ripps2-was-made-with) with RIPPS2 Audio Studio
 
 RIPPS2 is a PS2 front end in a single `.elf`: a teardown and rebuild of [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader) (the Open PS2 Loader fork) with its own look, launchers, file browser and save tools. Glass towers stand behind your games and orbit formations behind your files, all drawn live by the PS2.
 
 - **LAUNCH DISC** boots PS2, PS1 and DVD video discs, says which game is in the drive before you start it, and plays audio CDs with the towers turned into a spectrum analyzer.
 - **STORAGE** is your game library: every drive in one list, with art, an info page whose art crossfades with the screenshots, per-game settings, and R3 to star a game into Starred Games.
-- **MEMORY FILES** is a built-in file browser: copy, move and delete across memory cards, USB and HDD; open OPL's VMC card images like folders; export and import PSU saves; edit text files; Start opens its settings.
+- **MEMORY FILES** is a built-in file browser: copy, move and delete across memory cards, USB and HDD; open OPL's VMC card images like folders; export and import PSU saves; edit text files; Start opens its settings. Square on a memory card opens the **CARD MANAGER**: back a card up to a VMC, write a VMC's saves back, erase the game saves, format.
 
 It is **alpha**. It runs in PCSX2, and it is being tested now by ripto, nuno6573, zackcage6, eliminator1403, FifthFox and Mr.sus.60. Keep your usual loader close by, and tell us what breaks: feedback is what makes RIPPS2.
 
@@ -25,6 +25,7 @@ It is **alpha**. It runs in PCSX2, and it is being tested now by ripto, nuno6573
 - **RIPFLOW**, the built-in cover carousel, and **Colors and More**: six color themes (RIPPS2, Ember, Blood, Ectoplasm, Amethyst, Bone), D-pad glyphs, fading hints and category bar, the source name as a toast in the middle of the page; themes can pick all of it for themselves, and your own settings always win.
 - **Everything it needs, on board.** Neutrino 1.8.0, POPSTARTER and Ember ride inside the one `.elf` and install themselves where your games are; **STATUS** on the START menu shows where each one is and installs or sets it up.
 - **BIBLE**: PS2BBL 1.2.0 set up for RIPPS2, on a memory card or the internal HDD, so the console boots straight into it. Boot Loader > Manage shows what each card starts.
+- **An in-game menu** (Settings > General > In-Game Menu, off until consoles have shown it safe): L1+L2+R1+R2+SELECT+START pauses a game under Resume, Achievements and Exit Game, drawn over the game's own picture.
 - **Achievements** (SpiritofRA): RetroAchievements telemetry through the xeRAbora client on your PC, badges on tracked games, the disc in the tray, and **YOUR ACCOUNT**, every game you have checked with what you have unlocked.
 - **Cover Art** fetched by the PS2 itself over HTTPS, **720p and 1080i** drawn in one pass at full detail (text the right size since build 82), your **AUDIO** folder found on any drive, and towers and orbs that run all night at a steady 60 fps.
 - **Guard rails**: every build runs RiptOPL's host checks and RIPPS2's own, and a new warning in a RIPPS2 file fails it.
@@ -37,7 +38,7 @@ Put an `AUDIO` folder beside `RIPPS2.elf`. It takes sound effects as `.adp` file
 
 ### The sound RIPPS2 was made with
 
-RIPPS2 is voiced like a PS2 that never left the living room: **Sony's own console sounds**, Sony system music, and **one Nintendo track** to browse by (the RIPPS2 designer's own picks). None of it ships with RIPPS2; **[RIPPS2 Audio Studio](tools/audio-studio)** gets you there from the [BIOS dump of your own PS2](https://pcsx2.net/docs/setup/bios/) (the file PCSX2 uses) and your own copies of the music. Its **Start** rips the console's sounds into a full `AUDIO` folder; this is the map they go into.
+RIPPS2 is voiced like a PS2 that never left the living room: **Sony's own console sounds**, Sony system music, and **one Nintendo track** to browse by (the RIPPS2 designer's own picks). None of it ships with RIPPS2; **[RIPPS2 Audio Studio](tools/audio-studio)** gets you there from the [BIOS dump of your own PS2](https://pcsx2.net/docs/setup/bios/) (the file PCSX2 uses) and your own copies of the music. Its **Start** rips the console's sounds into a full `AUDIO` folder; this is the map they go into. Or skip the PC: **Audio Settings > BIOS Sounds > Rip** writes the menu sounds from the console RIPPS2 runs on straight into `AUDIO` (all but boot and launch, which are system music).
 
 | | Moment | `AUDIO` file | Sony's sound, from your own PS2 (Audio Studio > Your BIOS) |
 |:-:|---|---|---|
