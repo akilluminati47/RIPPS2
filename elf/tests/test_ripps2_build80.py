@@ -37,9 +37,11 @@ for act in ('ripps2NeutrinoInstallTo(', 'ripps2PopstarterInstall(', 'ripps2Ember
 nt = table(dia, 'diaNetConfig')
 if 'NETCFG_RA_TELEMETRY' in nt or 'NETCFG_RA_BADGES' in nt:
     fail.append('the Network page must not carry the RA switches any more')
-h = nt.find('{.label = {"RIPPS2", -1}}')
-if h < 0 or nt.index('NETCFG_NBD_BUTTON') < h or nt.index('NETCFG_POPSTARTER_BUTTON') > h:
-    fail.append('NBD and Cover Art sit under the RIPPS2 header, POPSTARTER network above it')
+# build 91 (the user's layout): no RIPPS2 header; a line under the share settings, then POPSTARTER's network
+# files, NBD, Cover Art (and Achievements) together
+s = nt.rfind('{UI_SPLITTER}', 0, nt.index('NETCFG_POPSTARTER_BUTTON'))
+if '{.label = {"RIPPS2", -1}}' in nt or s < 0 or not (nt.index('NETCFG_POPSTARTER_BUTTON') < nt.index('NETCFG_NBD_BUTTON') < nt.index('NETCFG_ART_BUTTON')):
+    fail.append('Network: a line, then POPSTARTER network, NBD and Cover Art together (no RIPPS2 header)')
 if not re.search(r'\{\.label = \{" ", -1\}\}\},\s*\{UI_BREAK\},\s*//[^\n]*\n\s*\{UI_BUTTON, NETCFG_OK', nt):
     fail.append('a clear chin row must sit right before the OK button')
 

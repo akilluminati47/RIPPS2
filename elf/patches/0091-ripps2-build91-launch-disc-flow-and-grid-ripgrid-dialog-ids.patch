@@ -1,0 +1,1496 @@
+diff --git a/Makefile b/Makefile
+index 073330d..4e8bc79 100644
+--- a/Makefile
++++ b/Makefile
+@@ -166,7 +166,7 @@ PNG_ASSETS = load0 load1 load2 load3 load4 load5 load6 load7 usb usb_bd ilk_bd \
+ 	# unused icons - up down l2 r2
+ 
+ # RIPPS2: glass info panel and PS2 selector mark (gfx/ripps2_*.png, copied in by RIPPS2's build.sh)
+-PNG_ASSETS += ripps2_glass ripps2_mark ripps2_mark_glow L2R2 ripps2_ps1logo ripps2_ps2logo ripps2_grid_icons ripps2_up ripps2_down hint_badge
++PNG_ASSETS += ripps2_glass ripps2_mark ripps2_mark_glow L2R2 ripps2_ps1logo ripps2_ps2logo ripps2_grid_icons ripps2_up ripps2_down hint_badge ripps2_disc
+ # RIPPS2 build 90: the Standard and White glyph sets (glyph_set=, Controller Settings > Hints and Glyphs)
+ PNG_ASSETS += glyph_standard_cross glyph_standard_circle glyph_standard_square glyph_standard_triangle glyph_standard_start glyph_standard_select glyph_standard_L1 glyph_standard_R1 glyph_standard_L2R2 glyph_standard_L3 glyph_standard_R3 glyph_standard_up glyph_standard_down glyph_standard_left glyph_standard_right glyph_standard_badge \
+ 	glyph_white_cross glyph_white_circle glyph_white_square glyph_white_triangle glyph_white_start glyph_white_select glyph_white_L1 glyph_white_R1 glyph_white_L2R2 glyph_white_L3 glyph_white_R3 glyph_white_up glyph_white_down glyph_white_left glyph_white_right glyph_white_badge
+@@ -192,7 +192,7 @@ AUDIO_OBJS =	boot.o cancel.o confirm.o cursor.o message.o transition.o bd_connec
+ # icon_sys.o + save_icn.o are the memory-card browser save icon for the settings folder.
+ # icon.sys names list.icn, copy.icn and del.icn; all three are the same artwork, so ONE blob is
+ # embedded and util.c writes it out under all three names (see saveIconName in src/util.c).
+-MISC_OBJS =	icon_sys.o save_icn.o icon_sys_A.o icon_sys_J.o icon_sys_C.o bible_xlf.o bible_mx4sio_xlf.o bible_hdd_xlf.o conf_theme_OPL.o theme_coverflow.o ripps2_font.o ripps2_sleek.o ripps2_sleekbold.o ripps2_sleekcase.o ripps2_one.o ripflow.o ripflowbold.o ember_elf.o ember_licence.o popstarter_elf.o neutrino_tgz.o
++MISC_OBJS =	icon_sys.o save_icn.o icon_sys_A.o icon_sys_J.o icon_sys_C.o bible_xlf.o bible_mx4sio_xlf.o bible_hdd_xlf.o conf_theme_OPL.o theme_coverflow.o theme_ripgrid.o ripps2_font.o ripps2_sleek.o ripps2_sleekbold.o ripps2_sleekcase.o ripps2_one.o ripflow.o ripflowbold.o ember_elf.o ember_licence.o popstarter_elf.o neutrino_tgz.o
+ 
+ TRANSLATIONS = Albanian Arabic Bulgarian Cebuano Croatian Czech Danish Dutch Filipino French \
+ 	Galician German Greek Hungarian Indonesian Italian Japanese Korean Laotian Persian Polish Portuguese \
+@@ -1154,6 +1154,10 @@ $(EE_ASM_DIR)conf_theme_OPL.c: misc/conf_theme_OPL.cfg | $(EE_ASM_DIR)
+ $(EE_ASM_DIR)theme_coverflow.c: misc/theme_coverflow.cfg | $(EE_ASM_DIR)
+ 	$(BIN2C) $< $@ $(*F)_cfg
+ 
++# RIPPS2 build 91: <RIPgrid>, the theme pack's grid, built in
++$(EE_ASM_DIR)theme_ripgrid.c: misc/theme_ripgrid.cfg | $(EE_ASM_DIR)
++	$(BIN2C) $< $@ $(*F)_cfg
++
+ # RIPPS2: theme font compiled in (misc/ripps2_font.ttf is copied in by RIPPS2's build.sh)
+ $(EE_ASM_DIR)ripps2_font.c: misc/ripps2_font.ttf | $(EE_ASM_DIR)
+ 	$(BIN2C) $< $@ $(*F)_raw
+diff --git a/include/dialogs.h b/include/dialogs.h
+index 4f259f1..252524e 100644
+--- a/include/dialogs.h
++++ b/include/dialogs.h
+@@ -207,6 +207,7 @@ enum UI_ITEMS {
+     NETCFG_POPSTARTER_BUTTON,
+     NETCFG_NBD_BUTTON, // RIPPS2 build 70: Start NBD Server, moved here from the main menu
+     NETCFG_ART_BUTTON, // RIPPS2 build 73: Cover Art download
++    NETCFG_RA_BUTTON,  // RIPPS2 build 91: Achievements, beside the other network features
+     NETCFG_OK,
+     // Section labels for the SMB-only block, so it can be hidden whole when the selected network
+     // protocol is not SMB. Appended here to keep the NETCFG_*_0..N consecutive runs above intact.
+@@ -259,7 +260,9 @@ enum UI_ITEMS {
+     COVERFLOW_CFG_COUNT,
+     COVERFLOW_CFG_SCALE,
+     COVERFLOW_CFG_ANIM,
+-    COVERFLOW_CFG_DIM,
++    COVERFLOW_CFG_DIM,        // build 91: Vignette Other Covers (was Dim Side Covers)
++    COVERFLOW_CFG_LAYOUT,     // build 91: Grid Layout
++    COVERFLOW_CFG_LAUNCHDISC, // build 91: Launch Disc
+ 
+     NARGS_QB,
+     NARGS_CWD,
+@@ -272,7 +275,10 @@ enum UI_ITEMS {
+     NARGS_DBC,
+     NARGS_LOGO,
+ 
+-    COMPAT_DMA = 100,
++    // RIPPS2 build 91: was 100. The settings ids above now run past 150; where the two ranges met, a page's
++    // row and another page's button shared an id and diaFindByID set the button (PS Emulation's USB BDMA
++    // Driver drew "<no values>" with no label). Ids are never stored, so moving the range changes nothing else.
++    COMPAT_DMA = 300,
+     COMPAT_ALTSTARTUP,
+     COMPAT_GAMEID,
+     // Retired Download Defaults button slot. Preserve later per-game dialog IDs.
+@@ -379,9 +385,9 @@ enum UI_ITEMS {
+     PADMACRO_INVERT_RY,
+     PADMACRO_TURBO_SPEED,
+ 
+-    COMPAT_MODE_BASE = 250,
++    COMPAT_MODE_BASE = 500, // build 91: was 250, which the last pad macro ids reached (PADEMU runs to 456 now)
+ #else
+-    COMPAT_MODE_BASE = 200,
++    COMPAT_MODE_BASE = 400, // build 91: was 200
+ #endif
+ };
+ 
+diff --git a/include/renderman.h b/include/renderman.h
+index 83782b4..efbd4bf 100644
+--- a/include/renderman.h
++++ b/include/renderman.h
+@@ -115,6 +115,10 @@ void rmSetReflectionYOffset(int yoff);
+ /** Queues a opaque rectangle to be rendered */
+ void rmDrawRect(int x, int y, int w, int h, u64 color);
+ 
++/** RIPPS2 build 91: a whole texture w x h (virtual px; w through the widescreen scale) centred on (cx, cy) and
++ * turned `angle` radians about its centre, in true screen shape (a disc stays round as it turns) */
++void rmDrawPixmapRotated(GSTEXTURE *txt, int cx, int cy, int w, int h, float angle, u64 color);
++
+ /** RIPPS2: one cell (u0,v0)-(u1,v1), in texels, of an atlas texture, placed the way rmDrawPixmap places a whole one */
+ void rmDrawPixmapPart(GSTEXTURE *txt, int x, int y, short aligned, int w, int h, short scaled, u64 color, float u0, float v0, float u1, float v1);
+ 
+diff --git a/include/ripps2.h b/include/ripps2.h
+index 1a2c65e..8477bb0 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -221,5 +221,16 @@ void ripps2PlayLaunchSequence(void); // pillars only, light-up and flash; the la
+ int ripps2LaunchScreenHeld(void);    // that frame is up: the teardown must not draw over it
+ void ripps2LaunchPump(void);         // build 70: one more frame of it, with the loading mark, from the teardown's waits
+ void ripps2LaunchAborted(void);      // the launch failed and returned to the menu
++int ripps2LaunchDiscFrame(void);     // build 91: one frame of the field with the launch disc on it; 0 when no disc is armed
++
++// ---- The launch disc (ripps2ui.c, build 91) ----
++// launch_disc=pop|spin in a theme, or Flow and Grid > Launch Disc (0 Theme, 1 Off, 2 Pop In, 3 Spin)
++extern int gRipps2LaunchDisc;
++int ripps2LaunchDiscMode(void);                                    // in effect: 0 off, 1 pop, 2 spin
++void ripps2LaunchDiscArm(struct _item_list_t *support, const char *startup); // a game: its ICO art, else RIPPS2's disc
++void ripps2LaunchDiscArmGeneric(void);                             // a disc with no art (Launch Disc, DVD, a VCD)
++void ripps2LaunchDiscBegin(void);                                  // its clock starts (the launch light-up)
++int ripps2DrawLaunchDisc(void);                                    // draws it; 0 when there is nothing to draw
++void ripps2LaunchDiscEnd(void);                                    // the launch came back: drop it
+ 
+ #endif
+diff --git a/include/textures.h b/include/textures.h
+index 95536c7..6ff7d87 100644
+--- a/include/textures.h
++++ b/include/textures.h
+@@ -130,6 +130,7 @@ enum INTERNAL_TEXTURE {
+     RIPPS2_DPAD_UP,    // RIPPS2 build 70: the D-pad glyph, Up lit (Coverflow's drive glyphs; image ripps2_up)
+     RIPPS2_DPAD_DOWN,  // RIPPS2 build 70: the D-pad glyph, Down lit (image ripps2_down)
+     RIPPS2_HINT_BADGE, // RIPPS2 build 90: the pill a hint badge is drawn on, stretched across its middle (image hint_badge)
++    RIPPS2_LAUNCH_DISC, // RIPPS2 build 91: the disc a launch pops in when the game has no ICO art (image launch_disc)
+ #ifdef RETROACHIEVEMENTS
+     // RA mark over a tracked game's cover (theme override "ra_mark"). Appended last:
+     // texId is positional.
+diff --git a/include/themes.h b/include/themes.h
+index 6473a0a..124e491 100644
+--- a/include/themes.h
++++ b/include/themes.h
+@@ -238,6 +238,7 @@ typedef struct theme
+     int glyphSetDef;                    // glyph_set: RIPPS2_GLYPHSET_* (THEME: its own PNGs)
+     int glyphSetLoaded;                 // the set its glyph textures hold now
+     char glyphPath[192];                // where its own glyph PNGs load from ("" for a built-in theme)
++    int launchDiscDef;                  // RIPPS2 build 91: launch_disc: 0 off, 1 pop, 2 spin
+     theme_element_t *grid; // RIPPS2 build 78: the first Grid element (a page of covers in rows), NULL if none
+     int gridColumns, gridRows, gridSpacing;
+ 
+@@ -263,6 +264,8 @@ extern theme_t *gTheme;
+ #define RIPPS2_CASE_TITLE_FONT (gTheme->fonts[9])
+ 
+ extern int gCoverflowCount, gCoverflowCenterScale, gCoverflowAnimSpeed, gCoverflowDimCovers;
++extern int gRipps2Vignette, gRipps2GridLayout; // RIPPS2 build 91: Flow and Grid
++#define RIPPS2_GRID_LAYOUTS 4                  // presets after Theme
+ void thmTriggerCoverflowAnim(int dir);
+ int thmCoverflowIsAnimating(void);
+ 
+diff --git a/lng_tmpl/_base.yml b/lng_tmpl/_base.yml
+index 498b5e9..2332443 100644
+--- a/lng_tmpl/_base.yml
++++ b/lng_tmpl/_base.yml
+@@ -52,7 +52,7 @@ gui_strings:
+ - label: SHOW_ADVANCED_OPTS
+   string: Advanced Options
+ - label: NO_ITEMS
+-  string: <no values>
++  string: Default
+ - label: SETTINGS_SAVED
+   string: Settings saved to %s
+ - label: ERROR_SAVING_SETTINGS
+@@ -750,11 +750,11 @@ gui_strings:
+ - label: COVERFLOW_COUNT
+   string: Cover Count
+ - label: COVERFLOW_DIM
+-  string: Dim Side Covers
++  string: Vignette Other Covers
+ - label: COVERFLOW_SCALE
+   string: Center Scale
+ - label: COVERFLOW_SETTINGS
+-  string: Coverflow Settings
++  string: Flow and Grid
+ - label: DEFAULT_CORE
+   string: Default Loader Core
+ - label: DISPLAY_SETTINGS
+@@ -1090,7 +1090,7 @@ gui_strings:
+ - label: VCD_USB_BDMA
+   string: USB BDMA Driver
+ - label: HINT_VCD_USB_BDMA
+-  string: "PS1 (VCD) launches from a USB stick only. The PS2 cannot detect whether a stick is fat32 or exFAT, so POPSTARTER's driver must be chosen. Ask prompts on every USB VCD launch; exFAT or fat32 pin the answer and skip the prompt."
++  string: "PS1 games on USB: POPSTARTER's driver for the stick. Ask asks at each launch; exFAT or fat32 skips the question."
+ - label: VCD_USB_BDMA_ASK
+   string: Ask
+ - label: SETTINGS_HDD_FALLBACK
+@@ -1503,6 +1503,16 @@ gui_strings:
+   string: "Arranges the hints. Theme keeps the theme's order; Your Order is the one set here."
+ - label: RIPPS2_HINT_ORDER_FOLLOW
+   string: Order
++- label: RIPPS2_GRID_LAYOUT
++  string: Grid Layout
++- label: HINT_RIPPS2_GRID_LAYOUT
++  string: "How many covers a Grid page holds, with RIPPS2's spacing. Theme keeps the theme's own."
++- label: RIPPS2_LAUNCH_DISC
++  string: Launch Disc
++- label: HINT_RIPPS2_LAUNCH_DISC
++  string: "A game's disc comes in as it launches. Pop In settles and fades; Spin turns faster and faster until the game starts."
++- label: HINT_RIPPS2_VIGNETTE
++  string: "Darkens the edges of every cover but the chosen one, so the chosen one stands out."
+ - label: HINT_RIPPS2_HINT_SLOT
+   string: "The hint in this place. The hint that was here moves to the picked hint's old place."
+ - label: PS1_SAVE_GUIDANCE
+diff --git a/misc/theme_coverflow.cfg b/misc/theme_coverflow.cfg
+index 2c27470..3a91e5c 100644
+--- a/misc/theme_coverflow.cfg
++++ b/misc/theme_coverflow.cfg
+@@ -4,6 +4,8 @@
+ # tooltips and hints (font15) keep their lowercase. Same slots as the RIPPS2 theme.
+ # RIPPS2 build 81: RIPFLOW puts Memory Files first on the category bar unless the user has picked an order
+ category_order=memory_files_first
++# RIPPS2 build 91: as a game launches its disc pops in and spins up (Flow and Grid > Launch Disc can change it)
++launch_disc=spin
+ default_font=builtin:ripflow
+ default_font_size=17
+ font1=builtin:ripflow
+diff --git a/misc/theme_ripgrid.cfg b/misc/theme_ripgrid.cfg
+new file mode 100644
+index 0000000..d8025ce
+--- /dev/null
++++ b/misc/theme_ripgrid.cfg
+@@ -0,0 +1,346 @@
++# RIPPS2 build 91: <RIPgrid>, built in. The theme pack's thm_RIPgrid (RIPPS2-themes) with RIPPS2's own
++# images in place of the folder's (the screenshots go without the pack's SCR43 frame). The launch disc
++# pops in as a game starts; RIPFLOW's spins.
++launch_disc=pop
++# Theme Name: RIPgrid
++# Made by: akilluminati47 (Adapt RiptOPL, 8/27/2026), RIPPS2 edition (build 83)
++# [case.png] [case_overlay.png] RiptOPL's built-in case (b2); [SCR43.png] Adapt's screenshot frame at 4:3
++# RIPPS2: each game's art under frosted glass (a full-screen Ripps2PanelGlass, blur=1), a frosted side
++# bar, clear glass panels under the text, page morphs between the list and the info page, the pillars
++# behind Settings (no settings_bg), right-stick tilt on the art. Art eases in; no stock disc or case.
++
++bg_color=#050A1C
++sel_text_color=#0064FF
++text_color=#FFFFFF
++ui_text_color=#C4DAFF
++towers=0
++source_name=pop
++default_font=builtin:ripps2sleek
++default_font_size=17
++font1=builtin:ripps2sleekcase
++font1_size=16
++font2=builtin:ripps2sleek
++font2_size=17
++font3=builtin:ripps2sleekbold
++font3_size=16
++font4=builtin:ripps2sleekbold
++font4_size=20
++font15=builtin:ripps2sleekcase
++font15_size=15
++# RIPgrid's type: RIPPS2 Sleek (Regular, Bold, Bold Case), built into RIPPS2 (builtin: fonts)
++# [circle.png] [cross.png] [square.png] [triangle.png] [select.png] [start.png] from the Grunge theme
++
++main0:
++	type=Background
++	pattern=BG
++	widecrop=1
++main1:
++	type=Ripps2PanelGlass
++	aligned=0
++	x=0
++	y=0
++	width=640
++	height=480
++	blur=1
++	tint=24
++	frame=0
++main2:
++	type=Ripps2PanelGlass
++	aligned=0
++	x=0
++	y=0
++	width=26
++	height=480
++	blur=1
++	tint=88
++	tint_color=#01040F
++	frame=0
++main3:
++	type=Ripps2PanelGlass
++	aligned=0
++	x=28
++	y=0
++	width=12
++	height=480
++	blur=1
++	tint=22
++	tint_color=#28C5F9
++	frame=0
++main4:
++	type=Grid
++	pattern=COV
++	x=340
++	y=84
++	width=107
++	height=150
++	columns=4
++	rows=2
++	spacing=12
++	font=4
++	tilt=1
++	tilt_scale=160
++main5:
++	type=ItemsList
++	x=POS_MID
++	y=45
++	width=DIM_INF
++	height=24
++	aligned=1
++	font=4
++	hidden=1
++main6:
++	type=LoadingIcon
++	x=-60
++	y=-31
++main7:
++	type=HintText
++	aligned=1
++	x=POS_MID
++	y=-41
++	font=1
++main8:
++	type=MenuText
++	x=POS_MID
++	y=25
++	aligned=1
++	width=225
++	font=2
++info0:
++	type=Background
++	pattern=BG
++	widecrop=1
++info1:
++	type=Ripps2PanelGlass
++	aligned=0
++	x=0
++	y=0
++	width=640
++	height=480
++	blur=1
++	tint=24
++	frame=0
++info2:
++	type=Ripps2PanelGlass
++	aligned=0
++	x=0
++	y=0
++	width=26
++	height=480
++	blur=1
++	tint=88
++	tint_color=#01040F
++	frame=0
++info3:
++	type=Ripps2PanelGlass
++	aligned=0
++	x=28
++	y=0
++	width=12
++	height=480
++	blur=1
++	tint=22
++	tint_color=#28C5F9
++	frame=0
++info4:
++	type=Ripps2PanelGlass
++	aligned=0
++	x=45
++	y=160
++	width=395
++	height=255
++	blur=1
++	tint=44
++	frame=1
++	tilt=1
++	tilt_x=320
++	tilt_y=260
++	tilt_scale=75
++info5:
++	type=GameImage
++	pattern=LGO
++	x=POS_MID
++	y=100
++	aligned=1
++	width=300
++	height=125
++	tilt=1
++	tilt_x=320
++	tilt_y=260
++	tilt_scale=75
++info6:
++	type=AttributeImage
++	attribute=Rating
++	default=rating/0_Rating
++	aligned=0
++	x=60
++	y=177
++	tilt=1
++	tilt_x=320
++	tilt_y=260
++	tilt_scale=75
++info7:
++	type=AttributeImage
++	attribute=Scan
++	aligned=0
++	x=232
++	y=173
++	tilt=1
++	tilt_x=320
++	tilt_y=260
++	tilt_scale=75
++info8:
++	type=AttributeImage
++	attribute=Players
++	aligned=0
++	x=182
++	y=173
++	tilt=1
++	tilt_x=320
++	tilt_y=260
++	tilt_scale=75
++info9:
++	type=AttributeText
++	attribute=Description
++	aligned=0
++	display=2
++	x=55
++	y=210
++	width=375
++	height=100
++	wrap=1
++	line_height=19
++	font=1
++	tilt=1
++	tilt_x=320
++	tilt_y=260
++	tilt_scale=75
++info10:
++	type=AttributeText
++	attribute=Developer
++	aligned=0
++	display=2
++	x=55
++	y=330
++	width=375
++	wrap=0
++	font=2
++	tilt=1
++	tilt_x=320
++	tilt_y=260
++	tilt_scale=75
++info11:
++	type=AttributeText
++	attribute=Release
++	aligned=0
++	display=2
++	x=55
++	y=358
++	width=375
++	font=3
++	tilt=1
++	tilt_x=320
++	tilt_y=260
++	tilt_scale=75
++info12:
++	type=AttributeText
++	attribute=Genre
++	display=2
++	aligned=0
++	x=55
++	y=385
++	width=375
++	font=2
++	tilt=1
++	tilt_x=320
++	tilt_y=260
++	tilt_scale=75
++info13:
++	type=InfoHintText
++	aligned=1
++	x=POS_MID
++	y=-41
++	font=1
++info14:
++	type=GameImage
++	pattern=SCR
++	scaled=1
++	x=532
++	y=230
++	width=170
++	height=128
++	tilt=1
++	tilt_x=320
++	tilt_y=260
++	tilt_scale=75
++info15:
++	type=GameImage
++	pattern=SCR2
++	scaled=1
++	x=532
++	y=362
++	width=170
++	height=128
++	tilt=1
++	tilt_x=320
++	tilt_y=260
++	tilt_scale=75
++info16:
++	type=AttributeImage
++	attribute=Parental
++	aligned=0
++	scaled=1
++	x=370
++	y=330
++	tilt=1
++	tilt_x=320
++	tilt_y=260
++	tilt_scale=75
++info17:
++	type=AttributeImage
++	attribute=Vmode
++	aligned=0
++	x=332
++	y=173
++	tilt=1
++	tilt_x=320
++	tilt_y=260
++	tilt_scale=75
++info18:
++	type=AttributeImage
++	attribute=Aspect
++	aligned=0
++	x=282
++	y=173
++	tilt=1
++	tilt_x=320
++	tilt_y=260
++	tilt_scale=75
++appsInfo5:
++	type=ItemCover
++	x=532
++	y=262
++	tilt=1
++	tilt_x=320
++	tilt_y=260
++	tilt_scale=75
++	width=143
++	height=201
++	aligned=1
++	scaled=1
++	reflection=1
++	overlay=case
++	overlay2=case_overlay
++	overlay_ulx=0
++	overlay_uly=0
++	overlay_urx=143
++	overlay_ury=0
++	overlay_llx=0
++	overlay_lly=201
++	overlay_lrx=143
++	overlay_lry=201
++appsInfo14:
++	type=GameImage
++	enabled=0
++appsInfo15:
++	type=GameImage
++	enabled=0
+diff --git a/src/dia.c b/src/dia.c
+index 983a7d8..e448484 100644
+--- a/src/dia.c
++++ b/src/dia.c
+@@ -1061,13 +1061,37 @@ void diaSetSettingsContext(int enabled)
+ 
+ // The lowest pixel the dialog would reach (content space, from `top`) with rows `gap` apart. Walks the
+ // items exactly as diaRenderUI lays them out, with diaItemHeight standing in for diaRenderItem's *h.
++// RIPPS2 build 91: a row whose controls are all hidden (BDMA Source and Mode while Apply on Launch is on,
++// HTTP's rows on an SMB page) takes no line. Its label and value go, but its spacer and the break that ends
++// it used to leave a blank line, the rows below floating under a gap. diaRowState follows a row: hidden
++// when something on it is hidden, shown when something drawn is; its break is skipped when only the first.
++static void diaRowState(struct UIItem *ui, int *rowHidden, int *rowShown)
++{
++    if (!ui->visible && ui->type >= UI_LABEL)
++        *rowHidden = 1;
++    else if (ui->type != UI_SPACER && ui->type != UI_BREAK)
++        *rowShown = 1;
++}
++
++static int diaRowCollapses(struct UIItem *ui, int rowHidden, int rowShown)
++{
++    return ui->type == UI_BREAK && rowHidden && !rowShown;
++}
++
+ static int diaLayoutBottom(struct UIItem *ui, int spacingH, int gap, int top)
+ {
+-    int y = top, hmax = 0, bottom = top;
++    int y = top, hmax = 0, bottom = top, rowHidden = 0, rowShown = 0;
+ 
+     for (; ui->type != UI_TERMINATOR; ui++) {
+         int h;
+ 
++        if (diaRowCollapses(ui, rowHidden, rowShown)) {
++            rowHidden = rowShown = 0;
++            continue;
++        }
++        if (diaShouldBreakLine(ui))
++            rowHidden = rowShown = 0;
++        diaRowState(ui, &rowHidden, &rowShown);
+         if (diaShouldBreakLine(ui)) {
+             if (hmax > 0)
+                 y += hmax + gap;
+@@ -1121,10 +1145,21 @@ void diaRenderUI(struct UIItem *ui, short inMenu, struct UIItem *cur, int haveFo
+     int x = x0, y = y0 - diaScrollOffset, hmax = 0;
+     int curTop = y0, curBot = y0; // rendered extent of the focused row, for cursor-follow scroll
+     int contentBottom = y0;       // lowest rendered pixel (screen-space), for the maxScroll upper clamp
++    int rowHidden = 0, rowShown = 0; // build 91: a row of hidden controls takes no line (diaRowCollapses)
+ 
+     while (rc->type != UI_TERMINATOR) {
+         int w = 0, h = 0;
+ 
++        if (diaRowCollapses(rc, rowHidden, rowShown)) {
++            x = x0; // its spacer moved x along: the next row starts at the margin, on this same line
++            rowHidden = rowShown = 0;
++            rc++;
++            continue;
++        }
++        if (diaShouldBreakLine(rc))
++            rowHidden = rowShown = 0;
++        diaRowState(rc, &rowHidden, &rowShown);
++
+         if (diaShouldBreakLine(rc)) {
+             x = x0;
+ 
+diff --git a/src/dialogs.c b/src/dialogs.c
+index 7617c95..44530f5 100644
+--- a/src/dialogs.c
++++ b/src/dialogs.c
+@@ -169,6 +169,11 @@ struct UIItem diaNetConfig[] = {
+     {UI_BUTTON, NETCFG_HTTP_TEST, 1, 1, -1, 0, 0, {.label = {NULL, _STR_TEST}}},
+     {UI_BREAK},
+ 
++    // RIPPS2 build 91: a line under the share's password (HTTP's rows, when they show, sit above it), then
++    // the network's other features together: POPSTARTER's own network files, the NBD server, Cover Art and
++    // Achievements. One clear row before OK. (Build 80's RIPPS2 header between them is gone.)
++    {UI_SPLITTER},
++
+     // POPSTARTER owns its own IPCONFIG.DAT / SMBCONFIG.DAT editor. Keep its entry beside the
+     // SMB server data it relates to, without duplicating any of that state in this page.
+     {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_POPSTARTER_NETWORK_SETTINGS}}},
+@@ -176,11 +181,6 @@ struct UIItem diaNetConfig[] = {
+     {UI_BUTTON, NETCFG_POPSTARTER_BUTTON, 1, 1, -1, 0, 0, {.label = {NULL, _STR_MODIFY}}},
+     {UI_BREAK},
+ 
+-    // RIPPS2 build 80: RIPPS2's own rows under their own header, the way the composed pages separate
+-    // their sections (Achievements moved to Settings > Achievements: its switches live there now)
+-    {UI_HEADER, 0, 1, 1, -1, 0, 0, {.label = {"RIPPS2", -1}}},
+-    {UI_SPLITTER},
+-
+     // RIPPS2 build 70: the NBD server starts here (it was a main menu entry); the status screen it
+     // shows while running is unchanged, and leaving it stops the server
+     {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_NBD_SERVER}}},
+@@ -193,6 +193,13 @@ struct UIItem diaNetConfig[] = {
+     {UI_SPACER},
+     {UI_BUTTON, NETCFG_ART_BUTTON, 1, 1, _STR_HINT_RIPPS2_COVER_ART, 0, 0, {.label = {NULL, _STR_RIPPS2_DOWNLOAD}}},
+     {UI_BREAK},
++#ifdef RETROACHIEVEMENTS
++    // build 91: Achievements (its own page, as from the Settings list) with the network's features
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_ACHIEVEMENTS}}},
++    {UI_SPACER},
++    {UI_BUTTON, NETCFG_RA_BUTTON, 1, 1, -1, 0, 0, {.label = {NULL, _STR_MODIFY}}},
++    {UI_BREAK},
++#endif
+ 
+     // build 80: the chin, a clear row between the last setting and the buttons
+     {UI_LABEL, 0, 1, 1, -1, 0, 0, {.label = {" ", -1}}},
+@@ -2006,7 +2013,18 @@ struct UIItem diaCoverflowConfig[] = {
+ 
+     {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_COVERFLOW_DIM}}},
+     {UI_SPACER},
+-    {UI_BOOL, COVERFLOW_CFG_DIM, 1, 1, -1, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BOOL, COVERFLOW_CFG_DIM, 1, 1, _STR_HINT_RIPPS2_VIGNETTE, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BREAK},
++
++    // RIPPS2 build 91: Grid's pages, and the disc a launch brings in
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_GRID_LAYOUT}}},
++    {UI_SPACER},
++    {UI_ENUM, COVERFLOW_CFG_LAYOUT, 1, 1, _STR_HINT_RIPPS2_GRID_LAYOUT, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BREAK},
++
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_LAUNCH_DISC}}},
++    {UI_SPACER},
++    {UI_ENUM, COVERFLOW_CFG_LAUNCHDISC, 1, 1, _STR_HINT_RIPPS2_LAUNCH_DISC, 0, 0, {.intvalue = {0, 0}}},
+     {UI_BREAK},
+ 
+     // buttons
+diff --git a/src/gui.c b/src/gui.c
+index 1c057f7..471d5f4 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -1548,6 +1548,12 @@ reshow_network:
+         guiShowPopsNetConfig();
+         goto reshow_network;
+     }
++#ifdef RETROACHIEVEMENTS
++    if (result == NETCFG_RA_BUTTON) { // build 91: Achievements, the page the Settings list opens
++        ripps2Achievements();
++        goto reshow_network;
++    }
++#endif
+     if (result == NETCFG_NBD_BUTTON) { // RIPPS2 build 70: the NBD server, with its status screen
+         if (menuCheckParentalLock() == 0)
+             handleLwnbdSrv();
+@@ -2558,6 +2564,15 @@ void guiShowCoverflowConfig(void)
+     const char *coverCounts[] = {"3", "5", NULL};
+     const char *centerScales[] = {_l(_STR_NONE), _l(_STR_SMALL), _l(_STR_MEDIUM), _l(_STR_LARGE), NULL};
+     const char *animSpeeds[] = {_l(_STR_OFF), _l(_STR_FAST), _l(_STR_NORMAL), _l(_STR_SLOW), NULL};
++    // RIPPS2 build 91: Grid Layout and Launch Disc, each starting on the theme's
++    static const char *gridLayouts[] = {"Theme", "4 x 2", "5 x 2", "3 x 2 Large", "6 x 3 Compact", NULL};
++    static const char *launchDiscs[] = {"Theme", "Off", "Pop In", "Spin", NULL};
++    int keepLayout = gRipps2GridLayout;
++
++    diaSetEnum(diaCoverflowConfig, COVERFLOW_CFG_LAYOUT, gridLayouts);
++    diaSetEnum(diaCoverflowConfig, COVERFLOW_CFG_LAUNCHDISC, launchDiscs);
++    diaSetInt(diaCoverflowConfig, COVERFLOW_CFG_LAYOUT, gRipps2GridLayout);
++    diaSetInt(diaCoverflowConfig, COVERFLOW_CFG_LAUNCHDISC, gRipps2LaunchDisc);
+ 
+     diaSetEnum(diaCoverflowConfig, COVERFLOW_CFG_COUNT, coverCounts);
+     diaSetEnum(diaCoverflowConfig, COVERFLOW_CFG_SCALE, centerScales);
+@@ -2579,7 +2594,7 @@ void guiShowCoverflowConfig(void)
+             animIdx = i;
+     diaSetInt(diaCoverflowConfig, COVERFLOW_CFG_ANIM, animIdx);
+ 
+-    diaSetInt(diaCoverflowConfig, COVERFLOW_CFG_DIM, gCoverflowDimCovers ? 1 : 0);
++    diaSetInt(diaCoverflowConfig, COVERFLOW_CFG_DIM, gRipps2Vignette ? 1 : 0); // build 91: the vignette
+ 
+     int result = diaExecuteDialog(diaCoverflowConfig, -1, 1, NULL);
+     if (result) {
+@@ -2590,7 +2605,17 @@ void guiShowCoverflowConfig(void)
+         if (diaGetInt(diaCoverflowConfig, COVERFLOW_CFG_ANIM, &value))
+             gCoverflowAnimSpeed = animValues[(value >= 0 && value <= 3) ? value : 2];
+         if (diaGetInt(diaCoverflowConfig, COVERFLOW_CFG_DIM, &value))
+-            gCoverflowDimCovers = value ? 1 : 0;
++            gRipps2Vignette = value ? 1 : 0;
++        if (diaGetInt(diaCoverflowConfig, COVERFLOW_CFG_LAUNCHDISC, &value) && value >= 0 && value <= 3)
++            gRipps2LaunchDisc = value;
++        if (diaGetInt(diaCoverflowConfig, COVERFLOW_CFG_LAYOUT, &value) && value >= 0 && value <= RIPPS2_GRID_LAYOUTS)
++            gRipps2GridLayout = value;
++        // a new Grid Layout changes how many covers a page holds (and its cache): the theme loads again with it
++        if (gRipps2GridLayout != keepLayout && gTheme != NULL && gTheme->grid != NULL && thmSetGuiValue(thmGetGuiValue(), 1)) {
++            int m;
++            for (m = 0; m < MODE_COUNT; m++)
++                moduleUpdateMenu(m, 1, 0);
++        }
+     }
+ }
+ 
+diff --git a/src/opl.c b/src/opl.c
+index cab7c67..b81b2fa 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -469,6 +469,7 @@ static void itemExecSelect(struct menu_item *curMenu)
+                 // the stack copy: the hold renders/unlocks for many frames while source lists may refresh.
+                 itemPushRecent(curMenu, support); // RIPPS2 build 71: Show Recents
+                 // RIPPS2: the pillars light up (no menu), then the handoff; a launch that returns failed
++                ripps2LaunchDiscArm(support, gameIdStartup); // build 91: the game's disc, when the theme or the user wants it
+                 ripps2PlayLaunchSequence();
+                 guiShowGameID(gameIdStartup);
+                 support->itemLaunch(support, launchId, configSet);
+@@ -3398,6 +3399,12 @@ static void _loadConfig()
+             if (configGetInt(configOPL, "ripps2_userset", &value) && value >= 0)
+                 gRipps2UserSet = value; // build 81: the rows a theme's defaults never touch
+             ripps2HintsLoadConfig(configOPL); // build 90: Hints and Glyphs
++            if (configGetInt(configOPL, "ripps2_launch_disc", &value) && value >= 0 && value <= 3)
++                gRipps2LaunchDisc = value; // build 91: Flow and Grid > Launch Disc
++            if (configGetInt(configOPL, "ripps2_vignette", &value))
++                gRipps2Vignette = value ? 1 : 0;
++            if (configGetInt(configOPL, "ripps2_grid_layout", &value) && value >= 0 && value <= RIPPS2_GRID_LAYOUTS)
++                gRipps2GridLayout = value;
+             configGetColor(configOPL, CONFIG_OPL_BGCOLOR, gDefaultBgColor);
+             configGetColor(configOPL, CONFIG_OPL_TEXTCOLOR, gDefaultTextColor);
+             configGetColor(configOPL, CONFIG_OPL_UI_TEXTCOLOR, gDefaultUITextColor);
+@@ -4098,6 +4105,9 @@ static void _saveConfig()
+         configSetInt(configOPL, "ripps2_recents", gRipps2Recents);
+         configSetInt(configOPL, "ripps2_userset", gRipps2UserSet); // build 81
+         ripps2HintsSaveConfig(configOPL);                          // build 90: Hints and Glyphs
++        configSetInt(configOPL, "ripps2_launch_disc", gRipps2LaunchDisc); // build 91
++        configSetInt(configOPL, "ripps2_vignette", gRipps2Vignette);
++        configSetInt(configOPL, "ripps2_grid_layout", gRipps2GridLayout);
+         ripps2QuietBootMark(gEnableSFX && gEnableBootSND); // build 75: what an HDD launch knows before its settings
+         configSetStr(configOPL, CONFIG_OPL_THEME, thmGetValue());
+         configSetStr(configOPL, CONFIG_OPL_LANGUAGE, lngGetValue());
+@@ -4903,8 +4913,9 @@ void deinitEx(int exception, int modeSelected, int modeSelected2)
+     // so a per-launch-leg banner would have to be repeated in each and would still miss some. The
+     // frame flips and then persists on its own -- nothing draws again until the handoff -- so one
+     // call covers the entire wait.
+-    // RIPPS2: after a launch light-up its final frame stays on screen instead of "Please Wait"
+-    if (!ripps2LaunchScreenHeld())
++    // RIPPS2: after a launch light-up its final frame stays on screen instead of "Please Wait"; build 91:
++    // with a launch disc armed, the disc stands in for the words
++    if (!ripps2LaunchScreenHeld() && !ripps2LaunchDiscFrame())
+         guiRenderTextScreen(_l(_STR_PLEASE_WAIT));
+     if (gLaunchDiag)
+         launchDiagMark(5); // "Please Wait" is up -- the io/art drain below runs next
+@@ -4991,8 +5002,9 @@ void deinit(int exception, int modeSelected)
+     // so a per-launch-leg banner would have to be repeated in each and would still miss some. The
+     // frame flips and then persists on its own -- nothing draws again until the handoff -- so one
+     // call covers the entire wait.
+-    // RIPPS2: after a launch light-up its final frame stays on screen instead of "Please Wait"
+-    if (!ripps2LaunchScreenHeld())
++    // RIPPS2: after a launch light-up its final frame stays on screen instead of "Please Wait"; build 91:
++    // with a launch disc armed, the disc stands in for the words
++    if (!ripps2LaunchScreenHeld() && !ripps2LaunchDiscFrame())
+         guiRenderTextScreen(_l(_STR_PLEASE_WAIT));
+     if (gLaunchDiag)
+         launchDiagMark(5); // "Please Wait" is up -- the io/art drain below runs next
+diff --git a/src/renderman.c b/src/renderman.c
+index 01536de..4975be3 100644
+--- a/src/renderman.c
++++ b/src/renderman.c
+@@ -629,6 +629,39 @@ void rmDrawPixmapPart(GSTEXTURE *txt, int x, int y, short aligned, int w, int h,
+     rmDrawQuad(&quad);
+ }
+ 
++// RIPPS2 build 91: the corners are turned in the 640 x 480 page's own square space, then the widescreen
++// squeeze is applied about the centre, then scaled to the display, so a round thing stays round at any angle
++void rmDrawPixmapRotated(GSTEXTURE *txt, int cx, int cy, int w, int h, float angle, u64 color)
++{
++    if (txt == NULL || txt->Mem == NULL || rmQueueFull())
++        return;
++    float c = cosf(angle), s = sinf(angle), squeeze = rmWideScale(1000) / 1000.0f;
++    float lx[4] = {-w / 2.0f, w / 2.0f, -w / 2.0f, w / 2.0f}, ly[4] = {-h / 2.0f, -h / 2.0f, h / 2.0f, h / 2.0f};
++    float px[4], py[4];
++    int k;
++    for (k = 0; k < 4; k++) {
++        px[k] = X_SCALE(cx + squeeze * (lx[k] * c - ly[k] * s));
++        py[k] = Y_SCALE(cy + (lx[k] * s + ly[k] * c));
++    }
++    if ((txt->PSM == GS_PSM_CT32) || (txt->Clut && txt->ClutPSM == GS_PSM_CT32)) {
++        gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
++        gsKit_set_test(gsGlobal, GS_ATEST_ON);
++    } else {
++        gsGlobal->PrimAlphaEnable = ((color >> 24) & 0xFF) < 0x80 ? GS_SETTING_ON : GS_SETTING_OFF;
++        gsKit_set_test(gsGlobal, GS_ATEST_OFF);
++    }
++    gsKit_TexManager_bind(gsGlobal, txt);
++    if (gTiltOn)
++        rmTiltTexQuad(txt, px, py, 0.0f, 0.0f, txt->Width, txt->Height, color);
++    else
++        gsKit_prim_quad_texture(gsGlobal, txt,
++                                px[0] + fRenderXOff, py[0] + fRenderYOff, 0.0f, 0.0f,
++                                px[1] + fRenderXOff, py[1] + fRenderYOff, txt->Width, 0.0f,
++                                px[2] + fRenderXOff, py[2] + fRenderYOff, 0.0f, txt->Height,
++                                px[3] + fRenderXOff, py[3] + fRenderYOff, txt->Width, txt->Height, order, color);
++    order++;
++}
++
+ void rmDrawPixmap(GSTEXTURE *txt, int x, int y, short aligned, int w, int h, short scaled, u64 color, int reflection)
+ {
+     rm_quad_t quad;
+diff --git a/src/ripps2.c b/src/ripps2.c
+index 4e7ff17..29f60db 100644
+--- a/src/ripps2.c
++++ b/src/ripps2.c
+@@ -56,6 +56,7 @@ int ripps2LaunchDvdPlayer(void)
+             if (r2FileExists(path)) {
+                 LOG("RIPPS2 DVD: booting the player update %s\n", path);
+                 snprintf(playerArg, sizeof(playerArg), "-x %s", path);
++                ripps2LaunchDiscArmGeneric(); // build 91: the launch disc for a disc (RIPPS2's own, no art)
+                 ripps2PlayLaunchSequence();
+                 deinit(NO_EXCEPTION, IO_MODE_SELECTED_ALL);
+                 args[0] = "-m rom0:SIO2MAN";
+@@ -83,6 +84,7 @@ int ripps2LaunchDvdPlayer(void)
+         }
+     }
+     LOG("RIPPS2 DVD: booting the ROM player (%s %s)\n", eromdrvArg, dvdelfArg);
++    ripps2LaunchDiscArmGeneric(); // build 91: the launch disc for a disc (RIPPS2's own, no art)
+     ripps2PlayLaunchSequence();
+     deinit(NO_EXCEPTION, IO_MODE_SELECTED_ALL);
+     args[0] = eromdrvArg;
+@@ -198,6 +200,7 @@ int ripps2LaunchDvdVideo(void)
+         }
+         LOG("RIPPS2 ESR: booting %s\n", esrPath);
+         argv[0] = esrPath;
++        ripps2LaunchDiscArmGeneric(); // build 91: the launch disc for a disc (RIPPS2's own, no art)
+         ripps2PlayLaunchSequence();
+         deinit(UNMOUNT_EXCEPTION, IO_MODE_SELECTED_ALL_SPARE); // keep the drive ESR is on
+         sysLoadELFApp(esrPath, NULL, 1, argv, 1, 0);
+@@ -281,6 +284,7 @@ int ripps2LaunchPs1Disc(void)
+     }
+ 
+     LOG("RIPPS2 PS1: booting %s (VER %s)\n", bootArg, verArg);
++    ripps2LaunchDiscArmGeneric(); // build 91: the launch disc for a disc (RIPPS2's own, no art)
+     ripps2PlayLaunchSequence();
+     deinit(NO_EXCEPTION, IO_MODE_SELECTED_ALL);
+     args[0] = bootArg;
+diff --git a/src/ripps2bg.c b/src/ripps2bg.c
+index 787985d..9e71df8 100644
+--- a/src/ripps2bg.c
++++ b/src/ripps2bg.c
+@@ -817,10 +817,12 @@ void ripps2PlayLaunchSequence(void)
+     sfxPlay(SFX_LAUNCH); // RIPPS2: a pack's launch sound, as the towers light (nothing without one)
+     launchT0 = sceneTime();
+     launchHeld = 0;
++    ripps2LaunchDiscBegin(); // build 91: the launch disc, when one is armed, comes in with the light-up
+     for (;;) {
+         float L = sceneTime() - launchT0;
+         guiStartFrame();
+         ripps2DrawPillars();
++        ripps2DrawLaunchDisc();
+         guiEndFrame();
+         if (L >= LAUNCH_S)
+             break;
+@@ -828,6 +830,7 @@ void ripps2PlayLaunchSequence(void)
+     // once more, so both framebuffers hold the final lit frame through the teardown and handoff
+     guiStartFrame();
+     ripps2DrawPillars();
++    ripps2DrawLaunchDisc();
+     guiEndFrame();
+     launchHeld = 1;
+ }
+@@ -843,15 +846,29 @@ void ripps2LaunchPump(void)
+ {
+     guiStartFrame();
+     ripps2DrawPillars();
+-    ripps2DrawBusy(0x80);
++    if (!ripps2DrawLaunchDisc()) // build 91: a spinning disc stands in for the loading mark
++        ripps2DrawBusy(0x80);
+     guiEndFrame();
+ }
+ 
++// build 91: the launch's wait without the light-up (no Please Wait text when a disc is armed)
++int ripps2LaunchDiscFrame(void)
++{
++    if (ripps2LaunchDiscMode() == 0)
++        return 0;
++    guiStartFrame();
++    ripps2DrawPillars();
++    int drew = ripps2DrawLaunchDisc();
++    guiEndFrame();
++    return drew;
++}
++
+ void ripps2LaunchAborted(void)
+ {
+     // the launch returned (it failed): back to the idle field under the menu
+     launchT0 = -1.0f;
+     launchHeld = 0;
++    ripps2LaunchDiscEnd(); // build 91
+ }
+ 
+ // ---------------------------------------------------------------- orbs
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index b9a6fdf..25a1f91 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -118,6 +118,10 @@ static int fbPasteMode = FB_PASTE_PLAIN;
+ // a paste or delete in progress
+ static volatile u32 fbDoneBytes = 0, fbTotalBytes = 0;
+ static volatile int fbDoneItems = 0, fbTotalItems = 0, fbFailed = 0, fbSkipped = 0, fbKept = 0;
++// build 91: the files a paste copies, every one down the folders' trees (the progress bar), and the folders
++// that went through whole (what the paste says it did)
++static volatile int fbDoneFiles = 0, fbTotalFiles = 0, fbOkDirs = 0;
++static int fbTreeFiles = 0; // counted by fbTreeSize as it walks
+ static const char *fbOpLabel = "";
+ static char fbFailWhat[40]; // the first thing that failed in this operation, e.g. "REMOVE icon.sys"
+ 
+@@ -560,8 +564,10 @@ static fb_child_t *fbListChildren(const char *dir, int *count)
+ static u32 fbTreeSize(const char *path, int isDir, int depth)
+ {
+     struct stat st;
+-    if (!isDir)
++    if (!isDir) {
++        fbTreeFiles++;
+         return stat(path, &st) == 0 ? (u32)st.st_size : 0;
++    }
+     if (depth > 16)
+         return 0;
+     char dir[320], child[320];
+@@ -571,6 +577,8 @@ static u32 fbTreeSize(const char *path, int isDir, int depth)
+     fb_child_t *kids = fbListChildren(dir, &n);
+     for (i = 0; i < n; i++) {
+         snprintf(child, sizeof(child), "%s%s", dir, kids[i].name);
++        if (!kids[i].isDir)
++            fbTreeFiles++;
+         total += kids[i].isDir ? fbTreeSize(child, 1, depth + 1) : kids[i].size;
+     }
+     free(kids);
+@@ -627,6 +635,8 @@ static int fbCopyFile(const char *src, const char *dst)
+     close(in);
+     if (!ok)
+         remove(dst);
++    else
++        fbDoneFiles++; // build 91: the paste's file count
+     return ok;
+ }
+ 
+@@ -777,16 +787,20 @@ static void fbPasteWork(void)
+         return;
+     }
+     fbTotalBytes = 0;
++    fbTreeFiles = 0;
+     if (!fromVmc && !toVmc && fbPasteMode == FB_PASTE_PLAIN) // saves report by item, plain files by bytes
+         for (i = 0; i < fbClipCount; i++) {
+             snprintf(src, sizeof(src), "%s%s", fbClipDir, fbClip[i]);
+             fbTotalBytes += fbTreeSize(src, fbClipIsDir[i], 0);
+         }
++    fbTotalFiles = fbTreeFiles; // build 91: every file it will copy, the folders' included
+     for (i = 0; i < fbClipCount; i++) {
+         snprintf(src, sizeof(src), "%s%s", fbClipDir, fbClip[i]);
+         r = fbSavePaste(i, src, fromVmc, srcSave, toVmc, toSave);
+         if (r != -2) {
+             if (r == 1) {
++                if (fbClipIsDir[i])
++                    fbOkDirs++;
+                 // a move takes the original away; an export or an unpack leaves it
+                 if (fbClipCut && fbPasteMode == FB_PASTE_PLAIN) {
+                     int gone = fromVmc ? (fbClipIsDir[i] && !srcSave[0] && ripps2VmcDeleteSave(fbClipVmc, fbClip[i])) : fbDeleteTree(src, fbClipIsDir[i], 0);
+@@ -811,6 +825,8 @@ static void fbPasteWork(void)
+         if (!strcmp(src, dst) || fbExists(dst)) {
+             fbSkipped++; // never over the top of something
+         } else if (fbCopyTree(src, dst, fbClipIsDir[i], 0)) {
++            if (fbClipIsDir[i])
++                fbOkDirs++;
+             if (fbClipCut && !fbDeleteTree(src, fbClipIsDir[i], 0))
+                 fbKept++; // copied; the original is still there
+         } else
+@@ -855,24 +871,47 @@ static void fbDeleteWork(void)
+             }
+         } else if (!fbDeleteTree(path, fbDeleteIsDir[i], 0))
+             fbFailed++;
++        else if (fbDeleteIsDir[i])
++            fbOkDirs++;
+         fbDoneItems++;
+     }
+ }
+ 
+-// What happened, top right: "PASTED 3", "MOVED 2, 1 SKIPPED", "DELETED 1, 1 FAILED"
+-// "3 FILES PASTED", "1 FILE MOVED" (folders count as one each, as on the clipboard)
+-static const char *fbFiles(int n)
++// What happened, top right: "3 FILES PASTED", "FOLDER AND CONTENTS MOVED", "1 FOLDER, 2 FILES DELETED, 1 FAILED".
++// build 91: a folder is a FOLDER, never a file, and what is in it is just its CONTENTS here: the progress bar
++// is where every file down the tree is counted, as it goes.
++static void fbWhat(char *out, int size, int dirs, int files)
+ {
+-    return n == 1 ? "FILE" : "FILES";
++    if (dirs <= 0)
++        snprintf(out, size, "%d %s", files, files == 1 ? "FILE" : "FILES");
++    else if (files <= 0 && dirs == 1)
++        snprintf(out, size, "FOLDER AND CONTENTS");
++    else if (files <= 0)
++        snprintf(out, size, "%d FOLDERS AND CONTENTS", dirs);
++    else
++        snprintf(out, size, "%d %s, %d %s", dirs, dirs == 1 ? "FOLDER" : "FOLDERS", files, files == 1 ? "FILE" : "FILES");
++}
++
++// the clipboard's: "FOLDER AND CONTENTS COPIED", "3 FILES CUT"
++static void fbClipWhat(char *out, int size)
++{
++    char what[48];
++    int i, dirs = 0;
++    for (i = 0; i < fbClipCount; i++)
++        dirs += fbClipIsDir[i] ? 1 : 0;
++    fbWhat(what, sizeof(what), dirs, fbClipCount - dirs);
++    snprintf(out, size, "%s %s", what, fbClipCut ? "CUT" : "COPIED");
+ }
+ 
+ static void fbReport(const char *verb, int done)
+ {
+-    char text[48];
++    char text[80], what[48];
+     int ok = done - fbFailed - fbSkipped - fbKept;
+     if (ok < 0)
+         ok = 0;
+-    int n = snprintf(text, sizeof(text), "%d %s %s", ok, fbFiles(ok), verb);
++    int dirs = fbOkDirs < ok ? fbOkDirs : ok;
++    fbWhat(what, sizeof(what), dirs, ok - dirs);
++    int n = snprintf(text, sizeof(text), "%s %s", what, verb);
+     if (fbSkipped > 0)
+         n += snprintf(text + n, sizeof(text) - n, ", %d SKIPPED", fbSkipped);
+     if (fbKept > 0)
+@@ -914,6 +953,7 @@ static void fbRun(int op, const char *label)
+     fbOp = op;
+     fbOpLabel = label;
+     fbDoneItems = fbFailed = fbSkipped = fbKept = 0;
++    fbDoneFiles = fbTotalFiles = fbOkDirs = 0; // build 91
+     fbFailWhat[0] = '\0';
+     fbDoneBytes = 0;
+     fbBusy = 1;
+@@ -1104,6 +1144,7 @@ static void fbRunVcd(const fb_entry_t *e)
+     snprintf(ask, sizeof(ask), "Play %s?", name);
+     if (!guiMsgBox(ask, 1, NULL))
+         return;
++    ripps2LaunchDiscArmGeneric(); // build 91: a PS1 disc image
+     ripps2PlayLaunchSequence();
+     mod->support->itemLaunchVcd(mod->support, name, NULL);
+     ripps2LaunchAborted();
+@@ -1328,7 +1369,7 @@ static void fbAction(int act)
+             snprintf(fbClipVmc, sizeof(fbClipVmc), "%s", fbVmcPath(fbVmc, fbPath, NULL, 0) ? fbVmc : "");
+             fbClipCut = act == FB_ACT_CUT;
+             fbClearMarks();
+-            snprintf(ask, sizeof(ask), "%d %s %s", fbClipCount, fbFiles(fbClipCount), fbClipCut ? "CUT" : "COPIED");
++            fbClipWhat(ask, sizeof(ask));
+             fbSetToast(ask);
+             sfxPlay(SFX_CONFIRM);
+             break;
+@@ -2005,7 +2046,7 @@ void ripps2RenderFiles(void)
+     if (fbToastAt != 0 && (float)(clock() - fbToastAt) / CLOCKS_PER_SEC < 2.5f)
+         snprintf(buf, sizeof(buf), "%s", fbToast);
+     else if (fbClipCount > 0)
+-        snprintf(buf, sizeof(buf), "%d %s %s", fbClipCount, fbFiles(fbClipCount), fbClipCut ? "CUT" : "COPIED");
++        fbClipWhat(buf, sizeof(buf));
+     else if (fbVmcPath(fbVmc, fbPath, NULL, 0))
+         snprintf(buf, sizeof(buf), "%u KB FREE%s", fbVmcFreeKb, fbVmcRO ? ", READ ONLY" : "");
+     else
+@@ -2025,7 +2066,10 @@ void ripps2RenderFiles(void)
+                 p = 1.0f;
+             rmDrawRect(170, 236, 300, 6, FB_PRIM(0x03, 0x08, 0x22, 0x80));
+             rmDrawRect(170, 236, (int)(300 * p), 6, FB_PRIM(0x4A, 0x8C, 0xF0, 0x80));
+-            snprintf(buf, sizeof(buf), "%d / %d", fbDoneItems, fbTotalItems);
++            if (fbOp == FB_OP_PASTE && fbTotalFiles > 0) // build 91: every file down the trees, counted as it goes
++                snprintf(buf, sizeof(buf), "%d / %d FILES", fbDoneFiles, fbTotalFiles);
++            else
++                snprintf(buf, sizeof(buf), "%d / %d", fbDoneItems, fbTotalItems);
+             fntRenderString(smallFont, 320, 258, ALIGN_CENTER, 0, 0, buf, FB_SOFT);
+         }
+         return;
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index ec6796b..7cd47c4 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -32,6 +32,8 @@
+ #include "include/ioman.h"
+ #include "include/config.h"
+ #include "include/metadb.h"
++#include "include/iosupport.h" // build 91: the launch disc reads a game's ICO through its source
++#include "include/texcache.h"
+ #include <libcdvd.h>
+ #include <fcntl.h>
+ #include <unistd.h>
+@@ -536,6 +538,127 @@ static u64 withAlpha(u64 c, int a)
+     return (c & ~(0xFFULL << 24)) | ((u64)(a < 0 ? 0 : a > 0x80 ? 0x80 : a) << 24);
+ }
+ 
++// ---- build 91: the launch disc ----
++// As a game starts, its disc comes in over the middle of the page where the launch's Please Wait would sit:
++// the game's own disc art (ICO), else RIPPS2's disc (a theme's launch_disc.png). pop: it arrives the way the
++// L3 logos do (a touch large, settling, with a glow), holds and fades. spin: it arrives the same way, then
++// turns, faster and faster up to a cap, and never fades: it is still turning when the game takes the screen.
++#define DISC_SIZE   150
++#define DISC_Y      228   // the view word's line
++#define DISC_IN_S   0.40f
++#define DISC_HOLD_S 0.90f
++#define DISC_OUT_S  0.55f
++#define DISC_REV0   0.25f // turns a second as it lands
++#define DISC_RAMP   0.90f // and faster by this, each second
++#define DISC_REVMAX 2.20f // the cap: past this a 50 Hz picture strobes the turn
++#define DISC_ICO_WAIT 500 // art worker ticks to wait for it to let go before the ICO is read
++int gRipps2LaunchDisc = 0;
++static GSTEXTURE launchIco;
++static int launchArmed = 0, launchMode = 0;
++static clock_t launchStart = 0;
++
++int ripps2LaunchDiscMode(void)
++{
++    if (gRipps2LaunchDisc == 1)
++        return 0;
++    if (gRipps2LaunchDisc >= 2 && gRipps2LaunchDisc <= 3)
++        return gRipps2LaunchDisc - 1;
++    return gTheme != NULL ? gTheme->launchDiscDef : 0;
++}
++
++static void launchIcoFree(void)
++{
++    if (launchIco.Mem != NULL) {
++        rmUnloadTexture(&launchIco);
++        texFree(&launchIco);
++    }
++    memset(&launchIco, 0, sizeof(launchIco));
++}
++
++void ripps2LaunchDiscArmGeneric(void)
++{
++    launchIcoFree();
++    launchMode = ripps2LaunchDiscMode();
++    launchArmed = launchMode != 0;
++    launchStart = 0;
++}
++
++void ripps2LaunchDiscArm(struct _item_list_t *support, const char *startup)
++{
++    char folder[8] = "ART", suffix[8] = "ICO", value[128];
++
++    ripps2LaunchDiscArmGeneric();
++    if (!launchArmed || support == NULL || support->itemGetImage == NULL || startup == NULL || startup[0] == '\0')
++        return;
++    // the art worker reads covers off the same drive: let it go first, or use RIPPS2's disc
++    if (!cacheCancelPendingImageLoadsTimed(DISC_ICO_WAIT))
++        return;
++    snprintf(value, sizeof(value), "%s", startup);
++    if (support->itemGetImage(support, folder, 1, value, suffix, &launchIco, GS_PSM_CT24) < 0 || launchIco.Mem == NULL ||
++        launchIco.Width == 0 || launchIco.Height == 0)
++        launchIcoFree();
++}
++
++void ripps2LaunchDiscBegin(void)
++{
++    if (launchArmed) {
++        launchStart = clock();
++        if (launchStart == 0)
++            launchStart = 1;
++    }
++}
++
++void ripps2LaunchDiscEnd(void)
++{
++    launchArmed = 0;
++    launchStart = 0;
++    launchIcoFree();
++}
++
++static void viewWordBand(float cx, float cy, float halfW, float halfH, float fade, int r, int g, int b, int a);
++
++int ripps2DrawLaunchDisc(void)
++{
++    if (!launchArmed)
++        return 0;
++    if (launchStart == 0)
++        ripps2LaunchDiscBegin();
++    GSTEXTURE *tex = launchIco.Mem != NULL ? &launchIco : thmGetTexture(RIPPS2_LAUNCH_DISC);
++    if (tex == NULL || tex->Width == 0 || tex->Height == 0)
++        return 0;
++
++    float t = (float)(clock() - launchStart) / (float)CLOCKS_PER_SEC, out = 0.0f, keep = 1.0f;
++    if (launchMode == 1) {
++        float outStart = DISC_IN_S + DISC_HOLD_S;
++        if (t >= outStart + DISC_OUT_S)
++            return 0;
++        out = t > outStart ? (t - outStart) / DISC_OUT_S : 0.0f;
++        keep = 1.0f - out * out;
++    }
++    float li = t < DISC_IN_S ? t / DISC_IN_S : 1.0f;
++    float s = (1.0f + 0.16f * (1.0f - easeOutBack(li))) * (1.0f + 0.10f * out);
++    float flare = sinf(3.14159265f * li);
++    int a = (int)(0x80 * fminf(1.0f, li * 1.8f) * keep);
++    int h = DISC_SIZE, w = DISC_SIZE * tex->Width / tex->Height;
++    float angle = 0.0f;
++    if (launchMode == 2) { // the turn: up from DISC_REV0 by DISC_RAMP a second, then held at DISC_REVMAX
++        float tcap = (DISC_REVMAX - DISC_REV0) / DISC_RAMP;
++        float revs = t < tcap ? DISC_REV0 * t + 0.5f * DISC_RAMP * t * t
++                              : DISC_REV0 * tcap + 0.5f * DISC_RAMP * tcap * tcap + DISC_REVMAX * (t - tcap);
++        angle = revs * 6.2831853f;
++    }
++
++    // a dark band keeps it clear of whatever is behind, as under the L3 word
++    int bandA = (int)(fminf(1.0f, li * 2.0f) * keep * 0x80);
++    viewWordBand(320.0f, (float)DISC_Y, w * s / 2.0f + 18.0f, h * s / 2.0f + 6.0f, 48.0f, 0x01, 0x02, 0x0A, bandA * 3 / 5);
++    rmSetBlendAdditive(1); // the glow: a larger copy, brightest as it lands
++    rmDrawPixmapRotated(tex, 320, DISC_Y, (int)(w * s * 1.08f), (int)(h * s * 1.08f), angle,
++                        GS_SETREG_RGBAQ(0x80, 0x80, 0x80, (int)((0x10 + 0x40 * flare) * keep), 0x00));
++    rmSetBlendAdditive(0);
++    rmDrawPixmapRotated(tex, 320, DISC_Y, (int)(w * s), (int)(h * s), angle, GS_SETREG_RGBAQ(0x80, 0x80, 0x80, a, 0x00));
++    return 1;
++}
++
+ void ripps2ShowViewWord(const char *word, int logo, const char *caption)
+ {
+     snprintf(viewWord, sizeof(viewWord), "%s", word != NULL ? word : "");
+diff --git a/src/textures.c b/src/textures.c
+index 0e2f45c..96c3875 100644
+--- a/src/textures.c
++++ b/src/textures.c
+@@ -119,6 +119,7 @@ extern void *ripps2_grid_icons_png; // RIPPS2: made by ps2-pillars elf/theme/mak
+ extern void *ripps2_up_png;   // RIPPS2 build 70: D-pad glyphs, ps2-pillars elf/theme/tools/make_glyphs.py
+ extern void *ripps2_down_png;
+ extern void *hint_badge_png; // RIPPS2 build 90: hint badges (hints_labels=badge)
++extern void *ripps2_disc_png; // RIPPS2 build 91: the launch disc (launch_disc=pop|spin)
+ #ifdef RETROACHIEVEMENTS
+ extern void *ra_mark_png;
+ #endif
+@@ -293,6 +294,7 @@ static texture_t internalDefault[TEXTURES_COUNT] = {
+     {RIPPS2_DPAD_UP, "ripps2_up", &ripps2_up_png},
+     {RIPPS2_DPAD_DOWN, "ripps2_down", &ripps2_down_png},
+     {RIPPS2_HINT_BADGE, "hint_badge", &hint_badge_png},
++    {RIPPS2_LAUNCH_DISC, "launch_disc", &ripps2_disc_png},
+ #ifdef RETROACHIEVEMENTS
+     // Positional: guarded by the same #ifdef as RA_MARK in enum INTERNAL_TEXTURE. Without
+     // this row TEXTURES_COUNT grows but the initialiser does not, leaving the last slot
+diff --git a/src/themes.c b/src/themes.c
+index e702ff2..fd3a227 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -57,12 +57,15 @@ extern const char conf_theme_OPL_cfg;
+ extern u16 size_conf_theme_OPL_cfg;
+ extern const char theme_coverflow_cfg;
+ extern u16 size_theme_coverflow_cfg;
++extern const char theme_ripgrid_cfg; // RIPPS2 build 91: <RIPgrid>, built in (misc/theme_ripgrid.cfg)
++extern u16 size_theme_ripgrid_cfg;
+ 
+ theme_t *gTheme;
+ 
+ // Set transiently around thmLoad(NULL) to load the embedded coverflow theme instead of
+ // the default OPL theme (the built-in "<Coverflow>" entry in the theme list).
+ static int gLoadCoverflowBuiltin = 0;
++static int gLoadGridBuiltin = 0; // RIPPS2 build 91: the same for <RIPgrid> (id nThemes + 2)
+ 
+ static int screenWidth;
+ static int screenHeight;
+@@ -78,7 +81,9 @@ static const char **guiThemesNames = NULL;
+ int gCoverflowCount = 3;        // 3 or 5 only (clamped on load AND at draw)
+ int gCoverflowCenterScale = 30; // px added to the center cover (UI 0/15/30/45)
+ int gCoverflowAnimSpeed = 200;  // ms (UI 0/100/200/400; 0 = instant, no anim)
+-int gCoverflowDimCovers = 0;    // bool
++int gCoverflowDimCovers = 0;    // bool (RIPPS2 build 91: kept in the settings, drawn as the vignette below)
++int gRipps2Vignette = 1;        // RIPPS2 build 91: Flow and Grid > Vignette Other Covers
++int gRipps2GridLayout = 0;      // RIPPS2 build 91: Flow and Grid > Grid Layout, 0 = the theme's
+ 
+ // Coverflow slide animation (cubic ease-out); armed by thmTriggerCoverflowAnim().
+ static int cfIsAnimating = 0;
+@@ -2304,7 +2309,8 @@ static void drawCoverFlow(struct menu_list *menu, struct submenu_list *item, con
+         int pageDrawH = ((elem->height > 0) ? elem->height : csh) * drawW / pageW;
+         int posY = elem->posY + (pageDrawH - drawH) / 2 + recenterY * drawH / csh;
+ 
+-        u64 coverColor = (gCoverflowDimCovers && i != centerIdx) ? GS_SETREG_RGBA(0x80, 0x80, 0x80, 0x40) : gDefaultCol;
++        // RIPPS2 build 91: the side covers take the vignette (Vignette Other Covers) in place of the old dim
++        u64 coverColor = gDefaultCol;
+ 
+         if (cimg->overlayTexture) {
+             // Scale the inlay (cover) corner offsets to the drawn overlay size so the case
+@@ -2318,6 +2324,8 @@ static void drawCoverFlow(struct menu_list *menu, struct submenu_list *item, con
+         } else {
+             rmDrawPixmap(texture, posX, posY, ALIGN_CENTER, drawW, drawH, SCALING_RATIO, coverColor, elem->reflection);
+         }
++        if (gRipps2Vignette && i != centerIdx)
++            drawCoverVignette(posX, posY, rmWideScale(drawW), drawH, 1.0f);
+     }
+ 
+     rmSetReflectionYOffset(0); // don't leak the offset to any other reflection draw
+@@ -2482,6 +2490,24 @@ static float gridFadeIn(const void *item, const void *tex)
+     return 0.0f;
+ }
+ 
++// RIPPS2 build 91: the vignette on the covers not chosen (Flow and Grid > Vignette Other Covers): their edges
++// darken inwards, so the chosen cover, drawn without it, seems lit. A dark rim fading over a third of the
++// cover from each side (the corners darken twice, as a vignette's do) over the whole a shade down. w is the
++// width as drawn (through rmWideScale); fade the cover's own ease-in, 0..1.
++static void drawCoverVignette(int cx, int cy, int w, int h, float fade)
++{
++    float x0 = cx - w / 2.0f, y0 = cy - h / 2.0f, x1 = x0 + w, y1 = y0 + h, fx = w * 0.34f, fy = h * 0.30f;
++    u64 dark = GS_SETREG_RGBA(0x00, 0x00, 0x00, (int)(0x58 * fade)), clear = GS_SETREG_RGBA(0x00, 0x00, 0x00, 0x00);
++
++    if (fade <= 0.0f)
++        return;
++    rmDrawRect((int)x0, (int)y0, w, h, GS_SETREG_RGBA(0x00, 0x00, 0x00, (int)(0x14 * fade)));
++    rmDrawQuadGouraud(x0, y0, dark, x1, y0, dark, x0, y0 + fy, clear, x1, y0 + fy, clear);
++    rmDrawQuadGouraud(x0, y1 - fy, clear, x1, y1 - fy, clear, x0, y1, dark, x1, y1, dark);
++    rmDrawQuadGouraud(x0, y0, dark, x0 + fx, y0, clear, x0, y1, dark, x0 + fx, y1, clear);
++    rmDrawQuadGouraud(x1 - fx, y0, clear, x1, y0, dark, x1 - fx, y1, clear, x1, y1, dark);
++}
++
+ static void drawGridCover(struct menu_list *menu, struct submenu_list *it, struct theme_element *elem, item_list_t *src,
+                           int cx, int cy, int w, int h, int selected, GSTEXTURE *back)
+ {
+@@ -2516,7 +2542,9 @@ static void drawGridCover(struct menu_list *menu, struct submenu_list *it, struc
+     int a = (int)(0x80 * in);
+     if (a <= 0)
+         return;
+-    u64 col = selected ? GS_SETREG_RGBA(0x80, 0x80, 0x80, a) : GS_SETREG_RGBA(0x70, 0x70, 0x70, a); // the others a step back
++    // the others a step back; with the vignette (build 91) a smaller step, the vignette doing the rest
++    int stepBack = gRipps2Vignette ? 0x78 : 0x70;
++    u64 col = selected ? GS_SETREG_RGBA(0x80, 0x80, 0x80, a) : GS_SETREG_RGBA(stepBack, stepBack, stepBack, a);
+     if (img->overlayTexture) {
+         image_texture_t *ov = img->overlayTexture;
+         int csw = coverElem->width > 0 ? coverElem->width : 1, csh = coverElem->height > 0 ? coverElem->height : 1;
+@@ -2525,6 +2553,8 @@ static void drawGridCover(struct menu_list *menu, struct submenu_list *it, struc
+                             ov->lowerLeft_x * w / csw, ov->lowerLeft_y * h / csh, ov->lowerRight_x * w / csw, ov->lowerRight_y * h / csh, elem->reflection);
+     } else
+         rmDrawPixmap(texture, cx, cy, ALIGN_CENTER, w, h, SCALING_RATIO, col, elem->reflection && selected);
++    if (!selected && gRipps2Vignette)
++        drawCoverVignette(cx, cy, rmWideScale(w), h, in);
+ }
+ 
+ // build 79: the selection breathes -- a soft glow in the theme's selection colour, swelling and easing
+@@ -2728,6 +2758,25 @@ static void initGrid(const char *themePath, config_set_t *themeConfig, theme_t *
+         rows = 2;
+     if (gap < 0 || gap > 64)
+         gap = 14;
++    // RIPPS2 build 91: Flow and Grid > Grid Layout, RIPPS2's own pages of covers in place of the theme's: 4 x 2,
++    // 5 x 2, 3 x 2 Large and 6 x 3 Compact, with RIPPS2's spacing. The grid keeps the theme's centre, and a
++    // page shorter than the theme's sits in the middle of the theme's height.
++    static const struct
++    {
++        int cols, rows, w, h, gap;
++    } layouts[RIPPS2_GRID_LAYOUTS] = {{4, 2, 107, 150, 12}, {5, 2, 86, 120, 10}, {3, 2, 112, 157, 16}, {6, 3, 66, 92, 8}};
++    if (gRipps2GridLayout >= 1 && gRipps2GridLayout <= RIPPS2_GRID_LAYOUTS && elem->width > 0 && elem->height > 0) {
++        int k = gRipps2GridLayout - 1;
++        int themeH = rows * elem->height + (rows - 1) * gap;
++        int pageH = layouts[k].rows * layouts[k].h + (layouts[k].rows - 1) * layouts[k].gap;
++        if (pageH < themeH)
++            elem->posY += (themeH - pageH) / 2;
++        cols = layouts[k].cols;
++        rows = layouts[k].rows;
++        gap = layouts[k].gap;
++        elem->width = layouts[k].w;
++        elem->height = layouts[k].h;
++    }
+ 
+     // build 82: enough cache slots for two pages (one slides out as the next slides in)
+     int slots = 2 * cols * rows;
+@@ -4690,7 +4739,9 @@ static int thmLoad(const char *themePath)
+     if (!themePath) {
+         // No theme specified. Prepare and load the default theme.
+         themeConfig = configAlloc(0, NULL, NULL);
+-        if (gLoadCoverflowBuiltin)
++        if (gLoadGridBuiltin)
++            configReadBuffer(themeConfig, &theme_ripgrid_cfg, size_theme_ripgrid_cfg);
++        else if (gLoadCoverflowBuiltin)
+             configReadBuffer(themeConfig, &theme_coverflow_cfg, size_theme_coverflow_cfg);
+         else
+             configReadBuffer(themeConfig, &conf_theme_OPL_cfg, size_conf_theme_OPL_cfg);
+@@ -4953,6 +5004,7 @@ static int thmLoad(const char *themePath)
+     // RIPPS2 build 90: the D-pad glyphs (Coverflow's drive glyphs, a glyph set's Up and Down) load like the others
+     thmLoadResource(&newT->textures[RIPPS2_DPAD_UP], RIPPS2_DPAD_UP, themePath, GS_PSM_CT32, newT->useDefault);
+     thmLoadResource(&newT->textures[RIPPS2_DPAD_DOWN], RIPPS2_DPAD_DOWN, themePath, GS_PSM_CT32, newT->useDefault);
++    thmLoadResource(&newT->textures[RIPPS2_LAUNCH_DISC], RIPPS2_LAUNCH_DISC, themePath, GS_PSM_CT32, 1); // build 91: always one
+     snprintf(newT->glyphPath, sizeof(newT->glyphPath), "%s", themePath != NULL ? themePath : "");
+     newT->glyphSetLoaded = RIPPS2_GLYPHSET_THEME;
+ 
+@@ -5037,6 +5089,10 @@ static int thmLoad(const char *themePath)
+         if (configGetInt(themeConfig, "hints_spacing", &intValue) && intValue >= 12 && intValue <= 96)
+             newT->hintsSpacing = intValue;
+         newT->glyphSetDef = configGetStr(themeConfig, "glyph_set", &v) ? ripps2GlyphSetParse(v) : RIPPS2_GLYPHSET_THEME;
++        // build 91: launch_disc=pop|spin, the disc that comes in as a game launches (off unless a theme or
++        // Flow and Grid > Launch Disc asks for it)
++        if (configGetStr(themeConfig, "launch_disc", &v) && v != NULL)
++            newT->launchDiscDef = !strcasecmp(v, "spin") ? 2 : !strcasecmp(v, "pop") ? 1 : 0;
+         if (ripps2GlyphSetFor(newT->glyphSetDef) != RIPPS2_GLYPHSET_THEME)
+             thmGlyphSetLoad(newT, ripps2GlyphSetFor(newT->glyphSetDef), 0); // never drawn yet: no VRAM to drop
+     }
+@@ -5070,8 +5126,8 @@ static void thmRebuildGuiNames(void)
+     if (guiThemesNames)
+         free(guiThemesNames);
+ 
+-    // build the themes name list (+1 default internal, +1 built-in coverflow, +1 NULL)
+-    guiThemesNames = (const char **)malloc((nThemes + 3) * sizeof(char **));
++    // build the themes name list (+1 default internal, +1 built-in coverflow, +1 built-in grid, +1 NULL)
++    guiThemesNames = (const char **)malloc((nThemes + 4) * sizeof(char **));
+ 
+     // add default internal
+     guiThemesNames[0] = "<RIPPS2>"; // RIPPS2: the built-in look is RIPPS2's own (was "<OPL>")
+@@ -5083,7 +5139,8 @@ static void thmRebuildGuiNames(void)
+ 
+     // built-in coverflow theme occupies the slot right after the disk themes
+     guiThemesNames[nThemes + 1] = "<RIPFLOW>"; // RIPPS2 build 70: the built-in coverflow theme is RIPFLOW
+-    guiThemesNames[nThemes + 2] = NULL;
++    guiThemesNames[nThemes + 2] = "<RIPgrid>"; // RIPPS2 build 91: and the theme pack's grid, built in
++    guiThemesNames[nThemes + 3] = NULL;
+ }
+ 
+ int thmAddElements(char *path, const char *separator, int forceRefresh)
+@@ -5100,6 +5157,8 @@ int thmAddElements(char *path, const char *separator, int forceRefresh)
+         snprintf(activeName, sizeof(activeName), "%s", themes[guiThemeID - 1].name);
+     else if (guiThemeID == nThemes + 1)
+         snprintf(activeName, sizeof(activeName), "<RIPFLOW>");
++    else if (guiThemeID == nThemes + 2)
++        snprintf(activeName, sizeof(activeName), "<RIPgrid>"); // build 91
+     const char *temp = NULL;
+     int savedMissing = configGetStr(configGetByType(CONFIG_OPL), "theme", &temp) && thmFindGuiID(temp) == 0;
+ 
+@@ -5153,6 +5212,8 @@ void thmReinit(const char *path)
+         activeOnDevice = strncmp(themes[guiThemeID - 1].filePath, path, strlen(path)) == 0;
+     } else if (guiThemeID == nThemes + 1) {
+         snprintf(activeName, sizeof(activeName), "<RIPFLOW>"); // built-in; its id (nThemes+1) shifts as themes are removed
++    } else if (guiThemeID == nThemes + 2) {
++        snprintf(activeName, sizeof(activeName), "<RIPgrid>"); // build 91: likewise (nThemes+2)
+     }
+ 
+     // One guiLock section across the removal loop AND the rebuild: the frees below invalidate
+@@ -5211,6 +5272,10 @@ int thmSetGuiValue(int themeID, int reload)
+                 gLoadCoverflowBuiltin = 1;
+                 loadResult = thmLoad(NULL);
+                 gLoadCoverflowBuiltin = 0;
++            } else if (themeID == nThemes + 2) { // RIPPS2 build 91: built-in <RIPgrid>, the same way
++                gLoadGridBuiltin = 1;
++                loadResult = thmLoad(NULL);
++                gLoadGridBuiltin = 0;
+             } else
+                 loadResult = thmLoad(themeID != 0 ? themes[themeID - 1].filePath : NULL);
+ 
+@@ -5250,6 +5315,8 @@ int thmFindGuiID(const char *theme)
+     if (theme) {
+         if (strcasecmp(theme, "<RIPFLOW>") == 0 || strcasecmp(theme, "<Coverflow>") == 0)
+             return nThemes + 1; // built-in coverflow theme (RIPPS2 build 70: RIPFLOW; <Coverflow> in older settings)
++        if (strcasecmp(theme, "<RIPgrid>") == 0)
++            return nThemes + 2; // RIPPS2 build 91: the built-in grid
+         int i = 0;
+         for (; i < nThemes; i++) {
+             if (strcasecmp(themes[i].name, theme) == 0)

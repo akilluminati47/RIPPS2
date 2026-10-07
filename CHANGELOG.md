@@ -1,5 +1,29 @@
 # RIPPS2 changelog
 
+## Build 91 (testing), changes since build 90
+
+### The launch disc
+- **As a game launches, its disc comes in** over the middle of the screen, where the launch's Please Wait used to sit. It is the game's own disc art (ICO) when you have it, else RIPPS2's disc.
+- **Pop In** arrives the way the L3 logos do (a touch large, settling, with a glow), holds and fades. **Spin** arrives the same way, then turns faster and faster up to a steady spin and never fades: it is still turning when the game takes the screen.
+- **RIPgrid pops its disc in; RIPFLOW spins its.** Other themes can ask for either with `launch_disc=pop` or `launch_disc=spin`. Off everywhere else unless you pick it in Flow and Grid.
+- Real discs (Launch Disc, the DVD player) and PS1 disc images get RIPPS2's disc too. Programs (ELFs) get none.
+
+### Interface > Flow and Grid (was Coverflow Settings)
+- **Vignette Other Covers** replaces Dim Side Covers, in Flow and on the Grid: every cover but the chosen one darkens towards its edges, so the chosen one looks lit. On unless you turn it off.
+- **Grid Layout:** Theme, 4 x 2, 5 x 2, 3 x 2 Large or 6 x 3 Compact, with RIPPS2's spacing. The grid keeps the theme's place on the page.
+- **Launch Disc:** Theme, Off, Pop In or Spin.
+- **RIPgrid is built in** as `<RIPgrid>`, next to `<RIPPS2>` and `<RIPFLOW>`: no theme folder needed.
+
+### Settings pages
+- **PS Emulation's USB BDMA Driver row is back.** It showed "<no values>" floating under VCD BDMA Apply on Launch: its ids were the same numbers as the VCD buttons beside it, so the page filled the buttons instead. Every settings id and every game's option id are now apart, and a test checks that no two ids match.
+- **Rows that are hidden take no space.** With VCD BDMA Apply on Launch on, BDMA Source and Mode go away without leaving a gap, so USB BDMA Driver sits right under it. The same goes for HTTP's rows on Network when the share is SMB.
+- **An empty value reads Default**, not "<no values>".
+- **Network:** a line under the share's password, then POPSTARTER Network Settings, NBD Server, Cover Art and Achievements together, then one clear row before OK. Achievements opens the same page as from the Settings list.
+
+### Memory Files
+- **A folder is called a folder.** Copy, cut and paste say "FOLDER AND CONTENTS COPIED", "2 FOLDERS AND CONTENTS MOVED" or "1 FOLDER, 2 FILES PASTED", never counting what is inside.
+- **The progress bar counts every file** as a paste goes, down every folder's tree: "12 / 48 FILES".
+
 ## Build 90 (testing), changes since build 89
 
 ### Hints and Glyphs (Controller Settings)
