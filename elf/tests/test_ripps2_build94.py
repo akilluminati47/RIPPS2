@@ -40,8 +40,8 @@ if 'free(all)' not in ra or 'free(lockedAt)' not in ra:
 if 'sbLoadRaHunt(path, file)' not in sb or 'raHuntBlob(list, n, sbRaHunt' not in sb:
     fail.append('a launch must read RA/<serial>.ach and pack it for the menu')
 m = re.search(r'gRipps2IgrMenu && \(huntSrc = sbGetRaHunt.*?\n.*?\n', sysc)
-if not m or 'OPL_MOD_STORAGE' not in m.group(0) or '0xFF000' not in m.group(0):
-    fail.append('the hunt list goes into module storage only with the menu on, at the default address, with room')
+if not m or 'OPL_MOD_STORAGE' not in m.group(0) or '0xD0000' not in m.group(0):
+    fail.append('the hunt list goes into module storage only with the menu on, at the default address, below 0xD0000')
 if 'config->RaHunt = raHunt' not in sysc:
     fail.append('ee_core must be told where the hunt list is')
 # coreconfig: appended, never inserted

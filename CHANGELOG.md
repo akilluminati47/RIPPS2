@@ -6,7 +6,7 @@
 - **CHECK GAME SUPPORT now brings the game's whole set home.** With xeRAbora's **OPEN TO THE NETWORK** on (its settings), the check also asks xeRAbora's interface page for the game's achievements and keeps them beside the game's list as `RA/<serial>.ach`: each one's title, points, how it is earned and whether your account has it. With it off, the check works as before and nothing else changes.
 - **Achievements > YOUR ACCOUNT:** a game's card says how many are left to hunt. Cross (or Circle, with Circle as confirm) opens **LEFT TO HUNT**: every locked achievement with its points and how to earn it, Up and Down to choose, L1 and R1 to page, Back to return.
 - **In-game menu (Settings > General > In-Game Menu):** ACHIEVEMENTS says how many are left, and the confirm button opens LEFT TO HUNT in the pause menu itself: one achievement at a time, its title, its points and how it is earned, Up and Down (or confirm) for the next, Back to return to the menu, START back to the game. The list is the one the last CHECK GAME SUPPORT saw: run it again to bring it up to date.
-- The pause menu's list travels with the game in the memory the game leaves alone, up to 8 KB of it (well over a hundred achievements). A game that needs that memory for itself plays without the page.
+- The pause menu's list travels with the game in the memory the game leaves alone, up to 8 KB of it (well over a hundred achievements). A game that needs that memory for itself, or a launch whose modules leave too little room, plays without the page.
 
 ## Build 93 (testing), changes since build 92
 

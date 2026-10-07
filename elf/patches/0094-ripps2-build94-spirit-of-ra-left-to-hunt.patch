@@ -1033,21 +1033,22 @@ index 4c70ee1..3330dc0 100644
      for (ext = 0; ext < sizeof(wlExt) / sizeof(wlExt[0]); ext++) {
          char wlPath[256];
 diff --git a/src/system.c b/src/system.c
-index ce052d3..b860338 100644
+index ce052d3..6a95323 100644
 --- a/src/system.c
 +++ b/src/system.c
-@@ -2185,6 +2185,19 @@ void sysLaunchLoaderElf(const char *filename, const char *mode_str, int size_cdv
+@@ -2185,6 +2185,20 @@ void sysLaunchLoaderElf(const char *filename, const char *mode_str, int size_cdv
          raWorkArea = (u8 *)ModuleStorage + ModuleStorageSize;
          ModuleStorageSize += (RA_EE_WORK_BYTES + 0x3F) & ~0x3F;
      }
 +
 +    /* RIPPS2 build 94: the in-game menu's LEFT TO HUNT list goes after it, for the whole game. Only with
-+       the menu on, and only at the default address, where the game's own memory starts at 0x100000: a
-+       game moved lower (mod_storage_location_list) or a storage too full for it plays without the page. */
++       the menu on, only at the default address, and only inside ee_core's modules region (up to 0xD0000:
++       above it some games keep data, see ee_core/linkfile). A game moved lower (mod_storage_location_list)
++       or a storage too full for it plays without the page. */
 +    const u8 *raHunt = NULL, *huntSrc;
 +    int raHuntCount = 0, raHuntBytes = 0;
 +    if (gRipps2IgrMenu && (huntSrc = sbGetRaHunt(&raHuntCount, &raHuntBytes)) != NULL &&
-+        ModuleStorage == (void *)OPL_MOD_STORAGE && (u32)ModuleStorage + ModuleStorageSize + raHuntBytes <= 0xFF000) {
++        ModuleStorage == (void *)OPL_MOD_STORAGE && (u32)ModuleStorage + ModuleStorageSize + raHuntBytes <= 0xD0000) {
 +        raHunt = (u8 *)ModuleStorage + ModuleStorageSize;
 +        memcpy((void *)raHunt, huntSrc, raHuntBytes);
 +        ModuleStorageSize += (raHuntBytes + 0x3F) & ~0x3F;
@@ -1056,7 +1057,7 @@ index ce052d3..b860338 100644
  #endif
  
      ModuleStorageEnd = (void *)((u8 *)ModuleStorage + ModuleStorageSize);
-@@ -2329,6 +2342,8 @@ void sysLaunchLoaderElf(const char *filename, const char *mode_str, int size_cdv
+@@ -2329,6 +2343,8 @@ void sysLaunchLoaderElf(const char *filename, const char *mode_str, int size_cdv
      config->IgrConfirmCircle = gSelectButton == KEY_CIRCLE;
  #ifdef RETROACHIEVEMENTS
      config->RaKnown = sbGetRaInfo(&config->RaTotal, &config->RaUnlocked);
