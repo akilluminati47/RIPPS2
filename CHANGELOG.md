@@ -1,5 +1,24 @@
 # RIPPS2 changelog
 
+## Build 89 (testing), changes since build 88
+
+### Your console's sounds, all of them
+- **BIOS Sounds > Rip now makes the boot and the game launch too.** On the console those are system music: notes played on the BIOS's own instruments. RIPPS2 plays them the way the console does (every instrument layer, its envelope, the noise voices, each channel's volume and pan, then a hall) and saves them as `boot.adp` and `launch.adp`. Fifteen sounds in all; a few seconds of work, with the progress on screen.
+
+### PS1 games
+- **Ember's BIOS from your own console.** Every PS2 carries a PS1 BIOS at the start of its own (the part it runs PS1 discs with). When an Ember game finds no `bios.bin`, RIPPS2 offers to make it from that, checked first, and starts the game. If a game will not run with it, a PS1 console's BIOS still goes in the same place.
+- **RIPPOPS.** Sony's `POPS.ELF` and `POPS_IOX.PAK` are not in any PS2's BIOS, so they cannot be ripped from the console. When POPSTARTER finds them missing beside your games but you have them in a `POPS` folder on another drive (USB, MMCE, the HDD or a memory card), RIPPS2 offers to copy them over and start the game.
+
+### Settings
+- **A scroll bar** on any page that runs past the screen.
+- **The right stick slides the page** up and down on its own, without moving the cursor and without the cursor sound. The D-pad (or the first confirm) brings the view back to the cursor.
+
+### Neutrino
+- The automatic `-logo` now comes after the `-bsd` options and before `-dvd`, as FifthFox asked for his iLink test. Neutrino reads all of its options before it does anything, so the position does not change when the logo plays; the argument preview just reads in that order.
+
+### About
+- Credits updated: ORBIT's Neutrino fork (the in-game menu's pause and drawing), the console-ripped sounds and RIPPS2 Audio Studio, Roboto Condensed (RIPFLOW's type), and MCKILLA, RIPPS2's card manager fork.
+
 ## Build 88 (testing), changes since build 87
 
 ### Audio

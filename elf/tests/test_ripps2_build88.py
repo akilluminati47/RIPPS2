@@ -27,9 +27,6 @@ for ev in ('cursor', 'confirm', 'cancel', 'page_in', 'page_out', 'transition', '
            'bd_connect', 'bd_disconnect', 'random'):
     if '"%s.adp"' % ev not in rip:
         fail.append('the ripper must write %s.adp' % ev)
-for ev in ('"boot.adp"', '"launch.adp"'):
-    if ev in rip:
-        fail.append('boot and launch are system music, not menu sounds: %s must not be ripped' % ev)
 if 'guiMsgBoxStartOption("RIP")' not in rip:
     fail.append('the rip must ask first (START), it replaces files')
 if 'int bgmMusicDefault(' not in snd or 'bgmMusicDefault(musicFiles, musicCount)' not in gui or 'pick = bgmMusicDefault(names, n);' not in snd:

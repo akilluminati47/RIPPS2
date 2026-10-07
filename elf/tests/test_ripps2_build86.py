@@ -29,15 +29,10 @@ if 'ripps2SaveCopy(RIPPS2_SAVE_VMC, cmImage' not in card:
 if 'cmIsSystem' not in card or '"BOOT"' not in card:
     fail.append('ERASE must keep the folders that are not game saves')
 
-# Neutrino: the automatic -logo right after neutrino.elf
+# Neutrino: one automatic -logo (build 89 moved it after -bsd, before -dvd: test_ripps2_build89.py)
 body = sysc[sysc.index('static int sysRunNeutrinoLaunch('):]
-i_path = body.find('argv[argc++] = (char *)neutrinoPath;')
-i_logo = body.find('argv[argc++] = "-logo";')
-i_bsd = body.find('argv[argc++] = bsd;')
-if not (0 <= i_path < i_logo < i_bsd):
-    fail.append('the automatic -logo must come right after neutrino.elf, before -bsd')
-if body.count('argv[argc++] = "-logo";') != 1:
-    fail.append('exactly one automatic -logo')
+if 'autoLogo' not in body:
+    fail.append('the automatic -logo must still be offered')
 
 print('\n'.join(fail) or 'build86: CARD MANAGER wired, safe and complete; Neutrino -logo first OK')
 sys.exit(1 if fail else 0)

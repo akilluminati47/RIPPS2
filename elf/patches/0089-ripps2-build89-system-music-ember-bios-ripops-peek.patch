@@ -1,0 +1,1121 @@
+diff --git a/include/cuesupport.h b/include/cuesupport.h
+index 298f750..b186599 100644
+--- a/include/cuesupport.h
++++ b/include/cuesupport.h
+@@ -118,6 +118,8 @@ int cueEnsureEmber(const char *devPrefix, char *out, int outSize); // RIPPS2 bui
+ // As cueResolveEmber, for the user-supplied bios.bin Ember needs at launch. A missing BIOS drops
+ // Ember to the PS1 shell with no explanation, so callers check this BEFORE deinit and say so.
+ int cueResolveEmberBios(const char *devPrefix, char *out, int outSize);
++// RIPPS2 build 89 (ripps2ember.c): no bios.bin: offer to make it from the console's own ROM (its PS1 BIOS). 1 = made
++int ripps2EmberBiosOffer(const char *biosPath);
+ 
+ // Build "<devPrefix><EmberFolder><sep>games" into out (no trailing separator, ready for opendir).
+ void cueBuildGamesDir(const char *devPrefix, char *out, int outSize);
+diff --git a/src/bdmsupport.c b/src/bdmsupport.c
+index dd18a96..b7fa9df 100644
+--- a/src/bdmsupport.c
++++ b/src/bdmsupport.c
+@@ -1760,10 +1760,9 @@ static void bdmLaunchCue(item_list_t *itemList, const char *cueName, config_set_
+     }
+     // Ember needs a user-supplied bios.bin beside it and says nothing useful when it is missing --
+     // it just runs the PS1 BIOS shell. Check while we can still explain.
+-    if (!cueResolveEmberBios(ps1Prefix, biosPath, sizeof(biosPath))) {
+-        guiMsgBoxMissing(_l(_STR_EMBER_BIOS_MISSING), biosPath);
++    if (!cueResolveEmberBios(ps1Prefix, biosPath, sizeof(biosPath)) &&
++        !ripps2EmberBiosOffer(biosPath)) // RIPPS2 build 89: or made from this console's own ROM
+         return;
+-    }
+     // The scan lists folders without reading inside them -- that would be a directory read per row
+     // on every refresh. Pay for it once, HERE, while a dialog can still be drawn: an empty or
+     // mis-filled folder otherwise drops the user into the PS1 BIOS shell with no explanation.
+diff --git a/src/dia.c b/src/dia.c
+index 473e319..8c55bdd 100644
+--- a/src/dia.c
++++ b/src/dia.c
+@@ -15,6 +15,7 @@
+ #include "include/ripps2.h" // RIPPS2: glass hint box
+ #include "include/util.h"
+ #include "include/sound.h"
++#include <time.h> // build 89: clock() for the right stick's peek
+ 
+ // UI spacing of the dialogues (pixels between consecutive items)
+ #define UI_SPACING_H          10
+@@ -1038,6 +1039,15 @@ static struct UIItem *diaGetFirstControl(struct UIItem *ui);
+ 
+ static int diaScrollOffset = 0;
+ 
++// RIPPS2 build 89: the right stick slides a long page on its own ("peek"), with no cursor sound, and leaves the
++// cursor where it is; the D-pad (or the first confirm) brings the view back to the cursor. A scroll bar on the
++// right shows how much page there is and where the view is.
++static int diaPeek = 0;
++static float diaPeekPos = 0.0f;
++#define DIA_PEEK_SPEED 720.0f // pixels a second at full tilt
++#define DIA_BAR_X      626
++#define DIA_BAR_W      4
++
+ void diaSetSettingsShell(struct UIItem *ui, const char *indicator)
+ {
+     diaSettingsShellUI = ui;
+@@ -1140,7 +1150,7 @@ void diaRenderUI(struct UIItem *ui, short inMenu, struct UIItem *cur, int haveFo
+         // cursor-follow clamp keeps it inside the viewport by construction), so cursor tracking is exact.
+         int rowH = diaItemHeight(rc, spacingH);
+         int viewBottom = gTheme->usedHeight - 40; // the same bound the scroll clamp below uses
+-        if (rc != cur && (y + rowH <= y0 || y >= viewBottom)) {
++        if ((rc != cur || diaPeek) && (y + rowH <= y0 || y >= viewBottom)) { // build 89: a peek may leave it off screen
+             w = 0;
+             h = rowH;
+         } else {
+@@ -1175,14 +1185,20 @@ void diaRenderUI(struct UIItem *ui, short inMenu, struct UIItem *cur, int haveFo
+ 
+     // Cursor-follow scroll: re-clamp the offset so the focused row stays on-screen, above the
+     // bottom hint bar. Self-correcting each frame; remains 0 for dialogs that fit (no scroll).
+-    if (cur != NULL) {
+-        int visibleBottom = gTheme->usedHeight - 40;
+-        // Upper bound: never scroll past the content's bottom. contentBottom is screen-space, so undo
+-        // the current offset to get the content-space extent. Without this, when the cursor lands on
+-        // the trailing OK row the offset could over-shoot and stay stuck shifted up (#48).
+-        int maxScroll = (contentBottom + diaScrollOffset) - visibleBottom;
+-        if (maxScroll < 0)
+-            maxScroll = 0;
++    int visibleBottom = gTheme->usedHeight - 40;
++    // Upper bound: never scroll past the content's bottom. contentBottom is screen-space, so undo
++    // the current offset to get the content-space extent. Without this, when the cursor lands on
++    // the trailing OK row the offset could over-shoot and stay stuck shifted up (#48).
++    int maxScroll = (contentBottom + diaScrollOffset) - visibleBottom;
++    if (maxScroll < 0)
++        maxScroll = 0;
++    if (diaPeek) { // build 89: the right stick holds the view where it slid it
++        if (diaPeekPos > maxScroll)
++            diaPeekPos = maxScroll;
++        if (diaPeekPos < 0)
++            diaPeekPos = 0;
++        diaScrollOffset = (int)diaPeekPos;
++    } else if (cur != NULL) {
+         // Only scroll when a real viewport exists; guards degenerate small-usedHeight themes
+         // where visibleBottom <= y0 would let the two edge corrections fight (jitter).
+         if (cur == diaGetFirstControl(ui)) {
+@@ -1203,6 +1219,18 @@ void diaRenderUI(struct UIItem *ui, short inMenu, struct UIItem *cur, int haveFo
+             diaScrollOffset = 0;
+     }
+ 
++    // build 89: the scroll bar, on a page that runs past the screen: a dim track, a thumb as long as the
++    // share of the page in view, where the view is
++    if (maxScroll > 0 && visibleBottom - y0 > 60) {
++        int trackH = visibleBottom - y0, contentH = trackH + maxScroll;
++        int thumbH = trackH * trackH / contentH, thumbY;
++        if (thumbH < 24)
++            thumbH = 24;
++        thumbY = y0 + (trackH - thumbH) * diaScrollOffset / maxScroll;
++        rmDrawRect(DIA_BAR_X, y0, DIA_BAR_W, trackH, GS_SETREG_RGBAQ(0x30, 0x3C, 0x68, 0x40, 0x00));
++        rmDrawRect(DIA_BAR_X, thumbY, DIA_BAR_W, thumbH, GS_SETREG_RGBAQ(0x70, 0x88, 0xD8, diaPeek ? 0x80 : 0x60, 0x00));
++    }
++
+     if ((cur != NULL) && (!haveFocus) && (cur->hintId != -1)) {
+         diaDrawHint(cur);
+     }
+@@ -1589,6 +1617,8 @@ int diaExecuteDialog(struct UIItem *ui, int uiId, short inMenu, int (*updater)(i
+     setButtonDelay(KEY_RIGHT, diaScrollDelay());
+ 
+     diaScrollOffset = 0; // start each dialog scrolled to the top
++    diaPeek = 0;         // build 89
++    clock_t peekLast = clock();
+ 
+     // okay, we have the first selectable item
+     // we can proceed with rendering etc. etc.
+@@ -1628,6 +1658,24 @@ int diaExecuteDialog(struct UIItem *ui, int uiId, short inMenu, int (*updater)(i
+                 return DIA_RESULT_NEXT;
+             }
+ 
++            // build 89: the right stick peeks up or down a long page, silently; the cursor stays put
++            {
++                int sx, sy;
++                clock_t now = clock();
++                float dt = (float)(now - peekLast) / CLOCKS_PER_SEC;
++                peekLast = now;
++                if (dt > 0.1f)
++                    dt = 0.1f;
++                padGetRightStick(&sx, &sy);
++                if (sy > 24 || sy < -24) {
++                    if (!diaPeek) {
++                        diaPeek = 1;
++                        diaPeekPos = (float)diaScrollOffset;
++                    }
++                    diaPeekPos += (float)sy / 127.0f * DIA_PEEK_SPEED * dt;
++                }
++            }
++
+             if (getKey(KEY_LEFT)) {
+                 newf = diaGetPrevControl(cur, ui);
+                 if (newf == cur)
+@@ -1656,6 +1704,7 @@ int diaExecuteDialog(struct UIItem *ui, int uiId, short inMenu, int (*updater)(i
+                 // Navigation change detected
+                 sfxPlay(SFX_CURSOR);
+                 cur = newf;
++                diaPeek = 0; // build 89: the view follows the cursor again
+             }
+ 
+             // Circle on a Settings PAGE goes back to the Settings Index KEEPING what was changed, the
+@@ -1677,7 +1726,9 @@ int diaExecuteDialog(struct UIItem *ui, int uiId, short inMenu, int (*updater)(i
+             }
+ 
+             // see what key events we have
+-            if (getKeyOn(guiConfirmKey())) {
++            if (diaPeek && getKeyOn(guiConfirmKey())) {
++                diaPeek = 0; // build 89: after a peek the first confirm brings the cursor's row back into view
++            } else if (getKeyOn(guiConfirmKey())) {
+                 haveFocus = 1;
+                 sfxPlay(SFX_CONFIRM);
+ 
+diff --git a/src/ethsupport.c b/src/ethsupport.c
+index 071d03e..6cc60b4 100644
+--- a/src/ethsupport.c
++++ b/src/ethsupport.c
+@@ -692,10 +692,9 @@ static void ethLaunchCue(item_list_t *itemList, const char *cueName, config_set_
+         guiMsgBoxMissing(_l(_STR_EMBER_NOT_FOUND), emberElf);
+         return;
+     }
+-    if (!cueResolveEmberBios(ethPrefix, biosPath, sizeof(biosPath))) {
+-        guiMsgBoxMissing(_l(_STR_EMBER_BIOS_MISSING), biosPath);
++    if (!cueResolveEmberBios(ethPrefix, biosPath, sizeof(biosPath)) &&
++        !ripps2EmberBiosOffer(biosPath)) // RIPPS2 build 89: or made from this console's own ROM
+         return;
+-    }
+     cueApplySettings(ethPrefix, cueName, configSet); // best-effort marker, never a launch gate
+     if (!cueGameHasImage(ethPrefix, cueName)) {
+         guiMsgBox(_l(_STR_EMBER_NO_DISC), 0, NULL);
+diff --git a/src/mmcesupport.c b/src/mmcesupport.c
+index b639df7..af4956f 100644
+--- a/src/mmcesupport.c
++++ b/src/mmcesupport.c
+@@ -860,10 +860,9 @@ static void mmceLaunchCue(item_list_t *itemList, const char *cueName, config_set
+         guiMsgBoxMissing(_l(_STR_EMBER_NOT_FOUND), emberElf);
+         return;
+     }
+-    if (!cueResolveEmberBios(ps1Root, biosPath, sizeof(biosPath))) {
+-        guiMsgBoxMissing(_l(_STR_EMBER_BIOS_MISSING), biosPath);
++    if (!cueResolveEmberBios(ps1Root, biosPath, sizeof(biosPath)) &&
++        !ripps2EmberBiosOffer(biosPath)) // RIPPS2 build 89: or made from this console's own ROM
+         return;
+-    }
+     // The scan lists folders without reading inside them -- that would be a directory read per row
+     // on every refresh. Pay for it once, HERE, while a dialog can still be drawn: an empty or
+     // mis-filled folder otherwise drops the user into the PS1 BIOS shell with no explanation.
+diff --git a/src/ripps2about.c b/src/ripps2about.c
+index fdde255..942790f 100644
+--- a/src/ripps2about.c
++++ b/src/ripps2about.c
+@@ -87,12 +87,25 @@ static const ab_row_t abRows[] = {
+     {'S', "carried unmodified: github.com/Gageformer/Ember/releases"},
+     {'T', "POPSTARTER by krHACKen"},
+     {'S', "your own copy first; else the one RIPPS2 carries, unchanged"},
++    {'S', "RIPPOPS copies your own POPS files over from another drive"},
++    {'S', "Ember's bios.bin can be made from your console's own BIOS"},
+     {'G', NULL},
+     {'H', "ACHIEVEMENTS: SPIRIT OF RA"},
+     {'T', "RetroAchievements on the console by hacan359 (yoba)"},
+     {'S', "game hashes and memory telemetry, made solid on hardware by oMrRexD"},
+     {'T', "xeRAbora by hacan359, rcheevos by RetroAchievements"},
+     {'S', "the PC client that unlocks them; the hash every game is known by"},
++
++    {'H', "IN-GAME MENU"},
++    {'T', "ORBIT's Neutrino fork by danielnuld"},
++    {'S', "its pause and on-screen drawing, brought to OPL's core (AFL-3.0)"},
++    {'S', "the panel's pixel font drawn for RIPPS2"},
++
++    {'H', "SOUNDS"},
++    {'T', "your console's own, ripped from its BIOS"},
++    {'S', "BIOS Sounds > Rip plays them as the SPU2 does; no BIOS ships"},
++    {'T', "RIPPS2 Audio Studio"},
++    {'S', "the same, and your music, on your PC: tools/audio-studio"},
+     {'G', NULL},
+     {'H', "BOOT LOCK AND BIBLE"},
+     {'T', "PS2BBL by El Isra (israpps)"},
+@@ -107,6 +120,8 @@ static const ab_row_t abRows[] = {
+     {'S', "binds BIBLE to your card; the console does the crypto, no keys"},
+     {'G', NULL},
+     {'H', "MEMORY FILES"},
++    {'T', "MCKILLA, RIPPS2's card manager fork"},
++    {'S', "an MC annihilator: Square on a memory card"},
+     {'T', "wLaunchELF by the ps2homebrew team"},
+     {'S', "the file manager RIPPS2's browser and settings grid follow"},
+     {'T', "wLaunchELF R3Z by NathanNeurotic"},
+@@ -121,6 +136,8 @@ static const ab_row_t abRows[] = {
+     {'H', "LOOK AND TYPE"},
+     {'T', "Planet N Compact by Iconian Fonts"},
+     {'T', "RIPPS2 Sleek and Sleek Bold, drawn for RIPPS2"},
++    {'T', "Roboto Condensed by Google (Apache-2.0)"},
++    {'S', "RIPFLOW's type"},
+     {'S', "PS1 and PS2 marks drawn from public SVGs; trademarks of Sony"},
+     {'G', NULL},
+     {'G', NULL},
+diff --git a/src/ripps2biossnd.c b/src/ripps2biossnd.c
+index 8371c40..a527c48 100644
+--- a/src/ripps2biossnd.c
++++ b/src/ripps2biossnd.c
+@@ -16,8 +16,11 @@
+   The format and the event map are RIPPS2 Audio Studio's (tools/audio-studio/ps2bios.py), matched
+   against the private pack's sounds: the browser's menu sound N in Audio Studio is entry N - 1 here.
+ 
+-  The boot and game launch sounds are the console's system music (sequences on another bank), so
+-  they are not ripped; an older BIOS (1.00, SCPH-10000) keeps its sounds elsewhere and is refused.
++  Build 89: the boot and the PS2 logo before a game are the console's system music, sequences (SNDBOOTS,
++  SNDLOGOS) played on another bank (SNDBOOT). RIPPS2 plays them the way Audio Studio's render_seq does: one
++  voice per layer of every note (its sample or the SPU2 noise, its envelope with the key off), each
++  channel through its volume, expression and pan, then the hall, into boot.adp and launch.adp.
++  An older BIOS (1.00, SCPH-10000) keeps its sounds elsewhere and is refused.
+ 
+   RIPPS2_BIOSSND_HOST_TEST builds only the ripper, for elf/tests and checks against Audio Studio.
+ */
+@@ -127,17 +130,25 @@ static const int rbsFilter[5][2] = {{0, 0}, {60, 0}, {115, -52}, {98, -55}, {122
+ 
+ static int rbsClamp16(int v) { return v < -32768 ? -32768 : v > 32767 ? 32767 : v; }
+ 
+-// SPU2 ADPCM at addr up to its end flag: samples (-1..1), malloc'd; their count in *n
+-static float *rbsAdpcm(const rbs_u8 *bd, int size, unsigned int addr, int *n)
++// SPU2 ADPCM at addr up to its end flag: samples (-1..1), malloc'd; their count in *n, and in *loop the
++// sample a repeating one loops back to (-1: a one-shot)
++static float *rbsAdpcm(const rbs_u8 *bd, int size, unsigned int addr, int *n, int *loop)
+ {
+-    int blocks = 0, o, s1 = 0, s2 = 0, k = 0, j;
++    int blocks = 0, o, s1 = 0, s2 = 0, k = 0, j, loopBlock = -1;
+     float *out;
+ 
+     for (o = (int)addr; o >= 0 && o + 16 <= size; o += 16) {
++        int flags = bd[o + 1];
++        if ((flags & 4) && loopBlock < 0)
++            loopBlock = blocks;
+         blocks++;
+-        if (bd[o + 1] & 1)
++        if (flags & 1) {
++            if (!(flags & 2))
++                loopBlock = -1;
+             break;
++        }
+     }
++    *loop = loopBlock >= 0 ? loopBlock * 28 : -1;
+     if (blocks == 0 || (out = malloc(sizeof(float) * 28 * blocks)) == NULL)
+         return NULL;
+     for (o = (int)addr; k < blocks * 28; o += 16) {
+@@ -159,66 +170,99 @@ static float *rbsAdpcm(const rbs_u8 *bd, int size, unsigned int addr, int *n)
+     return out;
+ }
+ 
+-// The SPU2's ADSR envelope from its two registers, n values (0..1) at 48 kHz; no key off (a one-shot)
+-static void rbsEnvelope(unsigned int a1, unsigned int a2, float *out, int n)
++// The SPU2's ADSR envelope from its two registers, one 48 kHz sample at a time (Audio Studio's Envelope):
++// attack, decay, sustain, and the release from the key off on
++typedef struct
+ {
+-    struct
+-    {
+-        int dec, exp, shift, step, target;
+-    } ph[3];
+-    int value = 0, counter = 0, phase = 0, i = 0, k;
+-
+-    ph[0].dec = 0;
+-    ph[0].exp = a1 >> 15 & 1;
+-    ph[0].shift = a1 >> 10 & 0x1F;
+-    ph[0].step = 7 - (int)(a1 >> 8 & 3);
+-    ph[0].target = 0x7FFF;
+-    ph[1].dec = 1;
+-    ph[1].exp = 1;
+-    ph[1].shift = a1 >> 4 & 0xF;
+-    ph[1].step = -8;
+-    ph[1].target = (int)((a1 & 0xF) + 1) << 11;
+-    ph[2].dec = a2 >> 14 & 1;
+-    ph[2].exp = a2 >> 15 & 1;
+-    ph[2].shift = a2 >> 8 & 0x1F;
+-    ph[2].step = ph[2].dec ? ~(7 - (int)(a2 >> 6 & 3)) : 7 - (int)(a2 >> 6 & 3);
+-    ph[2].target = -1;
+-
+-    memset(out, 0, sizeof(float) * n);
+-    while (i < n) {
+-        int shift = ph[phase].shift, inc = 0x8000 >> (shift > 11 ? shift - 11 : 0), lev;
+-        if (inc < 1)
+-            inc = 1;
+-        lev = ph[phase].step * (1 << (shift < 11 ? 11 - shift : 0));
+-        if (ph[phase].exp && !ph[phase].dec && value > 0x6000)
+-            inc = inc >> 2 > 0 ? inc >> 2 : 1;
+-        if (ph[phase].exp && ph[phase].dec)
+-            lev = (lev * value) >> 15; // the chip's arithmetic shift: it floors, so a decay reaches 0
+-        k = (0x8000 - counter + inc - 1) / inc;
+-        if (k < 1)
+-            k = 1;
+-        if (k > n - i)
+-            k = n - i;
+-        for (; k > 0; k--, i++, counter += inc)
+-            out[i] = value / 32767.0f;
+-        if (counter >= 0x8000) {
+-            counter = 0;
+-            value += lev;
+-            value = value < 0 ? 0 : value > 0x7FFF ? 0x7FFF : value;
+-        }
+-        if (phase == 2) {
+-            if (value == 0)
+-                break;
+-            continue;
++    int dec[4], exp[4], shift[4], step[4], target[4];
++    int value, counter, phase, done, inc, lev;
++} rbs_env_t;
++
++static void rbsEnvRates(rbs_env_t *e)
++{
++    int p = e->phase, shift = e->shift[p];
++
++    e->inc = 0x8000 >> (shift > 11 ? shift - 11 : 0);
++    if (e->inc < 1)
++        e->inc = 1;
++    e->lev = e->step[p] * (1 << (shift < 11 ? 11 - shift : 0));
++    if (e->exp[p] && !e->dec[p] && e->value > 0x6000)
++        e->inc = e->inc >> 2 > 0 ? e->inc >> 2 : 1;
++    if (e->exp[p] && e->dec[p])
++        e->lev = (e->lev * e->value) >> 15; // the chip's arithmetic shift: it floors, so a decay reaches 0
++}
++
++static void rbsEnvInit(rbs_env_t *e, unsigned int a1, unsigned int a2)
++{
++    memset(e, 0, sizeof(*e));
++    e->exp[0] = a1 >> 15 & 1;
++    e->shift[0] = a1 >> 10 & 0x1F;
++    e->step[0] = 7 - (int)(a1 >> 8 & 3);
++    e->target[0] = 0x7FFF;
++    e->dec[1] = 1;
++    e->exp[1] = 1;
++    e->shift[1] = a1 >> 4 & 0xF;
++    e->step[1] = -8;
++    e->target[1] = (int)((a1 & 0xF) + 1) << 11;
++    e->dec[2] = a2 >> 14 & 1;
++    e->exp[2] = a2 >> 15 & 1;
++    e->shift[2] = a2 >> 8 & 0x1F;
++    e->step[2] = e->dec[2] ? ~(7 - (int)(a2 >> 6 & 3)) : 7 - (int)(a2 >> 6 & 3);
++    e->target[2] = -1;
++    e->dec[3] = 1;
++    e->exp[3] = a2 >> 5 & 1;
++    e->shift[3] = a2 & 0x1F;
++    e->step[3] = -8;
++    e->target[3] = 0;
++    rbsEnvRates(e);
++}
++
++// this sample's level (0..1), then one step on; keyOff starts the release
++static float rbsEnvNext(rbs_env_t *e, int keyOff)
++{
++    float out;
++
++    if (e->done)
++        return 0;
++    if (keyOff && e->phase < 3) {
++        e->phase = 3;
++        e->counter = 0;
++        rbsEnvRates(e);
++    }
++    out = e->value / 32767.0f;
++    e->counter += e->inc;
++    if (e->counter >= 0x8000) {
++        int p = e->phase;
++        e->counter = 0;
++        e->value += e->lev;
++        e->value = e->value < 0 ? 0 : e->value > 0x7FFF ? 0x7FFF : e->value;
++        if (p == 2) {
++            if (e->value == 0)
++                e->done = 1;
++        } else if ((!e->dec[p] && e->value >= e->target[p]) || (e->dec[p] && e->value <= e->target[p])) {
++            if (++e->phase > 3)
++                e->done = 1;
+         }
+-        if ((!ph[phase].dec && value >= ph[phase].target) || (ph[phase].dec && value <= ph[phase].target))
+-            phase++;
++        if (!e->done)
++            rbsEnvRates(e);
+     }
++    return out;
++}
++
++// n values of a one-shot's envelope (no key off)
++static void rbsEnvelope(unsigned int a1, unsigned int a2, float *out, int n)
++{
++    rbs_env_t e;
++    int i;
++
++    rbsEnvInit(&e, a1, a2);
++    for (i = 0; i < n; i++)
++        out[i] = rbsEnvNext(&e, 0);
+ }
+ 
+ // A little of the hall the console runs under its menus (Schroeder: four damped combs, two all-passes,
+ // after an 18 ms gap), scaled to wet times the dry peak. y holds n dry samples and room for the tail.
+-static int rbsHall(float *y, int n, int cap, int rate, float wet)
++static int rbsHall(float *y, int n, int cap, int rate, float wet, float tail)
+ {
+     static const float combMs[4] = {29.7f, 37.1f, 41.1f, 43.7f}, apMs[2] = {5.0f, 1.7f};
+     float *w, *line[6], filt[4] = {0, 0, 0, 0}, peak = 0, wpeak = 0, g[4];
+@@ -236,7 +280,7 @@ static int rbsHall(float *y, int n, int cap, int rate, float wet)
+         }
+     }
+     for (c = 0; c < 4; c++)
+-        g[c] = powf(10.0f, -3.0f * combMs[c] / 1000.0f / 1.3f); // a 1.3 s tail
++        g[c] = powf(10.0f, -3.0f * combMs[c] / 1000.0f / tail); // tail: seconds to fall 60 dB
+     for (i = 0; i < total; i++) {
+         float x = (i - pre >= 0 && i - pre < n) ? y[i - pre] : 0, s = 0;
+         for (c = 0; c < 4; c++) {
+@@ -258,8 +302,8 @@ static int rbsHall(float *y, int n, int cap, int rate, float wet)
+         if (i < n && fabsf(y[i]) > peak)
+             peak = fabsf(y[i]);
+     }
+-    for (i = n; i < total; i++)
+-        y[i] = 0;
++    if (total > n)
++        memset(y + n, 0, sizeof(float) * (size_t)(total - n));
+     if (wpeak > 0)
+         for (i = 0; i < total; i++)
+             y[i] += w[i] * (wet * peak / wpeak);
+@@ -372,7 +416,7 @@ static rbs_u8 *rbsRender(const rbs_u8 *hd, int hdLen, const rbs_u8 *bd, int bdLe
+     unsigned int base, count, vl, vr, pitch, a1, a2, addr;
+     const rbs_u8 *e;
+     float *smp, *env, *y, vol, peak = 0;
+-    int n, n48, i, rate, cap, len;
++    int n, n48, i, rate, cap, len, loop;
+     rbs_u8 *adp;
+ 
+     if (hdLen < 0x30 || (base = rbsLe32(hd + 0x2C)) + 8 > (unsigned int)hdLen)
+@@ -387,7 +431,7 @@ static rbs_u8 *rbsRender(const rbs_u8 *hd, int hdLen, const rbs_u8 *bd, int bdLe
+     a1 = rbsLe16(e + 8);
+     a2 = rbsLe16(e + 10);
+     addr = rbsLe32(e + 16);
+-    if (pitch < 0x100 || pitch > 0x4000 || (smp = rbsAdpcm(bd, bdLen, addr, &n)) == NULL)
++    if (pitch < 0x100 || pitch > 0x4000 || (smp = rbsAdpcm(bd, bdLen, addr, &n, &loop)) == NULL)
+         return NULL;
+     rate = (int)(pitch * 48000u / 4096u); // the sample's own rate: the file keeps it, at the same pitch
+     n48 = (int)((long long)n * 4096 / pitch) + 1;
+@@ -408,7 +452,7 @@ static rbs_u8 *rbsRender(const rbs_u8 *hd, int hdLen, const rbs_u8 *bd, int bdLe
+     }
+     free(env);
+     free(smp);
+-    len = rbsHall(y, n, cap, rate, 0.3f);
++    len = rbsHall(y, n, cap, rate, 0.3f, 1.3f);
+     for (i = 0; i < len; i++)
+         if (fabsf(y[i]) > peak)
+             peak = fabsf(y[i]);
+@@ -417,6 +461,331 @@ static rbs_u8 *rbsRender(const rbs_u8 *hd, int hdLen, const rbs_u8 *bd, int bdLe
+     return adp;
+ }
+ 
++// ---- the system music (build 89): a sequence played on the SNDBOOT bank, mono at 48 kHz
++#define RBS_RATE       48000
++#define RBS_NOISE_BASE 750.0f // the SPU2 noise's base rate, matched to a recording of a real console (Audio Studio)
++#define RBS_PROGS      128
++#define RBS_NOTES      256
++#define RBS_POINTS     64
++#define RBS_SAMPLES    32
++#define RBS_PI4        0.78539816f
++
++typedef struct
++{
++    int keyLo, keyHi, root, fine, vol, pan, noise;
++    unsigned int addr, a1, a2;
++} rbs_tone_t;
++typedef struct
++{
++    int used, vol, pan, ntones;
++    rbs_tone_t tone[8];
++} rbs_prog_t;
++typedef struct
++{
++    int ch, note, vel, prog;
++    float on, off; // seconds; off < 0: held to the end
++} rbs_note_t;
++typedef struct
++{
++    float t[3][RBS_POINTS], v[3][RBS_POINTS]; // volume (0..1), expression (0..1), pan (0..127), as steps
++    int n[3];
++} rbs_chan_t;
++typedef struct
++{
++    unsigned int addr;
++    float *s;
++    int n, loop;
++} rbs_smp_t;
++
++// An instrument bank (SShd): its programs, each a few tones (layers) with their key range, root note and
++// fine tune, sample address (8-byte units; a tone without the sample flag is the SPU2 noise), envelope,
++// volume and pan
++static int rbsBankPrograms(const rbs_u8 *hd, int len, rbs_prog_t *progs)
++{
++    unsigned int base, last, p, k;
++
++    if (len < 0x14 || (base = rbsLe32(hd + 0x10)) + 2 > (unsigned int)len)
++        return -1;
++    last = rbsLe16(hd + base);
++    for (p = 0; p <= last && p < RBS_PROGS && base + 4 + p * 2 <= (unsigned int)len; p++) {
++        unsigned int off = rbsLe16(hd + base + 2 + p * 2), o = base + off, n;
++        if (off == 0xFFFF || o + 8 > (unsigned int)len)
++            continue;
++        n = (hd[o] & 0x7F) + 1;
++        progs[p].used = 1;
++        progs[p].vol = hd[o + 1];
++        progs[p].pan = hd[o + 2];
++        for (k = 0; k < n && k < 8 && o + 8 + (k + 1) * 16 <= (unsigned int)len; k++) {
++            const rbs_u8 *t = hd + o + 8 + k * 16;
++            rbs_tone_t *tn = &progs[p].tone[progs[p].ntones++];
++            tn->keyHi = t[1];
++            tn->root = t[2];
++            tn->fine = (signed char)t[3];
++            tn->addr = rbsLe16(t + 4) * 8;
++            tn->a1 = rbsLe16(t + 6);
++            tn->a2 = rbsLe16(t + 8);
++            tn->keyLo = t[10];
++            tn->vol = t[11];
++            tn->pan = t[12];
++            tn->noise = !(t[15] & 1);
++        }
++    }
++    return 0;
++}
++
++// A sequence (SSsq): volume, ticks per quarter note and tempo, a set-up row per channel (program, volume,
++// pan), then MIDI events. Fills notes and the channels' curves; returns the note count
++static int rbsSequence(const rbs_u8 *sq, int len, rbs_note_t *notes, rbs_chan_t *ch, int *headVol, float *endSec)
++{
++    unsigned int tick = 0, tmT[16];
++    float tmS[16];
++    int tmB[16], ntm = 1, n = 0, i = 0x110, status = 0x90, first = 1, c, k, ppq, cur[16];
++    short held[16][128];
++
++    if (len < 0x110)
++        return -1;
++    *headVol = rbsLe16(sq);
++    ppq = rbsLe16(sq + 2);
++    tmB[0] = rbsLe16(sq + 4);
++    tmT[0] = 0;
++    tmS[0] = 0;
++    if (ppq == 0 || tmB[0] == 0)
++        return -1;
++    memset(ch, 0, sizeof(rbs_chan_t) * 16);
++    memset(held, 0xff, sizeof(held));
++    for (c = 0; c < 16; c++) {
++        cur[c] = 0;
++        for (k = 0; k < 3; k++)
++            ch[c].n[k] = 1;
++        ch[c].v[0][0] = 100 / 127.0f;
++        ch[c].v[1][0] = 1.0f;
++        ch[c].v[2][0] = 64;
++    }
++    for (c = 0; c < 16; c++) {
++        const rbs_u8 *r = sq + 0x10 + c * 16;
++        if (r[1] < 16) {
++            cur[r[1]] = r[2];
++            ch[r[1]].v[0][0] = r[3] / 127.0f;
++            ch[r[1]].v[2][0] = r[4];
++        }
++    }
++#define RBS_SEC(tk) (tmS[ntm - 1] + (float)((tk) - tmT[ntm - 1]) * 60.0f / ((float)tmB[ntm - 1] * ppq))
++    while (i < len) {
++        int b, hi, chn, d0, d1 = 0, nb;
++        float s;
++        if (!first) {
++            unsigned int d = 0;
++            do {
++                if (i >= len)
++                    goto end;
++                b = sq[i++];
++                d = d << 7 | (b & 0x7F);
++            } while (b & 0x80);
++            tick += d;
++        }
++        first = 0;
++        if (i >= len)
++            break;
++        b = sq[i];
++        if (b == 0xFF) {
++            if (i + 3 < len && sq[i + 1] == 0x51) { // a tempo change, in quarter notes a minute
++                int bpm = sq[i + 2] | sq[i + 3] << 8;
++                if (bpm > 0 && bpm != tmB[ntm - 1] && ntm < 16) {
++                    tmS[ntm] = RBS_SEC(tick);
++                    tmT[ntm] = tick;
++                    tmB[ntm] = bpm;
++                    ntm++;
++                }
++                i += 4;
++                continue;
++            }
++            break; // the end
++        }
++        if (b & 0x80) {
++            status = b;
++            i++;
++        }
++        hi = status & 0xF0;
++        chn = status & 0xF;
++        nb = (hi == 0xC0 || hi == 0xD0) ? 1 : 2;
++        if (i + nb > len)
++            break;
++        d0 = sq[i] & 0x7F;
++        if (nb > 1)
++            d1 = sq[i + 1] & 0x7F;
++        i += nb;
++        s = RBS_SEC(tick);
++        if (hi == 0xC0)
++            cur[chn] = d0;
++        else if (hi == 0xB0 && (d0 == 7 || d0 == 11 || d0 == 10)) {
++            k = d0 == 7 ? 0 : d0 == 11 ? 1 : 2;
++            if (ch[chn].n[k] < RBS_POINTS) {
++                ch[chn].t[k][ch[chn].n[k]] = s;
++                ch[chn].v[k][ch[chn].n[k]++] = k == 2 ? (float)d1 : d1 / 127.0f;
++            }
++        } else if (hi == 0x90 && d1 > 0) {
++            if (n < RBS_NOTES) {
++                notes[n].ch = chn;
++                notes[n].note = d0;
++                notes[n].vel = d1;
++                notes[n].prog = cur[chn];
++                notes[n].on = s;
++                notes[n].off = -1;
++                held[chn][d0] = (short)n++;
++            }
++        } else if (hi == 0x80 || hi == 0x90) {
++            if ((k = held[chn][d0]) >= 0) {
++                notes[k].off = s;
++                held[chn][d0] = -1;
++            }
++        }
++    }
++end:
++    *endSec = RBS_SEC(tick);
++#undef RBS_SEC
++    return n;
++}
++
++static float rbsCurve(const rbs_chan_t *c, int k, float t) // a channel curve's step at time t
++{
++    int i;
++    float v = c->v[k][0];
++
++    for (i = 1; i < c->n[k] && c->t[k][i] <= t; i++)
++        v = c->v[k][i];
++    return v;
++}
++
++// One sequence as an event's .adp. NULL when it is not there
++static rbs_u8 *rbsRenderSeq(const rbs_u8 *sq, int sqLen, const rbs_u8 *hd, int hdLen, const rbs_u8 *bd, int bdLen, int *outLen)
++{
++    rbs_prog_t *progs = calloc(RBS_PROGS, sizeof(rbs_prog_t));
++    rbs_note_t *notes = malloc(sizeof(rbs_note_t) * RBS_NOTES);
++    rbs_chan_t *ch = malloc(sizeof(rbs_chan_t) * 16);
++    rbs_smp_t cache[RBS_SAMPLES];
++    float endSec = 0, *mix = NULL, peak = 0;
++    int headVol = 0, nn = 0, total, cap, k, len, ncache = 0;
++    unsigned int seed = 0x2545F491u;
++    rbs_u8 *adp = NULL;
++
++    if (progs == NULL || notes == NULL || ch == NULL || rbsBankPrograms(hd, hdLen, progs) ||
++        (nn = rbsSequence(sq, sqLen, notes, ch, &headVol, &endSec)) <= 0)
++        goto done;
++    total = (int)((endSec + 4.0f) * RBS_RATE) + 1; // the last event and 4 s for the releases, as Audio Studio
++    cap = total + RBS_RATE * 7 / 2;                 // and room for the hall
++    if (endSec > 40 || (mix = calloc(cap, sizeof(float))) == NULL)
++        goto done;
++    for (k = 0; k < nn; k++) {
++        const rbs_note_t *nt = &notes[k];
++        const rbs_prog_t *pg = &progs[nt->prog & (RBS_PROGS - 1)];
++        int i0 = (int)(nt->on * RBS_RATE), koff = nt->off >= 0 ? (int)((nt->off - nt->on) * RBS_RATE) : -1, t;
++        if (!pg->used || i0 >= total)
++            continue;
++        for (t = 0; t < pg->ntones; t++) {
++            const rbs_tone_t *tn = &pg->tone[t];
++            const rbs_smp_t *sp = NULL;
++            float ratio, g, pn, gl, gr, cg = 0, cl = 0, cr = 0, level = 0, hold = 1;
++            unsigned long long pos = 0, step; // where the sample is read, 32.32 fixed point: no drift in pitch
++            int i, c, hi = tn->keyHi > tn->keyLo ? tn->keyHi : tn->keyLo, lastIdx = -1;
++            rbs_env_t env;
++            if (nt->note < tn->keyLo || nt->note > hi)
++                continue;
++#ifdef RBS_TEST_NONOISE // host checks against Audio Studio: no noise voices (random on both sides), no hall
++            if (tn->noise)
++                continue;
++#endif
++            ratio = powf(2.0f, (nt->note - tn->root + tn->fine / 128.0f) / 12.0f);
++            if (tn->noise) { // the SPU2 noise: a random level held for 48000 / rate samples at a time
++                float rate = RBS_NOISE_BASE * ratio / 64.0f;
++                hold = rate > 1.0f ? RBS_RATE / rate : RBS_RATE;
++                if (hold < 1.0f)
++                    hold = 1.0f;
++            } else {
++                for (c = 0; c < ncache; c++)
++                    if (cache[c].addr == tn->addr)
++                        sp = &cache[c];
++                if (sp == NULL && ncache < RBS_SAMPLES) {
++                    cache[ncache].addr = tn->addr;
++                    if ((cache[ncache].s = rbsAdpcm(bd, bdLen, tn->addr, &cache[ncache].n, &cache[ncache].loop)) != NULL)
++                        sp = &cache[ncache++];
++                }
++                if (sp == NULL || sp->n < 2)
++                    continue;
++            }
++            step = (unsigned long long)(ratio * 4294967296.0f);
++            rbsEnvInit(&env, tn->a1, tn->a2);
++            g = nt->vel / 127.0f * tn->vol / 127.0f * pg->vol / 127.0f;
++            pn = ((tn->pan - 64) + (pg->pan - 64)) / 64.0f;
++            pn = pn < -1 ? -1 : pn > 1 ? 1 : pn;
++            gl = cosf((pn + 1) * RBS_PI4);
++            gr = sinf((pn + 1) * RBS_PI4);
++            for (i = 0; i0 + i < total; i++) {
++                float e = rbsEnvNext(&env, i == koff), y;
++                if (env.done)
++                    break; // the voice ends when its envelope does
++                if (tn->noise) {
++                    int idx = (int)(i / hold);
++                    if (idx != lastIdx) {
++                        seed = seed * 1664525u + 1013904223u;
++                        level = (seed >> 8) / 8388608.0f - 1.0f;
++                        lastIdx = idx;
++                    }
++                    y = level;
++                } else {
++                    int a, b;
++                    float f;
++                    if ((pos >> 32) >= (unsigned long long)sp->n) {
++                        if (sp->loop < 0 || sp->loop >= sp->n - 1)
++                            break;
++                        while ((pos >> 32) >= (unsigned long long)sp->n)
++                            pos -= (unsigned long long)(sp->n - sp->loop) << 32;
++                    }
++                    a = (int)(pos >> 32);
++                    f = (unsigned int)pos * (1.0f / 4294967296.0f);
++                    b = a + 1 < sp->n ? a + 1 : sp->n - 1;
++                    y = sp->s[a] * (1 - f) + sp->s[b] * f;
++                    pos += step;
++                }
++                if ((i & 63) == 0) { // the channel's volume, expression and pan where the note is
++                    float tt = (float)(i0 + i) / RBS_RATE, pc;
++                    cg = rbsCurve(&ch[nt->ch], 0, tt) * rbsCurve(&ch[nt->ch], 1, tt);
++                    pc = (rbsCurve(&ch[nt->ch], 2, tt) - 64) / 64.0f;
++                    pc = pc < -1 ? -1 : pc > 1 ? 1 : pc;
++                    cl = cosf((pc + 1) * RBS_PI4) * 1.41421356f;
++                    cr = sinf((pc + 1) * RBS_PI4) * 1.41421356f;
++                }
++                mix[i0 + i] += y * e * g * cg * (gl * cl + gr * cr) * 0.5f; // left and right, summed to mono
++            }
++        }
++    }
++    for (k = 0; k < total; k++)
++        mix[k] *= headVol / 127.0f;
++#if defined(RBS_TEST_NONOISE) || defined(RBS_TEST_DRY)
++    len = total;
++#else
++    len = rbsHall(mix, total, cap, RBS_RATE, 0.4f, 3.0f);
++#endif
++    for (k = 0; k < len; k++)
++        if (fabsf(mix[k]) > peak)
++            peak = fabsf(mix[k]);
++    if (peak > 0)
++        adp = rbsEncode(mix, len, 4096, 0.8f / peak, outLen);
++done:
++    for (k = 0; k < ncache; k++)
++        free(cache[k].s);
++    free(mix);
++    free(progs);
++    free(notes);
++    free(ch);
++    return adp;
++}
++
++// the two sequences RIPPS2 takes, on the SNDBOOT bank
++static const struct
++{
++    const char *seq, *file;
++} rbsMusic[] = {{"SNDBOOTS", "boot.adp"}, {"SNDLOGOS", "launch.adp"}};
++
+ int ripps2BiosSoundsFromImage(const unsigned char *img, int size, ripps2_biossnd_put_t put, void *ctx)
+ {
+     int ho, hl, bo, bl, hdLen, bdLen, i, done = 0;
+@@ -442,6 +811,25 @@ int ripps2BiosSoundsFromImage(const unsigned char *img, int size, ripps2_biossnd
+     }
+     free(hd);
+     free(bd);
++
++    // build 89: the boot and the PS2 logo, played from the BIOS's own notes
++    if (!ripps2RomdirFind(img, size, "SNDBOOTH", &ho, &hl) && !ripps2RomdirFind(img, size, "SNDBOOTB", &bo, &bl)) {
++        hd = rbsUnlz(img + ho, hl, &hdLen);
++        bd = rbsUnlz(img + bo, bl, &bdLen);
++        for (i = 0; hd != NULL && bd != NULL && i < (int)(sizeof(rbsMusic) / sizeof(rbsMusic[0])); i++) {
++            int so, sl, sqLen, len;
++            rbs_u8 *sq, *adp = NULL;
++            if (ripps2RomdirFind(img, size, rbsMusic[i].seq, &so, &sl) || (sq = rbsUnlz(img + so, sl, &sqLen)) == NULL)
++                continue;
++            adp = rbsRenderSeq(sq, sqLen, hd, hdLen, bd, bdLen, &len);
++            free(sq);
++            if (adp != NULL && put(rbsMusic[i].file, adp, len, ctx) == 0)
++                done++;
++            free(adp);
++        }
++        free(hd);
++        free(bd);
++    }
+     return done;
+ }
+ 
+@@ -449,11 +837,13 @@ int ripps2BiosSoundsFromImage(const unsigned char *img, int size, ripps2_biossnd
+ 
+ static int rbsWrite(const char *file, const unsigned char *adp, int size, void *ctx)
+ {
+-    char path[320];
++    char path[320], msg[96];
+     FILE *f;
+     int ok;
+ 
+     snprintf(path, sizeof(path), "%s%s", (const char *)ctx, file);
++    snprintf(msg, sizeof(msg), "Ripping this console's sounds: %s", file);
++    guiRenderTextScreen(msg);
+     if ((f = fopen(path, "wb")) == NULL)
+         return -1;
+     ok = (int)fwrite(adp, 1, size, f) == size;
+@@ -499,9 +889,9 @@ void ripps2RipBiosSoundsDialog(void)
+     }
+     snprintf(dir, sizeof(dir), "%sAUDIO/", base);
+     snprintf(msg, sizeof(msg),
+-             "RIPPS2 reads the menu sounds from this console's own BIOS and writes them to %s as its sounds: cursor, confirm, "
+-             "cancel, pages, category, messages, disc, error, save, drives and random. Files of those names already there are "
+-             "replaced. Boot and game launch stay as they are (they are the console's system music).",
++             "RIPPS2 reads the sounds from this console's own BIOS and writes them to %s as its sounds: cursor, confirm, "
++             "cancel, pages, category, messages, disc, error, save, drives and random, and the boot and game launch music, "
++             "played from the BIOS's own notes. Files of those names already there are replaced.",
+              dir);
+     guiMsgBoxStartOption("RIP");
+     if (guiMsgBox(msg, 0, NULL) != 2)
+@@ -516,6 +906,7 @@ void ripps2RipBiosSoundsDialog(void)
+     dir[strlen(dir) - 1] = '\0';
+     mkdir(dir, 0777);
+     strcat(dir, "/");
++    guiRenderTextScreen("Ripping this console's sounds");
+     n = ripps2BiosSoundsFromImage(img, size, rbsWrite, dir);
+     free(img);
+     if (n <= 0) {
+diff --git a/src/ripps2ember.c b/src/ripps2ember.c
+index ca8e866..faccb8c 100644
+--- a/src/ripps2ember.c
++++ b/src/ripps2ember.c
+@@ -25,6 +25,7 @@
+ #include "include/ripps2.h"
+ #include "include/gui.h"   // build 77: guiMsgBox, guiIsActive, guiRenderTextScreen (Neutrino)
+ #include "include/sound.h" // SFX_MESSAGE, SFX_ERROR
++#include <kernel.h>          // build 89: DI, EI, ee_kmode_enter for the ROM read
+ 
+ extern void *ember_elf_gz; // misc/ember_elf.gz: elf/ember/ember.elf, gzip -9 by RIPPS2's build.sh
+ extern int size_ember_elf_gz;
+@@ -326,3 +327,62 @@ int ripps2NeutrinoOffer(const char *activePrefix, char *out, int outSize)
+     }
+     return snprintf(out, outSize, "%s/neutrino.elf", dirs[pick]) < outSize;
+ }
++
++
++/*
++  RIPPS2 build 89: Ember's bios.bin from the console's own ROM. A PS2's boot ROM begins with the BIOS its IOP
++  runs as a PS1 (512 KB, "System ROM Version 5.0" on most consoles, at the offset a PS1 BIOS keeps it), and that
++  is what a PS1 emulator needs. When a launch finds no bios.bin, RIPPS2 offers to write that part of the console's
++  own ROM there, checked by its version string first. Nothing from any ROM ships with RIPPS2.
++*/
++#define PS1_BIOS_SIZE    (512 * 1024)
++#define PS1_BIOS_VERSION 0x7FF32 // "System ROM Version x.y mm/dd/yy r"
++
++static int ripps2RipPs1Bios(const char *path, char *version, int vsize)
++{
++    unsigned int *buf = memalign(64, PS1_BIOS_SIZE), i;
++    int ok = 0;
++    FILE *f;
++
++    if (buf == NULL)
++        return 0;
++    DI();
++    ee_kmode_enter();
++    for (i = 0; i < PS1_BIOS_SIZE / 4; i++) // the ROM through kseg1, as the EE's kernel reads it
++        buf[i] = ((volatile unsigned int *)0xBFC00000)[i];
++    ee_kmode_exit();
++    EI();
++    if (!memcmp((unsigned char *)buf + PS1_BIOS_VERSION, "System ROM Version", 18)) {
++        snprintf(version, vsize, "%.*s", 33, (char *)buf + PS1_BIOS_VERSION);
++        if ((f = fopen(path, "wb")) != NULL) {
++            ok = fwrite(buf, 1, PS1_BIOS_SIZE, f) == PS1_BIOS_SIZE;
++            fclose(f);
++            if (!ok)
++                unlink(path);
++        }
++    }
++    free(buf);
++    return ok;
++}
++
++int ripps2EmberBiosOffer(const char *biosPath)
++{
++    char msg[384], version[40] = "";
++
++    snprintf(msg, sizeof(msg), "Ember needs a PS1 BIOS, and %s is not there. RIPPS2 can make it from this console's own "
++                               "BIOS (the PS1 part every PS2 carries). START makes it and starts the game.", biosPath);
++    guiMsgBoxStartOption("MAKE IT");
++    if (guiMsgBox(msg, 0, NULL) != 2)
++        return 0;
++    guiRenderTextScreen("Making bios.bin from this console's BIOS");
++    if (!ripps2RipPs1Bios(biosPath, version, sizeof(version))) {
++        snprintf(msg, sizeof(msg), "bios.bin could not be made at %s. Is the drive full or write-protected? Or put a PS1 "
++                                   "console's BIOS there yourself.", biosPath);
++        guiMsgBox(msg, 0, NULL);
++        return 0;
++    }
++    snprintf(msg, sizeof(msg), "Made %s from this console's BIOS (%s). If a game will not start with it, put a PS1 "
++                               "console's BIOS there instead.", biosPath, version);
++    guiMsgBox(msg, 0, NULL);
++    return 1;
++}
+diff --git a/src/system.c b/src/system.c
+index 3a0fda0..ce052d3 100644
+--- a/src/system.c
++++ b/src/system.c
+@@ -1804,12 +1804,11 @@ static int sysRunNeutrinoLaunch(const char *driver, const char *path, const char
+     if (argc < argvMax)
+         argv[argc++] = (char *)neutrinoPath;
+ 
+-    // RIPPS2 build 86: the automatic -logo goes FIRST, NHDDL's order (docs/plans/neutrino-ilink-logo.md).
+-    // Neutrino reads every option before it acts, so this is about matching NHDDL for FifthFox's iLink A/B
+-    // test, not a fix: still exactly one -logo, a typed one wins, and mmce / udp* stay suppressed above.
+-    if (EnablePS2Logo && argc < argvMax &&
+-        !neutrinoArgHasActiveFlag(gNeutrinoArgs, "-logo") && !neutrinoArgHasActiveFlag(extraArgs, "-logo"))
+-        argv[argc++] = "-logo";
++    // RIPPS2 build 89: the automatic -logo goes after the -bsd arguments and before -dvd, FifthFox's order for
++    // his iLink test (build 86 put it first, NHDDL's). Neutrino reads every option into a setting before it acts
++    // (its loader's main.c: -logo only sets bLogo), so the place changes nothing it does; the preview reads in
++    // that order. Still exactly one -logo, a typed one wins, and mmce / udp* stay suppressed above.
++    int autoLogo = EnablePS2Logo && !neutrinoArgHasActiveFlag(gNeutrinoArgs, "-logo") && !neutrinoArgHasActiveFlag(extraArgs, "-logo");
+ 
+     if (!strcmp(deviceName, "apa")) {
+         snprintf(bsd, sizeof(bsd), "-bsd=ata");
+@@ -1819,6 +1818,8 @@ static int sysRunNeutrinoLaunch(const char *driver, const char *path, const char
+         if (argc < argvMax)
+             argv[argc++] = bsdfs;
+         snprintf(filePath, sizeof(filePath), "-dvd=hdl:%s", path);
++        if (autoLogo && argc < argvMax)
++            argv[argc++] = "-logo";
+         if (argc < argvMax)
+             argv[argc++] = filePath;
+     } else {
+@@ -1859,6 +1860,8 @@ static int sysRunNeutrinoLaunch(const char *driver, const char *path, const char
+         } else {
+             snprintf(filePath, sizeof(filePath), "-dvd=%s%s", bsdfsDvdPrefix[fsOverride], path);
+         }
++        if (autoLogo && argc < argvMax)
++            argv[argc++] = "-logo";
+         if (argc < argvMax)
+             argv[argc++] = filePath;
+ 
+diff --git a/src/udpfssupport.c b/src/udpfssupport.c
+index 141ba6f..337addf 100644
+--- a/src/udpfssupport.c
++++ b/src/udpfssupport.c
+@@ -476,10 +476,9 @@ static void udpfsLaunchCue(item_list_t *itemList, const char *cueName, config_se
+         guiMsgBoxMissing(_l(_STR_EMBER_NOT_FOUND), emberElf);
+         return;
+     }
+-    if (!cueResolveEmberBios(udpfsPrefix, biosPath, sizeof(biosPath))) {
+-        guiMsgBoxMissing(_l(_STR_EMBER_BIOS_MISSING), biosPath);
++    if (!cueResolveEmberBios(udpfsPrefix, biosPath, sizeof(biosPath)) &&
++        !ripps2EmberBiosOffer(biosPath)) // RIPPS2 build 89: or made from this console's own ROM
+         return;
+-    }
+ 
+     cueApplySettings(udpfsPrefix, cueName, configSet); // best-effort marker, never a launch gate
+     if (!cueGameHasImage(udpfsPrefix, cueName)) {
+diff --git a/src/vcdsupport.c b/src/vcdsupport.c
+index a3f8da8..02781cb 100644
+--- a/src/vcdsupport.c
++++ b/src/vcdsupport.c
+@@ -924,10 +924,61 @@ int vcdResolvePopstarterFor(const char *devPrefix, const char *prefix, const cha
+ // game's own POPS folder, and when they are not there it says nothing: a black screen, then the console's
+ // browser. Ask first, while a dialog can still be drawn. START launches anyway (a set-up RIPPS2 cannot
+ // see is still the user's), anything else goes back. Returns 1 to go on.
++// RIPPS2 build 89, RIPPOPS: Sony's POPS files are not in any PS2 ROM, so they cannot be ripped from the console;
++// a copy the user already has on another drive (a POPS folder at its top) can be brought over
++static const char *vcdFindPopsElsewhere(const char *devPrefix)
++{
++    static const char *const places[] = {"mass0:/", "mass1:/", "mass2:/", "mass3:/", "mmce0:/", "mmce1:/", "pfs0:/", "mc0:/", "mc1:/"};
++    char path[64];
++    int i, k, fd;
++
++    for (i = 0; i < (int)(sizeof(places) / sizeof(places[0])); i++) {
++        if (!strncmp(devPrefix, places[i], strlen(places[i])))
++            continue;
++        for (k = 0; k < 2; k++) {
++            snprintf(path, sizeof(path), "%s%s/%s", places[i], POPS_FOLDER, k ? "POPS_IOX.PAK" : "POPS.ELF");
++            if ((fd = open(path, O_RDONLY)) < 0)
++                break;
++            close(fd);
++        }
++        if (k == 2)
++            return places[i];
++    }
++    return NULL;
++}
++
++static int vcdCopyFile(const char *src, const char *dst)
++{
++    int in = open(src, O_RDONLY), out, r, ok = 1;
++    unsigned char *buf;
++
++    if (in < 0)
++        return 0;
++    if ((buf = malloc(64 * 1024)) == NULL || (out = open(dst, O_WRONLY | O_CREAT | O_TRUNC, 0666)) < 0) {
++        free(buf);
++        close(in);
++        return 0;
++    }
++    while ((r = read(in, buf, 64 * 1024)) > 0)
++        if (write(out, buf, r) != r) {
++            ok = 0;
++            break;
++        }
++    if (r < 0)
++        ok = 0;
++    close(out);
++    close(in);
++    free(buf);
++    if (!ok)
++        unlink(dst);
++    return ok;
++}
++
+ int vcdConfirmPopsFiles(const char *devPrefix)
+ {
+     static const char *const files[] = {"POPS.ELF", "POPS_IOX.PAK"};
+-    char missing[64] = "", path[256], msg[320];
++    char missing[64] = "", path[256], msg[384];
++    const char *from;
+     int i, n = 0;
+ 
+     if (devPrefix == NULL || devPrefix[0] == '\0')
+@@ -944,6 +995,29 @@ int vcdConfirmPopsFiles(const char *devPrefix)
+     }
+     if (n == 0)
+         return 1;
++    // build 89, RIPPOPS: your own copy on another drive is copied here
++    if ((from = vcdFindPopsElsewhere(devPrefix)) != NULL) {
++        snprintf(msg, sizeof(msg), "%s %s missing from %s%s. RIPPOPS found POPS.ELF and POPS_IOX.PAK, Sony's PS1 emulator, "
++                                   "on %s: START copies them here and starts the game.",
++                 missing, n == 1 ? "is" : "are", devPrefix, POPS_FOLDER, from);
++        guiMsgBoxStartOption("COPY AND START");
++        if (guiMsgBox(msg, 0, NULL) != 2)
++            return 0;
++        for (i = 0; i < 2; i++) {
++            char src[256];
++            snprintf(src, sizeof(src), "%s%s/%s", from, POPS_FOLDER, files[i]);
++            snprintf(path, sizeof(path), "%s%s%c%s", devPrefix, POPS_FOLDER, vcdSep(devPrefix), files[i]);
++            snprintf(msg, sizeof(msg), "Copying %s", files[i]);
++            guiRenderTextScreen(msg);
++            if (!vcdCopyFile(src, path)) {
++                snprintf(msg, sizeof(msg), "%s could not be copied to %s%s. Is the drive full or write-protected?", files[i],
++                         devPrefix, POPS_FOLDER);
++                guiMsgBox(msg, 0, NULL);
++                return 0;
++            }
++        }
++        return 1;
++    }
+     snprintf(msg, sizeof(msg), "%s %s missing from %s%s. POPSTARTER needs POPS.ELF and POPS_IOX.PAK, the PS1 emulator from "
+                                "your own console, beside the games to start one.",
+              missing, n == 1 ? "is" : "are", devPrefix, POPS_FOLDER);
