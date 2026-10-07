@@ -1,5 +1,19 @@
 # RIPPS2 changelog
 
+## Build 92 (testing), changes since build 91
+
+### The category bar
+- **LAUNCH DISC, STORAGE and MEMORY FILES look the same on every theme now**, in RIPPS2's own face. A theme that wants its own sets `category_font=theme`.
+- **Themes can move and reword it:** `category_layout=column` stacks the three down the side (a sidebar) from `category_x` and `category_y`, `category_spacing` apart, with the mark riding beside them; in a row, `category_y` moves the bar down. `category_label_launch`, `category_label_storage` and `category_label_files` change the words.
+
+### Page Transition
+- **Colors and More > Page Transition:** Theme, None, Fade or Flash. Going to another category, the new page comes in from the theme's background colour (Fade) or out of a quick flash (Flash); the bar stays put. Themes pick their own with `category_transition=none|fade|flash`.
+
+### The Grid look
+- **A game with no cover shows its serial** (SLUS-20482) on its case, in the in-game menu's own pixel font, sized to fit: one line, or the code over the number. Themes ask for it with `coverless=serial` on their Grid.
+- **The chosen game's name under the grid**, on its own line, with the highlight staying on the case (`title=1`, `title_y`, `title_font` on the Grid).
+- **RIPgrid uses both.** Its info page shows the developer and the genre in RIPPS2 Sleek Bold (capitals) and the date in Planet N, as Adapt does. The theme pack's RIPgrid carries Planet N; the built-in `<RIPgrid>` uses RIPPS2 Sleek in its place, as Planet N (Iconian Fonts) is not RIPPS2's to build into the ELF.
+
 ## Build 91 (testing), changes since build 90
 
 ### The launch disc
