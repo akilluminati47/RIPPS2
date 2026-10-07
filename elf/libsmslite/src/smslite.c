@@ -958,7 +958,7 @@ static void smsLitePlaybackShowFrame(SMSLitePlayback* playback, SMS_FrameBuffer*
     if (playback->audioActive && pts != SMS_NOPTS_VALUE) {
         int guard = 0;
 
-        while (playback->audioTimeMs > 0 &&
+        while (!playback->stopRequested && playback->audioTimeMs > 0 && /* RIPPS2: a stop does not wait */
                pts - playback->audioTimeMs > 80) {
             GS_VSync();
             if (++guard > 200)
@@ -1531,8 +1531,11 @@ static int smsLitePlaybackRunThreaded(SMSLitePlayback* playback)
         if (!frame)
             break;
 
-        if (playback->stopRequested) /* RIPPS2: stopped: let the rest go unshown */
+        if (playback->stopRequested) { /* RIPPS2: stopped: let the rest go unshown, each given back to the
+                                          decoder as IPU_Display gives it back (it waits for a free one) */
+            frame->m_FrameType = -1;
             continue;
+        }
 
         if (playback->framesDisplayed == 0)
             smsLiteDbg("first frame\n");

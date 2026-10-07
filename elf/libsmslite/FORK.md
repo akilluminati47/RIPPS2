@@ -21,4 +21,5 @@ family (MPEG-1 layer II and III). The copy here is RIPPS2's fork of it.
   smsLitePlayFullscreen but defined nowhere in this copy; RIPPS2 gives them empty bodies (nothing to reset).
 - A stop stops at once: smsLiteStop() ended only the reading, and every frame already decoded was still
   shown, each held against the sound's clock, which stops moving once the sound runs out (up to 200
-  vsyncs a frame). Now the decoding threads end on the stop and the frames left are let go unshown.
+  vsyncs a frame). Now the decoding threads end on the stop and the frames left are let go unshown, each
+  given back to the decoder the way IPU_Display gives a shown one back (m_FrameType = -1).
