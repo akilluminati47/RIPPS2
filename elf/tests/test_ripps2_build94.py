@@ -91,10 +91,29 @@ int main(void)
     if (strcmp(list[1].desc, "Win the cup")) return 6;
     if (raHuntRead("nope", 4, list, 8) != -1) return 7;
     bytes = raHuntBlob(list, n, blob, sizeof(blob), &count);
-    if (count != 1 || blob[0] != 10 || strcmp((char *)blob + 1, "CAF? RACER") || strcmp((char *)blob + 12, "WIN THE CUP")) return 8;
-    if (bytes != 1 + 11 + 12) return 9;
-    bytes = raHuntBlob(list, n, blob, 10, &count); /* no room: nothing half written */
-    if (count != 0 || bytes != 0) return 10;
+    /* the locked one, in the menu's lines: points, 1 title line, 1 description line */
+    if (count != 1 || blob[0] != 10 || blob[1] != 1 || blob[2] != 1) return 8;
+    if (strcmp((char *)blob + 3, "CAF? RACER") || strcmp((char *)blob + 14, "WIN THE CUP")) return 9;
+    if (bytes != 3 + 11 + 12) return 10;
+    bytes = raHuntBlob(list, n, blob, 20, &count); /* no room: nothing half written */
+    if (count != 0 || bytes != 0) return 11;
+    /* a long one: the title in two lines at most, every line in 24, the description cut with "..." */
+    list[1].unlocked = 0;
+    strcpy(list[1].title, "The long way round the whole circuit and back");
+    strcpy(list[1].desc, "Finish every race of the World Tour in first place without once using the boost, "
+                         "on the hardest setting, with the camera in the cockpit and the radio off");
+    bytes = raHuntBlob(list + 1, 1, blob, sizeof(blob), &count);
+    if (count != 1 || blob[1] != 2 || blob[2] != RA_HUNT_ROWS - 1 - 2) return 12;
+    {
+        const char *l = (const char *)blob + 3, *last = l;
+        int k;
+        for (k = 0; k < blob[1] + blob[2]; k++) {
+            if (strlen(l) > RA_HUNT_COLS || strlen(l) == 0 || l[strlen(l) - 1] == ' ') return 13;
+            last = l;
+            l += strlen(l) + 1;
+        }
+        if (strcmp(last + strlen(last) - 3, "...") || l != (const char *)blob + bytes) return 14;
+    }
     printf("rahunt ok\n");
     return 0;
 }
@@ -116,12 +135,15 @@ int main(void)
 #include <stdio.h>
 #include <string.h>
 #include "igrmenu.c"
+#include "include/rahunt.h"
 static u8 buf[320 * 212 * 3];
-static const u8 blob[] =
-    "\x0a" "FIRST CRASH\0CAUSE A TAKEDOWN IN ANY RACE\0"
-    "\x19" "THE LONG WAY ROUND THE WHOLE CIRCUIT\0FINISH EVERY RACE OF THE WORLD TOUR IN FIRST PLACE WITHOUT ONCE "
-    "USING THE BOOST, ON THE HARDEST SETTING, WITH THE CAMERA IN THE COCKPIT AND THE RADIO TURNED OFF\0"
-    "\x01" "QUIET\0\0";
+static u8 blob[RA_HUNT_BLOB];
+static ra_hunt_t list[3] = {
+    {0, 10, "First Crash", "Cause a takedown in any race"},
+    {0, 25, "The long way round the whole circuit", "Finish every race of the World Tour in first place without once "
+     "using the boost, on the hardest setting, with the camera in the cockpit and the radio turned off"},
+    {0, 1, "Quiet", ""},
+};
 static void save(const char *dir, const char *name)
 {
     char path[512];
@@ -137,11 +159,12 @@ static int longest(void) { int i, m = 0; for (i = 0; i < igrmLines; i++) if (igr
 int main(int argc, char **argv)
 {
     const char *dir = argc > 1 ? argv[1] : "";
-    igrm_info_t a = {0, "SLUS_204.82", "mc0:/BOOT/RIPPS2.ELF", 1, 1, 40, 12, 1, 2, blob, 3};
-    int k;
+    int k, count;
+    raHuntBlob(list, 3, blob, sizeof(blob), &count); /* packed as a launch packs it */
+    igrm_info_t a = {0, "SLUS_204.82", "mc0:/BOOT/RIPPS2.ELF", 1, 1, 40, 12, 1, 2, blob, count};
     igrmTestRender(&a, 1, 0, 2, 2, buf);
     save(dir, "achievements");
-    if (strncmp((const char *)a.hunt, "\x0a", 1) || igrmLine[igrmLines - 1].glyph[0] != G_CROSS) return 1; /* ok SEE THEM */
+    if (count != 3 || igrmLine[igrmLines - 1].glyph[0] != G_CROSS) return 1; /* ok SEE THEM */
     for (k = 0; k < 3; k++) {
         char name[16];
         if (igrmTestRender(&a, 3 + k, 0, 2, 2, buf) != 212) return 2;
@@ -168,7 +191,8 @@ int main(int argc, char **argv)
 ''')
         exe = td / 't.exe'
         r = subprocess.run([cc, '-DIGR_MENU_HOST_TEST', '-I', str(td), '-I', str(root / 'ee_core/include'),
-                            '-I', str(root / 'ee_core/src'), str(td / 't.c'), '-o', str(exe)], capture_output=True, text=True)
+                            '-I', str(root / 'ee_core/src'), '-I', str(root), str(td / 't.c'), str(root / 'src/rahunt.c'),
+                            '-o', str(exe)], capture_output=True, text=True)
         if r.returncode:
             fail.append('the menu renderer must build on the PC: ' + r.stderr[-400:])
         else:
