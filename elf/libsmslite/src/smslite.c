@@ -1284,6 +1284,8 @@ static void smsLiteVideoThread(void* apParam)
     smsLiteDbg("thr video go\n");
 
     for (;;) {
+        if (pb->stopRequested) /* RIPPS2: a stop ends decoding now, not after the queued packets */
+            goto videoExit;
         while (SMS_RingBufferCount(pb->videoStream->m_pPktBuf) == 0) {
             if (pb->eof)
                 goto videoExit;
@@ -1324,6 +1326,8 @@ static void smsLiteAudioThread(void* apParam)
     smsLiteDbg("thr audio go\n");
 
     for (;;) {
+        if (pb->stopRequested) /* RIPPS2 */
+            goto audioExit;
         while (SMS_RingBufferCount(stream->m_pPktBuf) == 0) {
             if (pb->eof)
                 goto audioExit;
@@ -1356,6 +1360,8 @@ static void smsLiteAudioRenderThread(void* apParam)
     for (;;) {
         while (s_smsLitePaused && !pb->stopRequested) /* RIPPS2: paused, nothing more goes to audsrv */
             DelayThread(10000);
+        if (pb->stopRequested && pb->audioDone) /* RIPPS2: stopped: what is queued is dropped */
+            goto arExit;
         while (SMS_RingBufferCount(pb->audioBuffer) == 0) {
             if (pb->audioDone)
                 goto arExit;
@@ -1524,6 +1530,9 @@ static int smsLitePlaybackRunThreaded(SMSLitePlayback* playback)
 
         if (!frame)
             break;
+
+        if (playback->stopRequested) /* RIPPS2: stopped: let the rest go unshown */
+            continue;
 
         if (playback->framesDisplayed == 0)
             smsLiteDbg("first frame\n");

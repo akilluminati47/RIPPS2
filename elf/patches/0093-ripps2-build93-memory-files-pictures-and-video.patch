@@ -76,10 +76,10 @@ index 25a1f91..f4fad92 100644
      }
 diff --git a/src/ripps2media.c b/src/ripps2media.c
 new file mode 100644
-index 0000000..580afb4
+index 0000000..a4d10f3
 --- /dev/null
 +++ b/src/ripps2media.c
-@@ -0,0 +1,466 @@
+@@ -0,0 +1,471 @@
 +/*
 +  RIPPS2 build 93: pictures and video in Memory Files.
 +
@@ -144,6 +144,7 @@ index 0000000..580afb4
 +typedef struct
 +{
 +    int sw, sh, tw, th, cur;
++    int ow, oh; // the picture's own size (a JPG is read at 1/2^n of it)
 +    unsigned int *acc, *cnt;
 +    unsigned char *out;
 +} view_shrink_t;
@@ -256,6 +257,8 @@ index 0000000..580afb4
 +        free(row);
 +        return 0;
 +    }
++    s->ow = (int)w;
++    s->oh = (int)h;
 +    for (y = 0; y < (int)h; y++) {
 +        png_read_row(png, row, NULL);
 +        shrinkRow(s, row, y);
@@ -318,6 +321,8 @@ index 0000000..580afb4
 +        *why = "Not enough memory to open this picture.";
 +        longjmp(viewJmp, 1);
 +    }
++    s->ow = (int)d.image_width;
++    s->oh = (int)d.image_height;
 +    while (d.output_scanline < d.output_height) {
 +        int y = (int)d.output_scanline;
 +        JSAMPROW r = rgb;
@@ -362,8 +367,8 @@ index 0000000..580afb4
 +    t->PSM = GS_PSM_CT32;
 +    t->Mem = (u32 *)s.out;
 +    t->Filter = GS_FILTER_LINEAR;
-+    *sw = s.sw;
-+    *sh = s.sh;
++    *sw = s.ow > 0 ? s.ow : s.sw;
++    *sh = s.oh > 0 ? s.oh : s.sh;
 +    return NULL;
 +}
 +
@@ -420,10 +425,10 @@ index 0000000..580afb4
 +        readPads();
 +        if (getKeyOn(guiCancelKey()))
 +            break;
-+        if (getKeyPressed(KEY_R2))
-+            zoom *= 1.035f;
++        if (getKeyPressed(KEY_R2)) // about 1.8x a second, held
++            zoom *= 1.012f;
 +        if (getKeyPressed(KEY_L2))
-+            zoom /= 1.035f;
++            zoom /= 1.012f;
 +        if (zoom > 8.0f)
 +            zoom = 8.0f;
 +        if (zoom < 0.25f)
