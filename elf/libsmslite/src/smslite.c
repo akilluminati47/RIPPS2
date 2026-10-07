@@ -1543,9 +1543,12 @@ static int smsLitePlaybackRunThreaded(SMSLitePlayback* playback)
         smsLitePlaybackShowFrame(playback, frame);
     }
 
+    /* RIPPS2: sleep while the audio threads finish. This thread runs a step above them (SMSLITE_THREAD_PRIO - 1),
+       so rotating their ready queue never let them run: after a stop the audio decoder, still mid-stream,
+       starved and this loop spun for ever (at the stream's end it had finished already, so it never showed). */
     while (playback->audioActive &&
            (!playback->audioDone || !playback->audioRenderDone))
-        RotateThreadReadyQueue(SMSLITE_THREAD_PRIO);
+        DelayThread(1000);
 
     TerminateThread(readerTID);
     TerminateThread(videoTID);

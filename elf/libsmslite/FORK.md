@@ -23,3 +23,5 @@ family (MPEG-1 layer II and III). The copy here is RIPPS2's fork of it.
   shown, each held against the sound's clock, which stops moving once the sound runs out (up to 200
   vsyncs a frame). Now the decoding threads end on the stop and the frames left are let go unshown, each
   given back to the decoder the way IPU_Display gives a shown one back (m_FrameType = -1).
+- After the last frame the player waited for its audio threads by rotating their ready queue, from a
+  thread one priority above them, so they never ran: after a stop it spun for ever. It sleeps now.
