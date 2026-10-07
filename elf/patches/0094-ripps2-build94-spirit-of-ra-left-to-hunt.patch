@@ -1,0 +1,1059 @@
+diff --git a/Makefile b/Makefile
+index 3a965cb..b451482 100644
+--- a/Makefile
++++ b/Makefile
+@@ -133,7 +133,7 @@ ifneq ($(GIT_TAG),latest)
+ endif
+ endif
+ 
+-FRONTEND_OBJS = ripps2.o ripps2ui.o ripps2boot.o ripps2ra.o ripps2status.o ripps2ember.o ripps2art.o ripps2cd.o ripps2sfxpack.o ripps2bg.o ripps2files.o ripps2edit.o ripps2hdd.o ripps2card.o ripps2biossnd.o ripps2hints.o ripps2media.o ripps2kbd.o ripps2saves.o ripps2about.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o mixsupport.o metadb.o \
++FRONTEND_OBJS = ripps2.o ripps2ui.o ripps2boot.o ripps2ra.o ripps2status.o ripps2ember.o ripps2art.o ripps2cd.o ripps2sfxpack.o ripps2bg.o ripps2files.o ripps2edit.o ripps2hdd.o ripps2card.o ripps2biossnd.o ripps2hints.o ripps2media.o rahunt.o ripps2kbd.o ripps2saves.o ripps2about.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o mixsupport.o metadb.o \
+ 		dia.o ioman.o texcache.o themes.o supportbase.o bdmsupport.o netsupport.o ethsupport.o httpcatalog.o httpsupport.o udpfssupport.o hddsupport.o zso.o lz4.o launchdiag.o \
+ 		appsupport.o mmcesupport.o artindex.o vcdsupport.o cuesupport.o libview.o retrogem.o folderbrowse.o gui.o guigame.o vmc_groups.o textures.o opl.o atlas.o nbns.o httpclient.o gsm.o cheatman.o cheatconfig.o sound.o ps2cnf.o tar.o
+ 
+diff --git a/ee_core/include/coreconfig.h b/ee_core/include/coreconfig.h
+index 3358490..58e91c5 100644
+--- a/ee_core/include/coreconfig.h
++++ b/ee_core/include/coreconfig.h
+@@ -114,6 +114,13 @@ struct EECoreConfig_t
+     int RaKnown;
+     int RaTotal;
+     int RaUnlocked;
++
++    /* RIPPS2 build 94: LEFT TO HUNT. The game's locked achievements as RA/<serial>.ach had them at launch,
++       packed by raHuntBlob (src/rahunt.c): for each, its points (one byte), title, NUL, how to earn it, NUL,
++       in the menu's characters. At the end of module storage, which lasts the whole game; NULL (and a
++       count of 0) when there are none, the menu is off or there was no room. APPENDED, like the above. */
++    const u8 *RaHunt;
++    int RaHuntCount;
+ };
+ 
+ #define USE_LOCAL_EECORE_CONFIG struct EECoreConfig_t *config = &g_ee_core_config;
+diff --git a/ee_core/src/igrmenu.c b/ee_core/src/igrmenu.c
+index 2ae7ac2..1e4eb9e 100644
+--- a/ee_core/src/igrmenu.c
++++ b/ee_core/src/igrmenu.c
+@@ -11,6 +11,10 @@
+   loader or the browser, as before). No animation: the panel is drawn when it opens and when the
+   choice moves, and nothing in between.
+ 
++  Build 94: when the launch brought a hunt list (RA/<serial>.ach, packed in module storage), the
++  confirm button on ACHIEVEMENTS opens LEFT TO HUNT: one locked achievement at a time, its title, its
++  points and how it is earned, Up / Down (or confirm) for the next, back to return.
++
+   The method is ORBIT's in-game menu for its Neutrino fork (danielnuld/ps2-launcher,
+   third_party/neutrino-igr/menu.c and igr.c, AFL-3.0), brought over to OPL's core. The game's GS
+   drawing state is write-only, so it is never touched: the panel is rendered here in the shown
+@@ -151,6 +155,8 @@ typedef struct
+     int raTotal, raUnlocked;
+     int tracking; // telemetry streams this game
+     int unlocks;  // unlocks the PC reported this session
++    const u8 *hunt; // build 94: LEFT TO HUNT, raHuntBlob's entries (NULL: none)
++    int huntCount;
+ } igrm_info_t;
+ 
+ #define IGRM_LINES 14
+@@ -164,6 +170,7 @@ typedef struct
+ static igrm_line_t *igrmLine; // on the IGR thread's stack while the menu is open: ee_core has no room in .bss
+ static int igrmLines;
+ static int igrmBarY;               // the selected row's bar, in panel units
++static int igrmSep2 = ROW_SEP2;    // the second separator's row (-1: none, as LEFT TO HUNT has)
+ static int igrmSx, igrmSy, igrmBpp; // scale, and the shown frame's bytes per pixel
+ 
+ static int igrmGlyph(unsigned char c)
+@@ -274,6 +281,84 @@ static void igrmPath(int y, const char *path)
+         igrmText(y + INFO_STEP, TEXT_X, C_TITLE, b);
+ }
+ 
++// build 94: s in lines of TEXT_CHARS broken at spaces, from row y down step a line, at most max of them;
++// a last line with more to say ends "...". The lines used.
++static int igrmWrap(int y, int step, int max, int colour, const char *s)
++{
++    char l[TEXT_CHARS + 1];
++    int n = 0, len, cut, i;
++
++    for (;;) {
++        while (*s == ' ')
++            s++;
++        if (!*s || n >= max)
++            return n;
++        len = igrmLen(s);
++        cut = len;
++        if (len > TEXT_CHARS) { // the last space that fits; one word too long for a line is broken
++            for (cut = TEXT_CHARS; cut > 0 && s[cut] != ' '; cut--)
++                ;
++            if (cut == 0)
++                cut = TEXT_CHARS;
++        }
++        for (i = 0; i < cut; i++)
++            l[i] = s[i];
++        if (n == max - 1 && cut < len) {
++            if (i > TEXT_CHARS - 3)
++                i = TEXT_CHARS - 3;
++            l[i++] = '.';
++            l[i++] = '.';
++            l[i++] = '.';
++        }
++        l[i] = '\0';
++        igrmText(y + n * step, TEXT_X, colour, l);
++        n++;
++        s += cut;
++    }
++}
++
++#define HUNT_STEP 9 // LEFT TO HUNT's rows: 8 of them from ROW_ITEM0, above the hint
++#define HUNT_ROWS 8
++
++// entry k of the hunt list: its points; its title and how it is earned into *title and *desc
++static int igrmHuntEntry(const igrm_info_t *in, int k, const char **title, const char **desc)
++{
++    const u8 *p = in->hunt;
++
++    while (k-- > 0) {
++        p++;
++        p += igrmLen((const char *)p) + 1;
++        p += igrmLen((const char *)p) + 1;
++    }
++    *title = (const char *)p + 1;
++    *desc = *title + igrmLen(*title) + 1;
++    return *p;
++}
++
++static void igrmComposeHunt(const igrm_info_t *in, int at)
++{
++    char s[40], *p, back[2] = {in->confirmCircle ? 1 : 2, 0};
++    const char *title, *desc;
++    int pts = igrmHuntEntry(in, at, &title, &desc), y = ROW_ITEM0;
++
++    igrmLines = 0;
++    igrmBarY = -100;
++    igrmSep2 = -1;
++    igrmText(ROW_TITLE, TEXT_X, C_TITLE, "LEFT TO HUNT");
++    p = igrmNum(s, at + 1);
++    p = igrmCat(p, "/");
++    igrmNum(p, in->huntCount);
++    igrmText(ROW_TITLE, PW - TEXT_X - (igrmLen(s) * 6 - 1), C_DIM, s);
++    y += igrmWrap(y, HUNT_STEP, 2, C_GOLD, title) * HUNT_STEP;
++    igrmCat(igrmNum(s, pts), pts == 1 ? " POINT" : " POINTS");
++    igrmText(y, TEXT_X, C_DIM, s);
++    y += HUNT_STEP;
++    if (!igrmWrap(y, HUNT_STEP, HUNT_ROWS - (y - ROW_ITEM0) / HUNT_STEP, C_TEXT, desc))
++        igrmText(y, TEXT_X, C_DIM, "NO DESCRIPTION");
++    igrmCat(igrmCat(igrmCat(s, in->huntCount > 1 ? "UP DOWN MORE   " : ""), back), " BACK");
++    igrmText(ROW_HINT, TEXT_X, C_DIM, s);
++}
++
+ static const char *const igrmItem[3] = {"RESUME", "ACHIEVEMENTS", "EXIT GAME"};
+ 
+ static void igrmCompose(const igrm_info_t *in, int sel, int armed)
+@@ -284,6 +369,7 @@ static void igrmCompose(const igrm_info_t *in, int sel, int armed)
+ 
+     igrmLines = 0;
+     igrmBarY = ROW_ITEM0 + sel * ITEM_STEP - 2;
++    igrmSep2 = ROW_SEP2;
+     igrmText(ROW_TITLE, TEXT_X, C_TITLE, "RIPPS2");
+     igrmText(ROW_TITLE, PW - TEXT_X - (igrmLen(id) * 6 - 1), C_DIM, id);
+     for (i = 0; i < 3; i++) {
+@@ -326,11 +412,13 @@ static void igrmCompose(const igrm_info_t *in, int sel, int armed)
+                 else
+                     igrmCat(igrmNum(s, in->unlocks), " NEW THIS SESSION");
+                 igrmText(y + 2 * INFO_STEP, TEXT_X, C_TEXT, s);
+-                igrmText(y + 3 * INFO_STEP, TEXT_X, C_DIM, "TRACKING ON");
+-            } else {
++            } else
+                 igrmText(y + 2 * INFO_STEP, TEXT_X, C_TEXT, "TRACKING OFF");
+-                igrmText(y + 3 * INFO_STEP, TEXT_X, C_DIM, "SET IN ACHIEVEMENTS");
+-            }
++            if (in->huntCount > 0) { // build 94: the confirm button shows them
++                igrmCat(igrmNum(s, in->huntCount), " LEFT TO HUNT");
++                igrmText(y + 3 * INFO_STEP, TEXT_X, C_GOLD, s);
++            } else
++                igrmText(y + 3 * INFO_STEP, TEXT_X, C_DIM, in->tracking ? "TRACKING ON" : "SET IN ACHIEVEMENTS");
+             break;
+         default: // EXIT GAME
+             if (armed) {
+@@ -356,7 +444,7 @@ static void igrmCompose(const igrm_info_t *in, int sel, int armed)
+     }
+ 
+     if (sel == 1)
+-        p = igrmCat(s, "");
++        p = in->huntCount > 0 ? igrmCat(igrmCat(s, ok), " SEE THEM   ") : igrmCat(s, "");
+     else
+         p = igrmCat(igrmCat(s, ok), " SELECT   ");
+     igrmCat(igrmCat(p, back), " RESUME");
+@@ -369,7 +457,7 @@ static int igrmBase(int ux, int uy)
+         return C_BORDER;
+     if (ux < 4 || ux >= PW - 4)
+         return C_PANEL;
+-    if (uy == ROW_SEP1 || uy == ROW_SEP2)
++    if (uy == ROW_SEP1 || uy == igrmSep2)
+         return C_SEP;
+     if (uy >= igrmBarY && uy < igrmBarY + 11)
+         return C_BAR;
+@@ -432,7 +520,10 @@ int igrmTestRender(const igrm_info_t *in, int sel, int armed, int sx, int sy, u8
+     igrmSx = sx;
+     igrmSy = sy;
+     igrmBpp = 3;
+-    igrmCompose(in, sel, armed);
++    if (sel >= 3) // build 94: LEFT TO HUNT's entry sel - 3
++        igrmComposeHunt(in, sel - 3);
++    else
++        igrmCompose(in, sel, armed);
+     for (y = 0; y < PH * sy; y++)
+         igrmRenderLine(rgb + y * PW * sx * 3, y);
+     return PH * sy;
+@@ -612,7 +703,7 @@ int IGR_MenuRun(u16 (*buttons)(void))
+     u32 *pkt = (u32 *)(((u32)raw + 63) & ~63);
+     u32 d1chcr, d1madr, d1qwc, d1tadr, gameDone, t, pressT = 0, firstT = 0;
+     u16 held, now, pressed, ok, back;
+-    int sel = 0, armed = 0, result = IGR_MENU_RESUME, presses = 0, power = 1, i;
++    int sel = 0, armed = 0, result = IGR_MENU_RESUME, presses = 0, power = 1, i, hunt = -1;
+     char gameId[CORE_GAME_ID_MAX_LEN + 1];
+     igrm_line_t lines[IGRM_LINES];
+     igrm_info_t info;
+@@ -643,10 +734,13 @@ int IGR_MenuRun(u16 (*buttons)(void))
+     info.raUnlocked = config->RaUnlocked;
+     info.tracking = RA_Tracking();
+     info.unlocks = (int)RA_OverlayUnlocks();
++    info.hunt = config->RaHunt; // build 94
++    info.huntCount = config->RaHunt != 0 ? config->RaHuntCount : 0;
+     if (config->GameMode == DISC_MODE)
+         power = 0; // the ROM's CDVDMAN keeps the power button there, as the VBLANK handler leaves it
+ #else
+-    info.raBuilt = info.raKnown = info.raTotal = info.raUnlocked = info.tracking = info.unlocks = 0;
++    info.raBuilt = info.raKnown = info.raTotal = info.raUnlocked = info.tracking = info.unlocks = info.huntCount = 0;
++    info.hunt = 0;
+ #endif
+     ok = info.confirmCircle ? PAD_CIRCLE : PAD_CROSS;
+     back = info.confirmCircle ? PAD_CROSS : PAD_CIRCLE;
+@@ -664,7 +758,16 @@ int IGR_MenuRun(u16 (*buttons)(void))
+         now = buttons();
+         pressed = now & ~held;
+         held = now;
+-        if (pressed & (PAD_UP | PAD_DOWN)) {
++        if (hunt >= 0) { // build 94: LEFT TO HUNT
++            if (pressed & (PAD_UP | PAD_DOWN | ok)) {
++                hunt = (hunt + ((pressed & PAD_UP) ? info.huntCount - 1 : 1)) % info.huntCount;
++                dirty = 1;
++            } else if (pressed & back) {
++                hunt = -1;
++                dirty = 1;
++            } else if (pressed & PAD_START)
++                break;
++        } else if (pressed & (PAD_UP | PAD_DOWN)) {
+             sel = (sel + ((pressed & PAD_UP) ? 2 : 1)) % 3;
+             armed = 0;
+             dirty = 1;
+@@ -677,7 +780,10 @@ int IGR_MenuRun(u16 (*buttons)(void))
+                     break;
+                 }
+                 armed = dirty = 1;
+-            } // ACHIEVEMENTS: its page is what the panel already shows
++            } else if (info.huntCount > 0) { // ACHIEVEMENTS: what is left to hunt (build 94)
++                hunt = 0;
++                dirty = 1;
++            }
+         } else if (pressed & (back | PAD_START))
+             break;
+ 
+@@ -695,7 +801,10 @@ int IGR_MenuRun(u16 (*buttons)(void))
+         }
+ 
+         if (dirty) {
+-            igrmCompose(&info, sel, armed);
++            if (hunt >= 0)
++                igrmComposeHunt(&info, hunt);
++            else
++                igrmCompose(&info, sel, armed);
+             igrmDraw(pkt); // a frame that took the first drawing takes this one; if not, the choice still works
+         }
+     }
+diff --git a/include/rahunt.h b/include/rahunt.h
+new file mode 100644
+index 0000000..b646cb7
+--- /dev/null
++++ b/include/rahunt.h
+@@ -0,0 +1,27 @@
++#ifndef __RAHUNT_H
++#define __RAHUNT_H
++
++// RIPPS2 build 94: a game's achievements as xeRAbora knows them (src/rahunt.c)
++
++#define RA_HUNT_TITLE 64
++#define RA_HUNT_DESC  160
++#define RA_HUNT_MAX   400       // achievements read from one RA/<serial>.ach
++#define RA_HUNT_BLOB  (8 * 1024) // the most the in-game menu is given (module storage is tight)
++
++typedef struct
++{
++    int unlocked, points;
++    char title[RA_HUNT_TITLE];
++    char desc[RA_HUNT_DESC];
++} ra_hunt_t;
++
++// xeRAbora's GET /state JSON into the RA/<serial>.ach text (its first line "RIPPS2 ACH 1"). The achievements
++// written, -1 when it carries none, -2 when the PC is on another game (serial "" skips that check).
++int raHuntFromState(const char *json, int len, const char *serial, char *out, int outsz);
++// RA/<serial>.ach's text into list; how many, or -1 when it is not one
++int raHuntRead(const char *text, int len, ra_hunt_t *list, int max);
++// The locked ones packed for the in-game menu: points (one byte), title, NUL, description, NUL, each in the
++// menu's characters (capitals, ASCII 32..95). Bytes used; *count how many fitted in cap.
++int raHuntBlob(const ra_hunt_t *list, int n, unsigned char *blob, int cap, int *count);
++
++#endif
+diff --git a/include/rawatch.h b/include/rawatch.h
+index 4bc5532..7f3b384 100644
+--- a/include/rawatch.h
++++ b/include/rawatch.h
+@@ -29,5 +29,8 @@ void raLaunchNote(const char *what, int a, int b);
+ /* RIPPS2 build 87: what the launched game's RA/<serial>.inf said (1 = found), read by
+    sbLoadWatchList (supportbase.c) for the in-game menu's Achievements page. */
+ int sbGetRaInfo(int *total, int *unlocked);
++/* RIPPS2 build 94: the launched game's locked achievements from RA/<serial>.ach, packed for the in-game
++   menu's LEFT TO HUNT page (raHuntBlob, rahunt.c): how many and their bytes, NULL when there are none. */
++const unsigned char *sbGetRaHunt(int *count, int *bytes);
+ 
+ #endif
+diff --git a/src/rahunt.c b/src/rahunt.c
+new file mode 100644
+index 0000000..1f54adb
+--- /dev/null
++++ b/src/rahunt.c
+@@ -0,0 +1,246 @@
++/*
++  RIPPS2 build 94: what is left to hunt in a game, and how each one is earned.
++
++  xeRAbora (the PC client) knows a game's whole set once a console has identified the game: its interface
++  page asks for it as GET /state, JSON, every achievement with its title, description, points and state.
++  When OPEN TO THE NETWORK is on in xeRAbora's settings, the console can ask the same thing over the
++  network, so CHECK GAME SUPPORT (ranet.c) does, and saves the set beside the game's list as
++  RA/<serial>.ach:
++
++    RIPPS2 ACH 1
++    <unlocked 0|1> TAB <points> TAB <title> TAB <description>      one line per achievement
++
++  Achievements > YOUR ACCOUNT reads it back (raHuntRead), and a launch hands the locked ones to the in-game
++  menu (raHuntBlob): its ACHIEVEMENTS page shows one at a time, title, points and how to earn it.
++
++  Plain C with no console calls, so elf/tests runs it on the PC (RAHUNT_HOST_TEST).
++*/
++
++#include <stdio.h>
++#include <string.h>
++#include <stdlib.h>
++#include <ctype.h>
++#include "include/rahunt.h"
++
++// ---- reading xeRAbora's /state ----
++
++// The JSON string starting at p (on its opening quote) into out, escapes undone; non-ASCII becomes '?', and
++// tabs and line ends spaces (the .ach line is TAB separated). Returns the character after the closing quote.
++static const char *huntString(const char *p, const char *end, char *out, int size)
++{
++    int o = 0;
++    if (p >= end || *p != '"')
++        return NULL;
++    for (p++; p < end && *p != '"'; p++) {
++        char c = *p;
++        if (c == '\\' && p + 1 < end) {
++            c = *++p;
++            if (c == 'n' || c == 't' || c == 'r')
++                c = ' ';
++            else if (c == 'u') { // \uXXXX: one character the PS2's fonts may not have
++                p += (p + 4 < end) ? 4 : 0;
++                c = '?';
++            } else if (c != '"' && c != '\\' && c != '/')
++                c = ' ';
++        } else if ((unsigned char)c >= 0x80) { // a UTF-8 sequence: one '?' for it
++            while (p + 1 < end && ((unsigned char)p[1] & 0xC0) == 0x80)
++                p++;
++            c = '?';
++        } else if (c == '\t' || c == '\r' || c == '\n')
++            c = ' ';
++        if (o < size - 1)
++            out[o++] = c;
++    }
++    out[o] = '\0';
++    return p < end ? p + 1 : NULL;
++}
++
++// The end of the JSON value starting at p: a string, an object or array (strings inside it skipped whole),
++// or a number or literal up to the next delimiter
++static const char *huntSkip(const char *p, const char *end)
++{
++    char tmp[2];
++    while (p < end && *p == ' ')
++        p++;
++    if (p >= end)
++        return NULL;
++    if (*p == '"')
++        return huntString(p, end, tmp, sizeof(tmp));
++    if (*p == '{' || *p == '[') {
++        int depth = 0;
++        for (; p < end; p++) {
++            if (*p == '"') {
++                if ((p = huntString(p, end, tmp, sizeof(tmp))) == NULL)
++                    return NULL;
++                p--;
++            } else if (*p == '{' || *p == '[')
++                depth++;
++            else if ((*p == '}' || *p == ']') && --depth == 0)
++                return p + 1;
++        }
++        return NULL;
++    }
++    while (p < end && *p != ',' && *p != '}' && *p != ']')
++        p++;
++    return p;
++}
++
++static int huntSame(const char *a, const char *b) // two serials alike, separators and case aside
++{
++    while (*a || *b) {
++        while (*a && !isalnum((unsigned char)*a))
++            a++;
++        while (*b && !isalnum((unsigned char)*b))
++            b++;
++        if (toupper((unsigned char)*a) != toupper((unsigned char)*b))
++            return 0;
++        if (*a)
++            a++;
++        if (*b)
++            b++;
++    }
++    return 1;
++}
++
++int raHuntFromState(const char *json, int len, const char *serial, char *out, int outsz)
++{
++    const char *end = json + len, *p, *game;
++    int n = 0, o;
++
++    // the set the page is drawing: the top level "game" object (the one with "checked_only"), and the
++    // "achievements" array that follows it; "follow" has an achievements list of its own, before it
++    if ((game = strstr(json, "\"checked_only\"")) == NULL || game >= end)
++        return -1;
++    if (serial != NULL && serial[0]) { // its "serial" must be this game's, or the PC is busy with another
++        const char *g = game;
++        while (g > json && strncmp(g, "\"game\":{", 8) != 0)
++            g--;
++        const char *s = strstr(g, "\"serial\":");
++        char got[32];
++        if (s != NULL && s < game) {
++            if (huntString(s + 9, end, got, sizeof(got)) == NULL || (got[0] && !huntSame(got, serial)))
++                return -2;
++        }
++    }
++    if ((p = strstr(game, "\"achievements\":[")) == NULL || p >= end)
++        return -1;
++    p += 16;
++    o = snprintf(out, outsz, "RIPPS2 ACH 1\n");
++    while (p < end && *p != ']') {
++        char title[RA_HUNT_TITLE], desc[RA_HUNT_DESC], key[24];
++        int points = 0, state = 0, line;
++        while (p < end && (*p == ',' || *p == ' ' || *p == '\n' || *p == '\r'))
++            p++;
++        if (p >= end || *p != '{')
++            break;
++        title[0] = desc[0] = '\0';
++        p++;
++        while (p < end && *p != '}') { // "key":value pairs at this level
++            while (p < end && (*p == ',' || *p == ' '))
++                p++;
++            if (p >= end || *p == '}')
++                break;
++            p = huntString(p, end, key, sizeof(key));
++            if (p == NULL || p >= end || *p != ':')
++                return -1;
++            p++;
++            if (!strcmp(key, "title"))
++                p = huntString(p, end, title, sizeof(title));
++            else if (!strcmp(key, "description"))
++                p = huntString(p, end, desc, sizeof(desc));
++            else if (!strcmp(key, "points")) {
++                points = atoi(p);
++                p = huntSkip(p, end);
++            } else if (!strcmp(key, "state")) {
++                state = atoi(p);
++                p = huntSkip(p, end);
++            } else
++                p = huntSkip(p, end);
++            if (p == NULL)
++                return -1;
++        }
++        if (p < end)
++            p++; // the object's '}'
++        // rcheevos' states: 0 inactive, 1 active, 2 unlocked, 3 disabled
++        line = snprintf(out + o, outsz - o, "%d\t%d\t%s\t%s\n", state == 2 ? 1 : 0, points, title, desc);
++        if (line >= outsz - o)
++            break; // full: what fitted is kept
++        o += line;
++        n++;
++    }
++    return n;
++}
++
++// ---- reading RA/<serial>.ach ----
++
++int raHuntRead(const char *text, int len, ra_hunt_t *list, int max)
++{
++    const char *p = text, *end = text + len;
++    int n = 0;
++    if (len < 12 || strncmp(text, "RIPPS2 ACH 1", 12) != 0)
++        return -1;
++    while (p < end && *p != '\n')
++        p++;
++    while (p < end && n < max) {
++        const char *e;
++        char field[4][RA_HUNT_DESC];
++        int f = 0, k;
++        if (*p == '\n')
++            p++;
++        if (p >= end)
++            break;
++        for (e = p; e < end && *e != '\n'; e++)
++            ;
++        for (k = 0; k < 4; k++)
++            field[k][0] = '\0';
++        while (p < e && f < 4) {
++            int o = 0;
++            while (p < e && *p != '\t') {
++                if (o < RA_HUNT_DESC - 1)
++                    field[f][o++] = *p;
++                p++;
++            }
++            field[f][o] = '\0';
++            f++;
++            if (p < e)
++                p++;
++        }
++        p = e;
++        if (f < 3)
++            continue;
++        list[n].unlocked = atoi(field[0]) != 0;
++        list[n].points = atoi(field[1]);
++        snprintf(list[n].title, sizeof(list[n].title), "%s", field[2]);
++        snprintf(list[n].desc, sizeof(list[n].desc), "%s", field[3]);
++        n++;
++    }
++    return n;
++}
++
++// ---- for the in-game menu ----
++
++int raHuntBlob(const ra_hunt_t *list, int n, unsigned char *blob, int cap, int *count)
++{
++    int i, o = 0;
++    *count = 0;
++    for (i = 0; i < n; i++) {
++        const char *s[2] = {list[i].title, list[i].desc};
++        int need = 1, k, j;
++        if (list[i].unlocked)
++            continue;
++        for (k = 0; k < 2; k++)
++            need += (int)strlen(s[k]) + 1;
++        if (o + need > cap)
++            break;
++        blob[o++] = (unsigned char)(list[i].points > 255 ? 255 : list[i].points);
++        for (k = 0; k < 2; k++) { // the menu's font has capitals and ASCII 32..95 only
++            for (j = 0; s[k][j]; j++) {
++                unsigned char c = (unsigned char)toupper((unsigned char)s[k][j]);
++                blob[o++] = (c >= 32 && c <= 95) ? c : '?';
++            }
++            blob[o++] = '\0';
++        }
++        (*count)++;
++    }
++    return o;
++}
+diff --git a/src/ranet.c b/src/ranet.c
+index 53ceca1..9206026 100644
+--- a/src/ranet.c
++++ b/src/ranet.c
+@@ -82,6 +82,8 @@
+ #include "include/udpfssupport.h" /* udpfsGetModulesLoaded: the NIC interlock */
+ #include "include/rawatch.h"      /* SetWatchList: list straight into memory */
+ #include "include/gui.h"          /* guiWarning: the untracked-launch notice */
++#include "include/rahunt.h"       /* RIPPS2 build 94: the set from xeRAbora's page, RA/<serial>.ach */
++#include <stdlib.h>                /* malloc: the page's answer */
+ 
+ #include <ps2ips.h>
+ #include <errno.h>
+@@ -109,6 +111,9 @@
+ #define RA_WAIT_ROUNDS 8
+ #define RA_MAX_BYTES   (16 * 1024)
+ 
++/* RIPPS2 build 94: the PC that answered last (network order): its interface page is asked for the set */
++static unsigned int g_peer = 0;
++
+ /* RIPPS2 build 80: the last answer's title and counts, saved as RA/<serial>.inf with the list */
+ static char g_infTitle[96];
+ static int g_infTotal, g_infUnlocked = -1, g_infUnsupported = -1;
+@@ -175,6 +180,7 @@ static int ask(int sock, struct sockaddr_in *to, const char *req, char *out, int
+ 
+             if (got > 0) {
+                 out[got] = '\0';
++                g_peer = from.sin_addr.s_addr; /* RIPPS2 build 94 */
+                 return got;
+             }
+ 
+@@ -185,6 +191,57 @@ static int ask(int sock, struct sockaddr_in *to, const char *req, char *out, int
+     return -1;
+ }
+ 
++/* RIPPS2 build 94: the game's whole set, from the PC that just answered. xeRAbora's interface page asks
++   for GET /state (port 18280, or up to four above when that was taken); with OPEN TO THE NETWORK on in its
++   settings it answers anyone on the network too. The answer is JSON with every achievement of the game
++   the check just identified: its title, how to earn it, its points and whether this account has it.
++   Plain HTTP over TCP, read the way the cover download reads (whole 64-byte blocks into an aligned
++   buffer: rule 1 and 2 above). The text into buf; its length, or -1. */
++#define RA_UI_PORT   18280
++#define RA_STATE_MAX (192 * 1024)
++static char g_tcp[960] __attribute__((aligned(64)));
++
++static int raFetchState(char *buf, int cap)
++{
++    static const char req[] = "GET /state HTTP/1.0\r\nHost: xerabora\r\nConnection: close\r\n\r\n";
++    int port;
++
++    if (g_peer == 0)
++        return -1;
++    for (port = RA_UI_PORT; port < RA_UI_PORT + 5; port++) {
++        struct sockaddr_in a;
++        int s, got = 0;
++
++        memset(&a, 0, sizeof(a));
++        a.sin_family = AF_INET;
++        a.sin_port = htons(port);
++        a.sin_addr.s_addr = g_peer;
++        if ((s = socket(AF_INET, SOCK_STREAM, 0)) < 0)
++            return -1;
++        if (connect(s, (struct sockaddr *)&a, sizeof(a)) < 0) { /* refused: the page is not open to the network */
++            disconnect(s);
++            continue;
++        }
++        send(s, (void *)req, sizeof(req) - 1, 0);
++        for (;;) {
++            int n = recv(s, g_tcp, sizeof(g_tcp), 0);
++            if (n <= 0)
++                break;
++            if (got + n > cap - 1)
++                n = cap - 1 - got;
++            memcpy(buf + got, g_tcp, n);
++            got += n;
++            if (got >= cap - 1)
++                break;
++        }
++        disconnect(s);
++        buf[got] = '\0';
++        if (got > 12 && strncmp(buf, "HTTP/1.", 7) == 0 && strstr(buf, "\"achievements\"") != NULL)
++            return got;
++    }
++    return -1;
++}
++
+ /* Opens the UDP socket for talking to the PC: brings the network up if
+    it is down, allows broadcast, makes the socket non-blocking and binds
+    it to RA_MY_PORT. Fills myaddr with " <ip> <port>" for the request
+@@ -459,6 +516,16 @@ int raAskPC(const char *hash, const char *serial, const char *savepath,
+         char dir[128], file[192];
+         FILE *f;
+         int w, saved = 0;
++        /* RIPPS2 build 94: the game's whole set from xeRAbora's page, kept as RA/<serial>.ach beside the
++           list (YOUR ACCOUNT and the in-game menu show what is left to hunt). Nothing when the page is
++           not open to the network: the check itself does not depend on it. */
++        char *state = malloc(RA_STATE_MAX), *ach = malloc(64 * 1024);
++        int achN = -1, stateLen;
++        if (state != NULL && ach != NULL && (stateLen = raFetchState(state, RA_STATE_MAX)) > 0) {
++            achN = raHuntFromState(state, stateLen, serial, ach, 64 * 1024);
++            LOG("RA: xeRAbora's set: %d achievements\n", achN);
++        }
++        free(state);
+ 
+         where[0] = savepath;
+         where[1] = strncmp(savepath, "smb0:", 5) != 0 ? "smb0:" : NULL;
+@@ -490,12 +557,20 @@ int raAskPC(const char *hash, const char *serial, const char *savepath,
+                 fprintf(f, "%s\n%d\n%d\n%d\n", g_infTitle, g_infTotal, g_infUnlocked, g_infUnsupported);
+                 fclose(f);
+             }
++            if (achN > 0) { /* build 94 */
++                snprintf(file, sizeof(file), "%sRA/%s.ach", where[w], serial);
++                if ((f = fopen(file, "wb")) != NULL) {
++                    fwrite(ach, 1, strlen(ach), f);
++                    fclose(f);
++                }
++            }
+ 
+             LOG("RA: list saved: %s (%d bytes)\n", file, total);
+         }
+ 
+         if (saved == 0)
+             raHashStep("9x-file-not-written");
++        free(ach);
+     }
+ 
+     return 0;
+diff --git a/src/ripps2ra.c b/src/ripps2ra.c
+index 48bfb86..12a5887 100644
+--- a/src/ripps2ra.c
++++ b/src/ripps2ra.c
+@@ -35,6 +35,7 @@
+ #ifdef RETROACHIEVEMENTS
+ #include "include/discsupport.h"
+ #include "include/supportbase.h"
++#include "include/rahunt.h" // build 94: RA/<serial>.ach, what is left to hunt
+ #endif
+ #include "include/ripps2tint.h" // RIPPSettings Color Theme: last, so every colour below goes through it
+ 
+@@ -72,6 +73,7 @@ typedef struct
+ {
+     char title[96], serial[24], where[12];
+     int total, unlocked, unsupported;
++    int dir, hunt; // build 94: which RA folder it came from; how many RA/<serial>.ach has locked (-1: none)
+ } ra_game_t;
+ 
+ #define RA_ACCT_MAX  256
+@@ -117,9 +119,49 @@ static int raAcctCmp(const void *a, const void *b)
+     return strcasecmp(x->title, y->title);
+ }
+ 
++static const char *const dirs[] = {"mass0:/RA", "mass1:/RA", "mmce0:/RA", "mmce1:/RA", "pfs0:/RA", "smb0:RA"};
++
++// build 94: RA/<serial>.ach read whole (the caller frees it); its length in *len, NULL when there is none
++static char *raHuntText(const ra_game_t *g, int *len)
++{
++    char path[192];
++    FILE *f;
++    char *t;
++    snprintf(path, sizeof(path), "%s/%s.ach", dirs[g->dir], g->serial);
++    if ((f = fopen(path, "rb")) == NULL)
++        return NULL;
++    fseek(f, 0, SEEK_END);
++    *len = (int)ftell(f);
++    fseek(f, 0, SEEK_SET);
++    if (*len <= 0 || *len > 256 * 1024 || (t = malloc(*len + 1)) == NULL) {
++        fclose(f);
++        return NULL;
++    }
++    *len = (int)fread(t, 1, *len, f);
++    t[*len] = '\0';
++    fclose(f);
++    return t;
++}
++
++// how many it has locked: its lines that start "0" (-1: no file)
++static int raHuntLeft(const ra_game_t *g)
++{
++    int len, n = 0;
++    char *t = raHuntText(g, &len), *p;
++    if (t == NULL)
++        return -1;
++    if (strncmp(t, "RIPPS2 ACH 1", 12) != 0)
++        n = -1;
++    else
++        for (p = strchr(t, '\n'); p != NULL; p = strchr(p + 1, '\n'))
++            if (p[1] == '0' && p[2] == '\t')
++                n++;
++    free(t);
++    return n;
++}
++
+ static int raAcctLoad(ra_game_t *games)
+ {
+-    static const char *const dirs[] = {"mass0:/RA", "mass1:/RA", "mmce0:/RA", "mmce1:/RA", "pfs0:/RA", "smb0:RA"};
+     static const char *const names[] = {"USB", "USB 2", "MMCE 1", "MMCE 2", "HDD", "SMB"};
+     int d, n = 0, i;
+ 
+@@ -159,6 +201,8 @@ static int raAcctLoad(ra_game_t *games)
+                 g->unsupported = atoi(line);
+             fclose(f);
+             snprintf(g->where, sizeof(g->where), "%s", names[d]);
++            g->dir = d;
++            g->hunt = raHuntLeft(g); // build 94
+             if (g->title[0])
+                 n++;
+         }
+@@ -179,6 +223,143 @@ static void raAcctBar(int x, int y, int w, int h, int done, int total, int a)
+     }
+ }
+ 
++// build 94: a wrapped text's lines, drawn when draw is set
++static int raWrapLines(int font, int x, int y, int w, int lineh, const char *text, u64 col, int draw)
++{
++    char line[200], word[80], next[200];
++    const char *p = text;
++    int lines = 0;
++    line[0] = '\0';
++    while (*p) {
++        int k = 0;
++        while (*p == ' ')
++            p++;
++        while (*p && *p != ' ' && k < (int)sizeof(word) - 1)
++            word[k++] = *p++;
++        word[k] = '\0';
++        if (k == 0)
++            break;
++        snprintf(next, sizeof(next), "%s%s%s", line, line[0] ? " " : "", word);
++        if (line[0] && rmUnScaleX(fntCalcDimensions(font, next)) > w) {
++            if (draw)
++                fntRenderString(font, x, y + lines * lineh, ALIGN_VCENTER, 0, 0, line, col);
++            lines++;
++            snprintf(line, sizeof(line), "%s", word);
++        } else
++            snprintf(line, sizeof(line), "%s", next);
++    }
++    if (line[0]) {
++        if (draw)
++            fntRenderString(font, x, y + lines * lineh, ALIGN_VCENTER, 0, 0, line, col);
++        lines++;
++    }
++    return lines;
++}
++
++// build 94: LEFT TO HUNT, a game's locked achievements as xeRAbora had them at the last CHECK GAME SUPPORT:
++// each one's title and points, and under it how it is earned. Up / Down choose, L1 / R1 page, back closes.
++static void raHuntPage(const ra_game_t *g)
++{
++    int backKey = gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE, len = 0, n, i, sel = 0, top = 0, left = 0;
++    char *text = raHuntText(g, &len), buf[160];
++    ra_hunt_t *all = malloc(sizeof(ra_hunt_t) * RA_HUNT_MAX);
++    int *lockedAt = malloc(sizeof(int) * RA_HUNT_MAX);
++
++    if (text == NULL || all == NULL || lockedAt == NULL) {
++        free(text);
++        free(all);
++        free(lockedAt);
++        return;
++    }
++    n = raHuntRead(text, len, all, RA_HUNT_MAX);
++    free(text);
++    for (i = 0; i < n; i++)
++        if (!all[i].unlocked)
++            lockedAt[left++] = i;
++    sfxPlay(SFX_PAGE_IN);
++    readPads();
++    while (1) {
++        readPads();
++        rmStartFrame();
++        ripps2DrawBackground();
++        rmDrawRect(0, 0, 640, 480, RA_PRIM(0x02, 0x04, 0x10, 0x60));
++        ripps2DrawPagePanel();
++        fntRenderString(gTheme->fonts[5], 30, 34, ALIGN_VCENTER, 0, 0, "LEFT TO HUNT", RA_GOLD);
++        snprintf(buf, sizeof(buf), "%s   %d of %d still locked", g->title, left, n);
++        fntRenderStringFit(RIPPS2_CASE_FONT, 30, 54, ALIGN_VCENTER, 580, buf, RA_SOFT, 1);
++        rmDrawRect(30, 68, 580, 1, RA_PRIM(0x2A, 0x3C, 0x78, 0x60));
++        if (left == 0)
++            raWrap(RIPPS2_CASE_FONT, 60, 200, 520, 20, "Nothing left: every achievement in this set is unlocked.", RA_GOLD);
++        else {
++            // from `top`, as many whole entries as fit above the hints; the chosen one kept on the page
++            int y, k, shown = 0;
++            if (sel < top)
++                top = sel;
++            for (;;) {
++                for (y = 86, k = top; k < left; k++) {
++                    int h = 22 + 18 * raWrapLines(RIPPS2_CASE_FONT, 0, 0, 540, 18, all[lockedAt[k]].desc, 0, 0) + 10;
++                    if (y + h > 440)
++                        break;
++                    y += h;
++                }
++                if (sel < k || top >= sel)
++                    break;
++                top++;
++            }
++            for (y = 86, k = top; k < left; k++) {
++                ra_hunt_t *h = &all[lockedAt[k]];
++                int lines = raWrapLines(RIPPS2_CASE_FONT, 0, 0, 540, 18, h->desc, 0, 0), eh = 22 + 18 * lines + 10, cur = k == sel;
++                if (y + eh > 440)
++                    break;
++                if (cur) {
++                    rmDrawRect(22, y - 4, 596, eh - 4, RA_PRIM(0x1E, 0x3C, 0x96, 0x40));
++                    rmDrawRect(22, y - 4, 3, eh - 4, RA_PRIM(0x6A, 0x9A, 0xFF, 0x80));
++                }
++                snprintf(buf, sizeof(buf), "%d %s", h->points, h->points == 1 ? "point" : "points");
++                int pw = rmUnScaleX(fntCalcDimensions(RIPPS2_CASE_FONT, buf));
++                fntRenderStringFit(gTheme->fonts[8], 40, y + 8, ALIGN_VCENTER, 560 - pw - 50, h->title, cur ? RA_LIT : RA_SOFT, cur);
++                fntRenderString(RIPPS2_CASE_FONT, 600 - pw, y + 8, ALIGN_VCENTER, 0, 0, buf, RA_GOLD);
++                raWrapLines(RIPPS2_CASE_FONT, 40, y + 28, 540, 18, h->desc[0] ? h->desc : "(no description)", cur ? RA_SOFT : RA_DIM, 1);
++                y += eh;
++                shown++;
++            }
++            (void)shown;
++        }
++        {
++            int hx = RA_X - 30, hy = 456;
++            raHint(gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON, "BACK", &hx, hy);
++            if (left > 1) {
++                raHint(L1_ICON, "PAGE", &hx, hy);
++                raHint(R1_ICON, "PAGE", &hx, hy);
++            }
++        }
++        rmEndFrame();
++
++        if (getKeyOn(backKey) || getKeyOn(KEY_START) || getKeyOn(KEY_TRIANGLE)) {
++            sfxPlay(SFX_CANCEL);
++            break;
++        }
++        if (left > 0) {
++            int to = sel;
++            if (getKey(KEY_UP))
++                to = sel > 0 ? sel - 1 : sel;
++            else if (getKey(KEY_DOWN))
++                to = sel < left - 1 ? sel + 1 : sel;
++            else if (getKeyOn(KEY_L1))
++                to = sel > 4 ? sel - 4 : 0;
++            else if (getKeyOn(KEY_R1))
++                to = sel + 4 < left ? sel + 4 : left - 1;
++            if (to != sel) {
++                sel = to;
++                sfxPlay(SFX_CURSOR);
++            }
++        }
++    }
++    free(all);
++    free(lockedAt);
++    readPads();
++}
++
+ static void raAccount(void)
+ {
+     int openKey = gSelectButton == KEY_CIRCLE ? KEY_CIRCLE : KEY_CROSS, backKey = gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE;
+@@ -286,15 +467,23 @@ static void raAccount(void)
+                 raAcctBar(tx, 258, tw, 8, 0, g->total, a);
+                 raWrap(RIPPS2_CASE_FONT, tx, 282, tw, 18, "Update xeRAbora on your PC to see what you have unlocked.", RA_SOFT);
+             }
++            int cy = 330; // build 94: the lines under the bar stack, so a wrapped one never sits on the next
+             if (g->unsupported > 0) {
+                 snprintf(buf, sizeof(buf), "%d of them not tracked on PS2 yet", g->unsupported);
+-                raWrap(RIPPS2_CASE_FONT, tx, 330, tw, 18, buf, RA_DIM);
++                cy += 18 * raWrapLines(RIPPS2_CASE_FONT, tx, cy, tw, 18, buf, RA_DIM, 1) + 6;
+             }
++            if (g->hunt > 0) {
++                snprintf(buf, sizeof(buf), "%d left to hunt", g->hunt);
++                fntRenderString(RIPPS2_CASE_FONT, tx, cy, ALIGN_VCENTER, 0, 0, buf, RA_GOLD);
++            } else if (g->hunt == 0)
++                fntRenderString(RIPPS2_CASE_FONT, tx, cy, ALIGN_VCENTER, 0, 0, "Nothing left to hunt", RA_GOLD);
+             raWrap(RIPPS2_CASE_FONT, tx, 392, tw, 18, "From this game's last CHECK GAME SUPPORT.", RA_DIM);
+         }
+         {
+             int hx = RA_X - 30, hy = 456;
+             raHint(gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON, "BACK", &hx, hy);
++            if (n > 0 && games[sel].hunt >= 0) // build 94
++                raHint(gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON, "LEFT TO HUNT", &hx, hy);
+             if (n > RA_ACCT_ROWS) {
+                 raHint(L1_ICON, "PAGE", &hx, hy);
+                 raHint(R1_ICON, "PAGE", &hx, hy);
+@@ -306,6 +495,10 @@ static void raAccount(void)
+             sfxPlay(SFX_CANCEL);
+             break;
+         }
++        if (n > 0 && games[sel].hunt >= 0 && getKeyOn(openKey)) { // build 94: what is left to hunt
++            raHuntPage(&games[sel]);
++            continue;
++        }
+         if (n > 0) {
+             int to = sel;
+             if (getKey(KEY_UP))
+diff --git a/src/supportbase.c b/src/supportbase.c
+index 4c70ee1..3330dc0 100644
+--- a/src/supportbase.c
++++ b/src/supportbase.c
+@@ -16,6 +16,7 @@
+ #include "include/tar.h"         // CHT/cht.tar cheat archives (#154)
+ #ifdef RETROACHIEVEMENTS
+ #include "include/rawatch.h" // RA watch lists, loaded next to the cheats
++#include "include/rahunt.h"  // RIPPS2 build 94: RA/<serial>.ach, for the in-game menu
+ #include "include/ranet.h"   // raAskPC/raNetTestLink -- the menu-side PC client exchange
+ #include "include/rahash.h"  // raHashIsoDirect -- the image hash, no mounting
+ #endif
+@@ -2399,6 +2400,46 @@ int sbGetRaInfo(int *total, int *unlocked)
+     return sbRaInfoKnown;
+ }
+ 
++/* RIPPS2 build 94: what is left to hunt, from RA/<serial>.ach beside the .inf (ranet.c saves both at a
++   CHECK GAME SUPPORT), packed as the in-game menu reads it. Static: the launch copies it into module
++   storage (system.c), which the game leaves alone. */
++static unsigned char sbRaHunt[RA_HUNT_BLOB];
++static int sbRaHuntCount, sbRaHuntBytes;
++
++const unsigned char *sbGetRaHunt(int *count, int *bytes)
++{
++    *count = sbRaHuntCount;
++    *bytes = sbRaHuntBytes;
++    return sbRaHuntCount > 0 ? sbRaHunt : NULL;
++}
++
++static void sbLoadRaHunt(const char *path, const char *file)
++{
++    char achPath[256], *text;
++    ra_hunt_t *list;
++    FILE *f;
++    int len, n;
++
++    sbRaHuntCount = sbRaHuntBytes = 0;
++    if (snprintf(achPath, sizeof(achPath), "%sRA/%s.ach", path, file) >= (int)sizeof(achPath) ||
++        (f = fopen(achPath, "rb")) == NULL)
++        return;
++    fseek(f, 0, SEEK_END);
++    len = (int)ftell(f);
++    fseek(f, 0, SEEK_SET);
++    text = len > 0 && len <= 256 * 1024 ? malloc(len + 1) : NULL;
++    list = text != NULL ? malloc(sizeof(ra_hunt_t) * RA_HUNT_MAX) : NULL;
++    if (list != NULL) {
++        len = (int)fread(text, 1, len, f);
++        text[len] = '\0';
++        if ((n = raHuntRead(text, len, list, RA_HUNT_MAX)) > 0)
++            sbRaHuntBytes = raHuntBlob(list, n, sbRaHunt, sizeof(sbRaHunt), &sbRaHuntCount);
++    }
++    free(list);
++    free(text);
++    fclose(f);
++}
++
+ static void sbLoadRaInfo(const char *path, const char *file)
+ {
+     char infPath[256], line[128];
+@@ -2443,9 +2484,11 @@ int sbLoadWatchList(const char *path, const char *file)
+     int result = -1;
+ 
+     sbRaInfoKnown = 0;
++    sbRaHuntCount = 0;
+     if (path == NULL || file == NULL)
+         return -1;
+     sbLoadRaInfo(path, file); // RIPPS2 build 87
++    sbLoadRaHunt(path, file); // RIPPS2 build 94
+ 
+     for (ext = 0; ext < sizeof(wlExt) / sizeof(wlExt[0]); ext++) {
+         char wlPath[256];
+diff --git a/src/system.c b/src/system.c
+index ce052d3..b860338 100644
+--- a/src/system.c
++++ b/src/system.c
+@@ -2185,6 +2185,19 @@ void sysLaunchLoaderElf(const char *filename, const char *mode_str, int size_cdv
+         raWorkArea = (u8 *)ModuleStorage + ModuleStorageSize;
+         ModuleStorageSize += (RA_EE_WORK_BYTES + 0x3F) & ~0x3F;
+     }
++
++    /* RIPPS2 build 94: the in-game menu's LEFT TO HUNT list goes after it, for the whole game. Only with
++       the menu on, and only at the default address, where the game's own memory starts at 0x100000: a
++       game moved lower (mod_storage_location_list) or a storage too full for it plays without the page. */
++    const u8 *raHunt = NULL, *huntSrc;
++    int raHuntCount = 0, raHuntBytes = 0;
++    if (gRipps2IgrMenu && (huntSrc = sbGetRaHunt(&raHuntCount, &raHuntBytes)) != NULL &&
++        ModuleStorage == (void *)OPL_MOD_STORAGE && (u32)ModuleStorage + ModuleStorageSize + raHuntBytes <= 0xFF000) {
++        raHunt = (u8 *)ModuleStorage + ModuleStorageSize;
++        memcpy((void *)raHunt, huntSrc, raHuntBytes);
++        ModuleStorageSize += (raHuntBytes + 0x3F) & ~0x3F;
++    } else
++        raHuntCount = 0;
+ #endif
+ 
+     ModuleStorageEnd = (void *)((u8 *)ModuleStorage + ModuleStorageSize);
+@@ -2329,6 +2342,8 @@ void sysLaunchLoaderElf(const char *filename, const char *mode_str, int size_cdv
+     config->IgrConfirmCircle = gSelectButton == KEY_CIRCLE;
+ #ifdef RETROACHIEVEMENTS
+     config->RaKnown = sbGetRaInfo(&config->RaTotal, &config->RaUnlocked);
++    config->RaHunt = raHunt; // build 94
++    config->RaHuntCount = raHuntCount;
+ #endif
+ 
+ #ifdef __DEBUG
