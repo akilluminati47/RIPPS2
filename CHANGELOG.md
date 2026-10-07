@@ -1,5 +1,13 @@
 # RIPPS2 changelog
 
+## Build 88 (testing), changes since build 87
+
+### Audio
+- **Audio settings > BIOS Sounds > Rip** writes your console's own menu sounds into the AUDIO folder as RIPPS2's sounds: cursor, confirm, cancel, pages in and out, category, messages, disc, error, save, drive in and out, and random. RIPPS2 reads them from the BIOS of the console it runs on, plays each one the way the console does (its envelope, its volume, a little of the hall the browser runs under its menus) and saves it as a sound file, so no one has to pass sound files around. It asks first, because files of those names in AUDIO are replaced.
+- Boot and game launch stay as they are: on the console those are system music, not menu sounds.
+- Consoles from SCPH-30000 on carry the sounds this way; the first models (BIOS 1.00) keep them elsewhere and are told so.
+- **Music** plays the track called Menu first when you have not picked one (`bgm_03 Menu.ogg` in a pack that has it); otherwise the first track, as before.
+
 ## Build 87 (testing), changes since build 86
 
 ### In-game menu
