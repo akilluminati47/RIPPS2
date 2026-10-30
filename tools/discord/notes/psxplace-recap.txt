@@ -1,7 +1,7 @@
 RIPPS2 on psx-place: the recap video's two posts (made 10/27/2026 for the evergreen recap). Both stay true as RIPPS2
 moves on: no version in the bump, and the first post's version line is the only thing a release changes.
 
-Before pasting: the first post points at the beta 100 reel (LPjdK_E1jjM) for now, as the user said on 10/28; once the tour (YOUTUBE_v4.md) is up, put its id in place of RECAP_VIDEO_ID here and LPjdK_E1jjM in psxplace-post.bbcode.
+Before pasting: the first post points at the beta 100 reel (LPjdK_E1jjM) for now, as the user said on 10/28; once the v6.5 tour (YOUTUBE_v65.md, renders/ripps2-recap-v65.mp4) is up, put its id in place of RECAP_VIDEO_ID here and LPjdK_E1jjM in psxplace-post.bbcode.
 The first post's two old videos (v1.1.4's and the beta reel) are replaced by this one.
 
 === 1. FIRST POST (edit the thread's first post: replace it all with this) ===
@@ -14,11 +14,11 @@ The first post's two old videos (v1.1.4's and the beta reel) are replaced by thi
 [I]RIP PS2, the ELF killer. ELF-sufficient, never ELF-destructive.[/I]
 
 [URL='https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf'][B]Download the latest RIPPS2.elf[/B][/URL]  |  [URL='https://github.com/akilluminati47/RIPPS2/releases/latest']What's new[/URL]  |  [URL='https://github.com/akilluminati47/RIPPS2-themes/releases/latest/download/RIPPS2-themes.zip']Theme pack[/URL]  |  [URL='https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip']Languages[/URL]  |  [URL='https://github.com/akilluminati47/RIPPS2']GitHub[/URL]  |  [URL='https://akilluminati47.github.io/RIPPS2/']Website[/URL]
-[SIZE=2]Current release: v1.2.1 beta (build 121)  |  [URL='https://github.com/akilluminati47/RIPPS2/blob/main/CHANGELOG.md']Changelog[/URL]  |  [URL='https://github.com/akilluminati47/RIPPS2/releases']All releases[/URL][/SIZE][/CENTER]
+[SIZE=2]Current release: v1.2.4 beta (build 124)  |  [URL='https://github.com/akilluminati47/RIPPS2/blob/main/CHANGELOG.md']Changelog[/URL]  |  [URL='https://github.com/akilluminati47/RIPPS2/releases']All releases[/URL][/SIZE][/CENTER]
 
 Hey everyone. RIPPS2 is in beta, and the download link above always gets the newest build.
 
-[SIZE=3]RIPPS2 is a PS2 front end in a single .elf (2,708 KB): a teardown and rebuild of [URL='https://github.com/NathanNeurotic/Open-PS2-Loader']RiptOPL[/URL], the Open PS2 Loader fork, with rickgaiser's [URL='https://github.com/rickgaiser/neutrino']Neutrino[/URL] inside as its second game core, and its own look, launchers, file browser and save tools. Glass towers stand behind your games and orbits behind your files, all drawn live by the PS2. The video is RIPPS2 running in PCSX2, from the web page it started as to what it does now; its only music is a PS2's own, the menu's and the red screen's, ripped from its BIOS by RIPPS2 itself.[/SIZE]
+[SIZE=3]RIPPS2 is a PS2 front end in a single .elf (2,714 KB): a teardown and rebuild of [URL='https://github.com/NathanNeurotic/Open-PS2-Loader']RiptOPL[/URL], the Open PS2 Loader fork, with rickgaiser's [URL='https://github.com/rickgaiser/neutrino']Neutrino[/URL] inside as its second game core, and its own look, launchers, file browser and save tools. Glass towers stand behind your games and orbits behind your files, all drawn live by the PS2. The video is RIPPS2 running in PCSX2, from the web page it started as to what it does now; its only music is a PS2's own, the menu's and the red screen's, ripped from its BIOS by RIPPS2 itself.[/SIZE]
 
 [SIZE=5][B]Launch Disc[/B][/SIZE]
 [LIST]
@@ -30,7 +30,7 @@ Hey everyone. RIPPS2 is in beta, and the download link above always gets the new
 [SIZE=5][B]Storage[/B][/SIZE]
 [LIST]
 [*][LEFT][B]Fast Boot[/B] (Settings > Game Sources > Cache): RIPPS2 boots from its own drive alone, every list from its cache, and the other drives start when you need them. A drive set to Manual still shows its games on its page, and X on one starts the drive and the game.[/LEFT]
-[*][LEFT][B]ART Pack[/B] (Settings > Game Sources > Cache): every started drive's ART folder in one art.tar on the drive you pick, the fastest first. Covers load from that one file through one index, never one lookup per game, so the art keeps up and the music stays smooth. Your ART folders are not touched.[/LEFT]
+[*][LEFT][B]ART Pack[/B] (Settings > Game Sources > Cache): every started drive's ART folder in one art.tar on the drive you pick, the fastest first. Covers load from that one file through one index, never one lookup per game, so the art keeps up and the music stays smooth. New art goes in a .tar of its own and is merged into the pack, the file names kept. Your ART folders are not touched.[/LEFT]
 [*][LEFT]Every game on every drive in one list, [B]All Games[/B], whole from the first frame, before the drives even answer; or drive by drive: USB, the internal HDD (exFAT or APA, shown once), iLink, MX4SIO, MMCE and the network.[/LEFT]
 [*][LEFT]Art and an info page with the game's badges, five-star rating, genre, developer, release and size; the screenshots crossfade, and the right stick tips the page like a case in your hand.[/LEFT]
 [*][LEFT]Per game: [B]Hide Game[/B] (back any time from Game Sources > Hidden Games), [B]Delete[/B] completely (the image, its settings, art and cheats; its saves only if you say so; on APA the partition table is checked first), and [B]Compress to ZSO[/B] (experimental: every piece checked before the ISO goes, and Back keeps both; an MMCE card needs [URL='https://sd2psxtd.github.io/download']sd2psXtd[/URL] 1.4.0 or newer), plus the loader core, cheats, VMCs, GSM, controller macros and achievements.[/LEFT]
@@ -53,6 +53,8 @@ Hey everyone. RIPPS2 is in beta, and the download link above always gets the new
 [LIST]
 [*][LEFT]RIPGRID (a cover grid whose cases turn over to their back covers) and RIPFLOW (a cover carousel) are built in; Adapt and Adapt Rx come in the theme pack, with the three categories as glyphs in their side bar. Every theme can have the sidebar (Layout > Category Layout > Sidebar): Circle opens it, L1 / R1 stay the theme's own. On RIPFLOW, Up / Down tilt the centre case. Hold SELECT on a game list for the [B]theme list[/B]: pick one and it loads.[/LEFT]
 [*][LEFT][B]Color Themes[/B] (RIPPS2, Ember, Blood, Ectoplasm, Amethyst, Bone, Tangerine, Flamingo, Turquoise, Moonlight, or Custom in your own color), and the [B]Color Sweep[/B]: five colors the theme fades through, never fast enough to flash, or a sweep of your own.[/LEFT]
+[*][LEFT][B]Your launch[/B]: as a game starts, its disc comes in your way on any theme: Pop In, Spin or Zoom.[/LEFT]
+[*][LEFT]A theme can place its art and text for each video mode, so 1080i gets its own layout and 480i keeps its own.[/LEFT]
 [*][LEFT]Themes made for OPL and RiptOPL work as they were made: Storage alone, with Launch Disc and Memory Files in the START menu.[/LEFT]
 [*][LEFT]Make your own with [URL='https://github.com/akilluminati47/RIPPS2-themes']RIPPS2-themes[/URL]: every key in one guide, a checker, no rebuild.[/LEFT]
 [/LIST]
@@ -77,13 +79,13 @@ Hey everyone. RIPPS2 is in beta, and the download link above always gets the new
 [URL='https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf']Download the latest RIPPS2.elf[/URL], copy it to a USB stick or a memory card, and start it from FreeMcBoot, PS2BBL, wLaunchELF or whatever you already use for homebrew. In PCSX2: System > Start File. For the themes, unzip [URL='https://github.com/akilluminati47/RIPPS2-themes/releases/latest/download/RIPPS2-themes.zip']the latest pack[/URL] into a THM folder on your drive and pick one in Settings > Interface > Theme.
 
 [SPOILER="Screenshots"]
-[IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b114/tour-01-storage.jpg[/IMG] [IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b114/tour-02-info-page.jpg[/IMG]
+[IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b124/sd-storage-we-love-katamari.jpg[/IMG] [IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b124/sd-info-we-love-katamari.jpg[/IMG]
 [IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b119/tour-adaptrx-info.jpg[/IMG]
 [IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b114/tour-05-ripflow.jpg[/IMG] [IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b114/tour-06-launch-disc.jpg[/IMG]
 [IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b114/tour-07-memory-files.jpg[/IMG] [IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b114/tour-08-in-game-menu.jpg[/IMG]
 [IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b114/tour-09-status.jpg[/IMG]
-[IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b114/tour-11-japanese.jpg[/IMG]
-[IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b119/tour-ripgrid-japanese.jpg[/IMG]
+[IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b124/sd-japanese-aqua-teen.jpg[/IMG]
+[IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b124/sd-ripgrid-japanese-ratchet.jpg[/IMG]
 [/SPOILER]
 
 [SIZE=5][B]Thanks[/B][/SIZE]
@@ -98,7 +100,7 @@ It is a beta: keep your usual loader close by, and tell us what breaks, here, on
 
 [SPOILER="Screenshots, in 1080i"]
 In 1080i (Settings > Interface > Video Mode, widescreen on), the art keeps its shape:
-[IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b119/1080i-storage.jpg[/IMG]
+[IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b124/theme-ripps2-katamari-1080i.jpg[/IMG]
 [IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b119/1080i-info-page.jpg[/IMG]
 Memory Files: your own tracks, marked and played together as one CD, the towers lit by the music:
 [IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b119/1080i-cd-player.jpg[/IMG]
