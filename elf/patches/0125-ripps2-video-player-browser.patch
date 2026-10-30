@@ -1,0 +1,2171 @@
+diff --git a/.github/scripts/test_config_null_allocation.py b/.github/scripts/test_config_null_allocation.py
+index d9e2096..0dc7960 100644
+--- a/.github/scripts/test_config_null_allocation.py
++++ b/.github/scripts/test_config_null_allocation.py
+@@ -24,7 +24,7 @@ assert "int configGetStat(config_set_t *configSet, iox_stat_t *stat)\n{\n    if
+ 
+ # Check sbPopulateConfig NULL check before configRead
+ sb_alloc = supportbase_c.index("config_set_t *config = configAlloc(0, NULL, path);")
+-sb_read = supportbase_c.index("int configLoaded = configRead(config);", sb_alloc)
++sb_read = supportbase_c.index("int configLoaded = ", sb_alloc)  # build 125: the settings cache may answer first
+ sb_slice = supportbase_c[sb_alloc:sb_read]
+ assert "if (config == NULL)\n        return NULL;" in sb_slice
+ 
+diff --git a/include/config.h b/include/config.h
+index 70238f4..615d2a6 100644
+--- a/include/config.h
++++ b/include/config.h
+@@ -210,7 +210,7 @@ enum CONFIG_INDEX {
+ #define CONFIG_OPL_DEFAULT_BGM_PATH     "default_bgm_path"
+ #define CONFIG_OPL_XSENSITIVITY         "x_sensitivity"
+ #define CONFIG_OPL_YSENSITIVITY         "y_sensitivity"
+-#define CONFIG_OPL_COVERFLOW_COUNT      "coverflow_count"
++#define CONFIG_OPL_COVERFLOW_COUNT      "ripps2_flow_count" // build 125: a new key, so the 3 every old file saved reads as "by the picture"
+ #define CONFIG_OPL_COVERFLOW_SCALE      "coverflow_scale"
+ #define CONFIG_OPL_COVERFLOW_ANIM       "coverflow_anim"
+ #define CONFIG_OPL_COVERFLOW_DIM        "coverflow_dim"
+@@ -310,6 +310,13 @@ int configOplIsOfficialSeed(void);
+ void configSetCarryOverDir(const char *dir);
+ int configOplIsCarryOver(void);
+ int configWrite(config_set_t *configSet);
++// RIPPS2 build 125: recent games' settings (their CFG with the metadata pack's keys merged in), kept in at most 64 KB as
++// packed text so a game looked at again needs no read. Get fills c (made with that path) and is 1 on a hit; Put keeps
++// c; Drop forgets one file (any write does), Clear all of them (a drive or file change, or memory wanted elsewhere).
++int configCacheGet(const char *path, config_set_t *c);
++void configCachePut(const config_set_t *c);
++void configCacheDrop(const char *path);
++void configCacheClear(void);
+ int configWriteMulti(int types);
+ void configClear(config_set_t *configSet);
+ 
+diff --git a/include/fntsys.h b/include/fntsys.h
+index 917e3c4..6288726 100644
+--- a/include/fntsys.h
++++ b/include/fntsys.h
+@@ -53,6 +53,8 @@ void fntSetSubUnit(float x, float y); // RIPPS2 build 102: the next strings move
+ /** Calculates the width of the given text string
+  * We can't use the height for alignment, as the horizontal center would depends of the contained text itself */
+ int fntCalcDimensions(int id, const char *str);
++// RIPPS2 build 125: text into an RGBA32 picture (alpha 0 to 0x80) for a screen RIPPS2 does not draw (the video player's)
++int fntRenderRGBA(int id, int px, const char *string, unsigned char *rgba, int w, int h, int x, int baseline, u32 rgb, int alpha);
+ 
+ /** RIPPS2 build 83: how far below a string's y (as passed to fntRenderString with `aligned`) the middle of
+  * the face's capitals sits, in unscaled units. Centre text on a row by drawing it at rowMiddle - this. */
+diff --git a/include/ripps2.h b/include/ripps2.h
+index 9818510..c82e340 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -224,6 +224,8 @@ int ripps2HintText(int x, int y, const char *text, u64 colour); // build 70: a b
+ void ripps2HintSmall(int on); // build 104: the next hints a size smaller (a row a translation made too long)
+ int ripps2HintSmallFont(void); // build 104: that smaller font, for a theme's hint row (FNT_ERROR if it would not load)
+ int ripps2HintWidth(const char *text);
++int ripps2HintFontId(void);                                          // build 125: the font a hint row draws in
++const char *ripps2HintCaseText(const char *text, char *out, int size); // build 125: a hint's words as a row writes them
+ // build 85: what a PS1 handoff is about to do, written to mc0:/RIPPS2/LAUNCH.TXT for a tester to read back
+ // in Memory Files (the file, its size and CRC, its argv, Sony's POPS files or Ember's BIOS beside it, the
+ // cards' POPSTARTER folders, the settings that steer it). Best effort: never stops a launch.
+diff --git a/include/ripps2artpack.h b/include/ripps2artpack.h
+index 68ca5b6..073e079 100644
+--- a/include/ripps2artpack.h
++++ b/include/ripps2artpack.h
+@@ -26,4 +26,19 @@ int ripps2ArtKeyOf(const char *name, char *key, int size);
+ // Pack's settings changed (the caller saves them)
+ int ripps2TarMergeInto(const char *target, const char *here);
+ 
++// build 125: a .tar as a folder in Memory Files. Its members (RIPPS2's list of games left out), at most max; -1: not a tar
++typedef struct
++{
++    char name[48];
++    unsigned int size;
++} ripps2_tar_entry_t;
++int ripps2TarList(const char *tar, ripps2_tar_entry_t *out, int max);
++// one member written out as the file dst (the first of its name, as RIPPS2 reads it); 1 written
++int ripps2TarExtract(const char *tar, const char *member, const char *dst);
++// files of dir (ending in '/') put into the .tar, pictures made ready first; on the GUI thread, with its own screens.
++// The members that went in (-1: the .tar was not changed), what was refused in *refused, a line for a toast in report
++int ripps2TarAddFiles(const char *tar, const char *dir, char (*names)[128], int n, int *refused, char *report, int reportSize);
++// members taken out (the archive written again without them); how many, -1: not changed
++int ripps2TarRemove(const char *tar, char (*names)[128], int n);
++
+ #endif
+diff --git a/include/themes.h b/include/themes.h
+index 01b966c..1d0c23e 100644
+--- a/include/themes.h
++++ b/include/themes.h
+@@ -334,6 +334,8 @@ extern theme_t *gTheme;
+ #define RIPPS2_CASE_TITLE_FONT (gTheme->fonts[9])
+ 
+ extern int gCoverflowCount, gCoverflowCenterScale, gCoverflowAnimSpeed, gCoverflowDimCovers;
++int thmCoverflowCount(void);
++int thmSavedPending(void); // RIPPS2 build 125: the saved disk theme's drive is not up yet // RIPPS2 build 125: the count as shown (0 in gCoverflowCount: by the picture)
+ extern int gRipps2Vignette, gRipps2GridLayout; // RIPPS2 build 91: Flow and Grid (build 98: vignette 0 off, 1 weak, 2 full)
+ #define RIPPS2_GRID_LAYOUTS 4                  // presets after Theme
+ extern int gRipps2GridWide;                    // RIPPS2 build 98: Widescreen Grid Layout, 0 Theme, 1 Same, 2.. presets
+diff --git a/misc/theme_coverflow.cfg b/misc/theme_coverflow.cfg
+index a020021..82c0720 100644
+--- a/misc/theme_coverflow.cfg
++++ b/misc/theme_coverflow.cfg
+@@ -583,6 +583,14 @@ info27:
+ 	overlay_lly=149
+ 	overlay_lrx=199
+ 	overlay_lry=149
++# build 125 (the user, 10/29): the source's name on the info page too, RUN and BACK either side of it (hints_flank)
++info28:
++	type=MenuText
++	font=7
++	x=POS_MID
++	y=-30
++	aligned=1
++	color=#5C6478
+ info16:
+ 	type=SaveIcon
+ 	x=319
+diff --git a/src/config.c b/src/config.c
+index 52a645e..0699ae1 100644
+--- a/src/config.c
++++ b/src/config.c
+@@ -337,11 +337,161 @@ static void configBuildPath(char *out, size_t outSize, const char *prefix, const
+     }
+ }
+ 
++// ---- RIPPS2 build 125: recent games' settings, kept small ----
++// Each one is a single block: its path, then key and value after key and value, every string with its NUL (a game's
++// is about 0.5 to 2 KB this way; its config_set_t would be 300 bytes a key). At most CFG_CACHE_BYTES in all, the least
++// recently used given up first; a block bigger than an eighth of that is not kept.
++#define CFG_CACHE_BYTES (64 * 1024)
++#define CFG_CACHE_SLOTS 64
++
++typedef struct
++{
++    char *blob;
++    int len, format;
++    unsigned int stamp;
++} cfg_cache_t;
++
++static cfg_cache_t cfgCache[CFG_CACHE_SLOTS];
++static int cfgCacheBytes = 0, cfgCacheSema = -1;
++static unsigned int cfgCacheStamp = 0;
++
++static void cfgCacheDropAt(int i)
++{
++    free(cfgCache[i].blob);
++    cfgCacheBytes -= cfgCache[i].len;
++    memset(&cfgCache[i], 0, sizeof(cfgCache[i]));
++}
++
++static int cfgCacheFind(const char *path)
++{
++    int i;
++    for (i = 0; i < CFG_CACHE_SLOTS; i++)
++        if (cfgCache[i].blob != NULL && !strcmp(cfgCache[i].blob, path))
++            return i;
++    return -1;
++}
++
++int configCacheGet(const char *path, config_set_t *c)
++{
++    int i, ok = 0;
++
++    if (path == NULL || c == NULL || cfgCacheSema < 0)
++        return 0;
++    WaitSema(cfgCacheSema);
++    if ((i = cfgCacheFind(path)) >= 0) {
++        const char *p = cfgCache[i].blob + strlen(path) + 1, *end = cfgCache[i].blob + cfgCache[i].len;
++        ok = 1;
++        while (p < end) {
++            const char *v = p + strlen(p) + 1;
++            if (v >= end || !addConfigValue(c, p, v)) {
++                ok = 0;
++                break;
++            }
++            p = v + strlen(v) + 1;
++        }
++        c->format = cfgCache[i].format;
++        c->modified = 0;
++        cfgCache[i].stamp = ++cfgCacheStamp;
++    }
++    SignalSema(cfgCacheSema);
++    if (!ok) { // a part-filled set (out of memory) goes back empty, and the file is read as before
++        struct config_value_t *it = c->head;
++        while (it != NULL) {
++            struct config_value_t *next = it->next;
++            free(it);
++            it = next;
++        }
++        c->head = c->tail = NULL;
++    }
++    return ok;
++}
++
++void configCachePut(const config_set_t *c)
++{
++    struct config_value_t *it;
++    char *blob, *p;
++    int len, i, slot;
++
++    if (c == NULL || c->filename == NULL || cfgCacheSema < 0)
++        return;
++    len = strlen(c->filename) + 1;
++    for (it = c->head; it != NULL; it = it->next)
++        len += strlen(it->key) + 1 + strlen(it->val) + 1;
++    if (len > CFG_CACHE_BYTES / 8 || (blob = malloc(len)) == NULL)
++        return;
++    p = blob;
++    p += strlen(strcpy(p, c->filename)) + 1;
++    for (it = c->head; it != NULL; it = it->next) {
++        p += strlen(strcpy(p, it->key)) + 1;
++        p += strlen(strcpy(p, it->val)) + 1;
++    }
++    WaitSema(cfgCacheSema);
++    if ((i = cfgCacheFind(c->filename)) >= 0)
++        cfgCacheDropAt(i);
++    for (;;) { // room: a free slot and the bytes, the oldest given up until there is
++        int oldest = -1;
++        slot = -1;
++        for (i = 0; i < CFG_CACHE_SLOTS; i++) {
++            if (cfgCache[i].blob == NULL) {
++                if (slot < 0)
++                    slot = i;
++            } else if (oldest < 0 || cfgCache[i].stamp < cfgCache[oldest].stamp)
++                oldest = i;
++        }
++        if (slot >= 0 && cfgCacheBytes + len <= CFG_CACHE_BYTES)
++            break;
++        if (oldest < 0)
++            break;
++        cfgCacheDropAt(oldest);
++    }
++    if (slot >= 0 && cfgCacheBytes + len <= CFG_CACHE_BYTES) {
++        cfgCache[slot].blob = blob;
++        cfgCache[slot].len = len;
++        cfgCache[slot].format = c->format;
++        cfgCache[slot].stamp = ++cfgCacheStamp;
++        cfgCacheBytes += len;
++        blob = NULL;
++    }
++    SignalSema(cfgCacheSema);
++    free(blob);
++}
++
++void configCacheDrop(const char *path)
++{
++    int i;
++    if (path == NULL || cfgCacheSema < 0)
++        return;
++    WaitSema(cfgCacheSema);
++    if ((i = cfgCacheFind(path)) >= 0)
++        cfgCacheDropAt(i);
++    SignalSema(cfgCacheSema);
++}
++
++void configCacheClear(void)
++{
++    int i;
++    if (cfgCacheSema < 0)
++        return;
++    WaitSema(cfgCacheSema);
++    for (i = 0; i < CFG_CACHE_SLOTS; i++)
++        if (cfgCache[i].blob != NULL)
++            cfgCacheDropAt(i);
++    SignalSema(cfgCacheSema);
++}
++
+ void configInit(char *prefix)
+ {
+     char path[256];
+     int i;
+ 
++    if (cfgCacheSema < 0) { // build 125: the settings cache, between the IO worker and the GUI thread
++        ee_sema_t sema;
++        memset(&sema, 0, sizeof(sema));
++        sema.init_count = 1;
++        sema.max_count = 1;
++        cfgCacheSema = CreateSema(&sema);
++    }
++
+     if (!prefix)
+         prefix = gBaseMCDir;
+ 
+@@ -1434,6 +1584,7 @@ int configWrite(config_set_t *configSet)
+ {
+     if (configSet == NULL)
+         return 0;
++    configCacheDrop(configSet->filename); // build 125: read fresh next time
+ 
+     // A config can be re-homed after it was read (legacy migration, missing-config recovery,
+     // boot-home self-migration). configMove/configSetMove intentionally preserve the in-memory
+diff --git a/src/fntsys.c b/src/fntsys.c
+index d71c0fc..82ebd99 100644
+--- a/src/fntsys.c
++++ b/src/fntsys.c
+@@ -1396,6 +1396,59 @@ int fntCenterOffset(int id, short aligned)
+     return base - cap / 2;
+ }
+ 
++// RIPPS2 build 125: text into an RGBA32 picture, for a screen RIPPS2 does not draw (the video player's). The slot's font
++// is opened again on its own at px pixels, so the GUI's glyph caches and sizes are left as they are. The pen starts at
++// x with the baseline at baseline; each glyph goes over what is there at its coverage times alpha (0 to 0x80), in rgb
++// (0xRRGGBB). With rgba NULL it only measures. Returns the pen's x after the text.
++int fntRenderRGBA(int id, int px, const char *string, unsigned char *rgba, int w, int h, int x, int baseline, u32 rgb, int alpha)
++{
++    FT_Face face = NULL;
++    uint32_t st = UTF8_ACCEPT, cp = 0;
++
++    if (string == NULL || id < 0 || id >= FNT_MAX_COUNT || px <= 0)
++        return x;
++    fntLock();
++    font_t *font = &fonts[id];
++    if (!font->isValid || font->buffer == NULL ||
++        FT_New_Memory_Face(font_library, (FT_Byte *)font->buffer, font->bufferSize, 0, &face) != 0) {
++        fntUnlock();
++        return x;
++    }
++    FT_Set_Pixel_Sizes(face, 0, px);
++    for (; *string; ++string) {
++        if (utf8Decode(&st, &cp, *string))
++            continue;
++        if (FT_Load_Char(face, FNT_CAPS(font, cp), FT_LOAD_RENDER) != 0)
++            continue;
++        FT_GlyphSlot g = face->glyph;
++        if (rgba != NULL) {
++            int gx = x + g->bitmap_left, gy = baseline - g->bitmap_top, r, c;
++            for (r = 0; r < (int)g->bitmap.rows; r++) {
++                int yy = gy + r;
++                if (yy < 0 || yy >= h)
++                    continue;
++                for (c = 0; c < (int)g->bitmap.width; c++) {
++                    int xx = gx + c, a = g->bitmap.buffer[r * g->bitmap.pitch + c] * alpha / 255, da, oa;
++                    unsigned char *d;
++                    if (xx < 0 || xx >= w || a <= 0)
++                        continue;
++                    d = rgba + (yy * w + xx) * 4;
++                    da = d[3] * (0x80 - a) / 0x80;
++                    oa = a + da;
++                    d[0] = (((rgb >> 16) & 0xFF) * a + d[0] * da) / oa;
++                    d[1] = (((rgb >> 8) & 0xFF) * a + d[1] * da) / oa;
++                    d[2] = ((rgb & 0xFF) * a + d[2] * da) / oa;
++                    d[3] = oa;
++                }
++            }
++        }
++        x += g->advance.x >> 6;
++    }
++    FT_Done_Face(face);
++    fntUnlock();
++    return x;
++}
++
+ int fntCalcDimensions(int id, const char *str)
+ {
+     int w;
+diff --git a/src/gui.c b/src/gui.c
+index a1a74bc..ee55388 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -3445,7 +3445,7 @@ void guiShowCoverflowConfig(void)
+     diaSetEnum(diaCoverflowConfig, COVERFLOW_CFG_SCALE, centerScales);
+     diaSetEnum(diaCoverflowConfig, COVERFLOW_CFG_ANIM, animSpeeds);
+ 
+-    diaSetInt(diaCoverflowConfig, COVERFLOW_CFG_COUNT, (gCoverflowCount == 5) ? 1 : 0);
++    diaSetInt(diaCoverflowConfig, COVERFLOW_CFG_COUNT, (thmCoverflowCount() == 5) ? 1 : 0); // build 125: as shown
+ 
+     int scaleIdx = gCoverflowCenterScale / 15;
+     if (scaleIdx < 0)
+@@ -3487,7 +3487,8 @@ void guiShowCoverflowConfig(void)
+     }
+     if (result) {
+         if (diaGetInt(diaCoverflowConfig, COVERFLOW_CFG_COUNT, &value))
+-            gCoverflowCount = (value == 1) ? 5 : 3;
++            if (((value == 1) ? 5 : 3) != thmCoverflowCount())
++                gCoverflowCount = (value == 1) ? 5 : 3; // build 125: kept by the picture until changed here
+         if (diaGetInt(diaCoverflowConfig, COVERFLOW_CFG_SCALE, &value))
+             gCoverflowCenterScale = ((value >= 0 && value <= 3) ? value : 0) * 15;
+         if (diaGetInt(diaCoverflowConfig, COVERFLOW_CFG_ANIM, &value))
+@@ -5837,6 +5838,8 @@ void guiIntroLoop(void)
+     gIntroSplashActive = 0;
+ }
+ 
++#define GUI_THEME_HOLD_S 6.0 // RIPPS2 build 125: the longest the boot waits for the saved theme's drive
++
+ void guiMainLoop(void)
+ {
+     guiResetNotifications();
+@@ -5848,9 +5851,21 @@ void guiMainLoop(void)
+     // RIPPS2: the music is started by bgmBootTick (below, and in the intro) once the sounds are loaded
+     sfxIntroStarted(); // build 102: a boot that skipped the intro still gets its boot sound
+ 
++    double holdUntil = ripps2Seconds() + GUI_THEME_HOLD_S;
+     while (!gTerminate) {
+         guiStartFrame();
+ 
++        // RIPPS2 build 125: the saved theme's drive is still coming up: the boot sky alone (the scene fades up over it
++        // once the theme is in), so RIPPS2's own look never shows for a moment before the theme replaces it
++        if (holdUntil > 0.0 && thmSavedPending() && ripps2Seconds() < holdUntil) {
++            ripps2DrawBootSky();
++            bgmBootTick();
++            guiHandleDeferredOpsBudget(GUI_OPS_FRAME_BUDGET_US);
++            guiEndFrame();
++            continue;
++        }
++        holdUntil = 0.0;
++
+         // Read the pad states to prepare for input processing in the screen handler
+         guiReadPads();
+         ripps2NoteInput(); // RIPPS2 build 70: the idle time RIPPSettings' fades follow
+diff --git a/src/metadb.c b/src/metadb.c
+index 38c1414..5e5fe80 100644
+--- a/src/metadb.c
++++ b/src/metadb.c
+@@ -53,6 +53,7 @@ void metaDbInvalidate(void)
+     WaitSema(metaSemaId);
+     tarInvalidate(TAR_KIND_CFG);
+     metaMissCount = 0;
++    configCacheClear(); // build 125: the settings cached hold this database's keys
+     SignalSema(metaSemaId);
+ }
+ 
+diff --git a/src/opl.c b/src/opl.c
+index 4b63eff..78f8226 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -4296,7 +4296,7 @@ static void _loadConfig()
+             configGetInt(configOPL, CONFIG_OPL_COVERFLOW_ANIM, &gCoverflowAnimSpeed);
+             configGetInt(configOPL, CONFIG_OPL_COVERFLOW_DIM, &gCoverflowDimCovers);
+             // clamp count to {3,5} on load -- defends a hand-edited conf.cfg
+-            gCoverflowCount = (gCoverflowCount == 5) ? 5 : 3;
++            gCoverflowCount = (gCoverflowCount == 5 || gCoverflowCount == 3) ? gCoverflowCount : 0; // build 125: 0 by the picture
+             // clamp the remaining coverflow values too -- a hand-edited conf.cfg
+             // otherwise feeds unbounded ints into signed render math
+             if (gCoverflowCenterScale < 0)
+diff --git a/src/ripps2art.c b/src/ripps2art.c
+index e81cf41..0ed3322 100644
+--- a/src/ripps2art.c
++++ b/src/ripps2art.c
+@@ -6,7 +6,8 @@
+   drive's ART folder as <ID>_COV.png, where RIPPS2 already looks for covers. Nothing else is touched:
+   a game that already has a cover keeps it. The collection's covers are 512x736 JPEGs and RIPPS2 reads
+   PNG only, so each one is decoded here (libjpeg-turbo, its DCT scaling does most of the shrink) and
+-  saved as OPL's covers are: 140x200, 8-bit (256 colours by median cut, dithered), about 20 KB.
++  saved as OPL's covers are: 140x200, 8-bit (256 colours by median cut, dithered), about 20 KB. Build 125 (the user,
++  10/29: OPL's size reads crunchy on an HD screen): HD is offered first, 280x400 from the same picture, about 70 KB.
+ 
+   Each source is asked where its covers live by drawing nothing: texDiscoverLoad in probe mode reports
+   the path the source would try (texSetProbe), so every drive type, HDD and network included, gets
+@@ -438,8 +439,14 @@ tls:
+ }
+ 
+ // ---------------------------------------------------------------- JPEG in, PNG out
+-#define ART_COV_W 140 // OPL's cover size (themes.c THM_COVER_W)
+-#define ART_COV_H 200
++// build 125: Standard is OPL's cover size (themes.c THM_COVER_W), HD twice it each way; the run's choice in artCovW / H
++#define ART_STD_W 140
++#define ART_STD_H 200
++#define ART_HD_W 280
++#define ART_HD_H 400
++static int artCovW = ART_STD_W, artCovH = ART_STD_H;
++#define ART_COV_W artCovW
++#define ART_COV_H artCovH
+ 
+ struct artJpegErr {
+     struct jpeg_error_mgr pub;
+@@ -451,7 +458,7 @@ static void artJpegFail(j_common_ptr c)
+     longjmp(((struct artJpegErr *)c->err)->jb, 1);
+ }
+ 
+-// The cover as 140x200 RGB in out, or 0 for a picture libjpeg will not read
++// The cover as ART_COV_W x ART_COV_H RGB in out (Standard or HD), or 0 for a picture libjpeg will not read
+ static int artDecode(const unsigned char *jpg, int len, unsigned char *out)
+ {
+     static struct jpeg_decompress_struct d;
+@@ -471,7 +478,7 @@ static int artDecode(const unsigned char *jpg, int len, unsigned char *out)
+     jpeg_mem_src(&d, (unsigned char *)jpg, len);
+     jpeg_read_header(&d, TRUE);
+     d.out_color_space = JCS_RGB;
+-    d.scale_num = 1; // the smallest 1/2^n the decoder can give that still covers 140x200
++    d.scale_num = 1; // the smallest 1/2^n the decoder can give that still covers the cover size
+     d.scale_denom = 1;
+     while (d.scale_denom < 8 && d.image_width / (d.scale_denom * 2) >= ART_COV_W && d.image_height / (d.scale_denom * 2) >= ART_COV_H)
+         d.scale_denom *= 2;
+@@ -487,7 +494,7 @@ static int artDecode(const unsigned char *jpg, int len, unsigned char *out)
+     jpeg_finish_decompress(&d);
+     jpeg_destroy_decompress(&d);
+ 
+-    // the rest of the way by averaging boxes (256x368 to 140x200 for the collection's covers)
++    // the rest of the way by averaging boxes (256x368 to 140x200, or 512x736 to 280x400, for the collection's covers)
+     for (y = 0; y < ART_COV_H; y++) {
+         unsigned int y0 = y * sh / ART_COV_H, y1 = (y + 1) * sh / ART_COV_H;
+         if (y1 <= y0)
+@@ -536,7 +543,7 @@ typedef struct {
+     int chan, range; // its widest channel and how wide
+ } art_box_t;
+ 
+-static void artBoxMeasure(const unsigned char *rgb, const unsigned short *order, art_box_t *b)
++static void artBoxMeasure(const unsigned char *rgb, const unsigned int *order, art_box_t *b)
+ {
+     int mn[3] = {255, 255, 255}, mx[3] = {0, 0, 0}, i, c;
+     for (i = b->lo; i < b->hi; i++) {
+@@ -558,10 +565,10 @@ static void artBoxMeasure(const unsigned char *rgb, const unsigned short *order,
+ }
+ 
+ // rgb (ART_PIX pixels) as palette indexes in idx; the palette's size
+-static int artQuantize(const unsigned char *rgb, unsigned short *order, unsigned short *tmp, unsigned char *idx, png_color *pal)
++static int artQuantize(const unsigned char *rgb, unsigned int *order, unsigned int *tmp, unsigned char *idx, png_color *pal)
+ {
+     static art_box_t box[256];
+-    static short errA[(ART_COV_W + 2) * 3], errB[(ART_COV_W + 2) * 3];
++    static short errA[(ART_HD_W + 2) * 3], errB[(ART_HD_W + 2) * 3]; // build 125: HD's 112,000 pixels: ints, not shorts
+     short *cur = errA, *nxt = errB, *sw;
+     int nb = 1, i, k, x, y, c;
+ 
+@@ -653,7 +660,7 @@ static int artQuantize(const unsigned char *rgb, unsigned short *order, unsigned
+     return nb;
+ }
+ 
+-// 140x200 RGB as an 8-bit palette PNG in out; its length, or 0
++// the cover RGB as an 8-bit palette PNG in out; its length, or 0
+ static int artEncode(const unsigned char *rgb, unsigned char *out, int cap)
+ {
+     static art_mem_t m;
+@@ -664,10 +671,10 @@ static int artEncode(const unsigned char *rgb, unsigned char *out, int cap)
+     unsigned char *idx;
+     int y, n;
+ 
+-    if ((work = (unsigned char *)malloc(ART_PIX * 5)) == NULL)
++    if ((work = (unsigned char *)malloc(ART_PIX * 9)) == NULL)
+         return 0;
+-    idx = work + ART_PIX * 4; // after order[] and tmp[], two shorts a pixel each
+-    n = artQuantize(rgb, (unsigned short *)work, (unsigned short *)work + ART_PIX, idx, pal);
++    idx = work + ART_PIX * 8; // after order[] and tmp[], an int a pixel each
++    n = artQuantize(rgb, (unsigned int *)work, (unsigned int *)work + ART_PIX, idx, pal);
+     png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+     info = png != NULL ? png_create_info_struct(png) : NULL;
+     if (png == NULL || info == NULL) {
+@@ -735,7 +742,7 @@ void ripps2ArtDownload(void)
+     artCount = 0;
+     artTargets = (art_target_t *)malloc(sizeof(art_target_t) * ART_MAX_GAMES);
+     body = (unsigned char *)malloc(ART_MAX_BYTES);
+-    rgb = (unsigned char *)malloc(ART_COV_W * ART_COV_H * 3);
++    rgb = (unsigned char *)malloc(ART_HD_W * ART_HD_H * 3); // either size
+     if (artTargets == NULL || body == NULL || rgb == NULL) {
+         free(artTargets);
+         free(body);
+@@ -759,6 +766,23 @@ void ripps2ArtDownload(void)
+         return;
+     }
+ 
++    // build 125: the size, HD first; a game with a cover keeps it either way
++    {
++        int pick;
++        guiMsgBoxStartOption(_t("STANDARD"));
++        pick = guiMsgBox(_t("Download the covers in HD (280 x 400)? Sharper on an HD screen, about 70 KB each. START: Standard (140 x 200, as Open PS2 Loader's), about 20 KB each. A game that already has a cover keeps it."),
++                         1, NULL);
++        if (pick == 0) {
++            free(artTargets);
++            free(body);
++            free(rgb);
++            artTargets = NULL;
++            return;
++        }
++        artCovW = pick == 2 ? ART_STD_W : ART_HD_W;
++        artCovH = pick == 2 ? ART_STD_H : ART_HD_H;
++    }
++
+     artStage = _t("Starting the network...");
+     artDraw();
+     if (netLoadInitModules(NET_PROTO_SMB) != 0) {
+@@ -795,7 +819,7 @@ void ripps2ArtDownload(void)
+         }
+         saved = 0;
+         if (status == 200 && len > 4 && body[0] == 0xFF && body[1] == 0xD8) {
+-            // the JPEG becomes a 140x200 8-bit PNG in the same buffer (the JPEG is done with by then)
++            // the JPEG becomes an 8-bit PNG of the chosen size in the same buffer (the JPEG is done with by then)
+             if (!artDecode(body, len, rgb))
+                 snprintf(err, sizeof(err), _t("%s: the picture would not decode."), t->serial);
+             else if ((len = artEncode(rgb, body, ART_MAX_BYTES)) <= 0)
+diff --git a/src/ripps2artpack.c b/src/ripps2artpack.c
+index 6c49fb3..d0a5595 100644
+--- a/src/ripps2artpack.c
++++ b/src/ripps2artpack.c
+@@ -36,6 +36,9 @@
+ #include <sys/stat.h>
+ #include <kernel.h>
+ #include <ps2sdkapi.h> // build 123: lseek64, a merge over 2 GB
++#include <malloc.h>
++#include <setjmp.h>
++#include <png.h> // build 125: a picture made ready for a .tar (a BMP, or one too big), written as a PNG
+ 
+ #include "include/opl.h"
+ #include "include/gui.h"
+@@ -1603,6 +1606,428 @@ out:
+     return changed;
+ }
+ 
++// ---------------------------------------------------------------- build 125: a .tar as a folder
++// The user, 10/29: a .tar shows in Memory Files as a blue folder. Opened, it lists what it holds. Files pasted into it go
++// in through the merge above (a member of the same name is replaced), pictures made ready first: PNG and JPG as they
++// are (RIPPS2 reads both) unless bigger than 512 on a side (shrunk to fit, written as a full-colour PNG), a BMP made a
++// PNG, any other kind of picture refused (nothing would read it); other files (a CFG pack's .cfg) as they are. Copied
++// out, a member is written as a file; deleted, the archive is written again without it. Every change is the merge's own
++// write: beside the archive, swapped in only once it is whole.
++
++#define TB_MAX_FILE (16 * 1024 * 1024)
++#define TB_ART_SIDE 512 // what the art loader keeps of a picture: anything bigger is shrunk at every load
++
++static const char *tbBase(const char *name)
++{
++    const char *b = strrchr(name, '/');
++    return b != NULL ? b + 1 : name;
++}
++
++int ripps2TarList(const char *tar, ripps2_tar_entry_t *out, int max)
++{
++    tm_plan_t p;
++    int i, n = 0;
++
++    memset(&p, 0, sizeof(p));
++    if (tmScan(&p, tar, 0) < 0) {
++        tmFree(&p);
++        return -1;
++    }
++    for (i = 0; i < p.count && n < max; i++) {
++        if (p.m[i].drop == 2)
++            continue;
++        snprintf(out[n].name, sizeof(out[n].name), "%s", tbBase(p.m[i].name));
++        out[n].size = p.m[i].size;
++        n++;
++    }
++    tmFree(&p);
++    return n;
++}
++
++int ripps2TarExtract(const char *tar, const char *member, const char *dst)
++{
++    tm_plan_t p;
++    unsigned char *buf = NULL;
++    unsigned int left;
++    int i, fd = -1, out = -1, ok = 0;
++
++    memset(&p, 0, sizeof(p));
++    if (tmScan(&p, tar, 0) < 0)
++        goto done;
++    for (i = 0; i < p.count; i++)
++        if (p.m[i].drop != 2 && !strcasecmp(tbBase(p.m[i].name), member))
++            break;
++    if (i == p.count || (buf = malloc(TM_CHUNK)) == NULL || (fd = open(tar, O_RDONLY)) < 0)
++        goto done;
++    if (lseek64(fd, p.m[i].head + 512, SEEK_SET) != (long long)(p.m[i].head + 512) ||
++        (out = open(dst, O_WRONLY | O_CREAT | O_TRUNC, 0666)) < 0)
++        goto done;
++    for (left = p.m[i].size; left > 0;) {
++        int k = left > TM_CHUNK ? TM_CHUNK : (int)left;
++        if (!tmReadAll(fd, buf, k) || write(out, buf, k) != k)
++            break;
++        left -= k;
++    }
++    ok = left == 0;
++done:
++    if (out >= 0) {
++        close(out);
++        if (!ok)
++            remove(dst);
++    }
++    if (fd >= 0)
++        close(fd);
++    free(buf);
++    tmFree(&p);
++    return ok;
++}
++
++// the plan written beside target and swapped in, its index beside it, the art engine told: tmRun's steps without its
++// questions. 1 done; else tmRun's codes (0 stopped, -1 not written, -2 read short, -3 / -4 a rename)
++static int tbCommit(tm_plan_t *p, const char *const tars[2], const char *target)
++{
++    char tmp[260], old[260];
++    int r, wasTar = gEnableArtTar;
++
++    snprintf(tmp, sizeof(tmp), "%s.tmp", target);
++    gEnableArtTar = 0;
++    tarInvalidate(TAR_KIND_ART);
++    ioBlockOps(1);
++    tmBegan = clock();
++    tmShown = target;
++    if (!ioWriteBegin())
++        r = -1;
++    else {
++        r = tmWrite(p, tars, tmp, tmProgress);
++        if (r == 1) {
++            r = tmSwap(target, tmp, old, sizeof(old));
++            if (r == 1)
++                tmWriteIndex(p, target);
++            else
++                r = r == -1 ? -3 : -4;
++        }
++        ioWriteEnd();
++    }
++    ioBlockOps(0);
++    if (r == 1 && apSamePath(gRipps2ArtPack, target)) {
++        gRipps2ArtPackCount = p->out;
++        gRipps2ArtPackKb = (int)(p->outBytes >> 10);
++    }
++    gEnableArtTar = wasTar;
++    ripps2ArtPackApplySettings();
++    tarInvalidate(TAR_KIND_ART);
++    tarInvalidate(TAR_KIND_CFG); // a cfg.tar changed here is read again, and the settings cached from it forgotten
++    artIndexInvalidate();
++    cacheInvalidateFailMemo();
++    configCacheClear();
++    return r;
++}
++
++static unsigned char *tbReadWhole(const char *path, int *len)
++{
++    int fd = open(path, O_RDONLY);
++    long long size;
++    unsigned char *b;
++
++    if (fd < 0)
++        return NULL;
++    size = lseek64(fd, 0, SEEK_END);
++    if (size <= 0 || size > TB_MAX_FILE || lseek64(fd, 0, SEEK_SET) != 0 || (b = malloc((int)size)) == NULL) {
++        close(fd);
++        return NULL;
++    }
++    if (!tmReadAll(fd, b, (int)size)) {
++        free(b);
++        close(fd);
++        return NULL;
++    }
++    close(fd);
++    *len = (int)size;
++    return b;
++}
++
++static int tbHasExt(const char *name, const char *ext)
++{
++    const char *dot = strrchr(name, '.');
++    return dot != NULL && !strcasecmp(dot + 1, ext);
++}
++
++static unsigned int tbLe(const unsigned char *b, int n)
++{
++    unsigned int v = 0;
++    while (n-- > 0)
++        v = (v << 8) | b[n];
++    return v;
++}
++
++// a BMP of 24 or 32 bits, not compressed: RGBA with the GS's alpha (opaque), memalign'd; NULL for any other
++static unsigned char *tbBmp(const unsigned char *b, int len, int *w, int *h)
++{
++    int off, W, H, bpp, comp, flip = 1, stride, x, y;
++    unsigned char *out;
++
++    if (len < 54 || b[0] != 'B' || b[1] != 'M')
++        return NULL;
++    off = (int)tbLe(b + 10, 4);
++    W = (int)tbLe(b + 18, 4);
++    H = (int)tbLe(b + 22, 4);
++    bpp = (int)tbLe(b + 28, 2);
++    comp = (int)tbLe(b + 30, 4);
++    if (H < 0) {
++        H = -H;
++        flip = 0;
++    }
++    if (W <= 0 || H <= 0 || W > 4096 || H > 4096 || (bpp != 24 && bpp != 32) || (comp != 0 && comp != 3))
++        return NULL;
++    stride = (W * (bpp / 8) + 3) & ~3;
++    if (off < 54 || (long long)off + (long long)stride * H > len || (out = memalign(64, W * H * 4)) == NULL)
++        return NULL;
++    for (y = 0; y < H; y++) {
++        const unsigned char *row = b + off + (flip ? H - 1 - y : y) * stride;
++        unsigned char *d = out + y * W * 4;
++        for (x = 0; x < W; x++, row += bpp / 8, d += 4) {
++            d[0] = row[2];
++            d[1] = row[1];
++            d[2] = row[0];
++            d[3] = 0x80;
++        }
++    }
++    *w = W;
++    *h = H;
++    return out;
++}
++
++// at most side on a side, each pixel the average of those it covers (the picture itself when it fits)
++static unsigned char *tbShrink(unsigned char *src, int w, int h, int side, int *nw, int *nh)
++{
++    unsigned char *out;
++    int W, H, x, y;
++
++    if (w <= side && h <= side) {
++        *nw = w;
++        *nh = h;
++        return src;
++    }
++    W = w >= h ? side : w * side / h;
++    H = w >= h ? h * side / w : side;
++    if (W < 1)
++        W = 1;
++    if (H < 1)
++        H = 1;
++    if ((out = memalign(64, W * H * 4)) == NULL)
++        return NULL;
++    for (y = 0; y < H; y++)
++        for (x = 0; x < W; x++) {
++            int x0 = x * w / W, x1 = (x + 1) * w / W, y0 = y * h / H, y1 = (y + 1) * h / H, s[4] = {0, 0, 0, 0}, n = 0, u, v, c;
++            for (v = y0; v < y1; v++)
++                for (u = x0; u < x1; u++, n++)
++                    for (c = 0; c < 4; c++)
++                        s[c] += src[(v * w + u) * 4 + c];
++            for (c = 0; c < 4; c++)
++                out[(y * W + x) * 4 + c] = (unsigned char)(s[c] / (n > 0 ? n : 1));
++        }
++    *nw = W;
++    *nh = H;
++    return out;
++}
++
++typedef struct
++{
++    unsigned char *b;
++    int n, cap;
++} tb_mem_t;
++
++static void tbPngWrite(png_structp png, png_bytep d, png_size_t len)
++{
++    tb_mem_t *m = (tb_mem_t *)png_get_io_ptr(png);
++    if (m->n + (int)len > m->cap) {
++        int cap = (m->n + (int)len) * 2;
++        unsigned char *nb = realloc(m->b, cap);
++        if (nb == NULL)
++            png_error(png, "out of memory");
++        m->b = nb;
++        m->cap = cap;
++    }
++    memcpy(m->b + m->n, d, len);
++    m->n += (int)len;
++}
++
++static void tbPngFlush(png_structp png)
++{
++    (void)png;
++}
++
++// RGBA with the GS's alpha as a PNG in memory (RGB when every pixel is opaque); NULL on a failure
++static unsigned char *tbPng(const unsigned char *rgba, int w, int h, int *len)
++{
++    png_structp png;
++    png_infop info = NULL;
++    tb_mem_t m = {NULL, 0, 0};
++    unsigned char *row;
++    int x, y, alpha = 0;
++
++    for (x = 0; x < w * h && !alpha; x++)
++        alpha = rgba[x * 4 + 3] < 0x80;
++    if ((png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL)) == NULL)
++        return NULL;
++    info = png_create_info_struct(png);
++    row = malloc(w * 4);
++    if (info == NULL || row == NULL || setjmp(png_jmpbuf(png))) {
++        png_destroy_write_struct(&png, &info);
++        free(row);
++        free(m.b);
++        return NULL;
++    }
++    png_set_write_fn(png, &m, tbPngWrite, tbPngFlush);
++    png_set_IHDR(png, info, w, h, 8, alpha ? PNG_COLOR_TYPE_RGB_ALPHA : PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
++                 PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
++    png_write_info(png, info);
++    for (y = 0; y < h; y++) {
++        const unsigned char *s = rgba + y * w * 4;
++        unsigned char *d = row;
++        for (x = 0; x < w; x++, s += 4) {
++            *d++ = s[0];
++            *d++ = s[1];
++            *d++ = s[2];
++            if (alpha)
++                *d++ = s[3] >= 0x80 ? 0xFF : (unsigned char)(s[3] * 2);
++        }
++        png_write_row(png, row);
++    }
++    png_write_end(png, NULL);
++    png_destroy_write_struct(&png, &info);
++    free(row);
++    *len = m.n;
++    return m.b;
++}
++
++// one file of the paste as it goes in: its bytes (the file's own, or a PNG made of it) and its name in the .tar. 1 ready,
++// 0 refused (a picture nothing would read, or a file that could not be read)
++static int tbReady(const char *path, const char *name, unsigned char **data, int *len, char *member, int memberSize)
++{
++    static const char *const unread[] = {"gif", "webp", "tga", "tif", "tiff", "ico", "heic", "avif", "psd", NULL};
++    unsigned char *raw, *rgba = NULL, *fit;
++    int rawLen = 0, w = 0, h = 0, ow = 0, oh = 0, fw, fh, i;
++    const char *dot = strrchr(name, '.');
++
++    for (i = 0; unread[i] != NULL; i++)
++        if (tbHasExt(name, unread[i]))
++            return 0;
++    if ((raw = tbReadWhole(path, &rawLen)) == NULL)
++        return 0;
++    snprintf(member, memberSize, "%s", name);
++    if (tbHasExt(name, "bmp"))
++        rgba = tbBmp(raw, rawLen, &w, &h);
++    else if (apIsPicture(name)) {
++        if (!ripps2DecodePicture(raw, rawLen, TB_ART_SIDE, TB_ART_SIDE, &rgba, &w, &h, &ow, &oh, NULL)) {
++            free(raw);
++            return 0;
++        }
++        if (ow <= TB_ART_SIDE && oh <= TB_ART_SIDE) { // it fits: in as it is
++            free(rgba);
++            *data = raw;
++            *len = rawLen;
++            return 1;
++        }
++    } else { // not a picture: in as it is
++        *data = raw;
++        *len = rawLen;
++        return 1;
++    }
++    free(raw);
++    if (rgba == NULL)
++        return 0;
++    fit = tbShrink(rgba, w, h, TB_ART_SIDE, &fw, &fh);
++    *data = fit != NULL ? tbPng(fit, fw, fh, len) : NULL;
++    if (fit != rgba)
++        free(fit);
++    free(rgba);
++    if (*data == NULL)
++        return 0;
++    if (dot != NULL && (int)(dot - name) + 5 < memberSize) // the same name, as a .png
++        snprintf(member + (dot - name), memberSize - (dot - name), ".png");
++    return 1;
++}
++
++int ripps2TarAddFiles(const char *tar, const char *dir, char (*names)[128], int n, int *refused, char *report, int reportSize)
++{
++    char add[260], path[384], member[AP_NAME], msg[300];
++    const char *tars[2] = {tar, add};
++    unsigned char head[512], *data;
++    tm_plan_t p;
++    FILE *out;
++    int i, len, in = 0, r = -1;
++
++    *refused = 0;
++    report[0] = '\0';
++    if (snprintf(add, sizeof(add), "%s.add", tar) >= (int)sizeof(add) - 5 || (out = fopen(add, "wb")) == NULL) {
++        snprintf(report, reportSize, "%s", _t("COULD NOT WRITE"));
++        return -1;
++    }
++    for (i = 0; i < n; i++) {
++        snprintf(msg, sizeof(msg), _t("Getting it ready: %s"), names[i]);
++        guiRenderTextScreen(msg);
++        snprintf(path, sizeof(path), "%s%s", dir, names[i]);
++        data = NULL;
++        if (!tbReady(path, names[i], &data, &len, member, sizeof(member))) {
++            (*refused)++;
++            continue;
++        }
++        apHeader(head, member, (unsigned int)len, (unsigned int)time(NULL));
++        if (fwrite(head, 1, 512, out) != 512 || fwrite(data, 1, len, out) != (size_t)len || !apWriteZeros(out, (512 - len % 512) % 512)) {
++            free(data);
++            fclose(out);
++            remove(add);
++            snprintf(report, reportSize, "%s", _t("COULD NOT WRITE"));
++            return -1;
++        }
++        free(data);
++        in++;
++    }
++    if (!apWriteZeros(out, 1024) || fclose(out) != 0 || in == 0) {
++        remove(add);
++        snprintf(report, reportSize, "%s", in == 0 ? _t("NOTHING TO PUT IN") : _t("COULD NOT WRITE"));
++        return -1;
++    }
++    memset(&p, 0, sizeof(p));
++    if (tmScan(&p, tar, 0) < 0 || tmScan(&p, add, 1) < 0 || !tmPlan(&p))
++        snprintf(report, reportSize, "%s", _t("NOT A .TAR"));
++    else if ((r = tbCommit(&p, tars, tar)) == 1) {
++        if (p.same > 0)
++            snprintf(report, reportSize, _t("%d IN, %d REPLACED"), in, p.same);
++        else
++            snprintf(report, reportSize, _t("%d IN"), in);
++    } else
++        snprintf(report, reportSize, "%s", _t("NOTHING CHANGED"));
++    tmFree(&p);
++    remove(add);
++    return r == 1 ? in : -1;
++}
++
++int ripps2TarRemove(const char *tar, char (*names)[128], int n)
++{
++    const char *tars[2] = {tar, tar};
++    tm_plan_t p;
++    int i, k, gone = 0, r = -1;
++
++    memset(&p, 0, sizeof(p));
++    if (tmScan(&p, tar, 0) < 0) {
++        tmFree(&p);
++        return -1;
++    }
++    for (i = 0; i < p.count; i++)
++        for (k = 0; k < n && p.m[i].drop != 2; k++)
++            if (!strcasecmp(tbBase(p.m[i].name), names[k])) {
++                p.m[i].drop = 1;
++                gone++;
++                break;
++            }
++    if (gone > 0 && tmPlan(&p))
++        r = tbCommit(&p, tars, tar);
++    tmFree(&p);
++    return r == 1 ? gone : -1;
++}
++
+ int ripps2TarMergeInto(const char *target, const char *here)
+ {
+     char paths[TM_PICK][256], msg[400];
+diff --git a/src/ripps2disc.c b/src/ripps2disc.c
+index b1f68c6..3e65e64 100644
+--- a/src/ripps2disc.c
++++ b/src/ripps2disc.c
+@@ -587,9 +587,12 @@ static void rdHintPair(int iconA, const char *a, int iconB, const char *b, int y
+ #define RD_NOTCH_OUT 17.0f
+ #define RD_RING_W    38    // the room the ring takes in the hold hint, so HOLD starts clear of it
+ 
++// build 125: a widescreen picture stretches the 640 layout across 16:9, so every x offset takes rmWideScale's squeeze
++// (as the hint glyphs do) or the ring is an oval with leaning notches
+ static void rdNotch(float cx, float cy, float ang, u64 c)
+ {
+-    float ux = cosf(ang), uy = sinf(ang), nx = -uy, ny = ux, hw = 1.4f, fw = 2.4f;
++    float sq = rmWideScale(1000) / 1000.0f;
++    float ux = cosf(ang) * sq, uy = sinf(ang), nx = -sinf(ang) * sq, ny = cosf(ang), hw = 1.4f, fw = 2.4f;
+     float x0 = cx + ux * RD_NOTCH_IN, y0 = cy + uy * RD_NOTCH_IN, x1 = cx + ux * RD_NOTCH_OUT, y1 = cy + uy * RD_NOTCH_OUT;
+     u64 clear = c & ~(0xFFULL << 24);
+     rmDrawQuadGouraud(x0 + nx * hw, y0 + ny * hw, c, x1 + nx * hw, y1 + ny * hw, c, x0 - nx * hw, y0 - ny * hw, c, x1 - nx * hw, y1 - ny * hw, c);
+@@ -686,7 +689,7 @@ void ripps2DiscRipRender(void)
+     rdRing(hx + RD_RING_W / 2, y + 90, p > 1.0f ? 1.0f : p, ia);
+     GSTEXTURE *sel = thmGetTexture(SELECT_ICON);
+     if (sel != NULL)
+-        rmDrawPixmap(sel, hx + RD_RING_W / 2 - 10, y + 80, ALIGN_NONE, 20, 20, SCALING_RATIO, rdAlpha(RD_LIT, ia), 0);
++        rmDrawPixmap(sel, hx + RD_RING_W / 2 - rmWideScale(20) / 2, y + 80, ALIGN_NONE, 20, 20, SCALING_RATIO, rdAlpha(RD_LIT, ia), 0);
+     ripps2HintText(hx + RD_RING_W + 6, y + 90, hold, rdAlpha(RD_SOFT, ia));
+ }
+ 
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index 7c1cff8..3a2be42 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -17,6 +17,13 @@
+   - Pasting a save folder (one with an icon.sys) onto a memory card always lands it in the card's
+     root, where the console looks for saves, wherever on the card you are.
+   - The clipboard count and what happened last (COPIED, CUT, PASTED, DELETED) sit top right.
++  - Build 125 (the user, 10/29): the open folder is the list's first row. It says how many entries are here, how
++    many are marked, the size of the files and the drive's free space; Cross or Square on it marks them all (or,
++    any marked, none). ACTIONS adds INVERT MARKS and SIZE AND FREE SPACE (the marked entries, folders all the way
++    down).
++  - Build 125: a .tar is a blue folder (MERGE A .TAR INTO THIS stays in its ACTIONS). Opened, it lists its members;
++    PASTE puts files in (pictures made ready: ripps2TarAddFiles), COPY then PASTE elsewhere writes members out, DELETE
++    takes them out; each through the merge's write, swapped in only once whole.
+ 
+   Reading folders and copying run on the IO worker; the screen keeps animating and shows progress.
+   The list is only read by the GUI while the worker is idle (fbBusy), so it needs no lock.
+@@ -84,7 +91,7 @@
+ #define FB_SOFT GS_SETREG_RGBA(0x67, 0x6C, 0x7A, 0x80)
+ #define FB_PRIM(r, g, b, a) GS_SETREG_RGBAQ((r), (g), (b), (a), 0x00)
+ 
+-enum { FB_KIND_DEVICE = 0, FB_KIND_START, FB_KIND_DIR, FB_KIND_SAVE, FB_KIND_FILE, FB_KIND_ELF, FB_KIND_VMC, FB_KIND_PSU, FB_KIND_VCD };
++enum { FB_KIND_DEVICE = 0, FB_KIND_START, FB_KIND_DIR, FB_KIND_SAVE, FB_KIND_FILE, FB_KIND_ELF, FB_KIND_VMC, FB_KIND_PSU, FB_KIND_VCD, FB_KIND_HERE, FB_KIND_TAR };
+ 
+ typedef struct
+ {
+@@ -106,7 +113,7 @@ static volatile int fbDrivesDone = 0; // ...and has just finished: read the driv
+ static int fbMmceSlot[2] = {0, 0};      // START DRIVES found an MMCE in that slot (its ping answered)
+ 
+ // what happened last, shown top right for a moment
+-static char fbToast[48];
++static char fbToast[64];
+ static clock_t fbToastAt = 0;
+ 
+ // the clipboard: names in one folder
+@@ -117,6 +124,8 @@ static int fbClipCount = 0, fbClipCut = 0;
+ static unsigned char fbClipReplace[FB_CLIP_MAX]; // build 98: a name already there, replaced by this paste (asked first)
+ static volatile int fbReplacing = 0;             // build 98: the copy running now replaces what it finds
+ static char fbClipVmc[256]; // the card image the clipboard was filled in ("" = none)
++static char fbTar[256];     // build 125: the .tar open as a folder ("" = none); its folder path is fbTar + "/"
++static char fbClipTar[256]; // build 125: the .tar the clipboard was filled in ("" = none)
+ static char fbRipWhat[48];  // build 105: RIPDISC's media on the clipboard ("AUDIO CD"), ripped where it is pasted
+ 
+ // inside a PS2 card image: its path ("" = not in one), whether it is read only, its free space
+@@ -187,15 +196,15 @@ static void fbNoteFail(const char *verb, const char *path)
+     snprintf(fbFailWhat, sizeof(fbFailWhat), "%s: %s %s", word != NULL ? word : why, verb, name && name[1] ? name + 1 : path);
+ }
+ static int fbOp = 0; // what the worker runs next
+-enum { FB_OP_SCAN = 0, FB_OP_PASTE, FB_OP_DELETE, FB_OP_UNPACK };
++enum { FB_OP_SCAN = 0, FB_OP_PASTE, FB_OP_DELETE, FB_OP_UNPACK, FB_OP_SIZE };
+ static char fbUnpackName[FB_NAME]; // Cross on a .psu: the one to unpack here
+ static char fbDeleteNames[FB_CLIP_MAX][FB_NAME];
+ static unsigned char fbDeleteIsDir[FB_CLIP_MAX];
+ static int fbDeleteCount = 0;
+ 
+ // the actions menu (Triangle)
+-enum { FB_ACT_EDIT = 0, FB_ACT_COPY, FB_ACT_CUT, FB_ACT_PASTE, FB_ACT_PASTE_PSU, FB_ACT_UNPACK, FB_ACT_DELETE, FB_ACT_RENAME, FB_ACT_NEWDIR, FB_ACT_MARKALL, FB_ACT_CARDS, FB_ACT_RIPICON, FB_ACT_TARMERGE, FB_ACT_COUNT };
+-static const char *fbActName[FB_ACT_COUNT] = {N_("EDIT"), N_("COPY"), N_("CUT"), N_("PASTE"), N_("PASTE AS PSU"), N_("UNPACK PSU HERE"), N_("DELETE"), N_("RENAME"), N_("NEW FOLDER"), N_("MARK ALL"), N_("CARD MANAGER"), N_("RIP 3D ICON"), N_("MERGE A .TAR INTO THIS")};
++enum { FB_ACT_EDIT = 0, FB_ACT_COPY, FB_ACT_CUT, FB_ACT_PASTE, FB_ACT_PASTE_PSU, FB_ACT_UNPACK, FB_ACT_DELETE, FB_ACT_RENAME, FB_ACT_NEWDIR, FB_ACT_MARKALL, FB_ACT_INVERT, FB_ACT_SIZE, FB_ACT_CARDS, FB_ACT_RIPICON, FB_ACT_TARMERGE, FB_ACT_COUNT };
++static const char *fbActName[FB_ACT_COUNT] = {N_("EDIT"), N_("COPY"), N_("CUT"), N_("PASTE"), N_("PASTE AS PSU"), N_("UNPACK PSU HERE"), N_("DELETE"), N_("RENAME"), N_("NEW FOLDER"), N_("MARK ALL"), N_("INVERT MARKS"), N_("SIZE AND FREE SPACE"), N_("CARD MANAGER"), N_("RIP 3D ICON"), N_("MERGE A .TAR INTO THIS")};
+ static int fbMenuOpen = 0, fbMenuSel = 0, fbMenuItems[FB_ACT_COUNT], fbMenuCount = 0;
+ 
+ static const char *fbDevices[] = {"mc0:/", "mc1:/", "mass0:/", "mass1:/", "mass2:/", "mass3:/", "mass4:/", "mass5:/", "mass6:/",
+@@ -375,7 +384,8 @@ static int fbHasSuffix(const char *name, const char *suffix)
+ static int fbCompare(const void *a, const void *b)
+ {
+     const fb_entry_t *x = (const fb_entry_t *)a, *y = (const fb_entry_t *)b;
+-    int xd = x->kind == FB_KIND_DIR || x->kind == FB_KIND_SAVE, yd = y->kind == FB_KIND_DIR || y->kind == FB_KIND_SAVE;
++    int xd = x->kind == FB_KIND_DIR || x->kind == FB_KIND_SAVE || x->kind == FB_KIND_TAR; // build 125: a .tar with the folders
++    int yd = y->kind == FB_KIND_DIR || y->kind == FB_KIND_SAVE || y->kind == FB_KIND_TAR;
+     if (xd != yd)
+         return xd ? -1 : 1;
+     return strcasecmp(x->name, y->name);
+@@ -520,6 +530,83 @@ static void fbScanDevices(void)
+ // A PS2 card image: a .vmc / .ps2 / .mc2, or a .bin of a card's size (OPL's VMC folder) that starts with
+ // the card format's own words (so a PS1 game's .bin is not taken for one). Build 115: an SD2PSX's own cards too, the
+ // .mcd files of MemoryCards/PS2 on its SD (the same raw format; its PS1 cards are 128 KB and stay files)
++// build 125: the open folder as the list's first row (FB_KIND_HERE, named "."), with what it shows beside it: the size of
++// the files here and the drive's free space (KB, -1 when the drive cannot say). On the IO worker, after a read.
++static unsigned long long fbHereBytes = 0;
++static int fbHereFreeKb = -1;
++static int fbLandFirst = 0; // a folder just opened: the cursor goes to its first entry, under the folder row
++
++static void fbAddHere(int n)
++{
++    ripps2_vol_t vol;
++    int i;
++
++    if (n >= FB_MAX)
++        n = FB_MAX - 1;
++    memmove(&fbList[1], &fbList[0], n * sizeof(fb_entry_t));
++    memset(&fbList[0], 0, sizeof(fb_entry_t));
++    fbList[0].kind = FB_KIND_HERE;
++    snprintf(fbList[0].name, sizeof(fbList[0].name), ".");
++    fbHereBytes = 0;
++    for (i = 1; i <= n; i++)
++        if (fbList[i].kind != FB_KIND_DIR && fbList[i].kind != FB_KIND_SAVE)
++            fbHereBytes += fbList[i].size;
++    fbHereFreeKb = -1;
++    if (fbVmc[0] && fbVmcPath(fbVmc, fbPath, NULL, 0))
++        fbHereFreeKb = (int)fbVmcFreeKb;
++    else if (fbIsMc(fbPath))
++        fbHereFreeKb = ripps2CardFreeKb(fbPath[2] - '0');
++    else if (ripps2VolInfo(fbPath, &vol) && vol.freeKb > 0)
++        fbHereFreeKb = (int)vol.freeKb;
++    fbCount = n + 1;
++}
++
++// build 125: inside the open .tar
++static int fbInTar(void)
++{
++    int n = strlen(fbTar);
++    return n > 0 && !strncmp(fbPath, fbTar, n) && fbPath[n] == '/' && fbPath[n + 1] == '\0';
++}
++
++static void fbScanTar(void)
++{
++    ripps2_tar_entry_t *t = malloc(FB_MAX * sizeof(ripps2_tar_entry_t));
++    int n = t != NULL ? ripps2TarList(fbTar, t, FB_MAX - 1) : -1, i;
++
++    if (n < 0) {
++        free(t);
++        fbCount = 0;
++        return;
++    }
++    for (i = 0; i < n; i++) {
++        fb_entry_t *e = &fbList[i];
++        memset(e, 0, sizeof(*e));
++        snprintf(e->name, sizeof(e->name), "%s", t[i].name);
++        e->size = t[i].size;
++        e->kind = FB_KIND_FILE;
++    }
++    free(t);
++    qsort(fbList, n, sizeof(fb_entry_t), &fbCompare);
++    fbAddHere(n);
++}
++
++static int fbOnItem(void) // the cursor is on an entry (not on the folder row, not on nothing)
++{
++    return fbCount > 0 && fbCursor >= 0 && fbCursor < fbCount && fbList[fbCursor].kind != FB_KIND_HERE;
++}
++
++static void fbSizeText64(unsigned long long size, char *out, int n)
++{
++    if (size >= 1024ULL * 1024 * 1024)
++        snprintf(out, n, _t("%u.%u GB"), (unsigned)(size >> 30), (unsigned)(((size & 0x3FFFFFFFULL) * 10) >> 30));
++    else if (size >= 1024 * 1024)
++        snprintf(out, n, _t("%u.%u MB"), (unsigned)(size >> 20), (unsigned)(((size & 0xFFFFF) * 10) >> 20));
++    else if (size >= 1024)
++        snprintf(out, n, _t("%u KB"), (unsigned)((size + 1023) >> 10));
++    else
++        snprintf(out, n, "%u B", (unsigned)size);
++}
++
+ static int fbIsCardImage(const char *path, const char *name, u32 size)
+ {
+     char magic[28];
+@@ -555,7 +642,7 @@ static void fbScanVmc(const char *save)
+     }
+     free(list);
+     qsort(fbList, n, sizeof(fb_entry_t), &fbCompare);
+-    fbCount = n;
++    fbAddHere(n); // build 125
+ }
+ 
+ static void fbScanDir(void)
+@@ -569,6 +656,10 @@ static void fbScanDir(void)
+         fbScanVmc(save);
+         return;
+     }
++    if (fbInTar()) { // build 125
++        fbScanTar();
++        return;
++    }
+     d = opendir(fbPath);
+     if (d == NULL) {
+         fbCount = 0;
+@@ -606,10 +697,12 @@ static void fbScanDir(void)
+                 e->kind = FB_KIND_VCD;
+             else if (fbIsCardImage(child, e->name, e->size))
+                 e->kind = FB_KIND_VMC;
++            else if (fbHasSuffix(e->name, ".tar") && !fbIsMc(fbPath))
++                e->kind = FB_KIND_TAR; // build 125: a blue folder
+         }
+     }
+     qsort(fbList, n, sizeof(fb_entry_t), &fbCompare);
+-    fbCount = n;
++    fbAddHere(n); // build 125
+ }
+ 
+ // ---- copying and deleting (all on the IO worker) ----
+@@ -1152,6 +1245,21 @@ static void fbReport(const char *verb, int done)
+     ripps2Diag("files: %s in %s: %d ok, %d skipped, %d failed %s", verb, fbPath, ok, fbSkipped, fbFailed, fbFailWhat);
+ }
+ 
++// build 125: SIZE AND FREE SPACE: the marked entries (or the one under the cursor), folders all the way down
++static unsigned long long fbSizeTotal = 0;
++static void fbSizeWork(void)
++{
++    char p[384];
++    int i;
++    fbSizeTotal = 0;
++    fbTotalItems = fbDeleteCount;
++    for (i = 0; i < fbDeleteCount; i++) {
++        fbJoin(p, sizeof(p), fbPath, fbDeleteNames[i]);
++        fbSizeTotal += fbTreeSize(p, fbDeleteIsDir[i], 0);
++        fbDoneItems++;
++    }
++}
++
+ static void fbWorker(void)
+ {
+     // build 114: no background write of RIPPS2's while a copy grows its files (the lab, 10/23: ps2sdk's exFAT driver loses
+@@ -1168,12 +1276,25 @@ static void fbWorker(void)
+     } else if (fbOp == FB_OP_DELETE) {
+         fbDeleteWork();
+         fbReport(_t("DELETED"), fbDoneItems);
+-    }
++    } else if (fbOp == FB_OP_SIZE)
++        fbSizeWork();
++    if (fbOp != FB_OP_SCAN && fbOp != FB_OP_SIZE)
++        configCacheClear(); // build 125: a game's CFG may have been pasted over, moved or deleted
+     ioLaunchCancel();
+     if (fbPath[0])
+         fbScanDir();
+     else
+         fbScanDevices();
++    if (fbOp == FB_OP_SIZE) { // build 125: after the read, so the free space is the drive's now
++        char size[24], room[24], text[64];
++        fbSizeText64(fbSizeTotal, size, sizeof(size));
++        if (fbHereFreeKb >= 0) {
++            fbSizeText64((unsigned long long)fbHereFreeKb * 1024, room, sizeof(room));
++            snprintf(text, sizeof(text), _t("%s IN %d, %s FREE"), size, fbDoneItems, room);
++        } else
++            snprintf(text, sizeof(text), _t("%s IN %d"), size, fbDoneItems);
++        fbSetToast(text);
++    }
+     fbBusy = 0;
+ }
+ 
+@@ -1334,8 +1455,11 @@ static void fbOpenPath(const char *path, const char *keep)
+ {
+     if (fbVmc[0] && !fbVmcPath(fbVmc, path, NULL, 0))
+         fbVmc[0] = '\0';
++    if (fbTar[0] && (strncmp(path, fbTar, strlen(fbTar)) || path[strlen(fbTar)] != '/'))
++        fbTar[0] = '\0'; // build 125: out of the .tar
+     snprintf(fbPath, sizeof(fbPath), "%s", path);
+     snprintf(fbKeepName, sizeof(fbKeepName), "%s", keep ? keep : "");
++    fbLandFirst = path[0] != '\0' && fbKeepName[0] == '\0'; // build 125: on the first entry, under the folder row
+     fbCursor = fbTop = 0;
+     fbMenuOpen = 0;
+     fbRun(FB_OP_SCAN, _t("READING"));
+@@ -1345,6 +1469,11 @@ static void fbOpenPath(const char *path, const char *keep)
+ static void fbRestoreCursor(void)
+ {
+     int i;
++    if (fbLandFirst) { // build 125
++        fbLandFirst = 0;
++        fbCursor = fbCount > 1 && fbList[0].kind == FB_KIND_HERE ? 1 : 0;
++        fbFixScroll();
++    }
+     if (!fbKeepName[0])
+         return;
+     for (i = 0; i < fbCount; i++)
+@@ -1418,7 +1547,7 @@ static int fbSelection(char names[][FB_NAME], unsigned char *isDir, int max)
+             snprintf(names[n], FB_NAME, "%s", fbList[i].name);
+             isDir[n++] = fbList[i].kind == FB_KIND_DIR || fbList[i].kind == FB_KIND_SAVE;
+         }
+-    if (n == 0 && fbCount > 0) {
++    if (n == 0 && fbOnItem()) {
+         snprintf(names[0], FB_NAME, "%s", fbList[fbCursor].name);
+         isDir[0] = fbList[fbCursor].kind == FB_KIND_DIR || fbList[fbCursor].kind == FB_KIND_SAVE;
+         n = 1;
+@@ -1863,14 +1992,42 @@ int ripps2CardFreeKb(int port)
+     return freeKb;
+ }
+ 
++static void fbMarkAll(void) // build 125: every entry marked, or (any marked) none; the folder row is never one
++{
++    int any = 0, i;
++    for (i = 0; i < fbCount; i++)
++        any |= fbList[i].kind != FB_KIND_HERE && fbList[i].marked;
++    for (i = 0; i < fbCount; i++)
++        fbList[i].marked = fbList[i].kind != FB_KIND_HERE && !any;
++    sfxPlay(SFX_CURSOR);
++}
++
+ static void fbOpen(void)
+ {
+     if (fbCount == 0)
+         return;
++    if (fbList[fbCursor].kind == FB_KIND_HERE) { // build 125: the folder row marks them all
++        fbMarkAll();
++        return;
++    }
+     fb_entry_t *e = &fbList[fbCursor];
+     char path[256];
+ 
++    if (fbInTar()) { // build 125: a member is opened from a copy of it
++        sfxPlay(SFX_CANCEL);
++        fbSetToast(_t("COPY IT OUT TO OPEN IT"));
++        return;
++    }
+     switch (e->kind) {
++        case FB_KIND_TAR: // build 125: the blue folder
++            sfxPlay(SFX_CONFIRM);
++            fbJoin(path, sizeof(path), fbPath, e->name);
++            snprintf(fbTar, sizeof(fbTar), "%s", path);
++            if (strlen(path) + 2 < sizeof(path)) {
++                strcat(path, "/");
++                fbOpenPath(path, NULL);
++            }
++            break;
+         case FB_KIND_START:
+             if (fbStarted)
+                 break;
+@@ -1999,13 +2156,29 @@ static int fbClipHas(int dirs)
+ static void fbMenuBuild(void)
+ {
+     char save[40];
+-    int inFolder = fbPath[0] != '\0', haveItem = inFolder && fbCount > 0;
++    int inFolder = fbPath[0] != '\0', haveItem = inFolder && fbOnItem(), haveSel = haveItem, i;
++    for (i = 0; inFolder && i < fbCount; i++) // build 125: on the folder row, the marked entries are what COPY / CUT / DELETE take
++        haveSel |= fbList[i].marked;
+     int inVmc = fbVmcPath(fbVmc, fbPath, save, sizeof(save)), vmcTop = inVmc && !save[0] && !fbVmcRO;
+     int canChange = !inVmc || vmcTop; // a card image takes whole saves at its top, and only without ECC
+     fbMenuCount = 0;
++    if (fbInTar()) { // build 125: in a .tar: copy out, paste in, delete, the marks
++        if (haveSel)
++            fbMenuItems[fbMenuCount++] = FB_ACT_COPY;
++        if (fbClipCount > 0 && !fbClipTar[0])
++            fbMenuItems[fbMenuCount++] = FB_ACT_PASTE;
++        if (haveSel)
++            fbMenuItems[fbMenuCount++] = FB_ACT_DELETE;
++        if (fbCount > 1) {
++            fbMenuItems[fbMenuCount++] = FB_ACT_MARKALL;
++            fbMenuItems[fbMenuCount++] = FB_ACT_INVERT;
++        }
++        fbMenuSel = 0;
++        return;
++    }
+     if (haveItem && !inVmc && fbList[fbCursor].kind == FB_KIND_FILE)
+         fbMenuItems[fbMenuCount++] = FB_ACT_EDIT; // first: the file under the cursor, in the text editor
+-    if (haveItem) {
++    if (haveSel) {
+         fbMenuItems[fbMenuCount++] = FB_ACT_COPY;
+         if (canChange)
+             fbMenuItems[fbMenuCount++] = FB_ACT_CUT;
+@@ -2016,19 +2189,23 @@ static void fbMenuBuild(void)
+         fbMenuItems[fbMenuCount++] = FB_ACT_PASTE_PSU;
+     if (inFolder && !inVmc && fbClipHas(0))
+         fbMenuItems[fbMenuCount++] = FB_ACT_UNPACK;
+-    if (haveItem && canChange)
++    if (haveSel && canChange)
+         fbMenuItems[fbMenuCount++] = FB_ACT_DELETE;
+     if (haveItem && !inVmc)
+         fbMenuItems[fbMenuCount++] = FB_ACT_RENAME;
+     if (inFolder && !inVmc)
+         fbMenuItems[fbMenuCount++] = FB_ACT_NEWDIR;
+-    if (inFolder && fbCount > 0)
++    if (inFolder && fbCount > 1) {
+         fbMenuItems[fbMenuCount++] = FB_ACT_MARKALL;
++        fbMenuItems[fbMenuCount++] = FB_ACT_INVERT; // build 125
++    }
++    if (inFolder && !inVmc && (haveItem || fbCount > 1))
++        fbMenuItems[fbMenuCount++] = FB_ACT_SIZE; // build 125
+     if (haveItem && !inVmc && fbList[fbCursor].kind == FB_KIND_VMC)
+         fbMenuItems[fbMenuCount++] = FB_ACT_CARDS; // build 86: the card image under the cursor
+     if (haveItem && !inVmc && fbList[fbCursor].kind == FB_KIND_FILE && ripps2MediaKind(fbList[fbCursor].name) == RIPPS2_MEDIA_ICON)
+         fbMenuItems[fbMenuCount++] = FB_ACT_RIPICON; // build 98: a save's 3D icon, for a PC
+-    if (haveItem && !inVmc && !fbIsMc(fbPath) && fbList[fbCursor].kind == FB_KIND_FILE && fbHasSuffix(fbList[fbCursor].name, ".tar"))
++    if (haveItem && !inVmc && !fbIsMc(fbPath) && fbList[fbCursor].kind == FB_KIND_TAR)
+         fbMenuItems[fbMenuCount++] = FB_ACT_TARMERGE; // build 123: this .tar kept, another merged into it
+     fbMenuSel = 0;
+ }
+@@ -2080,6 +2257,7 @@ static void fbAction(int act)
+             fbClipCount = fbSelection(fbClip, fbClipIsDir, FB_CLIP_MAX);
+             snprintf(fbClipDir, sizeof(fbClipDir), "%s", fbPath);
+             snprintf(fbClipVmc, sizeof(fbClipVmc), "%s", fbVmcPath(fbVmc, fbPath, NULL, 0) ? fbVmc : "");
++            snprintf(fbClipTar, sizeof(fbClipTar), "%s", fbInTar() ? fbTar : ""); // build 125
+             fbClipCut = act == FB_ACT_CUT;
+             fbClearMarks();
+             fbClipWhat(ask, sizeof(ask));
+@@ -2093,6 +2271,41 @@ static void fbAction(int act)
+                 fbPasteRipped();
+                 break;
+             }
++            if (act == FB_ACT_PASTE && fbInTar()) { // build 125: the clipboard's files into the .tar (its folders left out)
++                char files[FB_CLIP_MAX][FB_NAME], report[64];
++                int k = 0, refused = 0, in;
++                for (n = 0; n < fbClipCount; n++)
++                    if (!fbClipIsDir[n])
++                        snprintf(files[k++], FB_NAME, "%s", fbClip[n]);
++                sfxPlay(SFX_CONFIRM);
++                in = k > 0 ? ripps2TarAddFiles(fbTar, fbClipDir, files, k, &refused, report, sizeof(report)) : -1;
++                if (k == 0)
++                    snprintf(report, sizeof(report), "%s", _t("NO FILES ON THE CLIPBOARD"));
++                if (in > 0 && refused + (fbClipCount - k) > 0)
++                    snprintf(report + strlen(report), sizeof(report) - strlen(report), _t(", %d LEFT OUT"), refused + fbClipCount - k);
++                sfxPlay(in > 0 ? SFX_SAVE : SFX_ERROR);
++                fbRun(FB_OP_SCAN, _t("READING"));
++                fbSetToast(report);
++                break;
++            }
++            if (act == FB_ACT_PASTE && fbClipTar[0]) { // build 125: members written out here, each as a file
++                char dst[384], msg[300];
++                int out = 0;
++                sfxPlay(SFX_CONFIRM);
++                for (n = 0; n < fbClipCount; n++) {
++                    snprintf(msg, sizeof(msg), _t("Copying out: %s"), fbClip[n]);
++                    guiRenderTextScreen(msg);
++                    fbJoin(dst, sizeof(dst), fbPath, fbClip[n]);
++                    if (fbExists(dst)) // never over the top of a file that is there
++                        continue;
++                    out += ripps2TarExtract(fbClipTar, fbClip[n], dst);
++                }
++                snprintf(msg, sizeof(msg), _t("%d COPIED OUT"), out);
++                sfxPlay(out > 0 ? SFX_SAVE : SFX_ERROR);
++                fbRun(FB_OP_SCAN, _t("READING"));
++                fbSetToast(msg);
++                break;
++            }
+             sfxPlay(SFX_CONFIRM);
+             fbPasteMode = act == FB_ACT_PASTE_PSU ? FB_PASTE_PSU : act == FB_ACT_UNPACK ? FB_PASTE_UNPACK : FB_PASTE_PLAIN;
+             fbTotalItems = fbClipCount;
+@@ -2112,7 +2325,13 @@ static void fbAction(int act)
+                 snprintf(ask, sizeof(ask), _t("Delete %s?"), fbDeleteNames[0]);
+             else
+                 snprintf(ask, sizeof(ask), _t("Delete %d items?"), n);
+-            if (guiMsgBox(ask, 1, NULL)) {
++            if (fbInTar() && guiMsgBox(ask, 1, NULL)) { // build 125: out of the .tar, written again without them
++                int gone = ripps2TarRemove(fbTar, fbDeleteNames, n);
++                fbClearMarks();
++                sfxPlay(gone > 0 ? SFX_SAVE : SFX_ERROR);
++                fbRun(FB_OP_SCAN, _t("READING"));
++                fbSetToast(gone > 0 ? _t("DELETED") : _t("NOTHING CHANGED"));
++            } else if (!fbInTar() && guiMsgBox(ask, 1, NULL)) {
+                 fbDeleteCount = n;
+                 fbTotalItems = n;
+                 fbClearMarks();
+@@ -2130,6 +2349,7 @@ static void fbAction(int act)
+                     fbMusicPaused = 1;
+                 }
+                 fbSetToast(rename(from, to) == 0 ? _t("RENAMED") : _t("RENAME FAILED"));
++                configCacheClear(); // build 125: it may have been a game's CFG
+                 snprintf(fbKeepName, sizeof(fbKeepName), "%s", name);
+                 fbRun(FB_OP_SCAN, _t("READING"));
+             }
+@@ -2143,15 +2363,29 @@ static void fbAction(int act)
+                 fbRun(FB_OP_SCAN, _t("READING"));
+             }
+             break;
+-        case FB_ACT_MARKALL: {
+-            int any = 0, i;
+-            for (i = 0; i < fbCount; i++)
+-                any |= fbList[i].marked;
++        case FB_ACT_MARKALL:
++            fbMarkAll();
++            break;
++        case FB_ACT_INVERT: { // build 125
++            int i;
+             for (i = 0; i < fbCount; i++)
+-                fbList[i].marked = !any;
++                fbList[i].marked = fbList[i].kind != FB_KIND_HERE && !fbList[i].marked;
+             sfxPlay(SFX_CURSOR);
+             break;
+         }
++        case FB_ACT_SIZE: // build 125: the marked entries, or the one under the cursor (on the folder row: all of them)
++            if (!fbOnItem()) {
++                int i, any = 0;
++                for (i = 0; i < fbCount; i++)
++                    any |= fbList[i].marked;
++                if (!any)
++                    for (i = 0; i < fbCount; i++)
++                        fbList[i].marked = fbList[i].kind != FB_KIND_HERE;
++            }
++            fbDeleteCount = fbSelection(fbDeleteNames, fbDeleteIsDir, FB_CLIP_MAX);
++            sfxPlay(SFX_CONFIRM);
++            fbRun(FB_OP_SIZE, _t("READING"));
++            break;
+         case FB_ACT_CARDS: // build 86
+             fbJoin(from, sizeof(from), fbPath, fbList[fbCursor].name);
+             sfxPlay(SFX_CONFIRM);
+@@ -2522,7 +2756,7 @@ static void fbTile(int t)
+             break;
+         case FB_TILE_EDITOR:
+             sfxPlay(SFX_CONFIRM);
+-            if (fbPath[0] && fbCount > 0 && fbIsText(fbList[fbCursor].name)) {
++            if (fbPath[0] && fbOnItem() && fbIsText(fbList[fbCursor].name)) {
+                 fbGridOpen = 0;
+                 fbEdit(fbList[fbCursor].name);
+             } else if (fbPath[0]) { // a new file in this folder
+@@ -2805,7 +3039,9 @@ void ripps2HandleInputFiles(void)
+     } else if (getKeyOn(backKey)) {
+         fbUp();
+     } else if (getKeyOn(KEY_SQUARE)) {
+-        if (fbPath[0] && fbCount > 0) {
++        if (fbPath[0] && fbCount > 0 && fbList[fbCursor].kind == FB_KIND_HERE) {
++            fbMarkAll(); // build 125: on the folder row, all of them
++        } else if (fbPath[0] && fbCount > 0) {
+             fbList[fbCursor].marked ^= 1;
+             if (fbCursor < fbCount - 1)
+                 fbCursor++;
+@@ -3091,7 +3327,7 @@ static void fbDrawTip(void)
+         return;
+     }
+     e = &fbList[fbCursor];
+-    if (e->kind == FB_KIND_DEVICE || e->kind == FB_KIND_START)
++    if (e->kind == FB_KIND_DEVICE || e->kind == FB_KIND_START || e->kind == FB_KIND_HERE || fbInTar()) // build 125
+         return;
+     snprintf(path, sizeof(path), "%s%s", fbPath, e->name);
+     if (fbCursor != fbTipCursor || strcmp(path, fbTipPath) != 0) { // moved: the rest starts again
+@@ -3189,7 +3425,7 @@ void ripps2RenderFiles(void)
+         return;
+     }
+ 
+-    if (fbCount == 0)
++    if (fbCount == 0 || (fbCount == 1 && fbList[0].kind == FB_KIND_HERE))
+         fntRenderString(uiFont, 320, 200, ALIGN_CENTER, 0, 0, fbPath[0] ? _t("EMPTY") : _t("NO DRIVES"), FB_DIM);
+ 
+     for (i = 0; i < FB_ROWS && fbTop + i < fbCount; i++) {
+@@ -3202,9 +3438,39 @@ void ripps2RenderFiles(void)
+         }
+         if (e->marked)
+             rmDrawRect(FB_X, y + 6, 6, 6, FB_PRIM(0x6A, 0x9A, 0xFF, 0x80));
+-        fbGlyph(e->kind, FB_X + 12, y + 1, cur ? FB_PRIM(0x9C, 0xB8, 0xFF, 0x80) : FB_PRIM(0x4A, 0x72, 0xDC, 0x80));
++        // build 125: a .tar is a blue folder, lighter than a folder, a band across it; so is the folder row inside one
++        int tarRow = e->kind == FB_KIND_TAR || (e->kind == FB_KIND_HERE && fbInTar());
++        if (tarRow)
++            fbGlyph(FB_KIND_DIR, FB_X + 12, y + 1, cur ? FB_PRIM(0xA8, 0xD8, 0xFF, 0x80) : FB_PRIM(0x38, 0xA0, 0xF0, 0x80));
++        else
++            fbGlyph(e->kind == FB_KIND_HERE ? FB_KIND_DIR : e->kind, FB_X + 12, y + 1, cur ? FB_PRIM(0x9C, 0xB8, 0xFF, 0x80) : FB_PRIM(0x4A, 0x72, 0xDC, 0x80));
++        if (tarRow)
++            rmDrawRect(FB_X + 12, y + 9, 16, 2, FB_PRIM(0x03, 0x08, 0x22, 0x80));
+         int tx = FB_X + 36;
+-        if (e->kind == FB_KIND_DEVICE || e->kind == FB_KIND_START) {
++        if (e->kind == FB_KIND_HERE) {
++            // build 125: the open folder: its name, then how many entries, how many marked, the files' size, the free space
++            char name[FB_NAME], size[24], room[24];
++            int len = strlen(fbPath), k, marks = 0, sx;
++            for (k = len - 2; k >= 0 && fbPath[k] != '/'; k--)
++                ;
++            if (len >= 2 && fbPath[len - 2] == ':')
++                snprintf(name, sizeof(name), "%s", fbPath); // a drive's root
++            else
++                snprintf(name, sizeof(name), "%.*s", len - 2 - k, fbPath + k + 1);
++            for (k = 1; k < fbCount; k++)
++                marks += fbList[k].marked;
++            fbSizeText64(fbHereBytes, size, sizeof(size));
++            if (fbHereFreeKb >= 0) {
++                fbSizeText64((unsigned long long)fbHereFreeKb * 1024, room, sizeof(room));
++                snprintf(buf, sizeof(buf), fbCount == 2 ? _t("%d ITEM   %d MARKED   %s   %s FREE") : _t("%d ITEMS   %d MARKED   %s   %s FREE"),
++                         fbCount - 1, marks, size, room);
++            } else
++                snprintf(buf, sizeof(buf), fbCount == 2 ? _t("%d ITEM   %d MARKED   %s") : _t("%d ITEMS   %d MARKED   %s"), fbCount - 1, marks, size);
++            sx = FB_RIGHT - rmUnScaleX(fntCalcDimensions(smallFont, buf));
++            fntRenderStringFit(rowFont, tx, y + 9, ALIGN_VCENTER, sx - 12 - tx, name, cur ? FB_LIT : FB_SOFT, cur);
++            fntRenderString(smallFont, sx, y + 9, ALIGN_VCENTER, 0, 0, buf, marks > 0 ? FB_SOFT : FB_DIM);
++            rmDrawLine(FB_X, y + FB_ROW_H - 2, FB_RIGHT, y + FB_ROW_H - 2, FB_PRIM(0x4A, 0x72, 0xDC, 0x30));
++        } else if (e->kind == FB_KIND_DEVICE || e->kind == FB_KIND_START) {
+             // a drive: its label, its path on the right; the start row: START DRIVES, what it starts
+             const char *main = e->kind == FB_KIND_DEVICE ? e->title : e->name, *side = e->kind == FB_KIND_DEVICE ? e->name : e->title;
+             int sx = FB_RIGHT - rmUnScaleX(fntCalcDimensions(smallFont, side));
+@@ -3266,10 +3532,10 @@ void ripps2RenderFiles(void)
+         fbHint(backIcon, _t("CLOSE"), &hx, hy);
+     } else {
+         fb_entry_t *e = fbCount > 0 ? &fbList[fbCursor] : NULL;
+-        int icons[6], n = 0;
++        int icons[6], n = 0, here = e != NULL && e->kind == FB_KIND_HERE;
+         const char *texts[6];
+         icons[n] = selIcon;
+-        texts[n++] = e != NULL && e->kind == FB_KIND_ELF ? _t("RUN") : e != NULL && e->kind == FB_KIND_VCD ? _t("PLAY") : _t("OPEN");
++        texts[n++] = here ? _t("MARK ALL") : e != NULL && e->kind == FB_KIND_ELF ? _t("RUN") : e != NULL && e->kind == FB_KIND_VCD ? _t("PLAY") : _t("OPEN");
+         icons[n] = backIcon;
+         texts[n++] = fbPath[0] ? _t("BACK") : _t("EXIT");
+         if (fbPath[0]) {
+diff --git a/src/ripps2games.c b/src/ripps2games.c
+index a3fd3b5..ce9f1fe 100644
+--- a/src/ripps2games.c
++++ b/src/ripps2games.c
+@@ -1444,7 +1444,7 @@ int ripps2AskHold(const char *head, const char *name, const char *info, const ch
+         hx = 320 - (38 + 6 + ripps2HintWidth(hold)) / 2;
+         ripps2NotchRing(hx + 19, y + 90, p, ia);
+         if (sel != NULL)
+-            rmDrawPixmap(sel, hx + 9, y + 80, ALIGN_NONE, 20, 20, SCALING_RATIO, lgAlpha(LG_LIT, ia), 0);
++            rmDrawPixmap(sel, hx + 19 - rmWideScale(20) / 2, y + 80, ALIGN_NONE, 20, 20, SCALING_RATIO, lgAlpha(LG_LIT, ia), 0);
+         ripps2HintText(hx + 44, y + 90, hold, lgAlpha(LG_SOFT, ia));
+         fntRenderStringFit(RIPPS2_MSG_FONT, 320, y + 120, ALIGN_CENTER, w - 40, info, lgAlpha(LG_SOFT, ia), 1);
+         fntRenderStringFit(RIPPS2_MSG_FONT, 320, y + 140, ALIGN_CENTER, w - 40, when, lgAlpha(LG_SOFT, ia), 1);
+diff --git a/src/ripps2media.c b/src/ripps2media.c
+index 6b986ea..eb245d4 100644
+--- a/src/ripps2media.c
++++ b/src/ripps2media.c
+@@ -9,10 +9,12 @@
+   texture.
+ 
+   Video (AVI: XviD or DivX, with MP3 or MP2 sound), played by libsmslite (elf/libsmslite, RIPPS2's fork of the
+-  SMS player's core): full screen, the picture letterboxed to its own shape. START pauses and carries on; the
+-  cancel button or SELECT stops. Nothing else on the pad is taken, so a player that needs the pad (DVD menus)
+-  can have the rest of it. The menu's music stops for it and comes back after, and RIPPS2's display is set up
+-  again when it ends.
++  SMS player's core): full screen, the picture letterboxed to its own shape. Build 125 (the user, 10/29): the
++  confirm button pauses and plays, the cancel button (or SELECT) stops, START loops it, L1 / R1 go 10 s back and on,
++  L2 / R2 turn it down and up in steps of 5. Its hints, in the theme's glyphs, are hidden as it starts (its first
++  frame is the video), come up on any button and fade soon after while it plays (paused, they stay); the volume
++  pops in as a number and fades quickly once the buttons are let go. The menu's music stops for it and comes back
++  after, and RIPPS2's display is set up again when it ends.
+ */
+ 
+ #include <stdio.h>
+@@ -798,23 +800,301 @@ void ripps2ViewSaveIcon(const char *path)
+ #ifdef RIPPS2_SMSLITE
+ // ---- video ----
+ static volatile int videoPadRun = 0, videoPadDone = 0;
+-static u8 videoPadStack[0x2000] __attribute__((aligned(16)));
++static u8 videoPadStack[0x8000] __attribute__((aligned(16))); // build 125: FreeType paints the hints on this thread
+ 
+-// The pad while the player has the screen: START pauses and carries on, the cancel button or SELECT stops.
++#define VP_HINT_W 640 // the hint row's picture (libsmslite's first overlay, at most 640 x 64)
++#define VP_HINT_H 40
++#define VP_POP_W 192 // the volume's (its second, at most 256 x 128)
++#define VP_POP_H 96
++#define VP_HINTS_HOLD 1.6f  // playing: the hints stay this long after the last button,
++#define VP_HINTS_FADE 0.35f // then fade over this
++#define VP_POP_HOLD 0.8f    // the volume, after its last step,
++#define VP_POP_FADE 0.25f   // fades over this
++#define VP_POP_IN 0.24f     // and pops in over this, from a little bigger (RIPPS2's ease out back)
++
++static unsigned char *vpHints, *vpPop;
++
++static float vpEaseOutBack(float x) // ripps2ui.c's easeOutBack
++{
++    const float c1 = 1.70158f, c3 = c1 + 1.0f;
++    return 1.0f + c3 * powf(x - 1.0f, 3.0f) + c1 * powf(x - 1.0f, 2.0f);
++}
++
++static float vpSince(clock_t t)
++{
++    return (float)(clock() - t) / CLOCKS_PER_SEC;
++}
++
++static void vpOver(unsigned char *d, int r, int g, int b, int a) // a (0 to 0x80) over what is there
++{
++    int da, oa;
++    if (a <= 0)
++        return;
++    if (a > 0x80)
++        a = 0x80;
++    da = d[3] * (0x80 - a) / 0x80;
++    oa = a + da;
++    d[0] = (r * a + d[0] * da) / oa;
++    d[1] = (g * a + d[1] * da) / oa;
++    d[2] = (b * a + d[2] * da) / oa;
++    d[3] = oa;
++}
++
++static void vpTexel(const GSTEXTURE *t, int u, int v, unsigned char *px) // RGBA, alpha 0 to 0x80
++{
++    const unsigned char *m = (const unsigned char *)t->Mem;
++    int i;
++    switch (t->PSM) {
++        case GS_PSM_CT32:
++            memcpy(px, m + (v * t->Width + u) * 4, 4);
++            break;
++        case GS_PSM_CT24:
++            memcpy(px, m + (v * t->Width + u) * 3, 3);
++            px[3] = 0x80;
++            break;
++        case GS_PSM_T8: // the palette is stored as the GS reads it: entries 8-15 and 16-23 of every 32 swapped
++            i = m[v * t->Width + u];
++            i = (i & ~0x18) | ((i & 0x08) << 1) | ((i & 0x10) >> 1);
++            memcpy(px, (const unsigned char *)t->Clut + i * 4, 4);
++            break;
++        case GS_PSM_T4: // two to a byte, the left one low
++            i = m[(v * t->Width + u) / 2];
++            i = (u & 1) ? i >> 4 : i & 15;
++            memcpy(px, (const unsigned char *)t->Clut + i * 4, 4);
++            break;
++        default:
++            px[0] = px[1] = px[2] = px[3] = 0;
++    }
++}
++
++// a theme glyph h pixels tall at x, its middle on cy, each pixel the average of the texels it covers; its width
++static int vpGlyph(unsigned char *buf, int bw, int bh, int icon, int x, int cy, int h, int alpha)
++{
++    GSTEXTURE *t = thmGetTexture(icon);
++    int w, X, Y;
++    if (t == NULL || t->Mem == NULL || t->Width == 0 || t->Height == 0 || (t->PSM != GS_PSM_CT32 && t->PSM != GS_PSM_CT24 && t->Clut == NULL))
++        return 0;
++    w = h * t->Width / t->Height;
++    if (buf == NULL)
++        return w;
++    for (Y = 0; Y < h; Y++) {
++        int yy = cy - h / 2 + Y, v0 = Y * t->Height / h, v1 = (Y + 1) * t->Height / h;
++        if (yy < 0 || yy >= bh)
++            continue;
++        if (v1 <= v0)
++            v1 = v0 + 1;
++        for (X = 0; X < w; X++) {
++            int xx = x + X, u0 = X * t->Width / w, u1 = (X + 1) * t->Width / w, r = 0, g = 0, b = 0, a = 0, n = 0, u, v;
++            unsigned char px[4];
++            if (xx < 0 || xx >= bw)
++                continue;
++            if (u1 <= u0)
++                u1 = u0 + 1;
++            for (v = v0; v < v1; v++)
++                for (u = u0; u < u1; u++, n++) {
++                    vpTexel(t, u, v, px);
++                    r += px[0] * px[3];
++                    g += px[1] * px[3];
++                    b += px[2] * px[3];
++                    a += px[3];
++                }
++            if (a > 0)
++                vpOver(buf + (yy * bw + xx) * 4, r / a, g / a, b / a, a / n * alpha / 0x80);
++        }
++    }
++    return w;
++}
++
++// text with a soft shadow under it; its width
++static int vpText(unsigned char *buf, int bw, int bh, int font, int px, const char *text, int x, int baseline, u32 rgb)
++{
++    if (buf != NULL)
++        fntRenderRGBA(font, px, text, buf, bw, bh, x + 1, baseline + 1, 0x000000, 0x50);
++    return fntRenderRGBA(font, px, text, buf, bw, bh, x, baseline, rgb, 0x80) - x;
++}
++
++// the hint row: Play / Pause, 10 s back and on, Volume, Loop, Stop, centred on a band that darkens toward the bottom
++static void vpPaintHints(int paused, int loop)
++{
++    static const struct
++    {
++        int icon, icon2;
++        const char *word;
++    } row[5] = {{-1, -1, NULL}, {L1_ICON, R1_ICON, "10 s"}, {R2_ICON, -1, "Volume"}, {START_ICON, -1, NULL}, {-2, -1, "Stop"}};
++    unsigned char *b = vpHints;
++    int font = ripps2HintFontId(), pass, i, x = 0, total = 0, cy = VP_HINT_H / 2 + 2, y;
++    char word[64];
++
++    memset(b, 0, VP_HINT_W * VP_HINT_H * 4);
++    for (y = 0; y < VP_HINT_H; y++) { // the band: clear at the top, about a third dark at the bottom
++        int a = 0x30 * y / VP_HINT_H, xx;
++        for (xx = 0; xx < VP_HINT_W; xx++) {
++            unsigned char *d = b + (y * VP_HINT_W + xx) * 4;
++            d[0] = 0x02;
++            d[1] = 0x03;
++            d[2] = 0x0A;
++            d[3] = a;
++        }
++    }
++    for (pass = 0; pass < 2; pass++) { // measure, then paint centred
++        x = pass ? (VP_HINT_W - total) / 2 : 0;
++        for (i = 0; i < 5; i++) {
++            int icon = row[i].icon, gw;
++            const char *w = row[i].word;
++            if (i == 0) {
++                icon = gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON;
++                w = paused ? "Play" : "Pause";
++            } else if (i == 3)
++                w = loop ? "Loop on" : "Loop";
++            else if (icon == -2)
++                icon = gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON;
++            gw = vpGlyph(pass ? b : NULL, VP_HINT_W, VP_HINT_H, icon, x, cy, 18, 0x80);
++            x += gw + 2;
++            if (row[i].icon2 >= 0) {
++                gw = vpGlyph(pass ? b : NULL, VP_HINT_W, VP_HINT_H, row[i].icon2, x, cy, 18, 0x80);
++                x += gw + 4;
++            }
++            x += vpText(pass ? b : NULL, VP_HINT_W, VP_HINT_H, font, 15, ripps2HintCaseText(w, word, sizeof(word)), x, cy + 5,
++                        i == 3 && loop ? 0xFFFFFF : 0xD8DEEC);
++            if (i < 4)
++                x += 18;
++        }
++        total = x;
++    }
++}
++
++// the volume: a dark rounded plate, the word, the number big in RIPPS2 Sleek, and a bar at its level
++static void vpPaintPop(int vol)
++{
++    unsigned char *b = vpPop;
++    int x, y, w, font = RIPPS2_UI_FONT, bar = 120 * vol / 100;
++    char num[8], word[32];
++
++    memset(b, 0, VP_POP_W * VP_POP_H * 4);
++    for (y = 0; y < VP_POP_H; y++)
++        for (x = 0; x < VP_POP_W; x++) {
++            int dx = x < 12 ? 12 - x : x > VP_POP_W - 13 ? x - (VP_POP_W - 13) : 0;
++            int dy = y < 12 ? 12 - y : y > VP_POP_H - 13 ? y - (VP_POP_H - 13) : 0;
++            if (dx * dx + dy * dy <= 144)
++                vpOver(b + (y * VP_POP_W + x) * 4, 0x06, 0x08, 0x12, 0x58);
++        }
++    ripps2HintCaseText("Volume", word, sizeof(word));
++    w = vpText(NULL, 0, 0, ripps2HintFontId(), 14, word, 0, 0, 0);
++    vpText(b, VP_POP_W, VP_POP_H, ripps2HintFontId(), 14, word, (VP_POP_W - w) / 2, 22, 0xA8B0C8);
++    snprintf(num, sizeof(num), "%d", vol);
++    w = vpText(NULL, 0, 0, font, 40, num, 0, 0, 0);
++    vpText(b, VP_POP_W, VP_POP_H, font, 40, num, (VP_POP_W - w) / 2, 66, 0xFFFFFF);
++    for (y = 78; y < 82; y++)
++        for (x = 0; x < 120; x++)
++            vpOver(b + (y * VP_POP_W + 36 + x) * 4, 0xFF, 0xFF, 0xFF, x < bar ? 0x70 : 0x18);
++}
++
++// The pad while the player has the screen (build 125: the buttons above), and the two pictures over the video.
+ static void videoPadThread(void *arg)
+ {
+-    int paused = 0;
++    int paused = 0, loop = 0, vol = 100, sw = 0, sh = 0, hintsShown = 0, popShown = 0, hintsDirty = 1, popDirty = 1;
++    int confirm = gSelectButton == KEY_CIRCLE ? KEY_CIRCLE : KEY_CROSS;
++    clock_t hintsAt = 0, popAt = 0, popIn = 0;
+     (void)arg;
+     while (videoPadRun) {
++        int r1, l1, up, down;
+         readPads();
+-        if (getKeyOn(KEY_START)) {
+-            paused = !paused;
+-            smsLitePause(paused);
+-        }
+         if (getKeyOn(guiCancelKey()) || getKeyOn(KEY_SELECT)) {
+             LOG("MEDIA: video stop asked\n");
++            smsLiteOverlayShow(SMSLITE_OVERLAY_HINTS, 0, 256);
++            smsLiteOverlayShow(SMSLITE_OVERLAY_POP, 0, 256);
+             smsLitePause(0);
+             smsLiteStop();
++            DelayThread(16 * 1000);
++            continue;
++        }
++        if (getKeyOn(confirm)) {
++            paused = !paused;
++            smsLitePause(paused);
++            hintsShown = hintsDirty = 1;
++            hintsAt = clock();
++        }
++        if (getKeyOn(KEY_START)) {
++            loop = !loop;
++            smsLiteSetLoop(loop);
++            hintsShown = hintsDirty = 1;
++            hintsAt = clock();
++        }
++        l1 = getKeyOn(KEY_L1);
++        r1 = getKeyOn(KEY_R1);
++        if (l1 || r1) {
++            if (paused) { // a skip plays on from where it lands (the player lets go of the pause as it starts again)
++                paused = 0;
++                hintsDirty = 1;
++            }
++            smsLiteSkip(r1 ? 10000 : -10000);
++            hintsShown = 1;
++            hintsAt = clock();
++        }
++        down = getKey(KEY_L2);
++        up = getKey(KEY_R2);
++        if (up || down) {
++            int v = vol + (up ? 5 : 0) - (down ? 5 : 0);
++            v = v < 0 ? 0 : v > 100 ? 100 : v;
++            if (v != vol) {
++                vol = v;
++                smsLiteSetVolume(vol);
++                popDirty = 1;
++            }
++            if (!popShown || vpSince(popAt) > VP_POP_HOLD + VP_POP_FADE)
++                popIn = clock();
++            popShown = 1;
++            popAt = clock();
++            hintsShown = 1;
++            hintsAt = clock();
++        }
++        if (getKeyOn(KEY_UP) || getKeyOn(KEY_DOWN) || getKeyOn(KEY_LEFT) || getKeyOn(KEY_RIGHT) || getKeyOn(KEY_TRIANGLE) ||
++            getKeyOn(KEY_SQUARE)) {
++            hintsShown = 1; // any other button: just the hints
++            hintsAt = clock();
++        }
++
++        if (sw == 0)
++            smsLiteScreenSize(&sw, &sh);
++        if (sw > 0 && vpHints != NULL && vpPop != NULL) {
++            float t;
++            if (hintsShown && hintsDirty) {
++                vpPaintHints(paused, loop);
++                smsLiteOverlaySet(SMSLITE_OVERLAY_HINTS, vpHints, VP_HINT_W, VP_HINT_H, (sw - VP_HINT_W) / 2, sh - VP_HINT_H - 14);
++                hintsDirty = 0;
++            }
++            if (popShown && popDirty) {
++                vpPaintPop(vol);
++                smsLiteOverlaySet(SMSLITE_OVERLAY_POP, vpPop, VP_POP_W, VP_POP_H, (sw - VP_POP_W) / 2, sh / 5);
++                popDirty = 0;
++            }
++            if (hintsShown) {
++                t = vpSince(hintsAt);
++                if (paused)
++                    smsLiteOverlayShow(SMSLITE_OVERLAY_HINTS, 0x80, 256);
++                else if (t < VP_HINTS_HOLD)
++                    smsLiteOverlayShow(SMSLITE_OVERLAY_HINTS, 0x80, 256);
++                else if (t < VP_HINTS_HOLD + VP_HINTS_FADE)
++                    smsLiteOverlayShow(SMSLITE_OVERLAY_HINTS, (int)(0x80 * (1.0f - (t - VP_HINTS_HOLD) / VP_HINTS_FADE)), 256);
++                else {
++                    smsLiteOverlayShow(SMSLITE_OVERLAY_HINTS, 0, 256);
++                    hintsShown = 0;
++                }
++            }
++            if (popShown) {
++                float in = vpSince(popIn), li = in < VP_POP_IN ? in / VP_POP_IN : 1.0f, s, a;
++                t = vpSince(popAt);
++                // RIPPS2's pop in: in from 1.16 times its size, settling with a little overshoot (easeOutBack)
++                s = 1.0f + 0.16f * (1.0f - vpEaseOutBack(li));
++                a = fminf(1.0f, li * 2.5f);
++                if (t > VP_POP_HOLD)
++                    a *= fmaxf(0.0f, 1.0f - (t - VP_POP_HOLD) / VP_POP_FADE);
++                smsLiteOverlayShow(SMSLITE_OVERLAY_POP, (int)(0x80 * a), (int)(256 * s));
++                if (t >= VP_POP_HOLD + VP_POP_FADE) {
++                    smsLiteOverlayShow(SMSLITE_OVERLAY_POP, 0, 256);
++                    popShown = 0;
++                }
++            }
+         }
+         DelayThread(16 * 1000);
+     }
+@@ -837,6 +1117,9 @@ void ripps2PlayVideo(const char *path)
+     guiRenderTextScreen(_t("Opening the video"));
+     if (music)
+         bgmStop();
++    // build 125: the hint row and the volume, painted on the pad's thread (freed after)
++    vpHints = (unsigned char *)memalign(64, VP_HINT_W * VP_HINT_H * 4);
++    vpPop = (unsigned char *)memalign(64, VP_POP_W * VP_POP_H * 4);
+ 
+     rmEnd(); // the player sets the screen up its own way; RIPPS2's goes again after
+ 
+@@ -861,6 +1144,9 @@ void ripps2PlayVideo(const char *path)
+         DelayThread(5000);
+     smsLitePause(0);
+     LOG("MEDIA: pad thread done\n");
++    free(vpHints);
++    free(vpPop);
++    vpHints = vpPop = NULL;
+ 
+     rmSetMode(1);
+     thmReloadScreenExtents();
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index a623099..0532079 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -2272,6 +2272,17 @@ int ripps2HintSmallFont(void)
+     return f;
+ }
+ 
++// build 125: for the video player, which paints its hints itself
++int ripps2HintFontId(void)
++{
++    return hintFont(thmPageFont(15));
++}
++
++const char *ripps2HintCaseText(const char *text, char *out, int size)
++{
++    return hintCase(_t(text), out, size);
++}
++
+ // build 104: the English handed in is translated here (a text already translated passes through), so the hint rows'
+ // tables of English read in the chosen language; 160 bytes, a hint in UTF-8
+ int ripps2HintWidth(const char *text)
+diff --git a/src/supportbase.c b/src/supportbase.c
+index 51f94c7..a584803 100644
+--- a/src/supportbase.c
++++ b/src/supportbase.c
+@@ -1419,12 +1419,15 @@ config_set_t *sbPopulateConfig(base_game_info_t *game, const char *prefix, const
+     config_set_t *config = configAlloc(0, NULL, path);
+     if (config == NULL)
+         return NULL;
+-    int configLoaded = configRead(config); // Does not matter if the config file could be loaded or not.
++    // RIPPS2 build 125: a game looked at before comes from the settings cache (its CFG and the pack's keys, as merged
++    // last time): no read at all. Otherwise it is read and merged as before, and kept.
++    int cached = configCacheGet(path, config);
++    int configLoaded = cached ? 1 : configRead(config); // Does not matter if the config file could be loaded or not.
+ 
+     // Compatibility only: filename remains the VCD identity, but an existing disc-ID config may be
+     // loaded when the primary filename config is absent. Keep the primary object if both miss so a
+     // future save creates CFG/<filename>.cfg rather than inventing an ID-keyed file.
+-    if (!configLoaded && isVcd) {
++    if (!cached && !configLoaded && isVcd) {
+         char fallbackKey[VCD_ID_MAX];
+         if (vcdExtractGameId(game->name, fallbackKey, sizeof(fallbackKey))) {
+             snprintf(path, sizeof(path), "%sCFG%s%s.cfg", prefix, sep, fallbackKey);
+@@ -1441,7 +1444,10 @@ config_set_t *sbPopulateConfig(base_game_info_t *game, const char *prefix, const
+ 
+     // RIPPS2: what the game's CFG does not say comes from the drive's metadata database (CFG/cfg.tar),
+     // as runtime-only keys: the user's own values win and a settings save never copies the database
+-    metaDbMerge(config, prefix, sep, cfgKey);
++    if (!cached) {
++        metaDbMerge(config, prefix, sep, cfgKey);
++        configCachePut(config);
++    }
+ 
+     // Get game size if not already set (deferred off the scroll path; see sbConfigStatSize). A .VCD (PS1) has
+     // no meaningful ISO size and its file lives in POPS/, not CD/DVD/, so statting the CD/DVD path always
+diff --git a/src/textures.c b/src/textures.c
+index 91b7135..c1aa4a6 100644
+--- a/src/textures.c
++++ b/src/textures.c
+@@ -810,6 +810,10 @@ static int texReadData(GSTEXTURE *texture, png_structp pngPtr, png_infop infoPtr
+     png_bytep rowBuffer;
+ 
+     texture->Mem = memalign(128, size);
++    if (!texture->Mem) { // RIPPS2 build 125: the settings cache gives its room to a picture first
++        configCacheClear();
++        texture->Mem = memalign(128, size);
++    }
+ 
+     if (!texture->Mem) {
+         texFree(texture); // free the already-allocated paletted-PNG Clut before bailing (Gemini review);
+diff --git a/src/themes.c b/src/themes.c
+index b1a9f4e..fff6e8a 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -85,7 +85,7 @@ static const char **guiThemesNames = NULL;
+ // Coverflow render-mode state (externs in themes.h).
+ #define COVERFLOW_PAD 1 // extra covers built off each edge, purely to fill the slide (see drawCoverFlow)
+ #define COVERFLOW_MAX (5 + 2 * COVERFLOW_PAD)
+-int gCoverflowCount = 3;        // 3 or 5 only (clamped on load AND at draw)
++int gCoverflowCount = 0;        // 3 or 5, or 0: RIPPS2 build 125, by the picture (clamped on load AND at draw)
+ int gCoverflowCenterScale = 45; // Large by default; saved UI choices still override (0/15/30/45).
+ int gCoverflowAnimSpeed = 200;  // ms (UI 0/100/200/400; 0 = instant, no anim)
+ int gCoverflowDimCovers = 0;    // bool (RIPPS2 build 91: kept in the settings, drawn as the vignette below)
+@@ -2573,7 +2573,7 @@ static void drawCoverFlow(struct menu_list *menu, struct submenu_list *item, con
+     // Defensive clamp: never trust the global at the draw site (conf.cfg may be hand-edited
+     // to e.g. 7 -> covers[] OOB). coverCount is the VISIBLE count and drives layout only;
+     // coverTotal (= coverCount + 2*COVERFLOW_PAD) is the index bound for covers[].
+-    int coverCount = (gCoverflowCount == 5) ? 5 : 3;
++    int coverCount = thmCoverflowCount();
+     int centerIndex = coverCount / 2;
+ 
+     // Layout in virtual 640x480 space (div-guarded). SCALING_RATIO + the panel apply
+@@ -3047,6 +3047,15 @@ static void gridFlipUpdate(const void *selected, int backReady)
+     }
+ }
+ 
++// RIPPS2 build 125: RIPFLOW's covers as shown: the count chosen in its settings, or with none chosen, five on a 16:9
++// picture (720p, 1080i, or Widescreen on) and three on 4:3, as the Grid widens for the same pictures
++int thmCoverflowCount(void)
++{
++    if (gCoverflowCount == 3 || gCoverflowCount == 5)
++        return gCoverflowCount;
++    return rmWideScale(4) == 3 ? 5 : 3;
++}
++
+ // RIPPS2 build 98: the Grid's layout for the picture now on screen (a 16:9 one takes the wide layout); every reader of
+ // the grid's shape (its draw, the navigation) asks here first, so a widescreen switch takes effect at once
+ static void gridUseLayout(void)
+@@ -4185,6 +4194,14 @@ static int findMenuPrev(struct menu_list *menu)
+     return prev == NULL ? 0 : prev->item->visible;
+ }
+ 
++// build 125: an info page's family (games, apps, PS1, and Favourites' own), as against a main page's
++static int thmIsInfoFamily(const theme_elems_t *f)
++{
++    return f != NULL && gTheme != NULL &&
++           (f == &gTheme->infoElems || f == &gTheme->appsInfoElems || f == &gTheme->favsInfoElems || f == &gTheme->vcdInfoElems ||
++            f == &gTheme->favsVcdInfoElems || f == &gTheme->favsAppsInfoElems);
++}
++
+ static void drawMenuText(struct menu_list *menu, struct submenu_list *item, config_set_t *config, struct theme_element *elem)
+ {
+     GSTEXTURE *leftIconTex = NULL, *rightIconTex = NULL;
+@@ -4222,7 +4239,10 @@ static void drawMenuText(struct menu_list *menu, struct submenu_list *item, conf
+         u64 ic = GS_SETREG_RGBA(0x80, 0x80, 0x80, (int)(0x80 * srcA));
+         guiDrawIconAndTextNoFade(confirm, _STR_RUN, elem->font, elem->posX - half - gTheme->hintsFlankGap - guiIconTextWidth(confirm, _STR_RUN, elem->font),
+                                  elem->posY - 10, c, ic);
+-        if (findMenuNext(menu) != 0 || findMenuPrev(menu) != 0)
++        // build 125 (the user, 10/29): on the info page the cancel button goes back, so it says BACK there
++        if (thmIsInfoFamily(elem->family))
++            guiDrawIconAndTextNoFade(guiCancelIcon(), _STR_BACK, elem->font, elem->posX + half + gTheme->hintsFlankGap, elem->posY - 10, c, ic);
++        else if (findMenuNext(menu) != 0 || findMenuPrev(menu) != 0)
+             guiDrawIconAndTextNoFade(guiCancelIcon(), _STR_RIPPS2_SOURCE, elem->font, elem->posX + half + gTheme->hintsFlankGap, elem->posY - 10, c, ic);
+         fntRenderString(elem->font, elem->posX, elem->posY, elem->aligned, 0, 0, text, c);
+         return;
+@@ -4851,6 +4871,13 @@ static void drawInfoHintText(struct menu_list *menu, struct submenu_list *item,
+     float hintA = ripps2HintsAlpha(); // RIPPS2 build 70: RIPPSettings (Back still works with them hidden)
+     if (hintA <= 0.0f)
+         return;
++    // build 125: an info page with the source's name (a MenuText) and hints_flank has RUN and BACK beside that name
++    if (gTheme->hintsFlank && !ripps2SidebarOn() && ripps2SourceNameMode() != RIPPS2_SRC_POP) {
++        theme_element_t *e;
++        for (e = elem->family != NULL ? elem->family->first : NULL; e != NULL; e = e->next)
++            if (e->type == ELEM_TYPE_MENU_TEXT && e->aligned)
++                return;
++    }
+     u64 col = hintFade(elem->color, hintA), iconCol = hintFade(gDefaultCol, hintA);
+ 
+     if (elem->aligned)
+@@ -6746,7 +6773,8 @@ static int thmLoad(const char *themePath)
+         // auto hide itself"): sidebar_left=list keeps Left / Right and L1 / R1 the list's; sidebar_hide=1 keeps the bar
+         // out of sight until Circle brings it out
+         newT->sbLeftList = configGetStr(themeConfig, "sidebar_left", &v) && v != NULL && !strcasecmp(v, "list");
+-        newT->sbAutoHide = configGetInt(themeConfig, "sidebar_hide", &intValue) && intValue == 1;
++        newT->sbAutoHide = configGetInt(themeConfig, "sidebar_hide", &intValue) ? intValue == 1 : newT->catLegacy; // build 125 (the user,
++        // 10/29): a theme made for Open PS2 Loader keeps the sidebar out of sight until Circle, unless it says otherwise
+         // build 117 (the user, 10/27): flowtilt=1, a coverflow theme's Up / Down (and the left stick) tip the centre case
+         // instead of changing the source, the sidebar on (its drawer has the sources)
+         newT->flowTilt = configGetInt(themeConfig, "flowtilt", &intValue) && intValue == 1;
+@@ -7001,6 +7029,16 @@ int thmGetGuiValue(void)
+     return guiThemeID;
+ }
+ 
++// RIPPS2 build 125: the saved theme is on a drive that has not come up yet (a disk theme by name, not found so far);
++// the boot holds its sky for it rather than show RIPPS2's own look for a moment first
++int thmSavedPending(void)
++{
++    const char *temp = NULL;
++    if (!configGetStr(configGetByType(CONFIG_OPL), "theme", &temp) || temp == NULL || temp[0] == '\0' || temp[0] == '<')
++        return 0;
++    return thmFindGuiID(temp) == 0;
++}
++
+ int thmFindGuiID(const char *theme)
+ {
+     if (theme) {

@@ -872,6 +872,9 @@ strings:
 - en: 'Cross: stop'
   in:
   - ripps2art.c
+- en: 'Download the covers in HD (280 x 400)? Sharper on an HD screen, about 70 KB each. START: Standard (140 x 200, as Open PS2 Loader''s), about 20 KB each. A game that already has a cover keeps it.'
+  in:
+  - ripps2art.c
 - en: Downloading covers from xlenore's ps2-covers on GitHub
   in:
   - ripps2art.c
@@ -896,6 +899,9 @@ strings:
 - en: Not enough memory for the cover download.
   in:
   - ripps2art.c
+- en: STANDARD
+  in:
+  - ripps2art.c
 - en: Starting the network...
   in:
   - ripps2art.c
@@ -908,6 +914,12 @@ strings:
 - en: The server sent a chunked answer.
   in:
   - ripps2art.c
+- en: '%d IN'
+  in:
+  - ripps2artpack.c
+- en: '%d IN, %d REPLACED'
+  in:
+  - ripps2artpack.c
 - en: '%s could not be deleted; it stays as it was.'
   in:
   - ripps2artpack.c
@@ -940,6 +952,9 @@ strings:
 - en: Art loads from it from now on.
   in:
   - ripps2artpack.c
+- en: COULD NOT WRITE
+  in:
+  - ripps2artpack.c
 - en: DELETE IT
   in:
   - ripps2artpack.c
@@ -949,6 +964,9 @@ strings:
     DELETE: %s
 
     KEEP: %s (the destination, now with every picture of both)'
+  in:
+  - ripps2artpack.c
+- en: 'Getting it ready: %s'
   in:
   - ripps2artpack.c
 - en: 'In use: %s, %d pictures, %d MB'
@@ -995,6 +1013,16 @@ strings:
   in:
   - ripps2artpack.c
 - en: 'Merged: %s now holds %d pictures (%d MB), %d s.'
+  in:
+  - ripps2artpack.c
+- en: NOT A .TAR
+  in:
+  - ripps2artpack.c
+- en: NOTHING CHANGED
+  in:
+  - ripps2artpack.c
+  - ripps2files.c
+- en: NOTHING TO PUT IN
   in:
   - ripps2artpack.c
 - en: 'No started drive has room for the ART Pack: it needs about %s. Free some room on the drive you browse from, then try again.'
@@ -2033,13 +2061,34 @@ strings:
 - en: '%d / %d FILES'
   in:
   - ripps2files.c
+- en: '%d COPIED OUT'
+  in:
+  - ripps2files.c
 - en: '%d FOLDERS AND CONTENTS'
   in:
   - ripps2files.c
 - en: '%d FOLDERS, %d FOUND'
   in:
   - ripps2files.c
+- en: '%d ITEM   %d MARKED   %s'
+  in:
+  - ripps2files.c
+- en: '%d ITEM   %d MARKED   %s   %s FREE'
+  in:
+  - ripps2files.c
+- en: '%d ITEMS   %d MARKED   %s'
+  in:
+  - ripps2files.c
+- en: '%d ITEMS   %d MARKED   %s   %s FREE'
+  in:
+  - ripps2files.c
 - en: '%s BYTES'
+  in:
+  - ripps2files.c
+- en: '%s IN %d'
+  in:
+  - ripps2files.c
+- en: '%s IN %d, %s FREE'
   in:
   - ripps2files.c
 - en: '%s does not look like a text file. Open it in the text editor anyway?'
@@ -2048,10 +2097,17 @@ strings:
 - en: '%u KB FREE%s'
   in:
   - ripps2files.c
+- en: '%u.%u GB'
+  in:
+  - ripps2files.c
+  - ripps2hdd.c
 - en: ', %d COPIED ONLY'
   in:
   - ripps2files.c
 - en: ', %d FAILED'
+  in:
+  - ripps2files.c
+- en: ', %d LEFT OUT'
   in:
   - ripps2files.c
 - en: ', %d SKIPPED'
@@ -2121,6 +2177,9 @@ strings:
 - en: COPIED
   in:
   - ripps2files.c
+- en: COPY IT OUT TO OPEN IT
+  in:
+  - ripps2files.c
 - en: COULD NOT MAKE IT
   in:
   - ripps2files.c
@@ -2137,6 +2196,9 @@ strings:
   in:
   - ripps2files.c
 - en: Cheats, a file a game
+  in:
+  - ripps2files.c
+- en: 'Copying out: %s'
   in:
   - ripps2files.c
 - en: DELETE WHOLE SAVES HERE
@@ -2241,6 +2303,9 @@ strings:
   in:
   - ripps2files.c
   - ripps2ui.c
+- en: INVERT MARKS
+  in:
+  - ripps2files.c
 - en: IS ALREADY HERE (%d MORE TO GO). REPLACE IT?
   in:
   - ripps2files.c
@@ -2290,6 +2355,9 @@ strings:
   in:
   - ripps2files.c
 - en: NO DRIVES
+  in:
+  - ripps2files.c
+- en: NO FILES ON THE CLIPBOARD
   in:
   - ripps2files.c
 - en: NO, KEEP IT
@@ -2479,6 +2547,9 @@ strings:
   - ripps2shot.c
   - ripps2status.c
 - en: SETTINGS
+  in:
+  - ripps2files.c
+- en: SIZE AND FREE SPACE
   in:
   - ripps2files.c
 - en: SLOW
@@ -2867,9 +2938,6 @@ strings:
   in:
   - ripps2hdd.c
 - en: '%s IS IN USE: TRY AGAIN'
-  in:
-  - ripps2hdd.c
-- en: '%u.%u GB'
   in:
   - ripps2hdd.c
 - en: COULD NOT REMOVE %s (%d)

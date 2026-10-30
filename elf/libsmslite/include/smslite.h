@@ -36,6 +36,32 @@ void smsLiteStop(void);
    pad itself: the player takes no input). Cleared when a playback starts or ends. */
 void smsLitePause(int on);
 
+/* RIPPS2 build 125: what the host's pad asks of a playback. Each is safe from another thread and does nothing when
+   nothing plays. */
+
+/* The sound's level, 0 to 100. A playback starts at 100 (a skip or a loop keeps it); a change is eased in over the
+   next pieces of sound, so no step clicks. */
+void smsLiteSetVolume(int percent);
+
+/* From the frame on screen, by deltaMs (10 s back: -10000), to the key frame on that side. The file stays open,
+   so it is quick; past the last key frame the video ends (or, looping, starts again). It carries on playing. */
+void smsLiteSkip(int deltaMs);
+
+/* On: at its end the video starts again from the top. Off when a playback starts. */
+void smsLiteSetLoop(int on);
+
+/* Two pictures over the video (SMSLITE_OVERLAY_HINTS at most 640 x 64, SMSLITE_OVERLAY_POP at most 256 x 128):
+   RGBA32 rows of w pixels (w a multiple of 4), alpha 0 to 0x80, at x, y of the player's screen. The pixels are
+   copied before smsLiteOverlaySet returns. */
+#define SMSLITE_OVERLAY_HINTS 0
+#define SMSLITE_OVERLAY_POP   1
+#define SMSLITE_OVERLAYS      2
+void smsLiteOverlaySet(int slot, const void* rgba, int w, int h, int x, int y);
+/* How it is drawn: alpha 0 hides it, 0x80 draws it as it is; scale256 256 is its own size, about its middle. */
+void smsLiteOverlayShow(int slot, int alpha, int scale256);
+/* The player's screen: 640 x 448 (NTSC) or 640 x 512 (PAL), 0 x 0 when nothing plays */
+void smsLiteScreenSize(int* w, int* h);
+
 /* Open flags */
 #define SMSLITE_PREVIEW_AUDIO       0x0000  /* decode + play audio (audsrv) */
 #define SMSLITE_PREVIEW_VIDEO_ONLY  0x0001  /* skip audio entirely */

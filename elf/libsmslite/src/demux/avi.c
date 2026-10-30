@@ -1203,6 +1203,40 @@ int SMS_GetContainerAVI ( SMS_Container* apCont ) {
 
 }  /* end SMS_GetContainerAVI */
 
+int smsLiteAviKeyFrame ( SMS_Container* apCont, int anIdx, int aDir, int aPos ) /* RIPPS2 build 125 */
+{
+ _AVIStream* lpStm;
+
+ if ( !apCont || !apCont -> m_pCtx || anIdx < 0 || anIdx >= ( int )apCont -> m_nStm || !apCont -> m_pStm[ anIdx ] )
+  return -1;
+
+ lpStm = MYSTRM( apCont -> m_pStm[ anIdx ] );
+
+ if ( !lpStm || !lpStm -> m_pIdx || aPos < 0 || aPos >= ( int )lpStm -> m_nIdx ) return -1;
+
+ while (  aPos >= 0 && aPos < ( int )lpStm -> m_nIdx && !lpStm -> m_pIdx[ aPos ].m_fKey  ) aPos += aDir < 0 ? -1 : 1;
+
+ return aPos >= 0 && aPos < ( int )lpStm -> m_nIdx ? aPos : -1;
+}
+
+int smsLiteAviTiming ( SMS_Container* apCont, int anIdx, int32_t* apScale, int32_t* apRate, uint32_t* apN )
+{
+ _AVIStream* lpStm;
+
+ if ( !apCont || !apCont -> m_pCtx || anIdx < 0 || anIdx >= ( int )apCont -> m_nStm || !apCont -> m_pStm[ anIdx ] )
+  return -1;
+
+ lpStm = MYSTRM( apCont -> m_pStm[ anIdx ] );
+
+ if ( !lpStm || !lpStm -> m_pIdx || lpStm -> m_Scale <= 0 || lpStm -> m_Rate <= 0 || !lpStm -> m_nIdx ) return -1;
+
+ *apScale = lpStm -> m_Scale;
+ *apRate  = lpStm -> m_Rate;
+ *apN     = lpStm -> m_nIdx;
+
+ return 0;
+}
+
 uint32_t smsLiteContainerMoviStart ( SMS_Container* apCont )
 {
  if ( !apCont || !apCont -> m_pCtx )

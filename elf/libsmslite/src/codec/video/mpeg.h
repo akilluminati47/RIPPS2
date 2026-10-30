@@ -281,6 +281,7 @@ void SMS_MPEG_SetQScale            ( int                             );
 void SMS_MPEG_FrameEnd             ( void                            );
 void SMS_MPEG_DecodeMB             ( SMS_DCTELEM[ 12 ][ 64 ]         );
 void SMS_MPEG_CleanIntraTblEntries ( void                            );
+void SMS_MPEG_ResetPics            ( void                            ); /* RIPPS2 build 125 */
 void SMS_MPEG_DummyCB              ( void*                           );
 void SMS_MPEG_MCB                  ( void*                           );
 void SMS_MPEG_SCB                  ( void*                           );

@@ -130,6 +130,27 @@ static SMS_INLINE SMS_Frame* SMS_MPEGContext_FindUnusedPic ( void ) {
 
 }  /* end SMS_MPEGContext_FindUnusedPic */
 
+/* RIPPS2 build 125: after a skip no picture is held, so nothing from before it is shown or predicted from: the key
+   frame it lands on starts afresh (and is shown once the next picture is decoded, as at the start) */
+void SMS_MPEG_ResetPics ( void ) {
+
+ int i;
+
+ if ( !g_MPEGCtx.m_pPic ) return;
+
+ for ( i = 0; i < MAX_PICTURE_COUNT; ++i ) {
+
+  if ( g_MPEGCtx.m_pPic[ i ].m_pBuf ) SMS_CodecReleaseBuffer ( g_MPEGCtx.m_pParentCtx, &g_MPEGCtx.m_pPic[ i ] );
+
+  g_MPEGCtx.m_pPic[ i ].m_Ref = 0;
+
+ }  /* end for */
+
+ g_MPEGCtx.m_pCurPic = g_MPEGCtx.m_pLastPic = g_MPEGCtx.m_pNextPic = NULL;
+ g_MPEGCtx.m_CurPic.m_pBuf = g_MPEGCtx.m_LastPic.m_pBuf = g_MPEGCtx.m_NextPic.m_pBuf = NULL;
+
+}  /* end SMS_MPEG_ResetPics */
+
 void SMS_MPEG_FrameStart ( void ) {
 
  int        i;

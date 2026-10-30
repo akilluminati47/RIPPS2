@@ -1,5 +1,40 @@
 # RIPPS2 changelog
 
+## Build 125 (beta, v1.2.5-beta), changes since build 124
+
+The user's notes of 10/29.
+
+- **The video player's buttons.** Cross pauses and plays, Circle (or SELECT) stops, START loops the video (the volume is
+  kept through a loop), L1 / R1 jump 10 s back and on (to the key frame on that side; the file stays open, so it is
+  quick), L2 / R2 turn it down and up in steps of 5, eased on the sound itself so no step clicks. The volume starts at
+  100 for each video. Its hints, in the theme's own glyphs, are hidden as it starts, so the first frame is the video;
+  any button brings them up, they fade soon after while it plays and stay while it is paused. The volume pops in as a
+  number with a bar, in RIPPS2 Sleek, and fades quickly once the buttons are let go.
+- **Memory Files: the open folder is the first row.** It shows how many entries are there, how many are marked, the
+  files' size and the drive's free space; Cross or Square on it marks them all (or, any marked, none). ACTIONS adds
+  INVERT MARKS and SIZE AND FREE SPACE (the marked entries, folders all the way down).
+- **A .tar is a blue folder.** Open it to see what it holds; PASTE puts files in (a member of the same name is
+  replaced): PNG and JPG go in as they are, a picture bigger than 512 on a side is shrunk to a full-colour PNG, a BMP
+  becomes a PNG, and a kind of picture RIPPS2 cannot read is left out. COPY then PASTE elsewhere writes members out;
+  DELETE takes them out. Each change is written beside the archive and swapped in only once whole. MERGE A .TAR INTO
+  THIS stays in its ACTIONS.
+- **Cover Art Download in HD.** It asks first: HD (280 x 400, sharper on an HD screen, about 70 KB) or Standard
+  (140 x 200, as Open PS2 Loader's). Both stay 8-bit with dithering; a game that has a cover keeps it.
+- **Recent games' settings are kept in memory** (at most 64 KB, as packed text): a game looked at again shows its
+  info as soon as the cursor stops, with no read. Saving a game's settings, a drive change or a change in Memory
+  Files forgets them, and a picture that cannot get its memory takes theirs first.
+- **RIPFLOW's info page** keeps the source's name, with RUN and BACK either side of it.
+- **A theme made for Open PS2 Loader** keeps the sidebar out of sight until Circle.
+- **RIPFLOW shows five covers on a 16:9 picture** (720p, 1080i, or Widescreen on) and three on 4:3, as RIPGRID widens
+  for the same pictures, until a count is picked in its settings. The choice is kept under a new key
+  (`ripps2_flow_count`), so the 3 every older settings file saved reads as by the picture.
+- **No flash of RIPPS2's own look at boot** with a theme kept on a drive: while that drive comes up (at most 6 s) the boot
+  holds its sky, and the page fades up in the theme.
+- **Fixed: the hold wheel was an oval in widescreen** (RIPDISC, the launch guard, Hold SELECT's themes): its notches now
+  take the widescreen squeeze, as the button glyphs do, and the SELECT glyph sits in the middle of the ring.
+- **Fixed: the default theme's launch disc spins** as build 122 meant (the key never reached the ELF: the build
+  copies `elf/theme/conf_theme.cfg` over the patched file).
+
 ## Build 124 (beta, v1.2.4-beta), changes since build 123
 
 The user's notes of 10/28.

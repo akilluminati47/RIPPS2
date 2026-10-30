@@ -39,6 +39,12 @@
 #endif
 
 static volatile int s_smsLitePaused = 0; /* RIPPS2: smsLitePause() */
+/* RIPPS2 build 125: the volume, skip and loop the host's pad asks for (smsLiteSetVolume, smsLiteSkip, smsLiteSetLoop) */
+static volatile int s_smsLiteVolume = 100;
+static int s_smsLiteGain = 32768; /* where the sound is now, Q15: eased toward the volume */
+static volatile int s_smsLiteLoop = 0;
+static volatile int s_smsLiteUserStop = 0;
+static volatile int s_smsLiteSeekPending = 0, s_smsLiteSeekMs = 0, s_smsLiteSeekDir = 1;
 /* RIPPS2: called below but defined nowhere in this copy (the diagnostic counters they reset are not in it):
    nothing to clear. Without them the library only links in a build that never calls smsLiteInit. */
 static void smsLiteClearDecodeInfo(void) {}
@@ -697,6 +703,26 @@ static void smsLiteAudioSetFormat(SMSLitePlayback* playback, int aRate, int aCha
     playback->audioFmtSet   = 1;
 }
 
+/* RIPPS2 build 125: the volume, on the samples (audsrv's own stays at its top): each piece goes from where the last
+   left off toward the level asked for, at most a quarter of the way in a piece, so 100 to 0 takes four pieces
+   (about a tenth of a second) and a step of 5 is one smooth ramp */
+static void smsLiteApplyGain(short* s, int n)
+{
+    int target = s_smsLiteVolume * 32768 / 100, from = s_smsLiteGain, to = target, step, g, i;
+
+    if (to - from > 8192)
+        to = from + 8192;
+    else if (from - to > 8192)
+        to = from - 8192;
+    s_smsLiteGain = to;
+    if ((from == 32768 && to == 32768) || n <= 0)
+        return;
+    step = ((to - from) << 8) / n;
+    g = from << 8;
+    for (i = 0; i < n; ++i, g += step)
+        s[i] = (short)(((int)s[i] * (g >> 8)) >> 15);
+}
+
 static void smsLiteAudioDrain(SMSLitePlayback* playback)
 {
     unsigned char* slot;
@@ -726,6 +752,8 @@ static void smsLiteAudioDrain(SMSLitePlayback* playback)
             const char* p        = (const char*)(slot + 80);
             int         left     = len;
             int         accepted;
+
+            smsLiteApplyGain((short*)(slot + 80), len / 2); /* RIPPS2 build 125 */
 
             while (left > 0) {
                 int sent;
@@ -938,6 +966,156 @@ static int smsLitePlaybackInitDisplay(SMSLitePlayback* playback)
 #endif
 
 #if SMSLITE_ENABLE_FULLSCREEN
+/* RIPPS2 build 125: the host's two pictures over the video (its hints, its volume), each a CT32 texture in the VRAM
+   between the screen and the video's texture, drawn over the frame after each one is shown (and, paused, again
+   over the same frame whenever one of them changes). The host's thread copies a picture in; this thread uploads it. */
+typedef struct SMSLiteOverlay {
+    unsigned char* buf;
+    int size, w, h, x, y, maxW, maxH;
+    volatile int alpha, scale, dirty;
+    int drawnAlpha, drawnScale, ready;
+} SMSLiteOverlay;
+
+static SMSLiteOverlay s_ov[SMSLITE_OVERLAYS] = {{0, 0, 0, 0, 0, 0, 640, 64}, {0, 0, 0, 0, 0, 0, 256, 128}};
+static int s_ovSema = -1;
+static u64 s_ovPkt[24] __attribute__((aligned(64)));
+
+static int smsLiteLog2Up(int v)
+{
+    int r = 0;
+    while ((1 << r) < v)
+        ++r;
+    return r;
+}
+
+static unsigned int smsLiteOverlayTBP(int slot) /* the slots' VRAM, from the end of the screen; 0: no room */
+{
+    unsigned int base = (g_GSCtx.m_VRAMPtr + 31) & ~31u, i;
+    for (i = 0; i < (unsigned int)slot; ++i)
+        base += ((s_ov[i].maxW + 63) / 64) * ((s_ov[i].maxH + 31) / 32) * 32;
+    if (base + ((s_ov[slot].maxW + 63) / 64) * ((s_ov[slot].maxH + 31) / 32) * 32 > g_IPUCtx.m_VRAM)
+        return 0;
+    return base;
+}
+
+static int smsLiteOverlayChanged(void)
+{
+    int i;
+    for (i = 0; i < SMSLITE_OVERLAYS; ++i)
+        if (s_ov[i].dirty || s_ov[i].alpha != s_ov[i].drawnAlpha || (s_ov[i].alpha > 0 && s_ov[i].scale != s_ov[i].drawnScale))
+            return 1;
+    return 0;
+}
+
+static void smsLiteOverlayDraw(void)
+{
+    int i;
+
+    for (i = 0; i < SMSLITE_OVERLAYS; ++i) {
+        SMSLiteOverlay* o = &s_ov[i];
+        unsigned int tbp = smsLiteOverlayTBP(i);
+        int tbw, a, sc, x0, y0, x1, y1;
+        u64* p = s_ovPkt;
+
+        if (!tbp)
+            continue;
+        if (o->dirty && s_ovSema >= 0) {
+            WaitSema(s_ovSema);
+            if (o->buf && o->w > 0 && o->h > 0) {
+                int qwc = o->w * o->h * 4 / 16;
+                tbw = (o->w + 63) / 64;
+                p[0] = GIF_TAG(4, 0, 0, 0, 0, 1);
+                p[1] = GIFTAG_REGS_AD;
+                p[2] = GS_SET_BITBLTBUF(0, 0, 0, tbp, tbw, GSPixelFormat_PSMCT32);
+                p[3] = GS_BITBLTBUF;
+                p[4] = GS_SET_TRXPOS(0, 0, 0, 0, 0);
+                p[5] = GS_TRXPOS;
+                p[6] = GS_SET_TRXREG(o->w, o->h);
+                p[7] = GS_TRXREG;
+                p[8] = GS_SET_TRXDIR(0);
+                p[9] = GS_TRXDIR;
+                p[10] = GIF_TAG(qwc, 1, 0, 0, 2, 0);
+                p[11] = 0;
+                SyncDCache(p, p + 12);
+                DMA_Send(DMAC_GIF, p, 6);
+                DMA_Wait(DMAC_GIF);
+                SyncDCache(o->buf, o->buf + o->w * o->h * 4);
+                DMA_Send(DMAC_GIF, o->buf, qwc);
+                DMA_Wait(DMAC_GIF);
+                o->ready = 1;
+            }
+            o->dirty = 0;
+            SignalSema(s_ovSema);
+        }
+        a = o->alpha;
+        sc = o->scale > 0 ? o->scale : 256;
+        o->drawnAlpha = a;
+        o->drawnScale = sc;
+        if (a <= 0 || !o->ready)
+            continue;
+        if (a > 0x80)
+            a = 0x80;
+        tbw = (o->w + 63) / 64;
+        /* about its middle, in the GS's 1/16 pixels */
+        x0 = ((o->x << 4) + (o->w << 3)) - ((o->w << 3) * sc >> 8);
+        y0 = ((o->y << 4) + (o->h << 3)) - ((o->h << 3) * sc >> 8);
+        x1 = x0 + ((o->w << 4) * sc >> 8);
+        y1 = y0 + ((o->h << 4) * sc >> 8);
+        p[0] = GIF_TAG(10, 1, 0, 0, 0, 1);
+        p[1] = GIFTAG_REGS_AD;
+        p[2] = GS_SET_TEXFLUSH(0);
+        p[3] = GS_TEXFLUSH;
+        p[4] = GS_SET_TEX0(tbp, tbw, GSPixelFormat_PSMCT32, smsLiteLog2Up(o->w), smsLiteLog2Up(o->h), 1, 0, 0, 0, 0, 0, 0);
+        p[5] = GS_TEX0_1;
+        p[6] = GS_SET_TEX1(0, 0, 1, 1, 0, 0, 0);
+        p[7] = GS_TEX1_1;
+        p[8] = GS_SET_ALPHA(0, 1, 0, 1, 0); /* (picture - screen) x its alpha + screen */
+        p[9] = GS_ALPHA_1;
+        p[10] = GS_SET_PRIM(GS_PRIM_PRIM_SPRITE, 0, 1, 0, 1, 0, 1, 0, 0);
+        p[11] = GS_PRIM;
+        p[12] = GS_SET_RGBAQ(0x80, 0x80, 0x80, a, 0x00);
+        p[13] = GS_RGBAQ;
+        p[14] = GS_SET_UV(8, 8);
+        p[15] = GS_UV;
+        p[16] = GS_SET_XYZ(x0 < 0 ? 0 : x0, y0 < 0 ? 0 : y0, 0);
+        p[17] = GS_XYZ2;
+        p[18] = GS_SET_UV((o->w << 4) - 8, (o->h << 4) - 8);
+        p[19] = GS_UV;
+        p[20] = GS_SET_XYZ(x1, y1, 0);
+        p[21] = GS_XYZ2;
+        SyncDCache(p, p + 22);
+        DMA_Send(DMAC_GIF, p, 11);
+        DMA_Wait(DMAC_GIF);
+    }
+}
+
+static void smsLiteOverlayReset(void) /* a new playback: nothing shown, the pictures uploaded again when set */
+{
+    int i;
+    for (i = 0; i < SMSLITE_OVERLAYS; ++i) {
+        s_ov[i].alpha = s_ov[i].drawnAlpha = 0;
+        s_ov[i].scale = s_ov[i].drawnScale = 256;
+        s_ov[i].ready = 0;
+        s_ov[i].dirty = s_ov[i].buf != NULL && s_ov[i].w > 0;
+    }
+}
+
+static void smsLiteOverlayFree(void)
+{
+    int i;
+    if (s_ovSema >= 0)
+        WaitSema(s_ovSema);
+    for (i = 0; i < SMSLITE_OVERLAYS; ++i) {
+        if (s_ov[i].buf)
+            free(s_ov[i].buf);
+        s_ov[i].buf = NULL;
+        s_ov[i].size = s_ov[i].w = s_ov[i].h = 0;
+        s_ov[i].alpha = s_ov[i].dirty = s_ov[i].ready = 0;
+    }
+    if (s_ovSema >= 0)
+        SignalSema(s_ovSema);
+}
+
 static void smsLitePlaybackShowFrame(SMSLitePlayback* playback, SMS_FrameBuffer* frame)
 {
     s64 pts = frame->m_StartPTS;
@@ -974,11 +1152,19 @@ static void smsLitePlaybackShowFrame(SMSLitePlayback* playback, SMS_FrameBuffer*
     }
 
     /* RIPPS2: paused, the last frame stays up; the vsync count is left alone, so the pacing carries on
-       from here when the pause ends */
-    while (s_smsLitePaused && !playback->stopRequested)
+       from here when the pause ends. Build 125: an overlay changed while paused, the last frame is drawn again
+       from its texture (the draw alone, not the upload) and the overlays over it. */
+    while (s_smsLitePaused && !playback->stopRequested) {
         GS_VSync();
+        if (playback->framesDisplayed > 0 && smsLiteOverlayChanged()) {
+            DMA_SendChain(DMAC_GIF, &playback->ipuCtx->m_DMAGIFPack[4]);
+            DMA_Wait(DMAC_GIF);
+            smsLiteOverlayDraw();
+        }
+    }
 
     playback->ipuCtx->Display(frame, pts);
+    smsLiteOverlayDraw(); /* RIPPS2 build 125 */
 
     playback->framesDisplayed++;
 }
@@ -1596,6 +1782,59 @@ static int smsLitePlaybackRun(SMSLitePlayback* playback, int targetFrames, int m
 }
 #endif
 
+#if SMSLITE_ENABLE_FULLSCREEN
+/* RIPPS2 build 125: after a stop for a skip, or at the end when looping: the file to the key frame at or before ms
+   (dir -1) or at or after it (dir 1), every queue emptied, the decoder holding no picture, the sound dropped and its
+   clock set to the key frame's time, so smsLitePlaybackRunThreaded picks up from there. Not SMSLITE_OK: no such
+   key frame (past the end), or the file has no index. */
+static int smsLiteRestartAt(SMSLitePlayback* pb, int ms, int dir)
+{
+    SMS_Container* c = &pb->container;
+    int32_t scale, rate;
+    uint32_t n, i;
+    int idx, key;
+    s64 keyMs;
+
+    if (!c->Seek || pb->videoStreamIndex < 0 ||
+        smsLiteAviTiming(c, pb->videoStreamIndex, &scale, &rate, &n) != 0)
+        return SMSLITE_ERR_PLAY;
+    idx = (int)((s64)ms * rate / ((s64)scale * 1000));
+    if (idx >= (int)n)
+        return SMSLITE_ERR_PLAY;
+    key = smsLiteAviKeyFrame(c, pb->videoStreamIndex, dir, idx);
+    if (key < 0 && dir < 0)
+        key = smsLiteAviKeyFrame(c, pb->videoStreamIndex, 1, idx);
+    if (key < 0 || !c->Seek(c, pb->videoStreamIndex, -1, (uint32_t)key))
+        return SMSLITE_ERR_PLAY;
+    keyMs = (s64)key * scale * 1000 / rate;
+
+    for (i = 0; i < c->m_nStm; ++i)
+        if (c->m_pStm[i] && c->m_pStm[i]->m_pPktBuf)
+            SMS_RingBufferReset(c->m_pStm[i]->m_pPktBuf);
+    if (pb->outputBuffer)
+        SMS_RingBufferReset(pb->outputBuffer);
+    SMS_MPEG_ResetPics();
+    if (pb->codec && pb->codec->HWCtl)
+        pb->codec->HWCtl(pb->codec, SMS_HWC_Reset);
+#if SMSLITE_ENABLE_AUDIO
+    if (pb->audioActive) {
+        if (pb->audioBuffer)
+            SMS_RingBufferReset(pb->audioBuffer);
+        audsrv_stop_audio();
+        pb->audioFmtSet = 0;
+        pb->audioBytesOut = pb->audioByteRate > 0 ? (u64)(keyMs * pb->audioByteRate / 1000) : 0;
+        pb->audioTimeMs = keyMs;
+    }
+#endif
+    pb->havePTS = 0;
+    pb->lastPTS = keyMs;
+    pb->vsyncsElapsed = 0;
+    pb->nextDueMs = 0;
+    smsLiteDbg("restart at %d ms: frame %d\n", (int)keyMs, key);
+    return SMSLITE_OK;
+}
+#endif
+
 /* ------------------------------------------------------------------ */
 /* Public API                                                         */
 /* ------------------------------------------------------------------ */
@@ -1609,6 +1848,15 @@ int smsLiteInit(void)
 {
     if (!s_smsLiteInitialized)
         smsLiteInitConfig();
+#if SMSLITE_ENABLE_FULLSCREEN
+    if (s_ovSema < 0) { /* RIPPS2 build 125: the overlays' pixels, between the host's thread and the player's */
+        ee_sema_t sema;
+        memset(&sema, 0, sizeof(sema));
+        sema.init_count = 1;
+        sema.max_count = 1;
+        s_ovSema = CreateSema(&sema);
+    }
+#endif
 
     s_smsLiteInitialized = 1;
 
@@ -1629,8 +1877,93 @@ void smsLiteStop(void)
 {
     SMSLitePlayback* active = s_smsLiteActive;
 
+    s_smsLiteUserStop = 1; /* RIPPS2 build 125: also between a skip's stop and its start again */
     if (active)
         active->stopRequested = 1;
+}
+
+/* RIPPS2 build 125 */
+void smsLiteSetVolume(int percent)
+{
+    s_smsLiteVolume = percent < 0 ? 0 : percent > 100 ? 100 : percent;
+}
+
+void smsLiteSetLoop(int on)
+{
+    s_smsLiteLoop = on ? 1 : 0;
+}
+
+void smsLiteSkip(int deltaMs)
+{
+    SMSLitePlayback* active = s_smsLiteActive;
+    int from;
+
+    if (!active || s_smsLiteUserStop)
+        return;
+    from = s_smsLiteSeekPending ? s_smsLiteSeekMs : (active->havePTS ? (int)active->lastPTS : 0);
+    from += deltaMs;
+    s_smsLiteSeekMs = from < 0 ? 0 : from;
+    s_smsLiteSeekDir = deltaMs < 0 ? -1 : 1;
+    s_smsLiteSeekPending = 1;
+    active->stopRequested = 1;
+}
+
+void smsLiteOverlaySet(int slot, const void* rgba, int w, int h, int x, int y)
+{
+#if SMSLITE_ENABLE_FULLSCREEN
+    SMSLiteOverlay* o;
+    int need;
+
+    if (slot < 0 || slot >= SMSLITE_OVERLAYS || !rgba || w <= 0 || h <= 0 || (w & 3) || s_ovSema < 0)
+        return;
+    o = &s_ov[slot];
+    if (w > o->maxW || h > o->maxH)
+        return;
+    need = w * h * 4;
+    WaitSema(s_ovSema);
+    if (o->size < need) {
+        if (o->buf)
+            free(o->buf);
+        o->buf = (unsigned char*)memalign(64, need);
+        o->size = o->buf ? need : 0;
+    }
+    if (o->buf) {
+        memcpy(o->buf, rgba, need);
+        o->w = w;
+        o->h = h;
+        o->x = x;
+        o->y = y;
+        o->dirty = 1;
+    }
+    SignalSema(s_ovSema);
+#else
+    (void)slot; (void)rgba; (void)w; (void)h; (void)x; (void)y;
+#endif
+}
+
+void smsLiteOverlayShow(int slot, int alpha, int scale256)
+{
+#if SMSLITE_ENABLE_FULLSCREEN
+    if (slot < 0 || slot >= SMSLITE_OVERLAYS)
+        return;
+    s_ov[slot].alpha = alpha < 0 ? 0 : alpha;
+    s_ov[slot].scale = scale256 > 0 ? scale256 : 256;
+#else
+    (void)slot; (void)alpha; (void)scale256;
+#endif
+}
+
+void smsLiteScreenSize(int* w, int* h)
+{
+#if SMSLITE_ENABLE_FULLSCREEN
+    int on = s_smsLiteActive != NULL;
+#else
+    int on = 0;
+#endif
+    if (w)
+        *w = on ? (int)g_GSCtx.m_PWidth : 0;
+    if (h)
+        *h = on ? (int)g_GSCtx.m_PHeight : 0;
 }
 
 void smsLitePause(int on) /* RIPPS2 */
@@ -1663,6 +1996,13 @@ int smsLitePlayFullscreen(const char* path)
 
     smsLiteDbg("play start\n");
 
+    s_smsLiteUserStop = 0; /* RIPPS2 build 125: a new playback: full volume, no skip asked, not looping, nothing over it */
+    s_smsLiteSeekPending = 0;
+    s_smsLiteVolume = 100;
+    s_smsLiteGain = 32768;
+    s_smsLiteLoop = 0;
+    smsLiteOverlayReset();
+
     ret = smsLitePlaybackOpen(&playback, path);
     if (ret != SMSLITE_OK) {
         smsLitePlaybackClose(&playback);
@@ -1670,6 +2010,26 @@ int smsLitePlayFullscreen(const char* path)
     }
 
     ret = smsLitePlaybackRun(&playback, 0, 0x7FFFFFFF);
+
+    /* RIPPS2 build 125: a skip or a loop starts it again where it should be, the file, the display and the volume
+       kept: a skip stopped it (smsLiteSkip), a loop finds it at its end */
+    while (!s_smsLiteUserStop) {
+        int to, dir;
+
+        if (s_smsLiteSeekPending) {
+            to = s_smsLiteSeekMs;
+            dir = s_smsLiteSeekDir;
+            s_smsLiteSeekPending = 0;
+        } else if (s_smsLiteLoop && !playback.stopRequested) {
+            to = 0;
+            dir = -1;
+        } else
+            break;
+        if (smsLiteRestartAt(&playback, to, dir) != SMSLITE_OK &&
+            (!s_smsLiteLoop || to == 0 || smsLiteRestartAt(&playback, 0, -1) != SMSLITE_OK))
+            break; /* past the last key frame: the end (looping: the top) */
+        smsLitePlaybackRunThreaded(&playback);
+    }
 
 #ifdef SMSLITE_DEBUG
     {
@@ -1708,6 +2068,8 @@ int smsLitePlayFullscreen(const char* path)
     packetsRead = playback.packetsRead;
 
     smsLitePlaybackClose(&playback);
+    smsLiteOverlayFree(); /* RIPPS2 build 125 */
+    s_smsLiteLoop = 0;
 
     smsLiteDbg("play stopped\n");
     smsLiteDbg("frames %d\n", framesDisplayed);

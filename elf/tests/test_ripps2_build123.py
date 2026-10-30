@@ -60,7 +60,7 @@ if 'tmDelete(target)' in run or 'remove(target)' in run:
     fail.append('tmRun: the kept .tar is never deleted')
 fb = rd('src/ripps2files.c')
 need(fb, (('"MERGE A .TAR INTO THIS"', 'the Triangle menu names it'),
-          ('fbHasSuffix(fbList[fbCursor].name, ".tar"))\n        fbMenuItems[fbMenuCount++] = FB_ACT_TARMERGE;', 'on a .tar only'),
+          ('fbList[fbCursor].kind == FB_KIND_TAR)\n        fbMenuItems[fbMenuCount++] = FB_ACT_TARMERGE;', 'on a .tar only (build 125: the blue folder)'),
           ('if (ripps2TarMergeInto(from, fbPath))\n                saveConfig(CONFIG_OPL, 0);', 'a moved pack is saved from Memory Files'),
           ('int ripps2FilesDriveUp(const char *root)', 'only drives Memory Files lists are looked in')), 'ripps2files.c')
 need(rd('include/ripps2artpack.h'), (('int ripps2TarMergeInto(const char *target, const char *here);', 'declared'),), 'ripps2artpack.h')
