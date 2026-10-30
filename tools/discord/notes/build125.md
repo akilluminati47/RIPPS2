@@ -10,6 +10,9 @@
 - **Cover Art Download in HD**: 280 x 400, or Standard as before.
 - **Recent games' info shows at once** when you come back to them.
 - **RIPFLOW's info page** keeps the source with RUN and BACK beside it; **OPL themes** hide the sidebar until Circle; the default theme's disc **spins** again.
+- **RIPFLOW shows five covers in HD** (720p, 1080i, Widescreen) and three in 4:3, until you pick a count.
+- **No flash of the default look at boot** when your theme lives on a drive: the sky holds until it is in.
+- **The hold wheel is round in widescreen**, its button in the middle.
 
 ## Test list
 - **A video**: pause, play, L1 / R1, START to loop to the end and round again: does the volume stay where you set it?
@@ -23,6 +26,9 @@
 - **Delete from a .tar**, then copy a member out to a folder: both right?
 - **Cover Art Download in HD**: sharper on your TV, and how long for your library?
 - **Back and forth over games** on the info page: is their info there at once the second time?
+- **A theme on your HDD or USB** set and saved: at boot, does it come straight in, with no default look first?
+- **RIPFLOW in 1080i or with Widescreen on**: five covers? Back in 480i 4:3: three?
+- **Hold SELECT on a disc (RIPDISC)** in widescreen: a round wheel, the button centred?
 - **Spin** on the default theme, **Zoom** on RIPFLOW and Adapt, **Pop In** on an older theme?
 
 ## Report
