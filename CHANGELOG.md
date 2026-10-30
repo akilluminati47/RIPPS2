@@ -1,6 +1,6 @@
 # RIPPS2 changelog
 
-## Build 125 (beta, not released yet), changes since build 124
+## Build 125 (beta, v1.2.5-beta), changes since build 124
 
 The user's notes of 10/29.
 
@@ -25,6 +25,13 @@ The user's notes of 10/29.
   Files forgets them, and a picture that cannot get its memory takes theirs first.
 - **RIPFLOW's info page** keeps the source's name, with RUN and BACK either side of it.
 - **A theme made for Open PS2 Loader** keeps the sidebar out of sight until Circle.
+- **RIPFLOW shows five covers on a 16:9 picture** (720p, 1080i, or Widescreen on) and three on 4:3, as RIPGRID widens
+  for the same pictures, until a count is picked in its settings. The choice is kept under a new key
+  (`ripps2_flow_count`), so the 3 every older settings file saved reads as by the picture.
+- **No flash of RIPPS2's own look at boot** with a theme kept on a drive: while that drive comes up (at most 6 s) the boot
+  holds its sky, and the page fades up in the theme.
+- **Fixed: the hold wheel was an oval in widescreen** (RIPDISC, the launch guard, Hold SELECT's themes): its notches now
+  take the widescreen squeeze, as the button glyphs do, and the SELECT glyph sits in the middle of the ring.
 - **Fixed: the default theme's launch disc spins** as build 122 meant (the key never reached the ELF: the build
   copies `elf/theme/conf_theme.cfg` over the patched file).
 
