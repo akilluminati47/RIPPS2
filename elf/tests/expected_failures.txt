@@ -26,3 +26,4 @@ test_error_dialog_render.py the error box draws RIPPS2's START option (guiMsgBox
 test_wiki_sync.py RiptOPL's wiki tool (needs bs4); RIPPS2 does not publish that wiki (build 114 merge)
 test_net_protocol_pick.py Game Sources has no Protocol row of its own (build 114, the settings audit): the Network page alone picks the protocol and its Access, so Game Sources reads no UDPFS Access
 test_ra_xerabora_browser.py the build 126 backend pick of RiptOPL 82c39a5 leaves out its Achievements menu text (RIPPS2 keeps its own GUI); the network and parsing checks pass
+test_udpfs_art.py its harness slices RiptOPL's art index and texcache, which RIPPS2 keeps its own (artPlaceSecond, build 98; its art index); the UDPFS late-discovery picks of build 126 are in
