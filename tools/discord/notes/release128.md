@@ -17,20 +17,37 @@
 - **List Title and Description** (Settings > Interface), **PS1 Duplicates** (Ember or POPSTARTER when you have both), **conf_apps.cfg names** for POPStarterGameInstaller's numbered games, **sizes on MMCE**.
 - **Starting a drive for a launch** shows an estimate and waits longer, so a Manual HDD works on the first press.
 
-MEDIA_STORAGE
+<p align="center">
+<img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/v1.2.8-beta/media/b128/new-01-info-back-cover.jpg" width="48%" alt="RIPPS2's info page: the cover turned to its back">
+<img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/v1.2.8-beta/media/b128/new-02-info-stars.jpg" width="48%" alt="The info page's rating stars at RIPFLOW's size">
+</p>
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/v1.2.8-beta/media/b128/new-06-status-sounds.jpg" width="70%" alt="STATUS: the sounds and the boot sound">
+</p>
 
 ### Getting around
 - **The sidebar's flow:** Circle opens the drawer of the page you are on, Left folds it to the icons, Circle again closes it. Select and Back hints while it has the pad, on every page.
 - **RIPFLOW:** L2 / R2 step the covers as L1 / R1 do, Up / Down tip the case, the right stick turns it over.
 - **Tooltips stay 6.9 s.** Set Metadata names the library and the file on its top line.
 
-MEDIA_NAV
+<p align="center">
+<img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/v1.2.8-beta/media/b128/new-04-sidebar-drawer.jpg" width="48%" alt="Circle opens the drawer of the page you are on">
+<img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/v1.2.8-beta/media/b128/new-05-sidebar-launch-disc.jpg" width="48%" alt="Launch Disc: SELECT and BACK while the sidebar has the pad">
+</p>
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/v1.2.8-beta/media/b128/new-03-ripflow-flip.jpg" width="70%" alt="RIPFLOW: the right stick turns the case to its back">
+</p>
 
 ### In a game
 - **CHEATS in the in-game menu** (Settings > General > In-Game Menu > Cheats), by NathanNeurotic: each of a game's cheats on or off while you play, applied on RESUME.
 - **POPSTARTER's in-game reset pictures in RIPPS2's look**: [extras/POPS](https://github.com/akilluminati47/RIPPS2/tree/main/extras/POPS), copy them into POPS beside POPSTARTER.ELF.
 
-MEDIA_GAME
+<p align="center">
+<img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/v1.2.8-beta/media/b128/new-07-igr-cheats.png" width="48%" alt="The in-game menu's CHEATS">
+<img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/v1.2.8-beta/media/b128/new-08-popstarter-igr.png" width="48%" alt="POPSTARTER's reset pictures in RIPPS2's look">
+</p>
 
 ### Controllers: .pad
 - RIPPS2 leads **.pad**, one text file a USB pad, named by its ID ([the format](https://github.com/akilluminati47/RIPPS2/blob/main/docs/plans/pad-spec.md)), with a reference reader any launcher can use. **Settings > Controllers > My Pads** checks yours. PADEMU reads them in a later build: send us your pad's file.
