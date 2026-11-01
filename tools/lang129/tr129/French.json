@@ -1,0 +1,38 @@
+{
+ "s": {
+  "0": "%s n'a pas pu être écrit.",
+  "1": "%s existe déjà et n'a pas pu être mis de côté, il a donc été laissé tel quel.",
+  "2": "Rond",
+  "3": "Croix",
+  "4": "Bas",
+  "5": "Bas sur la croix directionnelle",
+  "6": "%04X:%04X trouvée. Relâchez tout dessus, sticks compris, et attendez.",
+  "7": "Reçu. Relâchez.",
+  "8": "L3 (enfoncez le stick gauche)",
+  "9": "Gauche sur la croix directionnelle",
+  "10": "Rien n'a été configuré, donc aucun fichier n'a été écrit.",
+  "11": "Branchez la manette USB à configurer. Si elle est déjà branchée, débranchez-la puis rebranchez-la. Appuyez ensuite une fois sur n'importe quel bouton.",
+  "12": "Appuyez sur %s sur la manette USB et maintenez.",
+  "13": "Poussez %s et maintenez.",
+  "14": "R3 (enfoncez le stick droit)",
+  "15": "Droite sur la croix directionnelle",
+  "16": "Enregistrer",
+  "17": "Enregistré sous %s. La manette pilote maintenant le menu et joue dans les jeux avec le Pad Emulator activé.",
+  "18": "Passer",
+  "19": "Carré",
+  "20": "Cette manette ne peut pas encore être décrite dans un .pad (%s), donc aucun fichier n'a été écrit.",
+  "21": "Triangle",
+  "22": "Essayez. Ce que vous maintenez s'affiche ici :",
+  "23": "Haut",
+  "24": "Haut sur la croix directionnelle",
+  "25": "le stick gauche vers le bas",
+  "26": "le stick gauche vers la droite",
+  "27": "le stick droit vers le bas",
+  "28": "le stick droit vers la droite"
+ },
+ "l": {
+  "RIPPS2_PAD_SETUP": "Configurer une manette USB",
+  "HINT_RIPPS2_PAD_SETUP": "Branchez une manette USB que RIPPS2 ne connaît pas, appuyez sur chaque bouton demandé, et RIPPS2 écrit son .pad dans PADS. SELECT sur votre manette PS2 passe un bouton.",
+  "HINT_RIPPS2_MY_PADS": "Les profils .pad du dossier PADS à côté de RIPPS2 : un fichier texte par manette USB, nommé d'après son ID (2563_0575.pad), chacun vérifié. Une manette profilée pilote le menu et joue dans les jeux (Pad Emulator activé)."
+ }
+}

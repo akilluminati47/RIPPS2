@@ -1411,6 +1411,36 @@ strings:
   'Boot sound On: from the AUDIO folder, once its drive is up': 'Son de démarrage Activé : depuis le dossier AUDIO, une fois son lecteur prêt'
   Boot sound off (Audio settings > Boot Sound): Son de démarrage désactivé (Paramètres audio > Son de démarrage)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Copie boot.adp à côté de RIPPS2 sur la carte mémoire d'où il démarre, où le démarrage le lit avant qu'un lecteur soit prêt.
+  '%s could not be written.': '%s n''a pas pu être écrit.'
+  '%s is there already and could not be put aside, so it was left as it was.': '%s existe déjà et n''a pas pu être mis de côté, il a donc été laissé tel quel.'
+  Circle: Rond
+  Cross: Croix
+  Down: Bas
+  Down on the d-pad: Bas sur la croix directionnelle
+  Found %04X:%04X. Let go of everything on it, sticks too, and wait.: '%04X:%04X trouvée. Relâchez tout dessus, sticks compris, et attendez.'
+  Got it. Let go.: Reçu. Relâchez.
+  L3 (press the left stick in): L3 (enfoncez le stick gauche)
+  Left on the d-pad: Gauche sur la croix directionnelle
+  Nothing was set up, so no file was written.: Rien n'a été configuré, donc aucun fichier n'a été écrit.
+  ? Plug in the USB pad you want to set up. If it is in already, take it out and plug it in again. Then press any button on it once.
+  : Branchez la manette USB à configurer. Si elle est déjà branchée, débranchez-la puis rebranchez-la. Appuyez ensuite une fois sur n'importe quel bouton.
+  Press %s on the USB pad and hold it.: Appuyez sur %s sur la manette USB et maintenez.
+  Push %s and hold it.: Poussez %s et maintenez.
+  R3 (press the right stick in): R3 (enfoncez le stick droit)
+  Right on the d-pad: Droite sur la croix directionnelle
+  Save: Enregistrer
+  Saved as %s. The pad now steers the menu, and plays in games with the Pad Emulator on.: Enregistré sous %s. La manette pilote maintenant le menu et joue dans les jeux avec le Pad Emulator activé.
+  Skip: Passer
+  Square: Carré
+  This pad cannot be described in a .pad yet (%s), so no file was written.: Cette manette ne peut pas encore être décrite dans un .pad (%s), donc aucun fichier n'a été écrit.
+  Triangle: Triangle
+  'Try it. What you hold shows here:': 'Essayez. Ce que vous maintenez s''affiche ici :'
+  Up: Haut
+  Up on the d-pad: Haut sur la croix directionnelle
+  the left stick down: le stick gauche vers le bas
+  the left stick to the right: le stick gauche vers la droite
+  the right stick down: le stick droit vers le bas
+  the right stick to the right: le stick droit vers la droite
 labels:
   HINT_NEUTRINO_AUTO_ELF: Transmet l'ELF de démarrage du jeu à Neutrino pour chercher sa configuration par titre. Activé par défaut ; une option Boot ELF réglée à la main a la priorité.
   HINT_POPSTARTER_PATH: Emplacement de POPSTARTER.ELF. Laissé vide, RIPPS2 en renseigne un qu'il trouve sur un périphérique ; écrivez par-dessus pour en utiliser un autre, comme usb:/POPS/POPSTARTER.ELF
@@ -1878,4 +1908,6 @@ labels:
   RIPPS2_PS1_PREFER: Doublons PS1
   HINT_RIPPS2_PS1_PREFER: 'Un jeu PS1 présent à la fois en VCD POPSTARTER et en image Ember. Les deux : deux lignes. Ember : seulement celle d''Ember. POPSTARTER : seulement la VCD. Le même titre, sans l''ID de disque en tête, est le même jeu.'
   RIPPS2_MY_PADS: Mes manettes
-  HINT_RIPPS2_MY_PADS: 'Les profils .pad du dossier PADS à côté de RIPPS2 : un fichier texte par manette USB, nommé d''après son ID (2563_0575.pad), chacun vérifié. RIPPS2 mène le format ; PADEMU les lira dans un build ultérieur.'
+  HINT_RIPPS2_MY_PADS: 'Les profils .pad du dossier PADS à côté de RIPPS2 : un fichier texte par manette USB, nommé d''après son ID (2563_0575.pad), chacun vérifié. Une manette profilée pilote le menu et joue dans les jeux (Pad Emulator activé).'
+  RIPPS2_PAD_SETUP: Configurer une manette USB
+  HINT_RIPPS2_PAD_SETUP: Branchez une manette USB que RIPPS2 ne connaît pas, appuyez sur chaque bouton demandé, et RIPPS2 écrit son .pad dans PADS. SELECT sur votre manette PS2 passe un bouton.

@@ -1412,6 +1412,36 @@ strings:
   'Boot sound On: from the AUDIO folder, once its drive is up': 'Indítási hang Be: az AUDIO mappából, ha a meghajtója kész'
   Boot sound off (Audio settings > Boot Sound): Indítási hang ki (Hangbeállítások > Indítási hang)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Átmásolja a boot.adp-t a RIPPS2 mellé azon a memóriakártyán, amelyről indul, ahol az indítás bármely meghajtó előtt beolvassa.
+  '%s could not be written.': '%s nem írható.'
+  '%s is there already and could not be put aside, so it was left as it was.': '%s már létezik, és nem lehetett félretenni, ezért úgy maradt, ahogy volt.'
+  Circle: Kör
+  Cross: X
+  Down: Le
+  Down on the d-pad: Le az iránygombon
+  Found %04X:%04X. Let go of everything on it, sticks too, and wait.: 'Megvan: %04X:%04X. Engedj el rajta mindent, a karokat is, és várj.'
+  Got it. Let go.: Megvan. Engedd el.
+  L3 (press the left stick in): L3 (nyomd be a bal kart)
+  Left on the d-pad: Balra az iránygombon
+  Nothing was set up, so no file was written.: Semmi sem lett beállítva, ezért nem készült fájl.
+  ? Plug in the USB pad you want to set up. If it is in already, take it out and plug it in again. Then press any button on it once.
+  : Csatlakoztasd a beállítandó USB-kontrollert. Ha már be van dugva, húzd ki és dugd be újra. Aztán nyomj meg rajta egyszer egy tetszőleges gombot.
+  Press %s on the USB pad and hold it.: Nyomd meg a(z) %s gombot az USB-kontrolleren, és tartsd.
+  Push %s and hold it.: Told %s, és tartsd.
+  R3 (press the right stick in): R3 (nyomd be a jobb kart)
+  Right on the d-pad: Jobbra az iránygombon
+  Save: Mentés
+  Saved as %s. The pad now steers the menu, and plays in games with the Pad Emulator on.: 'Mentve: %s. A kontroller most vezérli a menüt, és bekapcsolt Pad Emulatorral játszik a játékokban.'
+  Skip: Kihagyás
+  Square: Négyzet
+  This pad cannot be described in a .pad yet (%s), so no file was written.: Ezt a kontrollert még nem lehet .pad fájlban leírni (%s), ezért nem készült fájl.
+  Triangle: Háromszög
+  'Try it. What you hold shows here:': 'Próbáld ki. Amit nyomva tartasz, itt látszik:'
+  Up: Fel
+  Up on the d-pad: Fel az iránygombon
+  the left stick down: a bal kart lefelé
+  the left stick to the right: a bal kart jobbra
+  the right stick down: a jobb kart lefelé
+  the right stick to the right: a jobb kart jobbra
 labels:
   OK: OK
   BACKSPACE: Visszatörlés
@@ -1892,4 +1922,6 @@ labels:
   RIPPS2_PS1_PREFER: PS1 ismétlődések
   HINT_RIPPS2_PS1_PREFER: 'Egy PS1-játék, amely POPSTARTER VCD-ként és Ember-képként is megvan. Mindkettő: két sor. Ember: csak az Ember sor. POPSTARTER: csak a VCD. Ugyanaz a cím, az elöl álló lemezazonosítótól eltekintve, ugyanaz a játék.'
   RIPPS2_MY_PADS: Kontrollereim
-  HINT_RIPPS2_MY_PADS: 'A .pad profilok a RIPPS2 melletti PADS mappában: USB-kontrollerenként egy szövegfájl, az azonosítója a neve (2563_0575.pad), mindegyik ellenőrizve. A formátumot a RIPPS2 vezeti; a PADEMU egy későbbi buildben olvassa őket.'
+  HINT_RIPPS2_MY_PADS: 'A .pad profilok a RIPPS2 melletti PADS mappában: USB-kontrollerenként egy szövegfájl, az azonosítója szerint elnevezve (2563_0575.pad), mindegyik ellenőrizve. A profillal rendelkező kontroller vezérli a menüt és játszik a játékokban (Pad Emulator bekapcsolva).'
+  RIPPS2_PAD_SETUP: USB-kontroller beállítása
+  HINT_RIPPS2_PAD_SETUP: Csatlakoztass egy USB-kontrollert, amelyet a RIPPS2 nem ismer, nyomd meg az összes kért gombot, és a RIPPS2 megírja a .pad fájlját a PADS mappába. A PS2-kontroller SELECT gombja kihagy egy gombot.

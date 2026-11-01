@@ -1,0 +1,38 @@
+{
+ "s": {
+  "0": "No se pudo escribir %s.",
+  "1": "%s ya existe y no se pudo apartar, así que se dejó como estaba.",
+  "2": "Círculo",
+  "3": "Equis",
+  "4": "Abajo",
+  "5": "Abajo en la cruceta",
+  "6": "Encontrado %04X:%04X. Suelta todo en él, también los sticks, y espera.",
+  "7": "Hecho. Suelta.",
+  "8": "L3 (pulsa el stick izquierdo)",
+  "9": "Izquierda en la cruceta",
+  "10": "No se configuró nada, así que no se escribió ningún archivo.",
+  "11": "Conecta el mando USB que quieres configurar. Si ya está conectado, desconéctalo y vuelve a conectarlo. Luego pulsa una vez cualquier botón.",
+  "12": "Pulsa %s en el mando USB y mantenlo.",
+  "13": "Mueve %s y mantenlo.",
+  "14": "R3 (pulsa el stick derecho)",
+  "15": "Derecha en la cruceta",
+  "16": "Guardar",
+  "17": "Guardado como %s. El mando ya maneja el menú y juega en los juegos con el Pad Emulator activado.",
+  "18": "Omitir",
+  "19": "Cuadrado",
+  "20": "Este mando aún no se puede describir en un .pad (%s), así que no se escribió ningún archivo.",
+  "21": "Triángulo",
+  "22": "Pruébalo. Lo que mantengas pulsado aparece aquí:",
+  "23": "Arriba",
+  "24": "Arriba en la cruceta",
+  "25": "el stick izquierdo hacia abajo",
+  "26": "el stick izquierdo hacia la derecha",
+  "27": "el stick derecho hacia abajo",
+  "28": "el stick derecho hacia la derecha"
+ },
+ "l": {
+  "RIPPS2_PAD_SETUP": "Configurar un mando USB",
+  "HINT_RIPPS2_PAD_SETUP": "Conecta un mando USB que RIPPS2 no conozca, pulsa cada botón que te pida y RIPPS2 escribe su .pad en PADS. SELECT en tu mando de PS2 omite un botón.",
+  "HINT_RIPPS2_MY_PADS": "Los perfiles .pad de la carpeta PADS junto a RIPPS2: un archivo de texto por mando USB, con el nombre de su ID (2563_0575.pad), y cada uno comprobado. Un mando con perfil maneja el menú y juega en los juegos (Pad Emulator activado)."
+ }
+}

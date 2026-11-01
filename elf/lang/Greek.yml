@@ -1412,6 +1412,36 @@ strings:
   'Boot sound On: from the AUDIO folder, once its drive is up': 'Ήχος εκκίνησης Ναι: από τον φάκελο AUDIO, μόλις ο δίσκος του είναι έτοιμος'
   Boot sound off (Audio settings > Boot Sound): Ήχος εκκίνησης όχι (Ρυθμίσεις ήχου > Ήχος εκκίνησης)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Αντιγράφει το boot.adp δίπλα στο RIPPS2 στην κάρτα μνήμης από την οποία ξεκινά, όπου η εκκίνηση το διαβάζει πριν ετοιμαστεί οποιοσδήποτε δίσκος.
+  '%s could not be written.': Δεν ήταν δυνατή η εγγραφή του %s.
+  '%s is there already and could not be put aside, so it was left as it was.': Το %s υπάρχει ήδη και δεν ήταν δυνατό να μπει στην άκρη, οπότε έμεινε όπως ήταν.
+  Circle: Κύκλος
+  Cross: Χι
+  Down: Κάτω
+  Down on the d-pad: Κάτω στο σταυρό κατεύθυνσης
+  Found %04X:%04X. Let go of everything on it, sticks too, and wait.: Βρέθηκε %04X:%04X. Άφησε τα πάντα πάνω του, και τους μοχλούς, και περίμενε.
+  Got it. Let go.: Έγινε. Άφησε.
+  L3 (press the left stick in): L3 (πάτησε τον αριστερό μοχλό)
+  Left on the d-pad: Αριστερά στο σταυρό κατεύθυνσης
+  Nothing was set up, so no file was written.: Δεν ρυθμίστηκε τίποτα, οπότε δεν γράφτηκε αρχείο.
+  ? Plug in the USB pad you want to set up. If it is in already, take it out and plug it in again. Then press any button on it once.
+  : Σύνδεσε το χειριστήριο USB που θέλεις να ρυθμίσεις. Αν είναι ήδη συνδεδεμένο, αποσύνδεσέ το και σύνδεσέ το ξανά. Μετά πάτησε μία φορά οποιοδήποτε κουμπί του.
+  Press %s on the USB pad and hold it.: Πάτησε %s στο χειριστήριο USB και κράτησέ το.
+  Push %s and hold it.: Σπρώξε %s και κράτησέ τον.
+  R3 (press the right stick in): R3 (πάτησε τον δεξί μοχλό)
+  Right on the d-pad: Δεξιά στο σταυρό κατεύθυνσης
+  Save: Αποθήκευση
+  Saved as %s. The pad now steers the menu, and plays in games with the Pad Emulator on.: Αποθηκεύτηκε ως %s. Το χειριστήριο οδηγεί τώρα το μενού και παίζει στα παιχνίδια με ενεργό το Pad Emulator.
+  Skip: Παράλειψη
+  Square: Τετράγωνο
+  This pad cannot be described in a .pad yet (%s), so no file was written.: Αυτό το χειριστήριο δεν μπορεί ακόμη να περιγραφεί σε .pad (%s), οπότε δεν γράφτηκε αρχείο.
+  Triangle: Τρίγωνο
+  'Try it. What you hold shows here:': 'Δοκίμασέ το. Ό,τι κρατάς φαίνεται εδώ:'
+  Up: Πάνω
+  Up on the d-pad: Πάνω στο σταυρό κατεύθυνσης
+  the left stick down: τον αριστερό μοχλό κάτω
+  the left stick to the right: τον αριστερό μοχλό δεξιά
+  the right stick down: τον δεξί μοχλό κάτω
+  the right stick to the right: τον δεξί μοχλό δεξιά
 labels:
   OK: OK
   WIDE_SCREEN: Ευρεία οθόνη
@@ -1892,4 +1922,6 @@ labels:
   RIPPS2_PS1_PREFER: Διπλότυπα PS1
   HINT_RIPPS2_PS1_PREFER: 'Ένα παιχνίδι PS1 που είναι και VCD του POPSTARTER και εικόνα του Ember. Και τα δύο: δύο γραμμές. Ember: μόνο του Ember. POPSTARTER: μόνο το VCD. Ο ίδιος τίτλος, χωρίς ID δίσκου μπροστά, είναι το ίδιο παιχνίδι.'
   RIPPS2_MY_PADS: Τα χειριστήριά μου
-  HINT_RIPPS2_MY_PADS: 'Τα προφίλ .pad στον φάκελο PADS δίπλα στο RIPPS2: ένα αρχείο κειμένου ανά χειριστήριο USB, με όνομα το ID του (2563_0575.pad), το καθένα ελεγμένο. Το RIPPS2 οδηγεί τη μορφή· το PADEMU θα τα διαβάζει σε επόμενο build.'
+  HINT_RIPPS2_MY_PADS: 'Τα προφίλ .pad στον φάκελο PADS δίπλα στο RIPPS2: ένα αρχείο κειμένου ανά χειριστήριο USB, με όνομα το ID του (2563_0575.pad), και το καθένα ελεγμένο. Ένα χειριστήριο με προφίλ οδηγεί το μενού και παίζει στα παιχνίδια (Pad Emulator ενεργό).'
+  RIPPS2_PAD_SETUP: Ρύθμιση χειριστηρίου USB
+  HINT_RIPPS2_PAD_SETUP: Σύνδεσε ένα χειριστήριο USB που δεν γνωρίζει το RIPPS2, πάτησε κάθε κουμπί που ζητά, και το RIPPS2 γράφει το .pad του στο PADS. Το SELECT στο χειριστήριο PS2 παραλείπει ένα κουμπί.

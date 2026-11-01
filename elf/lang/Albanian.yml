@@ -1411,6 +1411,36 @@ strings:
   'Boot sound On: from the AUDIO folder, once its drive is up': 'Tingulli i nisjes Aktiv: nga dosja AUDIO, kur disku i saj është gati'
   Boot sound off (Audio settings > Boot Sound): Tingulli i nisjes joaktiv (Cilësimet e audios > Tingulli i nisjes)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Kopjon boot.adp pranë RIPPS2 në kartën e memories nga nis, ku nisja e lexon para se ndonjë disk të jetë gati.
+  '%s could not be written.': '%s nuk mund të shkruhej.'
+  '%s is there already and could not be put aside, so it was left as it was.': '%s ekziston tashmë dhe nuk mund të lihej mënjanë, ndaj mbeti siç ishte.'
+  Circle: Rreth
+  Cross: Kryq
+  Down: Poshtë
+  Down on the d-pad: Poshtë në kryqin e drejtimit
+  Found %04X:%04X. Let go of everything on it, sticks too, and wait.: U gjet %04X:%04X. Lësho gjithçka në të, edhe levat, dhe prit.
+  Got it. Let go.: U kap. Lësho.
+  L3 (press the left stick in): L3 (shtyp levën e majtë)
+  Left on the d-pad: Majtas në kryqin e drejtimit
+  Nothing was set up, so no file was written.: Asgjë nuk u rregullua, ndaj nuk u shkrua asnjë skedar.
+  ? Plug in the USB pad you want to set up. If it is in already, take it out and plug it in again. Then press any button on it once.
+  : Lidh kontrolluesin USB që do të rregullosh. Nëse është i lidhur, hiqe dhe lidhe sërish. Pastaj shtyp një herë çfarëdo butoni në të.
+  Press %s on the USB pad and hold it.: Shtyp %s në kontrolluesin USB dhe mbaje.
+  Push %s and hold it.: Shty %s dhe mbaje.
+  R3 (press the right stick in): R3 (shtyp levën e djathtë)
+  Right on the d-pad: Djathtas në kryqin e drejtimit
+  Save: Ruaj
+  Saved as %s. The pad now steers the menu, and plays in games with the Pad Emulator on.: U ruajt si %s. Kontrolluesi tani drejton menunë dhe luan në lojëra me Pad Emulator të ndezur.
+  Skip: Kapërce
+  Square: Katror
+  This pad cannot be described in a .pad yet (%s), so no file was written.: Ky kontrollues ende nuk mund të përshkruhet në një .pad (%s), ndaj nuk u shkrua asnjë skedar.
+  Triangle: Trekëndësh
+  'Try it. What you hold shows here:': 'Provoje. Ajo që mban shtypur shfaqet këtu:'
+  Up: Lart
+  Up on the d-pad: Lart në kryqin e drejtimit
+  the left stick down: levën e majtë poshtë
+  the left stick to the right: levën e majtë djathtas
+  the right stick down: levën e djathtë poshtë
+  the right stick to the right: levën e djathtë djathtas
 labels:
   OK: OK
   EXITTO: Shtegu IGR
@@ -1904,4 +1934,6 @@ labels:
   RIPPS2_PS1_PREFER: Dyfishimet PS1
   HINT_RIPPS2_PS1_PREFER: 'Një lojë PS1 që është edhe VCD për POPSTARTER, edhe imazh Ember. Të dyja: dy rreshta. Ember: vetëm rreshti Ember. POPSTARTER: vetëm VCD-ja. I njëjti titull, pa ID-në e diskut përpara, është e njëjta lojë.'
   RIPPS2_MY_PADS: Kontrollerët e mi
-  HINT_RIPPS2_MY_PADS: 'Profilet .pad në dosjen PADS pranë RIPPS2: një skedar teksti për çdo kontroller USB, i emërtuar sipas ID-së së tij (2563_0575.pad), secili i kontrolluar. RIPPS2 e udhëheq formatin; PADEMU do t''i lexojë në një build të mëvonshëm.'
+  HINT_RIPPS2_MY_PADS: 'Profilet .pad në dosjen PADS pranë RIPPS2: një skedar teksti për çdo kontrollues USB, me emrin e ID-së së tij (2563_0575.pad), secili i kontrolluar. Një kontrollues me profil drejton menunë dhe luan në lojëra (Pad Emulator i ndezur).'
+  RIPPS2_PAD_SETUP: Rregullo një kontrollues USB
+  HINT_RIPPS2_PAD_SETUP: Lidh një kontrollues USB që RIPPS2 nuk e njeh, shtyp çdo buton që kërkon dhe RIPPS2 shkruan .pad-in e tij në PADS. SELECT në kontrolluesin tënd PS2 kapërcen një buton.

@@ -1409,6 +1409,36 @@ strings:
   'Boot sound On: from the AUDIO folder, once its drive is up': 'Startton An: aus dem Ordner AUDIO, sobald sein Laufwerk bereit ist'
   Boot sound off (Audio settings > Boot Sound): Startton aus (Audio-Einstellungen > Startton)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Kopiert boot.adp neben RIPPS2 auf die Memory Card, von der es startet, wo der Start es liest, bevor ein Laufwerk bereit ist.
+  '%s could not be written.': '%s konnte nicht geschrieben werden.'
+  '%s is there already and could not be put aside, so it was left as it was.': '%s ist schon da und konnte nicht beiseitegelegt werden, also blieb es, wie es war.'
+  Circle: Kreis
+  Cross: Kreuz
+  Down: Unten
+  Down on the d-pad: Unten auf dem Steuerkreuz
+  Found %04X:%04X. Let go of everything on it, sticks too, and wait.: '%04X:%04X gefunden. Lass alles daran los, auch die Sticks, und warte.'
+  Got it. Let go.: Erkannt. Loslassen.
+  L3 (press the left stick in): L3 (den linken Stick hineindrücken)
+  Left on the d-pad: Links auf dem Steuerkreuz
+  Nothing was set up, so no file was written.: Nichts wurde eingerichtet, also wurde keine Datei geschrieben.
+  ? Plug in the USB pad you want to set up. If it is in already, take it out and plug it in again. Then press any button on it once.
+  : Steck das USB-Pad ein, das du einrichten willst. Steckt es schon, zieh es ab und steck es wieder ein. Drück dann einmal eine beliebige Taste darauf.
+  Press %s on the USB pad and hold it.: Drück %s auf dem USB-Pad und halte es.
+  Push %s and hold it.: Drück %s und halte ihn.
+  R3 (press the right stick in): R3 (den rechten Stick hineindrücken)
+  Right on the d-pad: Rechts auf dem Steuerkreuz
+  Save: Speichern
+  Saved as %s. The pad now steers the menu, and plays in games with the Pad Emulator on.: Gespeichert als %s. Das Pad steuert jetzt das Menü und spielt in Spielen mit eingeschaltetem Pad-Emulator.
+  Skip: Überspringen
+  Square: Quadrat
+  This pad cannot be described in a .pad yet (%s), so no file was written.: Dieses Pad lässt sich noch nicht in einer .pad beschreiben (%s), also wurde keine Datei geschrieben.
+  Triangle: Dreieck
+  'Try it. What you hold shows here:': 'Probier es aus. Was du hältst, erscheint hier:'
+  Up: Oben
+  Up on the d-pad: Oben auf dem Steuerkreuz
+  the left stick down: den linken Stick nach unten
+  the left stick to the right: den linken Stick nach rechts
+  the right stick down: den rechten Stick nach unten
+  the right stick to the right: den rechten Stick nach rechts
 labels:
   CFG_NOTIFICATION: Konfiguration geladen von %s
   THM_NOTIFICATION: Design geladen von %s
@@ -1880,4 +1910,6 @@ labels:
   RIPPS2_PS1_PREFER: PS1-Duplikate
   HINT_RIPPS2_PS1_PREFER: 'Ein PS1-Spiel, das sowohl als POPSTARTER-VCD als auch als Ember-Abbild vorliegt. Beide: zwei Zeilen. Ember: nur das Ember-Abbild. POPSTARTER: nur die VCD. Derselbe Titel, eine vorangestellte Disc-ID beiseite, ist dasselbe Spiel.'
   RIPPS2_MY_PADS: Meine Pads
-  HINT_RIPPS2_MY_PADS: 'Die .pad-Profile im Ordner PADS neben RIPPS2: eine Textdatei pro USB-Pad, nach seiner ID benannt (2563_0575.pad), jede geprüft. RIPPS2 führt das Format an; PADEMU liest sie in einem späteren Build.'
+  HINT_RIPPS2_MY_PADS: 'Die .pad-Profile im Ordner PADS neben RIPPS2: eine Textdatei pro USB-Pad, nach seiner ID benannt (2563_0575.pad), jede geprüft. Ein Pad mit Profil steuert das Menü und spielt in Spielen (Pad-Emulator an).'
+  RIPPS2_PAD_SETUP: USB-Pad einrichten
+  HINT_RIPPS2_PAD_SETUP: Steck ein USB-Pad ein, das RIPPS2 nicht kennt, drück jede Taste, nach der es fragt, und RIPPS2 schreibt seine .pad in PADS. SELECT auf deinem PS2-Pad überspringt eine Taste.

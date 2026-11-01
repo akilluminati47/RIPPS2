@@ -1412,6 +1412,36 @@ strings:
   'Boot sound On: from the AUDIO folder, once its drive is up': 'ສຽງເປີດ ເປີດ: ຈາກ AUDIO, ເມື່ອໄດຣຟ໌ພ້ອມ'
   Boot sound off (Audio settings > Boot Sound): ສຽງເປີດ ປິດ (ຕັ້ງຄ່າສຽງ)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: ສຳເນົາ boot.adp ໄວ້ຂ້າງ RIPPS2 ໃນເມມໂມຣີກາດທີ່ມັນເລີ່ມ, ບ່ອນທີ່ການເປີດເຄື່ອງອ່ານກ່ອນໄດຣຟ໌ໃດພ້ອມ.
+  '%s could not be written.': ບໍ່ສາມາດຂຽນ %s ໄດ້.
+  '%s is there already and could not be put aside, so it was left as it was.': '%s ມີຢູ່ແລ້ວ ແລະ ບໍ່ສາມາດຍ້າຍໄປໄວ້ຂ້າງໄດ້, ຈຶ່ງປະໄວ້ຄືເກົ່າ.'
+  Circle: ວົງມົນ
+  Cross: ກາກະບາດ
+  Down: ລົງ
+  Down on the d-pad: ລົງ ເທິງປຸ່ມທິດທາງ
+  Found %04X:%04X. Let go of everything on it, sticks too, and wait.: ພົບ %04X:%04X. ປ່ອຍທຸກຢ່າງ ລວມທັງຄັນໂຍກ ແລ້ວລໍຖ້າ.
+  Got it. Let go.: ໄດ້ແລ້ວ. ປ່ອຍ.
+  L3 (press the left stick in): L3 (ກົດຄັນໂຍກຊ້າຍລົງ)
+  Left on the d-pad: ຊ້າຍ ເທິງປຸ່ມທິດທາງ
+  Nothing was set up, so no file was written.: ບໍ່ມີຫຍັງຖືກຕັ້ງຄ່າ, ຈຶ່ງບໍ່ມີໄຟລ໌ຖືກຂຽນ.
+  ? Plug in the USB pad you want to set up. If it is in already, take it out and plug it in again. Then press any button on it once.
+  : ສຽບຈອຍ USB ທີ່ທ່ານຕ້ອງການຕັ້ງຄ່າ. ຖ້າສຽບຢູ່ແລ້ວ ໃຫ້ຖອດອອກແລ້ວສຽບໃໝ່. ຈາກນັ້ນກົດປຸ່ມໃດກໍໄດ້ເທິງມັນໜຶ່ງຄັ້ງ.
+  Press %s on the USB pad and hold it.: ກົດ %s ເທິງຈອຍ USB ແລະ ກົດຄ້າງໄວ້.
+  Push %s and hold it.: ດັນ %s ແລະ ຄ້າງໄວ້.
+  R3 (press the right stick in): R3 (ກົດຄັນໂຍກຂວາລົງ)
+  Right on the d-pad: ຂວາ ເທິງປຸ່ມທິດທາງ
+  Save: ບັນທຶກ
+  Saved as %s. The pad now steers the menu, and plays in games with the Pad Emulator on.: ບັນທຶກເປັນ %s ແລ້ວ. ຈອຍນີ້ຄວບຄຸມເມນູໄດ້ແລ້ວ ແລະ ຫຼິ້ນໃນເກມເມື່ອເປີດ Pad Emulator.
+  Skip: ຂ້າມ
+  Square: ສີ່ຫຼ່ຽມ
+  This pad cannot be described in a .pad yet (%s), so no file was written.: ຈອຍນີ້ຍັງບໍ່ສາມາດອະທິບາຍໃນ .pad ໄດ້ (%s), ຈຶ່ງບໍ່ມີໄຟລ໌ຖືກຂຽນ.
+  Triangle: ສາມຫຼ່ຽມ
+  'Try it. What you hold shows here:': 'ລອງເບິ່ງ. ສິ່ງທີ່ທ່ານກົດຄ້າງຈະສະແດງຢູ່ນີ້:'
+  Up: ຂຶ້ນ
+  Up on the d-pad: ຂຶ້ນ ເທິງປຸ່ມທິດທາງ
+  the left stick down: ຄັນໂຍກຊ້າຍລົງລຸ່ມ
+  the left stick to the right: ຄັນໂຍກຊ້າຍໄປຂວາ
+  the right stick down: ຄັນໂຍກຂວາລົງລຸ່ມ
+  the right stick to the right: ຄັນໂຍກຂວາໄປຂວາ
 labels:
   SETTINGS_SAVED: ບັນທຶກການຕັ້ງຄ່າ ໄວ້ໃນ %s ແລ້ວ
   REMOVE_ALL_SETTINGS: ລົບການຕັ້ງຄ່າ
@@ -1963,4 +1993,6 @@ labels:
   RIPPS2_PS1_PREFER: ເກມ PS1 ຊ້ຳ
   HINT_RIPPS2_PS1_PREFER: 'ເກມ PS1 ທີ່ເປັນທັງ VCD ຂອງ POPSTARTER ແລະ ອິມເມດ Ember. ທັງສອງ: ສອງແຖວ. Ember: ສະເພາະ Ember. POPSTARTER: ສະເພາະ VCD. ຫົວຂໍ້ດຽວກັນ ໂດຍບໍ່ນັບ ID ແຜ່ນທາງໜ້າ ແມ່ນເກມດຽວກັນ.'
   RIPPS2_MY_PADS: ຈອຍຂອງຂ້ອຍ
-  HINT_RIPPS2_MY_PADS: 'ໂປຣໄຟລ໌ .pad ໃນໂຟນເດີ PADS ຂ້າງ RIPPS2: ໄຟລ໌ຂໍ້ຄວາມໜຶ່ງຕໍ່ຈອຍ USB ຕັ້ງຊື່ຕາມ ID (2563_0575.pad), ກວດແຕ່ລະອັນ. RIPPS2 ນຳພາຮູບແບບນີ້; PADEMU ຈະອ່ານໃນ build ຕໍ່ໄປ.'
+  HINT_RIPPS2_MY_PADS: 'ໂປຣໄຟລ໌ .pad ໃນໂຟນເດີ PADS ຂ້າງ RIPPS2: ໄຟລ໌ຂໍ້ຄວາມໜຶ່ງຕໍ່ຈອຍ USB ໜຶ່ງ, ຕັ້ງຊື່ຕາມ ID ຂອງມັນ (2563_0575.pad), ແລະ ກວດແຕ່ລະອັນແລ້ວ. ຈອຍທີ່ມີໂປຣໄຟລ໌ຄວບຄຸມເມນູ ແລະ ຫຼິ້ນໃນເກມ (ເປີດ Pad Emulator).'
+  RIPPS2_PAD_SETUP: ຕັ້ງຄ່າຈອຍ USB
+  HINT_RIPPS2_PAD_SETUP: ສຽບຈອຍ USB ທີ່ RIPPS2 ບໍ່ຮູ້ຈັກ, ກົດແຕ່ລະປຸ່ມທີ່ມັນຂໍ, ແລ້ວ RIPPS2 ຈະຂຽນ .pad ຂອງມັນໄວ້ໃນ PADS. SELECT ເທິງຈອຍ PS2 ຂອງທ່ານຂ້າມໜຶ່ງປຸ່ມ.

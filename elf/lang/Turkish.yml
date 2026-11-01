@@ -1412,6 +1412,36 @@ strings:
   'Boot sound On: from the AUDIO folder, once its drive is up': 'Açılış sesi Açık: AUDIO klasöründen, sürücüsü hazır olunca'
   Boot sound off (Audio settings > Boot Sound): Açılış sesi kapalı (Ses ayarları > Açılış sesi)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: boot.adp'yi RIPPS2'nin başladığı hafıza kartında yanına kopyalar; açılış onu hiçbir sürücü hazır olmadan okur.
+  '%s could not be written.': '%s yazılamadı.'
+  '%s is there already and could not be put aside, so it was left as it was.': '%s zaten var ve kenara alınamadı, bu yüzden olduğu gibi bırakıldı.'
+  Circle: Daire
+  Cross: Çarpı
+  Down: Aşağı
+  Down on the d-pad: Yön tuşunda aşağı
+  Found %04X:%04X. Let go of everything on it, sticks too, and wait.: '%04X:%04X bulundu. Üzerindeki her şeyi, çubukları da bırak ve bekle.'
+  Got it. Let go.: Tamam. Bırak.
+  L3 (press the left stick in): L3 (sol çubuğa bas)
+  Left on the d-pad: Yön tuşunda sol
+  Nothing was set up, so no file was written.: Hiçbir şey ayarlanmadı, bu yüzden dosya yazılmadı.
+  ? Plug in the USB pad you want to set up. If it is in already, take it out and plug it in again. Then press any button on it once.
+  : Ayarlamak istediğin USB kolu tak. Zaten takılıysa çıkar ve yeniden tak. Sonra üzerindeki herhangi bir tuşa bir kez bas.
+  Press %s on the USB pad and hold it.: USB kolda %s tuşuna bas ve basılı tut.
+  Push %s and hold it.: '%s it ve tut.'
+  R3 (press the right stick in): R3 (sağ çubuğa bas)
+  Right on the d-pad: Yön tuşunda sağ
+  Save: Kaydet
+  Saved as %s. The pad now steers the menu, and plays in games with the Pad Emulator on.: '%s olarak kaydedildi. Kol artık menüyü yönetiyor ve Pad Emulator açıkken oyunlarda oynuyor.'
+  Skip: Atla
+  Square: Kare
+  This pad cannot be described in a .pad yet (%s), so no file was written.: Bu kol henüz bir .pad dosyasında tanımlanamıyor (%s), bu yüzden dosya yazılmadı.
+  Triangle: Üçgen
+  'Try it. What you hold shows here:': 'Dene. Basılı tuttuğun şey burada görünür:'
+  Up: Yukarı
+  Up on the d-pad: Yön tuşunda yukarı
+  the left stick down: sol çubuğu aşağı
+  the left stick to the right: sol çubuğu sağa
+  the right stick down: sağ çubuğu aşağı
+  the right stick to the right: sağ çubuğu sağa
 labels:
   ETH_100MFDX: 100Mbit Tam çift yönlü
   ETH_100MHDX: 100Mbit Yarı çift yönlü
@@ -1885,4 +1915,6 @@ labels:
   RIPPS2_PS1_PREFER: PS1 kopyaları
   HINT_RIPPS2_PS1_PREFER: 'Hem POPSTARTER VCD''si hem Ember görüntüsü olan bir PS1 oyunu. İkisi de: iki satır. Ember: yalnızca Ember satırı. POPSTARTER: yalnızca VCD. Baştaki disk kimliği dışında aynı başlık aynı oyundur.'
   RIPPS2_MY_PADS: Kollarım
-  HINT_RIPPS2_MY_PADS: 'RIPPS2''nin yanındaki PADS klasöründeki .pad profilleri: her USB kol için kimliğiyle adlandırılmış bir metin dosyası (2563_0575.pad), her biri denetlenir. Biçime RIPPS2 öncülük eder; PADEMU onları sonraki bir sürümde okur.'
+  HINT_RIPPS2_MY_PADS: 'RIPPS2''nin yanındaki PADS klasöründeki .pad profilleri: her USB kol için kimliğiyle adlandırılmış bir metin dosyası (2563_0575.pad), her biri denetlenmiş. Profili olan bir kol menüyü yönetir ve oyunlarda oynar (Pad Emulator açık).'
+  RIPPS2_PAD_SETUP: USB kol ayarla
+  HINT_RIPPS2_PAD_SETUP: RIPPS2'nin tanımadığı bir USB kol tak, istediği her tuşa bas; RIPPS2 onun .pad dosyasını PADS içine yazar. PS2 kolundaki SELECT bir tuşu atlar.

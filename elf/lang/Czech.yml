@@ -1412,6 +1412,36 @@ strings:
   'Boot sound On: from the AUDIO folder, once its drive is up': 'Zvuk spuštění Zap.: ze složky AUDIO, jakmile je její disk připraven'
   Boot sound off (Audio settings > Boot Sound): Zvuk spuštění vyp. (Nastavení zvuku > Zvuk spuštění)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Zkopíruje boot.adp vedle RIPPS2 na paměťovou kartu, ze které startuje, kde ho start čte dřív, než je připraven jakýkoli disk.
+  '%s could not be written.': '%s se nepodařilo zapsat.'
+  '%s is there already and could not be put aside, so it was left as it was.': '%s už existuje a nepodařilo se ho odložit stranou, takže zůstal, jak byl.'
+  Circle: Kolečko
+  Cross: Křížek
+  Down: Dolů
+  Down on the d-pad: Dolů na směrovém kříži
+  Found %04X:%04X. Let go of everything on it, sticks too, and wait.: Nalezeno %04X:%04X. Pusť na něm vše, i páčky, a počkej.
+  Got it. Let go.: Mám to. Pusť.
+  L3 (press the left stick in): L3 (zmáčkni levou páčku)
+  Left on the d-pad: Vlevo na směrovém kříži
+  Nothing was set up, so no file was written.: Nic nebylo nastaveno, takže se nezapsal žádný soubor.
+  ? Plug in the USB pad you want to set up. If it is in already, take it out and plug it in again. Then press any button on it once.
+  : Připoj USB ovladač, který chceš nastavit. Pokud už je připojený, odpoj ho a připoj znovu. Pak na něm jednou stiskni libovolné tlačítko.
+  Press %s on the USB pad and hold it.: Stiskni %s na USB ovladači a drž.
+  Push %s and hold it.: Vychyl %s a drž.
+  R3 (press the right stick in): R3 (zmáčkni pravou páčku)
+  Right on the d-pad: Vpravo na směrovém kříži
+  Save: Uložit
+  Saved as %s. The pad now steers the menu, and plays in games with the Pad Emulator on.: Uloženo jako %s. Ovladač teď ovládá menu a hraje ve hrách se zapnutým Pad Emulator.
+  Skip: Přeskočit
+  Square: Čtverec
+  This pad cannot be described in a .pad yet (%s), so no file was written.: Tento ovladač zatím nejde popsat v souboru .pad (%s), takže se nezapsal žádný soubor.
+  Triangle: Trojúhelník
+  'Try it. What you hold shows here:': 'Vyzkoušej to. Co držíš, se ukáže zde:'
+  Up: Nahoru
+  Up on the d-pad: Nahoru na směrovém kříži
+  the left stick down: levou páčku dolů
+  the left stick to the right: levou páčku doprava
+  the right stick down: pravou páčku dolů
+  the right stick to the right: pravou páčku doprava
 labels:
   HINT_NEUTRINO_AUTO_ELF: Předá zaváděcí ELF hry Neutrinu, aby vyhledalo nastavení pro daný titul. Ve výchozím stavu zapnuto; ručně nastavená volba Boot ELF má přednost.
   HINT_POPSTARTER_PATH: Kde je POPSTARTER.ELF. Když zůstane prázdné, RIPPS2 doplní ten, který najde na disku; přepište, chcete-li jiný, např. usb:/POPS/POPSTARTER.ELF
@@ -1879,4 +1909,6 @@ labels:
   RIPPS2_PS1_PREFER: Duplikáty PS1
   HINT_RIPPS2_PS1_PREFER: 'Hra PS1, která je zároveň VCD pro POPSTARTER i obraz pro Ember. Obojí: dva řádky. Ember: jen řádek Ember. POPSTARTER: jen VCD. Stejný název, bez ID disku na začátku, je stejná hra.'
   RIPPS2_MY_PADS: Moje ovladače
-  HINT_RIPPS2_MY_PADS: 'Profily .pad ve složce PADS vedle RIPPS2: jeden textový soubor na USB ovladač, pojmenovaný podle jeho ID (2563_0575.pad), každý zkontrolovaný. RIPPS2 vede tento formát; PADEMU je bude číst v pozdějším buildu.'
+  HINT_RIPPS2_MY_PADS: 'Profily .pad ve složce PADS vedle RIPPS2: jeden textový soubor na USB ovladač, pojmenovaný podle jeho ID (2563_0575.pad), každý zkontrolovaný. Ovladač s profilem ovládá menu a hraje ve hrách (Pad Emulator zapnutý).'
+  RIPPS2_PAD_SETUP: Nastavit USB ovladač
+  HINT_RIPPS2_PAD_SETUP: Připoj USB ovladač, který RIPPS2 nezná, stiskni každé tlačítko, o které požádá, a RIPPS2 zapíše jeho .pad do PADS. SELECT na tvém ovladači PS2 tlačítko přeskočí.

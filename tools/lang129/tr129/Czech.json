@@ -1,0 +1,38 @@
+{
+ "s": {
+  "0": "%s se nepodařilo zapsat.",
+  "1": "%s už existuje a nepodařilo se ho odložit stranou, takže zůstal, jak byl.",
+  "2": "Kolečko",
+  "3": "Křížek",
+  "4": "Dolů",
+  "5": "Dolů na směrovém kříži",
+  "6": "Nalezeno %04X:%04X. Pusť na něm vše, i páčky, a počkej.",
+  "7": "Mám to. Pusť.",
+  "8": "L3 (zmáčkni levou páčku)",
+  "9": "Vlevo na směrovém kříži",
+  "10": "Nic nebylo nastaveno, takže se nezapsal žádný soubor.",
+  "11": "Připoj USB ovladač, který chceš nastavit. Pokud už je připojený, odpoj ho a připoj znovu. Pak na něm jednou stiskni libovolné tlačítko.",
+  "12": "Stiskni %s na USB ovladači a drž.",
+  "13": "Vychyl %s a drž.",
+  "14": "R3 (zmáčkni pravou páčku)",
+  "15": "Vpravo na směrovém kříži",
+  "16": "Uložit",
+  "17": "Uloženo jako %s. Ovladač teď ovládá menu a hraje ve hrách se zapnutým Pad Emulator.",
+  "18": "Přeskočit",
+  "19": "Čtverec",
+  "20": "Tento ovladač zatím nejde popsat v souboru .pad (%s), takže se nezapsal žádný soubor.",
+  "21": "Trojúhelník",
+  "22": "Vyzkoušej to. Co držíš, se ukáže zde:",
+  "23": "Nahoru",
+  "24": "Nahoru na směrovém kříži",
+  "25": "levou páčku dolů",
+  "26": "levou páčku doprava",
+  "27": "pravou páčku dolů",
+  "28": "pravou páčku doprava"
+ },
+ "l": {
+  "RIPPS2_PAD_SETUP": "Nastavit USB ovladač",
+  "HINT_RIPPS2_PAD_SETUP": "Připoj USB ovladač, který RIPPS2 nezná, stiskni každé tlačítko, o které požádá, a RIPPS2 zapíše jeho .pad do PADS. SELECT na tvém ovladači PS2 tlačítko přeskočí.",
+  "HINT_RIPPS2_MY_PADS": "Profily .pad ve složce PADS vedle RIPPS2: jeden textový soubor na USB ovladač, pojmenovaný podle jeho ID (2563_0575.pad), každý zkontrolovaný. Ovladač s profilem ovládá menu a hraje ve hrách (Pad Emulator zapnutý)."
+ }
+}

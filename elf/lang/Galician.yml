@@ -1411,6 +1411,36 @@ strings:
   'Boot sound On: from the AUDIO folder, once its drive is up': 'Son de inicio Activado: desde o cartafol AUDIO, cando a súa unidade está lista'
   Boot sound off (Audio settings > Boot Sound): Son de inicio desactivado (Axustes de audio > Son de inicio)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Copia boot.adp xunto a RIPPS2 na tarxeta de memoria desde a que arranca, onde o inicio o le antes de que unha unidade estea lista.
+  '%s could not be written.': Non se puido escribir %s.
+  '%s is there already and could not be put aside, so it was left as it was.': '%s xa existe e non se puido apartar, así que quedou como estaba.'
+  Circle: Círculo
+  Cross: Aspa
+  Down: Abaixo
+  Down on the d-pad: Abaixo na cruceta
+  Found %04X:%04X. Let go of everything on it, sticks too, and wait.: Atopado %04X:%04X. Solta todo nel, tamén os sticks, e agarda.
+  Got it. Let go.: Feito. Solta.
+  L3 (press the left stick in): L3 (preme o stick esquerdo)
+  Left on the d-pad: Esquerda na cruceta
+  Nothing was set up, so no file was written.: Non se configurou nada, así que non se escribiu ningún ficheiro.
+  ? Plug in the USB pad you want to set up. If it is in already, take it out and plug it in again. Then press any button on it once.
+  : Conecta o mando USB que queres configurar. Se xa está conectado, desconéctao e volve conectalo. Despois preme unha vez calquera botón.
+  Press %s on the USB pad and hold it.: Preme %s no mando USB e mantéño.
+  Push %s and hold it.: Move %s e mantéño.
+  R3 (press the right stick in): R3 (preme o stick dereito)
+  Right on the d-pad: Dereita na cruceta
+  Save: Gardar
+  Saved as %s. The pad now steers the menu, and plays in games with the Pad Emulator on.: Gardado como %s. O mando xa manexa o menú e xoga nos xogos co Pad Emulator activado.
+  Skip: Omitir
+  Square: Cadrado
+  This pad cannot be described in a .pad yet (%s), so no file was written.: Este mando aínda non se pode describir nun .pad (%s), así que non se escribiu ningún ficheiro.
+  Triangle: Triángulo
+  'Try it. What you hold shows here:': 'Próbao. O que manteñas premido aparece aquí:'
+  Up: Arriba
+  Up on the d-pad: Arriba na cruceta
+  the left stick down: o stick esquerdo cara abaixo
+  the left stick to the right: o stick esquerdo cara á dereita
+  the right stick down: o stick dereito cara abaixo
+  the right stick to the right: o stick dereito cara á dereita
 labels:
   HINT_OSD_SETTINGS_LNG: Forzar unha configuración de idioma personalizada
   OSD_SETTINGS_TVASPECT: Tamaño da pantalla
@@ -2124,4 +2154,6 @@ labels:
   RIPPS2_PS1_PREFER: Duplicados de PS1
   HINT_RIPPS2_PS1_PREFER: 'Un xogo de PS1 que é á vez un VCD de POPSTARTER e unha imaxe de Ember. Ambos: dúas filas. Ember: só a de Ember. POPSTARTER: só o VCD. O mesmo título, sen a ID de disco diante, é o mesmo xogo.'
   RIPPS2_MY_PADS: Os meus mandos
-  HINT_RIPPS2_MY_PADS: 'Os perfís .pad do cartafol PADS xunto a RIPPS2: un ficheiro de texto por mando USB, co nome da súa ID (2563_0575.pad), cada un comprobado. RIPPS2 lidera o formato; PADEMU léos nunha build posterior.'
+  HINT_RIPPS2_MY_PADS: 'Os perfís .pad do cartafol PADS xunto a RIPPS2: un ficheiro de texto por mando USB, co nome do seu ID (2563_0575.pad), e cada un comprobado. Un mando con perfil manexa o menú e xoga nos xogos (Pad Emulator activado).'
+  RIPPS2_PAD_SETUP: Configurar un mando USB
+  HINT_RIPPS2_PAD_SETUP: Conecta un mando USB que RIPPS2 non coñeza, preme cada botón que che pida e RIPPS2 escribe o seu .pad en PADS. SELECT no teu mando de PS2 omite un botón.

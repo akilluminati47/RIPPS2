@@ -1410,6 +1410,36 @@ strings:
   'Boot sound On: from the AUDIO folder, once its drive is up': 'Som de inicialização Ligado: da pasta AUDIO, quando sua unidade estiver pronta'
   Boot sound off (Audio settings > Boot Sound): Som de inicialização desligado (Configurações de áudio > Som de inicialização)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Copia boot.adp para o lado do RIPPS2 no memory card de onde ele inicia, onde a inicialização o lê antes de qualquer unidade estar pronta.
+  '%s could not be written.': Não foi possível gravar %s.
+  '%s is there already and could not be put aside, so it was left as it was.': '%s já existe e não pôde ser deixado de lado, então ficou como estava.'
+  Circle: Círculo
+  Cross: X
+  Down: Baixo
+  Down on the d-pad: Baixo no direcional
+  Found %04X:%04X. Let go of everything on it, sticks too, and wait.: Encontrado %04X:%04X. Solte tudo nele, os analógicos também, e espere.
+  Got it. Let go.: Pronto. Solte.
+  L3 (press the left stick in): L3 (aperte o analógico esquerdo)
+  Left on the d-pad: Esquerda no direcional
+  Nothing was set up, so no file was written.: Nada foi configurado, então nenhum arquivo foi gravado.
+  ? Plug in the USB pad you want to set up. If it is in already, take it out and plug it in again. Then press any button on it once.
+  : Conecte o controle USB que você quer configurar. Se ele já estiver conectado, desconecte e conecte de novo. Depois aperte qualquer botão nele uma vez.
+  Press %s on the USB pad and hold it.: Aperte %s no controle USB e segure.
+  Push %s and hold it.: Empurre %s e segure.
+  R3 (press the right stick in): R3 (aperte o analógico direito)
+  Right on the d-pad: Direita no direcional
+  Save: Salvar
+  Saved as %s. The pad now steers the menu, and plays in games with the Pad Emulator on.: Salvo como %s. O controle agora comanda o menu e joga nos jogos com o Pad Emulator ligado.
+  Skip: Pular
+  Square: Quadrado
+  This pad cannot be described in a .pad yet (%s), so no file was written.: Este controle ainda não pode ser descrito em um .pad (%s), então nenhum arquivo foi gravado.
+  Triangle: Triângulo
+  'Try it. What you hold shows here:': 'Teste. O que você segurar aparece aqui:'
+  Up: Cima
+  Up on the d-pad: Cima no direcional
+  the left stick down: o analógico esquerdo para baixo
+  the left stick to the right: o analógico esquerdo para a direita
+  the right stick down: o analógico direito para baixo
+  the right stick to the right: o analógico direito para a direita
 labels:
   MANUAL: Manual
   ENTER: Entrar
@@ -1881,4 +1911,6 @@ labels:
   RIPPS2_PS1_PREFER: Duplicados de PS1
   HINT_RIPPS2_PS1_PREFER: 'Um jogo de PS1 que é ao mesmo tempo um VCD do POPSTARTER e uma imagem do Ember. Ambos: duas linhas. Ember: só a do Ember. POPSTARTER: só o VCD. O mesmo título, sem o ID do disco na frente, é o mesmo jogo.'
   RIPPS2_MY_PADS: Meus controles
-  HINT_RIPPS2_MY_PADS: 'Os perfis .pad da pasta PADS ao lado do RIPPS2: um arquivo de texto por controle USB, com o nome do seu ID (2563_0575.pad), cada um verificado. O RIPPS2 lidera o formato; o PADEMU vai lê-los numa build futura.'
+  HINT_RIPPS2_MY_PADS: 'Os perfis .pad na pasta PADS ao lado do RIPPS2: um arquivo de texto por controle USB, com o nome do ID dele (2563_0575.pad), e cada um verificado. Um controle com perfil comanda o menu e joga nos jogos (Pad Emulator ligado).'
+  RIPPS2_PAD_SETUP: Configurar um controle USB
+  HINT_RIPPS2_PAD_SETUP: Conecte um controle USB que o RIPPS2 não conhece, aperte cada botão que ele pedir e o RIPPS2 grava o .pad dele em PADS. SELECT no seu controle de PS2 pula um botão.

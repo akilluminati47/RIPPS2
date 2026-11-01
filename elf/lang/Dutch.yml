@@ -1410,6 +1410,36 @@ strings:
   'Boot sound On: from the AUDIO folder, once its drive is up': 'Opstartgeluid Aan: uit de map AUDIO, zodra de schijf klaar is'
   Boot sound off (Audio settings > Boot Sound): Opstartgeluid uit (Audio-instellingen > Opstartgeluid)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Kopieert boot.adp naast RIPPS2 op de geheugenkaart waarvan het start, waar het opstarten het leest voordat een schijf klaar is.
+  '%s could not be written.': '%s kon niet worden geschreven.'
+  '%s is there already and could not be put aside, so it was left as it was.': '%s bestaat al en kon niet opzij worden gezet, dus het bleef zoals het was.'
+  Circle: Cirkel
+  Cross: Kruis
+  Down: Omlaag
+  Down on the d-pad: Omlaag op de d-pad
+  Found %04X:%04X. Let go of everything on it, sticks too, and wait.: '%04X:%04X gevonden. Laat alles erop los, ook de sticks, en wacht.'
+  Got it. Let go.: Gelukt. Loslaten.
+  L3 (press the left stick in): L3 (druk de linkerstick in)
+  Left on the d-pad: Links op de d-pad
+  Nothing was set up, so no file was written.: Er is niets ingesteld, dus er is geen bestand geschreven.
+  ? Plug in the USB pad you want to set up. If it is in already, take it out and plug it in again. Then press any button on it once.
+  : Sluit de USB-pad aan die je wilt instellen. Zit hij er al in, haal hem eruit en sluit hem opnieuw aan. Druk dan één keer op een willekeurige knop.
+  Press %s on the USB pad and hold it.: Druk %s op de USB-pad in en houd vast.
+  Push %s and hold it.: Duw %s en houd vast.
+  R3 (press the right stick in): R3 (druk de rechterstick in)
+  Right on the d-pad: Rechts op de d-pad
+  Save: Opslaan
+  Saved as %s. The pad now steers the menu, and plays in games with the Pad Emulator on.: Opgeslagen als %s. De pad bestuurt nu het menu en speelt in games met de Pad Emulator aan.
+  Skip: Overslaan
+  Square: Vierkant
+  This pad cannot be described in a .pad yet (%s), so no file was written.: Deze pad kan nog niet in een .pad worden beschreven (%s), dus er is geen bestand geschreven.
+  Triangle: Driehoek
+  'Try it. What you hold shows here:': 'Probeer het. Wat je vasthoudt, staat hier:'
+  Up: Omhoog
+  Up on the d-pad: Omhoog op de d-pad
+  the left stick down: de linkerstick omlaag
+  the left stick to the right: de linkerstick naar rechts
+  the right stick down: de rechterstick omlaag
+  the right stick to the right: de rechterstick naar rechts
 labels:
   SETTINGS_SAVED: Instellingen opgeslagen in %s
   OK: OK
@@ -1944,4 +1974,6 @@ labels:
   RIPPS2_PS1_PREFER: PS1-dubbels
   HINT_RIPPS2_PS1_PREFER: 'Een PS1-game die zowel een POPSTARTER-VCD als een Ember-image is. Beide: twee regels. Ember: alleen de Ember-regel. POPSTARTER: alleen de VCD. Dezelfde titel, een disc-ID ervoor niet meegerekend, is dezelfde game.'
   RIPPS2_MY_PADS: Mijn controllers
-  HINT_RIPPS2_MY_PADS: 'De .pad-profielen in de map PADS naast RIPPS2: één tekstbestand per USB-controller, genoemd naar zijn ID (2563_0575.pad), elk gecontroleerd. RIPPS2 leidt het formaat; PADEMU leest ze in een latere build.'
+  HINT_RIPPS2_MY_PADS: 'De .pad-profielen in de map PADS naast RIPPS2: één tekstbestand per USB-pad, genoemd naar zijn ID (2563_0575.pad), elk gecontroleerd. Een pad met profiel bestuurt het menu en speelt in games (Pad Emulator aan).'
+  RIPPS2_PAD_SETUP: Een USB-pad instellen
+  HINT_RIPPS2_PAD_SETUP: Sluit een USB-pad aan die RIPPS2 niet kent, druk elke knop in waar het om vraagt, en RIPPS2 schrijft zijn .pad in PADS. SELECT op je PS2-pad slaat een knop over.

@@ -54,17 +54,20 @@ index 4788f1f..170acc1 100644
  #endif
  
 diff --git a/include/dialogs.h b/include/dialogs.h
-index 44bed9e..64890ee 100644
+index 44bed9e..b0e7928 100644
 --- a/include/dialogs.h
 +++ b/include/dialogs.h
-@@ -407,6 +407,7 @@ enum UI_ITEMS {
-     UICFG_RIPPS2_LIST_CFG_TEXT, // build 126: Interface > List Title and Description (Theme, On, Off)
-     UICFG_RIPPS2_PS1_PREFER,    // build 126: Interface > PS1 Duplicates (Both, Ember, POPSTARTER)
-     RIPPS2_MY_PADS_BUTTON,      // build 126: Controllers > My Pads (.pad profiles, padfile.c)
-+    RIPPS2_PAD_SETUP_BUTTON,    // build 129: Controllers > Set Up A USB Pad (learns one, writes its .pad)
+@@ -449,8 +449,9 @@ enum UI_ITEMS {
+     PADMACRO_INVERT_RX,
+     PADMACRO_INVERT_RY,
+     PADMACRO_TURBO_SPEED,
++    RIPPS2_PAD_SETUP_BUTTON, // build 129: Controllers > Set Up A USB Pad (PADEMU builds only: the base below 400 is full)
  
- #ifdef PADEMU
-     PADEMU_GLOBAL_BUTTON,
+-    COMPAT_MODE_BASE = 500, // build 91: was 250, which the last pad macro ids reached (PADEMU runs to 456 now)
++    COMPAT_MODE_BASE = 600, // build 129: was 500, which Set Up A USB Pad reached (build 91: was 250)
+ #else
+     COMPAT_MODE_BASE = 400, // build 91: was 200
+ #endif
 diff --git a/include/padfile.h b/include/padfile.h
 index 9268320..0be5876 100644
 --- a/include/padfile.h

@@ -1411,6 +1411,36 @@ strings:
   'Boot sound On: from the AUDIO folder, once its drive is up': 'Startljud På: från mappen AUDIO, när dess enhet är redo'
   Boot sound off (Audio settings > Boot Sound): Startljud av (Ljudinställningar > Startljud)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Kopierar boot.adp bredvid RIPPS2 på minneskortet det startar från, där starten läser det innan någon enhet är redo.
+  '%s could not be written.': '%s kunde inte skrivas.'
+  '%s is there already and could not be put aside, so it was left as it was.': '%s finns redan och kunde inte läggas undan, så den lämnades som den var.'
+  Circle: Cirkel
+  Cross: Kryss
+  Down: Ner
+  Down on the d-pad: Ner på styrkorset
+  Found %04X:%04X. Let go of everything on it, sticks too, and wait.: Hittade %04X:%04X. Släpp allt på den, spakarna också, och vänta.
+  Got it. Let go.: Klart. Släpp.
+  L3 (press the left stick in): L3 (tryck in vänster spak)
+  Left on the d-pad: Vänster på styrkorset
+  Nothing was set up, so no file was written.: Inget ställdes in, så ingen fil skrevs.
+  ? Plug in the USB pad you want to set up. If it is in already, take it out and plug it in again. Then press any button on it once.
+  : Anslut USB-handkontrollen du vill ställa in. Sitter den redan i, dra ur den och anslut den igen. Tryck sedan en gång på valfri knapp på den.
+  Press %s on the USB pad and hold it.: Tryck %s på USB-handkontrollen och håll in.
+  Push %s and hold it.: För %s och håll kvar.
+  R3 (press the right stick in): R3 (tryck in höger spak)
+  Right on the d-pad: Höger på styrkorset
+  Save: Spara
+  Saved as %s. The pad now steers the menu, and plays in games with the Pad Emulator on.: Sparad som %s. Handkontrollen styr nu menyn och spelar i spel med Pad Emulator på.
+  Skip: Hoppa över
+  Square: Fyrkant
+  This pad cannot be described in a .pad yet (%s), so no file was written.: Den här handkontrollen kan inte beskrivas i en .pad än (%s), så ingen fil skrevs.
+  Triangle: Triangel
+  'Try it. What you hold shows here:': 'Prova. Det du håller in visas här:'
+  Up: Upp
+  Up on the d-pad: Upp på styrkorset
+  the left stick down: vänster spak nedåt
+  the left stick to the right: vänster spak åt höger
+  the right stick down: höger spak nedåt
+  the right stick to the right: höger spak åt höger
 labels:
   OK: OK
   BDMMODE: Startläge för BDM
@@ -1900,4 +1930,6 @@ labels:
   RIPPS2_PS1_PREFER: PS1-dubbletter
   HINT_RIPPS2_PS1_PREFER: 'Ett PS1-spel som både är en POPSTARTER-VCD och en Ember-avbild. Båda: två rader. Ember: bara Ember-raden. POPSTARTER: bara VCD:n. Samma titel, ett skiv-ID först undantaget, är samma spel.'
   RIPPS2_MY_PADS: Mina handkontroller
-  HINT_RIPPS2_MY_PADS: 'De .pad-profiler som ligger i mappen PADS bredvid RIPPS2: en textfil per USB-handkontroll, med dess ID som namn (2563_0575.pad), var och en kontrollerad. RIPPS2 leder formatet; PADEMU läser dem i en senare build.'
+  HINT_RIPPS2_MY_PADS: '.pad-profilerna i mappen PADS bredvid RIPPS2: en textfil per USB-handkontroll, namngiven efter dess ID (2563_0575.pad), och var och en kontrollerad. En handkontroll med profil styr menyn och spelar i spel (Pad Emulator på).'
+  RIPPS2_PAD_SETUP: Ställ in en USB-handkontroll
+  HINT_RIPPS2_PAD_SETUP: Anslut en USB-handkontroll som RIPPS2 inte känner till, tryck på varje knapp den ber om, så skriver RIPPS2 dess .pad i PADS. SELECT på din PS2-handkontroll hoppar över en knapp.

@@ -1412,6 +1412,36 @@ strings:
   'Boot sound On: from the AUDIO folder, once its drive is up': 'صوت الإقلاع تشغيل: من مجلد AUDIO عند جاهزية قرصه'
   Boot sound off (Audio settings > Boot Sound): صوت الإقلاع متوقف (إعدادات الصوت > صوت الإقلاع)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: ينسخ boot.adp بجانب RIPPS2 على بطاقة الذاكرة التي يبدأ منها، حيث يقرؤه الإقلاع قبل جاهزية أي قرص.
+  '%s could not be written.': تعذرت كتابة %s.
+  '%s is there already and could not be put aside, so it was left as it was.': '%s موجود بالفعل وتعذر وضعه جانبا، لذا تُرك كما كان.'
+  Circle: دائرة
+  Cross: إكس
+  Down: أسفل
+  Down on the d-pad: أسفل على أزرار الاتجاه
+  Found %04X:%04X. Let go of everything on it, sticks too, and wait.: تم العثور على %04X:%04X. اترك كل شيء عليه، والعصي أيضا، وانتظر.
+  Got it. Let go.: تم. اترك.
+  L3 (press the left stick in): L3 (اضغط العصا اليسرى)
+  Left on the d-pad: يسار على أزرار الاتجاه
+  Nothing was set up, so no file was written.: لم يُضبط شيء، لذا لم يُكتب أي ملف.
+  ? Plug in the USB pad you want to set up. If it is in already, take it out and plug it in again. Then press any button on it once.
+  : وصّل يد التحكم USB التي تريد ضبطها. إن كانت موصولة، افصلها ثم وصّلها من جديد. ثم اضغط أي زر عليها مرة واحدة.
+  Press %s on the USB pad and hold it.: اضغط %s على يد التحكم USB واستمر بالضغط.
+  Push %s and hold it.: ادفع %s وأبقها.
+  R3 (press the right stick in): R3 (اضغط العصا اليمنى)
+  Right on the d-pad: يمين على أزرار الاتجاه
+  Save: حفظ
+  Saved as %s. The pad now steers the menu, and plays in games with the Pad Emulator on.: حُفظ باسم %s. يد التحكم تقود القائمة الآن، وتلعب في الألعاب مع تشغيل Pad Emulator.
+  Skip: تخطٍّ
+  Square: مربع
+  This pad cannot be described in a .pad yet (%s), so no file was written.: لا يمكن وصف يد التحكم هذه في ملف .pad بعد (%s)، لذا لم يُكتب أي ملف.
+  Triangle: مثلث
+  'Try it. What you hold shows here:': 'جرّبها. ما تضغطه يظهر هنا:'
+  Up: أعلى
+  Up on the d-pad: أعلى على أزرار الاتجاه
+  the left stick down: العصا اليسرى إلى الأسفل
+  the left stick to the right: العصا اليسرى إلى اليمين
+  the right stick down: العصا اليمنى إلى الأسفل
+  the right stick to the right: العصا اليمنى إلى اليمين
 labels:
   SETTINGS_SAVED: حُفظت الإعدادات في %s
   CONFIRMATION_EXIT: الخروج إلى المتصفح؟
@@ -1938,4 +1968,6 @@ labels:
   RIPPS2_PS1_PREFER: تكرارات PS1
   HINT_RIPPS2_PS1_PREFER: 'لعبة PS1 موجودة كملف VCD لـ POPSTARTER وكصورة Ember معًا. كلاهما: سطران. Ember: سطر Ember فقط. POPSTARTER: ملف VCD فقط. العنوان نفسه، دون معرّف القرص في أوله، هو اللعبة نفسها.'
   RIPPS2_MY_PADS: أذرع التحكم الخاصة بي
-  HINT_RIPPS2_MY_PADS: 'ملفات .pad في مجلد PADS بجانب RIPPS2: ملف نصي لكل ذراع USB باسم معرّفه (2563_0575.pad)، ويُفحص كل منها. يقود RIPPS2 هذه الصيغة؛ وسيقرؤها PADEMU في إصدار لاحق.'
+  HINT_RIPPS2_MY_PADS: 'ملفات تعريف .pad في مجلد PADS بجوار RIPPS2: ملف نصي لكل يد تحكم USB، باسم معرّفها (2563_0575.pad)، وكل واحد مفحوص. يد التحكم ذات الملف تقود القائمة وتلعب في الألعاب (مع تشغيل Pad Emulator).'
+  RIPPS2_PAD_SETUP: ضبط يد تحكم USB
+  HINT_RIPPS2_PAD_SETUP: وصّل يد تحكم USB لا يعرفها RIPPS2، واضغط كل زر يطلبه، فيكتب RIPPS2 ملف .pad الخاص بها في PADS. زر SELECT على يد تحكم PS2 يتخطى زرا.

@@ -1,0 +1,38 @@
+{
+ "s": {
+  "0": "%s nem írható.",
+  "1": "%s már létezik, és nem lehetett félretenni, ezért úgy maradt, ahogy volt.",
+  "2": "Kör",
+  "3": "X",
+  "4": "Le",
+  "5": "Le az iránygombon",
+  "6": "Megvan: %04X:%04X. Engedj el rajta mindent, a karokat is, és várj.",
+  "7": "Megvan. Engedd el.",
+  "8": "L3 (nyomd be a bal kart)",
+  "9": "Balra az iránygombon",
+  "10": "Semmi sem lett beállítva, ezért nem készült fájl.",
+  "11": "Csatlakoztasd a beállítandó USB-kontrollert. Ha már be van dugva, húzd ki és dugd be újra. Aztán nyomj meg rajta egyszer egy tetszőleges gombot.",
+  "12": "Nyomd meg a(z) %s gombot az USB-kontrolleren, és tartsd.",
+  "13": "Told %s, és tartsd.",
+  "14": "R3 (nyomd be a jobb kart)",
+  "15": "Jobbra az iránygombon",
+  "16": "Mentés",
+  "17": "Mentve: %s. A kontroller most vezérli a menüt, és bekapcsolt Pad Emulatorral játszik a játékokban.",
+  "18": "Kihagyás",
+  "19": "Négyzet",
+  "20": "Ezt a kontrollert még nem lehet .pad fájlban leírni (%s), ezért nem készült fájl.",
+  "21": "Háromszög",
+  "22": "Próbáld ki. Amit nyomva tartasz, itt látszik:",
+  "23": "Fel",
+  "24": "Fel az iránygombon",
+  "25": "a bal kart lefelé",
+  "26": "a bal kart jobbra",
+  "27": "a jobb kart lefelé",
+  "28": "a jobb kart jobbra"
+ },
+ "l": {
+  "RIPPS2_PAD_SETUP": "USB-kontroller beállítása",
+  "HINT_RIPPS2_PAD_SETUP": "Csatlakoztass egy USB-kontrollert, amelyet a RIPPS2 nem ismer, nyomd meg az összes kért gombot, és a RIPPS2 megírja a .pad fájlját a PADS mappába. A PS2-kontroller SELECT gombja kihagy egy gombot.",
+  "HINT_RIPPS2_MY_PADS": "A .pad profilok a RIPPS2 melletti PADS mappában: USB-kontrollerenként egy szövegfájl, az azonosítója szerint elnevezve (2563_0575.pad), mindegyik ellenőrizve. A profillal rendelkező kontroller vezérli a menüt és játszik a játékokban (Pad Emulator bekapcsolva)."
+ }
+}

@@ -1412,6 +1412,36 @@ strings:
   'Boot sound On: from the AUDIO folder, once its drive is up': 开机音 开:来自 AUDIO 文件夹,其驱动器就绪后
   Boot sound off (Audio settings > Boot Sound): 开机音 关(音频设置 > 开机音)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: 将 boot.adp 复制到启动所用记忆卡上的 RIPPS2 旁,开机时先于任何驱动器读取。
+  '%s could not be written.': 无法写入 %s。
+  '%s is there already and could not be put aside, so it was left as it was.': '%s 已存在且无法移到一边，所以保持原样。'
+  Circle: 圆圈
+  Cross: 叉
+  Down: 下
+  Down on the d-pad: 方向键下
+  Found %04X:%04X. Let go of everything on it, sticks too, and wait.: 找到 %04X:%04X。松开上面所有按键，包括摇杆，然后稍等。
+  Got it. Let go.: 收到。松开。
+  L3 (press the left stick in): L3（按下左摇杆）
+  Left on the d-pad: 方向键左
+  Nothing was set up, so no file was written.: 什么都没有设置，所以没有写入文件。
+  ? Plug in the USB pad you want to set up. If it is in already, take it out and plug it in again. Then press any button on it once.
+  : 插上你要设置的 USB 手柄。如果已经插着，请拔下再插上。然后随便按一次它上面的任意按键。
+  Press %s on the USB pad and hold it.: 按住 USB 手柄上的 %s。
+  Push %s and hold it.: 推%s并保持。
+  R3 (press the right stick in): R3（按下右摇杆）
+  Right on the d-pad: 方向键右
+  Save: 保存
+  Saved as %s. The pad now steers the menu, and plays in games with the Pad Emulator on.: 已保存为 %s。现在这个手柄可以操作菜单，开启 Pad Emulator 后也能在游戏中使用。
+  Skip: 跳过
+  Square: 方块
+  This pad cannot be described in a .pad yet (%s), so no file was written.: 这个手柄还无法用 .pad 描述（%s），所以没有写入文件。
+  Triangle: 三角
+  'Try it. What you hold shows here:': 试试看。你按住的会显示在这里：
+  Up: 上
+  Up on the d-pad: 方向键上
+  the left stick down: 左摇杆向下
+  the left stick to the right: 左摇杆向右
+  the right stick down: 右摇杆向下
+  the right stick to the right: 右摇杆向右
 labels:
   MTAP_ENABLE: 多分插模拟
   HINT_PADEMU_WORKAROUND: 部分仿制 DS3 需要变通处理，此选项会启用它。
@@ -1881,4 +1911,6 @@ labels:
   RIPPS2_PS1_PREFER: PS1 重复项
   HINT_RIPPS2_PS1_PREFER: 同时有 POPSTARTER VCD 和 Ember 镜像的 PS1 游戏。两者:两行。Ember:只显示 Ember。POPSTARTER:只显示 VCD。除开头的光盘 ID 外标题相同即为同一游戏。
   RIPPS2_MY_PADS: 我的手柄
-  HINT_RIPPS2_MY_PADS: RIPPS2 旁 PADS 文件夹中的 .pad 配置:每个 USB 手柄一个以其 ID 命名的文本文件(2563_0575.pad),逐个检查。RIPPS2 主导此格式;PADEMU 将在之后的版本中读取。
+  HINT_RIPPS2_MY_PADS: RIPPS2 旁边 PADS 文件夹中的 .pad 配置：每个 USB 手柄一个以其 ID 命名的文本文件（2563_0575.pad），每个都经过检查。有配置的手柄可以操作菜单，也能在游戏中使用（开启 Pad Emulator）。
+  RIPPS2_PAD_SETUP: 设置 USB 手柄
+  HINT_RIPPS2_PAD_SETUP: 插上一个 RIPPS2 不认识的 USB 手柄，按它要求的每个按键，RIPPS2 就会把它的 .pad 写到 PADS。PS2 手柄上的 SELECT 可跳过一个按键。

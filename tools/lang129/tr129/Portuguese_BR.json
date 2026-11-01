@@ -1,0 +1,38 @@
+{
+ "s": {
+  "0": "Não foi possível gravar %s.",
+  "1": "%s já existe e não pôde ser deixado de lado, então ficou como estava.",
+  "2": "Círculo",
+  "3": "X",
+  "4": "Baixo",
+  "5": "Baixo no direcional",
+  "6": "Encontrado %04X:%04X. Solte tudo nele, os analógicos também, e espere.",
+  "7": "Pronto. Solte.",
+  "8": "L3 (aperte o analógico esquerdo)",
+  "9": "Esquerda no direcional",
+  "10": "Nada foi configurado, então nenhum arquivo foi gravado.",
+  "11": "Conecte o controle USB que você quer configurar. Se ele já estiver conectado, desconecte e conecte de novo. Depois aperte qualquer botão nele uma vez.",
+  "12": "Aperte %s no controle USB e segure.",
+  "13": "Empurre %s e segure.",
+  "14": "R3 (aperte o analógico direito)",
+  "15": "Direita no direcional",
+  "16": "Salvar",
+  "17": "Salvo como %s. O controle agora comanda o menu e joga nos jogos com o Pad Emulator ligado.",
+  "18": "Pular",
+  "19": "Quadrado",
+  "20": "Este controle ainda não pode ser descrito em um .pad (%s), então nenhum arquivo foi gravado.",
+  "21": "Triângulo",
+  "22": "Teste. O que você segurar aparece aqui:",
+  "23": "Cima",
+  "24": "Cima no direcional",
+  "25": "o analógico esquerdo para baixo",
+  "26": "o analógico esquerdo para a direita",
+  "27": "o analógico direito para baixo",
+  "28": "o analógico direito para a direita"
+ },
+ "l": {
+  "RIPPS2_PAD_SETUP": "Configurar um controle USB",
+  "HINT_RIPPS2_PAD_SETUP": "Conecte um controle USB que o RIPPS2 não conhece, aperte cada botão que ele pedir e o RIPPS2 grava o .pad dele em PADS. SELECT no seu controle de PS2 pula um botão.",
+  "HINT_RIPPS2_MY_PADS": "Os perfis .pad na pasta PADS ao lado do RIPPS2: um arquivo de texto por controle USB, com o nome do ID dele (2563_0575.pad), e cada um verificado. Um controle com perfil comanda o menu e joga nos jogos (Pad Emulator ligado)."
+ }
+}

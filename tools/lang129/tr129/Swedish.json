@@ -1,0 +1,38 @@
+{
+ "s": {
+  "0": "%s kunde inte skrivas.",
+  "1": "%s finns redan och kunde inte läggas undan, så den lämnades som den var.",
+  "2": "Cirkel",
+  "3": "Kryss",
+  "4": "Ner",
+  "5": "Ner på styrkorset",
+  "6": "Hittade %04X:%04X. Släpp allt på den, spakarna också, och vänta.",
+  "7": "Klart. Släpp.",
+  "8": "L3 (tryck in vänster spak)",
+  "9": "Vänster på styrkorset",
+  "10": "Inget ställdes in, så ingen fil skrevs.",
+  "11": "Anslut USB-handkontrollen du vill ställa in. Sitter den redan i, dra ur den och anslut den igen. Tryck sedan en gång på valfri knapp på den.",
+  "12": "Tryck %s på USB-handkontrollen och håll in.",
+  "13": "För %s och håll kvar.",
+  "14": "R3 (tryck in höger spak)",
+  "15": "Höger på styrkorset",
+  "16": "Spara",
+  "17": "Sparad som %s. Handkontrollen styr nu menyn och spelar i spel med Pad Emulator på.",
+  "18": "Hoppa över",
+  "19": "Fyrkant",
+  "20": "Den här handkontrollen kan inte beskrivas i en .pad än (%s), så ingen fil skrevs.",
+  "21": "Triangel",
+  "22": "Prova. Det du håller in visas här:",
+  "23": "Upp",
+  "24": "Upp på styrkorset",
+  "25": "vänster spak nedåt",
+  "26": "vänster spak åt höger",
+  "27": "höger spak nedåt",
+  "28": "höger spak åt höger"
+ },
+ "l": {
+  "RIPPS2_PAD_SETUP": "Ställ in en USB-handkontroll",
+  "HINT_RIPPS2_PAD_SETUP": "Anslut en USB-handkontroll som RIPPS2 inte känner till, tryck på varje knapp den ber om, så skriver RIPPS2 dess .pad i PADS. SELECT på din PS2-handkontroll hoppar över en knapp.",
+  "HINT_RIPPS2_MY_PADS": ".pad-profilerna i mappen PADS bredvid RIPPS2: en textfil per USB-handkontroll, namngiven efter dess ID (2563_0575.pad), och var och en kontrollerad. En handkontroll med profil styr menyn och spelar i spel (Pad Emulator på)."
+ }
+}

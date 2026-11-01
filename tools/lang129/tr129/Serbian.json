@@ -1,0 +1,38 @@
+{
+ "s": {
+  "0": "%s nije moguće upisati.",
+  "1": "%s već postoji i nije ga bilo moguće skloniti, pa je ostao kakav je bio.",
+  "2": "Krug",
+  "3": "Iks",
+  "4": "Dole",
+  "5": "Dole na krstu",
+  "6": "Pronađen %04X:%04X. Pusti sve na njemu, i palice, i sačekaj.",
+  "7": "Uhvaćeno. Pusti.",
+  "8": "L3 (pritisni levu palicu)",
+  "9": "Levo na krstu",
+  "10": "Ništa nije podešeno, pa nijedna datoteka nije upisana.",
+  "11": "Priključi USB kontroler koji želiš da podesiš. Ako je već priključen, izvadi ga i priključi ponovo. Zatim jednom pritisni bilo koje dugme na njemu.",
+  "12": "Pritisni %s na USB kontroleru i drži.",
+  "13": "Pomeri %s i drži.",
+  "14": "R3 (pritisni desnu palicu)",
+  "15": "Desno na krstu",
+  "16": "Sačuvaj",
+  "17": "Sačuvano kao %s. Kontroler sada upravlja menijem i igra u igrama sa uključenim Pad Emulatorom.",
+  "18": "Preskoči",
+  "19": "Kvadrat",
+  "20": "Ovaj kontroler još ne može da se opiše u .pad datoteci (%s), pa nijedna datoteka nije upisana.",
+  "21": "Trougao",
+  "22": "Isprobaj. Ono što držiš prikazuje se ovde:",
+  "23": "Gore",
+  "24": "Gore na krstu",
+  "25": "levu palicu dole",
+  "26": "levu palicu udesno",
+  "27": "desnu palicu dole",
+  "28": "desnu palicu udesno"
+ },
+ "l": {
+  "RIPPS2_PAD_SETUP": "Podesi USB kontroler",
+  "HINT_RIPPS2_PAD_SETUP": "Priključi USB kontroler koji RIPPS2 ne poznaje, pritisni svako dugme koje zatraži i RIPPS2 upisuje njegov .pad u PADS. SELECT na tvom PS2 kontroleru preskače dugme.",
+  "HINT_RIPPS2_MY_PADS": ".pad profili u fascikli PADS pored RIPPS2: jedna tekstualna datoteka po USB kontroleru, nazvana po njegovom ID-u (2563_0575.pad), i svaki proveren. Kontroler sa profilom upravlja menijem i igra u igrama (Pad Emulator uključen)."
+ }
+}

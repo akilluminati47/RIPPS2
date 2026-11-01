@@ -1,0 +1,38 @@
+{
+ "s": {
+  "0": "%s kunne ikke skrives.",
+  "1": "%s findes allerede og kunne ikke lægges til side, så det blev, som det var.",
+  "2": "Cirkel",
+  "3": "Kryds",
+  "4": "Ned",
+  "5": "Ned på retningsknappen",
+  "6": "Fandt %04X:%04X. Slip alt på den, også pindene, og vent.",
+  "7": "Fanget. Slip.",
+  "8": "L3 (tryk venstre pind ind)",
+  "9": "Venstre på retningsknappen",
+  "10": "Intet blev sat op, så ingen fil blev skrevet.",
+  "11": "Sæt den USB-controller i, du vil sætte op. Sidder den allerede i, så tag den ud og sæt den i igen. Tryk så én gang på en vilkårlig knap på den.",
+  "12": "Tryk %s på USB-controlleren, og hold den.",
+  "13": "Skub %s, og hold den.",
+  "14": "R3 (tryk højre pind ind)",
+  "15": "Højre på retningsknappen",
+  "16": "Gem",
+  "17": "Gemt som %s. Controlleren styrer nu menuen og spiller i spil med Pad Emulator slået til.",
+  "18": "Spring over",
+  "19": "Firkant",
+  "20": "Denne controller kan endnu ikke beskrives i en .pad (%s), så ingen fil blev skrevet.",
+  "21": "Trekant",
+  "22": "Prøv den. Det, du holder, vises her:",
+  "23": "Op",
+  "24": "Op på retningsknappen",
+  "25": "venstre pind ned",
+  "26": "venstre pind til højre",
+  "27": "højre pind ned",
+  "28": "højre pind til højre"
+ },
+ "l": {
+  "RIPPS2_PAD_SETUP": "Sæt en USB-controller op",
+  "HINT_RIPPS2_PAD_SETUP": "Sæt en USB-controller i, som RIPPS2 ikke kender, tryk på hver knap, den beder om, og RIPPS2 skriver dens .pad i PADS. SELECT på din PS2-controller springer en knap over.",
+  "HINT_RIPPS2_MY_PADS": ".pad-profilerne i mappen PADS ved siden af RIPPS2: én tekstfil pr. USB-controller, navngivet efter dens ID (2563_0575.pad), og hver af dem tjekket. En controller med profil styrer menuen og spiller i spil (Pad Emulator til)."
+ }
+}

@@ -1412,6 +1412,36 @@ strings:
   'Boot sound On: from the AUDIO folder, once its drive is up': 'Dźwięk startu Wł.: z folderu AUDIO, gdy jego dysk jest gotowy'
   Boot sound off (Audio settings > Boot Sound): Dźwięk startu wył. (Ustawienia dźwięku > Dźwięk startu)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Kopiuje boot.adp obok RIPPS2 na kartę pamięci, z której startuje, gdzie start czyta go, zanim jakikolwiek dysk jest gotowy.
+  '%s could not be written.': Nie udało się zapisać %s.
+  '%s is there already and could not be put aside, so it was left as it was.': '%s już istnieje i nie dało się go odłożyć na bok, więc zostało bez zmian.'
+  Circle: Kółko
+  Cross: Krzyżyk
+  Down: Dół
+  Down on the d-pad: Dół na krzyżaku
+  Found %04X:%04X. Let go of everything on it, sticks too, and wait.: Znaleziono %04X:%04X. Puść wszystko na nim, gałki też, i zaczekaj.
+  Got it. Let go.: Jest. Puść.
+  L3 (press the left stick in): L3 (wciśnij lewą gałkę)
+  Left on the d-pad: Lewo na krzyżaku
+  Nothing was set up, so no file was written.: Nic nie zostało ustawione, więc nie zapisano żadnego pliku.
+  ? Plug in the USB pad you want to set up. If it is in already, take it out and plug it in again. Then press any button on it once.
+  : Podłącz pad USB, który chcesz ustawić. Jeśli już jest podłączony, odłącz go i podłącz ponownie. Potem naciśnij raz dowolny przycisk.
+  Press %s on the USB pad and hold it.: Naciśnij %s na padzie USB i przytrzymaj.
+  Push %s and hold it.: Wychyl %s i przytrzymaj.
+  R3 (press the right stick in): R3 (wciśnij prawą gałkę)
+  Right on the d-pad: Prawo na krzyżaku
+  Save: Zapisz
+  Saved as %s. The pad now steers the menu, and plays in games with the Pad Emulator on.: Zapisano jako %s. Pad steruje teraz menu i gra w grach z włączonym Pad Emulator.
+  Skip: Pomiń
+  Square: Kwadrat
+  This pad cannot be described in a .pad yet (%s), so no file was written.: Tego pada nie da się jeszcze opisać w pliku .pad (%s), więc nie zapisano żadnego pliku.
+  Triangle: Trójkąt
+  'Try it. What you hold shows here:': 'Wypróbuj. To, co trzymasz, pojawia się tutaj:'
+  Up: Góra
+  Up on the d-pad: Góra na krzyżaku
+  the left stick down: lewą gałkę w dół
+  the left stick to the right: lewą gałkę w prawo
+  the right stick down: prawą gałkę w dół
+  the right stick to the right: prawą gałkę w prawo
 labels:
   OK: OK
   START: Uruchom
@@ -1887,4 +1917,6 @@ labels:
   RIPPS2_PS1_PREFER: Duplikaty PS1
   HINT_RIPPS2_PS1_PREFER: 'Gra PS1, która jest zarazem VCD dla POPSTARTER i obrazem Ember. Oba: dwa wiersze. Ember: tylko wiersz Ember. POPSTARTER: tylko VCD. Ten sam tytuł, bez ID płyty na początku, to ta sama gra.'
   RIPPS2_MY_PADS: Moje pady
-  HINT_RIPPS2_MY_PADS: 'Profile .pad w folderze PADS obok RIPPS2: jeden plik tekstowy na pad USB, nazwany od jego ID (2563_0575.pad), każdy sprawdzony. RIPPS2 prowadzi ten format; PADEMU odczyta je w późniejszym buildzie.'
+  HINT_RIPPS2_MY_PADS: 'Profile .pad w folderze PADS obok RIPPS2: jeden plik tekstowy na pad USB, nazwany jego ID (2563_0575.pad), każdy sprawdzony. Pad z profilem steruje menu i gra w grach (Pad Emulator włączony).'
+  RIPPS2_PAD_SETUP: Ustaw pad USB
+  HINT_RIPPS2_PAD_SETUP: Podłącz pad USB, którego RIPPS2 nie zna, naciskaj każdy przycisk, o który prosi, a RIPPS2 zapisze jego .pad w PADS. SELECT na padzie PS2 pomija przycisk.

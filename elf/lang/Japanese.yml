@@ -1412,6 +1412,36 @@ strings:
   'Boot sound On: from the AUDIO folder, once its drive is up': '起動音オン: AUDIOフォルダから、ドライブの準備後'
   Boot sound off (Audio settings > Boot Sound): 起動音オフ(オーディオ設定 > 起動音)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: 起動元のメモリーカードのRIPPS2の隣にboot.adpをコピーし、どのドライブより先に起動時に読み込みます。
+  '%s could not be written.': '%s を書き込めませんでした。'
+  '%s is there already and could not be put aside, so it was left as it was.': '%s はすでにあり、よけておけなかったので、そのままにしました。'
+  Circle: ○ボタン
+  Cross: ×ボタン
+  Down: 下
+  Down on the d-pad: 方向キーの下
+  Found %04X:%04X. Let go of everything on it, sticks too, and wait.: '%04X:%04X が見つかりました。スティックも含めて全部離して、待ってください。'
+  Got it. Let go.: OK。離してください。
+  L3 (press the left stick in): L3(左スティックを押し込む)
+  Left on the d-pad: 方向キーの左
+  Nothing was set up, so no file was written.: 何も設定されなかったので、ファイルは書き込まれていません。
+  ? Plug in the USB pad you want to set up. If it is in already, take it out and plug it in again. Then press any button on it once.
+  : 設定したいUSBパッドをつないでください。すでにつないであるなら、抜いてもう一度つないでください。それから、どれかのボタンを一度押してください。
+  Press %s on the USB pad and hold it.: USBパッドの %s を押したままにしてください。
+  Push %s and hold it.: '%s倒したままにしてください。'
+  R3 (press the right stick in): R3(右スティックを押し込む)
+  Right on the d-pad: 方向キーの右
+  Save: 保存
+  Saved as %s. The pad now steers the menu, and plays in games with the Pad Emulator on.: '%s として保存しました。このパッドでメニューを操作でき、Pad Emulator をオンにするとゲームでも使えます。'
+  Skip: スキップ
+  Square: □ボタン
+  This pad cannot be described in a .pad yet (%s), so no file was written.: このパッドはまだ .pad で表せない(%s)ので、ファイルは書き込まれていません。
+  Triangle: △ボタン
+  'Try it. What you hold shows here:': '試してください。押しているものがここに出ます:'
+  Up: 上
+  Up on the d-pad: 方向キーの上
+  the left stick down: 左スティックを下に
+  the left stick to the right: 左スティックを右に
+  the right stick down: 右スティックを下に
+  the right stick to the right: 右スティックを右に
 labels:
   IP_ADDRESS_TYPE_STATIC: 固定
   HINT_NEUTRINO_AUTO_ELF: ゲームの起動 ELF を Neutrino に渡し、タイトルごとの設定を探させます。既定でオン。手動で設定した Boot ELF オプションが優先されます。
@@ -1880,4 +1910,6 @@ labels:
   RIPPS2_PS1_PREFER: PS1の重複
   HINT_RIPPS2_PS1_PREFER: 'POPSTARTERのVCDとEmberイメージの両方があるPS1ゲーム。両方: 2行。Ember: Emberのみ。POPSTARTER: VCDのみ。先頭のディスクIDを除いて同じタイトルなら同じゲームです。'
   RIPPS2_MY_PADS: マイパッド
-  HINT_RIPPS2_MY_PADS: 'RIPPS2の隣のPADSフォルダにある.padプロファイル: USBパッドごとにIDを名前にしたテキストファイル1つ(2563_0575.pad)で、それぞれ確認します。RIPPS2がこの形式を主導しています。PADEMUは今後のビルドで読み込みます。'
+  HINT_RIPPS2_MY_PADS: RIPPS2 の横の PADS フォルダにある .pad プロファイル:USBパッドごとにIDの名前のテキストファイル(2563_0575.pad)で、それぞれチェック済み。プロファイルのあるパッドはメニューを操作し、ゲームでも使えます(Pad Emulator オン)。
+  RIPPS2_PAD_SETUP: USBパッドを設定
+  HINT_RIPPS2_PAD_SETUP: RIPPS2 が知らないUSBパッドをつなぎ、言われたボタンを順に押すと、RIPPS2 がその .pad を PADS に書き込みます。PS2パッドの SELECT でボタンを飛ばせます。

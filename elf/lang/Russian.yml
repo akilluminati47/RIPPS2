@@ -1412,6 +1412,36 @@ strings:
   'Boot sound On: from the AUDIO folder, once its drive is up': 'Звук запуска Вкл.: из папки AUDIO, когда её диск готов'
   Boot sound off (Audio settings > Boot Sound): Звук запуска выкл. (Настройки звука > Звук запуска)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: 'Копирует boot.adp рядом с RIPPS2 на карту памяти, с которой он запускается: там запуск читает его до готовности дисков.'
+  '%s could not be written.': Не удалось записать %s.
+  '%s is there already and could not be put aside, so it was left as it was.': '%s уже существует, и его не удалось отложить, поэтому он остался как был.'
+  Circle: Круг
+  Cross: Крест
+  Down: Вниз
+  Down on the d-pad: Вниз на крестовине
+  Found %04X:%04X. Let go of everything on it, sticks too, and wait.: Найден %04X:%04X. Отпустите на нём всё, и стики тоже, и подождите.
+  Got it. Let go.: Есть. Отпустите.
+  L3 (press the left stick in): L3 (нажмите левый стик)
+  Left on the d-pad: Влево на крестовине
+  Nothing was set up, so no file was written.: Ничего не настроено, поэтому файл не записан.
+  ? Plug in the USB pad you want to set up. If it is in already, take it out and plug it in again. Then press any button on it once.
+  : Подключите USB-геймпад, который хотите настроить. Если он уже подключён, отключите и подключите снова. Затем один раз нажмите на нём любую кнопку.
+  Press %s on the USB pad and hold it.: Нажмите %s на USB-геймпаде и держите.
+  Push %s and hold it.: Отклоните %s и держите.
+  R3 (press the right stick in): R3 (нажмите правый стик)
+  Right on the d-pad: Вправо на крестовине
+  Save: Сохранить
+  Saved as %s. The pad now steers the menu, and plays in games with the Pad Emulator on.: Сохранено как %s. Теперь геймпад управляет меню и играет в играх при включённом Pad Emulator.
+  Skip: Пропустить
+  Square: Квадрат
+  This pad cannot be described in a .pad yet (%s), so no file was written.: Этот геймпад пока нельзя описать в .pad (%s), поэтому файл не записан.
+  Triangle: Треугольник
+  'Try it. What you hold shows here:': 'Попробуйте. То, что вы держите, видно здесь:'
+  Up: Вверх
+  Up on the d-pad: Вверх на крестовине
+  the left stick down: левый стик вниз
+  the left stick to the right: левый стик вправо
+  the right stick down: правый стик вниз
+  the right stick to the right: правый стик вправо
 labels:
   DS34BT_MODE: DualShock3/4 по Bluetooth
   HINT_NEUTRINO_AUTO_ELF: Передаёт загрузочный ELF игры в Neutrino, чтобы найти настройки для этой игры. Включено по умолчанию; заданный вручную параметр Boot ELF важнее.
@@ -1880,4 +1910,6 @@ labels:
   RIPPS2_PS1_PREFER: Дубликаты PS1
   HINT_RIPPS2_PS1_PREFER: 'Игра PS1, которая есть и как VCD для POPSTARTER, и как образ Ember. Оба: две строки. Ember: только строка Ember. POPSTARTER: только VCD. Одно название, без ID диска в начале, это одна игра.'
   RIPPS2_MY_PADS: Мои геймпады
-  HINT_RIPPS2_MY_PADS: 'Профили .pad в папке PADS рядом с RIPPS2: один текстовый файл на USB-геймпад, названный по его ID (2563_0575.pad), каждый проверен. RIPPS2 ведёт этот формат; PADEMU будет читать их в следующей сборке.'
+  HINT_RIPPS2_MY_PADS: 'Профили .pad в папке PADS рядом с RIPPS2: по одному текстовому файлу на USB-геймпад, названному по его ID (2563_0575.pad), и каждый проверен. Геймпад с профилем управляет меню и играет в играх (Pad Emulator включён).'
+  RIPPS2_PAD_SETUP: Настроить USB-геймпад
+  HINT_RIPPS2_PAD_SETUP: Подключите USB-геймпад, которого RIPPS2 не знает, нажмите каждую кнопку, которую он попросит, и RIPPS2 запишет его .pad в PADS. SELECT на геймпаде PS2 пропускает кнопку.

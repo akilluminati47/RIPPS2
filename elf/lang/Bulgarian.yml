@@ -1412,6 +1412,36 @@ strings:
   'Boot sound On: from the AUDIO folder, once its drive is up': 'Звук при стартиране Вкл.: от папката AUDIO, щом устройството ѝ е готово'
   Boot sound off (Audio settings > Boot Sound): Звук при стартиране изкл. (Аудио настройки > Звук при стартиране)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Копира boot.adp до RIPPS2 на картата памет, от която стартира, където стартирането го чете преди което и да е устройство да е готово.
+  '%s could not be written.': '%s не можа да бъде записан.'
+  '%s is there already and could not be put aside, so it was left as it was.': '%s вече съществува и не можа да бъде преместен настрана, затова остана както беше.'
+  Circle: Кръг
+  Cross: Кръстче
+  Down: Надолу
+  Down on the d-pad: Надолу на кръстачката
+  Found %04X:%04X. Let go of everything on it, sticks too, and wait.: Намерен %04X:%04X. Пусни всичко по него, и стиковете, и изчакай.
+  Got it. Let go.: Готово. Пусни.
+  L3 (press the left stick in): L3 (натисни левия стик)
+  Left on the d-pad: Наляво на кръстачката
+  Nothing was set up, so no file was written.: Нищо не беше настроено, затова не беше записан файл.
+  ? Plug in the USB pad you want to set up. If it is in already, take it out and plug it in again. Then press any button on it once.
+  : Включи USB контролера, който искаш да настроиш. Ако вече е включен, извади го и го включи отново. После натисни веднъж произволен бутон на него.
+  Press %s on the USB pad and hold it.: Натисни %s на USB контролера и задръж.
+  Push %s and hold it.: Бутни %s и задръж.
+  R3 (press the right stick in): R3 (натисни десния стик)
+  Right on the d-pad: Надясно на кръстачката
+  Save: Запази
+  Saved as %s. The pad now steers the menu, and plays in games with the Pad Emulator on.: Запазено като %s. Контролерът вече управлява менюто и играе в игри с включен Pad Emulator.
+  Skip: Пропусни
+  Square: Квадрат
+  This pad cannot be described in a .pad yet (%s), so no file was written.: Този контролер още не може да бъде описан в .pad (%s), затова не беше записан файл.
+  Triangle: Триъгълник
+  'Try it. What you hold shows here:': 'Пробвай. Това, което държиш, се показва тук:'
+  Up: Нагоре
+  Up on the d-pad: Нагоре на кръстачката
+  the left stick down: левия стик надолу
+  the left stick to the right: левия стик надясно
+  the right stick down: десния стик надолу
+  the right stick to the right: десния стик надясно
 labels:
   BDMMODE: Режим на стартиране на BDM
   GAME_ID: ID на играта
@@ -1885,4 +1915,6 @@ labels:
   RIPPS2_PS1_PREFER: Дубликати на PS1
   HINT_RIPPS2_PS1_PREFER: 'PS1 игра, която е едновременно VCD за POPSTARTER и образ за Ember. И двете: два реда. Ember: само редът на Ember. POPSTARTER: само VCD. Едно и също заглавие, без ID на диска отпред, е една и съща игра.'
   RIPPS2_MY_PADS: Моите контролери
-  HINT_RIPPS2_MY_PADS: 'Профилите .pad в папката PADS до RIPPS2: по един текстов файл на USB контролер, наименуван по неговото ID (2563_0575.pad), всеки проверен. RIPPS2 води този формат; PADEMU ще ги чете в по-късна компилация.'
+  HINT_RIPPS2_MY_PADS: '.pad профилите в папката PADS до RIPPS2: по един текстов файл за USB контролер, наречен по неговото ID (2563_0575.pad), и всеки проверен. Контролер с профил управлява менюто и играе в игри (Pad Emulator включен).'
+  RIPPS2_PAD_SETUP: Настрой USB контролер
+  HINT_RIPPS2_PAD_SETUP: Включи USB контролер, който RIPPS2 не познава, натисни всеки бутон, който поиска, и RIPPS2 записва неговия .pad в PADS. SELECT на твоя PS2 контролер пропуска бутон.

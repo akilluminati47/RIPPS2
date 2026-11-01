@@ -1411,6 +1411,36 @@ strings:
   'Boot sound On: from the AUDIO folder, once its drive is up': 'Opstartslyd Til: fra mappen AUDIO, når dens drev er klar'
   Boot sound off (Audio settings > Boot Sound): Opstartslyd fra (Lydindstillinger > Opstartslyd)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Kopierer boot.adp ved siden af RIPPS2 på hukommelseskortet, det starter fra, hvor opstarten læser den, før noget drev er klar.
+  '%s could not be written.': '%s kunne ikke skrives.'
+  '%s is there already and could not be put aside, so it was left as it was.': '%s findes allerede og kunne ikke lægges til side, så det blev, som det var.'
+  Circle: Cirkel
+  Cross: Kryds
+  Down: Ned
+  Down on the d-pad: Ned på retningsknappen
+  Found %04X:%04X. Let go of everything on it, sticks too, and wait.: Fandt %04X:%04X. Slip alt på den, også pindene, og vent.
+  Got it. Let go.: Fanget. Slip.
+  L3 (press the left stick in): L3 (tryk venstre pind ind)
+  Left on the d-pad: Venstre på retningsknappen
+  Nothing was set up, so no file was written.: Intet blev sat op, så ingen fil blev skrevet.
+  ? Plug in the USB pad you want to set up. If it is in already, take it out and plug it in again. Then press any button on it once.
+  : Sæt den USB-controller i, du vil sætte op. Sidder den allerede i, så tag den ud og sæt den i igen. Tryk så én gang på en vilkårlig knap på den.
+  Press %s on the USB pad and hold it.: Tryk %s på USB-controlleren, og hold den.
+  Push %s and hold it.: Skub %s, og hold den.
+  R3 (press the right stick in): R3 (tryk højre pind ind)
+  Right on the d-pad: Højre på retningsknappen
+  Save: Gem
+  Saved as %s. The pad now steers the menu, and plays in games with the Pad Emulator on.: Gemt som %s. Controlleren styrer nu menuen og spiller i spil med Pad Emulator slået til.
+  Skip: Spring over
+  Square: Firkant
+  This pad cannot be described in a .pad yet (%s), so no file was written.: Denne controller kan endnu ikke beskrives i en .pad (%s), så ingen fil blev skrevet.
+  Triangle: Trekant
+  'Try it. What you hold shows here:': 'Prøv den. Det, du holder, vises her:'
+  Up: Op
+  Up on the d-pad: Op på retningsknappen
+  the left stick down: venstre pind ned
+  the left stick to the right: venstre pind til højre
+  the right stick down: højre pind ned
+  the right stick to the right: højre pind til højre
 labels:
   OK: OK
   MEDIUM: Mellem
@@ -1895,4 +1925,6 @@ labels:
   RIPPS2_PS1_PREFER: PS1-dubletter
   HINT_RIPPS2_PS1_PREFER: 'Et PS1-spil, der både er en POPSTARTER-VCD og et Ember-billede. Begge: to rækker. Ember: kun Ember-rækken. POPSTARTER: kun VCD''en. Samme titel, et disk-ID foran ikke medregnet, er samme spil.'
   RIPPS2_MY_PADS: Mine controllere
-  HINT_RIPPS2_MY_PADS: 'De .pad-profiler, der ligger i mappen PADS ved siden af RIPPS2: én tekstfil pr. USB-controller, opkaldt efter dens ID (2563_0575.pad), hver kontrolleret. RIPPS2 leder formatet; PADEMU læser dem i et senere build.'
+  HINT_RIPPS2_MY_PADS: '.pad-profilerne i mappen PADS ved siden af RIPPS2: én tekstfil pr. USB-controller, navngivet efter dens ID (2563_0575.pad), og hver af dem tjekket. En controller med profil styrer menuen og spiller i spil (Pad Emulator til).'
+  RIPPS2_PAD_SETUP: Sæt en USB-controller op
+  HINT_RIPPS2_PAD_SETUP: Sæt en USB-controller i, som RIPPS2 ikke kender, tryk på hver knap, den beder om, og RIPPS2 skriver dens .pad i PADS. SELECT på din PS2-controller springer en knap over.

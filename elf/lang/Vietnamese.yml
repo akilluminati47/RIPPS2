@@ -1412,6 +1412,36 @@ strings:
   'Boot sound On: from the AUDIO folder, once its drive is up': 'Âm khởi động Bật: từ thư mục AUDIO, khi ổ của nó sẵn sàng'
   Boot sound off (Audio settings > Boot Sound): Âm khởi động tắt (Cài đặt âm thanh > Âm khởi động)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Chép boot.adp cạnh RIPPS2 trên thẻ nhớ mà nó khởi chạy, nơi lúc khởi động đọc nó trước khi bất kỳ ổ nào sẵn sàng.
+  '%s could not be written.': Không thể ghi %s.
+  '%s is there already and could not be put aside, so it was left as it was.': '%s đã có sẵn và không thể để sang một bên, nên được giữ nguyên.'
+  Circle: Tròn
+  Cross: Chéo
+  Down: Xuống
+  Down on the d-pad: Xuống trên d-pad
+  Found %04X:%04X. Let go of everything on it, sticks too, and wait.: Đã tìm thấy %04X:%04X. Thả hết mọi nút, cả cần analog, rồi chờ.
+  Got it. Let go.: Xong. Thả ra.
+  L3 (press the left stick in): L3 (nhấn cần trái xuống)
+  Left on the d-pad: Trái trên d-pad
+  Nothing was set up, so no file was written.: Chưa thiết lập gì, nên không có tệp nào được ghi.
+  ? Plug in the USB pad you want to set up. If it is in already, take it out and plug it in again. Then press any button on it once.
+  : Cắm tay cầm USB bạn muốn thiết lập. Nếu đã cắm, hãy rút ra rồi cắm lại. Sau đó nhấn một lần nút bất kỳ trên nó.
+  Press %s on the USB pad and hold it.: Nhấn %s trên tay cầm USB và giữ.
+  Push %s and hold it.: Đẩy %s và giữ.
+  R3 (press the right stick in): R3 (nhấn cần phải xuống)
+  Right on the d-pad: Phải trên d-pad
+  Save: Lưu
+  Saved as %s. The pad now steers the menu, and plays in games with the Pad Emulator on.: Đã lưu thành %s. Tay cầm giờ điều khiển menu và chơi trong game khi bật Pad Emulator.
+  Skip: Bỏ qua
+  Square: Vuông
+  This pad cannot be described in a .pad yet (%s), so no file was written.: Tay cầm này chưa thể mô tả trong một tệp .pad (%s), nên không có tệp nào được ghi.
+  Triangle: Tam giác
+  'Try it. What you hold shows here:': 'Thử xem. Nút bạn đang giữ hiện ở đây:'
+  Up: Lên
+  Up on the d-pad: Lên trên d-pad
+  the left stick down: cần trái xuống dưới
+  the left stick to the right: cần trái sang phải
+  the right stick down: cần phải xuống dưới
+  the right stick to the right: cần phải sang phải
 labels:
   NETCONFIG: Cài đặt mạng
   SETTINGS_SAVED: Đã lưu cài đặt vào %s
@@ -1929,4 +1959,6 @@ labels:
   RIPPS2_PS1_PREFER: Trùng lặp PS1
   HINT_RIPPS2_PS1_PREFER: 'Trò chơi PS1 vừa là VCD của POPSTARTER vừa là ảnh đĩa Ember. Cả hai: hai dòng. Ember: chỉ dòng Ember. POPSTARTER: chỉ VCD. Cùng tiêu đề, bỏ qua ID đĩa đứng đầu, là cùng một trò chơi.'
   RIPPS2_MY_PADS: Tay cầm của tôi
-  HINT_RIPPS2_MY_PADS: 'Các hồ sơ .pad trong thư mục PADS cạnh RIPPS2: mỗi tay cầm USB một tệp văn bản, đặt tên theo ID của nó (2563_0575.pad), mỗi tệp đều được kiểm tra. RIPPS2 dẫn đầu định dạng này; PADEMU sẽ đọc chúng trong bản dựng sau.'
+  HINT_RIPPS2_MY_PADS: 'Các hồ sơ .pad trong thư mục PADS cạnh RIPPS2: mỗi tay cầm USB một tệp văn bản, đặt tên theo ID của nó (2563_0575.pad), và mỗi tệp đều được kiểm tra. Tay cầm có hồ sơ điều khiển menu và chơi trong game (bật Pad Emulator).'
+  RIPPS2_PAD_SETUP: Thiết lập tay cầm USB
+  HINT_RIPPS2_PAD_SETUP: Cắm một tay cầm USB mà RIPPS2 chưa biết, nhấn từng nút nó yêu cầu, và RIPPS2 ghi tệp .pad của nó vào PADS. SELECT trên tay cầm PS2 bỏ qua một nút.

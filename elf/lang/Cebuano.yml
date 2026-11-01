@@ -1408,6 +1408,36 @@ strings:
   'Boot sound On: from the AUDIO folder, once its drive is up': 'Boot sound On: gikan sa folder nga AUDIO, kung andam na ang drive niini'
   Boot sound off (Audio settings > Boot Sound): Boot sound off (Audio settings > Boot Sound)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Mokopya sa boot.adp tupad sa RIPPS2 sa memory card nga gisugdan niini, diin kini basahon sa boot sa dili pa andam ang bisan unsang drive.
+  '%s could not be written.': Dili masulat ang %s.
+  '%s is there already and could not be put aside, so it was left as it was.': Anaa na ang %s ug dili maisalikway, busa gibilin kini sama sa una.
+  Circle: Lingin
+  Cross: Ekis
+  Down: Ubos
+  Down on the d-pad: Ubos sa d-pad
+  Found %04X:%04X. Let go of everything on it, sticks too, and wait.: Nakit-an ang %04X:%04X. Buhii ang tanan niini, apil ang mga stick, ug paghulat.
+  Got it. Let go.: Nakuha. Buhii.
+  L3 (press the left stick in): L3 (pislita ang wala nga stick)
+  Left on the d-pad: Wala sa d-pad
+  Nothing was set up, so no file was written.: Walay na-set up, busa walay file nga nasulat.
+  ? Plug in the USB pad you want to set up. If it is in already, take it out and plug it in again. Then press any button on it once.
+  : Isaksak ang USB pad nga gusto nimong i-set up. Kung nakasaksak na, ibton ug isaksak pag-usab. Dayon pislita kausa ang bisan unsang button niini.
+  Press %s on the USB pad and hold it.: Pislita ang %s sa USB pad ug kupti.
+  Push %s and hold it.: Iduso ang %s ug kupti.
+  R3 (press the right stick in): R3 (pislita ang tuo nga stick)
+  Right on the d-pad: Tuo sa d-pad
+  Save: I-save
+  Saved as %s. The pad now steers the menu, and plays in games with the Pad Emulator on.: Na-save isip %s. Ang pad na ang nagdumala sa menu, ug modula kini sa mga dula kung naka-on ang Pad Emulator.
+  Skip: Laktawi
+  Square: Kwadrado
+  This pad cannot be described in a .pad yet (%s), so no file was written.: Kini nga pad dili pa mahulagway sa usa ka .pad (%s), busa walay file nga nasulat.
+  Triangle: Trianggulo
+  'Try it. What you hold shows here:': 'Sulayi. Ang imong gikuptan makita dinhi:'
+  Up: Taas
+  Up on the d-pad: Taas sa d-pad
+  the left stick down: ang wala nga stick paubos
+  the left stick to the right: ang wala nga stick pakatuo
+  the right stick down: ang tuo nga stick paubos
+  the right stick to the right: ang tuo nga stick pakatuo
 labels:
   MEDIUM: Tunga-tunga
   BDMMODE: BDM Start Mode
@@ -1907,4 +1937,6 @@ labels:
   RIPPS2_PS1_PREFER: Mga doble sa PS1
   HINT_RIPPS2_PS1_PREFER: 'Usa ka dula sa PS1 nga parehong POPSTARTER VCD ug Ember image. Duha: duha ka laray. Ember: ang Ember ra. POPSTARTER: ang VCD ra. Ang parehas nga titulo, gawas sa disc ID sa unahan, usa ra ka dula.'
   RIPPS2_MY_PADS: Akong mga controller
-  HINT_RIPPS2_MY_PADS: 'Ang mga .pad profile sa folder nga PADS tupad sa RIPPS2: usa ka text file matag USB controller, ginganlan sa ID niini (2563_0575.pad), matag usa gisusi. Ang RIPPS2 ang nanguna sa format; basahon kini sa PADEMU sa sunod nga build.'
+  HINT_RIPPS2_MY_PADS: 'Ang mga .pad profile sa PADS folder tupad sa RIPPS2: usa ka text file matag USB pad, ginganlan sumala sa ID niini (2563_0575.pad), ug gisusi ang matag usa. Ang pad nga adunay profile magdumala sa menu ug modula sa mga dula (naka-on ang Pad Emulator).'
+  RIPPS2_PAD_SETUP: I-set Up ang USB Pad
+  HINT_RIPPS2_PAD_SETUP: Isaksak ang USB pad nga wala mailhi sa RIPPS2, pislita ang matag button nga gipangayo niini, ug isulat sa RIPPS2 ang .pad niini sa PADS. Ang SELECT sa imong PS2 pad molaktaw og usa ka button.

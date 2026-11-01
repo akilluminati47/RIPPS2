@@ -1,0 +1,38 @@
+{
+ "s": {
+  "0": "%s nu a putut fi scris.",
+  "1": "%s există deja și nu a putut fi pus deoparte, așa că a rămas cum era.",
+  "2": "Cerc",
+  "3": "X",
+  "4": "Jos",
+  "5": "Jos pe cruce",
+  "6": "Găsit %04X:%04X. Eliberează tot de pe el, și stick-urile, și așteaptă.",
+  "7": "Gata. Eliberează.",
+  "8": "L3 (apasă stick-ul stâng)",
+  "9": "Stânga pe cruce",
+  "10": "Nu s-a configurat nimic, așa că nu s-a scris niciun fișier.",
+  "11": "Conectează controlerul USB pe care vrei să-l configurezi. Dacă e deja conectat, scoate-l și conectează-l din nou. Apoi apasă o dată orice buton de pe el.",
+  "12": "Apasă %s pe controlerul USB și ține apăsat.",
+  "13": "Împinge %s și ține-l.",
+  "14": "R3 (apasă stick-ul drept)",
+  "15": "Dreapta pe cruce",
+  "16": "Salvează",
+  "17": "Salvat ca %s. Controlerul conduce acum meniul și joacă în jocuri cu Pad Emulator pornit.",
+  "18": "Sari",
+  "19": "Pătrat",
+  "20": "Acest controler nu poate fi descris încă într-un .pad (%s), așa că nu s-a scris niciun fișier.",
+  "21": "Triunghi",
+  "22": "Încearcă. Ce ții apăsat apare aici:",
+  "23": "Sus",
+  "24": "Sus pe cruce",
+  "25": "stick-ul stâng în jos",
+  "26": "stick-ul stâng la dreapta",
+  "27": "stick-ul drept în jos",
+  "28": "stick-ul drept la dreapta"
+ },
+ "l": {
+  "RIPPS2_PAD_SETUP": "Configurează un controler USB",
+  "HINT_RIPPS2_PAD_SETUP": "Conectează un controler USB pe care RIPPS2 nu-l cunoaște, apasă fiecare buton cerut, iar RIPPS2 îi scrie .pad-ul în PADS. SELECT pe controlerul tău PS2 sare peste un buton.",
+  "HINT_RIPPS2_MY_PADS": "Profilurile .pad din folderul PADS de lângă RIPPS2: un fișier text pentru fiecare controler USB, numit după ID-ul lui (2563_0575.pad), și fiecare verificat. Un controler cu profil conduce meniul și joacă în jocuri (Pad Emulator pornit)."
+ }
+}

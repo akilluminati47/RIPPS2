@@ -1412,6 +1412,36 @@ strings:
   'Boot sound On: from the AUDIO folder, once its drive is up': 'Zvuk pokretanja Uklj.: iz mape AUDIO, kad joj je disk spreman'
   Boot sound off (Audio settings > Boot Sound): Zvuk pokretanja isklj. (Postavke zvuka > Zvuk pokretanja)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Kopira boot.adp pokraj RIPPS2 na memorijsku karticu s koje se pokreće, gdje ga pokretanje čita prije nego što je ijedan disk spreman.
+  '%s could not be written.': '%s nije moguće zapisati.'
+  '%s is there already and could not be put aside, so it was left as it was.': '%s već postoji i nije ga bilo moguće skloniti, pa je ostao kakav je bio.'
+  Circle: Krug
+  Cross: Križić
+  Down: Dolje
+  Down on the d-pad: Dolje na križu
+  Found %04X:%04X. Let go of everything on it, sticks too, and wait.: Pronađen %04X:%04X. Pusti sve na njemu, i palice, i pričekaj.
+  Got it. Let go.: Uhvaćeno. Pusti.
+  L3 (press the left stick in): L3 (pritisni lijevu palicu)
+  Left on the d-pad: Lijevo na križu
+  Nothing was set up, so no file was written.: Ništa nije postavljeno, pa nijedna datoteka nije zapisana.
+  ? Plug in the USB pad you want to set up. If it is in already, take it out and plug it in again. Then press any button on it once.
+  : Uključi USB kontroler koji želiš postaviti. Ako je već uključen, izvadi ga i uključi ponovno. Zatim jednom pritisni bilo koju tipku na njemu.
+  Press %s on the USB pad and hold it.: Pritisni %s na USB kontroleru i drži.
+  Push %s and hold it.: Pomakni %s i drži.
+  R3 (press the right stick in): R3 (pritisni desnu palicu)
+  Right on the d-pad: Desno na križu
+  Save: Spremi
+  Saved as %s. The pad now steers the menu, and plays in games with the Pad Emulator on.: Spremljeno kao %s. Kontroler sada upravlja izbornikom i igra u igrama s uključenim Pad Emulatorom.
+  Skip: Preskoči
+  Square: Kvadrat
+  This pad cannot be described in a .pad yet (%s), so no file was written.: Ovaj kontroler još se ne može opisati u .pad datoteci (%s), pa nijedna datoteka nije zapisana.
+  Triangle: Trokut
+  'Try it. What you hold shows here:': 'Isprobaj. Ono što držiš prikazuje se ovdje:'
+  Up: Gore
+  Up on the d-pad: Gore na križu
+  the left stick down: lijevu palicu dolje
+  the left stick to the right: lijevu palicu udesno
+  the right stick down: desnu palicu dolje
+  the right stick to the right: desnu palicu udesno
 labels:
   NETCONFIG: Mrežne postavke
   BDMMODE: Način pokretanja BDM-a
@@ -1903,4 +1933,6 @@ labels:
   RIPPS2_PS1_PREFER: PS1 duplikati
   HINT_RIPPS2_PS1_PREFER: 'PS1 igra koja je i VCD za POPSTARTER i Ember slika. Oba: dva retka. Ember: samo Ember redak. POPSTARTER: samo VCD. Isti naslov, bez ID-a diska na početku, ista je igra.'
   RIPPS2_MY_PADS: Moji kontroleri
-  HINT_RIPPS2_MY_PADS: 'Profili .pad u mapi PADS pokraj RIPPS2: po jedna tekstna datoteka za USB kontroler, nazvana po njegovom ID-u (2563_0575.pad), svaka provjerena. RIPPS2 vodi ovaj format; PADEMU će ih čitati u kasnijem buildu.'
+  HINT_RIPPS2_MY_PADS: '.pad profili u mapi PADS pokraj RIPPS2: jedna tekstualna datoteka po USB kontroleru, nazvana po njegovom ID-u (2563_0575.pad), i svaki provjeren. Kontroler s profilom upravlja izbornikom i igra u igrama (Pad Emulator uključen).'
+  RIPPS2_PAD_SETUP: Postavi USB kontroler
+  HINT_RIPPS2_PAD_SETUP: Uključi USB kontroler koji RIPPS2 ne poznaje, pritisni svaku tipku koju zatraži i RIPPS2 zapisuje njegov .pad u PADS. SELECT na tvom PS2 kontroleru preskače tipku.

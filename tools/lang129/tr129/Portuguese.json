@@ -1,0 +1,38 @@
+{
+ "s": {
+  "0": "Não foi possível escrever %s.",
+  "1": "%s já existe e não pôde ser posto de parte, por isso ficou como estava.",
+  "2": "Círculo",
+  "3": "Cruz",
+  "4": "Baixo",
+  "5": "Baixo no direcional",
+  "6": "Encontrado %04X:%04X. Larga tudo nele, também os analógicos, e espera.",
+  "7": "Feito. Larga.",
+  "8": "L3 (carrega no analógico esquerdo)",
+  "9": "Esquerda no direcional",
+  "10": "Nada foi configurado, por isso nenhum ficheiro foi escrito.",
+  "11": "Liga o comando USB que queres configurar. Se já estiver ligado, desliga-o e volta a ligá-lo. Depois carrega uma vez em qualquer botão.",
+  "12": "Carrega em %s no comando USB e mantém.",
+  "13": "Empurra %s e mantém.",
+  "14": "R3 (carrega no analógico direito)",
+  "15": "Direita no direcional",
+  "16": "Guardar",
+  "17": "Guardado como %s. O comando já controla o menu e joga nos jogos com o Pad Emulator ligado.",
+  "18": "Saltar",
+  "19": "Quadrado",
+  "20": "Este comando ainda não pode ser descrito num .pad (%s), por isso nenhum ficheiro foi escrito.",
+  "21": "Triângulo",
+  "22": "Experimenta. O que manténs premido aparece aqui:",
+  "23": "Cima",
+  "24": "Cima no direcional",
+  "25": "o analógico esquerdo para baixo",
+  "26": "o analógico esquerdo para a direita",
+  "27": "o analógico direito para baixo",
+  "28": "o analógico direito para a direita"
+ },
+ "l": {
+  "RIPPS2_PAD_SETUP": "Configurar um comando USB",
+  "HINT_RIPPS2_PAD_SETUP": "Liga um comando USB que o RIPPS2 não conheça, carrega em cada botão que ele pedir e o RIPPS2 escreve o seu .pad em PADS. SELECT no teu comando PS2 salta um botão.",
+  "HINT_RIPPS2_MY_PADS": "Os perfis .pad na pasta PADS ao lado do RIPPS2: um ficheiro de texto por comando USB, com o nome do seu ID (2563_0575.pad), e cada um verificado. Um comando com perfil controla o menu e joga nos jogos (Pad Emulator ligado)."
+ }
+}

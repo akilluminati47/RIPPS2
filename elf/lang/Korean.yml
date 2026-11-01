@@ -1412,6 +1412,36 @@ strings:
   'Boot sound On: from the AUDIO folder, once its drive is up': '부팅음 켬: AUDIO 폴더에서, 드라이브 준비 후'
   Boot sound off (Audio settings > Boot Sound): 부팅음 끔(오디오 설정 > 부팅음)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: 시작한 메모리 카드의 RIPPS2 옆에 boot.adp를 복사해, 어떤 드라이브보다 먼저 부팅 때 읽습니다.
+  '%s could not be written.': '%s을(를) 쓸 수 없습니다.'
+  '%s is there already and could not be put aside, so it was left as it was.': '%s이(가) 이미 있고 옆으로 옮길 수 없어서 그대로 두었습니다.'
+  Circle: 동그라미
+  Cross: 엑스
+  Down: 아래
+  Down on the d-pad: 방향키 아래
+  Found %04X:%04X. Let go of everything on it, sticks too, and wait.: '%04X:%04X을(를) 찾았습니다. 스틱까지 모두 놓고 기다리세요.'
+  Got it. Let go.: 확인. 놓으세요.
+  L3 (press the left stick in): L3 (왼쪽 스틱 누르기)
+  Left on the d-pad: 방향키 왼쪽
+  Nothing was set up, so no file was written.: 아무것도 설정되지 않아 파일을 쓰지 않았습니다.
+  ? Plug in the USB pad you want to set up. If it is in already, take it out and plug it in again. Then press any button on it once.
+  : 설정할 USB 패드를 연결하세요. 이미 연결되어 있다면 뽑았다가 다시 연결하세요. 그런 다음 아무 버튼이나 한 번 누르세요.
+  Press %s on the USB pad and hold it.: USB 패드에서 %s을(를) 누른 채로 있으세요.
+  Push %s and hold it.: '%s 민 채로 있으세요.'
+  R3 (press the right stick in): R3 (오른쪽 스틱 누르기)
+  Right on the d-pad: 방향키 오른쪽
+  Save: 저장
+  Saved as %s. The pad now steers the menu, and plays in games with the Pad Emulator on.: '%s(으)로 저장했습니다. 이제 이 패드로 메뉴를 조작하고, Pad Emulator를 켜면 게임에서도 쓸 수 있습니다.'
+  Skip: 건너뛰기
+  Square: 네모
+  This pad cannot be described in a .pad yet (%s), so no file was written.: 이 패드는 아직 .pad로 나타낼 수 없어서(%s) 파일을 쓰지 않았습니다.
+  Triangle: 세모
+  'Try it. What you hold shows here:': '해 보세요. 누르고 있는 것이 여기 나옵니다:'
+  Up: 위
+  Up on the d-pad: 방향키 위
+  the left stick down: 왼쪽 스틱을 아래로
+  the left stick to the right: 왼쪽 스틱을 오른쪽으로
+  the right stick down: 오른쪽 스틱을 아래로
+  the right stick to the right: 오른쪽 스틱을 오른쪽으로
 labels:
   IP_ADDRESS_TYPE_STATIC: 고정
   HINT_NEUTRINO_AUTO_ELF: 게임의 부트 ELF를 Neutrino에 넘겨 타이틀별 설정을 찾게 합니다. 기본으로 켜져 있으며, 직접 설정한 Boot ELF 옵션이 우선합니다.
@@ -1880,4 +1910,6 @@ labels:
   RIPPS2_PS1_PREFER: PS1 중복
   HINT_RIPPS2_PS1_PREFER: 'POPSTARTER VCD와 Ember 이미지가 모두 있는 PS1 게임. 둘 다: 두 줄. Ember: Ember만. POPSTARTER: VCD만. 앞의 디스크 ID를 빼고 제목이 같으면 같은 게임입니다.'
   RIPPS2_MY_PADS: 내 패드
-  HINT_RIPPS2_MY_PADS: 'RIPPS2 옆 PADS 폴더의 .pad 프로필: USB 패드마다 ID로 이름 붙인 텍스트 파일 하나(2563_0575.pad)이며 각각 확인합니다. RIPPS2가 이 형식을 이끕니다. PADEMU는 이후 빌드에서 읽습니다.'
+  HINT_RIPPS2_MY_PADS: 'RIPPS2 옆 PADS 폴더의 .pad 프로필: USB 패드마다 ID로 이름 붙은 텍스트 파일 하나(2563_0575.pad), 모두 검사됨. 프로필이 있는 패드는 메뉴를 조작하고 게임에서도 쓰입니다(Pad Emulator 켬).'
+  RIPPS2_PAD_SETUP: USB 패드 설정
+  HINT_RIPPS2_PAD_SETUP: RIPPS2가 모르는 USB 패드를 연결하고 요청하는 버튼을 하나씩 누르면 RIPPS2가 그 .pad를 PADS에 씁니다. PS2 패드의 SELECT는 버튼을 건너뜁니다.

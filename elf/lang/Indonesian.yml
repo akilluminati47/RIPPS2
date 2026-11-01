@@ -1411,6 +1411,36 @@ strings:
   'Boot sound On: from the AUDIO folder, once its drive is up': 'Suara boot Aktif: dari folder AUDIO, setelah drive-nya siap'
   Boot sound off (Audio settings > Boot Sound): Suara boot mati (Pengaturan audio > Suara boot)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Menyalin boot.adp ke samping RIPPS2 di kartu memori tempat ia mulai, tempat boot membacanya sebelum drive mana pun siap.
+  '%s could not be written.': '%s tidak dapat ditulis.'
+  '%s is there already and could not be put aside, so it was left as it was.': '%s sudah ada dan tidak dapat disisihkan, jadi dibiarkan seperti semula.'
+  Circle: Lingkaran
+  Cross: Silang
+  Down: Bawah
+  Down on the d-pad: Bawah pada d-pad
+  Found %04X:%04X. Let go of everything on it, sticks too, and wait.: Ditemukan %04X:%04X. Lepaskan semua tombolnya, stik juga, lalu tunggu.
+  Got it. Let go.: Dapat. Lepaskan.
+  L3 (press the left stick in): L3 (tekan stik kiri)
+  Left on the d-pad: Kiri pada d-pad
+  Nothing was set up, so no file was written.: Tidak ada yang diatur, jadi tidak ada file yang ditulis.
+  ? Plug in the USB pad you want to set up. If it is in already, take it out and plug it in again. Then press any button on it once.
+  : Colokkan pad USB yang ingin diatur. Jika sudah tercolok, cabut lalu colokkan lagi. Lalu tekan sekali tombol apa saja di pad itu.
+  Press %s on the USB pad and hold it.: Tekan %s pada pad USB dan tahan.
+  Push %s and hold it.: Dorong %s dan tahan.
+  R3 (press the right stick in): R3 (tekan stik kanan)
+  Right on the d-pad: Kanan pada d-pad
+  Save: Simpan
+  Saved as %s. The pad now steers the menu, and plays in games with the Pad Emulator on.: Disimpan sebagai %s. Pad ini sekarang mengendalikan menu dan bermain di game dengan Pad Emulator aktif.
+  Skip: Lewati
+  Square: Kotak
+  This pad cannot be described in a .pad yet (%s), so no file was written.: Pad ini belum bisa dijelaskan dalam .pad (%s), jadi tidak ada file yang ditulis.
+  Triangle: Segitiga
+  'Try it. What you hold shows here:': 'Coba. Yang kamu tahan tampil di sini:'
+  Up: Atas
+  Up on the d-pad: Atas pada d-pad
+  the left stick down: stik kiri ke bawah
+  the left stick to the right: stik kiri ke kanan
+  the right stick down: stik kanan ke bawah
+  the right stick to the right: stik kanan ke kanan
 labels:
   BDM_GAMES: Game BDM
   HDD_GAMES: Game HDD
@@ -1904,4 +1934,6 @@ labels:
   RIPPS2_PS1_PREFER: Duplikat PS1
   HINT_RIPPS2_PS1_PREFER: 'Game PS1 yang sekaligus VCD POPSTARTER dan image Ember. Keduanya: dua baris. Ember: hanya baris Ember. POPSTARTER: hanya VCD. Judul yang sama, tanpa ID disk di depannya, adalah game yang sama.'
   RIPPS2_MY_PADS: Kontroler saya
-  HINT_RIPPS2_MY_PADS: 'Profil .pad di folder PADS di samping RIPPS2: satu file teks per kontroler USB, dinamai dengan ID-nya (2563_0575.pad), masing-masing diperiksa. RIPPS2 memimpin format ini; PADEMU membacanya di build berikutnya.'
+  HINT_RIPPS2_MY_PADS: 'Profil .pad di folder PADS di samping RIPPS2: satu file teks per pad USB, diberi nama sesuai ID-nya (2563_0575.pad), dan masing-masing diperiksa. Pad yang punya profil mengendalikan menu dan bermain di game (Pad Emulator aktif).'
+  RIPPS2_PAD_SETUP: Atur Pad USB
+  HINT_RIPPS2_PAD_SETUP: Colokkan pad USB yang belum dikenal RIPPS2, tekan setiap tombol yang diminta, dan RIPPS2 menulis .pad-nya di PADS. SELECT pada pad PS2 melewati satu tombol.

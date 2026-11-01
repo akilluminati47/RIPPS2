@@ -134,6 +134,21 @@ Then the game map, then PADEMU's macros as today. Pressure bytes for a generic p
 
 - Build 126: this format, the reference reader, packer and decoder, the host tests, and Settings > Controllers > My Pads,
   which lists the profiles on the card and says what is wrong with any it refuses.
-- Next (phase 2): the block into ee_core's config and PADEMU's arguments, `usb_probe` taking the profiles' IDs, the generic
-  path in the IRX through `padTranslate`, and the setup screen (press each button, saved as a profile). Hardware testers
-  with copy DS3s, 8BitDo pads and arcade sticks, each asked to send their `.pad`.
+- Build 129 (phase 2):
+  - The launcher reads `PADS` and `PADS/GAMES/<game ID>.pad` as a game starts (`src/ripps2pads.c`), packs the block, and
+    places it after PADEMU's eight bytes of settings below 0xD0000. ee_core passes 8 + 180 bytes and sets bit 19 of
+    PadEmuSettings (`PADEMU_PROFILES_FLAG`) so PADEMU knows the block follows. No block (no profile, no map): PADEMU starts
+    exactly as before.
+  - PADEMU (`modules/pademu/padprofile.c`, `padfile.c` built with `PADFILE_DECODE_ONLY`) takes a non-Sony pad whose
+    VID:PID a profile names as `GENERIC`: `init=ds3` sends the F4 packet, `rumble=ds3`/`led=ds3` send the DS3 output report,
+    and nothing else is ever sent. The game map (`padApplyMap`) applies to every USB pad, Sony ones included.
+  - The menu's USB driver (`modules/ds34usb`) reads the same block (RPC 10, `DS34USB_SET_PROFILES`), so a profiled pad
+    steers the menu too, and hands Set Up A USB Pad a HID pad's raw reports (RPC 9, `DS34USB_GET_RAW`: 8 bytes of state
+    and ID, then the report). While that screen is open it takes any HID pad that is not a boot keyboard or mouse.
+  - Settings > Controllers > Set Up A USB Pad: plug the pad in, let go (a second and a half at rest measures the bytes
+    that move on their own), press each button and push each stick as asked (SELECT on the PS2 pad skips one), try the
+    result live, save. It finds a bit (`b`/`!b`), a hat (`dpad=hat<byte>`), an analog trigger (`a<byte>`) or a stick
+    (`a<byte>`, `-` when it runs the other way), writes `PADS/VVVV_PPPP.pad` (an older file is kept as `.bak`, `.b01`...)
+    and reads it back with the reference reader before anything is saved.
+- Next: hardware testers with copy DS3s, 8BitDo pads and arcade sticks, each asked to send their `.pad`; a `report_id`
+  pass for pads that send more than one report.

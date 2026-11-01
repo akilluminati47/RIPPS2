@@ -1412,6 +1412,36 @@ strings:
   'Boot sound On: from the AUDIO folder, once its drive is up': 開機音 開:來自 AUDIO 資料夾,其磁碟就緒後
   Boot sound off (Audio settings > Boot Sound): 開機音 關(音訊設定 > 開機音)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: 將 boot.adp 複製到啟動所用記憶卡上的 RIPPS2 旁,開機時先於任何磁碟讀取。
+  '%s could not be written.': 無法寫入 %s。
+  '%s is there already and could not be put aside, so it was left as it was.': '%s 已存在且無法移到一旁，所以維持原樣。'
+  Circle: 圓圈
+  Cross: 叉
+  Down: 下
+  Down on the d-pad: 方向鍵下
+  Found %04X:%04X. Let go of everything on it, sticks too, and wait.: 找到 %04X:%04X。放開上面所有按鍵，包括類比搖桿，然後稍候。
+  Got it. Let go.: 收到。放開。
+  L3 (press the left stick in): L3（按下左搖桿）
+  Left on the d-pad: 方向鍵左
+  Nothing was set up, so no file was written.: 什麼都沒有設定，所以沒有寫入檔案。
+  ? Plug in the USB pad you want to set up. If it is in already, take it out and plug it in again. Then press any button on it once.
+  : 插上你要設定的 USB 手把。如果已經插著，請拔掉再插上。然後隨意按一次它上面的任一按鍵。
+  Press %s on the USB pad and hold it.: 按住 USB 手把上的 %s。
+  Push %s and hold it.: 推%s並保持。
+  R3 (press the right stick in): R3（按下右搖桿）
+  Right on the d-pad: 方向鍵右
+  Save: 儲存
+  Saved as %s. The pad now steers the menu, and plays in games with the Pad Emulator on.: 已儲存為 %s。現在這個手把可以操作選單，開啟 Pad Emulator 後也能在遊戲中使用。
+  Skip: 略過
+  Square: 方塊
+  This pad cannot be described in a .pad yet (%s), so no file was written.: 這個手把還無法用 .pad 描述（%s），所以沒有寫入檔案。
+  Triangle: 三角
+  'Try it. What you hold shows here:': 試試看。你按住的會顯示在這裡：
+  Up: 上
+  Up on the d-pad: 方向鍵上
+  the left stick down: 左搖桿向下
+  the left stick to the right: 左搖桿向右
+  the right stick down: 右搖桿向下
+  the right stick to the right: 右搖桿向右
 labels:
   BDMMODE: BDM 裝置啟動模式
   RESETCOLOR: 重設顏色
@@ -1890,4 +1920,6 @@ labels:
   RIPPS2_PS1_PREFER: PS1 重複項
   HINT_RIPPS2_PS1_PREFER: 同時有 POPSTARTER VCD 與 Ember 映像的 PS1 遊戲。兩者:兩列。Ember:只顯示 Ember。POPSTARTER:只顯示 VCD。除開頭的光碟 ID 外標題相同即為同一遊戲。
   RIPPS2_MY_PADS: 我的手把
-  HINT_RIPPS2_MY_PADS: RIPPS2 旁 PADS 資料夾中的 .pad 設定檔:每個 USB 手把一個以其 ID 命名的文字檔(2563_0575.pad),逐一檢查。RIPPS2 主導此格式;PADEMU 將在之後的版本中讀取。
+  HINT_RIPPS2_MY_PADS: RIPPS2 旁邊 PADS 資料夾中的 .pad 設定檔：每個 USB 手把一個以其 ID 命名的文字檔（2563_0575.pad），每個都經過檢查。有設定檔的手把可以操作選單，也能在遊戲中使用（開啟 Pad Emulator）。
+  RIPPS2_PAD_SETUP: 設定 USB 手把
+  HINT_RIPPS2_PAD_SETUP: 插上一個 RIPPS2 不認識的 USB 手把，按下它要求的每個按鍵，RIPPS2 就會把它的 .pad 寫到 PADS。PS2 手把上的 SELECT 可略過一個按鍵。
