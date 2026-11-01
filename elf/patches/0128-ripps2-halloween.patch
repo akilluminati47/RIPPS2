@@ -22,6 +22,19 @@ index 4696282..2db8ebb 100644
  void guiRenderPage(void); // build 114: the current page drawn once (under a panel)
  int guiThemeCount(void);  // build 115: how many themes the theme list shows
  int guiPickTheme(void);   // build 114: the theme list (SELECT held 4.2 s, Hold SELECT: List); 0: the one in use, refresh
+diff --git a/include/ripps2biossnd.h b/include/ripps2biossnd.h
+index 63ef708..343798d 100644
+--- a/include/ripps2biossnd.h
++++ b/include/ripps2biossnd.h
+@@ -15,6 +15,8 @@ int ripps2RomdirFind(const unsigned char *d, int size, const char *name, int *of
+ int ripps2BiosSoundsFromImage(const unsigned char *img, int size, ripps2_biossnd_put_t put, void *ctx);
+ // Audio settings > BIOS Sounds > RIP
+ void ripps2RipBiosSoundsDialog(void);
++// build 126: Boot Sound > On (fast) and STATUS: the boot sound beside RIPPS2 on its card (offered); 1 when it is there
++int ripps2BootSoundFast(void);
+ 
+ // build 100: the menu music, the BIOS's ambient piece, as 24 kHz mono 16-bit PCM handed over a slice at a time
+ // (done and total in samples); put returns 0 to go on
 diff --git a/include/themes.h b/include/themes.h
 index 1d0c23e..4e73b17 100644
 --- a/include/themes.h
@@ -43,9 +56,18 @@ index 1d0c23e..4e73b17 100644
      int hintsFlank, hintsFlankGap;      // build 115: hints_flank=1: RUN and SOURCE either side of the source name; the gap
      int badgeSet;                       // build 115: badge_set=ripps2 (1): RIPPS2's built-in badges, none of its own
 diff --git a/lng_tmpl/_base.yml b/lng_tmpl/_base.yml
-index 0368288..2839a2d 100644
+index 0368288..cede452 100644
 --- a/lng_tmpl/_base.yml
 +++ b/lng_tmpl/_base.yml
+@@ -1852,7 +1852,7 @@ gui_strings:
+ - label: HINT_SFX
+   string: "Menu sound effects."
+ - label: HINT_BOOT_SND
+-  string: "Plays a sound when RiptOPL starts."
++  string: "The boot sound as RIPPS2 starts. On: from the AUDIO folder, once its drive is up. On (fast): a copy beside RIPPS2 on the memory card it starts from (offered when you pick it), played as the pillars rise. It plays with Sound Effects off too."
+ - label: HINT_BGM
+   string: "Plays the theme's music, or your Default Theme Music file."
+ - label: HINT_SFX_VOLUME
 @@ -2242,5 +2242,9 @@ gui_strings:
    string: ART Pack
  - label: RIPPS2_ART_PACK_BUILD
@@ -104,7 +126,7 @@ index d0fbada..e20d63f 100644
  #define DIA_TIP_FONT   (gTheme->diaTipFont) // build 96: Roboto Condensed on every theme
  
 diff --git a/src/dialogs.c b/src/dialogs.c
-index 177660e..0da507a 100644
+index 177660e..a16f5ab 100644
 --- a/src/dialogs.c
 +++ b/src/dialogs.c
 @@ -874,6 +874,11 @@ struct UIItem diaUIConfig[] = {
@@ -119,8 +141,18 @@ index 177660e..0da507a 100644
  
      {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_THEME}}},
      {UI_SPACER},
+@@ -1956,7 +1961,8 @@ struct UIItem diaAudioConfig[] = {
+ 
+     {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_BOOT_SND}}},
+     {UI_SPACER},
+-    {UI_BOOL, CFG_BOOT_SND, 1, 1, _STR_HINT_BOOT_SND, 0, 0, {.intvalue = {0, 0}}},
++    // build 126 (the user, 10/31: "the boot sound option should show on (fast) for a third setting"): Off, On, On (fast)
++    {UI_ENUM, CFG_BOOT_SND, 1, 1, _STR_HINT_BOOT_SND, 0, 0, {.intvalue = {0, 0}}},
+     {UI_BREAK},
+ 
+     {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_BGM}}},
 diff --git a/src/gui.c b/src/gui.c
-index ee55388..80a5a18 100644
+index ee55388..7994bc7 100644
 --- a/src/gui.c
 +++ b/src/gui.c
 @@ -911,6 +911,8 @@ static const char *guiStarSides[] = {N_("Theme"), N_("Left"), N_("Right"), N_("H
@@ -149,7 +181,29 @@ index ee55388..80a5a18 100644
          diaGetInt(diaUIConfig, UICFG_AUTOSORT, &gAutosort);
          diaGetInt(diaUIConfig, UICFG_AUTOREFRESH, &gAutoRefresh);
          diaGetInt(diaUIConfig, UICFG_NOTIFICATIONS, &gEnableNotifications);
-@@ -4167,6 +4172,8 @@ static int guiSettingsShowInterface(void)
+@@ -3585,6 +3590,8 @@ static int guiAudioUpdater(int modified)
+ 
+ int guiShowAudioConfig(void)
+ {
++    static const char *bootModes[] = {N_("Off"), N_("On"), N_("On (fast)"), NULL}; // build 126
++    diaSetEnum(diaAudioConfig, CFG_BOOT_SND, bootModes);
+     diaSetInt(diaAudioConfig, CFG_SFX, gEnableSFX);
+     diaSetInt(diaAudioConfig, CFG_BOOT_SND, gEnableBootSND);
+     diaSetInt(diaAudioConfig, CFG_BGM, gEnableBGM);
+@@ -3605,6 +3612,12 @@ int guiShowAudioConfig(void)
+             ripps2RipBiosMusicDialog(); // RIPPS2 build 100: its menu music, on its own
+         guiMusicBegin();                // a new AUDIO folder can bring the music list with it
+     }
++    // build 126: On (fast) is the boot sound beside RIPPS2 on its memory card, read as the pillars rise: picked without one
++    // there, it offers the copy, and stays On when there is none
++    if (gEnableBootSND == 2 && !ripps2BootSoundFast()) {
++        gEnableBootSND = 1;
++        guiSettingsSavePending = 1;
++    }
+     guiSettingsEndDialog();
+     return guiSettingsPageResult(result);
+ }
+@@ -4167,6 +4180,8 @@ static int guiSettingsShowInterface(void)
      diaSetInt(ui, UICFG_THEME, guiThemeShown(thmGetGuiValue()));
      diaSetEnum(ui, UICFG_RIPPS2_SELECT_HOLD, guiHoldModes); // build 114
      diaSetInt(ui, UICFG_RIPPS2_SELECT_HOLD, gRipps2SelectHold);
@@ -158,7 +212,7 @@ index ee55388..80a5a18 100644
      diaSetInt(ui, UICFG_LANG, lngGetGuiValue());
      diaSetInt(ui, UICFG_AUTOSORT, gAutosort);
      diaSetInt(ui, UICFG_AUTOREFRESH, gAutoRefresh);
-@@ -4211,6 +4218,7 @@ reshow_interface:
+@@ -4211,6 +4226,7 @@ reshow_interface:
          diaGetInt(ui, UICFG_THEME, &themeID);
          themeID = guiThemeId(themeID);
          diaGetInt(ui, UICFG_RIPPS2_SELECT_HOLD, &gRipps2SelectHold); // build 114
@@ -217,11 +271,135 @@ index c5c6f6b..cf0fc52 100644
          else
              menuSourceCycle(); // build 80: the cancel button cycles the sources on Coverflow / Grid
      } else if (getKeyOn(KEY_CROSS)) {
+diff --git a/src/mixsupport.c b/src/mixsupport.c
+index 02cef2c..5a15835 100644
+--- a/src/mixsupport.c
++++ b/src/mixsupport.c
+@@ -1155,11 +1155,36 @@ static void mixPokeFamily(int fam)
+     }
+ }
+ 
++// build 126 (the user, 10/31: "When it starts a drive give an est. Time and pillars plus it doesn't work when I have the hdd
++// on manual and launch from the list. It takes a second attempt"): the wait said a drive "did not answer" at 30 s, and a
++// Manual HDD (its drivers, the spin up, the mount and the first list) can take longer, so the second Cross found it up.
++// It now waits MIX_LAUNCH_WAIT_S, with the time a start of that drive took last (kept in the settings) as the estimate
++#define MIX_LAUNCH_WAIT_S 75.0
++#define MIX_GONE_GRACE_S  3.0 // a first list can come in parts: the game is gone only when it is still missing after this
++static const unsigned char mixStartGuess[MIX_FAM_COUNT] = {12, 10, 5, 6, 8, 6, 4, 12, 8, 10}; // s, until one is measured
++
++static int mixStartEstimate(int fam)
++{
++    char key[32];
++    int s = 0;
++    snprintf(key, sizeof(key), "ripps2_start_s%d", fam);
++    if (!configGetInt(configGetByType(CONFIG_OPL), key, &s) || s < 1 || s > 120)
++        s = mixStartGuess[fam];
++    return s;
++}
++
++static void mixStartMeasured(int fam, double secs)
++{
++    char key[32];
++    snprintf(key, sizeof(key), "ripps2_start_s%d", fam);
++    configSetInt(configGetByType(CONFIG_OPL), key, (int)(secs + 0.5) < 1 ? 1 : (int)(secs + 0.5)); // saved with the settings
++}
++
+ int mixWaitForRow(struct menu_item *menu)
+ {
+     char name[256], startup[64], line[300];
+-    int kind, fam, id, backKey = gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE;
+-    double since;
++    int kind, fam, id, backKey = gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE, estimate;
++    double since, answeredAt = 0.0;
+     mix_set_t *set;
+     item_list_t *rows;
+ 
+@@ -1186,6 +1211,7 @@ int mixWaitForRow(struct menu_item *menu)
+     // IO worker past this wait while the drive the game is on waited behind it
+     ripps2StartSourceMode(mixFamilyMode(fam));
+     since = ripps2Seconds();
++    estimate = mixStartEstimate(fam);
+     readPads();
+     double poked = since;
+     while (1) {
+@@ -1195,6 +1221,8 @@ int mixWaitForRow(struct menu_item *menu)
+             poked = ripps2Seconds();
+             mixPokeFamily(fam);
+         }
++        if (mixAnswered[fam] && answeredAt == 0.0)
++            answeredAt = ripps2Seconds();
+         guiExecDeferredOps(); // the rebuilt list reaches the menu
+         if (menu->userdata != rows) { // build 116: the drive page took its drive's own list: the game is found there by its startup
+             item_list_t *own = (item_list_t *)menu->userdata;
+@@ -1203,22 +1231,25 @@ int mixWaitForRow(struct menu_item *menu)
+                 const char *st = p->item.isFolder ? NULL : own->itemGetStartup(own, p->item.id);
+                 if (st != NULL && !strcmp(st, startup)) {
+                     menu->current = p; // build 117: the cursor is put on it (it went where the drive's list put it)
++                    mixStartMeasured(fam, ripps2Seconds() - since);
+                     return 1;
+                 }
+             }
+         } else if (menu->current != NULL && mixValidIndex(set, menu->current->item.id) && set->arr[menu->current->item.id].owner != NULL &&
+                    mixLiveHas(set, name, kind)) {
+             const char *now = menu->current->item.text;
+-            if (now != NULL && !strcmp(now, name))
++            if (now != NULL && !strcmp(now, name)) {
++                mixStartMeasured(fam, ripps2Seconds() - since);
+                 return 1;
++            }
+         }
+-        if (menu->userdata == rows && mixAnswered[fam] && !mixLiveHas(set, name, kind)) {
++        if (menu->userdata == rows && mixAnswered[fam] && !mixLiveHas(set, name, kind) && ripps2Seconds() - answeredAt > MIX_GONE_GRACE_S) {
+             snprintf(line, sizeof(line), _t("%s is not on %s any more, so it has left All Games."), name, _t(mixFamName[fam]));
+             guiMsgBoxSound(SFX_ERROR);
+             guiMsgBox(line, 0, NULL);
+             return 0;
+         }
+-        if (ripps2Seconds() - since > 30.0) {
++        if (ripps2Seconds() - since > MIX_LAUNCH_WAIT_S) {
+             snprintf(line, sizeof(line), _t("%s did not answer, so %s cannot start. Is it connected?"), _t(mixFamName[fam]), name);
+             guiMsgBoxSound(SFX_ERROR);
+             guiMsgBox(line, 0, NULL);
+@@ -1230,6 +1261,19 @@ int mixWaitForRow(struct menu_item *menu)
+         snprintf(line, sizeof(line), _t("STARTING %s"), _t(mixFamName[fam]));
+         fntRenderStringFit(gTheme->fonts[4], 320, 200, ALIGN_CENTER, 540, line, GS_SETREG_RGBA(0x80, 0x80, 0x80, 0x80), 0);
+         fntRenderStringFit(gTheme->fonts[5], 320, 228, ALIGN_CENTER, 540, name, GS_SETREG_RGBA(0x67, 0x6C, 0x7A, 0x80), 0);
++        {
++            // build 126: the estimate, from the last start of this drive, and the time so far
++            int gone = (int)(ripps2Seconds() - since), left = estimate - gone;
++            if (left > 0)
++                snprintf(line, sizeof(line), left == 1 ? _t("About 1 second left") : _t("About %d seconds left"), left);
++            else
++                snprintf(line, sizeof(line), _t("Taking longer than its last start (%d s so far)"), gone);
++            fntRenderStringFit(gTheme->fonts[5], 320, 262, ALIGN_CENTER, 540, line, GS_SETREG_RGBA(0x47, 0x4B, 0x59, 0x80), 0);
++            float k = (float)(ripps2Seconds() - since) / (float)(estimate > 0 ? estimate : 1);
++            int w = (int)(240.0f * (k > 1.0f ? 1.0f : k));
++            rmDrawRect(200, 284, 240, 2, GS_SETREG_RGBA(0x20, 0x24, 0x34, 0x60));
++            rmDrawRect(200, 284, w, 2, GS_SETREG_RGBA(0x30, 0x80, 0xFF, 0x80));
++        }
+         {
+             GSTEXTURE *t = thmGetTexture(gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON);
+             int x = 320 - (24 + ripps2HintWidth(_t("CANCEL"))) / 2;
 diff --git a/src/opl.c b/src/opl.c
-index bf40e38..b06839b 100644
+index bf40e38..352382e 100644
 --- a/src/opl.c
 +++ b/src/opl.c
-@@ -4423,6 +4423,9 @@ static void _loadConfig()
+@@ -4398,6 +4398,14 @@ static void _loadConfig()
+             configGetInt(configOPL, CONFIG_OPL_SFX, &gEnableSFX);
+             configGetInt(configOPL, CONFIG_OPL_RUMBLE, &gEnableRumble);
+             configGetInt(configOPL, CONFIG_OPL_BOOT_SND, &gEnableBootSND);
++            if (gEnableBootSND < 0 || gEnableBootSND > 2)
++                gEnableBootSND = 1;
++            if (gEnableBootSND == 1) { // build 126: a copy beside RIPPS2 on its card (build 121's offer) is On (fast)
++                char cardBoot[300];
++                struct stat cardSt;
++                if (sfxCardBootPath(cardBoot, sizeof(cardBoot)) && stat(cardBoot, &cardSt) == 0 && cardSt.st_size > 0)
++                    gEnableBootSND = 2;
++            }
+             configGetInt(configOPL, CONFIG_OPL_BGM, &gEnableBGM);
+             configGetInt(configOPL, CONFIG_OPL_SFX_VOLUME, &gSFXVolume);
+             configGetInt(configOPL, CONFIG_OPL_BOOT_SND_VOLUME, &gBootSndVolume);
+@@ -4423,6 +4431,9 @@ static void _loadConfig()
              configGetInt(configOPL, "ripps2_select_hold", &gRipps2SelectHold); // build 114: Hold SELECT
              if (gRipps2SelectHold < RIPPS2_HOLD_LIST || gRipps2SelectHold > RIPPS2_HOLD_OFF)
                  gRipps2SelectHold = RIPPS2_HOLD_LIST;
@@ -231,7 +409,7 @@ index bf40e38..b06839b 100644
              if (gRipps2StarSide < 0 || gRipps2StarSide > 3)
                  gRipps2StarSide = 0;
          }
-@@ -4817,7 +4820,7 @@ static void _saveConfig()
+@@ -4817,7 +4828,7 @@ static void _saveConfig()
          configSetInt(configOPL, "ripps2_grid_wide", gRipps2GridWide); // build 98
          configSetInt(configOPL, "ripps2_bg_blur", gRipps2BgBlur);     // build 98
          configSetInt(configOPL, "ripps2_transition", gRipps2Transition); // build 92
@@ -240,7 +418,7 @@ index bf40e38..b06839b 100644
          configSetStr(configOPL, CONFIG_OPL_THEME, thmGetValue());
          configSetStr(configOPL, CONFIG_OPL_LANGUAGE, lngGetValue());
          configSetColor(configOPL, CONFIG_OPL_BGCOLOR, gDefaultBgColor);
-@@ -4957,6 +4960,7 @@ static void _saveConfig()
+@@ -4957,6 +4968,7 @@ static void _saveConfig()
          configSetInt(configOPL, "ripps2_star_side", gRipps2StarSide); // build 106
          configSetInt(configOPL, "ripps2_star_side_last", gRipps2StarSideLast); // build 115
          configSetInt(configOPL, "ripps2_select_hold", gRipps2SelectHold); // build 114: Hold SELECT
@@ -249,7 +427,7 @@ index bf40e38..b06839b 100644
          configSetInt(configOPL, CONFIG_OPL_YSENSITIVITY, gYSensitivity);
  
 diff --git a/src/ripps2biossnd.c b/src/ripps2biossnd.c
-index cb45dec..7c9e3d2 100644
+index cb45dec..d39817e 100644
 --- a/src/ripps2biossnd.c
 +++ b/src/ripps2biossnd.c
 @@ -496,6 +496,10 @@ static rbs_u8 *rbsRender(const rbs_u8 *hd, int hdLen, const rbs_u8 *bd, int bdLe
@@ -263,6 +441,41 @@ index cb45dec..7c9e3d2 100644
      rate = (int)(pitch * 48000u / 4096u); // the sample's own rate: the file keeps it, at the same pitch
      n48 = (int)((long long)n * 4096 / pitch) + 1;
      cap = n + rate * 3 / 2 + rate / 50; // room for the hall's tail
+@@ -1357,6 +1361,34 @@ static void rbsOfferCardBoot(const char *dir)
+     }
+ }
+ 
++// build 126 (the user, 10/31: "the boot sound option should show on (fast) for a third setting ... (if this isn't ideal then
++// make the setting put it on the boot memory card next to the elf no folder)"): Boot Sound > On (fast), and STATUS's row.
++// The boot sound beside RIPPS2 on the memory card it starts from is read before any drive is up, so it plays as the
++// pillars rise. Offers the copy when it is not there; 1 when the boot sound is read at once (the copy, or a set on a card)
++int ripps2BootSoundFast(void)
++{
++    char base[256], dir[288], dst[300];
++    struct stat st;
++
++    if (!sfxCardBootPath(dst, sizeof(dst))) {
++        guiMsgBox(_t("On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start "
++                     "from one. The boot sound plays as On."),
++                  0, NULL);
++        return 0;
++    }
++    if (stat(dst, &st) == 0 && st.st_size > 0)
++        return 1;
++    if (!ripps2AudioBase(base, sizeof(base) - 8, 0)) {
++        guiMsgBox(_t("There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console's."), 0, NULL);
++        return 0;
++    }
++    snprintf(dir, sizeof(dir), "%sAUDIO/", base);
++    if (!strncmp(dir, "mc", 2))
++        return 1; // the set is on a card already: read at once
++    rbsOfferCardBoot(dir);
++    return stat(dst, &st) == 0 && st.st_size > 0;
++}
++
+ // Audio settings > BIOS Sounds > RIP: ask, rip into the AUDIO folder, load them, say what happened
+ void ripps2RipBiosSoundsDialog(void)
+ {
 diff --git a/src/ripps2edit.c b/src/ripps2edit.c
 index 442b5b2..7a7df4b 100644
 --- a/src/ripps2edit.c
@@ -367,11 +580,97 @@ index 13a2e08..e560a84 100644
              sfxPlay(SFX_CANCEL);
          } else if (getKeyOn(KEY_RIGHT)) {
              sbClose();
+diff --git a/src/ripps2status.c b/src/ripps2status.c
+index c1ab19f..af1d23b 100644
+--- a/src/ripps2status.c
++++ b/src/ripps2status.c
+@@ -77,6 +77,7 @@ enum {
+     ACT_POPS_NET,
+     ACT_BIBLE_MANAGE,
+     ACT_SOUNDS_RIP,    // build 95
++    ACT_BOOT_FAST,     // build 126: SOUNDS > BOOT SOUND WITH THE PILLARS (Boot Sound > On (fast))
+     ACT_START_DRIVES,  // build 114
+     ACT_SEANCE_SEARCH, // build 114
+     ACT_CACHE,         // build 115: the Cache page (from Cache: back to it)
+@@ -364,6 +365,22 @@ static void stScan(void)
+     }
+     stAdd(ROW_ACTION, ACT_SOUNDS_RIP, _t("RIP THIS CONSOLE'S SOUNDS"), _t("from its BIOS, into AUDIO"))->hint =
+         _t("Makes RIPPS2's sounds from this console's own BIOS and writes them to the AUDIO folder.");
++    // build 126 (the user, 10/31: "fast boot boot sound should also be in status"): where the boot sound is read from
++    {
++        char card[300];
++        struct stat cs;
++        int onCard = sfxCardBootPath(card, sizeof(card)) && stat(card, &cs) == 0 && cs.st_size > 0;
++        if (!gEnableBootSND)
++            snprintf(line, sizeof(line), _t("Boot sound off (Audio settings > Boot Sound)"));
++        else if (gEnableBootSND == 2 && onCard)
++            snprintf(line, sizeof(line), _t("Boot sound On (fast): %s, as the pillars rise"), card);
++        else
++            snprintf(line, sizeof(line), _t("Boot sound On: from the AUDIO folder, once its drive is up"));
++        stAdd(ROW_STATUS, ACT_NONE, line, NULL)->ok = gEnableBootSND == 2 && onCard;
++        if (gEnableBootSND && !(gEnableBootSND == 2 && onCard))
++            stAdd(ROW_ACTION, ACT_BOOT_FAST, _t("BOOT SOUND WITH THE PILLARS"), _t("Boot Sound: On (fast)"))->hint =
++                _t("Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.");
++    }
+ }
+ 
+ // build 114: LOOK FOR THEM, with the drives started first when they are not (so every one is searched)
+@@ -613,6 +630,13 @@ void ripps2Status(void)
+                     ripps2RipBiosSoundsDialog();
+                     rescan = 1;
+                     break;
++                case ACT_BOOT_FAST: // build 126
++                    if (ripps2BootSoundFast() && gEnableBootSND != 2) {
++                        gEnableBootSND = 2;
++                        saveConfig(CONFIG_OPL, 0);
++                    }
++                    rescan = 1;
++                    break;
+                 case ACT_START_DRIVES: // build 114
+                     ripps2StartDrives();
+                     rescan = 1;
 diff --git a/src/ripps2ui.c b/src/ripps2ui.c
-index 0532079..79d39f5 100644
+index 0532079..31738bc 100644
 --- a/src/ripps2ui.c
 +++ b/src/ripps2ui.c
-@@ -1974,7 +1974,7 @@ void ripps2HandleInputLaunch(void)
+@@ -1514,8 +1514,14 @@ static int glyphWidth(GSTEXTURE *t)
+ 
+ // A START button glyph followed by the action name, centred as one unit (one of the hints RIPPSettings
+ // can fade or hide)
++static void renderSidebarHints(int y);
++
+ static void renderStartPrompt(const char *action, int y)
+ {
++    if (ripps2SidebarFocused()) { // build 126: the sidebar has the pad: its hints, Select and Back, in the prompt's place
++        renderSidebarHints(y);
++        return;
++    }
+     GSTEXTURE *start = thmGetTexture(START_ICON);
+     int textW = fntCalcDimensions(PROMPT_FONT, action);
+     int iconW = glyphWidth(start), iconH = start ? GLYPH_H : 0;
+@@ -1530,6 +1536,21 @@ static void renderStartPrompt(const char *action, int y)
+     fntRenderString(PROMPT_FONT, x0 + iconW + gap, y, ALIGN_VCENTER, 0, 0, action, withAlpha(COLOR_LIT, a));
+ }
+ 
++// build 126 (the user, 10/31: "Select and back glyphs hints need to appear on the sidebar ... so it's the full flow"):
++// the sidebar's own hints on a page that has no hint row, centred where the page's START prompt stands
++static void renderSidebarHints(int y)
++{
++    int ids[2] = {_STR_SELECT, _STR_BACK};
++    int icons[2] = {gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON, guiCancelIcon()};
++    int a = (int)(0x80 * ripps2HintsAlpha()), x, i;
++
++    if (a <= 0)
++        return;
++    x = guiAlignSubMenuHints(2, ids, icons, gTheme->fonts[0], 24, 1);
++    for (i = 0; i < 2; i++)
++        x = guiDrawIconAndTextA(icons[i], ids[i], gTheme->fonts[0], x, y - 10, withAlpha(COLOR_LIT, a), withAlpha(COLOR_TEX, a)) + 24; // y: their middle
++}
++
+ // ---- LAUNCH DISC ----
+ //
+ // What is in the drive, under START LASER. Read when it changes, not asked over and over: once a few
+@@ -1974,7 +1995,7 @@ void ripps2HandleInputLaunch(void)
          return;
      }
      if (ripps2SidebarOn() && (getKeyOn(KEY_LEFT) || getKeyOn(gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE))) {
@@ -380,7 +679,7 @@ index 0532079..79d39f5 100644
          return;
      }
      if (ripps2Legacy() && getKeyOn(gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE)) {
-@@ -2090,7 +2090,8 @@ void ripps2HandleInputMemory(void)
+@@ -2090,7 +2111,8 @@ void ripps2HandleInputMemory(void)
          return;
      }
      if (ripps2SidebarOn() && (getKeyOn(KEY_LEFT) || getKeyOn(gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE))) {
@@ -390,7 +689,7 @@ index 0532079..79d39f5 100644
          return;
      }
      if (ripps2SidebarOn() && getKeyOn(KEY_RIGHT))
-@@ -2528,7 +2529,7 @@ void ripps2TiltBeginFlow(int cx, int cy, int scalePct, float turn)
+@@ -2528,7 +2550,7 @@ void ripps2TiltBeginFlow(int cx, int cy, int scalePct, float turn)
          flowPitch = 0.0f;
          dt = 0.016f;
      }
@@ -400,7 +699,7 @@ index 0532079..79d39f5 100644
          if (ly != 0)
              goal = (ly / 128.0f) * FLOW_TILT_MAX;
 diff --git a/src/sound.c b/src/sound.c
-index 6cb5dc5..4783897 100644
+index 6cb5dc5..c9f401f 100644
 --- a/src/sound.c
 +++ b/src/sound.c
 @@ -519,12 +519,14 @@ void sfxIntroStarted(void)
@@ -437,7 +736,17 @@ index 6cb5dc5..4783897 100644
              d = opendir(dir);
              if (n > 5)
                  dir[n - 1] = '/';
-@@ -631,7 +633,7 @@ void sfxBootEarlyQueue(int themeID)
+@@ -609,7 +611,8 @@ static void sfxBootEarlyWork(void)
+         snprintf(path, sizeof(path), "%s/%s", sfxBootThemePath, sfx_files[SFX_BOOT].name);
+         ret = sfxRead(path, &sfx_files[SFX_BOOT]);
+     }
+-    if (ret != 0 && sfxCardBootPath(path, sizeof(path))) // build 121: the card's copy, before a drive's AUDIO folder
++    // build 121: the card's copy, before a drive's AUDIO folder; build 126: with Boot Sound on On (fast) only
++    if (ret != 0 && gEnableBootSND == 2 && sfxCardBootPath(path, sizeof(path)))
+         ret = sfxRead(path, &sfx_files[SFX_BOOT]);
+     if (ret != 0 && ripps2AudioBase(base, sizeof(base) - 8, 0) && audioBaseFound) {
+         snprintf(path, sizeof(path), "%sAUDIO/%s", base, sfx_files[SFX_BOOT].name);
+@@ -631,7 +634,7 @@ void sfxBootEarlyQueue(int themeID)
      static int queued = 0;
      char *thmPath;
  
@@ -446,7 +755,7 @@ index 6cb5dc5..4783897 100644
          return;
      queued = 1;
      sfxBootThemePath[0] = '\0';
-@@ -795,7 +797,7 @@ int sfxInit(int bootSnd)
+@@ -795,7 +798,7 @@ int sfxInit(int bootSnd)
          LOG("SFX: Loaded %s, size=%d, duration=%dms\n", full_path, sfx_files[i].size, sfx_files[i].duration_ms);
          sfxReady[i] = 1;
          loaded++;
@@ -456,7 +765,7 @@ index 6cb5dc5..4783897 100644
      }
      sfxLoadedCount = loaded;
 diff --git a/src/themes.c b/src/themes.c
-index fff6e8a..45239b0 100644
+index fff6e8a..583f6f1 100644
 --- a/src/themes.c
 +++ b/src/themes.c
 @@ -345,6 +345,7 @@ static mutable_text_t *initMutableText(const char *themePath, config_set_t *them
@@ -488,7 +797,36 @@ index fff6e8a..45239b0 100644
      } else
          LOG("THEMES AttributeText %s: NO attribute, elem disabled !!\n", name);
  }
-@@ -6783,6 +6791,7 @@ static int thmLoad(const char *themePath)
+@@ -4868,11 +4876,18 @@ static void drawInfoHintText(struct menu_list *menu, struct submenu_list *item,
+     // <name>_show_run=0 hides Run for a theme that draws its own launch prompt. Back always stays: it
+     // is the only way off this screen.
+     int first = elem->showRun ? 0 : 1;
++    // build 126 (the user, 10/31: "Select and back glyphs hints need to appear on the sidebar info page when
++    // highlighting"): the sidebar has the pad here, so its hints are its own, Select and Back
++    int sidebar = ripps2SidebarFocused() != 0, run = elem->showRun || sidebar;
++    if (sidebar) {
++        infoHints[0] = _STR_SELECT;
++        first = 0;
++    }
+     float hintA = ripps2HintsAlpha(); // RIPPS2 build 70: RIPPSettings (Back still works with them hidden)
+     if (hintA <= 0.0f)
+         return;
+     // build 125: an info page with the source's name (a MenuText) and hints_flank has RUN and BACK beside that name
+-    if (gTheme->hintsFlank && !ripps2SidebarOn() && ripps2SourceNameMode() != RIPPS2_SRC_POP) {
++    if (!sidebar && gTheme->hintsFlank && !ripps2SidebarOn() && ripps2SourceNameMode() != RIPPS2_SRC_POP) {
+         theme_element_t *e;
+         for (e = elem->family != NULL ? elem->family->first : NULL; e != NULL; e = e->next)
+             if (e->type == ELEM_TYPE_MENU_TEXT && e->aligned)
+@@ -4883,7 +4898,7 @@ static void drawInfoHintText(struct menu_list *menu, struct submenu_list *item,
+     if (elem->aligned)
+         x = guiAlignSubMenuHints(2 - first, infoHints + first, infoIcons + first, elem->font, elem->width, 1);
+ 
+-    if (elem->showRun) {
++    if (run) {
+         x = guiDrawIconAndTextA(gSelectButton == KEY_CIRCLE ? infoIcons[0] : infoIcons[1], infoHints[0], elem->font, x, elem->posY, col, iconCol);
+         x += elem->width;
+     }
+@@ -6783,6 +6798,7 @@ static int thmLoad(const char *themePath)
          // in and Circle back, so the sidebar stays on the list. info_sidebar=1 keeps it there for a theme that wants it
          // (Left reaches it); none of the built-in themes does
          newT->infoSidebar = configGetInt(themeConfig, "info_sidebar", &intValue) && intValue == 1;
