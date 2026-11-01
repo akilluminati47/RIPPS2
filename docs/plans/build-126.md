@@ -153,3 +153,19 @@ rounds, regen with `tools/dev/regen_patch.sh`), unless the user wants them folde
 
 ## Progress (10/31 night, usage limit)
 Done on b126: 0126 (PR #6 cheats), 0127 (RiptOPL backend picks, CI green), 0128 part 1 (sidebar flow, 6.9 s tooltips, boot sound without SFX, RIPFLOW L2/R2 + tilt, Set Metadata top line, deleted-AUDIO search fix in 0127; CI green). In progress, NOT CI-run or lab-checked: rating stars 143 x 18 (RIPPS2 conf_theme.cfg, RIPGRID misc cfg, Adapt generator edited in RIPPS2-themes but not regenerated or committed), a literal NUL in sound.c written as an escape. Answers: stars = rating stars at RIPFLOW size; lite ELF = a second smaller ELF without the carried Neutrino/PS2BBL. Next: lab-check the stars per theme, then Round 1 (theme-change crash, audio bugs, lab repro of the re-rip), Round 2 (art speed).
+
+## Progress (11/01 early morning)
+On b126, patch 0128 (CI per push):
+- SFX pitch: the browser plays menu sounds against 44.1 kHz; rbsRender and Media Studio render_osd scale by 44100/48000
+  (measured x0.916 before, x1.000 after; the menu music already matched at 0 cents). Old rips need ripping again.
+- RIPGRID stars x=1; List Title and Description setting (RIPPS2 theme list_cfg_text=0); sidebar Select/Back hints on the
+  info page and the Launch Disc / Memory Files pages; Boot Sound Off / On / On (fast) (card copy, STATUS row + action);
+  a launch's drive start waits 75 s with an estimate bar (Manual HDD second-Cross bug); list-page art fades as one;
+  info cover turns to COV2 on the shots' time (back=COV2); boot holds the pillars for a disk theme; PS1 art aliases in
+  the pack + PS1 rows in RIPPS2ART.LST (rebuild the pack); MMCE size by lseek, no "0 MiB"; PS1 Duplicates setting;
+  conf_apps.cfg names for numbered PS1 rows; a rip refreshes Fast Boot's copy; POPSTARTER IGR TM2s in extras/POPS.
+- Lab (debug build t126d): every menu asks one sound (Z1); 7 theme switches + RIPFLOW round trip stable on HDD art.tar
+  (T1/T2): the MMCE art.tar theme-change death stays a hardware item.
+Still open: the hang at boot with sounds and art.tar missing (needs the user's settings), random-game beep, save sound,
+Neutrino/BBL injection, MMCE browser launch and paste, video freeze, FF3 IGR, Ember controllers when cycling, RIPFLOW
+right-stick flip after the tilt change (lab next), lite ELF, .pad, translations, release, reel.
