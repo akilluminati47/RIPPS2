@@ -1400,10 +1400,10 @@ index 2f1dc95..1140ee1 100644
 +}
 diff --git a/src/ripps2pads.c b/src/ripps2pads.c
 new file mode 100644
-index 0000000..5b28dfe
+index 0000000..32074de
 --- /dev/null
 +++ b/src/ripps2pads.c
-@@ -0,0 +1,130 @@
+@@ -0,0 +1,131 @@
 +/*
 +  ripps2pads.c the user's .pad profiles for a launch (RIPPS2 build 129)
 +
@@ -1426,6 +1426,7 @@ index 0000000..5b28dfe
 +#include <dirent.h>
 +
 +#include "include/opl.h"
++#include "include/ioman.h" // LOG
 +#include "include/padfile.h"
 +#include "include/ripps2pads.h"
 +#ifdef PADEMU
