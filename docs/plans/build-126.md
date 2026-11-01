@@ -169,3 +169,13 @@ On b126, patch 0128 (CI per push):
 Still open: the hang at boot with sounds and art.tar missing (needs the user's settings), random-game beep, save sound,
 Neutrino/BBL injection, MMCE browser launch and paste, video freeze, FF3 IGR, Ember controllers when cycling, RIPFLOW
 right-stick flip after the tilt change (lab next), lite ELF, .pad, translations, release, reel.
+
+## Release (11/01 morning)
+v1.2.8-beta (builds 126 to 128) from main be1ba67: RIPPS2.elf, RIPPS2-lite.elf, RIPPS2-languages.zip; themes edition 128 on
+the rolling release. Lab-passed on the final build: sidebar flow and hints, RIPFLOW L2/R2 and the right-stick flip, the info
+cover's back, the stars, STATUS's SOUNDS rows (and rows drawn whole), boot with no AUDIO and the pack gone, seven theme
+switches. The reel v7 (10:48) adds those scenes to v6.5. Hardware only (Test me list in tools/discord/notes/build128.md):
+the MMCE art.tar theme-change death, the random-game beep, the save sound, menus that sound twice (no double in the lab log),
+MMCE browser launch and paste, Fatal Frame 3 IGR, the AVI that stops at "opening video", Ember's controllers when cycling.
+Carried to 127+ (next build): .pad phase 2 (the block into ee_core and PADEMU, the setup screen), POPSTARTER pictures offered
+in the PS1 flow by the ELF itself.
