@@ -1,0 +1,16 @@
+psx-place bump for v1.2.9 beta (build 129). The user posts it. Paste from the [CENTER] line.
+
+[CENTER][SIZE=5][B]RIPPS2 v1.2.9 beta (build 129)[/B][/SIZE]
+[URL='https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf']RIPPS2.elf[/URL] (2,743 KB)  |  [URL='https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf']RIPPS2-lite.elf[/URL] (2,200 KB, without PS2BBL and Neutrino)  |  [URL='https://github.com/akilluminati47/RIPPS2-themes/releases/latest']Theme pack, edition 128[/URL]  |  [URL='https://github.com/akilluminati47/RIPPS2/blob/main/CHANGELOG.md']Changelog[/URL][/CENTER]
+
+[B]USB pads RIPPS2 did not know.[/B] Settings > Controllers > [B]Set Up A USB Pad[/B]: plug the pad in, press each button and push each stick as RIPPS2 asks (SELECT on your PS2 pad skips one), try it live and save. RIPPS2 writes the pad's profile, a small text file in PADS beside it, and checks it with the same reader that loads it.
+
+[LIST]
+[*][B]A profiled pad steers the menu[/B], from boot and as soon as you save it.
+[*][B]It plays in games[/B] with the Pad Emulator on: RIPPS2 checks your profiles as the game starts and hands them to PADEMU in one small block, so nothing is read from a file during the game. DualShock 3 and 4 and the ShanWan copy keep their own drivers.
+[*][B]A button map per game[/B]: PADS/GAMES/<game ID>.pad with lines like cross=circle or select=none.
+[*][B]My Pads[/B] checks every profile and says what is wrong with any it refuses. The format is plain text and open: [URL='https://github.com/akilluminati47/RIPPS2/blob/main/docs/plans/pad-spec.md']pad-spec.md[/URL].
+[*]Every new line translated in all 32 languages.
+[/LIST]
+
+[B]This one needs your pads.[/B] A copy DS3, an 8BitDo, an arcade stick, any USB gamepad: does Set Up find every button, does the menu move with it, does it play in a game? [URL='https://github.com/akilluminati47/RIPPS2/issues']Open an issue[/URL] with the pad's name and the .pad RIPPS2 wrote, so the next person with that pad can just drop it in.
