@@ -1,5 +1,22 @@
 # RIPPS2 changelog
 
+## Build 126 (beta, not released yet), changes since build 125
+
+Contributed by NathanNeurotic (Ripto); not tested on a console yet.
+
+- **CHEATS in the in-game menu** (Settings > General > In-Game Menu > Cheats, Off by default). With it on, a game
+  with a cheat file and Cheats on gets a CHEATS item, second in the menu: a page with each of the file's cheats and
+  ON or OFF beside it. Cross turns a cheat on or off; the change is written on RESUME. A cheat turned off stops
+  writing; what it already wrote stays. The menu's items share the room of the five rows when CHEATS is there, so
+  the panel and RIPSHOT's buffer keep their size. Not for a disc game or with Mode 6, and only at the default
+  module address (as the menu's stack).
+- **The cheat engine's code list lives after the IOP modules** (2 KB), not in ee_core, so the stack keeps its room
+  (3328 bytes, the floor is 3072). Every game with cheats gets it there; without the room the game's cheats are off
+  and the log says so.
+- The page lists every cheat of the file, ticked ones first if the 250 codes cannot hold them all. Hook codes are
+  always planted, so a cheat turned on mid-game finds its hook. The idea and the cheat rules are RiptOPL's In-Game
+  Menu's (NathanNeurotic/RiptOPL #184, Open-PS2-Loader #1155), built here on RIPPS2's own menu.
+
 ## Build 125 (beta, v1.2.5-beta), changes since build 124
 
 The user's notes of 10/29.

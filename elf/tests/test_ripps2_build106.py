@@ -30,8 +30,9 @@ base = rd('lng_tmpl/_base.yml')
 
 # 1. POWER OFF: the last choice, confirmed like EXIT GAME, not for a disc game
 # build 108 put SCREENSHOT in (RESUME, EXIT GAME, SCREENSHOT, ACHIEVEMENTS, POWER OFF) and the items became ids
-check(re.search(r'#define IGRM_ITEMS_MAX 5', igr) is not None, 'the in-game menu has up to five items')
-check('{"RESUME", "EXIT GAME", "SCREENSHOT", "ACHIEVEMENTS", "POWER OFF"}' in igr, 'POWER OFF is the last item')
+# build 126 put CHEATS second (RESUME, CHEATS, EXIT GAME, ...), shown only when the game has the page
+check(re.search(r'#define IGRM_ITEMS_MAX 6', igr) is not None, 'the in-game menu has up to six items')
+check('{"RESUME", "CHEATS", "EXIT GAME", "SCREENSHOT", "ACHIEVEMENTS", "POWER OFF"}' in igr, 'POWER OFF is the last item')
 run = fn(igr, 'int IGR_MenuRun(u16 (*buttons)(void))')
 check('id == IT_POWER && info.canPowerOff' in run and 'result = id == IT_EXIT ? IGR_MENU_EXIT : IGR_MENU_POWEROFF;' in run,
       'POWER OFF takes a second press, then powers off as the power button does')

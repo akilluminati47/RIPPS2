@@ -1,0 +1,944 @@
+diff --git a/ee_core/include/cheat_engine.h b/ee_core/include/cheat_engine.h
+index e0877e4..56f7428 100644
+--- a/ee_core/include/cheat_engine.h
++++ b/ee_core/include/cheat_engine.h
+@@ -33,8 +33,11 @@ extern void (*Old_SetupThread)(void *gp, void *stack, s32 stack_size, void *args
+ extern void HookSetupThread(void *gp, void *stack, s32 stack_size, void *args, void *root_func);
+ 
+ extern u32 numhooks;
+-extern u32 numcodes;
+ extern u32 hooklist[];
+-extern u32 codelist[];
++// RIPPS2 build 126: the code list, [count][addr, val] x MAX_CODES (CHEAT_SET_WORDS), after the IOP modules
++// (config->CheatSet), NULL: no codes. It left ee_core's .bss to make room for the in-game menu's CHEATS.
++extern u32 *codeset;
++#define CHEAT_SET_WORDS (1 + MAX_CODES * 2)
++extern u32 codestate; // RIPPS2 build 126: 0 CodeHandler never ran, 1 inside a pass, 2 between passes
+ 
+ #endif /* _CHEATENGINE_H_ */
+diff --git a/ee_core/include/coreconfig.h b/ee_core/include/coreconfig.h
+index 0616e59..135bcb5 100644
+--- a/ee_core/include/coreconfig.h
++++ b/ee_core/include/coreconfig.h
+@@ -128,6 +128,17 @@ struct EECoreConfig_t
+        game (IgrMenu 0) and OPL's plain IGR thread runs on ee_core's own stack region. APPENDED, like the above. */
+     void *IgrStack;
+     const unsigned char *IgrFont; // build 108: igrmfont.h's table, after IgrStack (NULL with it)
++
++    /* RIPPS2 build 126: the in-game menu's CHEATS page (Settings > General > In-Game Menu > Cheats, off unless turned
++       on). Every cheat of the game's file, packed as igrcheats.h lays it out, after the modules (and LEFT TO HUNT's
++       list) for the whole game; NULL: no page (Cheats off, the engine off, no room, Mode 6 or a disc game). APPENDED,
++       like the above. */
++    void *IgrCheats;
++
++    /* RIPPS2 build 126: the cheat engine's code list (cheat_engine.h CHEAT_SET_WORDS words), after the modules for the
++       whole game, whenever the game's cheats are on: it left ee_core's .bss to make room for CHEATS. NULL: no cheats
++       (SetupCheats lists no codes). APPENDED, like the above. */
++    unsigned int *CheatSet;
+ };
+ 
+ #define IGR_MENU_STACK_SIZE (4 * 1024)
+diff --git a/ee_core/include/igrcheats.h b/ee_core/include/igrcheats.h
+new file mode 100644
+index 0000000..6be47cc
+--- /dev/null
++++ b/ee_core/include/igrcheats.h
+@@ -0,0 +1,52 @@
++/*
++  igrcheats.h RIPPS2 build 126: the cheats the in-game menu's CHEATS page turns on and off (igrmenu.c)
++
++  Licenced under Academic Free License version 3.0
++  Review OpenUsbLd README & LICENSE files for further details.
++
++  The launcher (src/cheatman.c igrCheatsPack) packs the game's cheats here, not only the ones ticked, after the IOP
++  modules (below 0xD0000, kept for the whole game), and gives the engine a code list with every listed cheat in it:
++  a cheat that is OFF sits there as {0, 1} pairs, which CodeHandler steps over (address 0) and SetupCheats keeps (only
++  {0, 0} ends the list). Turning a cheat on or off is then writing its own pairs of the code list back, from the copy
++  here, or {0, 1}: no second list, no copy of the list in ee_core, nothing that moves. Every listed cheat fits the
++  engine's list together (MAX_CODES pairs), so nothing can be turned on that would not fit.
++
++  Shared by the launcher and ee_core: plain C, fixed sizes, no pointers inside. Layout, all words little endian:
++    igr_cheats_t           header
++    igr_cheat_t cheat[n]   one row of the page each
++    u32 codes[]            what the code list holds with every cheat ON: addr/val pairs, cheat after cheat, hook codes
++                           left out (the engine plants those once, so they are always in the list)
++
++  The idea and the cheat rules (which codes are hooks, the master code) are RiptOPL's In-Game Menu's
++  (NathanNeurotic/RiptOPL #184, Open-PS2-Loader #1155); this layout is RIPPS2's own, smaller in ee_core.
++*/
++
++#ifndef IGRCHEATS_H
++#define IGRCHEATS_H
++
++#define IGR_CHEATS_MAGIC 0x32484349 // "ICH2"
++#define IGR_CHEATS_MAX   64         // rows on the page
++#define IGR_CHEAT_NAME   19         // a name on its row (18 characters, before ON / OFF), NUL included
++
++typedef struct
++{
++    unsigned short at;    // its first pair in the code list and in codes[]
++    unsigned char count;  // its pairs
++    unsigned char on;     // in the list now
++    char name[IGR_CHEAT_NAME + 1]; // + 1: the row stays 24 bytes
++} igr_cheat_t;
++
++typedef struct
++{
++    unsigned int magic;
++    unsigned int count; // rows
++    unsigned int pairs; // pairs in codes[] (the code list holds as many)
++    unsigned int reserved;
++} igr_cheats_t;
++
++#define IGR_CHEATS_ROWS(h)             ((igr_cheat_t *)((unsigned char *)(h) + sizeof(igr_cheats_t)))
++#define IGR_CHEATS_CODES(h)            ((unsigned int *)(IGR_CHEATS_ROWS(h) + (h)->count))
++#define IGR_CHEATS_BYTES(count, pairs) (sizeof(igr_cheats_t) + (count) * sizeof(igr_cheat_t) + (pairs) * 8)
++#define IGR_CHEAT_OFF_VAL              1 // an OFF pair: {0, IGR_CHEAT_OFF_VAL}
++
++#endif
+diff --git a/ee_core/src/cheat_api.c b/ee_core/src/cheat_api.c
+index a89095d..8e24c41 100644
+--- a/ee_core/src/cheat_api.c
++++ b/ee_core/src/cheat_api.c
+@@ -76,6 +76,7 @@ void SetupCheats()
+ {
+     USE_LOCAL_EECORE_CONFIG;
+     code_t code;
++    u32 *set = config->CheatSet; // RIPPS2 build 126: the code list, after the IOP modules
+ 
+     int i, j, k, nextCodeCanBeHook;
+     i = 0;
+@@ -100,11 +101,11 @@ void SetupCheats()
+             hooklist[j] = code.val;
+             j++;
+         } else {
+-            if (k + 2 > MAX_CODES * 2)
++            if (set == NULL || k + 2 > MAX_CODES * 2)
+                 break; // codelist full; stop rather than overflow past its MAX_CODES*2 words
+-            codelist[k] = code.addr;
++            set[1 + k] = code.addr;
+             k++;
+-            codelist[k] = code.val;
++            set[1 + k] = code.val;
+             k++;
+         }
+         // Discard any false positives from being possible hooks
+@@ -115,7 +116,9 @@ void SetupCheats()
+         }
+     }
+     numhooks = j / 2;
+-    numcodes = k / 2;
++    if (set != NULL)
++        set[0] = k / 2;
++    codeset = set;
+ }
+ 
+ /*-----------------------------------------------------*/
+diff --git a/ee_core/src/cheat_engine.S b/ee_core/src/cheat_engine.S
+index 46601b2..6297dae 100644
+--- a/ee_core/src/cheat_engine.S
++++ b/ee_core/src/cheat_engine.S
+@@ -55,8 +55,8 @@
+ .globl  numhooks
+ .globl  hooklist
+ 
+-.globl  numcodes
+-.globl  codelist
++.globl  codeset
++.globl  codestate
+ 
+ .globl  engine_info
+ 
+@@ -158,10 +158,22 @@ CodeHandler:
+      * $t3 - total number of codes
+      * $t4 - number of codes done
+      */
+-    lw      $t3, numcodes
+-    beqz    $t3, ch_ret
++    /*
++     * RIPPS2 build 126: the code list is not in ee_core any more (it had no room left for the in-game menu's CHEATS):
++     * codeset points at it, [count][addr, val] x MAX_CODES, after the IOP modules (src/system.c, cheat_api.c
++     * SetupCheats); NULL, no codes. codestate says where the last pass is, for CHEATS (igrmenu.c), which changes the
++     * list in place while the game is paused: 0 no pass yet, 1 inside one, 2 between passes. A game thread the pause
++     * stopped in here (1) has the list left alone until the menu opens again.
++     */
++    li      $t6, 1
++    lui     $t5, %hi(codestate)
++    sw      $t6, %lo(codestate)($t5)
++    lw      $t0, codeset
++    beqz    $t0, ch_ret
+     li      $t4, 0
+-    la      $t0, codelist
++    lw      $t3, 0($t0)
++    beqz    $t3, ch_ret
++    addiu   $t0, $t0, 4
+     la      $t1, type_tab
+ ch_loop:
+     /*
+@@ -506,8 +518,10 @@ next:
+     bnez    $at, ch_loop
+     nop
+ ch_ret:
++    li      $t6, 2
++    lui     $t5, %hi(codestate)
+     jr      $ra
+-    nop
++    sw      $t6, %lo(codestate)($t5)
+ .end    CodeHandler
+ 
+     /* jump table for code types */
+@@ -633,12 +647,16 @@ hooklist:
+ .word   0:(MAX_HOOKS*2)
+ 
+ /*
+- * Code list to be filled by loader.
++ * Code list to be filled by loader. RIPPS2 build 126: a pointer to it, after the IOP modules (NULL: none).
++ */
++codeset:
++.word   0
++
++/*
++ * RIPPS2 build 126: where CodeHandler is (0 never run, 1 inside a pass, 2 between passes).
+  */
+-numcodes:
++codestate:
+ .word   0
+-codelist:
+-.word   0:(MAX_CODES*2)
+ 
+ .set    pop
+ 
+diff --git a/ee_core/src/igrmenu.c b/ee_core/src/igrmenu.c
+index 1afda20..47dad48 100644
+--- a/ee_core/src/igrmenu.c
++++ b/ee_core/src/igrmenu.c
+@@ -22,6 +22,13 @@
+   so the menu returns over the same frame and RESUME gives it back exactly. The menu is silent too (rsHush): the
+   user's call, so a game's sound neither loops nor runs ahead while it is paused.
+ 
++  Build 126: CHEATS (Settings > General > In-Game Menu > Cheats, Off unless turned on), after RESUME: every cheat of the
++  game's file, ON or OFF, changed with the confirm button and written into the engine's code list on RESUME
++  (igrcheats.h: an OFF cheat's pairs are {0, 1}, which the engine steps over). OFF stops a cheat writing; what it wrote
++  stays until the game changes it. With CHEATS there the six items take the five rows' room, a pixel closer each, so
++  the panel keeps its size (the roll's hold is sized for it). The idea is RiptOPL's In-Game Menu's
++  (NathanNeurotic/RiptOPL #184, Open-PS2-Loader #1155), which was itself this menu brought over to RiptOPL.
++
+   Build 94: when the launch brought a hunt list (RA/<serial>.ach, packed in module storage), the
+   confirm button on ACHIEVEMENTS opens LEFT TO HUNT: one locked achievement at a time, its title, its
+   points and how it is earned, Up / Down (or confirm) for the next, back to return.
+@@ -42,12 +49,14 @@
+ #include "coreconfig.h"
+ #include "padhook.h"
+ #include "ripshot.h" // build 108: the shown frame (rsFrame), the hold, the silent menu
++#include "cheat_engine.h" // build 126: CHEATS writes the engine's code list
+ #ifdef RETROACHIEVEMENTS
+ #include "ra.h"
+ #include "ra_overlay.h"
+ #endif
+ #endif
+ #include "igrmenu.h"
++#include "igrcheats.h" // build 126: the CHEATS page's list, as the launcher packed it
+ #include "../../modules/iopcore/common/ripshot_roll.h" // build 108: RIPSHOT's roll and states
+ 
+ // ---- the panel, in its own units (one font pixel at scale 1): 160 x 126, or 320 x 252 at scale 2
+@@ -61,11 +70,12 @@
+ #define ROW_INFO0      73
+ #define INFO_STEP      10
+ #define ROW_HINT       115
+-#define IGRM_ITEMS_MAX 5  // RESUME, EXIT GAME, SCREENSHOT (build 108), ACHIEVEMENTS, POWER OFF (build 106)
++#define IGRM_ITEMS_MAX 6  // RESUME, CHEATS (build 126), EXIT GAME, SCREENSHOT (build 108), ACHIEVEMENTS, POWER OFF (build 106)
+ #define SH             16 // build 108: the KEEP strip's height, the panel's width
+ #define TEXT_X     8
+ #define ITEM_X     20
+ #define TEXT_CHARS 24 // (PW - 2 * TEXT_X) / 6
++#define CHEAT_ROWS  9  // build 126: the CHEATS page's rows, ITEM_STEP apart from ROW_ITEM0, above the hint
+ 
+ enum { C_PANEL, C_BORDER, C_SEP, C_BAR, C_TITLE, C_DIM, C_ITEM, C_SEL, C_TEXT, C_GOLD, C_WARN, C_CROSS, C_CIRCLE, C_COUNT };
+ static const u8 igrmRgb[C_COUNT][3] = {
+@@ -78,7 +88,7 @@ static const u8 igrmRgb[C_COUNT][3] = {
+     {150, 160, 190}, // items
+     {255, 255, 255}, // the selected item
+     {196, 204, 226}, // page text
+-    {255, 204, 96},  // SpiritofRA
++    {255, 204, 96},  // SpiritofRA, and a cheat that is on (build 126)
+     {255, 150, 120}, // what EXIT GAME costs
+     {124, 178, 240}, // the pad's cross
+     {240, 110, 110}, // the pad's circle
+@@ -117,9 +127,12 @@ typedef struct
+     const char *serial;    // the game's ID, for the ART name
+     const char *drive;     // USB, HDD, MX4SIO, ILINK, MMCE, SMB
+     const char *title;     // MEDIA's folder for the game
++    igr_cheats_t *cheats;  // build 126: the CHEATS page's list (its rows' ON is what the menu changes), NULL: none
++    int cheatsBusy;        // the last change waits: a game thread was paused inside the engine's pass
++    int cheatsIdle;        // the engine's hook has not run once this game: no cheat is being applied
+ } igrm_info_t;
+ 
+-#define IGRM_LINES 14
++#define IGRM_LINES 24 // build 126: CHEATS' page, a name and its ON / OFF on each of its 9 rows
+ #define IGRM_CHARS (TEXT_CHARS + 2)
+ typedef struct
+ {
+@@ -130,6 +143,7 @@ typedef struct
+ static igrm_line_t *igrmLine; // on the IGR thread's stack while the menu is open: ee_core has no room in .bss
+ static int igrmLines;
+ static int igrmBarY;               // the selected row's bar, in panel units
++static int igrmBarH = 11;          // build 126: and its height (9 when six items share the five rows' room)
+ static int igrmSep1 = ROW_SEP1;    // build 108: the separators' rows (-1: none, as LEFT TO HUNT and the strip have)
+ static int igrmSep2 = ROW_SEP2;
+ static int igrmH = PH;             // build 108: the page's height in panel units (the panel, or the KEEP strip)
+@@ -261,6 +275,7 @@ static void igrmComposeHunt(const igrm_info_t *in, int at)
+             e += igrmLen((const char *)e) + 1;
+     igrmLines = 0;
+     igrmBarY = -100;
++    igrmBarH = 11;
+     igrmH = PH;
+     igrmSep1 = ROW_SEP1;
+     igrmSep2 = -1;
+@@ -291,9 +306,10 @@ static void igrmComposeHunt(const igrm_info_t *in, int at)
+ 
+ // ---- the pages
+ 
+-// Build 108: SCREENSHOT sits between EXIT GAME and ACHIEVEMENTS (the user's order) and is not there with RIPSHOT off
+-enum { IT_RESUME, IT_EXIT, IT_SHOT, IT_ACH, IT_POWER };
+-static const char *const igrmName[5] = {"RESUME", "EXIT GAME", "SCREENSHOT", "ACHIEVEMENTS", "POWER OFF"};
++// Build 108: SCREENSHOT sits between EXIT GAME and ACHIEVEMENTS (the user's order) and is not there with RIPSHOT off.
++// Build 126: CHEATS comes after RESUME, only when the launch brought the game's cheats
++enum { IT_RESUME, IT_CHEATS, IT_EXIT, IT_SHOT, IT_ACH, IT_POWER };
++static const char *const igrmName[6] = {"RESUME", "CHEATS", "EXIT GAME", "SCREENSHOT", "ACHIEVEMENTS", "POWER OFF"};
+ static u8 igrmIds[IGRM_ITEMS_MAX];
+ static int igrmItems;
+ 
+@@ -303,10 +319,21 @@ static void igrmListItems(const igrm_info_t *in)
+ 
+     igrmItems = 0;
+     for (i = IT_RESUME; i <= IT_POWER; i++)
+-        if (i != IT_SHOT || in->shot != RIPSHOT_OFF)
++        if ((i != IT_SHOT || in->shot != RIPSHOT_OFF) && (i != IT_CHEATS || in->cheats != NULL))
+             igrmIds[igrmItems++] = i;
+ }
+ 
++// build 126: the cheats ON now
++static int igrmCheatsOn(const igr_cheats_t *b)
++{
++    const igr_cheat_t *row = IGR_CHEATS_ROWS(b);
++    int n = 0, i;
++
++    for (i = 0; i < (int)b->count; i++)
++        n += row[i].on != 0;
++    return n;
++}
++
+ // the roll's empty slots
+ static int igrmLeft(const igrm_info_t *in)
+ {
+@@ -349,13 +376,21 @@ static void igrmTitleRow(const igrm_info_t *in)
+ 
+ static void igrmRows(const char *const *names, int n, int sel)
+ {
+-    int i;
+-
+-    igrmBarY = ROW_ITEM0 + sel * ITEM_STEP - 2;
++    int i, row0 = ROW_ITEM0, step = ITEM_STEP;
++
++    // build 126: six items (CHEATS with SCREENSHOT) take the five rows' room between the separators, a pixel closer
++    // each, with a bar two pixels shorter, so the panel keeps the size RIPSHOT's hold is made for
++    igrmBarH = 11;
++    if (n > 5) {
++        row0 = ROW_ITEM0 - 1;
++        step = ITEM_STEP - 1;
++        igrmBarH = 9;
++    }
++    igrmBarY = row0 + sel * step - (igrmBarH == 11 ? 2 : 1);
+     for (i = 0; i < n; i++) {
+         if (i == sel)
+-            igrmText(ROW_ITEM0 + i * ITEM_STEP, TEXT_X, C_SEL, "\x03");
+-        igrmText(ROW_ITEM0 + i * ITEM_STEP, ITEM_X, i == sel ? C_SEL : C_ITEM, names[i]);
++            igrmText(row0 + i * step, TEXT_X, C_SEL, "\x03");
++        igrmText(row0 + i * step, ITEM_X, i == sel ? C_SEL : C_ITEM, names[i]);
+     }
+ }
+ 
+@@ -379,6 +414,24 @@ static void igrmCompose(const igrm_info_t *in, int sel, int armed)
+             igrmText(y + 2 * INFO_STEP, TEXT_X, C_DIM, "L1+L2+R1+R2+SELECT+START");
+             igrmText(y + 3 * INFO_STEP, TEXT_X, C_DIM, "OPENS THIS MENU AGAIN");
+             break;
++        case IT_CHEATS: // build 126
++            p = igrmNum(s, igrmCheatsOn(in->cheats));
++            p = igrmCat(p, " OF ");
++            igrmCat(igrmNum(p, in->cheats->count), " ON");
++            igrmText(y, TEXT_X, C_TEXT, s);
++            if (in->cheatsIdle) {
++                igrmText(y + INFO_STEP, TEXT_X, C_WARN, "THE CHEAT ENGINE HAS NOT");
++                igrmText(y + 2 * INFO_STEP, TEXT_X, C_WARN, "RUN IN THIS GAME YET");
++                igrmText(y + 3 * INFO_STEP, TEXT_X, C_DIM, "(CHECK THE MASTER CODE)");
++            } else if (in->cheatsBusy) {
++                igrmText(y + INFO_STEP, TEXT_X, C_WARN, "NOT APPLIED YET:");
++                igrmText(y + 2 * INFO_STEP, TEXT_X, C_WARN, "RESUME, THEN OPEN AGAIN");
++            } else {
++                igrmText(y + INFO_STEP, TEXT_X, C_DIM, "CHANGES APPLY ON RESUME");
++                igrmText(y + 2 * INFO_STEP, TEXT_X, C_DIM, "OFF STOPS NEW WRITES,");
++                igrmText(y + 3 * INFO_STEP, TEXT_X, C_DIM, "WRITTEN VALUES STAY");
++            }
++            break;
+         case IT_SHOT: // build 108: RIPSHOT
+             if (in->shot == RIPSHOT_READY && igrmLeft(in) > 0) {
+                 igrmText(y, TEXT_X, C_TEXT, "SAVE THIS FRAME");
+@@ -522,6 +575,36 @@ static void igrmComposePath(const igrm_info_t *in, int sel)
+     igrmText(ROW_HINT, TEXT_X, C_DIM, s);
+ }
+ 
++// Build 126: the CHEATS page, CHEAT_ROWS rows from `top`, the cursor on `sel`
++static void igrmComposeCheats(const igrm_info_t *in, int top, int sel)
++{
++    const igr_cheat_t *row = IGR_CHEATS_ROWS(in->cheats);
++    char s[40], *p, ok[2] = {in->confirmCircle ? 2 : 1, 0}, back[2] = {in->confirmCircle ? 1 : 2, 0};
++    int i, y;
++
++    igrmLines = 0;
++    igrmH = PH;
++    igrmSep1 = ROW_SEP1;
++    igrmSep2 = -1;
++    igrmBarH = 11;
++    igrmText(ROW_TITLE, TEXT_X, C_TITLE, "CHEATS");
++    p = igrmNum(s, sel + 1);
++    p = igrmCat(p, "/");
++    igrmNum(p, in->cheats->count);
++    igrmText(ROW_TITLE, PW - TEXT_X - (igrmLen(s) * 6 - 1), C_DIM, s);
++    igrmBarY = ROW_ITEM0 + (sel - top) * ITEM_STEP - 2;
++    for (i = 0; i < CHEAT_ROWS && top + i < (int)in->cheats->count; i++) {
++        const igr_cheat_t *c = &row[top + i];
++        y = ROW_ITEM0 + i * ITEM_STEP;
++        if (top + i == sel)
++            igrmText(y, TEXT_X, C_SEL, "\x03");
++        igrmText(y, ITEM_X, top + i == sel ? C_SEL : C_ITEM, c->name); // 18 characters at most (the launcher)
++        igrmText(y, PW - TEXT_X - (c->on ? 11 : 17), c->on ? C_GOLD : C_DIM, c->on ? "ON" : "OFF");
++    }
++    igrmCat(igrmCat(igrmCat(igrmCat(s, ok), " ON/OFF   "), back), " BACK");
++    igrmText(ROW_HINT, TEXT_X, C_DIM, s);
++}
++
+ // Build 108: the KEEP strip, one line in the middle
+ static void igrmComposeStrip(const char *msg)
+ {
+@@ -540,7 +623,7 @@ static int igrmBase(int ux, int uy)
+         return C_PANEL;
+     if (uy == igrmSep1 || uy == igrmSep2)
+         return C_SEP;
+-    if (uy >= igrmBarY && uy < igrmBarY + 11)
++    if (uy >= igrmBarY && uy < igrmBarY + igrmBarH)
+         return C_BAR;
+     return C_PANEL;
+ }
+@@ -601,7 +684,8 @@ static void igrmRenderLine(u8 *d, int y)
+ 
+ #ifdef IGR_MENU_HOST_TEST
+ // elf/tests: a page as RGB rows at the scale given; returns its height. page 0: the menu (sel past its items: LEFT TO
+-// HUNT's entry sel - items), 1: RIPSHOT's path step, 2: the KEEP strip saying msg
++// HUNT's entry sel - items), 1: RIPSHOT's path step, 2: the KEEP strip saying msg, 3 (build 126): CHEATS with the
++// cursor on sel
+ int igrmTestPage(const igrm_info_t *in, int page, int sel, int armed, int sx, int sy, const char *msg, u8 *rgb)
+ {
+     static igrm_line_t lines[IGRM_LINES];
+@@ -612,7 +696,9 @@ int igrmTestPage(const igrm_info_t *in, int page, int sel, int armed, int sx, in
+     igrmSy = sy;
+     igrmBpp = 3;
+     igrmListItems(in);
+-    if (page == 2)
++    if (page == 3)
++        igrmComposeCheats(in, sel >= CHEAT_ROWS ? sel - CHEAT_ROWS + 1 : 0, sel);
++    else if (page == 2)
+         igrmComposeStrip(msg);
+     else if (page == 1)
+         igrmComposePath(in, sel);
+@@ -768,6 +854,28 @@ static int igrmDraw(u32 *pkt)
+ // frame. Without a roll the game's next frame draws over the panel, as before.
+ static int igrmHeld;
+ 
++// Build 126: a CHEATS change RESUME could not write (a game thread was paused inside the engine's pass): written the
++// next time the menu opens, once the game has run on
++static int igrmPending;
++
++// every row's pairs into the engine's list as the row says (ON: the pack's copy, OFF: {0, 1}); 0, nothing written,
++// while a paused game thread is inside the engine's pass
++static int igrmCheatsWrite(const igr_cheats_t *b)
++{
++    const igr_cheat_t *row = IGR_CHEATS_ROWS(b);
++    const u32 *codes = IGR_CHEATS_CODES(b);
++    u32 i, k;
++
++    if (codestate == 1)
++        return 0;
++    for (i = 0; i < b->count; i++)
++        for (k = row[i].at * 2; k < (row[i].at + row[i].count) * 2u && k < b->pairs * 2; k += 2) {
++            codeset[1 + k] = row[i].on ? codes[k] : 0;
++            codeset[2 + k] = row[i].on ? codes[k + 1] : IGR_CHEAT_OFF_VAL;
++        }
++    return 1;
++}
++
+ // h lines held on the roll at `at` back into the frame from igrmY, read a write at a time (the writes rsHoldSave
+ // made) and sent a line at a time; with igrmMix set, the page is laid over them first (the fade)
+ static int igrmHoldPass(u32 *pkt, u32 at, u32 h)
+@@ -1023,6 +1131,8 @@ int IGR_MenuRun(u16 (*buttons)(void))
+     u32 d1chcr, d1madr, d1qwc, d1tadr, gameDone, t, pressT = 0, firstT = 0, bpc;
+     u16 held, now, pressed, ok, back;
+     int sel = 0, armed = 0, result = IGR_MENU_RESUME, presses = 0, power = 1, i, hunt = -1, page = 0, psel = 0;
++    int cheat = -1, cpos = 0, ctop = 0, changed = 0; // build 126: CHEATS' cursor (-1: closed), its top row
++    igr_cheat_t *row = NULL;
+     char gameId[CORE_GAME_ID_MAX_LEN + 1];
+     igrm_line_t lines[IGRM_LINES];
+     igrm_info_t info;
+@@ -1094,6 +1204,20 @@ int IGR_MenuRun(u16 (*buttons)(void))
+     info.raBuilt = info.raKnown = info.raTotal = info.raUnlocked = info.tracking = info.unlocks = info.huntCount = 0;
+     info.hunt = 0;
+ #endif
++    // build 126: CHEATS, when the launch packed the game's cheats and the engine runs
++    info.cheats = NULL;
++    info.cheatsBusy = info.cheatsIdle = 0;
++    if (config->IgrCheats != NULL && config->gCheatList != NULL && codeset != NULL) {
++        igr_cheats_t *b = (igr_cheats_t *)config->IgrCheats;
++        if (b->magic == IGR_CHEATS_MAGIC && b->count > 0 && b->count <= IGR_CHEATS_MAX && b->pairs == codeset[0]) {
++            info.cheats = b;
++            row = IGR_CHEATS_ROWS(b);
++            if (igrmPending) // the game ran since: the pass that was under way has finished
++                igrmPending = !igrmCheatsWrite(b);
++            info.cheatsBusy = igrmPending;
++            info.cheatsIdle = codestate == 0;
++        }
++    }
+     ok = info.confirmCircle ? PAD_CIRCLE : PAD_CROSS;
+     back = info.confirmCircle ? PAD_CROSS : PAD_CIRCLE;
+ 
+@@ -1119,6 +1243,24 @@ int IGR_MenuRun(u16 (*buttons)(void))
+                 dirty = 1;
+             } else if (pressed & PAD_START)
+                 break;
++        } else if (cheat >= 0) { // build 126: CHEATS
++            int n = (int)info.cheats->count;
++            if (pressed & (PAD_UP | PAD_DOWN)) {
++                cheat = (cheat + ((pressed & PAD_UP) ? n - 1 : 1)) % n;
++                if (cheat < ctop)
++                    ctop = cheat;
++                else if (cheat >= ctop + CHEAT_ROWS)
++                    ctop = cheat - CHEAT_ROWS + 1;
++                dirty = 1;
++            } else if (pressed & ok) { // every listed cheat fits the list: any can be turned on
++                row[cheat].on = !row[cheat].on;
++                changed = dirty = 1;
++            } else if (pressed & back) {
++                cpos = cheat;
++                cheat = -1;
++                dirty = 1;
++            } else if (pressed & PAD_START)
++                break;
+         } else if (page) { // build 108: RIPSHOT's path step
+             if (pressed & (PAD_UP | PAD_DOWN)) {
+                 psel = (psel + ((pressed & PAD_UP) ? 2 : 1)) % 3;
+@@ -1139,7 +1281,10 @@ int IGR_MenuRun(u16 (*buttons)(void))
+         } else if (pressed & ok) {
+             if (id == IT_RESUME)
+                 break;
+-            if (id == IT_EXIT || (id == IT_POWER && info.canPowerOff)) { // a second press: progress is lost
++            if (id == IT_CHEATS) { // build 126
++                cheat = cpos;
++                dirty = 1;
++            } else if (id == IT_EXIT || (id == IT_POWER && info.canPowerOff)) { // a second press: progress is lost
+                 if (armed) {
+                     result = id == IT_EXIT ? IGR_MENU_EXIT : IGR_MENU_POWEROFF;
+                     break;
+@@ -1172,6 +1317,8 @@ int IGR_MenuRun(u16 (*buttons)(void))
+         if (dirty) {
+             if (hunt >= 0)
+                 igrmComposeHunt(&info, hunt);
++            else if (cheat >= 0)
++                igrmComposeCheats(&info, ctop, cheat);
+             else if (page)
+                 igrmComposePath(&info, psel);
+             else
+@@ -1180,7 +1327,12 @@ int IGR_MenuRun(u16 (*buttons)(void))
+         }
+     }
+ 
+-    if (result == IGR_MENU_RESUME) { // the button that closed the menu must not reach the game
++    if (result == IGR_MENU_RESUME) {
++        // build 126: the cheats as ticked, before any game thread runs again; with a game thread paused inside the
++        // engine's pass nothing changes yet, and the menu says so next time (the ticks stay as they are)
++        if ((changed || igrmPending) && info.cheats != NULL)
++            igrmPending = !igrmCheatsWrite(info.cheats);
++        // the button that closed the menu must not reach the game
+         t = igrmCount();
+         while (buttons() && igrmCount() - t < 3 * IGRM_SECOND)
+             ;
+diff --git a/include/cheatman.h b/include/cheatman.h
+index e63d805..dc89b24 100644
+--- a/include/cheatman.h
++++ b/include/cheatman.h
+@@ -81,6 +81,12 @@ int load_cheats(const char *cheatfile);
+ int load_cheats_buf(const char *buf); // buf must be NUL-terminated (tar members carry no NUL)
+ void set_cheats_list(void);
+ 
++// RIPPS2 build 126: the in-game menu's CHEATS page (ee_core/include/igrcheats.h): list the game's cheats at dst (room
++// bytes) and return the bytes used (0: none, or no room); then set_cheats_list_live(dst) makes gCheatList the list the
++// page changes in place.
++int igrCheatsPack(void *dst, unsigned int room);
++void set_cheats_list_live(const void *packed);
++
+ // Prebuilt PS2RD cheat image (.img): a binary patch list applied directly at boot, parallel to the
+ // text .cht codes. Gated per-game by $EnableImage (default OFF).
+ int GetImageEnabled(void);
+diff --git a/include/dialogs.h b/include/dialogs.h
+index 1ceb9dc..776614f 100644
+--- a/include/dialogs.h
++++ b/include/dialogs.h
+@@ -41,6 +41,7 @@ enum UI_ITEMS {
+     CFG_RIPPS2_IGRMENU,  // RIPPS2 build 87: In-Game Menu (build 108: a row of Settings > General > In-Game Menu)
+     UICFG_RIPPS2_RIPSHOT, // RIPPS2 build 108: RIPSHOT and Develop Shots, on the same page
+     UICFG_RIPPS2_DEVELOP,
++    UICFG_RIPPS2_IGRCHEATS, // RIPPS2 build 126: Cheats, the in-game menu's CHEATS page (In-Game Menu's page too)
+     UICFG_RIPPS2_SETTINGS_HOME, // RIPPS2 build 109: Save Settings To (Memory Card, Internal HDD, Custom Path)
+     CFG_LBL_CUSTOMCFGPATH,      // and the Custom Settings Path row's label, shown with Custom Path
+     UICFG_RIPPS2_MUSIC,  // RIPPS2: Music (a track from MUSIC/ beside RIPPS2)
+diff --git a/include/ripps2shot.h b/include/ripps2shot.h
+index 7269490..2e04046 100644
+--- a/include/ripps2shot.h
++++ b/include/ripps2shot.h
+@@ -5,6 +5,7 @@
+ 
+ extern int gRipps2Ripshot;        // Settings > General > In-Game Menu > RIPSHOT (ripps2_ripshot), on by default
+ extern int gRipps2RipshotDevelop; // Develop Shots (ripps2_ripshot_develop): 0 Manual, 1 Auto
++extern int gRipps2IgrCheats;      // build 126: Cheats (ripps2_igr_cheats): the menu's CHEATS page, off by default
+ 
+ // The game's title as a folder name: no \ / : * ? " < > |, no spaces or dots at the ends, out up to size - 1
+ void ripps2ShotFolder(const char *title, const char *id, char *out, int size);
+diff --git a/lng_tmpl/_base.yml b/lng_tmpl/_base.yml
+index f716851..0368288 100644
+--- a/lng_tmpl/_base.yml
++++ b/lng_tmpl/_base.yml
+@@ -1471,6 +1471,10 @@ gui_strings:
+   string: Develop Shots
+ - label: HINT_RIPPS2_DEVELOP_SHOTS
+   string: "How the shots waiting on each game's roll turn into PNGs."
++- label: RIPPS2_IGR_CHEATS
++  string: Cheats
++- label: HINT_RIPPS2_IGR_CHEATS
++  string: "CHEATS in the in-game menu: turn the game's cheats on or off while you play."
+ - label: RIPPS2_BOOT_LOADER
+   string: Boot Loader
+ - label: HINT_RIPPS2_BOOT_LOADER
+diff --git a/src/cheatman.c b/src/cheatman.c
+index b4da6c5..a6b2da8 100644
+--- a/src/cheatman.c
++++ b/src/cheatman.c
+@@ -26,6 +26,7 @@
+ #include "include/cheatman.h"
+ #include "include/cheatconfig.h"
+ #include "include/ioman.h"
++#include "../ee_core/include/igrcheats.h" // RIPPS2 build 126: the in-game menu's CHEATS page
+ 
+ static int gEnableCheat;     // Enables PS2RD Cheat Engine - 0 for Off, 1 for On
+ static int gCheatMode;       // Cheat Mode - 0 Enable all cheats, 1 Cheats selected by user
+@@ -539,3 +540,127 @@ void set_cheats_list(void)
+         gCheatList[cheatCount - 1] = 0; // val
+     }
+ }
++
++/*
++ * RIPPS2 build 126: the in-game menu's CHEATS page (ee_core/include/igrcheats.h), only with Settings > General >
++ * In-Game Menu > Cheats on (off by default). The cheat rules here (which codes are hooks, every hook planted, the
++ * master code) are RiptOPL's In-Game Menu's (NathanNeurotic/RiptOPL #184, Open-PS2-Loader #1155).
++ *
++ * igrCheatsPack lists the game's cheats at dst, each with its codes, hook codes left out (the engine plants the hooks
++ * once, when the game calls SetupThread, so a hook cannot be switched later), and whether it is ticked now. Every
++ * listed cheat's codes fit the engine's list together (MAX_CODES pairs): the ticked ones first, then the others in
++ * file order while the list, the page and the room hold them. set_cheats_list_live then makes gCheatList that list:
++ * every cheat's hook codes first, then each listed cheat's codes, or {0, IGR_CHEAT_OFF_VAL} pairs in their place for
++ * one that is not ticked, which the engine steps over and the menu writes back when it is turned on.
++ */
++
++// A hook code, by the engine's own rule (ee_core cheat_api.c SetupCheats): 0x90/0x91 addresses, unless the line
++// before was the first of a two-line 3- or 4-type code. prevCanHook carries that across one cheat's lines.
++static int cheatIsHook(const code_t *c, int *prevCanHook)
++{
++    int hook = ((c->addr & 0xfe000000) == 0x90000000) && *prevCanHook;
++    *prevCanHook = !((c->addr & 0xf0000000) == 0x40000000 || (c->addr & 0xf0000000) == 0x30000000);
++    return hook;
++}
++
++static int cheatRealCodes(const cheat_entry_t *e)
++{
++    int n = 0, canHook = 1;
++    for (int j = 0; j < MAX_CHEATLIST && e->codes[j].addr != 0; ++j)
++        if (!cheatIsHook(&e->codes[j], &canHook))
++            n++;
++    return n;
++}
++
++int igrCheatsPack(void *dst, unsigned int room)
++{
++    igr_cheats_t *h = (igr_cheats_t *)dst;
++    unsigned char listed[MAX_CODES];
++    unsigned int count = 0, pairs = 0;
++
++    if (gCheats == NULL || dst == NULL)
++        return 0;
++    memset(listed, 0, sizeof(listed));
++    // the ticked cheats first, then the others: a ticked one that cannot be listed means no page, and the game starts
++    // with the list it gets without it (set_cheats_list), so every ticked cheat runs as before
++    for (int pass = 0; pass < 2; ++pass)
++        for (int i = 0; i < MAX_CODES; ++i) {
++            int n = gCheats[i].codes[0].addr != 0 ? cheatRealCodes(&gCheats[i]) : 0;
++            if (n == 0 || (gCheats[i].enabled != 0) != (pass == 0))
++                continue;
++            if (count >= IGR_CHEATS_MAX || n > 255 || pairs + n > MAX_CODES || IGR_CHEATS_BYTES(count + 1, pairs + n) > room) {
++                if (pass == 0)
++                    return 0;
++                continue;
++            }
++            listed[i] = 1;
++            count++;
++            pairs += n;
++        }
++    if (count == 0)
++        return 0;
++
++    memset(dst, 0, IGR_CHEATS_BYTES(count, pairs));
++    h->magic = IGR_CHEATS_MAGIC;
++    h->count = count;
++    h->pairs = pairs;
++    igr_cheat_t *row = IGR_CHEATS_ROWS(h);
++    unsigned int *codes = IGR_CHEATS_CODES(h), r = 0, p = 0;
++    for (int i = 0; i < MAX_CODES; ++i) {
++        if (!listed[i])
++            continue;
++        int canHook = 1;
++        row[r].at = p;
++        row[r].count = cheatRealCodes(&gCheats[i]);
++        row[r].on = gCheats[i].enabled ? 1 : 0;
++        // the menu's font is upper case ASCII (anything else shows as '?'), 18 characters before ON / OFF
++        snprintf(row[r].name, IGR_CHEAT_NAME, "%.*s", IGR_CHEAT_NAME - 1, gCheats[i].name[0] ? gCheats[i].name : "CHEAT");
++        for (int j = 0; j < MAX_CHEATLIST && gCheats[i].codes[j].addr != 0; ++j)
++            if (!cheatIsHook(&gCheats[i].codes[j], &canHook)) {
++                codes[p * 2] = gCheats[i].codes[j].addr;
++                codes[p * 2 + 1] = gCheats[i].codes[j].val;
++                p++;
++            }
++        r++;
++    }
++    return (int)IGR_CHEATS_BYTES(count, pairs);
++}
++
++void set_cheats_list_live(const void *packed)
++{
++    const igr_cheats_t *h = (const igr_cheats_t *)packed;
++    const igr_cheat_t *row = IGR_CHEATS_ROWS(h);
++    const unsigned int *codes = IGR_CHEATS_CODES(h);
++    int cheatCount = 0;
++
++    memset((void *)gCheatList, 0, sizeof(gCheatList));
++    if (gCheats == NULL)
++        return;
++    // every hook, from every cheat: the engine takes MAX_HOOKS, so the ticked cheats' hooks go first, and a hook two
++    // cheats share is listed once
++    for (int pass = 0; pass < 2; ++pass)
++        for (int i = 0; i < MAX_CODES; ++i) {
++            if ((gCheats[i].enabled != 0) != (pass == 0))
++                continue;
++            int canHook = 1;
++            for (int j = 0; j < MAX_CHEATLIST && gCheats[i].codes[j].addr != 0; ++j) {
++                if (!cheatIsHook(&gCheats[i].codes[j], &canHook) || cheatCount + 2 > MAX_HOOKS * 2)
++                    continue;
++                int seen = 0;
++                for (int d = 0; d < cheatCount && !seen; d += 2)
++                    seen = gCheatList[d] == gCheats[i].codes[j].addr && gCheatList[d + 1] == gCheats[i].codes[j].val;
++                if (!seen) {
++                    gCheatList[cheatCount++] = gCheats[i].codes[j].addr;
++                    gCheatList[cheatCount++] = gCheats[i].codes[j].val;
++                }
++            }
++        }
++    // then every listed cheat's codes in the menu's order, {0, IGR_CHEAT_OFF_VAL} for one not ticked: at most MAX_CODES
++    // pairs, so with MAX_HOOKS hooks the list is exactly full, which SetupCheats reads without a terminator (it stops at
++    // MAX_CHEATLIST); a shorter list ends in the zeros of the memset above
++    for (unsigned int r = 0; r < h->count; ++r)
++        for (unsigned int k = row[r].at; k < (unsigned int)row[r].at + row[r].count && cheatCount + 2 <= MAX_CHEATLIST; ++k) {
++            gCheatList[cheatCount++] = row[r].on ? codes[k * 2] : 0;
++            gCheatList[cheatCount++] = row[r].on ? codes[k * 2 + 1] : IGR_CHEAT_OFF_VAL;
++        }
++}
+diff --git a/src/dialogs.c b/src/dialogs.c
+index e117f5c..177660e 100644
+--- a/src/dialogs.c
++++ b/src/dialogs.c
+@@ -2080,6 +2080,11 @@ struct UIItem diaIgrConfig[] = {
+     {UI_SPACER},
+     {UI_ENUM, UICFG_RIPPS2_DEVELOP, 1, 1, _STR_HINT_RIPPS2_DEVELOP_SHOTS, 0, 0, {.intvalue = {0, 0}}},
+     {UI_BREAK},
++    // build 126: Cheats, the menu's CHEATS page (off by default)
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_IGR_CHEATS}}},
++    {UI_SPACER},
++    {UI_ENUM, UICFG_RIPPS2_IGRCHEATS, 1, 1, _STR_HINT_RIPPS2_IGR_CHEATS, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BREAK},
+ 
+     // buttons
+     {UI_OK, 0, 1, 1, -1, 0, 0, {.label = {NULL, _STR_OK}}},
+diff --git a/src/opl.c b/src/opl.c
+index 78f8226..bf40e38 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -3979,6 +3979,8 @@ static void _loadConfig()
+                 gRipps2Ripshot = value != 0; // RIPPS2 build 108: RIPSHOT
+             if (configGetInt(configOPL, "ripps2_ripshot_develop", &value))
+                 gRipps2RipshotDevelop = value == 1; // RIPPS2 build 108: Develop Shots (0 Manual, 1 Auto)
++            if (configGetInt(configOPL, "ripps2_igr_cheats", &value))
++                gRipps2IgrCheats = value == 1; // RIPPS2 build 126: the in-game menu's CHEATS page (off by default)
+             // RIPPS2 build 69: Memory Files ORBITS
+             if (configGetInt(configOPL, "ripps2_orb_off", &value) && value >= 0 && value < (1 << 12) - 1)
+                 gRipps2OrbOff = value;
+@@ -4785,6 +4787,7 @@ static void _saveConfig()
+         configSetInt(configOPL, "ripps2_igr_menu_v", 108);             // build 108: the one-time switch to on has run
+         configSetInt(configOPL, "ripps2_ripshot", gRipps2Ripshot);     // RIPPS2 build 108: RIPSHOT
+         configSetInt(configOPL, "ripps2_ripshot_develop", gRipps2RipshotDevelop);
++        configSetInt(configOPL, "ripps2_igr_cheats", gRipps2IgrCheats); // RIPPS2 build 126: CHEATS
+         configSetInt(configOPL, "ripps2_orb_off", gRipps2OrbOff);      // RIPPS2 build 69: ORBITS
+         configSetInt(configOPL, "ripps2_orb_cycle", gRipps2OrbCycle);
+         configSetInt(configOPL, "ripps2_orb_speed", gRipps2OrbSpeed);
+diff --git a/src/ripps2shot.c b/src/ripps2shot.c
+index 3b819f6..53ebee6 100644
+--- a/src/ripps2shot.c
++++ b/src/ripps2shot.c
+@@ -24,6 +24,7 @@
+ 
+ int gRipps2Ripshot = 1;
+ int gRipps2RipshotDevelop = 0;
++int gRipps2IgrCheats = 0; // build 126: the in-game menu's CHEATS page, off until the user turns it on
+ 
+ void ripps2ShotFolder(const char *title, const char *id, char *out, int size)
+ {
+@@ -1389,6 +1390,10 @@ static const char *rsIgrHints[] = {N_("L1+L2+R1+R2+SELECT+START pauses the game:
+                                    N_("The combo leaves the game at once, as before."), NULL};
+ static const char *rsShotHints[] = {N_("Screenshots from the in-game menu, to ART for your themes or to MEDIA. 6 per game; each game with shots waiting holds 4 MB."),
+                                     N_("No SCREENSHOT in the in-game menu, and no space kept for it."), NULL};
++// build 126: Cheats, Off first (its default)
++static const char *rsOffOn[] = {N_("Off"), N_("On"), NULL};
++static const char *rsCheatHints[] = {N_("No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before."),
++                                     N_("CHEATS in the in-game menu turns each of the game's cheats on or off while you play. Changes apply on RESUME; a cheat turned off stops writing, what it wrote stays. Needs Cheats on for the game."), NULL};
+ static const char *rsDevHints[] = {N_("Shots wait on each game's roll in Memory Files (MEDIA/RIPSHOT) until you develop them. Nothing runs on its own."),
+                                    N_("Shots turn into PNGs by themselves once you are back in RIPPS2, in the background while you browse."), NULL};
+ 
+@@ -1401,12 +1406,13 @@ static int rsIgrUpdater(int modified)
+     diaGetInt(diaIgrConfig, UICFG_RIPPS2_RIPSHOT, &shot);
+     diaSetEnabled(diaIgrConfig, UICFG_RIPPS2_RIPSHOT, igr == 0);              // greyed while the menu is off
+     diaSetEnabled(diaIgrConfig, UICFG_RIPPS2_DEVELOP, igr == 0 && shot == 0); // ...and while RIPSHOT is
++    diaSetEnabled(diaIgrConfig, UICFG_RIPPS2_IGRCHEATS, igr == 0);              // build 126: Cheats, with the menu
+     return 0;
+ }
+ 
+ int ripps2ShowIgrConfig(void)
+ {
+-    int keepIgr = gRipps2IgrMenu, keepShot = gRipps2Ripshot, keepDev = gRipps2RipshotDevelop, v;
++    int keepIgr = gRipps2IgrMenu, keepShot = gRipps2Ripshot, keepDev = gRipps2RipshotDevelop, keepCheats = gRipps2IgrCheats, v;
+     char keepPath[sizeof(gExitPath)];
+ 
+     snprintf(keepPath, sizeof(keepPath), "%s", gExitPath);
+@@ -1418,6 +1424,9 @@ int ripps2ShowIgrConfig(void)
+     diaSetEnumHints(diaIgrConfig, CFG_RIPPS2_IGRMENU, rsIgrHints);
+     diaSetEnumHints(diaIgrConfig, UICFG_RIPPS2_RIPSHOT, rsShotHints);
+     diaSetEnumHints(diaIgrConfig, UICFG_RIPPS2_DEVELOP, rsDevHints);
++    diaSetEnum(diaIgrConfig, UICFG_RIPPS2_IGRCHEATS, rsOffOn); // build 126: Off, On
++    diaSetEnumHints(diaIgrConfig, UICFG_RIPPS2_IGRCHEATS, rsCheatHints);
++    diaSetInt(diaIgrConfig, UICFG_RIPPS2_IGRCHEATS, gRipps2IgrCheats ? 1 : 0);
+     diaSetInt(diaIgrConfig, CFG_RIPPS2_IGRMENU, gRipps2IgrMenu ? 0 : 1);
+     diaSetInt(diaIgrConfig, UICFG_RIPPS2_RIPSHOT, gRipps2Ripshot ? 0 : 1);
+     diaSetInt(diaIgrConfig, UICFG_RIPPS2_DEVELOP, gRipps2RipshotDevelop == 1 ? 1 : 0);
+@@ -1429,9 +1438,12 @@ int ripps2ShowIgrConfig(void)
+             gRipps2Ripshot = v == 0;
+         if (diaGetInt(diaIgrConfig, UICFG_RIPPS2_DEVELOP, &v))
+             gRipps2RipshotDevelop = v == 1;
++        if (diaGetInt(diaIgrConfig, UICFG_RIPPS2_IGRCHEATS, &v))
++            gRipps2IgrCheats = v == 1;
+         guiExitPathEnd();
+     }
+-    return gRipps2IgrMenu != keepIgr || gRipps2Ripshot != keepShot || gRipps2RipshotDevelop != keepDev || strcmp(gExitPath, keepPath);
++    return gRipps2IgrMenu != keepIgr || gRipps2Ripshot != keepShot || gRipps2RipshotDevelop != keepDev || gRipps2IgrCheats != keepCheats ||
++           strcmp(gExitPath, keepPath);
+ }
+ 
+ #endif
+diff --git a/src/system.c b/src/system.c
+index 5d7e052..0a858c0 100644
+--- a/src/system.c
++++ b/src/system.c
+@@ -2868,6 +2868,24 @@ void sysLaunchLoaderElf(const char *filename, const char *mode_str, int size_cdv
+     LOG("SYSTEM LaunchLoaderElf loading modules\n");
+     ModuleStorageSize = (sendIrxKernelRAM(filename, mode_str, modules, ModuleStorage, size_cdvdman_irx, cdvdman_irx, size_mcemu_irx, mcemu_irx) + 0x3F) & ~0x3F;
+ 
++    /* RIPPS2 build 126: the cheat engine's code list goes right after the modules, for the whole game, whenever the
++       game's cheats are on (ee_core cheat_engine.h CHEAT_SET_WORDS): it left ee_core's .bss, which had no room for
++       the in-game menu's CHEATS. First, so the cheats have the room before anything else here. It stays inside the
++       modules region: below 0xD0000 at the default address (above it some games keep data, see ee_core/linkfile),
++       below the end of RAM at a game's own address (mod_storage_location_list). Without the room the game runs
++       without its cheats, and the log says so. */
++    u32 *cheatSet = NULL;
++    if (!discMode && GetCheatsEnabled()) {
++        const u32 cheatBytes = ((1 + MAX_CODES * 2) * 4 + 0x3F) & ~0x3F;
++        const u32 regionEnd = ModuleStorage == (void *)OPL_MOD_STORAGE ? 0xD0000 : 0x2000000;
++        if ((u32)ModuleStorage + ModuleStorageSize + cheatBytes <= regionEnd) {
++            cheatSet = (u32 *)((u8 *)ModuleStorage + ModuleStorageSize);
++            memset(cheatSet, 0, cheatBytes);
++            ModuleStorageSize += cheatBytes;
++        } else
++            LOG("cheats: no room after the modules for the code list, cheats off for this game\n");
++    }
++
+     /* RIPPS2 build 108: the in-game menu's thread stack goes after the modules too, for the whole game (ee_core's own
+        region has no room for it beside RIPSHOT). Only with the menu on, only at the default address and below 0xD0000,
+        as LEFT TO HUNT's list below; without the room the menu is off for this game and the combo leaves at once. */
+@@ -2897,6 +2915,23 @@ void sysLaunchLoaderElf(const char *filename, const char *mode_str, int size_cdv
+         raHuntCount = 0;
+ #endif
+ 
++    /* RIPPS2 build 126: the in-game menu's CHEATS page (Cheats, off by default): every cheat of the game's file goes
++       after the above, for the whole game, under the same rule (the menu's stack fitted, the default address, below
++       0xD0000). Not for a disc game (its cheats are left alone, as above) nor with Mode 6. Without the room the game
++       gets the menu without the page, and its cheats run as ticked before the launch. */
++    void *igrCheats = NULL;
++    if (gRipps2IgrCheats && igrStack != NULL && !discMode && GetCheatsEnabled() && !(compatflags & COMPAT_MODE_6) &&
++        ModuleStorage == (void *)OPL_MOD_STORAGE) {
++        u8 *at = (u8 *)ModuleStorage + ModuleStorageSize;
++        unsigned int room = (u32)at < 0xD0000 ? 0xD0000 - (u32)at : 0;
++        int bytes = igrCheatsPack(at, room);
++        if (bytes > 0) {
++            igrCheats = at;
++            ModuleStorageSize += (bytes + 0x3F) & ~0x3F;
++        }
++        LOG("IGR menu cheats: %d bytes at %p (room %u)\n", bytes, at, room);
++    }
++
+     ModuleStorageEnd = (void *)((u8 *)ModuleStorage + ModuleStorageSize);
+ #ifdef RETROACHIEVEMENTS
+     if (strcmp(mode_str, "BDM_CF_MODE") && gRATelemetry && GetWatchCount() > 0)
+@@ -2962,7 +2997,7 @@ void sysLaunchLoaderElf(const char *filename, const char *mode_str, int size_cdv
+     config->HDDSpindown = gHDDSpindown;
+     config->g_ps2_ETHOpMode = gETHOpMode;
+ 
+-    if (!discMode && GetCheatsEnabled()) {
++    if (!discMode && GetCheatsEnabled() && cheatSet != NULL) { // build 126: and the code list had its room
+         set_cheats_list();
+         config->gCheatList = GetCheatsList();
+     } else
+@@ -3062,6 +3097,15 @@ void sysLaunchLoaderElf(const char *filename, const char *mode_str, int size_cdv
+     config->IgrMenu = gRipps2IgrMenu && igrStack != NULL; // build 108: the menu's stack fitted after the modules
+     config->IgrStack = igrStack;
+     config->IgrFont = igrFont;
++    config->CheatSet = config->gCheatList != NULL ? cheatSet : NULL; // build 126: the code list, after the modules
++    // build 126: CHEATS. The game starts with every cheat's hook (so the hook is planted even with the master code's
++    // row OFF) and the ticked cheats' codes as the menu builds them, so its first change starts from this set
++    config->IgrCheats = NULL;
++    if (igrCheats != NULL && config->gCheatList != NULL) {
++        set_cheats_list_live(igrCheats);
++        config->gCheatList = GetCheatsList();
++        config->IgrCheats = igrCheats;
++    }
+     ripps2ShotFillConfig(config, mode_str); // build 108: RIPSHOT's roll, names and counts
+     config->IgrConfirmCircle = gSelectButton == KEY_CIRCLE;
+ #ifdef RETROACHIEVEMENTS
