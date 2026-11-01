@@ -231,6 +231,19 @@ strings:
 - en: psx-place.com
   in:
   - dialogs.c
+- en: '
+
+    %d game button maps in GAMES'
+  in:
+  - gui.c
+- en: '
+
+    1 game button map in GAMES'
+  in:
+  - gui.c
+- en: (no name)
+  in:
+  - gui.c
 - en: ', the sounds'
   in:
   - gui.c
@@ -341,6 +354,9 @@ strings:
 - en: None in AUDIO
   in:
   - gui.c
+- en: 'None yet. A profile is a text file named after the pad''s ID, like 2563_0575.pad: the format is in RIPPS2''s repo (docs/plans/pad-spec.md).'
+  in:
+  - gui.c
 - en: Normal
   in:
   - gui.c
@@ -367,6 +383,9 @@ strings:
 - en: PS Emulation
   in:
   - gui.c
+- en: 'Pad profiles in %s:'
+  in:
+  - gui.c
 - en: Pop In
   in:
   - gui.c
@@ -377,6 +396,12 @@ strings:
   in:
   - gui.c
 - en: RIPPS2 %s (build %d) on RiptOPL %s
+  in:
+  - gui.c
+- en: RIPPS2 %s lite (build %d) on RiptOPL %s
+  in:
+  - gui.c
+- en: RIPPS2 cannot tell where its folder is, so it cannot look for PADS.
   in:
   - gui.c
 - en: RIPPS2 found %d of the 5. Each one is remembered, and every launch reads it from there.
@@ -423,6 +448,9 @@ strings:
   in:
   - gui.c
 - en: Zoom
+  in:
+  - gui.c
+- en: could not be read
   in:
   - gui.c
 - en: not found on the started drives
@@ -1534,6 +1562,9 @@ strings:
 - en: This HDD has no __sysconf partition, so BIBLE's config has to go on a memory card (PS2BBL reads a card's first), and there is none in either slot. Insert one, then try again.
   in:
   - ripps2boot.c
+- en: This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
+  in:
+  - ripps2boot.c
 - en: a boot loader RIPPS2 does not know
   in:
   - ripps2boot.c
@@ -2077,6 +2108,9 @@ strings:
   in:
   - ripps2ember.c
 - en: 'This game starts through Neutrino, and RIPPS2 found none: not at Settings'' path, on the game''s drive, on the memory cards or on any started drive. RIPPS2 carries Neutrino by rickgaiser (AFL-3.0), its newest build: install it once, where you pick, and every Neutrino game uses it from there.'
+  in:
+  - ripps2ember.c
+- en: This is RIPPS2 lite, which carries no Neutrino. Put Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in a neutrino folder on a memory card or the game's drive, or use the full RIPPS2.elf, which installs it for you.
   in:
   - ripps2ember.c
 - en: '%d / %d FILES'

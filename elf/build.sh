@@ -167,6 +167,20 @@ ELF="$(ls RIPTOPL-*.ELF | head -n1)"
 cp -f "$ELF" "$OUT/RIPPS2.elf"
 echo "Built $ELF -> out/RIPPS2.elf"
 
+# build 126 (the user, 10/31: "Drop neutrino injection and bbl injection gracefully for lite elf"): RIPPS2-lite.elf, the same
+# build without the programs it carries as data (PS2BBL for BIBLE, Neutrino); src/ripps2lite.c stands in for them. Only the
+# three files RIPPS2_LITE changes are built again, and the ELF linked again, so the lite pass takes a minute
+if [ "${RIPPS2_NO_LITE:-0}" != "1" ]; then
+  cp -f opl.elf opl.full.elf; cp -f opl.map opl.full.map # the symbols CI uploads are the full ELF's
+  rm -f obj/gui.o obj/ripps2ember.o obj/ripps2boot.o opl.elf opl_stripped.elf RIPTOPL.ELF RIPTOPL-*.ELF
+  make LOCALVERSION=RIPPS2 DIRTY= REVISION="$UP_REV" GIT_HASH="$UP_HASH" RETROACHIEVEMENTS=1 RIPPS2_LITE=1 ${RIPPS2_MAKE_FLAGS:-} RIPTOPL.ELF
+  cp -f RIPTOPL.ELF "$OUT/RIPPS2-lite.elf"
+  echo "Built the lite ELF -> out/RIPPS2-lite.elf ($(wc -c < "$OUT/RIPPS2-lite.elf") bytes, full $(wc -c < "$OUT/RIPPS2.elf"))"
+  # the full ELF's objects back for anything after this that links again
+  rm -f obj/gui.o obj/ripps2ember.o obj/ripps2boot.o
+  mv -f opl.map opl-lite.map; mv -f opl.full.elf opl.elf; mv -f opl.full.map opl.map
+fi
+
 # build 104: the language pack. `make release` made lng_src/ (Open PS2 Loader's translations with RiptOPL's lng_fork
 # filled in); RIPPS2's own words come from elf/lang. Keyed by the English, so a pack keeps working in later builds.
 python3 "$HERE/lang/ripps2lang.py" extract "$SRC" --check || echo "::warning::elf/lang/_strings.yml is out of date"
