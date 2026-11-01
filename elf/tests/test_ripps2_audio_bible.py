@@ -19,7 +19,7 @@ if 'ripps2AudioBase(dir, sizeof(dir), 1)' not in opl:
     fail.append('deferredAudioInit must search the drives once')
 if not re.search(r'parts\[\] = \{"__sysconf", "__common"\}', boot):
     fail.append('BIBLE on the HDD must try __sysconf, then __common')
-if 'ripps2QuietBootMark(gEnableSFX && gEnableBootSND)' not in opl:
+if 'ripps2QuietBootMark(gEnableBootSND)' not in opl:  # build 126: the boot sound follows Boot Sound alone
     fail.append('each settings save must keep QUIETBOOT in step with the boot sound')
 print('\n'.join(fail) or 'AUDIO order, BIBLE HDD fallback, QUIETBOOT OK')
 sys.exit(1 if fail else 0)

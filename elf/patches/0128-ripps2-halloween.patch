@@ -1,0 +1,267 @@
+diff --git a/src/dia.c b/src/dia.c
+index d0fbada..e20d63f 100644
+--- a/src/dia.c
++++ b/src/dia.c
+@@ -729,11 +729,11 @@ static int diaShouldBreakLineAfter(struct UIItem *ui)
+     return (ui->type == UI_SPLITTER);
+ }
+ 
+-// RIPPS2 build 70: a tooltip comes in at the art's pace when its row is picked, stays 4.2 s and fades
+-// away (picking the row again brings it back). It reads in the theme's lowercase font: menus shout
+-// their names, tooltips explain.
++// RIPPS2 build 70: a tooltip comes in at the art's pace when its row is picked, stays 6.9 s (build 126, a tester:
++// 4.2 s was too short to read one) and fades away (picking the row again brings it back). It reads in the theme's
++// lowercase font: menus shout their names, tooltips explain.
+ #define DIA_TIP_IN_S   0.35f
+-#define DIA_TIP_HOLD_S 4.2f
++#define DIA_TIP_HOLD_S 6.9f
+ #define DIA_TIP_OUT_S  0.35f
+ #define DIA_TIP_FONT   (gTheme->diaTipFont) // build 96: Roboto Condensed on every theme
+ 
+diff --git a/src/menusys.c b/src/menusys.c
+index c5c6f6b..cf0fc52 100644
+--- a/src/menusys.c
++++ b/src/menusys.c
+@@ -2579,10 +2579,19 @@ static void menuShoulderKeys(int viewPending)
+         // build 96: Page Buttons. L2 / R2 turn the pages, or (with L1 / R1 on the pages) switch categories;
+         // else, as before, the top and the end of the list
+         // build 117: with the sidebar on, the categories are its alone: L2 / R2 are the pages or the list's ends
+-        if (getKeyOff(KEY_L2) && !shoulderChord)
+-            pages == 2 ? menuPrevPage() : (pages == 1 && !ripps2SidebarOn()) ? ripps2StepCategory(-1) : menuFirstPage();
+-        if (getKeyOff(KEY_R2) && !shoulderChord)
+-            pages == 2 ? menuNextPage() : (pages == 1 && !ripps2SidebarOn()) ? ripps2StepCategory(1) : menuLastPage();
++        // build 126 (the user, 10/31): RIPFLOW without the sidebar walks its covers on L2 / R2, a press or held, as L1 / R1
++        // do with the sidebar on, instead of jumping to the list's ends (Page Buttons still gives them the pages)
++        if (gTheme->coverflow != NULL && thmGridColumns() <= 0 && !ripps2SidebarOn() && pages == 0) {
++            if (!shoulderChord && !r2 && getKey(KEY_L2))
++                menuPrevV();
++            else if (!shoulderChord && !l2 && getKey(KEY_R2))
++                menuNextV();
++        } else {
++            if (getKeyOff(KEY_L2) && !shoulderChord)
++                pages == 2 ? menuPrevPage() : (pages == 1 && !ripps2SidebarOn()) ? ripps2StepCategory(-1) : menuFirstPage();
++            if (getKeyOff(KEY_R2) && !shoulderChord)
++                pages == 2 ? menuNextPage() : (pages == 1 && !ripps2SidebarOn()) ? ripps2StepCategory(1) : menuLastPage();
++        }
+         if (!l2 && !r2)
+             shoulderChord = 0;
+     }
+@@ -2656,8 +2665,9 @@ void menuHandleInputMain()
+         // build 115: a list in sidebar mode: Right steps no source (build 117: sidebar_left=list keeps both the list's)
+     } else if ((cf || grid) ? getKey(KEY_RIGHT) : getKeyOn(KEY_RIGHT)) {
+         menuNavigateRight();
+-    } else if (flowSide && (getKey(KEY_UP) || getKey(KEY_DOWN))) {
+-        // build 115: RIPFLOW in sidebar mode: Up/Down change no source (build 117: flowtilt=1 tips the case with them)
++    } else if ((flowSide || (cf && !grid && gTheme->flowTilt)) && (getKey(KEY_UP) || getKey(KEY_DOWN))) {
++        // build 115: RIPFLOW in sidebar mode: Up/Down change no source (build 117: flowtilt=1 tips the case with them;
++        // build 126, the user 10/31: without the sidebar too, where Circle cycles the sources)
+     } else if ((cf && !grid) ? getKeyOn(KEY_UP) : getKey(KEY_UP)) {
+         menuNavigateUp();
+     } else if ((cf && !grid) ? getKeyOn(KEY_DOWN) : getKey(KEY_DOWN)) {
+@@ -2665,8 +2675,8 @@ void menuHandleInputMain()
+     } else if ((menuSourceCycleActive() || ripps2SidebarOn()) && getKeyOn(gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE) &&
+                (support == NULL || folderDepth(support->mode) == 0)) {
+         if (ripps2SidebarOn())
+-            ripps2SidebarOpen(ripps2SidebarHidden() ? 0 : 1); // build 113: the Storage drawer, its sources (115: the icons
+-                                                              // first when the sidebar is out of sight)
++            ripps2SidebarOpen(1); // build 113: the Storage drawer, its sources (126, the user 10/31: shown or hidden, Circle
++                                  // opens the drawer of the page in use; Left or Circle there collapses it to the icons)
+         else
+             menuSourceCycle(); // build 80: the cancel button cycles the sources on Coverflow / Grid
+     } else if (getKeyOn(KEY_CROSS)) {
+diff --git a/src/opl.c b/src/opl.c
+index bf40e38..df9e322 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -4817,7 +4817,7 @@ static void _saveConfig()
+         configSetInt(configOPL, "ripps2_grid_wide", gRipps2GridWide); // build 98
+         configSetInt(configOPL, "ripps2_bg_blur", gRipps2BgBlur);     // build 98
+         configSetInt(configOPL, "ripps2_transition", gRipps2Transition); // build 92
+-        ripps2QuietBootMark(gEnableSFX && gEnableBootSND); // build 75: what an HDD launch knows before its settings
++        ripps2QuietBootMark(gEnableBootSND); // build 75: what an HDD launch knows before its settings
+         configSetStr(configOPL, CONFIG_OPL_THEME, thmGetValue());
+         configSetStr(configOPL, CONFIG_OPL_LANGUAGE, lngGetValue());
+         configSetColor(configOPL, CONFIG_OPL_BGCOLOR, gDefaultBgColor);
+diff --git a/src/ripps2edit.c b/src/ripps2edit.c
+index 442b5b2..7a7df4b 100644
+--- a/src/ripps2edit.c
++++ b/src/ripps2edit.c
+@@ -72,10 +72,12 @@ static void edHighlight(int y)
+ 
+ static void edFrameStart(const char *title, const char *right)
+ {
++    int rightW = right != NULL && right[0] ? fntCalcDimensions(ED_FONT, right) : 0;
+     guiDrawBGPlasma(); // the moving background and the glass page panel
+-    fntRenderString(ED_FONT, ED_X, 30, ALIGN_VCENTER, 0, 0, title, ED_LIT);
+-    if (right != NULL && right[0])
+-        fntRenderString(ED_FONT, ED_RIGHT - fntCalcDimensions(ED_FONT, right), 30, ALIGN_VCENTER, 0, 0, right, ED_SOFT);
++    // build 126: a long title (SET METADATA's library and file names) rolls in its room, short of the status on its right
++    fntRenderStringFit(ED_FONT, ED_X, 30, ALIGN_VCENTER, ED_RIGHT - ED_X - (rightW ? rightW + 16 : 0), title, ED_LIT, 1);
++    if (rightW)
++        fntRenderString(ED_FONT, ED_RIGHT - rightW, 30, ALIGN_VCENTER, 0, 0, right, ED_SOFT);
+     rmDrawLine(ED_X, 46, ED_RIGHT, 46, ED_PRIM(0x4A, 0x72, 0xDC, 0x60));
+ }
+ 
+@@ -487,7 +489,7 @@ int ripps2EditMetadata(config_set_t *config, const char *gameName, int canRename
+     char user[MD_COUNT][CONFIG_KEY_VALUE_LEN]; // the user's own values ("" = none, the database shows)
+     char db[MD_COUNT][CONFIG_KEY_VALUE_LEN];
+     int cursor = 0, top = 0, modified = 0, i;
+-    char title[128];
++    char title[256];
+ 
+     if (config == NULL)
+         return 0;
+@@ -502,7 +504,23 @@ int ripps2EditMetadata(config_set_t *config, const char *gameName, int canRename
+         if (configGetStr(config, rk, &v) && v != NULL)
+             snprintf(db[i], sizeof(db[i]), "%s", v);
+     }
+-    snprintf(title, sizeof(title), _t("SET METADATA: %s"), gameName ? gameName : "");
++    {
++        // build 126 (the user, 10/31): the top line names the game both ways, the library's name and the file's, both
++        // filled in (a game the list shows by its CFG title still says which file it is)
++        const char *fileName = NULL, *format = NULL;
++        char both[CONFIG_KEY_VALUE_LEN * 2 + 8], file[CONFIG_KEY_VALUE_LEN + 8];
++        configGetStr(config, CONFIG_ITEM_NAME, &fileName);
++        configGetStr(config, CONFIG_ITEM_FORMAT, &format);
++        if (fileName != NULL && format != NULL && (!strcmp(format, "ISO") || !strcmp(format, "ZSO") || !strcmp(format, "VCD")))
++            snprintf(file, sizeof(file), "%s.%s", fileName, format);
++        else
++            snprintf(file, sizeof(file), "%s", fileName != NULL ? fileName : "");
++        if (file[0])
++            snprintf(both, sizeof(both), "%s  /  %s", gameName ? gameName : "", file);
++        else
++            snprintf(both, sizeof(both), "%s", gameName ? gameName : "");
++        snprintf(title, sizeof(title), _t("SET METADATA: %s"), both);
++    }
+ 
+     while (1) {
+         readPads();
+diff --git a/src/ripps2side.c b/src/ripps2side.c
+index 13a2e08..e560a84 100644
+--- a/src/ripps2side.c
++++ b/src/ripps2side.c
+@@ -49,6 +49,7 @@ int gRipps2CatLayout = 0;
+ #define SB_TEX(v, a)        GS_SETREG_RGBA((v), (v), (v), (a))        // textured: 0x80 = the texel as it is
+ 
+ static int sbFocus = 0, sbGlyph = 0, sbItem = 0, sbDirect = 0; // sbDirect: opened straight into a list (Circle)
++static int sbOpenHidden = 0; // build 126: the sidebar was out of sight when it was opened (it closes from its icons)
+ static const char *sbNames[RIPPS2_CAT_COUNT] = {N_("LAUNCH DISC"), N_("STORAGE"), N_("MEMORY FILES")};
+ 
+ int ripps2SidebarOn(void)
+@@ -364,6 +365,8 @@ void ripps2SidebarOpen(int list)
+ {
+     if (!ripps2SidebarOn())
+         return;
++    if (!sbFocus)
++        sbOpenHidden = ripps2SidebarHidden(); // build 126: before the focus makes it shown
+     sbGlyph = ripps2CatSlot(gRipps2Category);
+     sbDirect = list;
+     if (list) {
+@@ -398,7 +401,9 @@ void ripps2SidebarInput(void)
+             sbFocus = 2;
+             sbItem = cat == RIPPS2_CAT_STORAGE && gRipps2Category == RIPPS2_CAT_STORAGE ? 1 + menuSourceCurrent() : 0;
+             sfxPlay(SFX_CONFIRM);
+-        } else if (getKeyOn(cancel) || getKeyOn(KEY_RIGHT)) {
++        } else if (getKeyOn(cancel) || getKeyOn(KEY_RIGHT) || (sbOpenHidden && getKeyOn(KEY_LEFT))) {
++            // build 126 (the user, 10/31): from the icons, Circle closes the bar and the list is where it was; a bar
++            // that was out of sight closes with Left too (a shown one stays on its icons, as Adapt's)
+             sbClose();
+             sfxPlay(SFX_PAGE_OUT);
+         }
+@@ -431,11 +436,12 @@ void ripps2SidebarInput(void)
+             if (cat == RIPPS2_CAT_STORAGE && sbItem > 0)
+                 menuSourceSelect(sbItem - 1);
+             ripps2SetCategory(cat);
+-        } else if (getKeyOn(cancel)) {
+-            if (sbDirect)
+-                sbClose();
+-            else
+-                sbFocus = 1;
++        } else if (getKeyOn(cancel) || getKeyOn(KEY_LEFT)) {
++            // build 126 (the user, 10/31): Left or Circle in a drawer collapses the bar to its icons, the category in use
++            // lit, so the others are a step away without walking the open drawer
++            sbFocus = 1;
++            sbItem = 0;
++            sbDirect = 0;
+             sfxPlay(SFX_CANCEL);
+         } else if (getKeyOn(KEY_RIGHT)) {
+             sbClose();
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index 0532079..79d39f5 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -1974,7 +1974,7 @@ void ripps2HandleInputLaunch(void)
+         return;
+     }
+     if (ripps2SidebarOn() && (getKeyOn(KEY_LEFT) || getKeyOn(gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE))) {
+-        ripps2SidebarOpen(0); // Left or the cancel button: the page has no other use for them
++        ripps2SidebarOpen(!getKeyOn(KEY_LEFT)); // Left: the icons; the cancel button (build 126): this page's drawer
+         return;
+     }
+     if (ripps2Legacy() && getKeyOn(gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE)) {
+@@ -2090,7 +2090,8 @@ void ripps2HandleInputMemory(void)
+         return;
+     }
+     if (ripps2SidebarOn() && (getKeyOn(KEY_LEFT) || getKeyOn(gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE))) {
+-        ripps2SidebarOpen(0); // build 115: Left or the cancel button, as on Launch Disc (L1/R1 take the formations)
++        ripps2SidebarOpen(!getKeyOn(KEY_LEFT)); // build 115: as on Launch Disc (L1/R1 take the formations); 126: the cancel
++                                                // button opens this page's drawer, Left the icons
+         return;
+     }
+     if (ripps2SidebarOn() && getKeyOn(KEY_RIGHT))
+@@ -2528,7 +2529,7 @@ void ripps2TiltBeginFlow(int cx, int cy, int scalePct, float turn)
+         flowPitch = 0.0f;
+         dt = 0.016f;
+     }
+-    if (gTheme != NULL && gTheme->flowTilt && ripps2SidebarOn() && !ripps2SidebarFocused()) {
++    if (gTheme != NULL && gTheme->flowTilt && !ripps2SidebarFocused()) { // build 126: with or without the sidebar
+         padGetLeftStick(&lx, &ly);
+         if (ly != 0)
+             goal = (ly / 128.0f) * FLOW_TILT_MAX;
+diff --git a/src/sound.c b/src/sound.c
+index 6cb5dc5..9ffdc03 100644
+--- a/src/sound.c
++++ b/src/sound.c
+@@ -519,12 +519,14 @@ void sfxIntroStarted(void)
+     ripps2Diag("boot: the menu is up"); // build 115: with the lines below, how long a boot takes, step by step
+ }
+ 
++// build 126 (the user, 10/31: "boot sound on should play it even if the sfx is set off"): the boot sound follows its own
++// setting (Boot Sound) only, here, in the early read and in the set's load; Sound Effects off silences the menu's sounds
+ static void sfxBootPlay(void)
+ {
+     if (!sfxBootPending || !sfxIntroOn)
+         return;
+     sfxBootPending = 0;
+-    if (!sfxReady[SFX_BOOT] || !gEnableSFX || !gEnableBootSND)
++    if (!sfxReady[SFX_BOOT] || !gEnableBootSND)
+         return;
+     audsrv_adpcm_set_volume_and_pan(SFX_BOOT_VOICE, gBootSndVolume, 0);
+     if (audsrv_ch_play_adpcm(SFX_BOOT_VOICE, &sfx[SFX_BOOT]) >= 0) {
+@@ -561,7 +563,7 @@ static void sfxBootEarlyUpload(void)
+     }
+     sfxReady[SFX_BOOT] = 1;
+     sfxBootEarly = SFX_EARLY_READY;
+-    if (gEnableSFX && gEnableBootSND)
++    if (gEnableBootSND)
+         sfxBootPending = 1; // sfxBootPlay, from the towers' first frame
+     ripps2Diag("boot: the boot sound is ready before the drives start");
+ }
+@@ -631,7 +633,7 @@ void sfxBootEarlyQueue(int themeID)
+     static int queued = 0;
+     char *thmPath;
+ 
+-    if (queued || !gEnableSFX || !gEnableBootSND)
++    if (queued || !gEnableBootSND)
+         return;
+     queued = 1;
+     sfxBootThemePath[0] = '\0';
+@@ -795,7 +797,7 @@ int sfxInit(int bootSnd)
+         LOG("SFX: Loaded %s, size=%d, duration=%dms\n", full_path, sfx_files[i].size, sfx_files[i].duration_ms);
+         sfxReady[i] = 1;
+         loaded++;
+-        if (i == SFX_BOOT && gEnableSFX && gEnableBootSND) // build 102: it plays with the towers' first frame
++        if (i == SFX_BOOT && gEnableBootSND) // build 102: it plays with the towers' first frame
+             sfxBootPending = 1;                                // (sfxBootPlay, from the GUI's frame tick)
+     }
+     sfxLoadedCount = loaded;

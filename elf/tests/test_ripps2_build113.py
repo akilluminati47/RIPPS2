@@ -34,8 +34,8 @@ if ui.count('if (ripps2SidebarFocused()) { // build 113: the category sidebar ha
     fail.append('ripps2ui.c: Launch Disc and Memory Files hand the pad to a focused sidebar')
 need(menusys, (('    if (ripps2SidebarFocused()) { // RIPPS2 build 113: the category sidebar has the pad while it has the focus\n        ripps2SidebarInput();\n        return;\n    }', 'Storage hands the pad to a focused sidebar'),
                ('ripps2SidebarOpen(0); // RIPPS2 build 113: Left on a list goes to the category sidebar', 'Left on a list opens it'),
-               # build 115: the icons first when the sidebar is out of sight
-               ('ripps2SidebarOpen(ripps2SidebarHidden() ? 0 : 1); // build 113: the Storage drawer, its sources', 'the cancel button opens the Storage drawer'),
+               # build 126 (the user, 10/31): the drawer of the page in use, shown or hidden
+               ('ripps2SidebarOpen(1); // build 113: the Storage drawer, its sources', 'the cancel button opens the Storage drawer'),
                ('int menuSourceCount(void)', 'the drawer lists the visible sources'), ('void menuSourceSelect(int i)', 'and goes to one')), 'menusys.c')
 need(side, (('if (gRipps2CatLayout == 1)\n        return 0;\n    if (gRipps2CatLayout == 2)\n        return 1;', 'Category Layout overrides the theme'),
             ('fntLoadFile("builtin:ripflowbold"', "the drawer's names in Roboto Condensed Bold (the user's pick)"),
