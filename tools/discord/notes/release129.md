@@ -2,6 +2,8 @@
 
 ## Rip it: RIPPS2 v1.2.9 beta (build 129)
 
+**[Watch the tour](https://youtu.be/OEa8b5rbyco)** (10:48): everything RIPPS2 does, from the web page it started as to the in-game menu, with chapters.
+
 **[Download RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/download/v1.2.9-beta/RIPPS2.elf)** (one file, 2,743 KB) and put it in place of your old one. Your settings stay where they were. **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/download/v1.2.9-beta/RIPPS2-lite.elf)** (2,200 KB) is the same RIPPS2 without the programs it carries for BIBLE (PS2BBL) and Neutrino. **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/download/v1.2.9-beta/RIPPS2-languages.zip)** puts RIPPS2 in your language (33 of them, every new line translated). The **[theme pack](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** stays at edition 128.
 
 ### USB pads RIPPS2 did not know

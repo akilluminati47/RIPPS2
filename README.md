@@ -25,6 +25,7 @@ It is **beta** from build 100: a hundred builds of alpha, tested on consoles and
 
 | Video | Length | What it shows |
 | --- | --- | --- |
+| [The tour](https://youtu.be/OEa8b5rbyco) | 10:48 | Everything RIPPS2 does as of v1.2.8: the web page it started as, your games on every theme, your files, the sounds from your own console, the in-game menu and what is on board, with chapters in its description |
 | [The v1.1.5 Short](https://akilluminati47.github.io/RIPPS2/media/b115/ripps2-v115-short.mp4) (on GitHub) | 0:39 | The CD player for your own tracks, Fast Boot, where rips go, Set Metadata (Rename) |
 | [The v1.1.4 reel](https://youtu.be/UwuKWfRtUEs) | 7:55 | Everything in v1.1.4, with chapters in its description |
 | [The v1.1.4 wheel Short](https://youtube.com/shorts/iQqR9lsar9Q) ([or on GitHub](https://akilluminati47.github.io/RIPPS2/media/b114/ripps2-v114-wheels-short.mp4)) | 1:10 | The wheels you hold SELECT for |
