@@ -2,7 +2,7 @@
 
 ## Rip it: RIPPS2 v1.2.8 beta (builds 126 to 128)
 
-**[Download RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/download/v1.2.8-beta/RIPPS2.elf)** (one file, 2,737 KB) and put it in place of your old one. Your settings stay where they were. New: **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/download/v1.2.8-beta/RIPPS2-lite.elf)** (2,193 KB), the same RIPPS2 without the programs it carries for BIBLE (PS2BBL) and Neutrino. **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/download/v1.2.8-beta/RIPPS2-languages.zip)** puts RIPPS2 in your language (33 of them, every new line translated). The **[theme pack](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** is edition 128.
+**[Download RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/download/v1.2.8-beta/RIPPS2.elf)** (one file, 2,738 KB) and put it in place of your old one. Your settings stay where they were. New: **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/download/v1.2.8-beta/RIPPS2-lite.elf)** (2,193 KB), the same RIPPS2 without the programs it carries for BIBLE (PS2BBL) and Neutrino. **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/download/v1.2.8-beta/RIPPS2-languages.zip)** puts RIPPS2 in your language (33 of them, every new line translated). The **[theme pack](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** is edition 128.
 
 **Two things to do once:** rip your sounds again (Audio settings > BIOS Sounds) for the right pitch, and build your ART Pack again (Settings > Game Sources > Cache > ART Pack) for the faster PS1 art.
 
