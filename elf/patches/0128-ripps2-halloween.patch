@@ -1,3 +1,29 @@
+diff --git a/misc/theme_ripgrid.cfg b/misc/theme_ripgrid.cfg
+index 1952991..96b3b6f 100644
+--- a/misc/theme_ripgrid.cfg
++++ b/misc/theme_ripgrid.cfg
+@@ -166,15 +166,17 @@ info3:
+ 	tilt_x=320
+ 	tilt_y=260
+ 	tilt_scale=75
++# build 126 (the user, 10/31: "stars on info pages too small"): the rating at RIPFLOW's size (143 x 18); its stars fill the
++# right 82 of the 143, so the box starts at -6 to keep the first star on the text's edge (55), on the same middle (186)
+ info4:
+ 	type=AttributeImage
+ 	attribute=Rating
+ 	default=rating/0_Rating
+ 	aligned=0
+-	x=8
+-	y=179
+-	width=111
+-	height=14
++	x=-6
++	y=177
++	width=143
++	height=18
+ 	tilt=1
+ 	tilt_x=320
+ 	tilt_y=260
 diff --git a/src/dia.c b/src/dia.c
 index d0fbada..e20d63f 100644
 --- a/src/dia.c
@@ -219,7 +245,7 @@ index 0532079..79d39f5 100644
          if (ly != 0)
              goal = (ly / 128.0f) * FLOW_TILT_MAX;
 diff --git a/src/sound.c b/src/sound.c
-index 6cb5dc5..9ffdc03 100644
+index 6cb5dc5..4783897 100644
 --- a/src/sound.c
 +++ b/src/sound.c
 @@ -519,12 +519,14 @@ void sfxIntroStarted(void)
@@ -247,6 +273,15 @@ index 6cb5dc5..9ffdc03 100644
          sfxBootPending = 1; // sfxBootPlay, from the towers' first frame
      ripps2Diag("boot: the boot sound is ready before the drives start");
  }
+@@ -584,7 +586,7 @@ int sfxCardBootPath(char *out, int size)
+         for (port = 0; port < 2; port++) {
+             dir[2] = '0' + port;
+             if (n > 5 && dir[n - 1] == '/')
+-                dir[n - 1] = ' ';
++                dir[n - 1] = '\0';
+             d = opendir(dir);
+             if (n > 5)
+                 dir[n - 1] = '/';
 @@ -631,7 +633,7 @@ void sfxBootEarlyQueue(int themeID)
      static int queued = 0;
      char *thmPath;

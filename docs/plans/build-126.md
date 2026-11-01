@@ -150,3 +150,6 @@ rounds, regen with `tools/dev/regen_patch.sh`), unless the user wants them folde
 - PC harnesses: BIOS sound renders for pitch and the rip audit; MP3/WAV readers as before.
 - Hardware items (MMCE browser, MMCE paste, Fatal Frame 3 IGR, injection on a boot card) go to the user's
   Test me list.
+
+## Progress (10/31 night, usage limit)
+Done on b126: 0126 (PR #6 cheats), 0127 (RiptOPL backend picks, CI green), 0128 part 1 (sidebar flow, 6.9 s tooltips, boot sound without SFX, RIPFLOW L2/R2 + tilt, Set Metadata top line, deleted-AUDIO search fix in 0127; CI green). In progress, NOT CI-run or lab-checked: rating stars 143 x 18 (RIPPS2 conf_theme.cfg, RIPGRID misc cfg, Adapt generator edited in RIPPS2-themes but not regenerated or committed), a literal NUL in sound.c written as an escape. Answers: stars = rating stars at RIPFLOW size; lite ELF = a second smaller ELF without the carried Neutrino/PS2BBL. Next: lab-check the stars per theme, then Round 1 (theme-change crash, audio bugs, lab repro of the re-rip), Round 2 (art speed).
