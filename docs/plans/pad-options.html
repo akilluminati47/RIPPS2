@@ -1,0 +1,204 @@
+<title>USB Pad Definitions</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;800&family=Roboto+Condensed:wght@400;700&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* layout: one reading column, option cards side by side on wide screens, a weighted score table, then the file example */
+:root{
+  --bg:#eef0f4; --panel:#ffffff; --fg:#1b1f2a; --muted:#5d6475; --line:#d3d7e0; --accent:#2b4fd8; --good:#1f8a4c; --pick:#e7ecff;
+  --display:"Archivo",system-ui,sans-serif; --body:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f121a;--panel:#171b26;--fg:#e4e7ef;--muted:#99a0b3;--line:#2a3042;--accent:#7f9bff;--good:#4fcb84;--pick:#1d2540;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f121a;--panel:#171b26;--fg:#e4e7ef;--muted:#99a0b3;--line:#2a3042;--accent:#7f9bff;--good:#4fcb84;--pick:#1d2540;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:16px/1.6 var(--body)}
+.wrap{max-width:960px;margin:0 auto;padding-block:40px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:32px}
+h1{font:800 clamp(28px,5vw,44px)/1.1 var(--display);margin:0;text-wrap:balance}
+h2{font:800 22px/1.2 var(--display);margin:0 0 12px}
+h3{font:800 18px/1.25 var(--display);margin:0}
+p{margin:0;max-width:68ch}
+.lead{color:var(--muted);font-size:18px}
+.eyebrow{font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.opt{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:20px;display:grid;gap:10px;align-content:start;min-width:0}
+.opt.pick{background:var(--pick);border-color:var(--accent)}
+.tag{justify-self:start;font:600 12px var(--mono);padding:2px 8px;border-radius:99px;border:1px solid var(--accent);color:var(--accent)}
+ul{margin:0;padding-left:18px;display:grid;gap:4px}
+.pro li::marker{content:"+ ";color:var(--good)}
+.con li::marker{content:"- ";color:var(--muted)}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;min-width:560px}
+th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left}
+th{font:600 13px var(--mono);color:var(--muted)}
+td.n{text-align:center;font-family:var(--mono)}
+tr.total td{font-weight:600;border-bottom:none}
+tr.total td.win{color:var(--accent)}
+pre{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px;overflow-x:auto;font:14px/1.55 var(--mono);margin:0}
+.c{color:var(--muted)}
+.note{color:var(--muted);font-size:14px}
+.flow{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px}
+.scr{margin:0;display:grid;gap:8px;align-content:start;min-width:0}
+.scr figcaption{font-size:14px;color:var(--muted)}
+.scr figcaption b{color:var(--fg)}
+/* the Adapt theme's settings dialog, from the build 113 lab grabs */
+.tv{max-width:100%;position:relative;padding:2.5%;display:flex;flex-direction:column;gap:.4em;overflow:hidden;border-radius:4px;background:#05081a;font:700 clamp(10px,2.6vw,13px)/1.22 "Roboto Condensed","Arial Narrow",sans-serif;color:#f2f4ff;container-type:inline-size}
+.tv::before{content:"";position:absolute;inset:0;background:
+ linear-gradient(to top,#0a1a5a 0 18%,transparent 60%),
+ repeating-linear-gradient(90deg,transparent 0 6%,#1b2f8a55 6% 6.4%,transparent 6.4% 9%),
+ radial-gradient(60% 50% at 60% 100%,#1c3aa866,transparent 70%);opacity:.9}
+.dlg{position:relative;min-height:21em;border:1px solid #3e63e6;background:#050a2ccc;display:flex;flex-direction:column;padding:2% 2.4%}
+.dlg h4{margin:0 0 3%;font:700 1.1em "Roboto Condensed",sans-serif;color:#3cc4ff;border-bottom:1px solid #7f8bbf;padding-bottom:1.5%}
+.kv{display:grid;grid-template-columns:60% 1fr;row-gap:.1em}
+.kv .v{font-weight:700}
+.kv .sel{background:#e8ebf7;color:#05081a;padding:0 .3em;justify-self:start}
+.kv .dim{color:#7d86ad}
+.kv .ok{color:#4fcb84}
+.kv .new::after{content:" NEW";font-size:.7em;color:#3cc4ff;margin-left:.3em}
+.gap{height:.7em}
+.help{margin-top:auto;border:1px solid #3e63e6;background:#050a2cee;padding:.4em .5em;font-weight:400;font-size:.88em;line-height:1.3}
+.foot{display:flex;justify-content:space-between;align-items:center;margin-top:.5em;font-size:.95em}
+.g{display:inline-grid;place-items:center;width:1.25em;height:1.25em;border-radius:50%;background:#2a2f45;border:1px solid #5a6080;font-size:.8em;margin-right:.2em;vertical-align:-.15em}
+.g.x{color:#8fb1ff}.g.o{color:#ff6b6b}.g.t{color:#4fcb84}.g.s{color:#ff8ad8}
+.pill{display:inline-block;background:#2a2f45;border:1px solid #5a6080;border-radius:.4em;padding:0 .3em;font-size:.8em;margin-right:.2em}
+.big{font-size:1.7em;margin:auto 0 .2em;text-align:center}
+.sub{color:#aab3dc;text-align:center;font-weight:400}
+.meter{height:.45em;background:#1b2350;margin:.6em 12%;border:1px solid #3e63e6}
+.meter i{display:block;height:100%;background:#3cc4ff}
+.pad{position:relative;width:56%;aspect-ratio:240/150;margin:0 auto}
+.pad svg{width:100%;height:100%}
+.toast{position:relative;align-self:flex-end;background:#050a2cee;border:1px solid #3e63e6;padding:.4em .6em;font-weight:400;font-size:.9em;max-width:55%}
+/* honest answers */
+.ans{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.ans .opt h3{font-size:16px}
+.yes li::marker{content:"\2713  ";color:var(--good)}
+.no li::marker{content:"\2715  ";color:#c0453a}
+</style>
+
+<div class="wrap">
+  <header style="display:grid;gap:10px">
+    <div class="eyebrow">RIPPS2 / PADEMU proposal</div>
+    <h1>Any USB pad from a .pad file</h1>
+    <p class="lead">PADEMU only knows a few Sony IDs today. Copy pads, like a DS3 knockoff with the ID 2563:0575, get ignored. The idea from the OPL help channel is to describe a pad in a human-readable text file, so anyone can add one without rebuilding anything. Here are three ways to do it, weighed against each other.</p>
+  </header>
+
+  <section>
+    <h2>User flow (same in every option)</h2>
+    <p style="margin-bottom:16px">Mockups of the RIPPS2 screens, in order. The user holds a working pad (PS2 pad or a known DS3/DS4) to drive the menu, and presses buttons on the new USB pad when asked. With no other pad, the new pad itself drives the menu once a button is learned, and waiting 3 seconds skips a step.</p>
+    <div class="flow">
+<figure class="scr"><div class="tv"><div class="dlg"><h4>General</h4><div class="kv"><span>Remember Last Played Game</span><span class="v ">Off</span><span>Browse Folders in Game List</span><span class="v ">Off</span><span>Boot Lock</span><span class="v ">Off</span><span>Boot Loader</span><span class="v ">Manage</span><span>Settings Home</span><span class="v ">Last Page</span><span>Language</span><span class="v new">English</span><span>Controllers</span><span class="v sel new">Modify</span></div><div class="gap"></div><div class="kv"><span>OK</span></div><div class="help">Opens the Controllers page: USB pads, Controller Emulation and Macros.</div><div class="foot"><span><span class="pill">L1</span> 2/8 <span class="pill">R1</span></span><span><span class="g x">&#10005;</span>Select &nbsp;<span class="g o">&#9675;</span>Back</span></div></div><div class="toast">New USB pad: USB Gamepad (2563:0575). Set it up in Settings &gt; Controllers.</div></div><figcaption><b>1. General.</b> Two rows added at the bottom (marked new). Language appears here as well as on Interface, and Controllers is the last row, a shortcut to the existing Controllers page.</figcaption></figure>
+<figure class="scr"><div class="tv"><div class="dlg"><h4>Controllers</h4><div class="kv"><span>Scrolling</span><span class="v ">Medium</span><span>Select Button</span><span class="v ">Cross</span><span>X Sensitivity</span><span class="v ">On</span><span>Y Sensitivity</span><span class="v ">On</span><span>Menu Rumble</span><span class="v ">On</span><span>Page Buttons</span><span class="v ">L1/R1</span><span>Controller Emulation</span><span class="v ">Modify</span><span>Controller Macros</span><span class="v ">Modify</span><span>Set Up A USB Pad</span><span class="v sel new">1 new pad</span><span>My Pads</span><span class="v new">2</span></div><div class="gap"></div><div class="kv"><span>OK</span></div><div class="help">Teach RIPPS2 a USB pad it does not know yet. You press each button when asked; it saves a .pad file.</div><div class="foot"><span><span class="pill">L1</span> 7/8 <span class="pill">R1</span></span><span><span class="g x">&#10005;</span>Select &nbsp;<span class="g o">&#9675;</span>Back</span></div></div></div><figcaption><b>2. Controllers.</b> The page RIPPS2 already has (7th of 8), unchanged except the two new rows under Controller Emulation and Macros.</figcaption></figure>
+<figure class="scr"><div class="tv"><div class="dlg"><h4>Set Up A USB Pad</h4><div class="kv"><span>Pad</span><span class="v">USB Gamepad</span><span>ID</span><span class="v">2563:0575</span><span>Plugged Into</span><span class="v">USB port 1</span><span>Status</span><span class="v dim">Not set up</span><span>Shared File Found</span><span class="v dim">None</span></div><div class="gap"></div><div class="kv"><span>Start Learning</span><span class="v sel">20 steps</span><span>Use A Shared File</span><span class="v dim">Browse</span></div><div class="help">Keep this pad plugged in. Use your PS2 pad to move through this screen; you only press the USB pad when asked.</div><div class="foot"><span></span><span><span class="g x">&#10005;</span>Select &nbsp;<span class="g o">&#9675;</span>Back</span></div></div></div><figcaption><b>3. Detect.</b> Name, ID and port show straight away. If a downloaded <code>2563_0575.pad</code> is already on a card or USB stick, it offers that file first.</figcaption></figure>
+<figure class="scr"><div class="tv"><div class="dlg"><h4>Hands Off The Pad</h4><div class="big">Don&#39;t touch anything</div><div class="sub">Reading the sticks at rest</div><div class="meter"><i style="width:60%"></i></div><div class="sub">Found 4 axes, 1 hat, 2 bytes of buttons</div><div class="help">Two seconds. Sticks that drift a little are fine; RIPPS2 sets their dead zone from this.</div><div class="foot"><span></span><span><span class="g x">&#10005;</span>Select &nbsp;<span class="g o">&#9675;</span>Back</span></div></div></div><figcaption><b>4. Rest check.</b> Two seconds of idle reading, so drift is never taken as a press. What it found also tells a tester at a glance whether the pad sends data at all.</figcaption></figure>
+<figure class="scr"><div class="tv"><div class="dlg"><h4>Learn Buttons <span style="float:right;color:#f2f4ff">5 / 20</span></h4><div class="pad"><svg viewBox="0 0 240 150" aria-hidden="true" fill="none" stroke-linejoin="round" stroke-linecap="round"><path d="M36 15 q0 -6 8 -6 h22 q8 0 8 6z" fill="none" stroke="#7d86ad" stroke-width="1.2"/><text x="55" y="14" font-size="5" text-anchor="middle" fill="#aab3dc">L2</text><path d="M166 15 q0 -6 8 -6 h22 q8 0 8 6z" fill="none" stroke="#7d86ad" stroke-width="1.2"/><text x="185" y="14" font-size="5" text-anchor="middle" fill="#aab3dc">R2</text><path d="M34 22 q0 -6 8 -6 h22 q8 0 8 6z" fill="none" stroke="#7d86ad" stroke-width="1.2"/><text x="53" y="21" font-size="5" text-anchor="middle" fill="#aab3dc">L1</text><path d="M168 22 q0 -6 8 -6 h22 q8 0 8 6z" fill="none" stroke="#7d86ad" stroke-width="1.2"/><text x="187" y="21" font-size="5" text-anchor="middle" fill="#aab3dc">R1</text><path d="M120 26 C100 26 80 22 52 22 C30 22 18 30 14 48 C8 74 6 104 14 124 C20 140 38 144 50 134 C58 127 64 118 74 114 C90 108 104 110 120 110 C136 110 150 108 166 114 C176 118 182 127 190 134 C202 144 220 140 226 124 C234 104 232 74 226 48 C222 30 210 22 188 22 C160 22 140 26 120 26 Z" fill="#0d1440" stroke="#c9cfee" stroke-width="1.6"/><path d="M30 110 C26 92 28 70 34 52 M210 110 C214 92 212 70 206 52" stroke="#7d86ad55" stroke-width="1"/><circle cx="62" cy="62" r="24" stroke="#7d86ad" stroke-width="1"/><circle cx="178" cy="62" r="26" stroke="#7d86ad" stroke-width="1"/><path d="M56 41 h12 v9 l-6 6 l-6 -6z" transform="rotate(0 62 62)" fill="#4fcb84" stroke="#4fcb84" stroke-width="1.3"/><path d="M56 41 h12 v9 l-6 6 l-6 -6z" transform="rotate(90 62 62)" fill="none" stroke="#7d86ad" stroke-width="1.3"/><path d="M56 41 h12 v9 l-6 6 l-6 -6z" transform="rotate(180 62 62)" fill="#4fcb84" stroke="#4fcb84" stroke-width="1.3"/><path d="M56 41 h12 v9 l-6 6 l-6 -6z" transform="rotate(270 62 62)" fill="none" stroke="#7d86ad" stroke-width="1.3"/><circle cx="178" cy="47" r="7.5" fill="#4fcb84" stroke="#4fcb84" stroke-width="1.4"/><path d="M178 44.5 l3.6 6 h-7.2z" fill="none" stroke="#4fcb84" stroke-width="1.2"/><circle cx="193" cy="62" r="7.5" fill="none" stroke="#7d86ad" stroke-width="1.4"/><circle cx="193" cy="62" r="3.6" fill="none" stroke="#ff6b6b" stroke-width="1.2"/><circle cx="178" cy="77" r="7.5" fill="#3cc4ff" stroke="#ffffff" stroke-width="1.4"/><path d="M175 74 l6 6 m0 -6 l-6 6" stroke="#8fb1ff" stroke-width="1.2"/><circle cx="163" cy="62" r="7.5" fill="#4fcb84" stroke="#4fcb84" stroke-width="1.4"/><rect x="159.5" y="58.5" width="7" height="7" fill="none" stroke="#ff8ad8" stroke-width="1.2"/><rect x="96" y="59" width="12" height="6" rx="3" fill="none" stroke="#7d86ad" stroke-width="1.2"/><text x="102" y="73" font-size="4.5" text-anchor="middle" fill="#aab3dc">SELECT</text><path d="M132 58.5 l10 3.5 l-10 3.5z" fill="none" stroke="#7d86ad" stroke-width="1.2"/><text x="137" y="73" font-size="4.5" text-anchor="middle" fill="#aab3dc">START</text><circle cx="120" cy="84" r="4" stroke="#7d86ad" stroke-width="1"/><text x="120" y="94" font-size="4" text-anchor="middle" fill="#7d86ad">ANALOG</text><circle cx="120" cy="77" r="1.4" fill="#ff4444" stroke="none"/><circle cx="90" cy="96" r="15" fill="none" stroke="#7d86ad" stroke-width="1"/><circle cx="90" cy="96" r="10.5" fill="none" stroke="#7d86ad" stroke-width="1.4"/><circle cx="90" cy="96" r="7" fill="none" stroke="#7d86ad55" stroke-width="1"/><circle cx="150" cy="96" r="15" fill="none" stroke="#7d86ad" stroke-width="1"/><circle cx="150" cy="96" r="10.5" fill="none" stroke="#7d86ad" stroke-width="1.4"/><circle cx="150" cy="96" r="7" fill="none" stroke="#7d86ad55" stroke-width="1"/></svg></div><div class="big" style="margin-top:.2em">Press CROSS</div><div class="sub">Triangle = byte 0 bit 3 &middot; Square = byte 0 bit 0</div><div class="foot"><span><span class="pill">SELECT</span>Skip</span><span><span class="g o">&#9675;</span>Redo last</span></div></div></div><figcaption><b>5. Learn.</b> The button to press glows on a PS2 pad drawing; learned ones turn green. Order: face buttons, d-pad, shoulders, Start/Select, L3/R3, then each stick direction. Pressing one already used asks "Use it for both?".</figcaption></figure>
+<figure class="scr"><div class="tv"><div class="dlg"><h4>Test It</h4><div class="pad"><svg viewBox="0 0 240 150" aria-hidden="true" fill="none" stroke-linejoin="round" stroke-linecap="round"><path d="M36 15 q0 -6 8 -6 h22 q8 0 8 6z" fill="none" stroke="#7d86ad" stroke-width="1.2"/><text x="55" y="14" font-size="5" text-anchor="middle" fill="#aab3dc">L2</text><path d="M166 15 q0 -6 8 -6 h22 q8 0 8 6z" fill="none" stroke="#7d86ad" stroke-width="1.2"/><text x="185" y="14" font-size="5" text-anchor="middle" fill="#aab3dc">R2</text><path d="M34 22 q0 -6 8 -6 h22 q8 0 8 6z" fill="#3e63e6" stroke="#7d86ad" stroke-width="1.2"/><text x="53" y="21" font-size="5" text-anchor="middle" fill="#aab3dc">L1</text><path d="M168 22 q0 -6 8 -6 h22 q8 0 8 6z" fill="none" stroke="#7d86ad" stroke-width="1.2"/><text x="187" y="21" font-size="5" text-anchor="middle" fill="#aab3dc">R1</text><path d="M120 26 C100 26 80 22 52 22 C30 22 18 30 14 48 C8 74 6 104 14 124 C20 140 38 144 50 134 C58 127 64 118 74 114 C90 108 104 110 120 110 C136 110 150 108 166 114 C176 118 182 127 190 134 C202 144 220 140 226 124 C234 104 232 74 226 48 C222 30 210 22 188 22 C160 22 140 26 120 26 Z" fill="#0d1440" stroke="#c9cfee" stroke-width="1.6"/><path d="M30 110 C26 92 28 70 34 52 M210 110 C214 92 212 70 206 52" stroke="#7d86ad55" stroke-width="1"/><circle cx="62" cy="62" r="24" stroke="#7d86ad" stroke-width="1"/><circle cx="178" cy="62" r="26" stroke="#7d86ad" stroke-width="1"/><path d="M56 41 h12 v9 l-6 6 l-6 -6z" transform="rotate(0 62 62)" fill="none" stroke="#7d86ad" stroke-width="1.3"/><path d="M56 41 h12 v9 l-6 6 l-6 -6z" transform="rotate(90 62 62)" fill="#3e63e6" stroke="#7d86ad" stroke-width="1.3"/><path d="M56 41 h12 v9 l-6 6 l-6 -6z" transform="rotate(180 62 62)" fill="none" stroke="#7d86ad" stroke-width="1.3"/><path d="M56 41 h12 v9 l-6 6 l-6 -6z" transform="rotate(270 62 62)" fill="none" stroke="#7d86ad" stroke-width="1.3"/><circle cx="178" cy="47" r="7.5" fill="none" stroke="#7d86ad" stroke-width="1.4"/><path d="M178 44.5 l3.6 6 h-7.2z" fill="none" stroke="#4fcb84" stroke-width="1.2"/><circle cx="193" cy="62" r="7.5" fill="none" stroke="#7d86ad" stroke-width="1.4"/><circle cx="193" cy="62" r="3.6" fill="none" stroke="#ff6b6b" stroke-width="1.2"/><circle cx="178" cy="77" r="7.5" fill="#3e63e6" stroke="#7d86ad" stroke-width="1.4"/><path d="M175 74 l6 6 m0 -6 l-6 6" stroke="#8fb1ff" stroke-width="1.2"/><circle cx="163" cy="62" r="7.5" fill="none" stroke="#7d86ad" stroke-width="1.4"/><rect x="159.5" y="58.5" width="7" height="7" fill="none" stroke="#ff8ad8" stroke-width="1.2"/><rect x="96" y="59" width="12" height="6" rx="3" fill="none" stroke="#7d86ad" stroke-width="1.2"/><text x="102" y="73" font-size="4.5" text-anchor="middle" fill="#aab3dc">SELECT</text><path d="M132 58.5 l10 3.5 l-10 3.5z" fill="none" stroke="#7d86ad" stroke-width="1.2"/><text x="137" y="73" font-size="4.5" text-anchor="middle" fill="#aab3dc">START</text><circle cx="120" cy="84" r="4" stroke="#7d86ad" stroke-width="1"/><text x="120" y="94" font-size="4" text-anchor="middle" fill="#7d86ad">ANALOG</text><circle cx="120" cy="77" r="1.4" fill="#ff4444" stroke="none"/><circle cx="90" cy="96" r="15" fill="none" stroke="#7d86ad" stroke-width="1"/><circle cx="90" cy="96" r="10.5" fill="none" stroke="#7d86ad" stroke-width="1.4"/><circle cx="90" cy="96" r="7" fill="none" stroke="#7d86ad55" stroke-width="1"/><circle cx="150" cy="96" r="15" fill="none" stroke="#7d86ad" stroke-width="1"/><circle cx="150" cy="96" r="10.5" fill="none" stroke="#7d86ad" stroke-width="1.4"/><circle cx="150" cy="96" r="7" fill="none" stroke="#7d86ad55" stroke-width="1"/></svg></div><div class="sub" style="margin:.3em 0">Press anything. Blue = what the game will get.</div><div class="kv"><span>Rumble</span><span class="v sel">Off</span><span>Lights</span><span class="v">Off</span><span>Start-Up Packet</span><span class="v">Off</span></div><div class="foot"><span><span class="pill">START</span>Save</span><span><span class="g o">&#9675;</span>Redo a button</span></div></div></div><figcaption><b>6. Test.</b> A live drawing of what the game will see. Rumble, lights and the DS3 start-up packet begin Off because copy pads often freeze on them; turning Rumble On buzzes the pad once so you know.</figcaption></figure>
+<figure class="scr"><div class="tv"><div class="dlg"><h4>Saved</h4><div class="big">USB Gamepad is ready</div><div class="sub">mc0:/RIPPS2/PADS/2563_0575.pad</div><div class="sub" style="margin-top:.5em">Works in every game launched from RIPPS2.<br>Share this file so others can skip the setup.</div><div class="help">Copy it to a USB stick from My Pads to share it.</div><div class="foot"><span></span><span><span class="g x">&#10005;</span>Done</span></div></div></div><figcaption><b>7. Done.</b> Saved where the rest of RIPPS2&#39;s settings go (Save Settings To decides the device).</figcaption></figure>
+<figure class="scr"><div class="tv"><div class="dlg"><h4>My Pads</h4><div class="kv"><span>USB Gamepad 2563:0575</span><span class="v sel">Plugged in</span><span>8BitDo SN30 Pro 2DC8:6001</span><span class="v dim">Not plugged in</span><span>DualShock 3 054C:0268</span><span class="v dim">Built in</span></div><div class="gap"></div><div class="kv"><span>OK</span></div><div class="help"><span class="g x">&#10005;</span>Test &nbsp; <span class="g t">&#9651;</span>Redo &nbsp; <span class="g s">&#9633;</span>Copy to USB &nbsp; SELECT Delete</div><div class="foot"><span></span><span><span class="g x">&#10005;</span>Select &nbsp;<span class="g o">&#9675;</span>Back</span></div></div></div><figcaption><b>8. Manage.</b> Every pad RIPPS2 knows, built-in ones included, so a user can see their Sony pad is already covered and needs no file.</figcaption></figure>
+<figure class="scr"><div class="tv"><div class="dlg"><h4>Pad Emulator: We Love Katamari</h4><div class="kv"><span>Enable Pad Emulator</span><span class="v ">On</span><span>Emulator Mode</span><span class="v ">USB</span><span>Settings Source</span><span class="v ">Per Game</span><span>Emulate Port 1</span><span class="v ">On</span><span>Vibration</span><span class="v ">On</span><span>Multitap</span><span class="v ">Off</span><span>Fake DS3 Workaround</span><span class="v ">Off</span><span>Button Map</span><span class="v sel new">Modify</span></div><div class="gap"></div><div class="kv"><span>OK</span></div><div class="help">Swap buttons for this game only. Works with every pad, a real DualShock 2 included.</div><div class="foot"><span></span><span><span class="g x">&#10005;</span>Select &nbsp;<span class="g o">&#9675;</span>Back</span></div></div></div><figcaption><b>Per game.</b> The game&#39;s existing Pad Emulator dialog (Triangle &gt; Options) gets one new row, Button Map, which opens the swap list below.</figcaption></figure>
+<figure class="scr"><div class="tv"><div class="dlg"><h4>Button Map: We Love Katamari</h4><div class="kv"><span>Cross</span><span class="v">Cross</span><span>Circle</span><span class="v sel">Square</span><span>Square</span><span class="v">Circle</span><span>L1</span><span class="v">L1</span><span>R1</span><span class="v">R1</span></div><div class="gap"></div><div class="kv"><span>Reset To Normal</span><span></span><span>OK</span></div><div class="help">Only for this game. Works with every pad, a real DualShock 2 included.</div><div class="foot"><span></span><span><span class="g x">&#10005;</span>Select &nbsp;<span class="g o">&#9675;</span>Back</span></div></div></div><figcaption><b>Button Map.</b> The swap list. Saved as <code>PADS/GAMES/SLUS_210.08.pad</code>.</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>Is it more inclusive than PADEMU ever was?</h2>
+    <p style="margin-bottom:16px">Yes, by a lot. Today PADEMU's USB side accepts exactly five IDs: DualShock 3, DualShock 4 (two models), and the PS3 Guitar Hero and Rock Band guitars. Anything else is ignored, even if it was sold for the PS3. With .pad files, any pad that sends ordinary USB HID input works once someone sets it up, and every setup is shareable.</p>
+    <div class="ans">
+      <div class="opt"><h3>Newly covered</h3><ul class="yes"><li>Third-party PS3 and PS4 pads, wired or with a dongle (sushi's 2563:0575 kind)</li><li>Generic USB pads, arcade sticks, fight pads, SNES-style pads</li><li>8BitDo and similar pads in their DInput/PS mode</li><li>Per-game button swaps for every pad, a real DualShock 2 included</li></ul></div>
+      <div class="opt"><h3>Still not covered</h3><ul class="no"><li>Xbox 360 and Xbox One pads: not HID, so not by .pad file alone. belek666's 2020 modularPademu branch has drivers for both, planned as a later step</li><li>Pads that need a secret start-up handshake, like the Switch Pro Controller in USB mode</li><li>Bluetooth: BT stays DualShock 3/4 only</li><li>USB 2.0 high-speed-only devices: the PS2's USB port is 1.1</li><li>Pressure-sensitive buttons: other pads give full pressure or none</li></ul></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Is it foolproof?</h2>
+    <p style="margin-bottom:16px">No setup that relies on people's own pads can be fully foolproof. But RIPPS2 can make every mistake harmless and easy to undo:</p>
+    <div class="ans">
+      <div class="opt"><h3>Built-in guards</h3><ul class="yes"><li>Sony pads never read a .pad file, so a bad file can't break a DualShock 3 or 4</li><li>The PS2 pad in port 1 always works, in the menu and in games</li><li>The file is checked in the menu; a broken one is skipped with a message, never sent to the game</li><li>Rumble, lights and the start-up packet start Off, so copy pads don't freeze</li><li>The Test screen shows exactly what the game will get before saving</li></ul></div>
+      <div class="opt"><h3>What can still go wrong</h3><ul class="no"><li>A pad that reports buttons differently in different modes (switch on the back) needs one file per mode</li><li>A shared file made from a different revision of the "same" pad may map wrong; Redo fixes it in a minute</li><li>Some games read pads in unusual ways, and PADEMU's existing limits there still apply</li><li>Only testers with real pads can confirm each model; PCSX2 can't test this</li></ul></div>
+    </div>
+  </section>
+
+  <section class="opts">
+    <article class="opt pick">
+      <span class="tag">Recommended</span>
+      <h3>A. The front end packs it, PADEMU reads it</h3>
+      <p>RIPPS2 reads <code>PADS/*.pad</code> before a game starts. It packs them into about 180 bytes and hands that to PADEMU along with the settings it already gets.</p>
+      <ul class="pro"><li>No card or file access needed inside the game</li><li>Works from any device the ELF boots from (MC, USB, HDD, MMCE)</li><li>A bad file gets caught in the menu, not mid-game</li></ul>
+      <ul class="con"><li>Touches three parts: the menu, ee_core and the IRX</li><li>Only launchers that adopt the packing step can use the files</li></ul>
+    </article>
+    <article class="opt">
+      <span class="tag">Option B</span>
+      <h3>B. PADEMU reads the .pad file itself</h3>
+      <p>The IRX opens <code>mc0:/PADS/</code> when it loads, as suggested in the thread, and applies whatever it finds there.</p>
+      <ul class="pro"><li>Every launcher that ships the IRX gets it for free</li><li>Smallest change on the front-end side</li></ul>
+      <ul class="con"><li>The game owns the card and IOP memory at that point. Reading files there risks hangs, and RIPPS2 has a history of those</li><li>Only covers MC0, not USB, HDD or MMCE</li><li>Adds a file reader to an IRX that has very little room</li></ul>
+    </article>
+    <article class="opt">
+      <span class="tag">Option C</span>
+      <h3>C. Read the pad's own description</h3>
+      <p>Every USB HID pad reports its own button and stick layout (its HID report descriptor). PADEMU parses that, the way SDL does on PC. A .pad file only fixes the button order.</p>
+      <ul class="pro"><li>Many pads work with no file at all</li><li>Covers keyboards, mice and pads in one go</li></ul>
+      <ul class="con"><li>Copy pads often describe themselves wrong (the face-button mix-up in the thread)</li><li>A descriptor parser is the biggest and riskiest job in IOP memory</li><li>Still needs the setup screen for the button order</li></ul>
+    </article>
+  </section>
+
+  <section>
+    <h2>Weighted score</h2>
+    <p class="note" style="margin-bottom:12px">Each criterion is scored 1 to 5 (5 = best), then multiplied by its weight. The weights reflect RIPPS2's priorities: no in-game hangs, and simple for the user.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Criterion</th><th>Weight</th><th>A</th><th>B</th><th>C</th></tr></thead>
+      <tbody>
+        <tr><td>Stable in game (no hangs)</td><td class="n">30%</td><td class="n">5</td><td class="n">2</td><td class="n">3</td></tr>
+        <tr><td>Easy for the user</td><td class="n">25%</td><td class="n">4</td><td class="n">4</td><td class="n">5</td></tr>
+        <tr><td>Works with copy pads</td><td class="n">15%</td><td class="n">5</td><td class="n">5</td><td class="n">3</td></tr>
+        <tr><td>Works from every boot device</td><td class="n">10%</td><td class="n">5</td><td class="n">2</td><td class="n">5</td></tr>
+        <tr><td>Other launchers can use it</td><td class="n">10%</td><td class="n">3</td><td class="n">5</td><td class="n">4</td></tr>
+        <tr><td>Build effort / risk</td><td class="n">10%</td><td class="n">4</td><td class="n">3</td><td class="n">1</td></tr>
+        <tr class="total"><td>Total (out of 5)</td><td></td><td class="n win">4.50</td><td class="n">3.35</td><td class="n">3.65</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2>Recommended path</h2>
+    <p>Build A first. Its <code>.pad</code> format is plain text, so another launcher can read the same files later, and option C can be added afterwards as an "auto-detect" step that fills in a first draft for the setup screen. Testing a real copy pad needs hardware testers, because PCSX2 can't pass a random USB pad through to PADEMU.</p>
+  </section>
+
+  <section class="opt" style="gap:12px">
+    <h2 style="margin:0">Build handoff</h2>
+    <p>The full build brief for RIPPS2, RiptOPL and OPL: how the .pad files upgrade PADEMU (the Sony pads become built-in definitions, so there is one code path instead of five special cases), the file format, which file each part goes in, the safety rules and the test plan.</p>
+    <p style="display:flex;gap:12px;flex-wrap:wrap"><a href="handoff.md" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600">Open handoff.md</a> <button id="copyHandoff" type="button" style="font:inherit;padding:4px 12px;border:1px solid var(--accent);background:none;color:var(--accent);border-radius:6px;cursor:pointer">Copy as text</button> <span id="copyMsg" class="note"></span></p>
+    <p class="note">To save it, open it and use your browser's Save, or copy the text into a file named handoff.md.</p>
+  </section>
+  <script>
+  var handoffText = '';
+  fetch('handoff.md').then(function (r) { return r.text(); }).then(function (t) { handoffText = t; }, function () {});
+  document.getElementById('copyHandoff').addEventListener('click', function () {
+    var msg = document.getElementById('copyMsg');
+    (handoffText ? navigator.clipboard.writeText(handoffText) : Promise.reject()).then(function () { msg.textContent = 'Copied.'; }, function () { msg.textContent = 'Copy blocked here. Use Open handoff.md instead.'; });
+  });
+  </script>
+
+  <section>
+    <h2>Example: 2563_0575.pad</h2>
+<pre><span class="c"># USB Gamepad (made by RIPPS2)</span>
+name=USB Gamepad
+vid=2563
+pid=0575
+offset=0       <span class="c"># buttons start at byte 0 (a real DS3 starts at 2)</span>
+cross=b0.1     <span class="c"># byte 0, bit 1</span>
+circle=b0.2
+square=b0.0
+triangle=b0.3
+l1=b0.4
+r1=b0.5
+l2=b0.6
+r2=b0.7
+select=b1.0
+start=b1.1
+dpad=hat2      <span class="c"># byte 2 is a hat switch</span>
+lx=a3
+ly=a4
+rx=a5
+ry=a6
+rumble=off     <span class="c"># copy pads often hang on the DS3 rumble packet</span>
+led=off</pre>
+    <p class="note" style="margin-top:8px">Per-game button swaps go in <code>PADS/GAMES/SLUS_123.45.pad</code>, written like <code>cross=circle</code>.</p>
+  </section>
+</div>

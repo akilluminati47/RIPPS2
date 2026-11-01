@@ -191,8 +191,8 @@ Enabled", Aqua Teen Hunger Force boots. Hardware only: a real USB pad through Se
 ## Next pass: POPSTARTER's in-game reset with RIPPS2's buttons and words (the user, 11/01)
 X selects, O goes back, the words read like the in-game menu's EXIT GAME flow (confirmed twice). Plan and limits in
 docs/plans/popstarter-igr.md: the three TM2 pictures can carry the words but not the buttons or a second confirm.
-1. Measure POPSTARTER's own prompt in the lab with the user's POPS files (from their microSD, never shipped): which
-   buttons move, confirm and cancel, which is highlighted first.
+1. Measure POPSTARTER's own prompt on the console (the user): which buttons move, confirm and cancel, which is lit
+   first. Not the lab: POPSTARTER is packed and the user's POPS runs from the SD2PSX through MMCE drivers PCSX2 lacks.
 2. Pictures only if POPSTARTER already reads X / O: the background in EXIT GAME's words and RIPPS2's hint line, the
    buttons as EXIT GAME / RESUME, the highlighted EXIT GAME reading "(X) TO LEAVE".
 3. If it reads other buttons: truthful hints now, Ember for PS1 games that want RIPPS2's menu, and an in-memory

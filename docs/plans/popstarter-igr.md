@@ -17,9 +17,12 @@ IS LOST", the hint line "(X) SELECT (O) RESUME"; the first X arms it ("PRESS (X)
 
 ## Plan
 
-1. **Measure POPSTARTER's prompt in the lab** (no build): a POPS game in the lab PCSX2 with the user's own POPS files
-   on the lab image (never shipped), open the IGR prompt and record what Left / Right / Up / Down / X / O / Triangle /
-   START do, which button is highlighted first, and whether the prompt has a timeout. One take, grabs of each state.
+1. **Measure POPSTARTER's prompt on the console** (no build). The lab cannot: POPSTARTER.ELF is packed (no readable
+   text, checked 11/01 on the user's SD2PSX copy, 167,700 bytes), and the user's POPS reads the SD2PSX through renamed
+   MMCE drivers (usbd.irx.mmce, usbhdfsd.irx.mmce), which PCSX2 does not emulate. The user opens a POPS game, presses
+   the IGR combo and notes: which of YES / NO is lit first, what Left / Right / Up / Down do, what X does on NO and on
+   YES, what O / Triangle / START do, and whether the prompt closes by itself. The SD2PSX still has POPSTARTER's
+   original 2018 pictures, so this measures POPSTARTER itself.
 2. **If POPSTARTER already reads X = confirm and O = back** (or Left/Right + X with O closing): pictures only, a new
    `make_igr.py` set:
    - the background in RIPPS2's exit page words: "EXIT GAME", "LEAVE THE GAME FOR THE PS2 BROWSER" (or what
