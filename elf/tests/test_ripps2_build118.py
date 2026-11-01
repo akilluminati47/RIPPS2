@@ -65,12 +65,14 @@ need(tar, (('static void tarSortIndex(TarKind kind)', 'one sorted order per inde
            ('TarEntryBase *tarFindLoaded(TarKind kind, const char *name)', 'its list read without a sweep')), 'tar.c')
 tc = rd('src/texcache.c')
 need(tc, (('result == ART_TAR_MISS && ripps2ArtPackAnswers(req->value)', 'the pack answers for its games'),
+          ('texArtAliasNames(req->value, req->cache->suffix, aliasKeys, aliasKinds, 8)', "a PS1 game's other names looked up in the pack"),
           ('if (result < 0 && !packAnswered)', 'and the folder is not asked then'),
           ('texLoadArtFromMemory(texture, buffer, entry->rawSize', 'PNG or JPG out of the pack')), 'texcache.c')
 need(rd('src/textures.c'), (('int texLoadArtFromMemory(GSTEXTURE *texture, const void *buf, u32 size, int background)', 'a JPG in a pack'),), 'textures.c')
 ap = rd('src/ripps2artpack.c')
 need(ap, (('#define AP_LIST      "RIPPS2ART.LST"', "the pack's own list of games"),
-          ('libListRowView(list, id) == LIB_VIEW_PS1', 'a PS1 game is never answered for (its art has other keys)'),
+          # build 126: a PS1 game is in the list too, its other keys looked up in the pack (texcache.c texArtAliasNames)
+          ('if (strlen(startup) >= AP_KEY || apKeyCount >= AP_MAX_KEYS)', 'every game with a key in the list, PS1 ones too'),
           ('setvbuf(out, NULL, _IOFBF, 256 * 1024);', 'whole 256 KB writes'),
           ('qsort(order, n, sizeof(int), apSpeedCmp);', 'the fastest drive first'),
           ('gEnableArtTar = 0;\n    tarInvalidate(TAR_KIND_ART);\n    ioBlockOps(1);', 'nothing reads the pack while it is written'),

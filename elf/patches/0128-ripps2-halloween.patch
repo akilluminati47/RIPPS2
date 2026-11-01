@@ -1,22 +1,37 @@
+diff --git a/include/cuesupport.h b/include/cuesupport.h
+index 2cf6604..e5adbdd 100644
+--- a/include/cuesupport.h
++++ b/include/cuesupport.h
+@@ -207,6 +207,7 @@ int cueFillGameList(const char *devPrefix, base_game_info_t **outGames);
+ // device class. See the note at the top of this header for why the root, and not a configurable
+ // games prefix, is the right home for them.
+ int ps1FillGameList(const char *devPrefix, base_game_info_t **outGames);
++extern int gRipps2Ps1Prefer; // RIPPS2 build 126: Interface > PS1 Duplicates (0 both, 1 Ember, 2 POPSTARTER)
+ /* Serialized I/O worker: query immediately after ps1FillGameList. */
+ int ps1GameListNeedsRetry(void);
+ 
 diff --git a/include/dialogs.h b/include/dialogs.h
-index 776614f..e04a1b0 100644
+index 776614f..ff37bfc 100644
 --- a/include/dialogs.h
 +++ b/include/dialogs.h
-@@ -404,6 +404,7 @@ enum UI_ITEMS {
+@@ -404,6 +404,8 @@ enum UI_ITEMS {
      UICFG_RIPPS2_MMCE_PADFIRST, // build 115: MMCE > Pad First (experimental)
      RIPPS2_ARTPACK_BUTTON,      // build 118: Cache > ART Pack (ripps2artpack.c)
      RIPPS2_ARTPACK_ROW,         // and the line saying which pack is in use
 +    UICFG_RIPPS2_LIST_CFG_TEXT, // build 126: Interface > List Title and Description (Theme, On, Off)
++    UICFG_RIPPS2_PS1_PREFER,    // build 126: Interface > PS1 Duplicates (Both, Ember, POPSTARTER)
  
  #ifdef PADEMU
      PADEMU_GLOBAL_BUTTON,
 diff --git a/include/gui.h b/include/gui.h
-index 4696282..2db8ebb 100644
+index 4696282..0173142 100644
 --- a/include/gui.h
 +++ b/include/gui.h
-@@ -129,6 +129,7 @@ int guiIsActive(void);
+@@ -128,7 +128,9 @@ int guiMsgBox(const char *text, int addAccept, struct UIItem *ui);
+ int guiIsActive(void);
  void guiCycleTheme(void); // build 79: the next theme (SELECT held 4.2 s)
  enum { RIPPS2_HOLD_LIST = 0, RIPPS2_HOLD_CYCLE, RIPPS2_HOLD_OFF };
++void guiFastBootRefreshSounds(void); // build 126: a rip's sounds into Fast Boot's copy too
  extern int gRipps2SelectHold; // build 114: Settings > Interface > Hold SELECT (SELECT held 4.2 s on a list)
 +extern int gRipps2ListCfgText; // build 126: Settings > Interface > List Title and Description: 0 the theme's, 1 on, 2 off
  void guiRenderPage(void); // build 114: the current page drawn once (under a panel)
@@ -79,7 +94,7 @@ index 1d0c23e..df331f1 100644
      int hintsFlank, hintsFlankGap;      // build 115: hints_flank=1: RUN and SOURCE either side of the source name; the gap
      int badgeSet;                       // build 115: badge_set=ripps2 (1): RIPPS2's built-in badges, none of its own
 diff --git a/lng_tmpl/_base.yml b/lng_tmpl/_base.yml
-index 0368288..cede452 100644
+index 0368288..c73d1da 100644
 --- a/lng_tmpl/_base.yml
 +++ b/lng_tmpl/_base.yml
 @@ -1852,7 +1852,7 @@ gui_strings:
@@ -91,7 +106,7 @@ index 0368288..cede452 100644
  - label: HINT_BGM
    string: "Plays the theme's music, or your Default Theme Music file."
  - label: HINT_SFX_VOLUME
-@@ -2242,5 +2242,9 @@ gui_strings:
+@@ -2242,5 +2242,13 @@ gui_strings:
    string: ART Pack
  - label: RIPPS2_ART_PACK_BUILD
    string: Build or Remove
@@ -99,6 +114,10 @@ index 0368288..cede452 100644
 +  string: List Title and Description
 +- label: HINT_RIPPS2_LIST_CFG_TEXT
 +  string: "The game's Title and Description from its CFG beside the game list. Theme: as the theme has them (RIPPS2's own theme leaves them off). The info page keeps them either way."
++- label: RIPPS2_PS1_PREFER
++  string: PS1 Duplicates
++- label: HINT_RIPPS2_PS1_PREFER
++  string: "A PS1 game that is both a POPSTARTER VCD and an Ember image. Both: two rows. Ember: the Ember one only. POPSTARTER: the VCD only. The same title, a leading disc ID aside, is the same game."
  - label: HINT_RIPPS2_ART_PACK
    string: "Packs the ART folder of every started drive into one art.tar on the drive you pick (the fastest is offered first). Covers then load from one file with one index, never a lookup per game, so the menus and the music stay smooth. The ART folders stay as they are."
 diff --git a/misc/theme_ripgrid.cfg b/misc/theme_ripgrid.cfg
@@ -128,6 +147,62 @@ index 1952991..6753e0d 100644
  	tilt=1
  	tilt_x=320
  	tilt_y=260
+diff --git a/src/cuesupport.c b/src/cuesupport.c
+index 0ac51e9..b91af71 100644
+--- a/src/cuesupport.c
++++ b/src/cuesupport.c
+@@ -1026,6 +1026,42 @@ int cueFillGameList(const char *devPrefix, base_game_info_t **outGames)
+ 
+ static int ps1ScanIncomplete;
+ 
++/* RIPPS2 build 126 (the user, 10/31: "make a filter so you can hide pops elfs for the iso files to be ember ... have the
++   ember named ones win over pops named"): Settings > Interface > PS1 Duplicates. A game both as a POPSTARTER VCD and as an
++   Ember image shows once: 0 both rows (as before), 1 the Ember one, 2 the POPSTARTER one. A twin is the same title, letter
++   case and a leading disc ID ("SLUS_005.94.") aside */
++int gRipps2Ps1Prefer = 0;
++
++static const char *ps1TwinKey(const char *name)
++{
++    size_t n = strlen(name);
++    if (n > 12 && name[4] == '_' && name[8] == '.' && (name[11] == '.' || name[11] == '_' || name[11] == ' '))
++        return name + 12;
++    return name;
++}
++
++static int ps1DropTwins(base_game_info_t *rows, int vcdCount, int cueCount, int prefer)
++{
++    int i, j, out = 0, total = vcdCount + cueCount;
++    unsigned char *drop = calloc(total, 1);
++    if (drop == NULL)
++        return total;
++    for (i = 0; i < vcdCount; i++)
++        for (j = vcdCount; j < total; j++)
++            if (!strcasecmp(ps1TwinKey(rows[i].name), ps1TwinKey(rows[j].name))) {
++                drop[prefer == 1 ? i : j] = 1;
++                break;
++            }
++    for (i = 0; i < total; i++)
++        if (!drop[i]) {
++            if (out != i)
++                rows[out] = rows[i];
++            out++;
++        }
++    free(drop);
++    return out;
++}
++
+ int ps1GameListNeedsRetry(void)
+ {
+     return ps1ScanIncomplete;
+@@ -1107,6 +1143,8 @@ int ps1FillGameList(const char *devPrefix, base_game_info_t **outGames)
+ 
+     free(vcdGames);
+     free(cueGames);
++    if (gRipps2Ps1Prefer == 1 || gRipps2Ps1Prefer == 2) // RIPPS2 build 126: PS1 Duplicates
++        total = ps1DropTwins(merged, vcdCount, cueCount, gRipps2Ps1Prefer);
+ 
+     // Gated on the same Automatic Sorting switch every other list honours. With it off the halves
+     // stay concatenated in scan order, which is the "raw directory order" the setting promises.
 diff --git a/src/dia.c b/src/dia.c
 index d0fbada..e20d63f 100644
 --- a/src/dia.c
@@ -149,10 +224,10 @@ index d0fbada..e20d63f 100644
  #define DIA_TIP_FONT   (gTheme->diaTipFont) // build 96: Roboto Condensed on every theme
  
 diff --git a/src/dialogs.c b/src/dialogs.c
-index 177660e..a16f5ab 100644
+index 177660e..c82d13d 100644
 --- a/src/dialogs.c
 +++ b/src/dialogs.c
-@@ -874,6 +874,11 @@ struct UIItem diaUIConfig[] = {
+@@ -874,6 +874,15 @@ struct UIItem diaUIConfig[] = {
      {UI_SPACER},
      {UI_BOOL, UICFG_CFG_TITLES, 1, 1, _STR_HINT_CFG_TITLES, 0, 0, {.intvalue = {0, 0}}},
      {UI_BREAK},
@@ -161,10 +236,14 @@ index 177660e..a16f5ab 100644
 +    {UI_SPACER},
 +    {UI_ENUM, UICFG_RIPPS2_LIST_CFG_TEXT, 1, 1, _STR_HINT_RIPPS2_LIST_CFG_TEXT, 0, 0, {.intvalue = {0, 0}}},
 +    {UI_BREAK},
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_PS1_PREFER}}},
++    {UI_SPACER},
++    {UI_ENUM, UICFG_RIPPS2_PS1_PREFER, 1, 1, _STR_HINT_RIPPS2_PS1_PREFER, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BREAK},
  
      {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_THEME}}},
      {UI_SPACER},
-@@ -1956,7 +1961,8 @@ struct UIItem diaAudioConfig[] = {
+@@ -1956,7 +1965,8 @@ struct UIItem diaAudioConfig[] = {
  
      {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_BOOT_SND}}},
      {UI_SPACER},
@@ -175,36 +254,61 @@ index 177660e..a16f5ab 100644
  
      {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_BGM}}},
 diff --git a/src/gui.c b/src/gui.c
-index ee55388..4d4b743 100644
+index ee55388..846f43a 100644
 --- a/src/gui.c
 +++ b/src/gui.c
-@@ -911,6 +911,8 @@ static const char *guiStarSides[] = {N_("Theme"), N_("Left"), N_("Right"), N_("H
+@@ -911,6 +911,9 @@ static const char *guiStarSides[] = {N_("Theme"), N_("Left"), N_("Right"), N_("H
  // build 114 (the user, 10/23): Interface > Hold SELECT: the theme list (the default), the next theme, or nothing
  int gRipps2SelectHold = RIPPS2_HOLD_LIST;
  static const char *guiHoldModes[] = {N_("List"), N_("Cycle"), N_("Off"), NULL};
 +int gRipps2ListCfgText = 0; // build 126: the theme says (RIPPS2's own leaves them off)
 +static const char *guiListCfgModes[] = {N_("Theme"), N_("On"), N_("Off"), NULL};
++static const char *guiPs1PreferModes[] = {N_("Both"), "Ember", "POPSTARTER", NULL}; // build 126: PS1 Duplicates
  
  // RIPPS2 build 114 (the settings audit): Game Sources > BDM Devices, the drives BDM reads on a page of their own (they
  // made Game Sources scroll). Returns 1 when one was turned on or off: Game Sources applies it with the rest of its page.
-@@ -1525,6 +1527,8 @@ reshow_ui:
+@@ -1093,6 +1096,15 @@ static int fastBootSounds(void)
+     return copied > 0;
+ }
+ 
++// RIPPS2 build 126 (the user, 10/31: "If I delete one sound and want to rip again it doesn't add the missing sound"): a rip
++// into another drive's AUDIO left Fast Boot's copy beside RIPPS2 as it was, and the next boot reads that copy. With Fast
++// Boot on, the rip's sounds are copied there too
++void guiFastBootRefreshSounds(void)
++{
++    if (gRipps2FastBoot)
++        fastBootSounds();
++}
++
+ // RIPPS2 build 115: Fast Boot just turned on. RIPPS2's own drive starts at boot (Auto); every other drive on Auto waits on
+ // Manual, its list shown from the cache, unless Automatic Refresh is on (which starts them at boot as before); the lists
+ // are kept and trusted (Fast Cache, Trust Cache); the sounds go beside RIPPS2
+@@ -1525,6 +1537,10 @@ reshow_ui:
      diaSetInt(diaUIConfig, UICFG_THEME, guiThemeShown(thmGetGuiValue()));
      diaSetEnum(diaUIConfig, UICFG_RIPPS2_SELECT_HOLD, guiHoldModes); // build 114
      diaSetInt(diaUIConfig, UICFG_RIPPS2_SELECT_HOLD, gRipps2SelectHold);
 +    diaSetEnum(diaUIConfig, UICFG_RIPPS2_LIST_CFG_TEXT, guiListCfgModes); // build 126
 +    diaSetInt(diaUIConfig, UICFG_RIPPS2_LIST_CFG_TEXT, gRipps2ListCfgText);
++    diaSetEnum(diaUIConfig, UICFG_RIPPS2_PS1_PREFER, guiPs1PreferModes); // build 126
++    diaSetInt(diaUIConfig, UICFG_RIPPS2_PS1_PREFER, gRipps2Ps1Prefer);
      diaSetInt(diaUIConfig, UICFG_LANG, lngGetGuiValue());
      diaSetInt(diaUIConfig, UICFG_AUTOSORT, gAutosort);
      diaSetInt(diaUIConfig, UICFG_AUTOREFRESH, gAutoRefresh);
-@@ -1579,6 +1583,7 @@ reshow_ui:
+@@ -1579,6 +1595,13 @@ reshow_ui:
          diaGetInt(diaUIConfig, UICFG_THEME, &themeID);
          themeID = guiThemeId(themeID);
          diaGetInt(diaUIConfig, UICFG_RIPPS2_SELECT_HOLD, &gRipps2SelectHold); // build 114
 +        diaGetInt(diaUIConfig, UICFG_RIPPS2_LIST_CFG_TEXT, &gRipps2ListCfgText); // build 126
++        {
++            int wasPrefer = gRipps2Ps1Prefer;
++            diaGetInt(diaUIConfig, UICFG_RIPPS2_PS1_PREFER, &gRipps2Ps1Prefer); // build 126: a change rebuilds the lists
++            if (wasPrefer != gRipps2Ps1Prefer)
++                guiRefreshCfgTitles();
++        }
          diaGetInt(diaUIConfig, UICFG_AUTOSORT, &gAutosort);
          diaGetInt(diaUIConfig, UICFG_AUTOREFRESH, &gAutoRefresh);
          diaGetInt(diaUIConfig, UICFG_NOTIFICATIONS, &gEnableNotifications);
-@@ -3585,6 +3590,8 @@ static int guiAudioUpdater(int modified)
+@@ -3585,6 +3608,8 @@ static int guiAudioUpdater(int modified)
  
  int guiShowAudioConfig(void)
  {
@@ -213,7 +317,7 @@ index ee55388..4d4b743 100644
      diaSetInt(diaAudioConfig, CFG_SFX, gEnableSFX);
      diaSetInt(diaAudioConfig, CFG_BOOT_SND, gEnableBootSND);
      diaSetInt(diaAudioConfig, CFG_BGM, gEnableBGM);
-@@ -3605,6 +3612,12 @@ int guiShowAudioConfig(void)
+@@ -3605,6 +3630,12 @@ int guiShowAudioConfig(void)
              ripps2RipBiosMusicDialog(); // RIPPS2 build 100: its menu music, on its own
          guiMusicBegin();                // a new AUDIO folder can bring the music list with it
      }
@@ -226,24 +330,32 @@ index ee55388..4d4b743 100644
      guiSettingsEndDialog();
      return guiSettingsPageResult(result);
  }
-@@ -4167,6 +4180,8 @@ static int guiSettingsShowInterface(void)
+@@ -4167,6 +4198,10 @@ static int guiSettingsShowInterface(void)
      diaSetInt(ui, UICFG_THEME, guiThemeShown(thmGetGuiValue()));
      diaSetEnum(ui, UICFG_RIPPS2_SELECT_HOLD, guiHoldModes); // build 114
      diaSetInt(ui, UICFG_RIPPS2_SELECT_HOLD, gRipps2SelectHold);
 +    diaSetEnum(ui, UICFG_RIPPS2_LIST_CFG_TEXT, guiListCfgModes); // build 126
 +    diaSetInt(ui, UICFG_RIPPS2_LIST_CFG_TEXT, gRipps2ListCfgText);
++    diaSetEnum(ui, UICFG_RIPPS2_PS1_PREFER, guiPs1PreferModes); // build 126
++    diaSetInt(ui, UICFG_RIPPS2_PS1_PREFER, gRipps2Ps1Prefer);
      diaSetInt(ui, UICFG_LANG, lngGetGuiValue());
      diaSetInt(ui, UICFG_AUTOSORT, gAutosort);
      diaSetInt(ui, UICFG_AUTOREFRESH, gAutoRefresh);
-@@ -4211,6 +4226,7 @@ reshow_interface:
+@@ -4211,6 +4246,13 @@ reshow_interface:
          diaGetInt(ui, UICFG_THEME, &themeID);
          themeID = guiThemeId(themeID);
          diaGetInt(ui, UICFG_RIPPS2_SELECT_HOLD, &gRipps2SelectHold); // build 114
 +        diaGetInt(ui, UICFG_RIPPS2_LIST_CFG_TEXT, &gRipps2ListCfgText); // build 126
++        {
++            int wasPrefer = gRipps2Ps1Prefer;
++            diaGetInt(ui, UICFG_RIPPS2_PS1_PREFER, &gRipps2Ps1Prefer); // build 126: a change rebuilds the lists
++            if (wasPrefer != gRipps2Ps1Prefer)
++                guiRefreshCfgTitles();
++        }
          diaGetInt(ui, UICFG_AUTOSORT, &gAutosort);
          diaGetInt(ui, UICFG_AUTOREFRESH, &gAutoRefresh);
          diaGetInt(ui, UICFG_NOTIFICATIONS, &gEnableNotifications);
-@@ -5856,9 +5872,12 @@ void guiMainLoop(void)
+@@ -5856,9 +5898,12 @@ void guiMainLoop(void)
          guiStartFrame();
  
          // RIPPS2 build 125: the saved theme's drive is still coming up: the boot sky alone (the scene fades up over it
@@ -419,7 +531,7 @@ index 02cef2c..5a15835 100644
              GSTEXTURE *t = thmGetTexture(gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON);
              int x = 320 - (24 + ripps2HintWidth(_t("CANCEL"))) / 2;
 diff --git a/src/opl.c b/src/opl.c
-index bf40e38..352382e 100644
+index bf40e38..8497719 100644
 --- a/src/opl.c
 +++ b/src/opl.c
 @@ -4398,6 +4398,14 @@ static void _loadConfig()
@@ -437,17 +549,20 @@ index bf40e38..352382e 100644
              configGetInt(configOPL, CONFIG_OPL_BGM, &gEnableBGM);
              configGetInt(configOPL, CONFIG_OPL_SFX_VOLUME, &gSFXVolume);
              configGetInt(configOPL, CONFIG_OPL_BOOT_SND_VOLUME, &gBootSndVolume);
-@@ -4423,6 +4431,9 @@ static void _loadConfig()
+@@ -4423,6 +4431,12 @@ static void _loadConfig()
              configGetInt(configOPL, "ripps2_select_hold", &gRipps2SelectHold); // build 114: Hold SELECT
              if (gRipps2SelectHold < RIPPS2_HOLD_LIST || gRipps2SelectHold > RIPPS2_HOLD_OFF)
                  gRipps2SelectHold = RIPPS2_HOLD_LIST;
 +            configGetInt(configOPL, "ripps2_list_cfg_text", &gRipps2ListCfgText); // build 126
++            configGetInt(configOPL, "ripps2_ps1_prefer", &gRipps2Ps1Prefer); // build 126: PS1 Duplicates
++            if (gRipps2Ps1Prefer < 0 || gRipps2Ps1Prefer > 2)
++                gRipps2Ps1Prefer = 0;
 +            if (gRipps2ListCfgText < 0 || gRipps2ListCfgText > 2)
 +                gRipps2ListCfgText = 0;
              if (gRipps2StarSide < 0 || gRipps2StarSide > 3)
                  gRipps2StarSide = 0;
          }
-@@ -4817,7 +4828,7 @@ static void _saveConfig()
+@@ -4817,7 +4831,7 @@ static void _saveConfig()
          configSetInt(configOPL, "ripps2_grid_wide", gRipps2GridWide); // build 98
          configSetInt(configOPL, "ripps2_bg_blur", gRipps2BgBlur);     // build 98
          configSetInt(configOPL, "ripps2_transition", gRipps2Transition); // build 92
@@ -456,11 +571,12 @@ index bf40e38..352382e 100644
          configSetStr(configOPL, CONFIG_OPL_THEME, thmGetValue());
          configSetStr(configOPL, CONFIG_OPL_LANGUAGE, lngGetValue());
          configSetColor(configOPL, CONFIG_OPL_BGCOLOR, gDefaultBgColor);
-@@ -4957,6 +4968,7 @@ static void _saveConfig()
+@@ -4957,6 +4971,8 @@ static void _saveConfig()
          configSetInt(configOPL, "ripps2_star_side", gRipps2StarSide); // build 106
          configSetInt(configOPL, "ripps2_star_side_last", gRipps2StarSideLast); // build 115
          configSetInt(configOPL, "ripps2_select_hold", gRipps2SelectHold); // build 114: Hold SELECT
 +        configSetInt(configOPL, "ripps2_list_cfg_text", gRipps2ListCfgText); // build 126: List Title and Description
++        configSetInt(configOPL, "ripps2_ps1_prefer", gRipps2Ps1Prefer); // build 126: PS1 Duplicates
          configSetInt(configOPL, CONFIG_OPL_XSENSITIVITY, gXSensitivity);
          configSetInt(configOPL, CONFIG_OPL_YSENSITIVITY, gYSensitivity);
  
@@ -481,7 +597,7 @@ index d0a5595..5b0d6a3 100644
              snprintf(apKeys[apKeyCount].key, AP_KEY, "%s", startup);
              apKeys[apKeyCount].src = (unsigned char)s;
 diff --git a/src/ripps2biossnd.c b/src/ripps2biossnd.c
-index cb45dec..d39817e 100644
+index cb45dec..bbc8eca 100644
 --- a/src/ripps2biossnd.c
 +++ b/src/ripps2biossnd.c
 @@ -496,6 +496,10 @@ static rbs_u8 *rbsRender(const rbs_u8 *hd, int hdLen, const rbs_u8 *bd, int bdLe
@@ -530,6 +646,14 @@ index cb45dec..d39817e 100644
  // Audio settings > BIOS Sounds > RIP: ask, rip into the AUDIO folder, load them, say what happened
  void ripps2RipBiosSoundsDialog(void)
  {
+@@ -1450,6 +1482,7 @@ void ripps2RipBiosSoundsDialog(void)
+             return;
+     }
+     ripps2AudioBaseSet(base); // build 115: the folder just made is the one the sounds load from
++    guiFastBootRefreshSounds(); // build 126: and Fast Boot's copy beside RIPPS2, which the next boot reads
+     sfxReload(SFX_CONFIRM); // the new sounds, loaded on the IO worker, and a confirm in them
+     snprintf(msg, sizeof(msg), _t("%d sounds from this console's BIOS are in %s and playing now."), n, dir);
+     guiMsgBox(msg, 0, NULL);
 diff --git a/src/ripps2edit.c b/src/ripps2edit.c
 index 442b5b2..7a7df4b 100644
 --- a/src/ripps2edit.c
@@ -1190,3 +1314,101 @@ index fff6e8a..3025995 100644
          configGetColor(themeConfig, "sidebar_color", newT->sbColor);
          configGetColor(themeConfig, "sidebar_accent_color", newT->sbAccent);
          if (configGetInt(themeConfig, "sidebar_tint", &intValue) && intValue >= 0 && intValue <= 128)
+diff --git a/src/vcdsupport.c b/src/vcdsupport.c
+index e4f5a95..e13d007 100644
+--- a/src/vcdsupport.c
++++ b/src/vcdsupport.c
+@@ -11,6 +11,7 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
++#include <ctype.h> // RIPPS2 build 126: toupper, conf_apps.cfg names
+ #include <fcntl.h>
+ #include <unistd.h>
+ #include <errno.h>    // errno/ENOENT in the vcdScanOpenDir absent-vs-contended split (#154)
+@@ -186,13 +187,84 @@ const char *vcdDisplayName(int mode, const char *text)
+     return n ? text + n : text;
+ }
+ 
++/* RIPPS2 build 126 (ahavasi, 10/30: "I used POPStarterGameInstallerforOPL for PSX stuff, my ps1 games are listed as random
++   numbers. is it possible to use conf_apps.cfg to get game names?"): that installer names each game's files with a number
++   and writes the game's name into conf_apps.cfg, "<name>=mass:/POPS/XX.<number>.ELF". A PS1 row whose file is the one a
++   conf_apps.cfg line launches shows that line's name. Display only: the row's identity (art, CFG, launch) stays the file
++   name. The lines are read into a table, by the launcher's name, once each time conf_apps.cfg changes */
++#define VCD_APPS_MAX 512
++static struct
++{
++    char base[64];  // the launcher's file name without XX. and .ELF, upper case
++    char title[64]; // conf_apps.cfg's name for it
++} vcdApps[VCD_APPS_MAX];
++static int vcdAppsCount = -1;
++static u32 vcdAppsUid = 0;
++
++static int vcdAppsCmp(const void *a, const void *b)
++{
++    return strcmp((const char *)a, (const char *)b); // base is the first member
++}
++
++static void vcdAppsLoad(config_set_t *apps)
++{
++    struct config_value_t *v;
++    vcdAppsCount = 0;
++    for (v = apps != NULL ? apps->head : NULL; v != NULL && vcdAppsCount < VCD_APPS_MAX; v = v->next) {
++        const char *base = strrchr(v->val, '/'), *colon = strrchr(v->val, ':');
++        size_t len;
++        if (v->key[0] == '$' || v->key[0] == '#' || v->key[0] == '\0')
++            continue;
++        if (base == NULL || (colon != NULL && colon > base))
++            base = colon;
++        base = base != NULL ? base + 1 : v->val;
++        if (!strncasecmp(base, "XX.", 3))
++            base += 3;
++        len = strlen(base);
++        if (len < 5 || strcasecmp(base + len - 4, ".ELF") || len - 4 >= sizeof(vcdApps[0].base))
++            continue;
++        for (size_t i = 0; i < len - 4; i++)
++            vcdApps[vcdAppsCount].base[i] = (char)toupper((unsigned char)base[i]);
++        vcdApps[vcdAppsCount].base[len - 4] = '\0';
++        snprintf(vcdApps[vcdAppsCount].title, sizeof(vcdApps[0].title), "%s", v->key);
++        vcdAppsCount++;
++    }
++    qsort(vcdApps, vcdAppsCount, sizeof(vcdApps[0]), vcdAppsCmp);
++}
++
++static const char *vcdAppsTitle(const char *name)
++{
++    config_set_t *apps = configGetByType(CONFIG_APPS);
++    char key[64];
++    size_t i;
++
++    if (apps == NULL || name == NULL)
++        return NULL;
++    if (vcdAppsCount < 0 || apps->uid != vcdAppsUid) {
++        vcdAppsUid = apps->uid;
++        vcdAppsLoad(apps);
++    }
++    if (vcdAppsCount <= 0)
++        return NULL;
++    for (i = 0; name[i] && i < sizeof(key) - 1; i++)
++        key[i] = (char)toupper((unsigned char)name[i]);
++    key[i] = '\0';
++    const char *hit = bsearch(key, vcdApps, vcdAppsCount, sizeof(vcdApps[0]), vcdAppsCmp);
++    return hit != NULL ? hit + sizeof(vcdApps[0].base) : NULL; // its title
++}
++
+ const char *vcdDisplayNameForRow(item_list_t *itemList, int id, const char *text)
+ {
+     int n;
+ 
++    if (text == NULL || itemList == NULL || libListRowView(itemList, id) != LIB_VIEW_PS1)
++        return text;
++    const char *named = vcdAppsTitle(text); // build 126: a conf_apps.cfg name for this file
++    if (named != NULL)
++        return named;
+     // A Mixed page is not itself a PS1 page, so the legacy mode-only helper cannot identify its
+     // VCD rows. Ask the list for the row view; homogeneous pages fall back to their active view.
+-    if (!gVcdHideGameId || text == NULL || itemList == NULL || libListRowView(itemList, id) != LIB_VIEW_PS1)
++    if (!gVcdHideGameId)
+         return text;
+     n = vcdGameIdPrefixLen(text);
+     return n ? text + n : text;
