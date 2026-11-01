@@ -179,3 +179,21 @@ the MMCE art.tar theme-change death, the random-game beep, the save sound, menus
 MMCE browser launch and paste, Fatal Frame 3 IGR, the AVI that stops at "opening video", Ember's controllers when cycling.
 Carried to 127+ (next build): .pad phase 2 (the block into ee_core and PADEMU, the setup screen), POPSTARTER pictures offered
 in the PS1 flow by the ELF itself.
+
+## Build 129 (11/01): .pad phase 2
+Patch 0129 (branch b129, merged to main for the release): PADEMU reads the packed profiles (padprofile.c, padfile.c built
+decode-only), ee_core passes 8 + 180 bytes with flag 1 << 19, the launcher packs PADS and PADS/GAMES/<ID>.pad, the menu's
+USB driver reads the same block (RPC 10) and hands raw reports to Settings > Controllers > Set Up A USB Pad (RPC 9). 32
+languages. CI green (226 host tests, test_ripps2_pad129 runs the setup screen's finder on the PC). Lab: Controllers page,
+the setup screen and Back; debug build log "PADS: 1 profile(s) packed for PADEMU" at boot and at launch, "PADEMU =
+Enabled", Aqua Teen Hunger Force boots. Hardware only: a real USB pad through Set Up, in the menu and in a game.
+
+## Next pass: POPSTARTER's in-game reset with RIPPS2's buttons and words (the user, 11/01)
+X selects, O goes back, the words read like the in-game menu's EXIT GAME flow (confirmed twice). Plan and limits in
+docs/plans/popstarter-igr.md: the three TM2 pictures can carry the words but not the buttons or a second confirm.
+1. Measure POPSTARTER's own prompt in the lab with the user's POPS files (from their microSD, never shipped): which
+   buttons move, confirm and cancel, which is highlighted first.
+2. Pictures only if POPSTARTER already reads X / O: the background in EXIT GAME's words and RIPPS2's hint line, the
+   buttons as EXIT GAME / RESUME, the highlighted EXIT GAME reading "(X) TO LEAVE".
+3. If it reads other buttons: truthful hints now, Ember for PS1 games that want RIPPS2's menu, and an in-memory
+   POPSTARTER patch only with the user's go-ahead.

@@ -1,5 +1,26 @@
 # RIPPS2 changelog
 
+## Build 129 (beta, v1.2.9-beta), changes since build 128
+
+.pad, phase 2: the USB pad profiles RIPPS2 leads (docs/plans/pad-spec.md) now reach the games and the menu, and RIPPS2
+writes them for you. The theme pack stays at edition 128.
+
+**USB pads**
+- **A profiled USB pad plays in games.** With the Pad Emulator on, every `PADS/VVVV_PPPP.pad` beside RIPPS2 (up to four)
+  is checked and packed as the game starts, and PADEMU reads the pad as its profile says: no text and no file is read
+  in the game. A pad PADEMU knows (DualShock 3 and 4, the ShanWan copy) keeps its own driver.
+- **The game's button map.** `PADS/GAMES/<game ID>.pad` (`cross=circle`, `select=none`...) moves buttons for that
+  game, on every USB pad.
+- **A profiled pad steers the menu too**, from boot and as soon as its profile is saved.
+- **Set Up A USB Pad** (Settings > Controllers): plug the pad in, let go, press each button and push each stick as
+  RIPPS2 asks (SELECT on your PS2 pad skips one), try it live, save. RIPPS2 finds buttons, a hat d-pad, analog
+  triggers and sticks (inverted ones too), writes `PADS/VVVV_PPPP.pad` and checks it with the reference reader before
+  saving. An older file for the same pad is kept beside it as `.bak`.
+- **My Pads** now says what a profile does: it steers the menu and plays in games.
+
+**Languages**
+- Every new line in all 32 translations.
+
 ## Builds 126 to 128 (beta, v1.2.8-beta), changes since build 125
 
 The user's Halloween notes (10/31) and tester ahavasi's report on 125, with Ripto's CHEATS (build 126) and RiptOPL's
