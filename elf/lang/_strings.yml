@@ -241,6 +241,12 @@ strings:
     1 game button map in GAMES'
   in:
   - gui.c
+- en: '%s could not be written.'
+  in:
+  - gui.c
+- en: '%s is there already and could not be put aside, so it was left as it was.'
+  in:
+  - gui.c
 - en: (no name)
   in:
   - gui.c
@@ -283,16 +289,28 @@ strings:
 - en: Both
   in:
   - gui.c
+- en: Circle
+  in:
+  - gui.c
 - en: Classic (Split)
   in:
   - gui.c
 - en: Controllers
   in:
   - gui.c
+- en: Cross
+  in:
+  - gui.c
 - en: Cycle
   in:
   - gui.c
 - en: Delete %s? RIPPS2's own sweeps stay as they are.
+  in:
+  - gui.c
+- en: Down
+  in:
+  - gui.c
+- en: Down on the d-pad
   in:
   - gui.c
 - en: Fade
@@ -316,7 +334,13 @@ strings:
 - en: Flash
   in:
   - gui.c
+- en: Found %04X:%04X. Let go of everything on it, sticks too, and wait.
+  in:
+  - gui.c
 - en: Full
+  in:
+  - gui.c
+- en: Got it. Let go.
   in:
   - gui.c
 - en: Guidance
@@ -326,10 +350,16 @@ strings:
   in:
   - gui.c
   - ripps2hints.c
+- en: L3 (press the left stick in)
+  in:
+  - gui.c
 - en: Launch Disc First
   in:
   - gui.c
 - en: Left
+  in:
+  - gui.c
+- en: Left on the d-pad
   in:
   - gui.c
 - en: List
@@ -360,6 +390,9 @@ strings:
 - en: Normal
   in:
   - gui.c
+- en: Nothing was set up, so no file was written.
+  in:
+  - gui.c
 - en: OK
   in:
   - gui.c
@@ -386,10 +419,22 @@ strings:
 - en: 'Pad profiles in %s:'
   in:
   - gui.c
+- en: Plug in the USB pad you want to set up. If it is in already, take it out and plug it in again. Then press any button on it once.
+  in:
+  - gui.c
 - en: Pop In
   in:
   - gui.c
 - en: Pop In and Name
+  in:
+  - gui.c
+- en: Press %s on the USB pad and hold it.
+  in:
+  - gui.c
+- en: Push %s and hold it.
+  in:
+  - gui.c
+- en: R3 (press the right stick in)
   in:
   - gui.c
 - en: REBOOT IOP?
@@ -411,7 +456,16 @@ strings:
 - en: Right
   in:
   - gui.c
+- en: Right on the d-pad
+  in:
+  - gui.c
 - en: Same as Grid Layout
+  in:
+  - gui.c
+- en: Save
+  in:
+  - gui.c
+- en: Saved as %s. The pad now steers the menu, and plays in games with the Pad Emulator on.
   in:
   - gui.c
 - en: Shown
@@ -421,10 +475,16 @@ strings:
 - en: Sidebar
   in:
   - gui.c
+- en: Skip
+  in:
+  - gui.c
 - en: Slow
   in:
   - gui.c
 - en: Spin
+  in:
+  - gui.c
+- en: Square
   in:
   - gui.c
 - en: Strong
@@ -438,6 +498,21 @@ strings:
   - gui.c
   - menusys.c
   - ripps2hints.c
+- en: This pad cannot be described in a .pad yet (%s), so no file was written.
+  in:
+  - gui.c
+- en: Triangle
+  in:
+  - gui.c
+- en: 'Try it. What you hold shows here:'
+  in:
+  - gui.c
+- en: Up
+  in:
+  - gui.c
+- en: Up on the d-pad
+  in:
+  - gui.c
 - en: Weak
   in:
   - gui.c
@@ -457,6 +532,18 @@ strings:
   in:
   - gui.c
 - en: not looked for yet
+  in:
+  - gui.c
+- en: the left stick down
+  in:
+  - gui.c
+- en: the left stick to the right
+  in:
+  - gui.c
+- en: the right stick down
+  in:
+  - gui.c
+- en: the right stick to the right
   in:
   - gui.c
 - en: 'Case Shape: %s'
