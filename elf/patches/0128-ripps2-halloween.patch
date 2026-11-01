@@ -35,11 +35,34 @@ index 63ef708..343798d 100644
  
  // build 100: the menu music, the BIOS's ambient piece, as 24 kHz mono 16-bit PCM handed over a slice at a time
  // (done and total in samples); put returns 0 to go on
+diff --git a/include/textures.h b/include/textures.h
+index cec4ac5..7e092bf 100644
+--- a/include/textures.h
++++ b/include/textures.h
+@@ -173,6 +173,8 @@ int texLookupInternalTexId(const char *name);
+ int texLoadInternal(GSTEXTURE *texture, int texId);
+ int texLoadFromMemory(GSTEXTURE *texture, const void *buf, u32 size);
+ int texLoadArtFromMemory(GSTEXTURE *texture, const void *buf, u32 size, int background); // build 118: PNG or JPG
++// build 126: a picture's other names (a PS1 game's keys), key and kind apart, for the art.tar
++int texArtAliasNames(const char *value, const char *suffix, char keys[][160], char kinds[][8], int max);
+ int texDiscoverLoad(GSTEXTURE *texture, const char *path, int texId);
+ void texSetProbe(char *out, int size); // RIPPS2 build 73: report the path texDiscoverLoad would try (cover art download)
+ 
 diff --git a/include/themes.h b/include/themes.h
-index 1d0c23e..4e73b17 100644
+index 1d0c23e..df331f1 100644
 --- a/include/themes.h
 +++ b/include/themes.h
-@@ -74,6 +74,7 @@ typedef struct
+@@ -58,6 +58,9 @@ typedef struct
+     // shared by every SCRn box of the theme (the first box's own, linked from the rest); cache is shots[0]
+     image_cache_t **shots;
+     int shotsLinked;
++    // build 126: <name>_back=COV2, the back of the case: on an info page the cover turns to it and back, crossfading on the
++    // screenshots' time (SLIDE_HOLD_S, SLIDE_FADE_S)
++    image_cache_t *backCache;
+ } mutable_image_t;
+ 
+ typedef struct
+@@ -74,6 +77,7 @@ typedef struct
      char *currentValue;
      char *wrappedValue; // owned, word-wrapped copy of currentValue for SIZING_WRAP (issue #44)
      clock_t rollStart;  // RIPPS2: when this game's text began showing (a long description rolls from it)
@@ -47,7 +70,7 @@ index 1d0c23e..4e73b17 100644
  } mutable_text_t;
  
  typedef struct
-@@ -287,6 +288,7 @@ typedef struct theme
+@@ -287,6 +291,7 @@ typedef struct theme
      int sbAutoHide;                     // build 115: sidebar_hide=1: the sidebar slides away until Circle calls it
      int flowTilt;                       // build 117: flowtilt=1: RIPFLOW's Up / Down (left stick) tip the centre case
      int infoSidebar;                    // build 119: info_sidebar=1: the sidebar stays on the info page (none built in does)
@@ -152,7 +175,7 @@ index 177660e..a16f5ab 100644
  
      {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_BGM}}},
 diff --git a/src/gui.c b/src/gui.c
-index ee55388..7994bc7 100644
+index ee55388..4d4b743 100644
 --- a/src/gui.c
 +++ b/src/gui.c
 @@ -911,6 +911,8 @@ static const char *guiStarSides[] = {N_("Theme"), N_("Left"), N_("Right"), N_("H
@@ -220,6 +243,21 @@ index ee55388..7994bc7 100644
          diaGetInt(ui, UICFG_AUTOSORT, &gAutosort);
          diaGetInt(ui, UICFG_AUTOREFRESH, &gAutoRefresh);
          diaGetInt(ui, UICFG_NOTIFICATIONS, &gEnableNotifications);
+@@ -5856,9 +5872,12 @@ void guiMainLoop(void)
+         guiStartFrame();
+ 
+         // RIPPS2 build 125: the saved theme's drive is still coming up: the boot sky alone (the scene fades up over it
+-        // once the theme is in), so RIPPS2's own look never shows for a moment before the theme replaces it
++        // once the theme is in), so RIPPS2's own look never shows for a moment before the theme replaces it. Build 126 (the
++        // user, 10/31: "the towers rise just show the scene without the categories or games list ... so the flow of the
++        // pillars remains in the handoff to themes instead of the Bible sky"): the pillars go on as they rose, no categories
++        // and no list, until the theme is in
+         if (holdUntil > 0.0 && thmSavedPending() && ripps2Seconds() < holdUntil) {
+-            ripps2DrawBootSky();
++            ripps2DrawPillars();
+             bgmBootTick();
+             guiHandleDeferredOpsBudget(GUI_OPS_FRAME_BUDGET_US);
+             guiEndFrame();
 diff --git a/src/menusys.c b/src/menusys.c
 index c5c6f6b..cf0fc52 100644
 --- a/src/menusys.c
@@ -426,6 +464,22 @@ index bf40e38..352382e 100644
          configSetInt(configOPL, CONFIG_OPL_XSENSITIVITY, gXSensitivity);
          configSetInt(configOPL, CONFIG_OPL_YSENSITIVITY, gYSensitivity);
  
+diff --git a/src/ripps2artpack.c b/src/ripps2artpack.c
+index d0a5595..5b0d6a3 100644
+--- a/src/ripps2artpack.c
++++ b/src/ripps2artpack.c
+@@ -451,8 +451,9 @@ static void apCollect(void)
+                 if (s < 0)
+                     break;
+             }
+-            // a PS1 game's art goes by other keys as well (textures.c texArtAliases): its folder keeps answering for it
+-            if (libListRowView(list, id) == LIB_VIEW_PS1 || strlen(startup) >= AP_KEY || apKeyCount >= AP_MAX_KEYS)
++            // a PS1 game's art goes by other keys as well (textures.c texArtAliases); build 126: the art worker looks those up in
++            // the pack too (texArtAliasNames), so the pack answers for a PS1 game as for a PS2 one: no folder lookup per game
++            if (strlen(startup) >= AP_KEY || apKeyCount >= AP_MAX_KEYS)
+                 continue;
+             snprintf(apKeys[apKeyCount].key, AP_KEY, "%s", startup);
+             apKeys[apKeyCount].src = (unsigned char)s;
 diff --git a/src/ripps2biossnd.c b/src/ripps2biossnd.c
 index cb45dec..d39817e 100644
 --- a/src/ripps2biossnd.c
@@ -764,8 +818,123 @@ index 6cb5dc5..c9f401f 100644
              sfxBootPending = 1;                                // (sfxBootPlay, from the GUI's frame tick)
      }
      sfxLoadedCount = loaded;
+diff --git a/src/supportbase.c b/src/supportbase.c
+index e8a56dc..ebf37a4 100644
+--- a/src/supportbase.c
++++ b/src/supportbase.c
+@@ -30,6 +30,8 @@
+ #include "include/udpfssupport.h"
+ #include "include/hddsupport.h"
+ #include "include/mmcesupport.h"
++#include <ps2sdkapi.h> // RIPPS2 build 126: lseek64, a game's size where stat gives none (sbFileSizeMB)
++#include <fcntl.h>
+ #include "include/metadb.h" // RIPPS2: the metadata database
+ #include <delaythread.h>    // RIPPS2 build 109: sbPadBreath
+ #include "include/ripps2.h" // RIPPS2 build 77: ripps2NeutrinoOffer
+@@ -1406,6 +1408,23 @@ int sbConfigStatSizeEnabled(void)
+     return sbConfigStatSize;
+ }
+ 
++// RIPPS2 build 126 (the user, 10/31: "mmce show size"): a game file's size in MiB. stat first; a driver whose stat gives no
++// size (MMCE's mmceman) is asked by its end instead, once, when the info page wants it (sbConfigStatSize)
++static int sbFileSizeMB(const char *path)
++{
++    struct stat st;
++    int fd;
++    long long end;
++
++    if (stat(path, &st) == 0 && st.st_size > 0)
++        return (int)(st.st_size >> 20);
++    if ((fd = open(path, O_RDONLY)) < 0)
++        return 0;
++    end = lseek64(fd, 0, SEEK_END);
++    close(fd);
++    return end > 0 ? (int)(end >> 20) : 0;
++}
++
+ config_set_t *sbPopulateConfig(base_game_info_t *game, const char *prefix, const char *sep)
+ {
+     char path[256];
+@@ -1481,13 +1500,11 @@ config_set_t *sbPopulateConfig(base_game_info_t *game, const char *prefix, const
+         if (game->format == GAME_FORMAT_ISO) {
+             snprintf(gamepath, sizeof(gamepath), "%s%s%s%s%s%s%s", prefix, sep, game->media == SCECdPS2CD ? "CD" : "DVD", sep, subseg, game->name, game->extension);
+ 
+-            if (stat(gamepath, &st) == 0)
+-                game->sizeMB = st.st_size >> 20;
++            game->sizeMB = sbFileSizeMB(gamepath);
+         } else if (game->format == GAME_FORMAT_OLD_ISO) {
+             snprintf(gamepath, sizeof(gamepath), "%s%s%s%s%s%s.%s%s", prefix, sep, game->media == SCECdPS2CD ? "CD" : "DVD", sep, subseg, game->startup, game->name, game->extension);
+ 
+-            if (stat(gamepath, &st) == 0)
+-                game->sizeMB = st.st_size >> 20;
++            game->sizeMB = sbFileSizeMB(gamepath);
+         } else if (game->format == GAME_FORMAT_USBLD) {
+             // Calculate total size for multi-part USBLD games
+             int part;
+diff --git a/src/texcache.c b/src/texcache.c
+index 3f85092..4f093fe 100644
+--- a/src/texcache.c
++++ b/src/texcache.c
+@@ -946,6 +946,17 @@ static void cacheLoadImage(load_image_request_t *req)
+             result = artTarLoadImageExact(req->value, req->cache->suffix, req->artArchivePath, &staged);
+         else
+             result = artTarLoadImage(req->value, req->cache->suffix, &staged);
++        // build 126 (the user, 10/31: PS1 art slower than PS2's): the pack holds every picture its folders had, a PS1 game's
++        // under whatever name its file has (the disc ID, the POPStarter launcher's XX.<name>.ELF ...), so those names are
++        // looked up in the index too, in RAM, before the game's own drive is asked for any of them
++        if (result == ART_TAR_MISS && req->artArchive >= 0) {
++            char aliasKeys[8][160], aliasKinds[8][8];
++            int an = texArtAliasNames(req->value, req->cache->suffix, aliasKeys, aliasKinds, 8);
++            for (int ai = 0; ai < an && result == ART_TAR_MISS; ai++)
++                result = req->artArchive > 0 && req->artArchivePath != NULL ?
++                             artTarLoadImageExact(aliasKeys[ai], aliasKinds[ai], req->artArchivePath, &staged) :
++                             artTarLoadImage(aliasKeys[ai], aliasKinds[ai], &staged);
++        }
+         // build 118: an ART Pack RIPPS2 built holds every picture the ART folders had for the games it was built for: one it
+         // does not hold is not there, so the folder is not listed or opened for it (no art RIPPS2 wrote since, no PS1 game)
+         if (result == ART_TAR_MISS && ripps2ArtPackAnswers(req->value)) {
+diff --git a/src/textures.c b/src/textures.c
+index c1aa4a6..2fbfd1c 100644
+--- a/src/textures.c
++++ b/src/textures.c
+@@ -1336,6 +1336,35 @@ static int texArtAliases(const char *path, int listedKeys, char out[TEX_ART_ALIA
+     return n;
+ }
+ 
++// build 126 (the user, 10/31: "the vcd art on mmce is slower than its ps2 iso art ... at hdd game speed"): the other names a
++// picture of <value>_<suffix> goes by (texArtAliases, a PS1 game's other keys included), as key and kind apart, for the
++// art.tar, whose index answers a miss in RAM. Returns how many
++int texArtAliasNames(const char *value, const char *suffix, char keys[][160], char kinds[][8], int max)
++{
++    static const char *const kinds2[] = {"SCR_00", "SCR_01", "BG_00", "COV2", "SCR2", "COV", "ICO", "LAB", "LGO", "SCR", "BG"};
++    char path[256], out[TEX_ART_ALIASES][256];
++    int n, i, k, got = 0;
++
++    if (value == NULL || suffix == NULL || snprintf(path, sizeof(path), "ART/%s_%s", value, suffix) >= (int)sizeof(path))
++        return 0;
++    n = texArtAliases(path, 1, out);
++    for (i = 0; i < n && got < max; i++) {
++        const char *name = out[i] + 4; // past "ART/"
++        size_t len = strlen(name);
++        for (k = 0; k < (int)(sizeof(kinds2) / sizeof(kinds2[0])); k++) {
++            size_t kl = strlen(kinds2[k]);
++            if (len > kl + 1 && name[len - kl - 1] == '_' && !strcmp(&name[len - kl], kinds2[k]) && len - kl - 1 < 160) {
++                memcpy(keys[got], name, len - kl - 1);
++                keys[got][len - kl - 1] = '\0';
++                snprintf(kinds[got], 8, "%s", kinds2[k]);
++                got++;
++                break;
++            }
++        }
++    }
++    return got;
++}
++
+ int texDiscoverLoad(GSTEXTURE *texture, const char *path, int texId)
+ {
+     char filePath[256];
 diff --git a/src/themes.c b/src/themes.c
-index fff6e8a..583f6f1 100644
+index fff6e8a..3025995 100644
 --- a/src/themes.c
 +++ b/src/themes.c
 @@ -345,6 +345,7 @@ static mutable_text_t *initMutableText(const char *themePath, config_set_t *them
@@ -787,7 +956,17 @@ index fff6e8a..583f6f1 100644
      if (config) {
          if (mutableText->currentConfigId != config->uid) {
              // force refresh
-@@ -793,6 +798,9 @@ static void initAttributeText(const char *themePath, config_set_t *themeConfig,
+@@ -740,6 +745,9 @@ static void drawAttributeText(struct menu_list *menu, struct submenu_list *item,
+                 }
+             }
+         }
++        // build 126: "0 MiB" is no size (a PS1 row, a POPS launcher): the line shows nothing rather than a wrong size
++        if (mutableText->currentValue && !strcmp(mutableText->value, "#Size") && !strcmp(mutableText->currentValue, "0"))
++            return;
+         if (mutableText->currentValue) {
+             char result[300];
+             if (mutableText->displayMode == DISPLAY_NEVER) {
+@@ -793,6 +801,9 @@ static void initAttributeText(const char *themePath, config_set_t *themeConfig,
          elem->extended = initMutableText(themePath, themeConfig, theme, name, ELEM_TYPE_ATTRIBUTE_TEXT, elem, attribute, NULL, DISPLAY_ALWAYS, SIZING_NONE);
          elem->endElem = &endMutableText;
          elem->drawElem = &drawAttributeText;
@@ -797,7 +976,184 @@ index fff6e8a..583f6f1 100644
      } else
          LOG("THEMES AttributeText %s: NO attribute, elem disabled !!\n", name);
  }
-@@ -4868,11 +4876,18 @@ static void drawInfoHintText(struct menu_list *menu, struct submenu_list *item,
+@@ -1032,6 +1043,9 @@ static void endMutableImage(struct theme_element *elem)
+         if (mutableImage->overlayTexture2 && !mutableImage->overlayTexture2Linked)
+             freeImageTexture(mutableImage->overlayTexture2);
+ 
++        if (mutableImage->backCache) // build 126: the back cover's own
++            cacheDestroyCache(mutableImage->backCache);
++
+         if (mutableImage->shots && !mutableImage->shotsLinked) { // build 108: SCRn's caches (cache is shots[0])
+             for (int i = 0; i < SCRN_MAX; i++)
+                 cacheDestroyCache(mutableImage->shots[i]);
+@@ -1064,6 +1078,7 @@ static mutable_image_t *initMutableImage(const char *themePath, config_set_t *th
+ #endif
+     mutableImage->shots = NULL;
+     mutableImage->shotsLinked = 0;
++    mutableImage->backCache = NULL; // build 126: initGameImage (<name>_back)
+ 
+     char elemProp[64];
+ 
+@@ -1684,6 +1699,51 @@ static float infoGroupAlpha(void)
+     return f * f * (3.0f - 2.0f * f);
+ }
+ 
++// build 126 (the user, 10/31: "on adapt the art fade wasnt appearing together it was ico cov and bg separated sometimes the
++// cover first -- make sure the themes all use the sync fade for art"): the list page's art of the chosen game comes in as
++// one too, on every theme. Only the art waits (its reads go on as before, so nothing loads later), and for MAIN_GROUP_WAIT_S
++// at most, so a slow drive never holds the page; placeholders show at once as before
++#define MAIN_GROUP_WAIT_S 0.6f
++static struct
++{
++    void *item;
++    unsigned int frame;
++    int pendingThis, pendingLast;
++    int released;
++    clock_t start, release;
++} mainGroup;
++
++static void mainGroupFrame(void *item)
++{
++    if (mainGroup.item != item || guiFrameId - mainGroup.frame > 2) {
++        mainGroup.item = item;
++        mainGroup.frame = guiFrameId;
++        mainGroup.pendingThis = 0;
++        mainGroup.pendingLast = 1;
++        mainGroup.released = 0;
++        mainGroup.start = clock();
++    } else if (mainGroup.frame != guiFrameId) {
++        mainGroup.pendingLast = mainGroup.pendingThis;
++        mainGroup.pendingThis = 0;
++        mainGroup.frame = guiFrameId;
++    }
++    if (!mainGroup.released && (mainGroup.pendingLast == 0 ||
++                                (float)(clock() - mainGroup.start) / (float)CLOCKS_PER_SEC >= MAIN_GROUP_WAIT_S)) {
++        mainGroup.released = 1;
++        mainGroup.release = clock();
++    }
++}
++
++static float mainGroupAlpha(void)
++{
++    if (!mainGroup.released)
++        return 0.0f;
++    float f = (float)(clock() - mainGroup.release) / (float)CLOCKS_PER_SEC / 0.35f; // ART_FADE_S
++    if (f >= 1.0f)
++        return 1.0f;
++    return f * f * (3.0f - 2.0f * f);
++}
++
+ // An art read still out for this element: no texture yet, and not answered "absent" (-2)
+ static int infoArtPending(image_cache_t *cache, struct submenu_item *item)
+ {
+@@ -1898,6 +1958,35 @@ static void scrShowUpdate(struct menu_list *menu, struct submenu_list *item, str
+         scrShow.f = scrShow.f * scrShow.f * (3.0f - 2.0f * scrShow.f);
+ }
+ 
++// build 126: how far an info page's cover has turned to its back (0 the front, 1 the back). The screenshot boxes' show
++// sets the time when it runs for this game: the cover turns as the shots change, every other change; else its own clock
++static float backTurn(void *item)
++{
++    static void *ownItem = NULL;
++    static clock_t ownStart = 0;
++    static unsigned int ownFrame = 0;
++    float f;
++    int phase;
++
++    int all;
++    if (scrShow.item == item && scrShow.updated == guiFrameId && scrShowKnown(&all) >= 2) { // shots that move
++        phase = scrShow.base & 1;
++        f = scrShow.f;
++    } else {
++        if (ownItem != item || guiFrameId - ownFrame > 2) {
++            ownItem = item;
++            ownStart = clock();
++        }
++        ownFrame = guiFrameId;
++        float t = (float)(clock() - ownStart) / (float)CLOCKS_PER_SEC, cycle = SLIDE_HOLD_S + SLIDE_FADE_S;
++        phase = (int)(t / cycle) & 1;
++        t -= (float)(int)(t / cycle) * cycle;
++        f = t < SLIDE_HOLD_S ? 0.0f : (t - SLIDE_HOLD_S) / SLIDE_FADE_S;
++        f = f * f * (3.0f - 2.0f * f);
++    }
++    return phase ? 1.0f - f : f;
++}
++
+ static void slideUpdate(struct menu_list *menu, struct submenu_list *item, struct theme_element *drawElem)
+ {
+     theme_element_t *e;
+@@ -2149,6 +2238,11 @@ static void drawGameImage(struct menu_list *menu, struct submenu_list *item, con
+         int onInfo = thmElemIsInfo(drawElem) && !item->item.isFolder && drawElem->type != ELEM_TYPE_BACKGROUND; // the info page's art appears as one (the pillars behind it are not art)
+         if (onInfo)
+             infoGroupFrame(thmItemKey(item));
++        // build 126: the list page's art of the chosen game, as one (not a slide, not a row of a list)
++        int onMain = !onInfo && !isSlide && !thmElemIsInfo(drawElem) && !item->item.isFolder && menu != NULL && menu->item != NULL &&
++                     menu->item->current == item;
++        if (onMain)
++            mainGroupFrame(thmItemKey(item));
+         if (isSlide) {
+             slideUpdate(menu, item, drawElem);
+             if (onInfo && drawElem->slide == 1 && slideShow.bgPending)
+@@ -2249,6 +2343,8 @@ static void drawGameImage(struct menu_list *menu, struct submenu_list *item, con
+ 
+         if (onInfo && !isSlide && (!texture || !texture->Mem) && infoArtPending(gameImage->cache, &item->item))
+             infoGroup.pendingThis++;
++        if (onMain && (!texture || !texture->Mem) && infoArtPending(gameImage->cache, &item->item))
++            mainGroup.pendingThis++;
+ 
+         if (!texture || !texture->Mem) {
+             // Keep the configured/default cover visible when art is absent. This is also the
+@@ -2275,6 +2371,11 @@ static void drawGameImage(struct menu_list *menu, struct submenu_list *item, con
+         // RIPPS2: art fades in as it arrives (the slideshow fades its own); a placeholder never fades
+         else if (!isSlide && (gameImage->defaultTexture == NULL || texture != &gameImage->defaultTexture->source)) {
+             float in = artFadeIn(drawElem, thmItemKey(item), gameImage->shots ? (const void *)gameImage->shots : texture);
++            if (onMain) { // build 126: with the rest of the game's art
++                float g = mainGroupAlpha();
++                if (g < in)
++                    in = g;
++            }
+             if (in < 1.0f && drawElem->type == ELEM_TYPE_BACKGROUND)
+                 thmDrawEmptyBackdrop(); // the pillars show until it is all there
+             slideW *= in;
+@@ -2282,7 +2383,19 @@ static void drawGameImage(struct menu_list *menu, struct submenu_list *item, con
+                 return;
+         }
+ 
+-        drawGameImageArt(menu, item, drawElem, gameImage, texture, slideW);
++        // build 126: an info page's cover turns to its back and home again on the screenshots' time, once its back is there
++        GSTEXTURE *backTex = onInfo && gameImage->backCache != NULL && !isSlide &&
++                                     (gameImage->defaultTexture == NULL || texture != &gameImage->defaultTexture->source) ?
++                                 getGameImageTextureEx(gameImage->backCache, menu->item->userdata, &item->item, 0) :
++                                 NULL;
++        if (backTex != NULL && backTex->Mem != NULL) {
++            float b = backTurn(thmItemKey(item));
++            if (b < 1.0f)
++                drawGameImageArt(menu, item, drawElem, gameImage, texture, slideW * (1.0f - b));
++            if (b > 0.0f)
++                drawGameImageArt(menu, item, drawElem, gameImage, backTex, slideW * b);
++        } else
++            drawGameImageArt(menu, item, drawElem, gameImage, texture, slideW);
+         if (over != NULL) // build 108: SCRn, the next shot fading in over this one
+             drawGameImageArt(menu, item, drawElem, gameImage, over, slideW * overW);
+ 
+@@ -2316,6 +2429,16 @@ static void initGameImage(const char *themePath, config_set_t *themeConfig, them
+         elem->drawElem = &drawGameImage;
+     else
+         LOG("THEMES GameImage %s: NO pattern, elem disabled !!\n", name);
++
++    // build 126 (the user, 10/31: "ripps2 info page fade the cover to back cover with screenshot timing"): <name>_back
++    // names the back's art (COV2): a cache of its own, two deep (the game and its neighbour)
++    {
++        const char *back = NULL;
++        char key[64];
++        snprintf(key, sizeof(key), "%s_back", name);
++        if (mutableImage->cache && configGetStr(themeConfig, key, &back) && back != NULL && back[0] && strcmp(back, "0"))
++            mutableImage->backCache = cacheInitCache(theme->gameCacheCount++, "ART", 1, back, 2);
++    }
+ }
+ 
+ // Coverflow ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+@@ -4868,11 +4991,18 @@ static void drawInfoHintText(struct menu_list *menu, struct submenu_list *item,
      // <name>_show_run=0 hides Run for a theme that draws its own launch prompt. Back always stays: it
      // is the only way off this screen.
      int first = elem->showRun ? 0 : 1;
@@ -817,7 +1173,7 @@ index fff6e8a..583f6f1 100644
          theme_element_t *e;
          for (e = elem->family != NULL ? elem->family->first : NULL; e != NULL; e = e->next)
              if (e->type == ELEM_TYPE_MENU_TEXT && e->aligned)
-@@ -4883,7 +4898,7 @@ static void drawInfoHintText(struct menu_list *menu, struct submenu_list *item,
+@@ -4883,7 +5013,7 @@ static void drawInfoHintText(struct menu_list *menu, struct submenu_list *item,
      if (elem->aligned)
          x = guiAlignSubMenuHints(2 - first, infoHints + first, infoIcons + first, elem->font, elem->width, 1);
  
@@ -826,7 +1182,7 @@ index fff6e8a..583f6f1 100644
          x = guiDrawIconAndTextA(gSelectButton == KEY_CIRCLE ? infoIcons[0] : infoIcons[1], infoHints[0], elem->font, x, elem->posY, col, iconCol);
          x += elem->width;
      }
-@@ -6783,6 +6798,7 @@ static int thmLoad(const char *themePath)
+@@ -6783,6 +6913,7 @@ static int thmLoad(const char *themePath)
          // in and Circle back, so the sidebar stays on the list. info_sidebar=1 keeps it there for a theme that wants it
          // (Left reaches it); none of the built-in themes does
          newT->infoSidebar = configGetInt(themeConfig, "info_sidebar", &intValue) && intValue == 1;

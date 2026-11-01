@@ -355,6 +355,9 @@ strings:
 - en: On (L2+R2)
   in:
   - gui.c
+- en: On (fast)
+  in:
+  - gui.c
 - en: On RiptOPL %s
   in:
   - gui.c
@@ -465,6 +468,12 @@ strings:
 - en: '%s is not on %s any more, so it has left All Games.'
   in:
   - mixsupport.c
+- en: About %d seconds left
+  in:
+  - mixsupport.c
+- en: About 1 second left
+  in:
+  - mixsupport.c
 - en: CANCEL
   in:
   - mixsupport.c
@@ -472,6 +481,9 @@ strings:
   - ripps2disc.c
   - ripps2games.c
 - en: STARTING %s
+  in:
+  - mixsupport.c
+- en: Taking longer than its last start (%d s so far)
   in:
   - mixsupport.c
 - en: the SMB share
@@ -1149,6 +1161,9 @@ strings:
   - ripps2biossnd.c
   - ripps2cd.c
   - ripps2files.c
+- en: On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
+  in:
+  - ripps2biossnd.c
 - en: RIP
   in:
   - ripps2biossnd.c
@@ -1211,6 +1226,9 @@ strings:
   in:
   - ripps2biossnd.c
 - en: The sounds take %d KB and this memory card has %d KB free. START writes them to %sAUDIO/ on the drive instead, and RIPPS2 plays them from there.
+  in:
+  - ripps2biossnd.c
+- en: 'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.'
   in:
   - ripps2biossnd.c
 - en: There was not enough memory to make the sounds. Nothing was written.
@@ -3512,7 +3530,25 @@ strings:
 - en: 'All Games: no master list yet; %s is written once the games are listed (Fast Cache on)'
   in:
   - ripps2status.c
+- en: BOOT SOUND WITH THE PILLARS
+  in:
+  - ripps2status.c
+- en: 'Boot Sound: On (fast)'
+  in:
+  - ripps2status.c
+- en: 'Boot sound On (fast): %s, as the pillars rise'
+  in:
+  - ripps2status.c
+- en: 'Boot sound On: from the AUDIO folder, once its drive is up'
+  in:
+  - ripps2status.c
+- en: Boot sound off (Audio settings > Boot Sound)
+  in:
+  - ripps2status.c
 - en: CACHE SETTINGS
+  in:
+  - ripps2status.c
+- en: Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.
   in:
   - ripps2status.c
 - en: Copies the Neutrino RIPPS2 carries to a drive or a memory card. A Neutrino of your own is used as it is.
