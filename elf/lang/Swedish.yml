@@ -1350,6 +1350,67 @@ strings:
   ? There is no other .tar to merge into %s. Put it in this folder, in a drive's ART folder or at the top of a drive, then try again.
   : Det finns ingen annan .tar att foga in i %s. Lägg den i den här mappen, i en enhets ART-mapp eller överst på en enhet och försök igen.
   MERGE A .TAR INTO THIS: FOGA IN EN .TAR HÄR
+  ? '
+  
+    %d game button maps in GAMES'
+  : '
+  
+    %d knappmappningar för spel i GAMES'
+  ? '
+  
+    1 game button map in GAMES'
+  : '
+  
+    1 knappmappning för ett spel i GAMES'
+  (no name): (inget namn)
+  Both: Båda
+  ? 'None yet. A profile is a text file named after the pad''s ID, like 2563_0575.pad: the format is in RIPPS2''s repo (docs/plans/pad-spec.md).'
+  : 'Inga än. En profil är en textfil med handkontrollens ID som namn, som 2563_0575.pad: formatet finns i RIPPS2:s repo (docs/plans/pad-spec.md).'
+  On (fast): På (snabb)
+  'Pad profiles in %s:': 'Handkontrollprofiler i %s:'
+  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (build %d) på RiptOPL %s
+  RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: RIPPS2 vet inte var dess mapp är och kan därför inte leta efter PADS.
+  could not be read: kunde inte läsas
+  About %d seconds left: Ungefär %d sekunder kvar
+  About 1 second left: Ungefär 1 sekund kvar
+  Taking longer than its last start (%d s so far): Tar längre tid än förra starten (%d s hittills)
+  ? 'Download the covers in HD (280 x 400)? Sharper on an HD screen, about 70 KB each. START: Standard (140 x 200, as Open PS2 Loader''s), about 20 KB each. A game that already has a cover keeps it.'
+  : 'Ladda ner omslagen i HD (280 x 400)? Skarpare på en HD-skärm, ungefär 70 KB styck. START: Standard (140 x 200, som Open PS2 Loader), ungefär 20 KB styck. Ett spel som redan har ett omslag behåller det.'
+  STANDARD: STANDARD
+  '%d IN': '%d IN'
+  '%d IN, %d REPLACED': '%d IN, %d ERSATTA'
+  COULD NOT WRITE: KUNDE INTE SKRIVA
+  'Getting it ready: %s': 'Förbereder: %s'
+  NOT A .TAR: INTE EN .TAR
+  NOTHING CHANGED: INGET ÄNDRAT
+  NOTHING TO PUT IN: INGET ATT LÄGGA IN
+  ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
+  : På (snabb) håller startljudet bredvid RIPPS2 på minneskortet det startar från, och RIPPS2 startade inte från ett. Startljudet spelas som vid På.
+  'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'Det finns inget startljud att kopiera än: Ljudinställningar > BIOS-ljud rippar den här konsolens.'
+  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
+  : Det här är RIPPS2 lite, som inte har med PS2BBL, så det kan inte installera BIBLE. Den fulla RIPPS2.elf installerar och reparerar det; en redan installerad startladdare fortsätter att starta RIPPS2 lite som det är.
+  '%d COPIED OUT': '%d KOPIERADE UT'
+  '%d ITEM   %d MARKED   %s': '%d OBJEKT   %d MARKERAT   %s'
+  '%d ITEM   %d MARKED   %s   %s FREE': '%d OBJEKT   %d MARKERAT   %s   %s LEDIGT'
+  '%d ITEMS   %d MARKED   %s': '%d OBJEKT   %d MARKERADE   %s'
+  '%d ITEMS   %d MARKED   %s   %s FREE': '%d OBJEKT   %d MARKERADE   %s   %s LEDIGT'
+  '%s IN %d': '%s I %d'
+  '%s IN %d, %s FREE': '%s I %d, %s LEDIGT'
+  ', %d LEFT OUT': ', %d UTELÄMNADE'
+  COPY IT OUT TO OPEN IT: KOPIERA UT DET FÖR ATT ÖPPNA
+  'Copying out: %s': 'Kopierar ut: %s'
+  INVERT MARKS: VÄND MARKERINGAR
+  NO FILES ON THE CLIPBOARD: INGA FILER I URKLIPP
+  SIZE AND FREE SPACE: STORLEK OCH LEDIGT UTRYMME
+  ? CHEATS in the in-game menu turns each of the game's cheats on or off while you play. Changes apply on RESUME; a cheat turned off stops writing, what it wrote stays. Needs Cheats on for the game.
+  : CHEATS i spelmenyn slår på eller av varje fusk i spelet medan du spelar. Ändringar gäller vid RESUME; ett avslaget fusk slutar skriva, det det skrev ligger kvar. Kräver Cheats på för spelet.
+  'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 'Inga CHEATS i spelmenyn: fusken som kryssades före starten gäller hela spelet, som förut.'
+  BOOT SOUND WITH THE PILLARS: STARTLJUD MED PELARNA
+  'Boot Sound: On (fast)': 'Startljud: På (snabb)'
+  'Boot sound On (fast): %s, as the pillars rise': 'Startljud På (snabb): %s, när pelarna reser sig'
+  'Boot sound On: from the AUDIO folder, once its drive is up': 'Startljud På: från mappen AUDIO, när dess enhet är redo'
+  Boot sound off (Audio settings > Boot Sound): Startljud av (Ljudinställningar > Startljud)
+  Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Kopierar boot.adp bredvid RIPPS2 på minneskortet det startar från, där starten läser det innan någon enhet är redo.
 labels:
   OK: OK
   BDMMODE: Startläge för BDM
@@ -1686,7 +1747,7 @@ labels:
   HINT_SETTINGS_SOURCE: Global använder de delade inställningarna; Per spel behåller dem bara för det här spelet.
   HINT_PADMACRO_TOGGLE: Medan knappen hålls saktar bara ner spaken medan du håller knappen; Växlas med knapp slår på och av det.
   HINT_SFX: Menyns ljudeffekter.
-  HINT_BOOT_SND: Spelar ett ljud när RiptOPL startar.
+  HINT_BOOT_SND: 'Startljudet när RIPPS2 startar. På: från mappen AUDIO, när dess enhet är redo. På (snabb): en kopia bredvid RIPPS2 på minneskortet det startar från (erbjuds när du väljer det), spelad när pelarna reser sig. Det spelas även med ljudeffekter av.'
   HINT_BGM: Spelar temats musik, eller din fil för standardtemamusik.
   HINT_SFX_VOLUME: Volym för menyns ljudeffekter.
   HINT_BOOT_SND_VOLUME: Volym för startljudet.
@@ -1834,3 +1895,9 @@ labels:
   RIPPS2_ART_PACK: ART-paket
   RIPPS2_ART_PACK_BUILD: Bygg eller ta bort
   HINT_RIPPS2_ART_PACK: Packar ART-mappen på varje startad enhet i en enda art.tar på enheten du väljer (den snabbaste erbjuds först). Omslagen läses då från en fil med ett index, aldrig med en sökning per spel, så menyerna och musiken förblir mjuka. ART-mapparna förblir som de är.
+  RIPPS2_LIST_CFG_TEXT: Titel och beskrivning i listan
+  HINT_RIPPS2_LIST_CFG_TEXT: 'Spelets titel och beskrivning från dess CFG bredvid listan. Tema: som temat visar dem (RIPPS2:s eget tema utelämnar dem). Infosidan behåller dem i alla fall.'
+  RIPPS2_PS1_PREFER: PS1-dubbletter
+  HINT_RIPPS2_PS1_PREFER: 'Ett PS1-spel som både är en POPSTARTER-VCD och en Ember-avbild. Båda: två rader. Ember: bara Ember-raden. POPSTARTER: bara VCD:n. Samma titel, ett skiv-ID först undantaget, är samma spel.'
+  RIPPS2_MY_PADS: Mina handkontroller
+  HINT_RIPPS2_MY_PADS: 'De .pad-profiler som ligger i mappen PADS bredvid RIPPS2: en textfil per USB-handkontroll, med dess ID som namn (2563_0575.pad), var och en kontrollerad. RIPPS2 leder formatet; PADEMU läser dem i en senare build.'

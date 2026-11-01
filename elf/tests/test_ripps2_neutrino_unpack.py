@@ -28,6 +28,7 @@ with tempfile.TemporaryDirectory() as tmp:
 #include <sys/stat.h>
 #define LOG(...) ((void)0)
 static FILE *order;
+static int ripps2CardFolderIconNamed(const char *dir, const char *title) { (void)dir; (void)title; return 1; } /* build 126: the card icon */
 static void guiRenderTextScreen(const char *m) { if (!strncmp(m, "NEUTRINO: writing ", 18)) fprintf(order, "%s\\n", m + 18); }
 static unsigned char neutrino_tgz[] = {''' + blob + '''};
 static int size_neutrino_tgz = sizeof(neutrino_tgz);

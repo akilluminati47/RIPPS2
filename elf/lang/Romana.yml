@@ -1349,6 +1349,67 @@ strings:
   ? There is no other .tar to merge into %s. Put it in this folder, in a drive's ART folder or at the top of a drive, then try again.
   : Nu există alt .tar de îmbinat în %s. Pune-l în acest folder, în folderul ART al unei unități sau în rădăcina unei unități, apoi încearcă din nou.
   MERGE A .TAR INTO THIS: ÎMBINĂ UN .TAR AICI
+  ? '
+  
+    %d game button maps in GAMES'
+  : '
+  
+    %d asocieri de butoane ale jocurilor în GAMES'
+  ? '
+  
+    1 game button map in GAMES'
+  : '
+  
+    1 asociere de butoane a unui joc în GAMES'
+  (no name): (fără nume)
+  Both: Ambele
+  ? 'None yet. A profile is a text file named after the pad''s ID, like 2563_0575.pad: the format is in RIPPS2''s repo (docs/plans/pad-spec.md).'
+  : 'Încă niciunul. Un profil este un fișier text numit după ID-ul controlerului, ca 2563_0575.pad: formatul e în depozitul RIPPS2 (docs/plans/pad-spec.md).'
+  On (fast): Pornit (rapid)
+  'Pad profiles in %s:': 'Profiluri de controler în %s:'
+  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (build %d) pe RiptOPL %s
+  RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: RIPPS2 nu știe unde îi e dosarul, deci nu poate căuta PADS.
+  could not be read: nu a putut fi citit
+  About %d seconds left: Au mai rămas circa %d secunde
+  About 1 second left: A mai rămas circa 1 secundă
+  Taking longer than its last start (%d s so far): Durează mai mult decât ultima pornire (%d s până acum)
+  ? 'Download the covers in HD (280 x 400)? Sharper on an HD screen, about 70 KB each. START: Standard (140 x 200, as Open PS2 Loader''s), about 20 KB each. A game that already has a cover keeps it.'
+  : 'Descarci copertele în HD (280 x 400)? Mai clare pe un ecran HD, circa 70 KB fiecare. START: Standard (140 x 200, ca în Open PS2 Loader), circa 20 KB fiecare. Un joc care are deja copertă o păstrează.'
+  STANDARD: STANDARD
+  '%d IN': '%d ADĂUGATE'
+  '%d IN, %d REPLACED': '%d ADĂUGATE, %d ÎNLOCUITE'
+  COULD NOT WRITE: SCRIEREA A EȘUAT
+  'Getting it ready: %s': 'Pregătire: %s'
+  NOT A .TAR: NU E UN .TAR
+  NOTHING CHANGED: NIMIC SCHIMBAT
+  NOTHING TO PUT IN: NIMIC DE ADĂUGAT
+  ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
+  : Pornit (rapid) ține sunetul de pornire lângă RIPPS2 pe cardul de memorie de pe care pornește, iar RIPPS2 nu a pornit de pe un card. Sunetul de pornire se aude ca la Pornit.
+  'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'Încă nu există un sunet de pornire de copiat: Setări audio > Sunete BIOS le extrage pe cele ale acestei console.'
+  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
+  : Acesta este RIPPS2 lite, fără PS2BBL, deci nu poate instala BIBLE. RIPPS2.elf complet îl instalează și îl repară; un bootloader deja instalat continuă să pornească RIPPS2 lite așa cum e.
+  '%d COPIED OUT': '%d COPIATE AFARĂ'
+  '%d ITEM   %d MARKED   %s': '%d ELEMENT   %d MARCAT   %s'
+  '%d ITEM   %d MARKED   %s   %s FREE': '%d ELEMENT   %d MARCAT   %s   %s LIBER'
+  '%d ITEMS   %d MARKED   %s': '%d ELEMENTE   %d MARCATE   %s'
+  '%d ITEMS   %d MARKED   %s   %s FREE': '%d ELEMENTE   %d MARCATE   %s   %s LIBER'
+  '%s IN %d': '%s ÎN %d'
+  '%s IN %d, %s FREE': '%s ÎN %d, %s LIBER'
+  ', %d LEFT OUT': ', %d LĂSATE DEOPARTE'
+  COPY IT OUT TO OPEN IT: COPIAZĂ-L AFARĂ CA SĂ-L DESCHIZI
+  'Copying out: %s': 'Se copiază afară: %s'
+  INVERT MARKS: INVERSEAZĂ MARCAJELE
+  NO FILES ON THE CLIPBOARD: NICIUN FIȘIER ÎN CLIPBOARD
+  SIZE AND FREE SPACE: DIMENSIUNE ȘI SPAȚIU LIBER
+  ? CHEATS in the in-game menu turns each of the game's cheats on or off while you play. Changes apply on RESUME; a cheat turned off stops writing, what it wrote stays. Needs Cheats on for the game.
+  : CHEATS în meniul din joc pornește sau oprește fiecare cheat al jocului în timp ce joci. Schimbările se aplică la RESUME; un cheat oprit nu mai scrie, ce a scris rămâne. Necesită Cheats pornite pentru joc.
+  'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 'Fără CHEATS în meniul din joc: cheaturile bifate înainte de pornire merg tot jocul, ca înainte.'
+  BOOT SOUND WITH THE PILLARS: SUNET DE PORNIRE CU PILONII
+  'Boot Sound: On (fast)': 'Sunet de pornire: Pornit (rapid)'
+  'Boot sound On (fast): %s, as the pillars rise': 'Sunet de pornire Pornit (rapid): %s, când se înalță pilonii'
+  'Boot sound On: from the AUDIO folder, once its drive is up': 'Sunet de pornire Pornit: din dosarul AUDIO, când unitatea lui e gata'
+  Boot sound off (Audio settings > Boot Sound): Sunet de pornire oprit (Setări audio > Sunet de pornire)
+  Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Copiază boot.adp lângă RIPPS2 pe cardul de memorie de pe care pornește, unde pornirea îl citește înainte ca vreo unitate să fie gata.
 labels:
   SETTINGS_SAVED: Setări salvate în %s
   REMOVE_ALL_SETTINGS: Elimină setările
@@ -1721,7 +1782,7 @@ labels:
   HINT_SETTINGS_SOURCE: Global folosește setările comune; Per joc le păstrează doar pentru acest joc.
   HINT_PADMACRO_TOGGLE: Cât timp e apăsat butonul încetinește stickul doar cât ții butonul; Comutat cu butonul îl pornește și îl oprește.
   HINT_SFX: Efectele sonore ale meniului.
-  HINT_BOOT_SND: Redă un sunet când pornește RiptOPL.
+  HINT_BOOT_SND: 'Sunetul de pornire când pornește RIPPS2. Pornit: din dosarul AUDIO, când unitatea lui e gata. Pornit (rapid): o copie lângă RIPPS2 pe cardul de memorie de pe care pornește (oferită când îl alegi), redată când se înalță pilonii. Se aude și cu efectele sonore oprite.'
   HINT_BGM: Redă muzica temei sau fișierul tău Muzică implicită a temei.
   HINT_SFX_VOLUME: Volumul efectelor sonore ale meniului.
   HINT_BOOT_SND_VOLUME: Volumul sunetului de pornire.
@@ -1871,3 +1932,9 @@ labels:
   RIPPS2_ART_PACK: Pachet ART
   RIPPS2_ART_PACK_BUILD: Construiește sau șterge
   HINT_RIPPS2_ART_PACK: Pune folderul ART al fiecărei unități pornite într-un singur art.tar pe unitatea pe care o alegi (cea mai rapidă este oferită prima). Copertele se încarcă apoi dintr-un fișier cu un index, niciodată cu o căutare pentru fiecare joc, așa că meniurile și muzica rămân fluide. Folderele ART rămân cum sunt.
+  RIPPS2_LIST_CFG_TEXT: Titlu și descriere în listă
+  HINT_RIPPS2_LIST_CFG_TEXT: 'Titlul și descrierea jocului din CFG-ul lui lângă listă. Temă: cum le arată tema (tema proprie RIPPS2 le omite). Pagina de informații le păstrează oricum.'
+  RIPPS2_PS1_PREFER: Duplicate PS1
+  HINT_RIPPS2_PS1_PREFER: 'Un joc PS1 care e și VCD pentru POPSTARTER, și imagine Ember. Ambele: două rânduri. Ember: doar cel Ember. POPSTARTER: doar VCD-ul. Același titlu, fără un ID de disc în față, e același joc.'
+  RIPPS2_MY_PADS: Controlerele mele
+  HINT_RIPPS2_MY_PADS: 'Profilurile .pad din dosarul PADS de lângă RIPPS2: câte un fișier text pentru fiecare controler USB, numit după ID-ul lui (2563_0575.pad), fiecare verificat. RIPPS2 conduce formatul; PADEMU le va citi într-un build ulterior.'

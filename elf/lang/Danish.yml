@@ -1350,6 +1350,67 @@ strings:
   ? There is no other .tar to merge into %s. Put it in this folder, in a drive's ART folder or at the top of a drive, then try again.
   : Der er ingen anden .tar at flette ind i %s. Læg den i denne mappe, i et drevs ART-mappe eller øverst på et drev, og prøv igen.
   MERGE A .TAR INTO THIS: FLET EN .TAR IND I DENNE
+  ? '
+  
+    %d game button maps in GAMES'
+  : '
+  
+    %d knaptildelinger for spil i GAMES'
+  ? '
+  
+    1 game button map in GAMES'
+  : '
+  
+    1 knaptildeling for et spil i GAMES'
+  (no name): (intet navn)
+  Both: Begge
+  ? 'None yet. A profile is a text file named after the pad''s ID, like 2563_0575.pad: the format is in RIPPS2''s repo (docs/plans/pad-spec.md).'
+  : 'Ingen endnu. En profil er en tekstfil opkaldt efter controllerens ID, som 2563_0575.pad: formatet står i RIPPS2''s repo (docs/plans/pad-spec.md).'
+  On (fast): Til (hurtig)
+  'Pad profiles in %s:': 'Controllerprofiler i %s:'
+  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (build %d) på RiptOPL %s
+  RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: RIPPS2 ved ikke, hvor dens mappe er, så den kan ikke lede efter PADS.
+  could not be read: kunne ikke læses
+  About %d seconds left: Omkring %d sekunder tilbage
+  About 1 second left: Omkring 1 sekund tilbage
+  Taking longer than its last start (%d s so far): Tager længere tid end sidste start (%d s indtil nu)
+  ? 'Download the covers in HD (280 x 400)? Sharper on an HD screen, about 70 KB each. START: Standard (140 x 200, as Open PS2 Loader''s), about 20 KB each. A game that already has a cover keeps it.'
+  : 'Hente coverne i HD (280 x 400)? Skarpere på en HD-skærm, omkring 70 KB stykket. START: Standard (140 x 200, som Open PS2 Loader), omkring 20 KB stykket. Et spil, der allerede har et cover, beholder det.'
+  STANDARD: STANDARD
+  '%d IN': '%d IND'
+  '%d IN, %d REPLACED': '%d IND, %d ERSTATTET'
+  COULD NOT WRITE: KUNNE IKKE SKRIVE
+  'Getting it ready: %s': 'Gør klar: %s'
+  NOT A .TAR: IKKE EN .TAR
+  NOTHING CHANGED: INTET ÆNDRET
+  NOTHING TO PUT IN: INTET AT LÆGGE IND
+  ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
+  : Til (hurtig) holder opstartslyden ved siden af RIPPS2 på hukommelseskortet, det starter fra, og RIPPS2 startede ikke fra et. Opstartslyden spiller som ved Til.
+  'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'Der er ingen opstartslyd at kopiere endnu: Lydindstillinger > BIOS-lyde ripper denne konsols.'
+  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
+  : Dette er RIPPS2 lite, som ikke har PS2BBL med, så den kan ikke sætte BIBLE op. Den fulde RIPPS2.elf installerer og reparerer den; en allerede opsat bootloader bliver ved med at starte RIPPS2 lite, som den er.
+  '%d COPIED OUT': '%d KOPIERET UD'
+  '%d ITEM   %d MARKED   %s': '%d ELEMENT   %d MARKERET   %s'
+  '%d ITEM   %d MARKED   %s   %s FREE': '%d ELEMENT   %d MARKERET   %s   %s LEDIGT'
+  '%d ITEMS   %d MARKED   %s': '%d ELEMENTER   %d MARKERET   %s'
+  '%d ITEMS   %d MARKED   %s   %s FREE': '%d ELEMENTER   %d MARKERET   %s   %s LEDIGT'
+  '%s IN %d': '%s I %d'
+  '%s IN %d, %s FREE': '%s I %d, %s LEDIGT'
+  ', %d LEFT OUT': ', %d UDELADT'
+  COPY IT OUT TO OPEN IT: KOPIÉR DEN UD FOR AT ÅBNE DEN
+  'Copying out: %s': 'Kopierer ud: %s'
+  INVERT MARKS: VEND MARKERINGER
+  NO FILES ON THE CLIPBOARD: INGEN FILER I UDKLIPSHOLDEREN
+  SIZE AND FREE SPACE: STØRRELSE OG LEDIG PLADS
+  ? CHEATS in the in-game menu turns each of the game's cheats on or off while you play. Changes apply on RESUME; a cheat turned off stops writing, what it wrote stays. Needs Cheats on for the game.
+  : CHEATS i spilmenuen slår hvert af spillets snyd til eller fra, mens du spiller. Ændringer gælder ved RESUME; et snyd slået fra holder op med at skrive, det det skrev bliver. Kræver Cheats slået til for spillet.
+  'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 'Ingen CHEATS i spilmenuen: de snyd, der var sat flueben ved før start, kører hele spillet, som før.'
+  BOOT SOUND WITH THE PILLARS: OPSTARTSLYD MED SØJLERNE
+  'Boot Sound: On (fast)': 'Opstartslyd: Til (hurtig)'
+  'Boot sound On (fast): %s, as the pillars rise': 'Opstartslyd Til (hurtig): %s, når søjlerne rejser sig'
+  'Boot sound On: from the AUDIO folder, once its drive is up': 'Opstartslyd Til: fra mappen AUDIO, når dens drev er klar'
+  Boot sound off (Audio settings > Boot Sound): Opstartslyd fra (Lydindstillinger > Opstartslyd)
+  Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Kopierer boot.adp ved siden af RIPPS2 på hukommelseskortet, det starter fra, hvor opstarten læser den, før noget drev er klar.
 labels:
   OK: OK
   MEDIUM: Mellem
@@ -1681,7 +1742,7 @@ labels:
   HINT_SETTINGS_SOURCE: Global bruger de delte indstillinger; Pr. spil beholder dem kun til dette spil.
   HINT_PADMACRO_TOGGLE: Mens knappen holdes sænker kun pindens fart, mens du holder knappen; Skiftes med knap slår det til og fra.
   HINT_SFX: Menuens lydeffekter.
-  HINT_BOOT_SND: Afspiller en lyd, når RiptOPL starter.
+  HINT_BOOT_SND: 'Opstartslyden, når RIPPS2 starter. Til: fra mappen AUDIO, når dens drev er klar. Til (hurtig): en kopi ved siden af RIPPS2 på hukommelseskortet, det starter fra (tilbydes, når du vælger det), spillet når søjlerne rejser sig. Den spiller også med lydeffekter slået fra.'
   HINT_BGM: Afspiller temaets musik eller din fil med standardtemamusik.
   HINT_SFX_VOLUME: Lydstyrke for menuens lydeffekter.
   HINT_BOOT_SND_VOLUME: Lydstyrke for opstartslyden.
@@ -1829,3 +1890,9 @@ labels:
   RIPPS2_ART_PACK: ART-pakke
   RIPPS2_ART_PACK_BUILD: Byg eller fjern
   HINT_RIPPS2_ART_PACK: Pakker ART-mappen på hvert startet drev i én art.tar på det drev, du vælger (det hurtigste tilbydes først). Coverne læses så fra én fil med ét indeks, aldrig med et opslag pr. spil, så menuerne og musikken forbliver glatte. ART-mapperne forbliver, som de er.
+  RIPPS2_LIST_CFG_TEXT: Titel og beskrivelse i listen
+  HINT_RIPPS2_LIST_CFG_TEXT: 'Spillets titel og beskrivelse fra dets CFG ved siden af listen. Tema: som temaet viser dem (RIPPS2''s eget tema udelader dem). Infosiden beholder dem under alle omstændigheder.'
+  RIPPS2_PS1_PREFER: PS1-dubletter
+  HINT_RIPPS2_PS1_PREFER: 'Et PS1-spil, der både er en POPSTARTER-VCD og et Ember-billede. Begge: to rækker. Ember: kun Ember-rækken. POPSTARTER: kun VCD''en. Samme titel, et disk-ID foran ikke medregnet, er samme spil.'
+  RIPPS2_MY_PADS: Mine controllere
+  HINT_RIPPS2_MY_PADS: 'De .pad-profiler, der ligger i mappen PADS ved siden af RIPPS2: én tekstfil pr. USB-controller, opkaldt efter dens ID (2563_0575.pad), hver kontrolleret. RIPPS2 leder formatet; PADEMU læser dem i et senere build.'

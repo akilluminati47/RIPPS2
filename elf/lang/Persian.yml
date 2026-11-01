@@ -1351,6 +1351,67 @@ strings:
   ? There is no other .tar to merge into %s. Put it in this folder, in a drive's ART folder or at the top of a drive, then try again.
   : .tar دیگری برای ادغام در %s نیست. آن را در این پوشه، در پوشهٔ ART یک درایو یا در بالای یک درایو بگذارید و دوباره امتحان کنید.
   MERGE A .TAR INTO THIS: ادغام یک .TAR در این
+  ? '
+  
+    %d game button maps in GAMES'
+  : '
+  
+    %d چیدمان دکمه بازی در GAMES'
+  ? '
+  
+    1 game button map in GAMES'
+  : '
+  
+    1 چیدمان دکمه بازی در GAMES'
+  (no name): (بی‌نام)
+  Both: هر دو
+  ? 'None yet. A profile is a text file named after the pad''s ID, like 2563_0575.pad: the format is in RIPPS2''s repo (docs/plans/pad-spec.md).'
+  : 'هنوز هیچ. نمایه یک فایل متنی است که با شناسه دسته نام‌گذاری می‌شود، مثل 2563_0575.pad: قالب در مخزن RIPPS2 است (docs/plans/pad-spec.md).'
+  On (fast): روشن (سریع)
+  'Pad profiles in %s:': 'نمایه‌های دسته در %s:'
+  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (ساخت %d) روی RiptOPL %s
+  RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: RIPPS2 نمی‌داند پوشه‌اش کجاست، پس نمی‌تواند PADS را بجوید.
+  could not be read: خوانده نشد
+  About %d seconds left: حدود %d ثانیه مانده
+  About 1 second left: حدود 1 ثانیه مانده
+  Taking longer than its last start (%d s so far): کندتر از آخرین شروع (تا حالا %d ث)
+  ? 'Download the covers in HD (280 x 400)? Sharper on an HD screen, about 70 KB each. START: Standard (140 x 200, as Open PS2 Loader''s), about 20 KB each. A game that already has a cover keeps it.'
+  : 'جلدها با کیفیت HD (280 x 400) دانلود شوند؟ روی صفحه HD واضح‌تر، هر کدام حدود 70 KB. START: استاندارد (140 x 200، مثل Open PS2 Loader)، هر کدام حدود 20 KB. بازی‌ای که جلد دارد آن را نگه می‌دارد.'
+  STANDARD: استاندارد
+  '%d IN': '%d افزوده شد'
+  '%d IN, %d REPLACED': '%d افزوده، %d جایگزین شد'
+  COULD NOT WRITE: نوشته نشد
+  'Getting it ready: %s': 'آماده‌سازی: %s'
+  NOT A .TAR: .TAR نیست
+  NOTHING CHANGED: چیزی تغییر نکرد
+  NOTHING TO PUT IN: چیزی برای افزودن نیست
+  ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
+  : روشن (سریع) صدای راه‌اندازی را کنار RIPPS2 روی کارت حافظه‌ای که از آن شروع می‌شود نگه می‌دارد، و RIPPS2 از کارت شروع نشده. صدای راه‌اندازی مثل روشن پخش می‌شود.
+  'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'هنوز صدای راه‌اندازی‌ای برای کپی نیست: تنظیمات صدا > صداهای BIOS صداهای این کنسول را استخراج می‌کند.'
+  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
+  : این RIPPS2 lite است که PS2BBL ندارد، پس نمی‌تواند BIBLE را راه بیندازد. RIPPS2.elf کامل آن را نصب و تعمیر می‌کند؛ بارگذار راه‌اندازی که از قبل نصب شده همچنان RIPPS2 lite را اجرا می‌کند.
+  '%d COPIED OUT': '%d به بیرون کپی شد'
+  '%d ITEM   %d MARKED   %s': '%d مورد   %d علامت‌خورده   %s'
+  '%d ITEM   %d MARKED   %s   %s FREE': '%d مورد   %d علامت‌خورده   %s   %s آزاد'
+  '%d ITEMS   %d MARKED   %s': '%d مورد   %d علامت‌خورده   %s'
+  '%d ITEMS   %d MARKED   %s   %s FREE': '%d مورد   %d علامت‌خورده   %s   %s آزاد'
+  '%s IN %d': '%s در %d'
+  '%s IN %d, %s FREE': '%s در %d، %s آزاد'
+  ', %d LEFT OUT': ، %d کنار گذاشته شد
+  COPY IT OUT TO OPEN IT: برای باز کردن به بیرون کپی کنید
+  'Copying out: %s': 'کپی به بیرون: %s'
+  INVERT MARKS: وارونه کردن علامت‌ها
+  NO FILES ON THE CLIPBOARD: فایلی در کلیپ‌بورد نیست
+  SIZE AND FREE SPACE: اندازه و فضای آزاد
+  ? CHEATS in the in-game menu turns each of the game's cheats on or off while you play. Changes apply on RESUME; a cheat turned off stops writing, what it wrote stays. Needs Cheats on for the game.
+  : CHEATS در منوی درون بازی هر تقلب بازی را هنگام بازی روشن یا خاموش می‌کند. تغییرات با RESUME اعمال می‌شوند؛ تقلب خاموش‌شده دیگر نمی‌نویسد، آنچه نوشته می‌ماند. Cheats باید برای بازی روشن باشد.
+  'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 'بدون CHEATS در منوی درون بازی: تقلب‌هایی که پیش از اجرا تیک خورده‌اند مثل قبل در تمام بازی کار می‌کنند.'
+  BOOT SOUND WITH THE PILLARS: صدای راه‌اندازی با ستون‌ها
+  'Boot Sound: On (fast)': 'صدای راه‌اندازی: روشن (سریع)'
+  'Boot sound On (fast): %s, as the pillars rise': 'صدای راه‌اندازی روشن (سریع): %s، هنگام بالا آمدن ستون‌ها'
+  'Boot sound On: from the AUDIO folder, once its drive is up': 'صدای راه‌اندازی روشن: از پوشه AUDIO، وقتی درایوش آماده شد'
+  Boot sound off (Audio settings > Boot Sound): صدای راه‌اندازی خاموش (تنظیمات صدا > صدای راه‌اندازی)
+  Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: boot.adp را کنار RIPPS2 روی کارت حافظه‌ای که از آن شروع می‌شود کپی می‌کند، جایی که راه‌اندازی آن را پیش از آماده شدن هر درایوی می‌خواند.
 labels:
   SAVE_CHANGES: ذخیره تغییرات
   BACK: بازگشت
@@ -1923,7 +1984,7 @@ labels:
   HINT_SETTINGS_SOURCE: سراسری از تنظیمات مشترک استفاده می‌کند؛ هر بازی آن‌ها را فقط برای این بازی نگه می‌دارد.
   HINT_PADMACRO_TOGGLE: هنگام فشردن دکمه استیک را فقط وقتی دکمه را نگه داشته‌اید کند می‌کند؛ روشن/خاموش با دکمه آن را روشن و خاموش می‌کند.
   HINT_SFX: جلوه‌های صوتی منو.
-  HINT_BOOT_SND: هنگام شروع RiptOPL صدایی پخش می‌کند.
+  HINT_BOOT_SND: 'صدای راه‌اندازی هنگام شروع RIPPS2. روشن: از پوشه AUDIO، وقتی درایوش آماده شد. روشن (سریع): نسخه‌ای کنار RIPPS2 روی کارت حافظه‌ای که از آن شروع می‌شود (هنگام انتخاب پیشنهاد می‌شود)، هنگام بالا آمدن ستون‌ها پخش می‌شود. با جلوه‌های صوتی خاموش هم پخش می‌شود.'
   HINT_BGM: موسیقی پوسته، یا فایل موسیقی پیش‌فرض پوسته شما را پخش می‌کند.
   HINT_SFX_VOLUME: بلندی جلوه‌های صوتی منو.
   HINT_BOOT_SND_VOLUME: بلندی صدای راه‌اندازی.
@@ -2072,3 +2133,9 @@ labels:
   RIPPS2_ART_PACK: بسته ART
   RIPPS2_ART_PACK_BUILD: ساختن یا حذف
   HINT_RIPPS2_ART_PACK: پوشه ART هر درایو راه‌اندازی‌شده را در یک art.tar روی درایوی که انتخاب می‌کنی بسته‌بندی می‌کند (سریع‌ترین اول پیشنهاد می‌شود). جلدها سپس از یک فایل با یک فهرست بارگذاری می‌شوند، هرگز با جست‌وجو برای هر بازی، تا منوها و موسیقی روان بمانند. پوشه‌های ART همان‌طور که هستند می‌مانند.
+  RIPPS2_LIST_CFG_TEXT: عنوان و توضیح در فهرست
+  HINT_RIPPS2_LIST_CFG_TEXT: 'عنوان و توضیح بازی از CFG آن کنار فهرست بازی‌ها. پوسته: همان‌طور که پوسته نشان می‌دهد (پوسته خود RIPPS2 آن‌ها را نشان نمی‌دهد). صفحه اطلاعات همیشه نشانشان می‌دهد.'
+  RIPPS2_PS1_PREFER: تکراری‌های PS1
+  HINT_RIPPS2_PS1_PREFER: 'بازی PS1 که هم VCD برای POPSTARTER است و هم ایمیج Ember. هر دو: دو ردیف. Ember: فقط ردیف Ember. POPSTARTER: فقط VCD. عنوان یکسان، بدون شناسه دیسک در ابتدا، یعنی همان بازی.'
+  RIPPS2_MY_PADS: دسته‌های من
+  HINT_RIPPS2_MY_PADS: 'نمایه‌های .pad در پوشه PADS کنار RIPPS2: برای هر دسته USB یک فایل متنی با نام شناسه‌اش (2563_0575.pad)، که هر کدام بررسی می‌شود. RIPPS2 این قالب را پیش می‌برد؛ PADEMU آن‌ها را در ساختی بعدی می‌خواند.'

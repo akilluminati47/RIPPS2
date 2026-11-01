@@ -1351,6 +1351,67 @@ strings:
   ? There is no other .tar to merge into %s. Put it in this folder, in a drive's ART folder or at the top of a drive, then try again.
   : ບໍ່ມີ .tar ອື່ນທີ່ຈະລວມເຂົ້າໃນ %s. ວາງມັນໄວ້ໃນໂຟນເດີນີ້, ໃນໂຟນເດີ ART ຂອງໄດຣຟ໌ ຫຼື ຢູ່ເທິງສຸດຂອງໄດຣຟ໌, ແລ້ວລອງໃໝ່.
   MERGE A .TAR INTO THIS: ລວມ .TAR ເຂົ້າໃນອັນນີ້
+  ? '
+  
+    %d game button maps in GAMES'
+  : '
+  
+    ການຈັດປຸ່ມເກມ %d ອັນໃນ GAMES'
+  ? '
+  
+    1 game button map in GAMES'
+  : '
+  
+    ການຈັດປຸ່ມເກມ 1 ອັນໃນ GAMES'
+  (no name): (ບໍ່ມີຊື່)
+  Both: ທັງສອງ
+  ? 'None yet. A profile is a text file named after the pad''s ID, like 2563_0575.pad: the format is in RIPPS2''s repo (docs/plans/pad-spec.md).'
+  : 'ຍັງບໍ່ມີ. ໂປຣໄຟລ໌ແມ່ນໄຟລ໌ຂໍ້ຄວາມທີ່ຕັ້ງຊື່ຕາມ ID ຂອງຈອຍ ເຊັ່ນ 2563_0575.pad: ຮູບແບບຢູ່ໃນ repo ຂອງ RIPPS2 (docs/plans/pad-spec.md).'
+  On (fast): ເປີດ (ໄວ)
+  'Pad profiles in %s:': 'ໂປຣໄຟລ໌ຈອຍໃນ %s:'
+  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (build %d) ເທິງ RiptOPL %s
+  RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: RIPPS2 ບໍ່ຮູ້ວ່າໂຟນເດີຂອງມັນຢູ່ໃສ ຈຶ່ງຊອກ PADS ບໍ່ໄດ້.
+  could not be read: ອ່ານບໍ່ໄດ້
+  About %d seconds left: ເຫຼືອປະມານ %d ວິນາທີ
+  About 1 second left: ເຫຼືອປະມານ 1 ວິນາທີ
+  Taking longer than its last start (%d s so far): ຊ້າກວ່າການເລີ່ມຄັ້ງກ່ອນ (%d ວິ ແລ້ວ)
+  ? 'Download the covers in HD (280 x 400)? Sharper on an HD screen, about 70 KB each. START: Standard (140 x 200, as Open PS2 Loader''s), about 20 KB each. A game that already has a cover keeps it.'
+  : 'ດາວໂຫຼດໜ້າປົກແບບ HD (280 x 400)? ຄົມຊັດກວ່າໃນຈໍ HD, ປະມານ 70 KB ຕໍ່ໃບ. START: ມາດຕະຖານ (140 x 200, ຄື Open PS2 Loader), ປະມານ 20 KB ຕໍ່ໃບ. ເກມທີ່ມີໜ້າປົກແລ້ວຈະເກັບໄວ້.'
+  STANDARD: ມາດຕະຖານ
+  '%d IN': ເພີ່ມ %d
+  '%d IN, %d REPLACED': ເພີ່ມ %d, ແທນ %d
+  COULD NOT WRITE: ຂຽນບໍ່ໄດ້
+  'Getting it ready: %s': 'ກຳລັງກຽມ: %s'
+  NOT A .TAR: ບໍ່ແມ່ນ .TAR
+  NOTHING CHANGED: ບໍ່ມີຫຍັງປ່ຽນ
+  NOTHING TO PUT IN: ບໍ່ມີຫຍັງເພີ່ມ
+  ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
+  : ເປີດ (ໄວ) ເກັບສຽງເປີດເຄື່ອງໄວ້ຂ້າງ RIPPS2 ໃນເມມໂມຣີກາດທີ່ມັນເລີ່ມ, ແຕ່ RIPPS2 ບໍ່ໄດ້ເລີ່ມຈາກກາດ. ສຽງເປີດເຄື່ອງດັງຄືກັບ ເປີດ.
+  'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'ຍັງບໍ່ມີສຽງເປີດເຄື່ອງໃຫ້ສຳເນົາ: ຕັ້ງຄ່າສຽງ > ສຽງ BIOS ດຶງສຽງຂອງເຄື່ອງນີ້.'
+  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
+  : ນີ້ແມ່ນ RIPPS2 lite ທີ່ບໍ່ມີ PS2BBL ຈຶ່ງຕັ້ງ BIBLE ບໍ່ໄດ້. RIPPS2.elf ເຕັມຕິດຕັ້ງ ແລະ ສ້ອມແປງມັນ; ໂຕໂຫຼດທີ່ຕັ້ງແລ້ວຍັງເລີ່ມ RIPPS2 lite ຄືເກົ່າ.
+  '%d COPIED OUT': ສຳເນົາອອກ %d
+  '%d ITEM   %d MARKED   %s': '%d ລາຍການ   ໝາຍ %d   %s'
+  '%d ITEM   %d MARKED   %s   %s FREE': '%d ລາຍການ   ໝາຍ %d   %s   ວ່າງ %s'
+  '%d ITEMS   %d MARKED   %s': '%d ລາຍການ   ໝາຍ %d   %s'
+  '%d ITEMS   %d MARKED   %s   %s FREE': '%d ລາຍການ   ໝາຍ %d   %s   ວ່າງ %s'
+  '%s IN %d': '%s ໃນ %d'
+  '%s IN %d, %s FREE': '%s ໃນ %d, ວ່າງ %s'
+  ', %d LEFT OUT': ', ຂ້າມ %d'
+  COPY IT OUT TO OPEN IT: ສຳເນົາອອກເພື່ອເປີດ
+  'Copying out: %s': 'ກຳລັງສຳເນົາອອກ: %s'
+  INVERT MARKS: ສະລັບເຄື່ອງໝາຍ
+  NO FILES ON THE CLIPBOARD: ບໍ່ມີໄຟລ໌ໃນຄລິບບອດ
+  SIZE AND FREE SPACE: ຂະໜາດ ແລະ ບ່ອນວ່າງ
+  ? CHEATS in the in-game menu turns each of the game's cheats on or off while you play. Changes apply on RESUME; a cheat turned off stops writing, what it wrote stays. Needs Cheats on for the game.
+  : CHEATS ໃນເມນູໃນເກມ ເປີດ ຫຼື ປິດແຕ່ລະສູດໂກງຂອງເກມໃນຂະນະຫຼິ້ນ. ການປ່ຽນມີຜົນເມື່ອ RESUME; ສູດທີ່ປິດຢຸດຂຽນ, ສິ່ງທີ່ຂຽນແລ້ວຍັງຢູ່. ຕ້ອງເປີດ Cheats ສຳລັບເກມນັ້ນ.
+  'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 'ບໍ່ມີ CHEATS ໃນເມນູໃນເກມ: ສູດທີ່ໝາຍໄວ້ກ່ອນເລີ່ມເຮັດວຽກຕະຫຼອດເກມ ຄືເກົ່າ.'
+  BOOT SOUND WITH THE PILLARS: ສຽງເປີດກັບເສົາ
+  'Boot Sound: On (fast)': 'ສຽງເປີດ: ເປີດ (ໄວ)'
+  'Boot sound On (fast): %s, as the pillars rise': 'ສຽງເປີດ ເປີດ (ໄວ): %s, ເມື່ອເສົາຂຶ້ນ'
+  'Boot sound On: from the AUDIO folder, once its drive is up': 'ສຽງເປີດ ເປີດ: ຈາກ AUDIO, ເມື່ອໄດຣຟ໌ພ້ອມ'
+  Boot sound off (Audio settings > Boot Sound): ສຽງເປີດ ປິດ (ຕັ້ງຄ່າສຽງ)
+  Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: ສຳເນົາ boot.adp ໄວ້ຂ້າງ RIPPS2 ໃນເມມໂມຣີກາດທີ່ມັນເລີ່ມ, ບ່ອນທີ່ການເປີດເຄື່ອງອ່ານກ່ອນໄດຣຟ໌ໃດພ້ອມ.
 labels:
   SETTINGS_SAVED: ບັນທຶກການຕັ້ງຄ່າ ໄວ້ໃນ %s ແລ້ວ
   REMOVE_ALL_SETTINGS: ລົບການຕັ້ງຄ່າ
@@ -1747,7 +1808,7 @@ labels:
   HINT_SETTINGS_SOURCE: ລວມ ໃຊ້ການຕັ້ງຄ່າ ທີ່ໃຊ້ຮ່ວມກັນ; ແຕ່ລະເກມ ເກັບພວກມັນ ສຳລັບເກມນີ້ເທົ່ານັ້ນ.
   HINT_PADMACRO_TOGGLE: ຂະນະກົດປຸ່ມ ເຮັດໃຫ້ກ້ານຊ້າ ສະເພາະຂະນະທີ່ທ່ານກົດປຸ່ມຄ້າງ; ສະລັບດ້ວຍປຸ່ມ ເປີດ ແລະ ປິດມັນ.
   HINT_SFX: ເອັບເຟັກສຽງ ເມນູ.
-  HINT_BOOT_SND: ຫຼິ້ນສຽງ ເມື່ອ RiptOPL ເລີ່ມ.
+  HINT_BOOT_SND: 'ສຽງເປີດເຄື່ອງເມື່ອ RIPPS2 ເລີ່ມ. ເປີດ: ຈາກໂຟນເດີ AUDIO, ເມື່ອໄດຣຟ໌ພ້ອມ. ເປີດ (ໄວ): ສຳເນົາຂ້າງ RIPPS2 ໃນເມມໂມຣີກາດທີ່ມັນເລີ່ມ (ສະເໜີເມື່ອເລືອກ), ດັງເມື່ອເສົາຂຶ້ນ. ດັງເຖິງແມ່ນປິດສຽງເອັບເຟັກ.'
   HINT_BGM: ຫຼິ້ນເພງ ຂອງທີມ, ຫຼື ໄຟລ໌ ເພງທີມເລີ່ມຕົ້ນ ຂອງທ່ານ.
   HINT_SFX_VOLUME: ລະດັບສຽງ ເອັບເຟັກສຽງເມນູ.
   HINT_BOOT_SND_VOLUME: ລະດັບສຽງ ເປີດເຄື່ອງ.
@@ -1897,3 +1958,9 @@ labels:
   RIPPS2_ART_PACK: ແພັກ ART
   RIPPS2_ART_PACK_BUILD: ສ້າງ ຫຼື ລຶບ
   HINT_RIPPS2_ART_PACK: ລວມໂຟນເດີ ART ຂອງທຸກໄດຣຟ໌ທີ່ເລີ່ມແລ້ວ ເຂົ້າເປັນ art.tar ດຽວໃນໄດຣຟ໌ທີ່ທ່ານເລືອກ (ໄດຣຟ໌ທີ່ໄວທີ່ສຸດຖືກສະເໜີກ່ອນ). ໜ້າປົກຈະຖືກໂຫຼດຈາກໄຟລ໌ດຽວດ້ວຍດັດຊະນີດຽວ, ບໍ່ເຄີຍຊອກຫາເທື່ອລະເກມ, ສະນັ້ນເມນູ ແລະ ເພງຈຶ່ງລື່ນໄຫຼ. ໂຟນເດີ ART ຄົງຢູ່ຄືເກົ່າ.
+  RIPPS2_LIST_CFG_TEXT: ຫົວຂໍ້ ແລະ ຄຳອະທິບາຍໃນລາຍການ
+  HINT_RIPPS2_LIST_CFG_TEXT: 'ຫົວຂໍ້ ແລະ ຄຳອະທິບາຍຂອງເກມຈາກ CFG ຂ້າງລາຍການເກມ. ທີມ: ຕາມທີ່ທີມສະແດງ (ທີມຂອງ RIPPS2 ບໍ່ສະແດງ). ໜ້າຂໍ້ມູນສະແດງສະເໝີ.'
+  RIPPS2_PS1_PREFER: ເກມ PS1 ຊ້ຳ
+  HINT_RIPPS2_PS1_PREFER: 'ເກມ PS1 ທີ່ເປັນທັງ VCD ຂອງ POPSTARTER ແລະ ອິມເມດ Ember. ທັງສອງ: ສອງແຖວ. Ember: ສະເພາະ Ember. POPSTARTER: ສະເພາະ VCD. ຫົວຂໍ້ດຽວກັນ ໂດຍບໍ່ນັບ ID ແຜ່ນທາງໜ້າ ແມ່ນເກມດຽວກັນ.'
+  RIPPS2_MY_PADS: ຈອຍຂອງຂ້ອຍ
+  HINT_RIPPS2_MY_PADS: 'ໂປຣໄຟລ໌ .pad ໃນໂຟນເດີ PADS ຂ້າງ RIPPS2: ໄຟລ໌ຂໍ້ຄວາມໜຶ່ງຕໍ່ຈອຍ USB ຕັ້ງຊື່ຕາມ ID (2563_0575.pad), ກວດແຕ່ລະອັນ. RIPPS2 ນຳພາຮູບແບບນີ້; PADEMU ຈະອ່ານໃນ build ຕໍ່ໄປ.'

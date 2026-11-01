@@ -1351,6 +1351,67 @@ strings:
   ? There is no other .tar to merge into %s. Put it in this folder, in a drive's ART folder or at the top of a drive, then try again.
   : Nincs más .tar, amit a(z) %s fájlba lehetne olvasztani. Tedd ebbe a mappába, egy meghajtó ART mappájába vagy egy meghajtó gyökerébe, majd próbáld újra.
   MERGE A .TAR INTO THIS: .TAR BEOLVASZTÁSA IDE
+  ? '
+  
+    %d game button maps in GAMES'
+  : '
+  
+    %d játék gombkiosztása a GAMES mappában'
+  ? '
+  
+    1 game button map in GAMES'
+  : '
+  
+    1 játék gombkiosztása a GAMES mappában'
+  (no name): (nincs név)
+  Both: Mindkettő
+  ? 'None yet. A profile is a text file named after the pad''s ID, like 2563_0575.pad: the format is in RIPPS2''s repo (docs/plans/pad-spec.md).'
+  : 'Még nincs. A profil egy szövegfájl, amely a kontroller azonosítójáról kapja a nevét, pl. 2563_0575.pad: a formátum a RIPPS2 tárolójában van (docs/plans/pad-spec.md).'
+  On (fast): Be (gyors)
+  'Pad profiles in %s:': 'Kontrollerprofilok itt: %s'
+  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (%d. build) RiptOPL %s alapon
+  RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: A RIPPS2 nem tudja, hol a mappája, így nem keresheti a PADS mappát.
+  could not be read: nem olvasható
+  About %d seconds left: Kb. %d mp van hátra
+  About 1 second left: Kb. 1 másodperc van hátra
+  Taking longer than its last start (%d s so far): Tovább tart, mint a legutóbbi indítás (eddig %d mp)
+  ? 'Download the covers in HD (280 x 400)? Sharper on an HD screen, about 70 KB each. START: Standard (140 x 200, as Open PS2 Loader''s), about 20 KB each. A game that already has a cover keeps it.'
+  : 'Letöltöd a borítókat HD-ben (280 x 400)? Élesebb HD kijelzőn, egyenként kb. 70 KB. START: Normál (140 x 200, mint az Open PS2 Loaderben), egyenként kb. 20 KB. A már borítóval rendelkező játék megtartja.'
+  STANDARD: NORMÁL
+  '%d IN': '%d BETÉVE'
+  '%d IN, %d REPLACED': '%d BETÉVE, %d CSERÉLVE'
+  COULD NOT WRITE: NEM ÍRHATÓ
+  'Getting it ready: %s': 'Előkészítés: %s'
+  NOT A .TAR: NEM .TAR
+  NOTHING CHANGED: NINCS VÁLTOZÁS
+  NOTHING TO PUT IN: NINCS MIT BETENNI
+  ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
+  : A Be (gyors) a RIPPS2 mellett tartja az indítási hangot azon a memóriakártyán, amelyről indul, de a RIPPS2 nem kártyáról indult. Az indítási hang úgy szól, mint Be állásban.
+  'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'Még nincs másolható indítási hang: Hangbeállítások > BIOS-hangok kimenti ennek a konzolnak a hangjait.'
+  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
+  : Ez a RIPPS2 lite, amely nem tartalmazza a PS2BBL-t, így nem tudja beállítani a BIBLE-t. A teljes RIPPS2.elf telepíti és javítja; a már beállított rendszerbetöltő továbbra is a RIPPS2 lite-ot indítja.
+  '%d COPIED OUT': '%d KIMÁSOLVA'
+  '%d ITEM   %d MARKED   %s': '%d ELEM   %d JELÖLVE   %s'
+  '%d ITEM   %d MARKED   %s   %s FREE': '%d ELEM   %d JELÖLVE   %s   %s SZABAD'
+  '%d ITEMS   %d MARKED   %s': '%d ELEM   %d JELÖLVE   %s'
+  '%d ITEMS   %d MARKED   %s   %s FREE': '%d ELEM   %d JELÖLVE   %s   %s SZABAD'
+  '%s IN %d': '%s, %d elemben'
+  '%s IN %d, %s FREE': '%s, %d elemben, %s SZABAD'
+  ', %d LEFT OUT': ', %d KIHAGYVA'
+  COPY IT OUT TO OPEN IT: MEGNYITÁSHOZ MÁSOLD KI
+  'Copying out: %s': 'Kimásolás: %s'
+  INVERT MARKS: JELÖLÉS MEGFORDÍTÁSA
+  NO FILES ON THE CLIPBOARD: NINCS FÁJL A VÁGÓLAPON
+  SIZE AND FREE SPACE: MÉRET ÉS SZABAD HELY
+  ? CHEATS in the in-game menu turns each of the game's cheats on or off while you play. Changes apply on RESUME; a cheat turned off stops writing, what it wrote stays. Needs Cheats on for the game.
+  : A játék közbeni menü CHEATS pontja játék közben be- vagy kikapcsolja a játék minden csalását. A változás RESUME-kor él; a kikapcsolt csalás nem ír tovább, amit írt, megmarad. A játékhoz bekapcsolt Cheats kell.
+  'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 'Nincs CHEATS a játék közbeni menüben: az indítás előtt bejelölt csalások az egész játék alatt futnak, mint eddig.'
+  BOOT SOUND WITH THE PILLARS: INDÍTÁSI HANG AZ OSZLOPOKKAL
+  'Boot Sound: On (fast)': 'Indítási hang: Be (gyors)'
+  'Boot sound On (fast): %s, as the pillars rise': 'Indítási hang Be (gyors): %s, ahogy az oszlopok emelkednek'
+  'Boot sound On: from the AUDIO folder, once its drive is up': 'Indítási hang Be: az AUDIO mappából, ha a meghajtója kész'
+  Boot sound off (Audio settings > Boot Sound): Indítási hang ki (Hangbeállítások > Indítási hang)
+  Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Átmásolja a boot.adp-t a RIPPS2 mellé azon a memóriakártyán, amelyről indul, ahol az indítás bármely meghajtó előtt beolvassa.
 labels:
   OK: OK
   BACKSPACE: Visszatörlés
@@ -1676,7 +1737,7 @@ labels:
   HINT_SETTINGS_SOURCE: A Globális a közös beállításokat használja; a Játékonként csak ennek a játéknak tartja meg őket.
   HINT_PADMACRO_TOGGLE: A Gomb lenyomása közben csak addig lassítja a kart, amíg tartod a gombot; a Gombbal váltva be- és kikapcsolja.
   HINT_SFX: A menü hangeffektusai.
-  HINT_BOOT_SND: Hangot játszik le a RiptOPL indulásakor.
+  HINT_BOOT_SND: 'Az indítási hang a RIPPS2 indulásakor. Be: az AUDIO mappából, ha a meghajtója kész. Be (gyors): egy másolat a RIPPS2 mellett azon a memóriakártyán, amelyről indul (választáskor felajánlja), az oszlopok emelkedésekor szól. Kikapcsolt hangeffektekkel is szól.'
   HINT_BGM: A téma zenéjét vagy az Alapértelmezett témazene fájlodat játssza le.
   HINT_SFX_VOLUME: A menü hangeffektusainak hangereje.
   HINT_BOOT_SND_VOLUME: Az indítóhang hangereje.
@@ -1826,3 +1887,9 @@ labels:
   RIPPS2_ART_PACK: ART csomag
   RIPPS2_ART_PACK_BUILD: Építés vagy törlés
   HINT_RIPPS2_ART_PACK: Minden elindított meghajtó ART mappáját egyetlen art.tar fájlba csomagolja a választott meghajtón (a leggyorsabbat kínálja elsőként). A borítók ezután egy fájlból, egy indexszel jönnek, soha nem játékonkénti kereséssel, így a menük és a zene zökkenőmentesek maradnak. Az ART mappák maradnak, ahogy vannak.
+  RIPPS2_LIST_CFG_TEXT: Cím és leírás a listában
+  HINT_RIPPS2_LIST_CFG_TEXT: 'A játék CFG-jéből vett cím és leírás a lista mellett. Téma: ahogy a téma mutatja (a RIPPS2 saját témája elhagyja őket). Az információs oldal mindig megtartja őket.'
+  RIPPS2_PS1_PREFER: PS1 ismétlődések
+  HINT_RIPPS2_PS1_PREFER: 'Egy PS1-játék, amely POPSTARTER VCD-ként és Ember-képként is megvan. Mindkettő: két sor. Ember: csak az Ember sor. POPSTARTER: csak a VCD. Ugyanaz a cím, az elöl álló lemezazonosítótól eltekintve, ugyanaz a játék.'
+  RIPPS2_MY_PADS: Kontrollereim
+  HINT_RIPPS2_MY_PADS: 'A .pad profilok a RIPPS2 melletti PADS mappában: USB-kontrollerenként egy szövegfájl, az azonosítója a neve (2563_0575.pad), mindegyik ellenőrizve. A formátumot a RIPPS2 vezeti; a PADEMU egy későbbi buildben olvassa őket.'

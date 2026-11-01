@@ -1351,6 +1351,67 @@ strings:
   ? There is no other .tar to merge into %s. Put it in this folder, in a drive's ART folder or at the top of a drive, then try again.
   : لا يوجد ملف .tar آخر لدمجه في %s. ضعه في هذا المجلد أو في مجلد ART لمحرك ما أو في أعلى محرك، ثم أعد المحاولة.
   MERGE A .TAR INTO THIS: ادمج ملف .TAR في هذا
+  ? '
+  
+    %d game button maps in GAMES'
+  : '
+  
+    %d تخطيط أزرار للألعاب في GAMES'
+  ? '
+  
+    1 game button map in GAMES'
+  : '
+  
+    تخطيط أزرار واحد لعبة في GAMES'
+  (no name): (بلا اسم)
+  Both: كلاهما
+  ? 'None yet. A profile is a text file named after the pad''s ID, like 2563_0575.pad: the format is in RIPPS2''s repo (docs/plans/pad-spec.md).'
+  : 'لا شيء بعد. الملف التعريفي ملف نصي باسم معرّف ذراع التحكم، مثل 2563_0575.pad: الصيغة في مستودع RIPPS2 (docs/plans/pad-spec.md).'
+  On (fast): تشغيل (سريع)
+  'Pad profiles in %s:': 'ملفات أذرع التحكم في %s:'
+  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (الإصدار %d) على RiptOPL %s
+  RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: لا يعرف RIPPS2 مكان مجلده، فلا يمكنه البحث عن PADS.
+  could not be read: تعذرت القراءة
+  About %d seconds left: بقي نحو %d ثانية
+  About 1 second left: بقيت نحو ثانية واحدة
+  Taking longer than its last start (%d s so far): أبطأ من آخر تشغيل (%d ث حتى الآن)
+  ? 'Download the covers in HD (280 x 400)? Sharper on an HD screen, about 70 KB each. START: Standard (140 x 200, as Open PS2 Loader''s), about 20 KB each. A game that already has a cover keeps it.'
+  : 'تنزيل الأغلفة بدقة HD (280 x 400)؟ أوضح على شاشة HD، نحو 70 KB لكل منها. START: قياسي (140 x 200، كما في Open PS2 Loader)، نحو 20 KB لكل منها. اللعبة التي لها غلاف تحتفظ به.'
+  STANDARD: قياسي
+  '%d IN': أُضيف %d
+  '%d IN, %d REPLACED': أُضيف %d، واستُبدل %d
+  COULD NOT WRITE: تعذرت الكتابة
+  'Getting it ready: %s': 'جارٍ التجهيز: %s'
+  NOT A .TAR: ليس .TAR
+  NOTHING CHANGED: لم يتغير شيء
+  NOTHING TO PUT IN: لا شيء لإضافته
+  ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
+  : تشغيل (سريع) يبقي صوت الإقلاع بجانب RIPPS2 على بطاقة الذاكرة التي يبدأ منها، ولم يبدأ RIPPS2 من بطاقة. يعمل صوت الإقلاع كما في تشغيل.
+  'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'لا يوجد صوت إقلاع لنسخه بعد: إعدادات الصوت > أصوات BIOS تستخرج أصوات هذا الجهاز.'
+  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
+  : هذا RIPPS2 lite، لا يحمل PS2BBL، فلا يمكنه إعداد BIBLE. ملف RIPPS2.elf الكامل يثبّته ويصلحه؛ ومحمل الإقلاع المعدّ مسبقًا يواصل تشغيل RIPPS2 lite كما هو.
+  '%d COPIED OUT': نُسخ %d للخارج
+  '%d ITEM   %d MARKED   %s': '%d عنصر   %d معلّم   %s'
+  '%d ITEM   %d MARKED   %s   %s FREE': '%d عنصر   %d معلّم   %s   %s فارغ'
+  '%d ITEMS   %d MARKED   %s': '%d عناصر   %d معلّمة   %s'
+  '%d ITEMS   %d MARKED   %s   %s FREE': '%d عناصر   %d معلّمة   %s   %s فارغ'
+  '%s IN %d': '%s في %d'
+  '%s IN %d, %s FREE': '%s في %d، %s فارغ'
+  ', %d LEFT OUT': ، %d مستبعدة
+  COPY IT OUT TO OPEN IT: انسخه للخارج لفتحه
+  'Copying out: %s': 'جارٍ النسخ للخارج: %s'
+  INVERT MARKS: عكس العلامات
+  NO FILES ON THE CLIPBOARD: لا ملفات في الحافظة
+  SIZE AND FREE SPACE: الحجم والمساحة الفارغة
+  ? CHEATS in the in-game menu turns each of the game's cheats on or off while you play. Changes apply on RESUME; a cheat turned off stops writing, what it wrote stays. Needs Cheats on for the game.
+  : CHEATS في قائمة اللعبة يشغّل أو يوقف كل غش في اللعبة أثناء اللعب. تُطبّق التغييرات عند RESUME؛ الغش المتوقف يكف عن الكتابة، وما كتبه يبقى. يتطلب تشغيل Cheats للعبة.
+  'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 'لا CHEATS في قائمة اللعبة: الغش المحدد قبل التشغيل يعمل طوال اللعبة كما كان.'
+  BOOT SOUND WITH THE PILLARS: صوت الإقلاع مع الأعمدة
+  'Boot Sound: On (fast)': 'صوت الإقلاع: تشغيل (سريع)'
+  'Boot sound On (fast): %s, as the pillars rise': 'صوت الإقلاع تشغيل (سريع): %s، عند ارتفاع الأعمدة'
+  'Boot sound On: from the AUDIO folder, once its drive is up': 'صوت الإقلاع تشغيل: من مجلد AUDIO عند جاهزية قرصه'
+  Boot sound off (Audio settings > Boot Sound): صوت الإقلاع متوقف (إعدادات الصوت > صوت الإقلاع)
+  Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: ينسخ boot.adp بجانب RIPPS2 على بطاقة الذاكرة التي يبدأ منها، حيث يقرؤه الإقلاع قبل جاهزية أي قرص.
 labels:
   SETTINGS_SAVED: حُفظت الإعدادات في %s
   CONFIRMATION_EXIT: الخروج إلى المتصفح؟
@@ -1722,7 +1783,7 @@ labels:
   HINT_SETTINGS_SOURCE: العام يستخدم الإعدادات المشتركة؛ ولكل لعبة يحفظها لهذه اللعبة فقط.
   HINT_PADMACRO_TOGGLE: أثناء الضغط على الزر يبطئ العصا فقط ما دمت تضغط الزر؛ والتبديل بالزر يشغّله ويوقفه.
   HINT_SFX: المؤثرات الصوتية للقائمة.
-  HINT_BOOT_SND: يشغّل صوتاً عند بدء RiptOPL.
+  HINT_BOOT_SND: 'صوت الإقلاع عند بدء RIPPS2. تشغيل: من مجلد AUDIO عند جاهزية قرصه. تشغيل (سريع): نسخة بجانب RIPPS2 على بطاقة الذاكرة التي يبدأ منها (تُعرض عند اختياره)، تعمل عند ارتفاع الأعمدة. يعمل أيضًا مع إيقاف المؤثرات الصوتية.'
   HINT_BGM: يعزف موسيقى السمة، أو ملف موسيقى السمة الافتراضية الخاص بك.
   HINT_SFX_VOLUME: مستوى صوت المؤثرات الصوتية للقائمة.
   HINT_BOOT_SND_VOLUME: مستوى صوت الإقلاع.
@@ -1872,3 +1933,9 @@ labels:
   RIPPS2_ART_PACK: حزمة ART
   RIPPS2_ART_PACK_BUILD: بناء أو إزالة
   HINT_RIPPS2_ART_PACK: يحزم مجلد ART لكل محرك بدأ في ملف art.tar واحد على المحرك الذي تختاره (يُعرض الأسرع أولًا). تُحمَّل الأغلفة بعدها من ملف واحد بفهرس واحد، دون بحث لكل لعبة، فتبقى القوائم والموسيقى سلسة. تبقى مجلدات ART كما هي.
+  RIPPS2_LIST_CFG_TEXT: العنوان والوصف في القائمة
+  HINT_RIPPS2_LIST_CFG_TEXT: 'عنوان اللعبة ووصفها من ملف CFG بجانب القائمة. السمة: كما تعرضها السمة (سمة RIPPS2 لا تعرضهما). صفحة المعلومات تعرضهما دائمًا.'
+  RIPPS2_PS1_PREFER: تكرارات PS1
+  HINT_RIPPS2_PS1_PREFER: 'لعبة PS1 موجودة كملف VCD لـ POPSTARTER وكصورة Ember معًا. كلاهما: سطران. Ember: سطر Ember فقط. POPSTARTER: ملف VCD فقط. العنوان نفسه، دون معرّف القرص في أوله، هو اللعبة نفسها.'
+  RIPPS2_MY_PADS: أذرع التحكم الخاصة بي
+  HINT_RIPPS2_MY_PADS: 'ملفات .pad في مجلد PADS بجانب RIPPS2: ملف نصي لكل ذراع USB باسم معرّفه (2563_0575.pad)، ويُفحص كل منها. يقود RIPPS2 هذه الصيغة؛ وسيقرؤها PADEMU في إصدار لاحق.'

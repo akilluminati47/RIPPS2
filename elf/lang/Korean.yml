@@ -1351,6 +1351,67 @@ strings:
   ? There is no other .tar to merge into %s. Put it in this folder, in a drive's ART folder or at the top of a drive, then try again.
   : '%s에 합칠 다른 .tar가 없습니다. 이 폴더, 드라이브의 ART 폴더 또는 드라이브 맨 위에 넣은 뒤 다시 시도하세요.'
   MERGE A .TAR INTO THIS: 여기에 .TAR 합치기
+  ? '
+  
+    %d game button maps in GAMES'
+  : '
+  
+    GAMES에 게임 버튼 배치 %d개'
+  ? '
+  
+    1 game button map in GAMES'
+  : '
+  
+    GAMES에 게임 버튼 배치 1개'
+  (no name): (이름 없음)
+  Both: 둘 다
+  ? 'None yet. A profile is a text file named after the pad''s ID, like 2563_0575.pad: the format is in RIPPS2''s repo (docs/plans/pad-spec.md).'
+  : '아직 없습니다. 프로필은 패드 ID로 이름 붙인 텍스트 파일입니다(예: 2563_0575.pad). 형식은 RIPPS2 저장소에 있습니다(docs/plans/pad-spec.md).'
+  On (fast): 켬(빠르게)
+  'Pad profiles in %s:': '%s의 패드 프로필:'
+  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (빌드 %d), RiptOPL %s 기반
+  RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: RIPPS2가 자기 폴더 위치를 몰라 PADS를 찾을 수 없습니다.
+  could not be read: 읽을 수 없음
+  About %d seconds left: 약 %d초 남음
+  About 1 second left: 약 1초 남음
+  Taking longer than its last start (%d s so far): 지난 시작보다 오래 걸림(지금까지 %d초)
+  ? 'Download the covers in HD (280 x 400)? Sharper on an HD screen, about 70 KB each. START: Standard (140 x 200, as Open PS2 Loader''s), about 20 KB each. A game that already has a cover keeps it.'
+  : '커버를 HD(280 x 400)로 받을까요? HD 화면에서 더 선명하며 장당 약 70 KB. START: 표준(140 x 200, Open PS2 Loader와 동일), 장당 약 20 KB. 이미 커버가 있는 게임은 그대로 둡니다.'
+  STANDARD: 표준
+  '%d IN': '%d개 추가'
+  '%d IN, %d REPLACED': '%d개 추가, %d개 교체'
+  COULD NOT WRITE: 쓸 수 없음
+  'Getting it ready: %s': '준비 중: %s'
+  NOT A .TAR: .TAR 아님
+  NOTHING CHANGED: 변경 없음
+  NOTHING TO PUT IN: 추가할 것 없음
+  ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
+  : 켬(빠르게)은 부팅음을 시작한 메모리 카드의 RIPPS2 옆에 두지만, RIPPS2가 메모리 카드에서 시작하지 않았습니다. 부팅음은 켬처럼 재생됩니다.
+  'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': '아직 복사할 부팅음이 없습니다: 오디오 설정 > BIOS 사운드에서 이 콘솔의 소리를 추출하세요.'
+  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
+  : 이것은 PS2BBL이 없는 RIPPS2 lite라 BIBLE을 설치할 수 없습니다. 전체 RIPPS2.elf가 설치와 복구를 합니다. 이미 설치된 부트로더는 RIPPS2 lite를 그대로 계속 시작합니다.
+  '%d COPIED OUT': '%d개 밖으로 복사'
+  '%d ITEM   %d MARKED   %s': '%d개 항목   %d개 표시   %s'
+  '%d ITEM   %d MARKED   %s   %s FREE': '%d개 항목   %d개 표시   %s   여유 %s'
+  '%d ITEMS   %d MARKED   %s': '%d개 항목   %d개 표시   %s'
+  '%d ITEMS   %d MARKED   %s   %s FREE': '%d개 항목   %d개 표시   %s   여유 %s'
+  '%s IN %d': '%s / %d개'
+  '%s IN %d, %s FREE': '%s / %d개, 여유 %s'
+  ', %d LEFT OUT': ', %d개 제외'
+  COPY IT OUT TO OPEN IT: 열려면 밖으로 복사
+  'Copying out: %s': '밖으로 복사 중: %s'
+  INVERT MARKS: 표시 반전
+  NO FILES ON THE CLIPBOARD: 클립보드에 파일 없음
+  SIZE AND FREE SPACE: 크기와 여유 공간
+  ? CHEATS in the in-game menu turns each of the game's cheats on or off while you play. Changes apply on RESUME; a cheat turned off stops writing, what it wrote stays. Needs Cheats on for the game.
+  : 게임 내 메뉴의 CHEATS는 플레이 중에 게임의 치트를 하나씩 켜고 끕니다. 변경은 RESUME에서 적용되며, 끈 치트는 더 쓰지 않지만 이미 쓴 값은 남습니다. 그 게임의 Cheats가 켜져 있어야 합니다.
+  'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': '게임 내 메뉴에 CHEATS 없음: 시작 전에 체크한 치트가 예전처럼 게임 내내 작동합니다.'
+  BOOT SOUND WITH THE PILLARS: 기둥과 함께 부팅음
+  'Boot Sound: On (fast)': '부팅음: 켬(빠르게)'
+  'Boot sound On (fast): %s, as the pillars rise': '부팅음 켬(빠르게): %s, 기둥이 솟을 때'
+  'Boot sound On: from the AUDIO folder, once its drive is up': '부팅음 켬: AUDIO 폴더에서, 드라이브 준비 후'
+  Boot sound off (Audio settings > Boot Sound): 부팅음 끔(오디오 설정 > 부팅음)
+  Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: 시작한 메모리 카드의 RIPPS2 옆에 boot.adp를 복사해, 어떤 드라이브보다 먼저 부팅 때 읽습니다.
 labels:
   IP_ADDRESS_TYPE_STATIC: 고정
   HINT_NEUTRINO_AUTO_ELF: 게임의 부트 ELF를 Neutrino에 넘겨 타이틀별 설정을 찾게 합니다. 기본으로 켜져 있으며, 직접 설정한 Boot ELF 옵션이 우선합니다.
@@ -1666,7 +1727,7 @@ labels:
   HINT_SETTINGS_SOURCE: 전역은 공용 설정을 쓰고, 게임별은 이 게임만의 설정으로 둡니다.
   HINT_PADMACRO_TOGGLE: 버튼을 누르는 동안은 버튼을 누르고 있을 때만 스틱을 느리게 하고, 버튼으로 전환은 버튼으로 켜고 끕니다.
   HINT_SFX: 메뉴 효과음.
-  HINT_BOOT_SND: RiptOPL이 시작될 때 소리를 냅니다.
+  HINT_BOOT_SND: 'RIPPS2 시작 때의 부팅음. 켬: AUDIO 폴더에서, 드라이브 준비 후. 켬(빠르게): 시작한 메모리 카드의 RIPPS2 옆 사본(선택 시 제안), 기둥이 솟을 때 재생. 효과음이 꺼져 있어도 재생됩니다.'
   HINT_BGM: 테마의 음악, 또는 기본 테마 음악 파일을 재생합니다.
   HINT_SFX_VOLUME: 메뉴 효과음의 음량.
   HINT_BOOT_SND_VOLUME: 시작음의 음량.
@@ -1814,3 +1875,9 @@ labels:
   RIPPS2_ART_PACK: ART 팩
   RIPPS2_ART_PACK_BUILD: 만들기 또는 삭제
   HINT_RIPPS2_ART_PACK: 시작된 모든 드라이브의 ART 폴더를 고른 드라이브의 art.tar 하나로 묶습니다(가장 빠른 드라이브를 먼저 제안). 커버는 하나의 파일에서 하나의 색인으로 읽히고 게임마다 찾는 일이 없어서 메뉴와 음악이 매끄럽습니다. ART 폴더는 그대로 남습니다.
+  RIPPS2_LIST_CFG_TEXT: 목록의 제목과 설명
+  HINT_RIPPS2_LIST_CFG_TEXT: '게임 목록 옆에 게임 CFG의 제목과 설명을 표시합니다. 테마: 테마 설정대로(RIPPS2 테마는 숨김). 정보 페이지에는 항상 표시됩니다.'
+  RIPPS2_PS1_PREFER: PS1 중복
+  HINT_RIPPS2_PS1_PREFER: 'POPSTARTER VCD와 Ember 이미지가 모두 있는 PS1 게임. 둘 다: 두 줄. Ember: Ember만. POPSTARTER: VCD만. 앞의 디스크 ID를 빼고 제목이 같으면 같은 게임입니다.'
+  RIPPS2_MY_PADS: 내 패드
+  HINT_RIPPS2_MY_PADS: 'RIPPS2 옆 PADS 폴더의 .pad 프로필: USB 패드마다 ID로 이름 붙인 텍스트 파일 하나(2563_0575.pad)이며 각각 확인합니다. RIPPS2가 이 형식을 이끕니다. PADEMU는 이후 빌드에서 읽습니다.'

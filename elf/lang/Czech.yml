@@ -1351,6 +1351,67 @@ strings:
   ? There is no other .tar to merge into %s. Put it in this folder, in a drive's ART folder or at the top of a drive, then try again.
   : Není žádný další .tar ke sloučení do %s. Dej ho do této složky, do složky ART některého disku nebo do kořene disku a zkus to znovu.
   MERGE A .TAR INTO THIS: SLOUČIT .TAR DO TOHOTO
+  ? '
+  
+    %d game button maps in GAMES'
+  : '
+  
+    %d mapování tlačítek her v GAMES'
+  ? '
+  
+    1 game button map in GAMES'
+  : '
+  
+    1 mapování tlačítek hry v GAMES'
+  (no name): (bez názvu)
+  Both: Obojí
+  ? 'None yet. A profile is a text file named after the pad''s ID, like 2563_0575.pad: the format is in RIPPS2''s repo (docs/plans/pad-spec.md).'
+  : 'Zatím žádné. Profil je textový soubor pojmenovaný podle ID ovladače, např. 2563_0575.pad: formát je v repozitáři RIPPS2 (docs/plans/pad-spec.md).'
+  On (fast): Zap. (rychle)
+  'Pad profiles in %s:': 'Profily ovladačů v %s:'
+  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (build %d) na RiptOPL %s
+  RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: RIPPS2 neví, kde je jeho složka, a nemůže tedy hledat PADS.
+  could not be read: nelze přečíst
+  About %d seconds left: Zbývá asi %d s
+  About 1 second left: Zbývá asi 1 sekunda
+  Taking longer than its last start (%d s so far): Trvá déle než poslední start (zatím %d s)
+  ? 'Download the covers in HD (280 x 400)? Sharper on an HD screen, about 70 KB each. START: Standard (140 x 200, as Open PS2 Loader''s), about 20 KB each. A game that already has a cover keeps it.'
+  : 'Stáhnout obaly v HD (280 x 400)? Ostřejší na HD obrazovce, asi 70 KB každý. START: Standard (140 x 200, jako Open PS2 Loader), asi 20 KB každý. Hra, která už obal má, si ho ponechá.'
+  STANDARD: STANDARD
+  '%d IN': '%d PŘIDÁNO'
+  '%d IN, %d REPLACED': '%d PŘIDÁNO, %d NAHRAZENO'
+  COULD NOT WRITE: NELZE ZAPSAT
+  'Getting it ready: %s': 'Příprava: %s'
+  NOT A .TAR: NENÍ TO .TAR
+  NOTHING CHANGED: NIC SE NEZMĚNILO
+  NOTHING TO PUT IN: NENÍ CO PŘIDAT
+  ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
+  : Zap. (rychle) drží zvuk spuštění vedle RIPPS2 na paměťové kartě, ze které startuje, a RIPPS2 nebyl spuštěn z karty. Zvuk spuštění hraje jako u Zap.
+  'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'Zatím není co kopírovat: Nastavení zvuku > Zvuky BIOSu vyjme zvuky této konzole.'
+  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
+  : Toto je RIPPS2 lite, které nenese PS2BBL, a nemůže tedy nastavit BIBLE. Plný RIPPS2.elf ho instaluje a opravuje; už nastavený zavaděč dál spouští RIPPS2 lite, jak je.
+  '%d COPIED OUT': '%d ZKOPÍROVÁNO VEN'
+  '%d ITEM   %d MARKED   %s': '%d POLOŽKA   %d OZNAČENO   %s'
+  '%d ITEM   %d MARKED   %s   %s FREE': '%d POLOŽKA   %d OZNAČENO   %s   %s VOLNO'
+  '%d ITEMS   %d MARKED   %s': '%d POLOŽEK   %d OZNAČENO   %s'
+  '%d ITEMS   %d MARKED   %s   %s FREE': '%d POLOŽEK   %d OZNAČENO   %s   %s VOLNO'
+  '%s IN %d': '%s V %d'
+  '%s IN %d, %s FREE': '%s V %d, %s VOLNO'
+  ', %d LEFT OUT': ', %d VYNECHÁNO'
+  COPY IT OUT TO OPEN IT: ZKOPÍRUJTE VEN, ABY ŠLO OTEVŘÍT
+  'Copying out: %s': 'Kopíruje se ven: %s'
+  INVERT MARKS: OBRÁTIT OZNAČENÍ
+  NO FILES ON THE CLIPBOARD: VE SCHRÁNCE NEJSOU SOUBORY
+  SIZE AND FREE SPACE: VELIKOST A VOLNÉ MÍSTO
+  ? CHEATS in the in-game menu turns each of the game's cheats on or off while you play. Changes apply on RESUME; a cheat turned off stops writing, what it wrote stays. Needs Cheats on for the game.
+  : CHEATS v herním menu zapíná nebo vypíná každý cheat hry během hraní. Změny platí po RESUME; vypnutý cheat přestane zapisovat, co zapsal, zůstane. Vyžaduje zapnuté Cheats pro hru.
+  'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 'Bez CHEATS v herním menu: cheaty zaškrtnuté před spuštěním běží celou hru, jako dřív.'
+  BOOT SOUND WITH THE PILLARS: ZVUK SPUŠTĚNÍ SE SLOUPY
+  'Boot Sound: On (fast)': 'Zvuk spuštění: Zap. (rychle)'
+  'Boot sound On (fast): %s, as the pillars rise': 'Zvuk spuštění Zap. (rychle): %s, když sloupy rostou'
+  'Boot sound On: from the AUDIO folder, once its drive is up': 'Zvuk spuštění Zap.: ze složky AUDIO, jakmile je její disk připraven'
+  Boot sound off (Audio settings > Boot Sound): Zvuk spuštění vyp. (Nastavení zvuku > Zvuk spuštění)
+  Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Zkopíruje boot.adp vedle RIPPS2 na paměťovou kartu, ze které startuje, kde ho start čte dřív, než je připraven jakýkoli disk.
 labels:
   HINT_NEUTRINO_AUTO_ELF: Předá zaváděcí ELF hry Neutrinu, aby vyhledalo nastavení pro daný titul. Ve výchozím stavu zapnuto; ručně nastavená volba Boot ELF má přednost.
   HINT_POPSTARTER_PATH: Kde je POPSTARTER.ELF. Když zůstane prázdné, RIPPS2 doplní ten, který najde na disku; přepište, chcete-li jiný, např. usb:/POPS/POPSTARTER.ELF
@@ -1665,7 +1726,7 @@ labels:
   HINT_SETTINGS_SOURCE: Globální používá sdílená nastavení; Pro hru je uchová jen pro tuto hru.
   HINT_PADMACRO_TOGGLE: Při stisku tlačítka zpomalí páčku jen tehdy, když tlačítko držíte; Přepínáno tlačítkem ho zapíná a vypíná.
   HINT_SFX: Zvukové efekty menu.
-  HINT_BOOT_SND: Při startu RiptOPL zahraje zvuk.
+  HINT_BOOT_SND: 'Zvuk spuštění RIPPS2. Zap.: ze složky AUDIO, jakmile je její disk připraven. Zap. (rychle): kopie vedle RIPPS2 na paměťové kartě, ze které startuje (nabídne se při volbě), hraje, když sloupy rostou. Hraje i při vypnutých zvukových efektech.'
   HINT_BGM: Přehrává hudbu motivu, nebo váš soubor Výchozí hudba motivu.
   HINT_SFX_VOLUME: Hlasitost zvukových efektů menu.
   HINT_BOOT_SND_VOLUME: Hlasitost úvodního zvuku.
@@ -1813,3 +1874,9 @@ labels:
   RIPPS2_ART_PACK: Balíček ART
   RIPPS2_ART_PACK_BUILD: Postavit nebo odstranit
   HINT_RIPPS2_ART_PACK: Zabalí složku ART každého spuštěného disku do jednoho art.tar na disku, který vybereš (nejrychlejší je nabídnut první). Obaly se pak načítají z jednoho souboru s jedním indexem, nikdy s hledáním pro každou hru, takže menu i hudba běží plynule. Složky ART zůstanou, jak jsou.
+  RIPPS2_LIST_CFG_TEXT: Název a popis v seznamu
+  HINT_RIPPS2_LIST_CFG_TEXT: 'Název a popis hry z jejího CFG vedle seznamu. Motiv: jak je motiv ukazuje (vlastní motiv RIPPS2 je vynechává). Stránka informací je vždy ponechá.'
+  RIPPS2_PS1_PREFER: Duplikáty PS1
+  HINT_RIPPS2_PS1_PREFER: 'Hra PS1, která je zároveň VCD pro POPSTARTER i obraz pro Ember. Obojí: dva řádky. Ember: jen řádek Ember. POPSTARTER: jen VCD. Stejný název, bez ID disku na začátku, je stejná hra.'
+  RIPPS2_MY_PADS: Moje ovladače
+  HINT_RIPPS2_MY_PADS: 'Profily .pad ve složce PADS vedle RIPPS2: jeden textový soubor na USB ovladač, pojmenovaný podle jeho ID (2563_0575.pad), každý zkontrolovaný. RIPPS2 vede tento formát; PADEMU je bude číst v pozdějším buildu.'

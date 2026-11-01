@@ -1347,6 +1347,67 @@ strings:
   ? There is no other .tar to merge into %s. Put it in this folder, in a drive's ART folder or at the top of a drive, then try again.
   : Walay laing .tar nga isagol sa %s. Ibutang kini niining folder, sa ART folder sa usa ka drive o sa ibabaw sa drive, unya sulayi pag-usab.
   MERGE A .TAR INTO THIS: ISAGOL ANG .TAR DINHI
+  ? '
+  
+    %d game button maps in GAMES'
+  : '
+  
+    %d ka button map sa mga dula sa GAMES'
+  ? '
+  
+    1 game button map in GAMES'
+  : '
+  
+    1 ka button map sa dula sa GAMES'
+  (no name): (walay ngalan)
+  Both: Duha
+  ? 'None yet. A profile is a text file named after the pad''s ID, like 2563_0575.pad: the format is in RIPPS2''s repo (docs/plans/pad-spec.md).'
+  : 'Wala pa. Ang profile usa ka text file nga ginganlan sa ID sa controller, sama sa 2563_0575.pad: ang format anaa sa repo sa RIPPS2 (docs/plans/pad-spec.md).'
+  On (fast): On (paspas)
+  'Pad profiles in %s:': 'Mga profile sa controller sa %s:'
+  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (build %d) sa RiptOPL %s
+  RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: Wala mahibaw-an sa RIPPS2 asa ang folder niini, busa dili kini makapangita sa PADS.
+  could not be read: dili mabasa
+  About %d seconds left: Mga %d segundos pa
+  About 1 second left: Mga 1 segundo pa
+  Taking longer than its last start (%d s so far): Mas dugay kaysa sa katapusang sugod niini (%d s hangtod karon)
+  ? 'Download the covers in HD (280 x 400)? Sharper on an HD screen, about 70 KB each. START: Standard (140 x 200, as Open PS2 Loader''s), about 20 KB each. A game that already has a cover keeps it.'
+  : 'I-download ang mga cover sa HD (280 x 400)? Mas klaro sa HD nga screen, mga 70 KB matag usa. START: Standard (140 x 200, sama sa Open PS2 Loader), mga 20 KB matag usa. Ang dula nga naay cover na magpabilin niini.'
+  STANDARD: STANDARD
+  '%d IN': '%d NISULOD'
+  '%d IN, %d REPLACED': '%d NISULOD, %d GIILISAN'
+  COULD NOT WRITE: DILI MASULAT
+  'Getting it ready: %s': 'Giandam: %s'
+  NOT A .TAR: DILI .TAR
+  NOTHING CHANGED: WALAY NAUSAB
+  NOTHING TO PUT IN: WALAY ISULOD
+  ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
+  : Ang On (paspas) magtipig sa boot sound tupad sa RIPPS2 sa memory card nga gisugdan niini, ug ang RIPPS2 wala magsugod sa usa. Ang boot sound motingog sama sa On.
+  'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'Wala pay boot sound nga makopya: ang Audio settings > BIOS Sounds mokuha sa mga tingog niining console.'
+  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
+  : Kini ang RIPPS2 lite, nga walay dalang PS2BBL, busa dili kini maka-set up sa BIBLE. Ang tibuok RIPPS2.elf mag-install ug mag-ayo niini; ang boot loader nga naka-set up na magpadayon sa pagsugod sa RIPPS2 lite.
+  '%d COPIED OUT': '%d NAKOPYA PAGAWAS'
+  '%d ITEM   %d MARKED   %s': '%d ITEM   %d GIMARKAHAN   %s'
+  '%d ITEM   %d MARKED   %s   %s FREE': '%d ITEM   %d GIMARKAHAN   %s   %s LIBRE'
+  '%d ITEMS   %d MARKED   %s': '%d KA ITEM   %d GIMARKAHAN   %s'
+  '%d ITEMS   %d MARKED   %s   %s FREE': '%d KA ITEM   %d GIMARKAHAN   %s   %s LIBRE'
+  '%s IN %d': '%s SA %d'
+  '%s IN %d, %s FREE': '%s SA %d, %s LIBRE'
+  ', %d LEFT OUT': ', %d WALA GILAKIP'
+  COPY IT OUT TO OPEN IT: KOPYAHA PAGAWAS ARON MAABLIHAN
+  'Copying out: %s': 'Gikopya pagawas: %s'
+  INVERT MARKS: BALIHA ANG MGA MARKA
+  NO FILES ON THE CLIPBOARD: WALAY FILE SA CLIPBOARD
+  SIZE AND FREE SPACE: GIDAKOON UG LIBRENG LUNA
+  ? CHEATS in the in-game menu turns each of the game's cheats on or off while you play. Changes apply on RESUME; a cheat turned off stops writing, what it wrote stays. Needs Cheats on for the game.
+  : Ang CHEATS sa in-game menu mo-on o mo-off sa matag cheat sa dula samtang nagdula. Ang kausaban mogana sa RESUME; ang cheat nga gi-off mohunong sa pagsulat, ang nasulat niini magpabilin. Kinahanglan naka-on ang Cheats alang sa dula.
+  'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 'Walay CHEATS sa in-game menu: ang mga cheat nga gi-tsek sa wala pa ang sugod modagan sa tibuok dula, sama kaniadto.'
+  BOOT SOUND WITH THE PILLARS: BOOT SOUND UBAN SA MGA HALIGI
+  'Boot Sound: On (fast)': 'Boot sound: On (paspas)'
+  'Boot sound On (fast): %s, as the pillars rise': 'Boot sound On (paspas): %s, samtang mobangon ang mga haligi'
+  'Boot sound On: from the AUDIO folder, once its drive is up': 'Boot sound On: gikan sa folder nga AUDIO, kung andam na ang drive niini'
+  Boot sound off (Audio settings > Boot Sound): Boot sound off (Audio settings > Boot Sound)
+  Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Mokopya sa boot.adp tupad sa RIPPS2 sa memory card nga gisugdan niini, diin kini basahon sa boot sa dili pa andam ang bisan unsang drive.
 labels:
   MEDIUM: Tunga-tunga
   BDMMODE: BDM Start Mode
@@ -1691,7 +1752,7 @@ labels:
   HINT_SETTINGS_SOURCE: Gigamit sa Global ang gipaambit nga settings; gitipigan sa Matag dula kini alang niining dula ra.
   HINT_PADMACRO_TOGGLE: Pahinayon sa While Button Pressed ang stick samtang gikuptan ra nimo ang button; i-on ug i-off kini sa Toggled By Button.
   HINT_SFX: Mga sound effect sa menu.
-  HINT_BOOT_SND: Magpatugtog og tunog kung magsugod ang RiptOPL.
+  HINT_BOOT_SND: 'Ang boot sound sa pagsugod sa RIPPS2. On: gikan sa folder nga AUDIO, kung andam na ang drive niini. On (paspas): kopya tupad sa RIPPS2 sa memory card nga gisugdan niini (gitanyag kung imong pilion), motingog samtang mobangon ang mga haligi. Motingog gihapon bisan naka-off ang Sound Effects.'
   HINT_BGM: Gitugtog ang musika sa tema, o ang imong Default Theme Music file.
   HINT_SFX_VOLUME: Kakusog sa mga sound effect sa menu.
   HINT_BOOT_SND_VOLUME: Kakusog sa tunog sa pagsugod.
@@ -1841,3 +1902,9 @@ labels:
   RIPPS2_ART_PACK: ART Pack
   RIPPS2_ART_PACK_BUILD: Buhata o tangtanga
   HINT_RIPPS2_ART_PACK: Giputos ang ART folder sa matag gisugdang drive ngadto sa usa ka art.tar sa drive nga imong pilion (unang gitanyag ang pinakapaspas). Ang mga cover makuha na gikan sa usa ka file nga adunay usa ka index, dili gyud pinaagi sa pagpangita sa matag dula, mao nga hapsay ang mga menu ug musika. Magpabilin ang mga ART folder.
+  RIPPS2_LIST_CFG_TEXT: Titulo ug paghulagway sa lista
+  HINT_RIPPS2_LIST_CFG_TEXT: 'Ang titulo ug paghulagway sa dula gikan sa CFG niini tupad sa lista. Theme: sumala sa theme (ang kaugalingong theme sa RIPPS2 dili magpakita niini). Kanunay kining ipakita sa info page.'
+  RIPPS2_PS1_PREFER: Mga doble sa PS1
+  HINT_RIPPS2_PS1_PREFER: 'Usa ka dula sa PS1 nga parehong POPSTARTER VCD ug Ember image. Duha: duha ka laray. Ember: ang Ember ra. POPSTARTER: ang VCD ra. Ang parehas nga titulo, gawas sa disc ID sa unahan, usa ra ka dula.'
+  RIPPS2_MY_PADS: Akong mga controller
+  HINT_RIPPS2_MY_PADS: 'Ang mga .pad profile sa folder nga PADS tupad sa RIPPS2: usa ka text file matag USB controller, ginganlan sa ID niini (2563_0575.pad), matag usa gisusi. Ang RIPPS2 ang nanguna sa format; basahon kini sa PADEMU sa sunod nga build.'

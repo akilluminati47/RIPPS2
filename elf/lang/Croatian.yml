@@ -1351,6 +1351,67 @@ strings:
   ? There is no other .tar to merge into %s. Put it in this folder, in a drive's ART folder or at the top of a drive, then try again.
   : Nema drugog .tar za spajanje u %s. Stavi ga u ovu mapu, u mapu ART nekog pogona ili na vrh pogona pa pokušaj ponovno.
   MERGE A .TAR INTO THIS: SPOJI .TAR U OVAJ
+  ? '
+  
+    %d game button maps in GAMES'
+  : '
+  
+    %d mapiranja tipki igara u GAMES'
+  ? '
+  
+    1 game button map in GAMES'
+  : '
+  
+    1 mapiranje tipki igre u GAMES'
+  (no name): (bez imena)
+  Both: Oba
+  ? 'None yet. A profile is a text file named after the pad''s ID, like 2563_0575.pad: the format is in RIPPS2''s repo (docs/plans/pad-spec.md).'
+  : 'Još nijedan. Profil je tekstna datoteka nazvana po ID-u kontrolera, npr. 2563_0575.pad: format je u repozitoriju RIPPS2 (docs/plans/pad-spec.md).'
+  On (fast): Uklj. (brzo)
+  'Pad profiles in %s:': 'Profili kontrolera u %s:'
+  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (build %d) na RiptOPL %s
+  RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: RIPPS2 ne zna gdje mu je mapa, pa ne može tražiti PADS.
+  could not be read: ne može se pročitati
+  About %d seconds left: Ostalo je oko %d sekundi
+  About 1 second left: Ostala je oko 1 sekunda
+  Taking longer than its last start (%d s so far): Traje dulje od zadnjeg pokretanja (zasad %d s)
+  ? 'Download the covers in HD (280 x 400)? Sharper on an HD screen, about 70 KB each. START: Standard (140 x 200, as Open PS2 Loader''s), about 20 KB each. A game that already has a cover keeps it.'
+  : 'Preuzeti omote u HD-u (280 x 400)? Oštriji na HD zaslonu, oko 70 KB svaki. START: standardni (140 x 200, kao Open PS2 Loader), oko 20 KB svaki. Igra koja već ima omot zadržava ga.'
+  STANDARD: STANDARDNI
+  '%d IN': '%d DODANO'
+  '%d IN, %d REPLACED': '%d DODANO, %d ZAMIJENJENO'
+  COULD NOT WRITE: ZAPIS NIJE USPIO
+  'Getting it ready: %s': 'Priprema: %s'
+  NOT A .TAR: NIJE .TAR
+  NOTHING CHANGED: NIŠTA NIJE PROMIJENJENO
+  NOTHING TO PUT IN: NEMA ŠTO DODATI
+  ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
+  : Uklj. (brzo) drži zvuk pokretanja pokraj RIPPS2 na memorijskoj kartici s koje se pokreće, a RIPPS2 nije pokrenut s kartice. Zvuk pokretanja svira kao kod Uklj.
+  'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'Još nema zvuka pokretanja za kopiranje: Postavke zvuka > BIOS zvukovi izdvajaju zvukove ove konzole.'
+  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
+  : Ovo je RIPPS2 lite, bez PS2BBL-a, pa ne može postaviti BIBLE. Puni RIPPS2.elf ga instalira i popravlja; već postavljen bootloader nastavlja pokretati RIPPS2 lite kakav jest.
+  '%d COPIED OUT': '%d KOPIRANO VAN'
+  '%d ITEM   %d MARKED   %s': '%d STAVKA   %d OZNAČENA   %s'
+  '%d ITEM   %d MARKED   %s   %s FREE': '%d STAVKA   %d OZNAČENA   %s   %s SLOBODNO'
+  '%d ITEMS   %d MARKED   %s': '%d STAVKI   %d OZNAČENO   %s'
+  '%d ITEMS   %d MARKED   %s   %s FREE': '%d STAVKI   %d OZNAČENO   %s   %s SLOBODNO'
+  '%s IN %d': '%s U %d'
+  '%s IN %d, %s FREE': '%s U %d, %s SLOBODNO'
+  ', %d LEFT OUT': ', %d IZOSTAVLJENO'
+  COPY IT OUT TO OPEN IT: KOPIRAJTE VAN DA BISTE OTVORILI
+  'Copying out: %s': 'Kopiranje van: %s'
+  INVERT MARKS: OBRNI OZNAKE
+  NO FILES ON THE CLIPBOARD: NEMA DATOTEKA U MEĐUSPREMNIKU
+  SIZE AND FREE SPACE: VELIČINA I SLOBODAN PROSTOR
+  ? CHEATS in the in-game menu turns each of the game's cheats on or off while you play. Changes apply on RESUME; a cheat turned off stops writing, what it wrote stays. Needs Cheats on for the game.
+  : CHEATS u izborniku u igri uključuje ili isključuje svaki cheat igre dok igrate. Promjene vrijede na RESUME; isključen cheat prestaje pisati, napisano ostaje. Potrebni su uključeni Cheats za igru.
+  'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 'Bez CHEATS u izborniku u igri: cheatovi označeni prije pokretanja rade cijelu igru, kao dosad.'
+  BOOT SOUND WITH THE PILLARS: ZVUK POKRETANJA SA STUPOVIMA
+  'Boot Sound: On (fast)': 'Zvuk pokretanja: Uklj. (brzo)'
+  'Boot sound On (fast): %s, as the pillars rise': 'Zvuk pokretanja Uklj. (brzo): %s, dok stupovi rastu'
+  'Boot sound On: from the AUDIO folder, once its drive is up': 'Zvuk pokretanja Uklj.: iz mape AUDIO, kad joj je disk spreman'
+  Boot sound off (Audio settings > Boot Sound): Zvuk pokretanja isklj. (Postavke zvuka > Zvuk pokretanja)
+  Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Kopira boot.adp pokraj RIPPS2 na memorijsku karticu s koje se pokreće, gdje ga pokretanje čita prije nego što je ijedan disk spreman.
 labels:
   NETCONFIG: Mrežne postavke
   BDMMODE: Način pokretanja BDM-a
@@ -1687,7 +1748,7 @@ labels:
   HINT_SETTINGS_SOURCE: Globalno koristi zajedničke postavke; Po igri ih čuva samo za ovu igru.
   HINT_PADMACRO_TOGGLE: Dok je tipka pritisnuta usporava palicu samo dok držiš tipku; Uključuje tipka je uključuje i isključuje.
   HINT_SFX: Zvučni efekti izbornika.
-  HINT_BOOT_SND: Reproducira zvuk kad se RiptOPL pokrene.
+  HINT_BOOT_SND: 'Zvuk pokretanja kad se RIPPS2 pokrene. Uklj.: iz mape AUDIO, kad joj je disk spreman. Uklj. (brzo): kopija pokraj RIPPS2 na memorijskoj kartici s koje se pokreće (nudi se kad ga odaberete), svira dok stupovi rastu. Svira i kad su zvučni efekti isključeni.'
   HINT_BGM: Reproducira glazbu teme ili tvoju datoteku zadane glazbe teme.
   HINT_SFX_VOLUME: Glasnoća zvučnih efekata izbornika.
   HINT_BOOT_SND_VOLUME: Glasnoća zvuka pri pokretanju.
@@ -1837,3 +1898,9 @@ labels:
   RIPPS2_ART_PACK: Paket ART
   RIPPS2_ART_PACK_BUILD: Izradi ili ukloni
   HINT_RIPPS2_ART_PACK: Pakira mapu ART svakog pokrenutog pogona u jedan art.tar na pogonu koji odabereš (najbrži se nudi prvi). Omoti se tada učitavaju iz jedne datoteke s jednim indeksom, nikad pretragom za svaku igru, pa izbornici i glazba ostaju glatki. Mape ART ostaju kakve jesu.
+  RIPPS2_LIST_CFG_TEXT: Naslov i opis na popisu
+  HINT_RIPPS2_LIST_CFG_TEXT: 'Naslov i opis igre iz njezinog CFG-a pokraj popisa. Tema: kako ih tema prikazuje (vlastita tema RIPPS2 ih izostavlja). Stranica s informacijama ih uvijek zadržava.'
+  RIPPS2_PS1_PREFER: PS1 duplikati
+  HINT_RIPPS2_PS1_PREFER: 'PS1 igra koja je i VCD za POPSTARTER i Ember slika. Oba: dva retka. Ember: samo Ember redak. POPSTARTER: samo VCD. Isti naslov, bez ID-a diska na početku, ista je igra.'
+  RIPPS2_MY_PADS: Moji kontroleri
+  HINT_RIPPS2_MY_PADS: 'Profili .pad u mapi PADS pokraj RIPPS2: po jedna tekstna datoteka za USB kontroler, nazvana po njegovom ID-u (2563_0575.pad), svaka provjerena. RIPPS2 vodi ovaj format; PADEMU će ih čitati u kasnijem buildu.'

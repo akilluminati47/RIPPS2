@@ -1351,6 +1351,67 @@ strings:
   ? There is no other .tar to merge into %s. Put it in this folder, in a drive's ART folder or at the top of a drive, then try again.
   : 没有其他 .tar 可以合并到 %s。请把它放在此文件夹、某个驱动器的 ART 文件夹或驱动器根目录，然后重试。
   MERGE A .TAR INTO THIS: 将 .TAR 合并到此
+  ? '
+  
+    %d game button maps in GAMES'
+  : '
+  
+    GAMES 中有 %d 个游戏按键映射'
+  ? '
+  
+    1 game button map in GAMES'
+  : '
+  
+    GAMES 中有 1 个游戏按键映射'
+  (no name): (无名称)
+  Both: 两者
+  ? 'None yet. A profile is a text file named after the pad''s ID, like 2563_0575.pad: the format is in RIPPS2''s repo (docs/plans/pad-spec.md).'
+  : 还没有。配置文件是以手柄 ID 命名的文本文件,如 2563_0575.pad:格式见 RIPPS2 仓库(docs/plans/pad-spec.md)。
+  On (fast): 开(快速)
+  'Pad profiles in %s:': '%s 中的手柄配置:'
+  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite(版本 %d),基于 RiptOPL %s
+  RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: RIPPS2 不知道自己的文件夹在哪,无法查找 PADS。
+  could not be read: 无法读取
+  About %d seconds left: 约剩 %d 秒
+  About 1 second left: 约剩 1 秒
+  Taking longer than its last start (%d s so far): 比上次启动慢(已 %d 秒)
+  ? 'Download the covers in HD (280 x 400)? Sharper on an HD screen, about 70 KB each. START: Standard (140 x 200, as Open PS2 Loader''s), about 20 KB each. A game that already has a cover keeps it.'
+  : 以 HD(280 x 400)下载封面?在 HD 屏幕上更清晰,每张约 70 KB。START:标准(140 x 200,与 Open PS2 Loader 相同),每张约 20 KB。已有封面的游戏保留原封面。
+  STANDARD: 标准
+  '%d IN': 已加入 %d
+  '%d IN, %d REPLACED': 已加入 %d,已替换 %d
+  COULD NOT WRITE: 无法写入
+  'Getting it ready: %s': 正在准备:%s
+  NOT A .TAR: 不是 .TAR
+  NOTHING CHANGED: 没有变化
+  NOTHING TO PUT IN: 没有可加入的
+  ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
+  : 开(快速)把开机音放在启动所用记忆卡上的 RIPPS2 旁,但 RIPPS2 并非从记忆卡启动。开机音按「开」播放。
+  'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 还没有可复制的开机音:音频设置 > BIOS 声音可提取本机的声音。
+  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
+  : 这是 RIPPS2 lite,不含 PS2BBL,无法设置 BIBLE。完整的 RIPPS2.elf 可安装和修复;已设置的引导程序会照常启动 RIPPS2 lite。
+  '%d COPIED OUT': 已复制出 %d
+  '%d ITEM   %d MARKED   %s': '%d 项   已标记 %d   %s'
+  '%d ITEM   %d MARKED   %s   %s FREE': '%d 项   已标记 %d   %s   可用 %s'
+  '%d ITEMS   %d MARKED   %s': '%d 项   已标记 %d   %s'
+  '%d ITEMS   %d MARKED   %s   %s FREE': '%d 项   已标记 %d   %s   可用 %s'
+  '%s IN %d': '%s / %d 项'
+  '%s IN %d, %s FREE': '%s / %d 项,可用 %s'
+  ', %d LEFT OUT': ',略过 %d'
+  COPY IT OUT TO OPEN IT: 复制出来才能打开
+  'Copying out: %s': 正在复制出:%s
+  INVERT MARKS: 反选标记
+  NO FILES ON THE CLIPBOARD: 剪贴板中没有文件
+  SIZE AND FREE SPACE: 大小和可用空间
+  ? CHEATS in the in-game menu turns each of the game's cheats on or off while you play. Changes apply on RESUME; a cheat turned off stops writing, what it wrote stays. Needs Cheats on for the game.
+  : 游戏内菜单的 CHEATS 可在游戏中逐个开关该游戏的金手指。更改在 RESUME 时生效;关闭的金手指停止写入,已写入的保留。需为该游戏开启 Cheats。
+  'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 游戏内菜单没有 CHEATS:启动前勾选的金手指照旧全程生效。
+  BOOT SOUND WITH THE PILLARS: 开机音随光柱响起
+  'Boot Sound: On (fast)': 开机音:开(快速)
+  'Boot sound On (fast): %s, as the pillars rise': 开机音 开(快速):%s,光柱升起时
+  'Boot sound On: from the AUDIO folder, once its drive is up': 开机音 开:来自 AUDIO 文件夹,其驱动器就绪后
+  Boot sound off (Audio settings > Boot Sound): 开机音 关(音频设置 > 开机音)
+  Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: 将 boot.adp 复制到启动所用记忆卡上的 RIPPS2 旁,开机时先于任何驱动器读取。
 labels:
   MTAP_ENABLE: 多分插模拟
   HINT_PADEMU_WORKAROUND: 部分仿制 DS3 需要变通处理，此选项会启用它。
@@ -1667,7 +1728,7 @@ labels:
   HINT_SETTINGS_SOURCE: “全局”使用共用设置；“按游戏”只为这个游戏保存。
   HINT_PADMACRO_TOGGLE: “按住时”只在你按住按键时减慢摇杆；“按键切换”用按键开关。
   HINT_SFX: 菜单音效。
-  HINT_BOOT_SND: RiptOPL 启动时播放声音。
+  HINT_BOOT_SND: RIPPS2 启动时的开机音。开:来自 AUDIO 文件夹,其驱动器就绪后。开(快速):启动所用记忆卡上 RIPPS2 旁的副本(选择时会提示),光柱升起时播放。关闭音效时也会播放。
   HINT_BGM: 播放主题的音乐，或你的默认主题音乐文件。
   HINT_SFX_VOLUME: 菜单音效的音量。
   HINT_BOOT_SND_VOLUME: 启动声音的音量。
@@ -1815,3 +1876,9 @@ labels:
   RIPPS2_ART_PACK: ART 包
   RIPPS2_ART_PACK_BUILD: 生成或删除
   HINT_RIPPS2_ART_PACK: 把每个已启动驱动器的 ART 文件夹打包成你所选驱动器上的一个 art.tar（最快的驱动器优先推荐）。封面随后从一个文件凭一个索引读取，不再逐个游戏查找，菜单和音乐都保持流畅。ART 文件夹保持原样。
+  RIPPS2_LIST_CFG_TEXT: 列表中的标题和描述
+  HINT_RIPPS2_LIST_CFG_TEXT: 在游戏列表旁显示游戏 CFG 中的标题和描述。主题:按主题设置(RIPPS2 自带主题不显示)。信息页始终显示。
+  RIPPS2_PS1_PREFER: PS1 重复项
+  HINT_RIPPS2_PS1_PREFER: 同时有 POPSTARTER VCD 和 Ember 镜像的 PS1 游戏。两者:两行。Ember:只显示 Ember。POPSTARTER:只显示 VCD。除开头的光盘 ID 外标题相同即为同一游戏。
+  RIPPS2_MY_PADS: 我的手柄
+  HINT_RIPPS2_MY_PADS: RIPPS2 旁 PADS 文件夹中的 .pad 配置:每个 USB 手柄一个以其 ID 命名的文本文件(2563_0575.pad),逐个检查。RIPPS2 主导此格式;PADEMU 将在之后的版本中读取。

@@ -1349,6 +1349,67 @@ strings:
   ? There is no other .tar to merge into %s. Put it in this folder, in a drive's ART folder or at the top of a drive, then try again.
   : Er is geen ander .tar om in %s samen te voegen. Zet het in deze map, in de ART-map van een schijf of bovenaan een schijf en probeer het opnieuw.
   MERGE A .TAR INTO THIS: EEN .TAR HIERIN SAMENVOEGEN
+  ? '
+  
+    %d game button maps in GAMES'
+  : '
+  
+    %d knoptoewijzingen van games in GAMES'
+  ? '
+  
+    1 game button map in GAMES'
+  : '
+  
+    1 knoptoewijzing van een game in GAMES'
+  (no name): (geen naam)
+  Both: Beide
+  ? 'None yet. A profile is a text file named after the pad''s ID, like 2563_0575.pad: the format is in RIPPS2''s repo (docs/plans/pad-spec.md).'
+  : 'Nog geen. Een profiel is een tekstbestand genoemd naar de ID van de controller, zoals 2563_0575.pad: het formaat staat in de repo van RIPPS2 (docs/plans/pad-spec.md).'
+  On (fast): Aan (snel)
+  'Pad profiles in %s:': 'Controllerprofielen in %s:'
+  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (build %d) op RiptOPL %s
+  RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: RIPPS2 weet niet waar zijn map is en kan dus niet naar PADS zoeken.
+  could not be read: kon niet gelezen worden
+  About %d seconds left: Nog ongeveer %d seconden
+  About 1 second left: Nog ongeveer 1 seconde
+  Taking longer than its last start (%d s so far): Duurt langer dan de vorige start (%d s tot nu toe)
+  ? 'Download the covers in HD (280 x 400)? Sharper on an HD screen, about 70 KB each. START: Standard (140 x 200, as Open PS2 Loader''s), about 20 KB each. A game that already has a cover keeps it.'
+  : 'De covers in HD downloaden (280 x 400)? Scherper op een HD-scherm, ongeveer 70 KB per stuk. START: Standaard (140 x 200, zoals Open PS2 Loader), ongeveer 20 KB per stuk. Een game die al een cover heeft houdt die.'
+  STANDARD: STANDAARD
+  '%d IN': '%d ERIN'
+  '%d IN, %d REPLACED': '%d ERIN, %d VERVANGEN'
+  COULD NOT WRITE: KON NIET SCHRIJVEN
+  'Getting it ready: %s': 'Klaarmaken: %s'
+  NOT A .TAR: GEEN .TAR
+  NOTHING CHANGED: NIETS VERANDERD
+  NOTHING TO PUT IN: NIETS OM TOE TE VOEGEN
+  ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
+  : Aan (snel) houdt het opstartgeluid naast RIPPS2 op de geheugenkaart waarvan het start, en RIPPS2 is niet van een geheugenkaart gestart. Het opstartgeluid speelt als bij Aan.
+  'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'Er is nog geen opstartgeluid om te kopiëren: Audio-instellingen > BIOS-geluiden ript die van deze console.'
+  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
+  : Dit is RIPPS2 lite, zonder PS2BBL, dus het kan BIBLE niet instellen. De volledige RIPPS2.elf installeert en herstelt het; een al ingestelde bootloader blijft RIPPS2 lite gewoon starten.
+  '%d COPIED OUT': '%d NAAR BUITEN GEKOPIEERD'
+  '%d ITEM   %d MARKED   %s': '%d ITEM   %d GEMARKEERD   %s'
+  '%d ITEM   %d MARKED   %s   %s FREE': '%d ITEM   %d GEMARKEERD   %s   %s VRIJ'
+  '%d ITEMS   %d MARKED   %s': '%d ITEMS   %d GEMARKEERD   %s'
+  '%d ITEMS   %d MARKED   %s   %s FREE': '%d ITEMS   %d GEMARKEERD   %s   %s VRIJ'
+  '%s IN %d': '%s IN %d'
+  '%s IN %d, %s FREE': '%s IN %d, %s VRIJ'
+  ', %d LEFT OUT': ', %d WEGGELATEN'
+  COPY IT OUT TO OPEN IT: KOPIEER HET NAAR BUITEN OM HET TE OPENEN
+  'Copying out: %s': 'Naar buiten kopiëren: %s'
+  INVERT MARKS: MARKERINGEN OMKEREN
+  NO FILES ON THE CLIPBOARD: GEEN BESTANDEN OP HET KLEMBORD
+  SIZE AND FREE SPACE: GROOTTE EN VRIJE RUIMTE
+  ? CHEATS in the in-game menu turns each of the game's cheats on or off while you play. Changes apply on RESUME; a cheat turned off stops writing, what it wrote stays. Needs Cheats on for the game.
+  : CHEATS in het spelmenu zet elke cheat van de game aan of uit tijdens het spelen. Wijzigingen gelden bij RESUME; een uitgezette cheat schrijft niet meer, wat hij schreef blijft. Vereist Cheats aan voor de game.
+  'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 'Geen CHEATS in het spelmenu: de cheats die vóór de start aangevinkt waren lopen het hele spel, zoals voorheen.'
+  BOOT SOUND WITH THE PILLARS: OPSTARTGELUID MET DE PILAREN
+  'Boot Sound: On (fast)': 'Opstartgeluid: Aan (snel)'
+  'Boot sound On (fast): %s, as the pillars rise': 'Opstartgeluid Aan (snel): %s, als de pilaren rijzen'
+  'Boot sound On: from the AUDIO folder, once its drive is up': 'Opstartgeluid Aan: uit de map AUDIO, zodra de schijf klaar is'
+  Boot sound off (Audio settings > Boot Sound): Opstartgeluid uit (Audio-instellingen > Opstartgeluid)
+  Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Kopieert boot.adp naast RIPPS2 op de geheugenkaart waarvan het start, waar het opstarten het leest voordat een schijf klaar is.
 labels:
   SETTINGS_SAVED: Instellingen opgeslagen in %s
   OK: OK
@@ -1730,7 +1791,7 @@ labels:
   HINT_SETTINGS_SOURCE: Algemeen gebruikt de gedeelde instellingen; Per game bewaart deze alleen voor deze game.
   HINT_PADMACRO_TOGGLE: Terwijl knop ingedrukt vertraagt de stick alleen zolang je de knop vasthoudt; Wisselen met knop zet het aan en uit.
   HINT_SFX: Geluidseffecten van het menu.
-  HINT_BOOT_SND: Speelt een geluid af als RiptOPL start.
+  HINT_BOOT_SND: 'Het opstartgeluid als RIPPS2 start. Aan: uit de map AUDIO, zodra de schijf klaar is. Aan (snel): een kopie naast RIPPS2 op de geheugenkaart waarvan het start (aangeboden als je het kiest), gespeeld als de pilaren rijzen. Het speelt ook met geluidseffecten uit.'
   HINT_BGM: Speelt de muziek van het thema af, of je bestand Standaard themamuziek.
   HINT_SFX_VOLUME: Volume van de geluidseffecten van het menu.
   HINT_BOOT_SND_VOLUME: Volume van het opstartgeluid.
@@ -1878,3 +1939,9 @@ labels:
   RIPPS2_ART_PACK: ART-pakket
   RIPPS2_ART_PACK_BUILD: Bouwen of verwijderen
   HINT_RIPPS2_ART_PACK: Zet de ART-map van elk gestart station in één art.tar op het station dat je kiest (het snelste wordt eerst aangeboden). De covers komen dan uit één bestand met één index, nooit met een zoektocht per game, zodat de menu's en de muziek soepel blijven. De ART-mappen blijven zoals ze zijn.
+  RIPPS2_LIST_CFG_TEXT: Titel en beschrijving in de lijst
+  HINT_RIPPS2_LIST_CFG_TEXT: 'De titel en beschrijving van de game uit zijn CFG naast de lijst. Thema: zoals het thema ze toont (het eigen thema van RIPPS2 laat ze weg). De infopagina houdt ze altijd.'
+  RIPPS2_PS1_PREFER: PS1-dubbels
+  HINT_RIPPS2_PS1_PREFER: 'Een PS1-game die zowel een POPSTARTER-VCD als een Ember-image is. Beide: twee regels. Ember: alleen de Ember-regel. POPSTARTER: alleen de VCD. Dezelfde titel, een disc-ID ervoor niet meegerekend, is dezelfde game.'
+  RIPPS2_MY_PADS: Mijn controllers
+  HINT_RIPPS2_MY_PADS: 'De .pad-profielen in de map PADS naast RIPPS2: één tekstbestand per USB-controller, genoemd naar zijn ID (2563_0575.pad), elk gecontroleerd. RIPPS2 leidt het formaat; PADEMU leest ze in een latere build.'

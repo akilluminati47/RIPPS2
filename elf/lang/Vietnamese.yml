@@ -1351,6 +1351,67 @@ strings:
   ? There is no other .tar to merge into %s. Put it in this folder, in a drive's ART folder or at the top of a drive, then try again.
   : Không có .tar nào khác để gộp vào %s. Hãy đặt nó trong thư mục này, trong thư mục ART của một ổ hoặc ở gốc một ổ, rồi thử lại.
   MERGE A .TAR INTO THIS: GỘP MỘT .TAR VÀO ĐÂY
+  ? '
+  
+    %d game button maps in GAMES'
+  : '
+  
+    %d bản gán nút của trò chơi trong GAMES'
+  ? '
+  
+    1 game button map in GAMES'
+  : '
+  
+    1 bản gán nút của trò chơi trong GAMES'
+  (no name): (không tên)
+  Both: Cả hai
+  ? 'None yet. A profile is a text file named after the pad''s ID, like 2563_0575.pad: the format is in RIPPS2''s repo (docs/plans/pad-spec.md).'
+  : 'Chưa có. Hồ sơ là một tệp văn bản đặt tên theo ID của tay cầm, như 2563_0575.pad: định dạng nằm trong kho của RIPPS2 (docs/plans/pad-spec.md).'
+  On (fast): Bật (nhanh)
+  'Pad profiles in %s:': 'Hồ sơ tay cầm trong %s:'
+  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (bản dựng %d) trên RiptOPL %s
+  RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: RIPPS2 không biết thư mục của nó ở đâu nên không thể tìm PADS.
+  could not be read: không đọc được
+  About %d seconds left: Còn khoảng %d giây
+  About 1 second left: Còn khoảng 1 giây
+  Taking longer than its last start (%d s so far): Lâu hơn lần khởi động trước (đã %d giây)
+  ? 'Download the covers in HD (280 x 400)? Sharper on an HD screen, about 70 KB each. START: Standard (140 x 200, as Open PS2 Loader''s), about 20 KB each. A game that already has a cover keeps it.'
+  : 'Tải ảnh bìa HD (280 x 400)? Sắc nét hơn trên màn hình HD, khoảng 70 KB mỗi ảnh. START: Chuẩn (140 x 200, như Open PS2 Loader), khoảng 20 KB mỗi ảnh. Trò chơi đã có ảnh bìa sẽ giữ nguyên.'
+  STANDARD: CHUẨN
+  '%d IN': ĐÃ THÊM %d
+  '%d IN, %d REPLACED': ĐÃ THÊM %d, THAY %d
+  COULD NOT WRITE: KHÔNG GHI ĐƯỢC
+  'Getting it ready: %s': 'Đang chuẩn bị: %s'
+  NOT A .TAR: KHÔNG PHẢI .TAR
+  NOTHING CHANGED: KHÔNG CÓ GÌ THAY ĐỔI
+  NOTHING TO PUT IN: KHÔNG CÓ GÌ ĐỂ THÊM
+  ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
+  : Bật (nhanh) giữ âm thanh khởi động cạnh RIPPS2 trên thẻ nhớ mà nó khởi chạy, nhưng RIPPS2 không khởi chạy từ thẻ nhớ. Âm thanh khởi động phát như khi Bật.
+  'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'Chưa có âm thanh khởi động để sao chép: Cài đặt âm thanh > Âm thanh BIOS sẽ trích âm thanh của máy này.'
+  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
+  : Đây là RIPPS2 lite, không mang theo PS2BBL nên không thể cài BIBLE. Bản RIPPS2.elf đầy đủ sẽ cài và sửa nó; trình khởi động đã cài vẫn khởi chạy RIPPS2 lite như cũ.
+  '%d COPIED OUT': ĐÃ CHÉP RA %d
+  '%d ITEM   %d MARKED   %s': '%d MỤC   %d ĐÃ ĐÁNH DẤU   %s'
+  '%d ITEM   %d MARKED   %s   %s FREE': '%d MỤC   %d ĐÃ ĐÁNH DẤU   %s   %s TRỐNG'
+  '%d ITEMS   %d MARKED   %s': '%d MỤC   %d ĐÃ ĐÁNH DẤU   %s'
+  '%d ITEMS   %d MARKED   %s   %s FREE': '%d MỤC   %d ĐÃ ĐÁNH DẤU   %s   %s TRỐNG'
+  '%s IN %d': '%s TRONG %d'
+  '%s IN %d, %s FREE': '%s TRONG %d, %s TRỐNG'
+  ', %d LEFT OUT': ', BỎ QUA %d'
+  COPY IT OUT TO OPEN IT: CHÉP RA NGOÀI ĐỂ MỞ
+  'Copying out: %s': 'Đang chép ra: %s'
+  INVERT MARKS: ĐẢO DẤU
+  NO FILES ON THE CLIPBOARD: KHÔNG CÓ TỆP TRONG BỘ NHỚ TẠM
+  SIZE AND FREE SPACE: DUNG LƯỢNG VÀ CHỖ TRỐNG
+  ? CHEATS in the in-game menu turns each of the game's cheats on or off while you play. Changes apply on RESUME; a cheat turned off stops writing, what it wrote stays. Needs Cheats on for the game.
+  : CHEATS trong menu trong game bật hoặc tắt từng mã gian lận của trò chơi khi đang chơi. Thay đổi có hiệu lực khi RESUME; mã bị tắt ngừng ghi, những gì đã ghi vẫn còn. Cần bật Cheats cho trò chơi.
+  'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 'Không có CHEATS trong menu trong game: các mã được chọn trước khi chạy sẽ chạy suốt trò chơi, như trước.'
+  BOOT SOUND WITH THE PILLARS: ÂM KHỞI ĐỘNG CÙNG CÁC CỘT
+  'Boot Sound: On (fast)': 'Âm khởi động: Bật (nhanh)'
+  'Boot sound On (fast): %s, as the pillars rise': 'Âm khởi động Bật (nhanh): %s, khi các cột dâng lên'
+  'Boot sound On: from the AUDIO folder, once its drive is up': 'Âm khởi động Bật: từ thư mục AUDIO, khi ổ của nó sẵn sàng'
+  Boot sound off (Audio settings > Boot Sound): Âm khởi động tắt (Cài đặt âm thanh > Âm khởi động)
+  Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Chép boot.adp cạnh RIPPS2 trên thẻ nhớ mà nó khởi chạy, nơi lúc khởi động đọc nó trước khi bất kỳ ổ nào sẵn sàng.
 labels:
   NETCONFIG: Cài đặt mạng
   SETTINGS_SAVED: Đã lưu cài đặt vào %s
@@ -1713,7 +1774,7 @@ labels:
   HINT_SETTINGS_SOURCE: Chung dùng cài đặt dùng chung; Theo trò chơi giữ các cài đặt này chỉ cho trò chơi này.
   HINT_PADMACRO_TOGGLE: Khi giữ nút chỉ làm chậm cần trong lúc bạn giữ nút; Bật tắt bằng nút thì bật và tắt nó.
   HINT_SFX: Hiệu ứng âm thanh của menu.
-  HINT_BOOT_SND: Phát một âm thanh khi RiptOPL khởi động.
+  HINT_BOOT_SND: 'Âm thanh khởi động khi RIPPS2 chạy. Bật: từ thư mục AUDIO, khi ổ của nó sẵn sàng. Bật (nhanh): một bản sao cạnh RIPPS2 trên thẻ nhớ mà nó khởi chạy (được đề nghị khi bạn chọn), phát khi các cột dâng lên. Vẫn phát khi hiệu ứng âm thanh tắt.'
   HINT_BGM: Phát nhạc của chủ đề, hoặc tệp Nhạc chủ đề mặc định của bạn.
   HINT_SFX_VOLUME: Âm lượng hiệu ứng âm thanh của menu.
   HINT_BOOT_SND_VOLUME: Âm lượng âm thanh khởi động.
@@ -1863,3 +1924,9 @@ labels:
   RIPPS2_ART_PACK: Gói ART
   RIPPS2_ART_PACK_BUILD: Tạo hoặc xóa
   HINT_RIPPS2_ART_PACK: Gói thư mục ART của mọi ổ đã khởi động vào một art.tar trên ổ bạn chọn (ổ nhanh nhất được đề xuất trước). Bìa khi đó được tải từ một tệp với một chỉ mục, không bao giờ tìm từng trò chơi, nên menu và nhạc luôn mượt. Các thư mục ART giữ nguyên.
+  RIPPS2_LIST_CFG_TEXT: Tiêu đề và mô tả trong danh sách
+  HINT_RIPPS2_LIST_CFG_TEXT: 'Tiêu đề và mô tả của trò chơi từ CFG của nó cạnh danh sách. Chủ đề: theo chủ đề hiển thị (chủ đề riêng của RIPPS2 ẩn chúng). Trang thông tin luôn giữ chúng.'
+  RIPPS2_PS1_PREFER: Trùng lặp PS1
+  HINT_RIPPS2_PS1_PREFER: 'Trò chơi PS1 vừa là VCD của POPSTARTER vừa là ảnh đĩa Ember. Cả hai: hai dòng. Ember: chỉ dòng Ember. POPSTARTER: chỉ VCD. Cùng tiêu đề, bỏ qua ID đĩa đứng đầu, là cùng một trò chơi.'
+  RIPPS2_MY_PADS: Tay cầm của tôi
+  HINT_RIPPS2_MY_PADS: 'Các hồ sơ .pad trong thư mục PADS cạnh RIPPS2: mỗi tay cầm USB một tệp văn bản, đặt tên theo ID của nó (2563_0575.pad), mỗi tệp đều được kiểm tra. RIPPS2 dẫn đầu định dạng này; PADEMU sẽ đọc chúng trong bản dựng sau.'

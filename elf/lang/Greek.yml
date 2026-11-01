@@ -1351,6 +1351,67 @@ strings:
   ? There is no other .tar to merge into %s. Put it in this folder, in a drive's ART folder or at the top of a drive, then try again.
   : Δεν υπάρχει άλλο .tar για συγχώνευση στο %s. Βάλ' το σε αυτόν τον φάκελο, στον φάκελο ART ενός δίσκου ή στη ρίζα ενός δίσκου και δοκίμασε ξανά.
   MERGE A .TAR INTO THIS: ΣΥΓΧΩΝΕΥΣΗ .TAR ΕΔΩ
+  ? '
+  
+    %d game button maps in GAMES'
+  : '
+  
+    %d αντιστοιχίσεις κουμπιών παιχνιδιών στο GAMES'
+  ? '
+  
+    1 game button map in GAMES'
+  : '
+  
+    1 αντιστοίχιση κουμπιών παιχνιδιού στο GAMES'
+  (no name): (χωρίς όνομα)
+  Both: Και τα δύο
+  ? 'None yet. A profile is a text file named after the pad''s ID, like 2563_0575.pad: the format is in RIPPS2''s repo (docs/plans/pad-spec.md).'
+  : 'Κανένα ακόμα. Ένα προφίλ είναι αρχείο κειμένου με όνομα το ID του χειριστηρίου, π.χ. 2563_0575.pad: η μορφή είναι στο αποθετήριο του RIPPS2 (docs/plans/pad-spec.md).'
+  On (fast): Ναι (γρήγορα)
+  'Pad profiles in %s:': 'Προφίλ χειριστηρίων στο %s:'
+  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (build %d) σε RiptOPL %s
+  RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: Το RIPPS2 δεν ξέρει πού είναι ο φάκελός του, άρα δεν μπορεί να ψάξει το PADS.
+  could not be read: δεν διαβάστηκε
+  About %d seconds left: Απομένουν περίπου %d δ.
+  About 1 second left: Απομένει περίπου 1 δευτερόλεπτο
+  Taking longer than its last start (%d s so far): Αργεί πιο πολύ από την τελευταία εκκίνηση (%d δ. ως τώρα)
+  ? 'Download the covers in HD (280 x 400)? Sharper on an HD screen, about 70 KB each. START: Standard (140 x 200, as Open PS2 Loader''s), about 20 KB each. A game that already has a cover keeps it.'
+  : 'Λήψη των εξωφύλλων σε HD (280 x 400); Πιο καθαρά σε οθόνη HD, περίπου 70 KB το καθένα. START: Τυπικά (140 x 200, όπως στο Open PS2 Loader), περίπου 20 KB το καθένα. Ένα παιχνίδι που έχει ήδη εξώφυλλο το κρατά.'
+  STANDARD: ΤΥΠΙΚΑ
+  '%d IN': '%d ΜΕΣΑ'
+  '%d IN, %d REPLACED': '%d ΜΕΣΑ, %d ΑΝΤΙΚΑΤΑΣΤΑΘΗΚΑΝ'
+  COULD NOT WRITE: ΑΔΥΝΑΜΙΑ ΕΓΓΡΑΦΗΣ
+  'Getting it ready: %s': 'Προετοιμασία: %s'
+  NOT A .TAR: ΟΧΙ .TAR
+  NOTHING CHANGED: ΤΙΠΟΤΑ ΔΕΝ ΑΛΛΑΞΕ
+  NOTHING TO PUT IN: ΤΙΠΟΤΑ ΓΙΑ ΠΡΟΣΘΗΚΗ
+  ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
+  : Το Ναι (γρήγορα) κρατά τον ήχο εκκίνησης δίπλα στο RIPPS2 στην κάρτα μνήμης από την οποία ξεκινά, και το RIPPS2 δεν ξεκίνησε από κάρτα. Ο ήχος εκκίνησης παίζει όπως στο Ναι.
+  'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'Δεν υπάρχει ακόμα ήχος εκκίνησης για αντιγραφή: Ρυθμίσεις ήχου > Ήχοι BIOS εξάγει αυτούς της κονσόλας.'
+  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
+  : Αυτό είναι το RIPPS2 lite, χωρίς PS2BBL, οπότε δεν μπορεί να εγκαταστήσει το BIBLE. Το πλήρες RIPPS2.elf το εγκαθιστά και το επισκευάζει· ένας φορτωτής ήδη στημένος συνεχίζει να ξεκινά το RIPPS2 lite όπως είναι.
+  '%d COPIED OUT': '%d ΑΝΤΙΓΡΑΦΗΚΑΝ ΕΞΩ'
+  '%d ITEM   %d MARKED   %s': '%d ΣΤΟΙΧΕΙΟ   %d ΣΗΜΕΙΩΜΕΝΟ   %s'
+  '%d ITEM   %d MARKED   %s   %s FREE': '%d ΣΤΟΙΧΕΙΟ   %d ΣΗΜΕΙΩΜΕΝΟ   %s   %s ΕΛΕΥΘΕΡΑ'
+  '%d ITEMS   %d MARKED   %s': '%d ΣΤΟΙΧΕΙΑ   %d ΣΗΜΕΙΩΜΕΝΑ   %s'
+  '%d ITEMS   %d MARKED   %s   %s FREE': '%d ΣΤΟΙΧΕΙΑ   %d ΣΗΜΕΙΩΜΕΝΑ   %s   %s ΕΛΕΥΘΕΡΑ'
+  '%s IN %d': '%s ΣΕ %d'
+  '%s IN %d, %s FREE': '%s ΣΕ %d, %s ΕΛΕΥΘΕΡΑ'
+  ', %d LEFT OUT': ', %d ΕΚΤΟΣ'
+  COPY IT OUT TO OPEN IT: ΑΝΤΙΓΡΑΨΤΕ ΤΟ ΕΞΩ ΓΙΑ ΝΑ ΑΝΟΙΞΕΙ
+  'Copying out: %s': 'Αντιγραφή έξω: %s'
+  INVERT MARKS: ΑΝΤΙΣΤΡΟΦΗ ΣΗΜΑΝΣΗΣ
+  NO FILES ON THE CLIPBOARD: ΚΑΝΕΝΑ ΑΡΧΕΙΟ ΣΤΟ ΠΡΟΧΕΙΡΟ
+  SIZE AND FREE SPACE: ΜΕΓΕΘΟΣ ΚΑΙ ΕΛΕΥΘΕΡΟΣ ΧΩΡΟΣ
+  ? CHEATS in the in-game menu turns each of the game's cheats on or off while you play. Changes apply on RESUME; a cheat turned off stops writing, what it wrote stays. Needs Cheats on for the game.
+  : Το CHEATS στο μενού μέσα στο παιχνίδι ενεργοποιεί ή απενεργοποιεί κάθε cheat του παιχνιδιού ενώ παίζετε. Οι αλλαγές ισχύουν στο RESUME· ένα cheat που κλείνει σταματά να γράφει, ό,τι έγραψε μένει. Θέλει Cheats ενεργά για το παιχνίδι.
+  'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 'Χωρίς CHEATS στο μενού μέσα στο παιχνίδι: τα cheats που επιλέχθηκαν πριν την εκκίνηση τρέχουν όλο το παιχνίδι, όπως πριν.'
+  BOOT SOUND WITH THE PILLARS: ΗΧΟΣ ΕΚΚΙΝΗΣΗΣ ΜΕ ΤΟΥΣ ΠΥΛΩΝΕΣ
+  'Boot Sound: On (fast)': 'Ήχος εκκίνησης: Ναι (γρήγορα)'
+  'Boot sound On (fast): %s, as the pillars rise': 'Ήχος εκκίνησης Ναι (γρήγορα): %s, καθώς υψώνονται οι πυλώνες'
+  'Boot sound On: from the AUDIO folder, once its drive is up': 'Ήχος εκκίνησης Ναι: από τον φάκελο AUDIO, μόλις ο δίσκος του είναι έτοιμος'
+  Boot sound off (Audio settings > Boot Sound): Ήχος εκκίνησης όχι (Ρυθμίσεις ήχου > Ήχος εκκίνησης)
+  Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Αντιγράφει το boot.adp δίπλα στο RIPPS2 στην κάρτα μνήμης από την οποία ξεκινά, όπου η εκκίνηση το διαβάζει πριν ετοιμαστεί οποιοσδήποτε δίσκος.
 labels:
   OK: OK
   WIDE_SCREEN: Ευρεία οθόνη
@@ -1678,7 +1739,7 @@ labels:
   HINT_SETTINGS_SOURCE: Το Γενικό χρησιμοποιεί τις κοινές ρυθμίσεις· το Ανά παιχνίδι τις κρατά μόνο για αυτό το παιχνίδι.
   HINT_PADMACRO_TOGGLE: Το Όσο πατιέται το κουμπί επιβραδύνει τον μοχλό μόνο όσο κρατάτε το κουμπί· το Εναλλαγή με κουμπί το ανάβει και το σβήνει.
   HINT_SFX: Ηχητικά εφέ του μενού.
-  HINT_BOOT_SND: Παίζει έναν ήχο όταν ξεκινά το RiptOPL.
+  HINT_BOOT_SND: 'Ο ήχος εκκίνησης όταν ξεκινά το RIPPS2. Ναι: από τον φάκελο AUDIO, μόλις ο δίσκος του είναι έτοιμος. Ναι (γρήγορα): ένα αντίγραφο δίπλα στο RIPPS2 στην κάρτα μνήμης από την οποία ξεκινά (προσφέρεται όταν το επιλέξετε), που παίζει καθώς υψώνονται οι πυλώνες. Παίζει και με τα ηχητικά εφέ κλειστά.'
   HINT_BGM: Παίζει τη μουσική του θέματος, ή το αρχείο σας Προεπιλεγμένη μουσική θέματος.
   HINT_SFX_VOLUME: Ένταση των ηχητικών εφέ του μενού.
   HINT_BOOT_SND_VOLUME: Ένταση του ήχου εκκίνησης.
@@ -1826,3 +1887,9 @@ labels:
   RIPPS2_ART_PACK: Πακέτο ART
   RIPPS2_ART_PACK_BUILD: Δημιουργία ή αφαίρεση
   HINT_RIPPS2_ART_PACK: Βάζει τον φάκελο ART κάθε μονάδας που ξεκίνησε σε ένα art.tar στη μονάδα που διαλέγεις (η πιο γρήγορη προτείνεται πρώτη). Τα εξώφυλλα φορτώνονται τότε από ένα αρχείο με ένα ευρετήριο, ποτέ με αναζήτηση ανά παιχνίδι, ώστε τα μενού και η μουσική να μένουν ομαλά. Οι φάκελοι ART μένουν όπως είναι.
+  RIPPS2_LIST_CFG_TEXT: Τίτλος και περιγραφή στη λίστα
+  HINT_RIPPS2_LIST_CFG_TEXT: 'Ο τίτλος και η περιγραφή του παιχνιδιού από το CFG του δίπλα στη λίστα. Θέμα: όπως τα δείχνει το θέμα (το θέμα του RIPPS2 τα παραλείπει). Η σελίδα πληροφοριών τα κρατά πάντα.'
+  RIPPS2_PS1_PREFER: Διπλότυπα PS1
+  HINT_RIPPS2_PS1_PREFER: 'Ένα παιχνίδι PS1 που είναι και VCD του POPSTARTER και εικόνα του Ember. Και τα δύο: δύο γραμμές. Ember: μόνο του Ember. POPSTARTER: μόνο το VCD. Ο ίδιος τίτλος, χωρίς ID δίσκου μπροστά, είναι το ίδιο παιχνίδι.'
+  RIPPS2_MY_PADS: Τα χειριστήριά μου
+  HINT_RIPPS2_MY_PADS: 'Τα προφίλ .pad στον φάκελο PADS δίπλα στο RIPPS2: ένα αρχείο κειμένου ανά χειριστήριο USB, με όνομα το ID του (2563_0575.pad), το καθένα ελεγμένο. Το RIPPS2 οδηγεί τη μορφή· το PADEMU θα τα διαβάζει σε επόμενο build.'

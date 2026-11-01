@@ -1348,6 +1348,67 @@ strings:
   ? There is no other .tar to merge into %s. Put it in this folder, in a drive's ART folder or at the top of a drive, then try again.
   : Walang ibang .tar na maisasama sa %s. Ilagay ito sa folder na ito, sa ART folder ng isang drive o sa itaas ng isang drive, pagkatapos ay subukan muli.
   MERGE A .TAR INTO THIS: ISAMA ANG .TAR DITO
+  ? '
+  
+    %d game button maps in GAMES'
+  : '
+  
+    %d button map ng mga laro sa GAMES'
+  ? '
+  
+    1 game button map in GAMES'
+  : '
+  
+    1 button map ng laro sa GAMES'
+  (no name): (walang pangalan)
+  Both: Pareho
+  ? 'None yet. A profile is a text file named after the pad''s ID, like 2563_0575.pad: the format is in RIPPS2''s repo (docs/plans/pad-spec.md).'
+  : 'Wala pa. Ang profile ay text file na ipinangalan sa ID ng controller, gaya ng 2563_0575.pad: nasa repo ng RIPPS2 ang format (docs/plans/pad-spec.md).'
+  On (fast): On (mabilis)
+  'Pad profiles in %s:': 'Mga profile ng controller sa %s:'
+  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (build %d) sa RiptOPL %s
+  RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: Hindi alam ng RIPPS2 kung nasaan ang folder nito, kaya hindi nito mahanap ang PADS.
+  could not be read: hindi mabasa
+  About %d seconds left: Mga %d segundo pa
+  About 1 second left: Mga 1 segundo pa
+  Taking longer than its last start (%d s so far): Mas matagal kaysa sa huling simula nito (%d s sa ngayon)
+  ? 'Download the covers in HD (280 x 400)? Sharper on an HD screen, about 70 KB each. START: Standard (140 x 200, as Open PS2 Loader''s), about 20 KB each. A game that already has a cover keeps it.'
+  : 'I-download ang mga cover sa HD (280 x 400)? Mas malinaw sa HD na screen, mga 70 KB bawat isa. START: Standard (140 x 200, gaya ng sa Open PS2 Loader), mga 20 KB bawat isa. Ang larong may cover na ay mananatili rito.'
+  STANDARD: STANDARD
+  '%d IN': '%d PUMASOK'
+  '%d IN, %d REPLACED': '%d PUMASOK, %d PINALITAN'
+  COULD NOT WRITE: HINDI MAISULAT
+  'Getting it ready: %s': 'Inihahanda: %s'
+  NOT A .TAR: HINDI .TAR
+  NOTHING CHANGED: WALANG NAGBAGO
+  NOTHING TO PUT IN: WALANG MAILALAGAY
+  ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
+  : Itinatabi ng On (mabilis) ang boot sound sa tabi ng RIPPS2 sa memory card na pinagsimulan nito, at hindi nagsimula ang RIPPS2 sa isa. Tutunog ang boot sound gaya ng On.
+  'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'Wala pang boot sound na makokopya: kinukuha ng Audio settings > BIOS Sounds ang mga tunog ng console na ito.'
+  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
+  : Ito ang RIPPS2 lite, na walang dalang PS2BBL, kaya hindi nito maise-set up ang BIBLE. Ang buong RIPPS2.elf ang nag-i-install at nag-aayos nito; ang boot loader na naka-set up na ay patuloy na magsisimula ng RIPPS2 lite.
+  '%d COPIED OUT': '%d NAKOPYA PALABAS'
+  '%d ITEM   %d MARKED   %s': '%d ITEM   %d MARKADO   %s'
+  '%d ITEM   %d MARKED   %s   %s FREE': '%d ITEM   %d MARKADO   %s   %s LIBRE'
+  '%d ITEMS   %d MARKED   %s': '%d ITEM   %d MARKADO   %s'
+  '%d ITEMS   %d MARKED   %s   %s FREE': '%d ITEM   %d MARKADO   %s   %s LIBRE'
+  '%s IN %d': '%s SA %d'
+  '%s IN %d, %s FREE': '%s SA %d, %s LIBRE'
+  ', %d LEFT OUT': ', %d HINDI ISINAMA'
+  COPY IT OUT TO OPEN IT: KOPYAHIN PALABAS PARA MABUKSAN
+  'Copying out: %s': 'Kinokopya palabas: %s'
+  INVERT MARKS: BALIGTARIN ANG MARKA
+  NO FILES ON THE CLIPBOARD: WALANG FILE SA CLIPBOARD
+  SIZE AND FREE SPACE: LAKI AT LIBRENG ESPASYO
+  ? CHEATS in the in-game menu turns each of the game's cheats on or off while you play. Changes apply on RESUME; a cheat turned off stops writing, what it wrote stays. Needs Cheats on for the game.
+  : Ang CHEATS sa in-game menu ay nag-o-on o nag-o-off ng bawat cheat ng laro habang naglalaro. Gumagana ang pagbabago sa RESUME; ang na-off na cheat ay hihinto sa pagsulat, mananatili ang naisulat nito. Kailangang naka-on ang Cheats para sa laro.
+  'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 'Walang CHEATS sa in-game menu: ang mga cheat na naka-tsek bago ang simula ay tatakbo buong laro, gaya ng dati.'
+  BOOT SOUND WITH THE PILLARS: BOOT SOUND KASABAY NG MGA HALIGI
+  'Boot Sound: On (fast)': 'Boot sound: On (mabilis)'
+  'Boot sound On (fast): %s, as the pillars rise': 'Boot sound On (mabilis): %s, habang tumataas ang mga haligi'
+  'Boot sound On: from the AUDIO folder, once its drive is up': 'Boot sound On: mula sa folder na AUDIO, kapag handa na ang drive nito'
+  Boot sound off (Audio settings > Boot Sound): Boot sound off (Audio settings > Boot Sound)
+  Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Kinokopya ang boot.adp sa tabi ng RIPPS2 sa memory card na pinagsimulan nito, kung saan ito binabasa ng boot bago maging handa ang anumang drive.
 labels:
   SETTINGS_SAVED: Na-save ang settings sa %s
   SETTINGS: Settings
@@ -1702,7 +1763,7 @@ labels:
   HINT_SETTINGS_SOURCE: Ginagamit ng Global ang pinagsasaluhang settings; itinatabi ng Bawat laro ang mga ito para sa larong ito lang.
   HINT_PADMACRO_TOGGLE: Pinababagal ng While Button Pressed ang stick habang hawak mo lang ang button; ino-on at ino-off ito ng Toggled By Button.
   HINT_SFX: Mga sound effect ng menu.
-  HINT_BOOT_SND: Nagpapatugtog ng tunog kapag nagsimula ang RiptOPL.
+  HINT_BOOT_SND: 'Ang boot sound sa pagsisimula ng RIPPS2. On: mula sa folder na AUDIO, kapag handa na ang drive nito. On (mabilis): kopya sa tabi ng RIPPS2 sa memory card na pinagsimulan nito (iniaalok kapag pinili mo), tumutunog habang tumataas ang mga haligi. Tumutunog din kahit naka-off ang Sound Effects.'
   HINT_BGM: Pinapatugtog ang musika ng theme, o ang iyong Default Theme Music file.
   HINT_SFX_VOLUME: Lakas ng mga sound effect ng menu.
   HINT_BOOT_SND_VOLUME: Lakas ng tunog sa pagsisimula.
@@ -1850,3 +1911,9 @@ labels:
   RIPPS2_ART_PACK: ART Pack
   RIPPS2_ART_PACK_BUILD: Buuin o tanggalin
   HINT_RIPPS2_ART_PACK: Pinagsasama ang ART folder ng bawat sinimulang drive sa iisang art.tar sa drive na pipiliin mo (unang inaalok ang pinakamabilis). Nilo-load na ang mga cover mula sa iisang file na may iisang index, hindi kailanman sa paghahanap sa bawat laro, kaya maayos ang takbo ng mga menu at musika. Mananatili ang mga ART folder.
+  RIPPS2_LIST_CFG_TEXT: Pamagat at paglalarawan sa listahan
+  HINT_RIPPS2_LIST_CFG_TEXT: 'Ang pamagat at paglalarawan ng laro mula sa CFG nito sa tabi ng listahan. Theme: ayon sa theme (hindi ito ipinapakita ng sariling theme ng RIPPS2). Laging ipinapakita ng info page.'
+  RIPPS2_PS1_PREFER: Mga dobleng PS1
+  HINT_RIPPS2_PS1_PREFER: 'Larong PS1 na parehong POPSTARTER VCD at Ember image. Pareho: dalawang hilera. Ember: ang Ember lang. POPSTARTER: ang VCD lang. Ang parehong pamagat, maliban sa disc ID sa unahan, ay iisang laro.'
+  RIPPS2_MY_PADS: Aking mga controller
+  HINT_RIPPS2_MY_PADS: 'Ang mga .pad profile sa folder na PADS sa tabi ng RIPPS2: isang text file bawat USB controller, ipinangalan sa ID nito (2563_0575.pad), bawat isa ay sinusuri. Pinangungunahan ng RIPPS2 ang format; babasahin ito ng PADEMU sa susunod na build.'

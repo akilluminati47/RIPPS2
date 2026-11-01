@@ -1350,6 +1350,67 @@ strings:
   ? There is no other .tar to merge into %s. Put it in this folder, in a drive's ART folder or at the top of a drive, then try again.
   : Não há outro .tar para fundir em %s. Coloque-o nesta pasta, na pasta ART de uma unidade ou na raiz de uma unidade e tente de novo.
   MERGE A .TAR INTO THIS: FUNDIR UM .TAR AQUI
+  ? '
+  
+    %d game button maps in GAMES'
+  : '
+  
+    %d mapeamentos de botões de jogos em GAMES'
+  ? '
+  
+    1 game button map in GAMES'
+  : '
+  
+    1 mapeamento de botões de jogo em GAMES'
+  (no name): (sem nome)
+  Both: Ambos
+  ? 'None yet. A profile is a text file named after the pad''s ID, like 2563_0575.pad: the format is in RIPPS2''s repo (docs/plans/pad-spec.md).'
+  : 'Ainda nenhum. Um perfil é um ficheiro de texto com o nome do ID do comando, como 2563_0575.pad: o formato está no repositório do RIPPS2 (docs/plans/pad-spec.md).'
+  On (fast): Ligado (rápido)
+  'Pad profiles in %s:': 'Perfis de comando em %s:'
+  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (build %d) sobre RiptOPL %s
+  RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: O RIPPS2 não sabe onde está a sua pasta, por isso não pode procurar PADS.
+  could not be read: não foi possível ler
+  About %d seconds left: Faltam cerca de %d segundos
+  About 1 second left: Falta cerca de 1 segundo
+  Taking longer than its last start (%d s so far): Mais lento que o último arranque (%d s até agora)
+  ? 'Download the covers in HD (280 x 400)? Sharper on an HD screen, about 70 KB each. START: Standard (140 x 200, as Open PS2 Loader''s), about 20 KB each. A game that already has a cover keeps it.'
+  : 'Transferir as capas em HD (280 x 400)? Mais nítidas num ecrã HD, cerca de 70 KB cada. START: Padrão (140 x 200, como o Open PS2 Loader), cerca de 20 KB cada. Um jogo que já tem capa mantém-na.'
+  STANDARD: PADRÃO
+  '%d IN': '%d DENTRO'
+  '%d IN, %d REPLACED': '%d DENTRO, %d SUBSTITUÍDOS'
+  COULD NOT WRITE: NÃO FOI POSSÍVEL ESCREVER
+  'Getting it ready: %s': 'A preparar: %s'
+  NOT A .TAR: NÃO É UM .TAR
+  NOTHING CHANGED: NADA MUDOU
+  NOTHING TO PUT IN: NADA PARA ACRESCENTAR
+  ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
+  : Ligado (rápido) guarda o som de arranque junto ao RIPPS2 no cartão de memória de onde arranca, e o RIPPS2 não arrancou de um. O som de arranque toca como Ligado.
+  'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'Ainda não há som de arranque para copiar: Definições de áudio > Sons da BIOS extrai os desta consola.'
+  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
+  : Este é o RIPPS2 lite, que não traz o PS2BBL, por isso não pode instalar o BIBLE. O RIPPS2.elf completo instala-o e repara-o; um carregador já instalado continua a arrancar o RIPPS2 lite como está.
+  '%d COPIED OUT': '%d COPIADOS PARA FORA'
+  '%d ITEM   %d MARKED   %s': '%d ITEM   %d MARCADO   %s'
+  '%d ITEM   %d MARKED   %s   %s FREE': '%d ITEM   %d MARCADO   %s   %s LIVRES'
+  '%d ITEMS   %d MARKED   %s': '%d ITENS   %d MARCADOS   %s'
+  '%d ITEMS   %d MARKED   %s   %s FREE': '%d ITENS   %d MARCADOS   %s   %s LIVRES'
+  '%s IN %d': '%s EM %d'
+  '%s IN %d, %s FREE': '%s EM %d, %s LIVRES'
+  ', %d LEFT OUT': ', %d DE FORA'
+  COPY IT OUT TO OPEN IT: COPIE-O PARA FORA PARA O ABRIR
+  'Copying out: %s': 'A copiar para fora: %s'
+  INVERT MARKS: INVERTER MARCAS
+  NO FILES ON THE CLIPBOARD: NENHUM FICHEIRO NA ÁREA DE TRANSFERÊNCIA
+  SIZE AND FREE SPACE: TAMANHO E ESPAÇO LIVRE
+  ? CHEATS in the in-game menu turns each of the game's cheats on or off while you play. Changes apply on RESUME; a cheat turned off stops writing, what it wrote stays. Needs Cheats on for the game.
+  : CHEATS no menu do jogo liga ou desliga cada cheat do jogo enquanto joga. As alterações aplicam-se em RESUME; um cheat desligado deixa de escrever, o que escreveu fica. Requer os Cheats ligados para o jogo.
+  'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 'Sem CHEATS no menu do jogo: os cheats marcados antes do arranque correm todo o jogo, como antes.'
+  BOOT SOUND WITH THE PILLARS: SOM DE ARRANQUE COM OS PILARES
+  'Boot Sound: On (fast)': 'Som de arranque: Ligado (rápido)'
+  'Boot sound On (fast): %s, as the pillars rise': 'Som de arranque Ligado (rápido): %s, ao subirem os pilares'
+  'Boot sound On: from the AUDIO folder, once its drive is up': 'Som de arranque Ligado: da pasta AUDIO, quando a sua unidade estiver pronta'
+  Boot sound off (Audio settings > Boot Sound): Som de arranque desligado (Definições de áudio > Som de arranque)
+  Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Copia boot.adp para junto do RIPPS2 no cartão de memória de onde arranca, onde o arranque o lê antes de qualquer unidade estar pronta.
 labels:
   MANUAL: Manual
   ENTER: Entrar
@@ -1668,7 +1729,7 @@ labels:
   HINT_SETTINGS_SOURCE: Global usa as definições comuns; Por jogo as mantém só para este jogo.
   HINT_PADMACRO_TOGGLE: Enquanto pressionado deixa o analógico lento só enquanto você segura o botão; Alternar pelo botão liga e desliga.
   HINT_SFX: Efeitos sonoros do menu.
-  HINT_BOOT_SND: Reproduz um som quando o RiptOPL inicia.
+  HINT_BOOT_SND: 'O som de arranque quando o RIPPS2 inicia. Ligado: da pasta AUDIO, quando a sua unidade estiver pronta. Ligado (rápido): uma cópia junto ao RIPPS2 no cartão de memória de onde arranca (oferecida quando o escolhe), tocada ao subirem os pilares. Toca também com os efeitos sonoros desligados.'
   HINT_BGM: Reproduz a música do tema, ou o seu ficheiro de música de tema padrão.
   HINT_SFX_VOLUME: Volume dos efeitos sonoros do menu.
   HINT_BOOT_SND_VOLUME: Volume do som de início.
@@ -1816,3 +1877,9 @@ labels:
   RIPPS2_ART_PACK: Pacote ART
   RIPPS2_ART_PACK_BUILD: Criar ou remover
   HINT_RIPPS2_ART_PACK: Junta a pasta ART de cada unidade iniciada num único art.tar na unidade que escolheres (a mais rápida é oferecida primeiro). As capas passam a vir de um ficheiro com um índice, nunca de uma procura por jogo, e os menus e a música ficam fluidos. As pastas ART ficam como estão.
+  RIPPS2_LIST_CFG_TEXT: Título e descrição na lista
+  HINT_RIPPS2_LIST_CFG_TEXT: 'O título e a descrição do jogo da sua CFG junto à lista. Tema: como o tema os mostra (o tema do RIPPS2 esconde-os). A página de informação mantém-nos sempre.'
+  RIPPS2_PS1_PREFER: Duplicados PS1
+  HINT_RIPPS2_PS1_PREFER: 'Um jogo PS1 que é ao mesmo tempo um VCD do POPSTARTER e uma imagem Ember. Ambos: duas linhas. Ember: só a do Ember. POPSTARTER: só o VCD. O mesmo título, sem um ID de disco à frente, é o mesmo jogo.'
+  RIPPS2_MY_PADS: Os meus comandos
+  HINT_RIPPS2_MY_PADS: 'Os perfis .pad da pasta PADS junto ao RIPPS2: um ficheiro de texto por comando USB, com o nome do seu ID (2563_0575.pad), cada um verificado. O RIPPS2 lidera o formato; o PADEMU lê-los-á numa build posterior.'

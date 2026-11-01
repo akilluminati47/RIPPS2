@@ -1350,6 +1350,67 @@ strings:
   ? There is no other .tar to merge into %s. Put it in this folder, in a drive's ART folder or at the top of a drive, then try again.
   : Nuk ka asnjë .tar tjetër për t'u bashkuar në %s. Vendose në këtë dosje, në dosjen ART të një disku ose në majë të një disku, pastaj provo sërish.
   MERGE A .TAR INTO THIS: BASHKO NJË .TAR KËTU
+  ? '
+  
+    %d game button maps in GAMES'
+  : '
+  
+    %d caktime butonash lojërash në GAMES'
+  ? '
+  
+    1 game button map in GAMES'
+  : '
+  
+    1 caktim butonash loje në GAMES'
+  (no name): (pa emër)
+  Both: Të dyja
+  ? 'None yet. A profile is a text file named after the pad''s ID, like 2563_0575.pad: the format is in RIPPS2''s repo (docs/plans/pad-spec.md).'
+  : 'Asnjë ende. Një profil është skedar teksti i emërtuar sipas ID-së së kontrollerit, si 2563_0575.pad: formati është në depon e RIPPS2 (docs/plans/pad-spec.md).'
+  On (fast): Aktiv (shpejt)
+  'Pad profiles in %s:': 'Profilet e kontrollerëve në %s:'
+  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (build %d) mbi RiptOPL %s
+  RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: RIPPS2 nuk e di ku është dosja e tij, ndaj nuk mund të kërkojë PADS.
+  could not be read: nuk u lexua
+  About %d seconds left: Rreth %d sekonda të mbetura
+  About 1 second left: Rreth 1 sekondë e mbetur
+  Taking longer than its last start (%d s so far): Po zgjat më shumë se nisja e fundit (%d s deri tani)
+  ? 'Download the covers in HD (280 x 400)? Sharper on an HD screen, about 70 KB each. START: Standard (140 x 200, as Open PS2 Loader''s), about 20 KB each. A game that already has a cover keeps it.'
+  : 'Të shkarkohen kopertinat në HD (280 x 400)? Më të qarta në ekran HD, rreth 70 KB secila. START: Standarde (140 x 200, si te Open PS2 Loader), rreth 20 KB secila. Një lojë që ka kopertinë e mban atë.'
+  STANDARD: STANDARDE
+  '%d IN': '%d BRENDA'
+  '%d IN, %d REPLACED': '%d BRENDA, %d ZËVENDËSUAR'
+  COULD NOT WRITE: NUK U SHKRUA
+  'Getting it ready: %s': 'Po përgatitet: %s'
+  NOT A .TAR: NUK ËSHTË .TAR
+  NOTHING CHANGED: ASGJË NUK NDRYSHOI
+  NOTHING TO PUT IN: ASGJË PËR TË FUTUR
+  ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
+  : Aktiv (shpejt) e mban tingullin e nisjes pranë RIPPS2 në kartën e memories nga nis, por RIPPS2 nuk nisi nga një kartë. Tingulli i nisjes luhet si te Aktiv.
+  'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'Nuk ka ende tingull nisjeje për t''u kopjuar: Cilësimet e audios > Tingujt e BIOS nxjerr ato të kësaj konsole.'
+  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
+  : Ky është RIPPS2 lite, pa PS2BBL, ndaj nuk mund të instalojë BIBLE. RIPPS2.elf i plotë e instalon dhe e riparon; një ngarkues i instaluar më parë vazhdon ta nisë RIPPS2 lite siç është.
+  '%d COPIED OUT': '%d U KOPJUAN JASHTË'
+  '%d ITEM   %d MARKED   %s': '%d ELEMENT   %d SHËNUAR   %s'
+  '%d ITEM   %d MARKED   %s   %s FREE': '%d ELEMENT   %d SHËNUAR   %s   %s I LIRË'
+  '%d ITEMS   %d MARKED   %s': '%d ELEMENTE   %d SHËNUAR   %s'
+  '%d ITEMS   %d MARKED   %s   %s FREE': '%d ELEMENTE   %d SHËNUAR   %s   %s I LIRË'
+  '%s IN %d': '%s NË %d'
+  '%s IN %d, %s FREE': '%s NË %d, %s I LIRË'
+  ', %d LEFT OUT': ', %d LËNË JASHTË'
+  COPY IT OUT TO OPEN IT: KOPJOJENI JASHTË PËR TA HAPUR
+  'Copying out: %s': 'Po kopjohet jashtë: %s'
+  INVERT MARKS: KTHE SHËNIMET
+  NO FILES ON THE CLIPBOARD: ASNJË SKEDAR NË KUJTESËN E PËRKOHSHME
+  SIZE AND FREE SPACE: MADHËSIA DHE HAPËSIRA E LIRË
+  ? CHEATS in the in-game menu turns each of the game's cheats on or off while you play. Changes apply on RESUME; a cheat turned off stops writing, what it wrote stays. Needs Cheats on for the game.
+  : CHEATS në menunë brenda lojës ndez ose fik çdo cheat të lojës ndërsa luani. Ndryshimet vlejnë në RESUME; një cheat i fikur ndalon së shkruari, ç'ka shkruar mbetet. Kërkon Cheats aktive për lojën.
+  'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 'Pa CHEATS në menunë brenda lojës: cheat-et e shënuara para nisjes punojnë gjithë lojën, si më parë.'
+  BOOT SOUND WITH THE PILLARS: TINGULL NISJEJE ME SHTYLLAT
+  'Boot Sound: On (fast)': 'Tingulli i nisjes: Aktiv (shpejt)'
+  'Boot sound On (fast): %s, as the pillars rise': 'Tingulli i nisjes Aktiv (shpejt): %s, ndërsa ngrihen shtyllat'
+  'Boot sound On: from the AUDIO folder, once its drive is up': 'Tingulli i nisjes Aktiv: nga dosja AUDIO, kur disku i saj është gati'
+  Boot sound off (Audio settings > Boot Sound): Tingulli i nisjes joaktiv (Cilësimet e audios > Tingulli i nisjes)
+  Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Kopjon boot.adp pranë RIPPS2 në kartën e memories nga nis, ku nisja e lexon para se ndonjë disk të jetë gati.
 labels:
   OK: OK
   EXITTO: Shtegu IGR
@@ -1688,7 +1749,7 @@ labels:
   HINT_SETTINGS_SOURCE: Globale përdor cilësimet e përbashkëta; Për lojë i mban vetëm për këtë lojë.
   HINT_PADMACRO_TOGGLE: Ndërsa butoni shtypet ngadalëson levën vetëm ndërsa mban butonin; Ndërrohet nga butoni e ndez dhe e fik.
   HINT_SFX: Efektet zanore të menysë.
-  HINT_BOOT_SND: Luan një tingull kur niset RiptOPL.
+  HINT_BOOT_SND: 'Tingulli i nisjes kur nis RIPPS2. Aktiv: nga dosja AUDIO, kur disku i saj është gati. Aktiv (shpejt): një kopje pranë RIPPS2 në kartën e memories nga nis (ofrohet kur e zgjidhni), luhet ndërsa ngrihen shtyllat. Luhet edhe me efektet zanore të fikura.'
   HINT_BGM: Luan muzikën e temës, ose skedarin tënd të Muzikës së parazgjedhur të temës.
   HINT_SFX_VOLUME: Volumi i efekteve zanore të menysë.
   HINT_BOOT_SND_VOLUME: Volumi i tingullit të nisjes.
@@ -1838,3 +1899,9 @@ labels:
   RIPPS2_ART_PACK: Paketa ART
   RIPPS2_ART_PACK_BUILD: Ndërto ose hiq
   HINT_RIPPS2_ART_PACK: Paketon dosjen ART të çdo disku të nisur në një art.tar të vetëm në diskun që zgjedh (më i shpejti ofrohet i pari). Kopertinat ngarkohen pastaj nga një skedar me një indeks, kurrë me një kërkim për çdo lojë, kështu që menytë dhe muzika mbeten të rrjedhshme. Dosjet ART mbeten siç janë.
+  RIPPS2_LIST_CFG_TEXT: Titulli dhe përshkrimi në listë
+  HINT_RIPPS2_LIST_CFG_TEXT: 'Titulli dhe përshkrimi i lojës nga CFG-ja e saj pranë listës. Tema: siç i tregon tema (tema e vetë RIPPS2 i lë jashtë). Faqja e informacionit i mban gjithmonë.'
+  RIPPS2_PS1_PREFER: Dyfishimet PS1
+  HINT_RIPPS2_PS1_PREFER: 'Një lojë PS1 që është edhe VCD për POPSTARTER, edhe imazh Ember. Të dyja: dy rreshta. Ember: vetëm rreshti Ember. POPSTARTER: vetëm VCD-ja. I njëjti titull, pa ID-në e diskut përpara, është e njëjta lojë.'
+  RIPPS2_MY_PADS: Kontrollerët e mi
+  HINT_RIPPS2_MY_PADS: 'Profilet .pad në dosjen PADS pranë RIPPS2: një skedar teksti për çdo kontroller USB, i emërtuar sipas ID-së së tij (2563_0575.pad), secili i kontrolluar. RIPPS2 e udhëheq formatin; PADEMU do t''i lexojë në një build të mëvonshëm.'

@@ -1350,6 +1350,67 @@ strings:
   ? There is no other .tar to merge into %s. Put it in this folder, in a drive's ART folder or at the top of a drive, then try again.
   : Tidak ada .tar lain untuk digabungkan ke %s. Taruh di folder ini, di folder ART suatu drive atau di bagian teratas drive, lalu coba lagi.
   MERGE A .TAR INTO THIS: GABUNGKAN .TAR KE SINI
+  ? '
+  
+    %d game button maps in GAMES'
+  : '
+  
+    %d pemetaan tombol game di GAMES'
+  ? '
+  
+    1 game button map in GAMES'
+  : '
+  
+    1 pemetaan tombol game di GAMES'
+  (no name): (tanpa nama)
+  Both: Keduanya
+  ? 'None yet. A profile is a text file named after the pad''s ID, like 2563_0575.pad: the format is in RIPPS2''s repo (docs/plans/pad-spec.md).'
+  : 'Belum ada. Profil adalah file teks yang dinamai dengan ID kontroler, seperti 2563_0575.pad: formatnya ada di repo RIPPS2 (docs/plans/pad-spec.md).'
+  On (fast): Aktif (cepat)
+  'Pad profiles in %s:': 'Profil kontroler di %s:'
+  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (build %d) di RiptOPL %s
+  RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: RIPPS2 tidak tahu di mana foldernya, jadi tidak bisa mencari PADS.
+  could not be read: tidak dapat dibaca
+  About %d seconds left: Sekitar %d detik lagi
+  About 1 second left: Sekitar 1 detik lagi
+  Taking longer than its last start (%d s so far): Lebih lama dari mulai terakhirnya (%d dtk sejauh ini)
+  ? 'Download the covers in HD (280 x 400)? Sharper on an HD screen, about 70 KB each. START: Standard (140 x 200, as Open PS2 Loader''s), about 20 KB each. A game that already has a cover keeps it.'
+  : 'Unduh sampul dalam HD (280 x 400)? Lebih tajam di layar HD, sekitar 70 KB masing-masing. START: Standar (140 x 200, seperti Open PS2 Loader), sekitar 20 KB masing-masing. Game yang sudah punya sampul tetap memakainya.'
+  STANDARD: STANDAR
+  '%d IN': '%d MASUK'
+  '%d IN, %d REPLACED': '%d MASUK, %d DIGANTI'
+  COULD NOT WRITE: TIDAK DAPAT MENULIS
+  'Getting it ready: %s': 'Menyiapkan: %s'
+  NOT A .TAR: BUKAN .TAR
+  NOTHING CHANGED: TIDAK ADA YANG BERUBAH
+  NOTHING TO PUT IN: TIDAK ADA YANG DIMASUKKAN
+  ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
+  : Aktif (cepat) menyimpan suara boot di samping RIPPS2 pada kartu memori tempat ia mulai, dan RIPPS2 tidak dimulai dari kartu. Suara boot diputar seperti Aktif.
+  'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'Belum ada suara boot untuk disalin: Pengaturan audio > Suara BIOS mengambil suara konsol ini.'
+  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
+  : Ini RIPPS2 lite, yang tidak membawa PS2BBL, jadi tidak bisa memasang BIBLE. RIPPS2.elf lengkap memasang dan memperbaikinya; boot loader yang sudah terpasang tetap memulai RIPPS2 lite apa adanya.
+  '%d COPIED OUT': '%d DISALIN KELUAR'
+  '%d ITEM   %d MARKED   %s': '%d ITEM   %d DITANDAI   %s'
+  '%d ITEM   %d MARKED   %s   %s FREE': '%d ITEM   %d DITANDAI   %s   %s KOSONG'
+  '%d ITEMS   %d MARKED   %s': '%d ITEM   %d DITANDAI   %s'
+  '%d ITEMS   %d MARKED   %s   %s FREE': '%d ITEM   %d DITANDAI   %s   %s KOSONG'
+  '%s IN %d': '%s DALAM %d'
+  '%s IN %d, %s FREE': '%s DALAM %d, %s KOSONG'
+  ', %d LEFT OUT': ', %d DILEWATI'
+  COPY IT OUT TO OPEN IT: SALIN KELUAR UNTUK MEMBUKANYA
+  'Copying out: %s': 'Menyalin keluar: %s'
+  INVERT MARKS: BALIK TANDA
+  NO FILES ON THE CLIPBOARD: TIDAK ADA FILE DI PAPAN KLIP
+  SIZE AND FREE SPACE: UKURAN DAN RUANG KOSONG
+  ? CHEATS in the in-game menu turns each of the game's cheats on or off while you play. Changes apply on RESUME; a cheat turned off stops writing, what it wrote stays. Needs Cheats on for the game.
+  : CHEATS di menu dalam game menyalakan atau mematikan tiap cheat game saat bermain. Perubahan berlaku saat RESUME; cheat yang dimatikan berhenti menulis, yang sudah ditulis tetap. Perlu Cheats aktif untuk game itu.
+  'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 'Tanpa CHEATS di menu dalam game: cheat yang dicentang sebelum mulai berjalan sepanjang game, seperti sebelumnya.'
+  BOOT SOUND WITH THE PILLARS: SUARA BOOT BERSAMA PILAR
+  'Boot Sound: On (fast)': 'Suara boot: Aktif (cepat)'
+  'Boot sound On (fast): %s, as the pillars rise': 'Suara boot Aktif (cepat): %s, saat pilar naik'
+  'Boot sound On: from the AUDIO folder, once its drive is up': 'Suara boot Aktif: dari folder AUDIO, setelah drive-nya siap'
+  Boot sound off (Audio settings > Boot Sound): Suara boot mati (Pengaturan audio > Suara boot)
+  Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Menyalin boot.adp ke samping RIPPS2 di kartu memori tempat ia mulai, tempat boot membacanya sebelum drive mana pun siap.
 labels:
   BDM_GAMES: Game BDM
   HDD_GAMES: Game HDD
@@ -1690,7 +1751,7 @@ labels:
   HINT_SETTINGS_SOURCE: Global memakai pengaturan bersama; Per Game menyimpannya hanya untuk game ini.
   HINT_PADMACRO_TOGGLE: Saat Tombol Ditekan melambatkan stik hanya selama kamu menahan tombol; Diganti dengan Tombol menyalakan dan mematikannya.
   HINT_SFX: Efek suara menu.
-  HINT_BOOT_SND: Memutar suara saat RiptOPL mulai.
+  HINT_BOOT_SND: 'Suara boot saat RIPPS2 dimulai. Aktif: dari folder AUDIO, setelah drive-nya siap. Aktif (cepat): salinan di samping RIPPS2 pada kartu memori tempat ia mulai (ditawarkan saat dipilih), diputar saat pilar naik. Tetap diputar walau efek suara mati.'
   HINT_BGM: Memutar musik tema, atau file Musik Tema Bawaan milikmu.
   HINT_SFX_VOLUME: Volume efek suara menu.
   HINT_BOOT_SND_VOLUME: Volume suara awal.
@@ -1838,3 +1899,9 @@ labels:
   RIPPS2_ART_PACK: Paket ART
   RIPPS2_ART_PACK_BUILD: Buat atau hapus
   HINT_RIPPS2_ART_PACK: Mengemas folder ART setiap drive yang dimulai ke satu art.tar di drive yang kamu pilih (yang tercepat ditawarkan lebih dulu). Sampul lalu dimuat dari satu berkas dengan satu indeks, tidak pernah dengan pencarian per game, sehingga menu dan musik tetap lancar. Folder ART tetap seperti adanya.
+  RIPPS2_LIST_CFG_TEXT: Judul dan deskripsi di daftar
+  HINT_RIPPS2_LIST_CFG_TEXT: 'Judul dan deskripsi game dari CFG-nya di samping daftar. Tema: seperti yang ditampilkan tema (tema RIPPS2 sendiri tidak menampilkannya). Halaman info selalu menampilkannya.'
+  RIPPS2_PS1_PREFER: Duplikat PS1
+  HINT_RIPPS2_PS1_PREFER: 'Game PS1 yang sekaligus VCD POPSTARTER dan image Ember. Keduanya: dua baris. Ember: hanya baris Ember. POPSTARTER: hanya VCD. Judul yang sama, tanpa ID disk di depannya, adalah game yang sama.'
+  RIPPS2_MY_PADS: Kontroler saya
+  HINT_RIPPS2_MY_PADS: 'Profil .pad di folder PADS di samping RIPPS2: satu file teks per kontroler USB, dinamai dengan ID-nya (2563_0575.pad), masing-masing diperiksa. RIPPS2 memimpin format ini; PADEMU membacanya di build berikutnya.'

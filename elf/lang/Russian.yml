@@ -1351,6 +1351,67 @@ strings:
   ? There is no other .tar to merge into %s. Put it in this folder, in a drive's ART folder or at the top of a drive, then try again.
   : Нет другого .tar, чтобы влить в %s. Положите его в эту папку, в папку ART диска или в корень диска и попробуйте снова.
   MERGE A .TAR INTO THIS: ВЛИТЬ .TAR В ЭТОТ
+  ? '
+  
+    %d game button maps in GAMES'
+  : '
+  
+    %d раскладок кнопок игр в GAMES'
+  ? '
+  
+    1 game button map in GAMES'
+  : '
+  
+    1 раскладка кнопок игры в GAMES'
+  (no name): (без имени)
+  Both: Оба
+  ? 'None yet. A profile is a text file named after the pad''s ID, like 2563_0575.pad: the format is in RIPPS2''s repo (docs/plans/pad-spec.md).'
+  : 'Пока нет. Профиль: это текстовый файл, названный по ID геймпада, например 2563_0575.pad: формат описан в репозитории RIPPS2 (docs/plans/pad-spec.md).'
+  On (fast): Вкл. (быстро)
+  'Pad profiles in %s:': 'Профили геймпадов в %s:'
+  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (сборка %d) на RiptOPL %s
+  RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: RIPPS2 не знает, где его папка, поэтому не может искать PADS.
+  could not be read: не удалось прочитать
+  About %d seconds left: Осталось около %d с
+  About 1 second left: Осталась около 1 секунды
+  Taking longer than its last start (%d s so far): Дольше прошлого запуска (уже %d с)
+  ? 'Download the covers in HD (280 x 400)? Sharper on an HD screen, about 70 KB each. START: Standard (140 x 200, as Open PS2 Loader''s), about 20 KB each. A game that already has a cover keeps it.'
+  : 'Скачать обложки в HD (280 x 400)? Чётче на HD-экране, около 70 КБ каждая. START: стандартные (140 x 200, как в Open PS2 Loader), около 20 КБ каждая. Игра, у которой уже есть обложка, сохранит её.'
+  STANDARD: СТАНДАРТ
+  '%d IN': 'ДОБАВЛЕНО: %d'
+  '%d IN, %d REPLACED': 'ДОБАВЛЕНО: %d, ЗАМЕНЕНО: %d'
+  COULD NOT WRITE: НЕ УДАЛОСЬ ЗАПИСАТЬ
+  'Getting it ready: %s': 'Подготовка: %s'
+  NOT A .TAR: ЭТО НЕ .TAR
+  NOTHING CHANGED: НИЧЕГО НЕ ИЗМЕНЕНО
+  NOTHING TO PUT IN: НЕЧЕГО ДОБАВИТЬ
+  ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
+  : Вкл. (быстро) хранит звук запуска рядом с RIPPS2 на карте памяти, с которой он запускается, а RIPPS2 запущен не с карты. Звук запуска играет как при Вкл.
+  'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'Звука запуска для копирования ещё нет: Настройки звука > Звуки BIOS извлекают звуки этой консоли.'
+  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
+  : 'Это RIPPS2 lite: в нём нет PS2BBL, поэтому он не может установить BIBLE. Полный RIPPS2.elf устанавливает и восстанавливает его; уже установленный загрузчик продолжит запускать RIPPS2 lite как есть.'
+  '%d COPIED OUT': 'СКОПИРОВАНО НАРУЖУ: %d'
+  '%d ITEM   %d MARKED   %s': '%d ЭЛЕМЕНТ   %d ОТМЕЧЕНО   %s'
+  '%d ITEM   %d MARKED   %s   %s FREE': '%d ЭЛЕМЕНТ   %d ОТМЕЧЕНО   %s   %s СВОБОДНО'
+  '%d ITEMS   %d MARKED   %s': '%d ЭЛЕМЕНТОВ   %d ОТМЕЧЕНО   %s'
+  '%d ITEMS   %d MARKED   %s   %s FREE': '%d ЭЛЕМЕНТОВ   %d ОТМЕЧЕНО   %s   %s СВОБОДНО'
+  '%s IN %d': '%s В %d'
+  '%s IN %d, %s FREE': '%s В %d, %s СВОБОДНО'
+  ', %d LEFT OUT': ', ПРОПУЩЕНО: %d'
+  COPY IT OUT TO OPEN IT: СКОПИРУЙТЕ НАРУЖУ, ЧТОБЫ ОТКРЫТЬ
+  'Copying out: %s': 'Копирование наружу: %s'
+  INVERT MARKS: ОБРАТИТЬ ОТМЕТКИ
+  NO FILES ON THE CLIPBOARD: В БУФЕРЕ НЕТ ФАЙЛОВ
+  SIZE AND FREE SPACE: РАЗМЕР И СВОБОДНОЕ МЕСТО
+  ? CHEATS in the in-game menu turns each of the game's cheats on or off while you play. Changes apply on RESUME; a cheat turned off stops writing, what it wrote stays. Needs Cheats on for the game.
+  : CHEATS во внутриигровом меню включает или выключает каждый чит игры прямо во время игры. Изменения применяются по RESUME; выключенный чит перестаёт записывать, записанное остаётся. Нужны включённые Cheats для игры.
+  'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 'Без CHEATS во внутриигровом меню: читы, отмеченные до запуска, работают всю игру, как раньше.'
+  BOOT SOUND WITH THE PILLARS: ЗВУК ЗАПУСКА С КОЛОННАМИ
+  'Boot Sound: On (fast)': 'Звук запуска: Вкл. (быстро)'
+  'Boot sound On (fast): %s, as the pillars rise': 'Звук запуска Вкл. (быстро): %s, пока растут колонны'
+  'Boot sound On: from the AUDIO folder, once its drive is up': 'Звук запуска Вкл.: из папки AUDIO, когда её диск готов'
+  Boot sound off (Audio settings > Boot Sound): Звук запуска выкл. (Настройки звука > Звук запуска)
+  Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: 'Копирует boot.adp рядом с RIPPS2 на карту памяти, с которой он запускается: там запуск читает его до готовности дисков.'
 labels:
   DS34BT_MODE: DualShock3/4 по Bluetooth
   HINT_NEUTRINO_AUTO_ELF: Передаёт загрузочный ELF игры в Neutrino, чтобы найти настройки для этой игры. Включено по умолчанию; заданный вручную параметр Boot ELF важнее.
@@ -1666,7 +1727,7 @@ labels:
   HINT_SETTINGS_SOURCE: «Общие» использует общие настройки; «Для игры» хранит их только для этой игры.
   HINT_PADMACRO_TOGGLE: «Пока нажата» замедляет стик, только пока держите кнопку; «Переключение кнопкой» включает и выключает.
   HINT_SFX: Звуковые эффекты меню.
-  HINT_BOOT_SND: Играет звук при запуске RiptOPL.
+  HINT_BOOT_SND: 'Звук запуска RIPPS2. Вкл.: из папки AUDIO, когда её диск готов. Вкл. (быстро): копия рядом с RIPPS2 на карте памяти, с которой он запускается (предлагается при выборе), звучит, пока растут колонны. Играет и при выключенных звуковых эффектах.'
   HINT_BGM: Играет музыку темы или ваш файл музыки темы по умолчанию.
   HINT_SFX_VOLUME: Громкость звуковых эффектов меню.
   HINT_BOOT_SND_VOLUME: Громкость звука запуска.
@@ -1814,3 +1875,9 @@ labels:
   RIPPS2_ART_PACK: Пакет ART
   RIPPS2_ART_PACK_BUILD: Собрать или удалить
   HINT_RIPPS2_ART_PACK: Упаковывает папку ART каждого запущенного накопителя в один art.tar на выбранном накопителе (самый быстрый предлагается первым). Обложки затем загружаются из одного файла с одним индексом, без поиска для каждой игры, поэтому меню и музыка идут плавно. Папки ART остаются как есть.
+  RIPPS2_LIST_CFG_TEXT: Название и описание в списке
+  HINT_RIPPS2_LIST_CFG_TEXT: 'Название и описание игры из её CFG рядом со списком. Тема: как показывает тема (собственная тема RIPPS2 их скрывает). Страница сведений сохраняет их всегда.'
+  RIPPS2_PS1_PREFER: Дубликаты PS1
+  HINT_RIPPS2_PS1_PREFER: 'Игра PS1, которая есть и как VCD для POPSTARTER, и как образ Ember. Оба: две строки. Ember: только строка Ember. POPSTARTER: только VCD. Одно название, без ID диска в начале, это одна игра.'
+  RIPPS2_MY_PADS: Мои геймпады
+  HINT_RIPPS2_MY_PADS: 'Профили .pad в папке PADS рядом с RIPPS2: один текстовый файл на USB-геймпад, названный по его ID (2563_0575.pad), каждый проверен. RIPPS2 ведёт этот формат; PADEMU будет читать их в следующей сборке.'

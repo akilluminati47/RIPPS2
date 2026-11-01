@@ -1351,6 +1351,67 @@ strings:
   ? There is no other .tar to merge into %s. Put it in this folder, in a drive's ART folder or at the top of a drive, then try again.
   : '%s に結合できるほかの .tar がありません。このフォルダー、ドライブの ART フォルダー、またはドライブの一番上に置いてから、やり直してください。'
   MERGE A .TAR INTO THIS: ここに .TAR を結合
+  ? '
+  
+    %d game button maps in GAMES'
+  : '
+  
+    GAMESにゲームのボタン割り当て%d件'
+  ? '
+  
+    1 game button map in GAMES'
+  : '
+  
+    GAMESにゲームのボタン割り当て1件'
+  (no name): (名前なし)
+  Both: 両方
+  ? 'None yet. A profile is a text file named after the pad''s ID, like 2563_0575.pad: the format is in RIPPS2''s repo (docs/plans/pad-spec.md).'
+  : 'まだありません。プロファイルはパッドのIDを名前にしたテキストファイルです(例: 2563_0575.pad)。形式はRIPPS2のリポジトリにあります(docs/plans/pad-spec.md)。'
+  On (fast): オン(高速)
+  'Pad profiles in %s:': '%s のパッドプロファイル:'
+  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (ビルド %d) RiptOPL %s 上
+  RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: RIPPS2は自分のフォルダの場所がわからないため、PADSを探せません。
+  could not be read: 読み取れません
+  About %d seconds left: 残り約%d秒
+  About 1 second left: 残り約1秒
+  Taking longer than its last start (%d s so far): 前回の起動より時間がかかっています(%d秒経過)
+  ? 'Download the covers in HD (280 x 400)? Sharper on an HD screen, about 70 KB each. START: Standard (140 x 200, as Open PS2 Loader''s), about 20 KB each. A game that already has a cover keeps it.'
+  : 'カバーをHD(280 x 400)でダウンロードしますか?HD画面でより鮮明で、1枚約70 KB。START: 標準(140 x 200、Open PS2 Loaderと同じ)、1枚約20 KB。すでにカバーがあるゲームはそのままです。'
+  STANDARD: 標準
+  '%d IN': '%d件追加'
+  '%d IN, %d REPLACED': '%d件追加、%d件置換'
+  COULD NOT WRITE: 書き込めません
+  'Getting it ready: %s': '準備中: %s'
+  NOT A .TAR: .TARではありません
+  NOTHING CHANGED: 変更なし
+  NOTHING TO PUT IN: 追加するものがありません
+  ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
+  : オン(高速)は起動音を起動元のメモリーカードのRIPPS2の隣に置きますが、RIPPS2はメモリーカードから起動していません。起動音はオンと同じように鳴ります。
+  'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'コピーする起動音がまだありません: オーディオ設定 > BIOSサウンドでこの本体の音を取り出せます。'
+  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
+  : これはRIPPS2 liteで、PS2BBLを含まないためBIBLEを設定できません。完全版のRIPPS2.elfがインストールと修復を行います。設定済みのブートローダーはRIPPS2 liteをそのまま起動し続けます。
+  '%d COPIED OUT': '%d件を外へコピー'
+  '%d ITEM   %d MARKED   %s': '%d項目   %d件マーク   %s'
+  '%d ITEM   %d MARKED   %s   %s FREE': '%d項目   %d件マーク   %s   空き%s'
+  '%d ITEMS   %d MARKED   %s': '%d項目   %d件マーク   %s'
+  '%d ITEMS   %d MARKED   %s   %s FREE': '%d項目   %d件マーク   %s   空き%s'
+  '%s IN %d': '%s / %d件'
+  '%s IN %d, %s FREE': '%s / %d件、空き%s'
+  ', %d LEFT OUT': 、%d件除外
+  COPY IT OUT TO OPEN IT: 開くには外へコピー
+  'Copying out: %s': '外へコピー中: %s'
+  INVERT MARKS: マークを反転
+  NO FILES ON THE CLIPBOARD: クリップボードにファイルなし
+  SIZE AND FREE SPACE: サイズと空き容量
+  ? CHEATS in the in-game menu turns each of the game's cheats on or off while you play. Changes apply on RESUME; a cheat turned off stops writing, what it wrote stays. Needs Cheats on for the game.
+  : ゲーム内メニューのCHEATSで、プレイ中にゲームの各チートをオン・オフできます。変更はRESUMEで反映され、オフにしたチートは書き込みをやめますが、書き込んだ内容は残ります。そのゲームでCheatsがオンである必要があります。
+  'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 'ゲーム内メニューにCHEATSなし: 起動前にチェックしたチートがこれまでどおりゲーム中ずっと有効です。'
+  BOOT SOUND WITH THE PILLARS: 柱と一緒に起動音
+  'Boot Sound: On (fast)': '起動音: オン(高速)'
+  'Boot sound On (fast): %s, as the pillars rise': '起動音オン(高速): %s、柱が立ち上がるとき'
+  'Boot sound On: from the AUDIO folder, once its drive is up': '起動音オン: AUDIOフォルダから、ドライブの準備後'
+  Boot sound off (Audio settings > Boot Sound): 起動音オフ(オーディオ設定 > 起動音)
+  Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: 起動元のメモリーカードのRIPPS2の隣にboot.adpをコピーし、どのドライブより先に起動時に読み込みます。
 labels:
   IP_ADDRESS_TYPE_STATIC: 固定
   HINT_NEUTRINO_AUTO_ELF: ゲームの起動 ELF を Neutrino に渡し、タイトルごとの設定を探させます。既定でオン。手動で設定した Boot ELF オプションが優先されます。
@@ -1666,7 +1727,7 @@ labels:
   HINT_SETTINGS_SOURCE: 「グローバル」は共通の設定を使い、「ゲームごと」はこのゲームだけの設定にします。
   HINT_PADMACRO_TOGGLE: 「押している間」はボタンを押している間だけスティックを遅くし、「ボタンで切り替え」はボタンでオンとオフを切り替えます。
   HINT_SFX: メニューの効果音。
-  HINT_BOOT_SND: RiptOPL の起動時に音を鳴らします。
+  HINT_BOOT_SND: 'RIPPS2起動時の起動音。オン: AUDIOフォルダから、ドライブの準備後。オン(高速): 起動元のメモリーカードのRIPPS2の隣のコピー(選んだときに提案)で、柱が立ち上がるときに鳴ります。効果音がオフでも鳴ります。'
   HINT_BGM: テーマの音楽、またはデフォルトのテーマ音楽ファイルを再生します。
   HINT_SFX_VOLUME: メニューの効果音の音量。
   HINT_BOOT_SND_VOLUME: 起動音の音量。
@@ -1814,3 +1875,9 @@ labels:
   RIPPS2_ART_PACK: ART パック
   RIPPS2_ART_PACK_BUILD: 作成または削除
   HINT_RIPPS2_ART_PACK: 起動したすべてのドライブの ART フォルダーを、選んだドライブの art.tar 1 つにまとめます（最速のドライブを先に提案します）。カバーは 1 つのファイルから 1 つの索引で読み込まれ、ゲームごとの検索は一切ないので、メニューも音楽もなめらかです。ART フォルダーはそのまま残ります。
+  RIPPS2_LIST_CFG_TEXT: リストのタイトルと説明
+  HINT_RIPPS2_LIST_CFG_TEXT: 'ゲームリストの横に、ゲームのCFGのタイトルと説明を表示します。テーマ: テーマの設定どおり(RIPPS2のテーマでは非表示)。情報ページでは常に表示されます。'
+  RIPPS2_PS1_PREFER: PS1の重複
+  HINT_RIPPS2_PS1_PREFER: 'POPSTARTERのVCDとEmberイメージの両方があるPS1ゲーム。両方: 2行。Ember: Emberのみ。POPSTARTER: VCDのみ。先頭のディスクIDを除いて同じタイトルなら同じゲームです。'
+  RIPPS2_MY_PADS: マイパッド
+  HINT_RIPPS2_MY_PADS: 'RIPPS2の隣のPADSフォルダにある.padプロファイル: USBパッドごとにIDを名前にしたテキストファイル1つ(2563_0575.pad)で、それぞれ確認します。RIPPS2がこの形式を主導しています。PADEMUは今後のビルドで読み込みます。'

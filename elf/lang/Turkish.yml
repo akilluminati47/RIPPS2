@@ -1351,6 +1351,67 @@ strings:
   ? There is no other .tar to merge into %s. Put it in this folder, in a drive's ART folder or at the top of a drive, then try again.
   : '%s içine birleştirilecek başka .tar yok. Onu bu klasöre, bir sürücünün ART klasörüne ya da bir sürücünün en üstüne koy ve yeniden dene.'
   MERGE A .TAR INTO THIS: BURAYA BİR .TAR BİRLEŞTİR
+  ? '
+  
+    %d game button maps in GAMES'
+  : '
+  
+    GAMES içinde %d oyun tuş eşlemesi'
+  ? '
+  
+    1 game button map in GAMES'
+  : '
+  
+    GAMES içinde 1 oyun tuş eşlemesi'
+  (no name): (adsız)
+  Both: İkisi de
+  ? 'None yet. A profile is a text file named after the pad''s ID, like 2563_0575.pad: the format is in RIPPS2''s repo (docs/plans/pad-spec.md).'
+  : 'Henüz yok. Profil, kolun kimliğiyle adlandırılan bir metin dosyasıdır, örneğin 2563_0575.pad: biçim RIPPS2 deposunda (docs/plans/pad-spec.md).'
+  On (fast): Açık (hızlı)
+  'Pad profiles in %s:': '%s içindeki kol profilleri:'
+  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (sürüm %d), RiptOPL %s üzerinde
+  RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: RIPPS2 klasörünün nerede olduğunu bilmiyor, bu yüzden PADS klasörüne bakamıyor.
+  could not be read: okunamadı
+  About %d seconds left: Yaklaşık %d saniye kaldı
+  About 1 second left: Yaklaşık 1 saniye kaldı
+  Taking longer than its last start (%d s so far): Son başlatmadan uzun sürüyor (şimdiye dek %d sn)
+  ? 'Download the covers in HD (280 x 400)? Sharper on an HD screen, about 70 KB each. START: Standard (140 x 200, as Open PS2 Loader''s), about 20 KB each. A game that already has a cover keeps it.'
+  : 'Kapaklar HD indirilsin mi (280 x 400)? HD ekranda daha net, her biri yaklaşık 70 KB. START: Standart (140 x 200, Open PS2 Loader gibi), her biri yaklaşık 20 KB. Kapağı olan oyun kapağını korur.'
+  STANDARD: STANDART
+  '%d IN': '%d EKLENDİ'
+  '%d IN, %d REPLACED': '%d EKLENDİ, %d DEĞİŞTİRİLDİ'
+  COULD NOT WRITE: YAZILAMADI
+  'Getting it ready: %s': 'Hazırlanıyor: %s'
+  NOT A .TAR: .TAR DEĞİL
+  NOTHING CHANGED: HİÇBİR ŞEY DEĞİŞMEDİ
+  NOTHING TO PUT IN: EKLENECEK BİR ŞEY YOK
+  ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
+  : Açık (hızlı), açılış sesini RIPPS2'nin başladığı hafıza kartında yanında tutar; RIPPS2 bir karttan başlamadı. Açılış sesi Açık gibi çalar.
+  'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'Henüz kopyalanacak açılış sesi yok: Ses ayarları > BIOS sesleri bu konsolun seslerini çıkarır.'
+  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
+  : 'Bu RIPPS2 lite: PS2BBL taşımaz, bu yüzden BIBLE kuramaz. Tam RIPPS2.elf onu kurar ve onarır; zaten kurulu bir önyükleyici RIPPS2 lite''ı olduğu gibi başlatmaya devam eder.'
+  '%d COPIED OUT': '%d DIŞARI KOPYALANDI'
+  '%d ITEM   %d MARKED   %s': '%d ÖĞE   %d İŞARETLİ   %s'
+  '%d ITEM   %d MARKED   %s   %s FREE': '%d ÖĞE   %d İŞARETLİ   %s   %s BOŞ'
+  '%d ITEMS   %d MARKED   %s': '%d ÖĞE   %d İŞARETLİ   %s'
+  '%d ITEMS   %d MARKED   %s   %s FREE': '%d ÖĞE   %d İŞARETLİ   %s   %s BOŞ'
+  '%s IN %d': '%s, %d ÖĞEDE'
+  '%s IN %d, %s FREE': '%s, %d ÖĞEDE, %s BOŞ'
+  ', %d LEFT OUT': ', %d DIŞARIDA KALDI'
+  COPY IT OUT TO OPEN IT: AÇMAK İÇİN DIŞARI KOPYALAYIN
+  'Copying out: %s': 'Dışarı kopyalanıyor: %s'
+  INVERT MARKS: İŞARETLERİ TERS ÇEVİR
+  NO FILES ON THE CLIPBOARD: PANODA DOSYA YOK
+  SIZE AND FREE SPACE: BOYUT VE BOŞ ALAN
+  ? CHEATS in the in-game menu turns each of the game's cheats on or off while you play. Changes apply on RESUME; a cheat turned off stops writing, what it wrote stays. Needs Cheats on for the game.
+  : Oyun içi menüdeki CHEATS, oynarken oyunun her hilesini açar veya kapatır. Değişiklikler RESUME ile geçerli olur; kapatılan hile yazmayı bırakır, yazdıkları kalır. Oyun için Cheats açık olmalı.
+  'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 'Oyun içi menüde CHEATS yok: başlatmadan önce işaretlenen hileler, eskisi gibi tüm oyun boyunca çalışır.'
+  BOOT SOUND WITH THE PILLARS: SÜTUNLARLA AÇILIŞ SESİ
+  'Boot Sound: On (fast)': 'Açılış sesi: Açık (hızlı)'
+  'Boot sound On (fast): %s, as the pillars rise': 'Açılış sesi Açık (hızlı): %s, sütunlar yükselirken'
+  'Boot sound On: from the AUDIO folder, once its drive is up': 'Açılış sesi Açık: AUDIO klasöründen, sürücüsü hazır olunca'
+  Boot sound off (Audio settings > Boot Sound): Açılış sesi kapalı (Ses ayarları > Açılış sesi)
+  Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: boot.adp'yi RIPPS2'nin başladığı hafıza kartında yanına kopyalar; açılış onu hiçbir sürücü hazır olmadan okur.
 labels:
   ETH_100MFDX: 100Mbit Tam çift yönlü
   ETH_100MHDX: 100Mbit Yarı çift yönlü
@@ -1671,7 +1732,7 @@ labels:
   HINT_SETTINGS_SOURCE: Genel ortak ayarları kullanır; Oyuna Özel bunları yalnızca bu oyun için tutar.
   HINT_PADMACRO_TOGGLE: Tuşa Basılıyken çubuğu yalnızca tuşu tuttuğunuz sürece yavaşlatır; Tuşla Aç/Kapat onu açar ve kapatır.
   HINT_SFX: Menü ses efektleri.
-  HINT_BOOT_SND: RiptOPL başlarken bir ses çalar.
+  HINT_BOOT_SND: 'RIPPS2 başlarken çalan açılış sesi. Açık: AUDIO klasöründen, sürücüsü hazır olunca. Açık (hızlı): RIPPS2''nin başladığı hafıza kartında yanında bir kopya (seçince önerilir), sütunlar yükselirken çalar. Ses efektleri kapalıyken de çalar.'
   HINT_BGM: Temanın müziğini veya Varsayılan Tema Müziği dosyanızı çalar.
   HINT_SFX_VOLUME: Menü ses efektlerinin ses düzeyi.
   HINT_BOOT_SND_VOLUME: Açılış sesinin ses düzeyi.
@@ -1819,3 +1880,9 @@ labels:
   RIPPS2_ART_PACK: ART Paketi
   RIPPS2_ART_PACK_BUILD: Oluştur veya kaldır
   HINT_RIPPS2_ART_PACK: Başlatılan her sürücünün ART klasörünü seçtiğin sürücüde tek bir art.tar dosyasına paketler (en hızlısı ilk sunulur). Kapaklar böylece tek dosyadan tek bir dizinle yüklenir, asla oyun başına bir aramayla değil; menüler ve müzik akıcı kalır. ART klasörleri olduğu gibi kalır.
+  RIPPS2_LIST_CFG_TEXT: Listede başlık ve açıklama
+  HINT_RIPPS2_LIST_CFG_TEXT: 'Oyunun CFG dosyasındaki başlık ve açıklama, listenin yanında. Tema: temanın gösterdiği gibi (RIPPS2''nin kendi teması göstermez). Bilgi sayfası her durumda gösterir.'
+  RIPPS2_PS1_PREFER: PS1 kopyaları
+  HINT_RIPPS2_PS1_PREFER: 'Hem POPSTARTER VCD''si hem Ember görüntüsü olan bir PS1 oyunu. İkisi de: iki satır. Ember: yalnızca Ember satırı. POPSTARTER: yalnızca VCD. Baştaki disk kimliği dışında aynı başlık aynı oyundur.'
+  RIPPS2_MY_PADS: Kollarım
+  HINT_RIPPS2_MY_PADS: 'RIPPS2''nin yanındaki PADS klasöründeki .pad profilleri: her USB kol için kimliğiyle adlandırılmış bir metin dosyası (2563_0575.pad), her biri denetlenir. Biçime RIPPS2 öncülük eder; PADEMU onları sonraki bir sürümde okur.'
