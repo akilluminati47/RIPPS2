@@ -1,5 +1,7 @@
 # POPSTARTER's in-game reset: RIPPS2's buttons and words (plan, not built)
 
+**Closed 11/01:** the user keeps build 126's pictures (extras/POPS) as they are. Kept for the facts below.
+
 The user, 11/01: POPSTARTER's IGR should take **X to select and O to go back**, and read like RIPPS2's own in-game menu
 exit flow (EXIT GAME, confirmed twice). Build 126 replaced only POPSTARTER's three pictures (`IGR_BG.TM2`,
 `IGR_YES.TM2`, `IGR_NO.TM2`, made by `tools/pops-igr/make_igr.py`, shipped in `extras/POPS`).

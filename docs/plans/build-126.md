@@ -189,6 +189,8 @@ the setup screen and Back; debug build log "PADS: 1 profile(s) packed for PADEMU
 Enabled", Aqua Teen Hunger Force boots. Hardware only: a real USB pad through Set Up, in the menu and in a game.
 
 ## Next pass: POPSTARTER's in-game reset with RIPPS2's buttons and words (the user, 11/01)
+**Closed 11/01:** shown the original pictures beside build 126's, the user keeps build 126's (extras/POPS) as they are.
+Nothing below is to be built.
 X selects, O goes back, the words read like the in-game menu's EXIT GAME flow (confirmed twice). Plan and limits in
 docs/plans/popstarter-igr.md: the three TM2 pictures can carry the words but not the buttons or a second confirm.
 1. Measure POPSTARTER's own prompt on the console (the user): which buttons move, confirm and cancel, which is lit
