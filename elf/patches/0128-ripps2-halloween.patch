@@ -1661,7 +1661,7 @@ index 13a2e08..e560a84 100644
          } else if (getKeyOn(KEY_RIGHT)) {
              sbClose();
 diff --git a/src/ripps2status.c b/src/ripps2status.c
-index c1ab19f..af1d23b 100644
+index c1ab19f..48f733d 100644
 --- a/src/ripps2status.c
 +++ b/src/ripps2status.c
 @@ -77,6 +77,7 @@ enum {
@@ -1695,7 +1695,18 @@ index c1ab19f..af1d23b 100644
  }
  
  // build 114: LOOK FOR THEM, with the drives started first when they are not (so every one is searched)
-@@ -613,6 +630,13 @@ void ripps2Status(void)
+@@ -520,7 +537,9 @@ void ripps2Status(void)
+         for (i = 0; i < stCount; i++) {
+             st_row_t *r = &stRows[i];
+             int h = stRowH(r);
+-            if (y + h > ST_TOP - 4 && y < ST_BOTTOM) {
++            // build 126: a row is drawn only whole: one cut at the top ran over the page's hint line (the list scrolled to SOUNDS),
++            // one cut at the bottom over the SELECT and BACK hints
++            if (y >= ST_TOP - 4 && y + h <= ST_BOTTOM + 4) {
+                 if (r->kind == ROW_HEAD) {
+                     fntRenderString(thmPageFont(5), ST_X, y + 20, ALIGN_VCENTER, 0, 0, r->text, ST_GOLD);
+                     fntRenderString(thmPageFont(15), ST_X + ST_W - rmUnScaleX(fntCalcDimensions(thmPageFont(15), r->aside)), y + 20, ALIGN_VCENTER, 0, 0, r->aside, ST_SOFT);
+@@ -613,6 +632,13 @@ void ripps2Status(void)
                      ripps2RipBiosSoundsDialog();
                      rescan = 1;
                      break;
