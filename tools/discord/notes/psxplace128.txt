@@ -1,0 +1,20 @@
+psx-place bump for v1.2.8 beta (builds 126 to 128). The user posts it. Paste from the [CENTER] line.
+
+[CENTER][SIZE=5][B]RIPPS2 v1.2.8 beta (build 128)[/B][/SIZE]
+[URL='https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf']RIPPS2.elf[/URL] (2,737 KB)  |  [URL='https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf']RIPPS2-lite.elf[/URL] (2,193 KB, without PS2BBL and Neutrino)  |  [URL='https://github.com/akilluminati47/RIPPS2-themes/releases/latest']Theme pack, edition 128[/URL]  |  [URL='https://github.com/akilluminati47/RIPPS2/blob/main/CHANGELOG.md']Changelog[/URL][/CENTER]
+
+[B]Rip your sounds again.[/B] The PS2 browser plays its menu sounds against 44.1 kHz, and RIPPS2's rips were 8.8% high. Audio settings > BIOS Sounds now rips them at the console's own pitch, measured against the BIOS itself. The menu music was already right.
+
+[LIST]
+[*][B]Boot Sound: Off, On, On (fast).[/B] On (fast) keeps the boot sound on the memory card RIPPS2 starts from, so it plays as the pillars rise. STATUS says where it comes from.
+[*][B]PS1 art from an ART Pack as fast as PS2 art[/B]: its other names (the disc ID, XX.<name>.ELF) are looked up in the pack, in memory. Build the pack again to get it.
+[*][B]The list page's art fades in as one[/B] on every theme; RIPPS2's info page turns the cover to its back with the screenshots; the info pages' stars are RIPFLOW's size.
+[*][B]The sidebar's flow[/B]: Circle opens the drawer of the page you are on, Left folds it to the icons, Circle again closes it. Select and Back hints while it has the pad.
+[*][B]RIPFLOW[/B]: L2 / R2 step the covers, Up / Down tip the case, the right stick turns it over.
+[*][B]CHEATS in the in-game menu[/B] (by NathanNeurotic): turn a game's cheats on and off while you play.
+[*][B]PS1 Duplicates[/B] (Ember or POPSTARTER when you have both), [B]conf_apps.cfg names[/B] for POPStarterGameInstaller's numbered games, and [B]POPSTARTER's in-game reset pictures[/B] remade in RIPPS2's look.
+[*][B].pad[/B]: RIPPS2's format for any USB pad, one text file each, with a reference reader for any launcher. Settings > Controllers > My Pads checks yours.
+[*][B]Starting a drive for a launch[/B] shows an estimate and waits longer, so a Manual HDD works on the first press. Tooltips stay 6.9 s. MMCE shows sizes.
+[*][B]RIPPS2-lite.elf[/B]: the same RIPPS2 without the programs it carries for BIBLE and Neutrino.
+[/LIST]
+Thanks to everyone testing on Discord and GitHub: ahavasi's report shaped half of this one.

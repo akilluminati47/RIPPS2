@@ -1,6 +1,70 @@
 # RIPPS2 changelog
 
-## Build 126 (beta, not released yet), changes since build 125
+## Builds 126 to 128 (beta, v1.2.8-beta), changes since build 125
+
+The user's Halloween notes (10/31) and tester ahavasi's report on 125, with Ripto's CHEATS (build 126) and RiptOPL's
+backend fixes (build 127). The theme pack moves to edition 128 with it.
+
+**Sound**
+- **The BIOS menu sounds at the console's own pitch.** The browser plays its menu sounds against 44.1 kHz, not 48 kHz:
+  measured against the BIOS's own playback, the rips were 8.8% high. The ripper (and Media Studio) now play them as
+  the browser does. The menu music was already right. **Rip your sounds again** (Audio settings > BIOS Sounds) to hear it.
+- **Boot Sound: Off, On or On (fast).** On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from,
+  read before any drive is up, so it plays as the pillars rise; picking it offers the copy. STATUS shows where the boot
+  sound comes from, with a row that sets up On (fast). The boot sound plays with Sound Effects off too.
+- **A rip refreshes Fast Boot's copy.** With Fast Boot on, a rip into another drive's AUDIO left the copy beside RIPPS2
+  as it was (a deleted sound stayed missing after the next boot).
+- **Deleting the AUDIO folder no longer loops the load** and blocks the pad: each place is asked once, and again only
+  when a new drive comes up.
+
+**Lists, art and pages**
+- **PS1 art as fast as PS2 art from an ART Pack.** A PS1 game's art goes by other names too (the disc ID, the
+  POPStarter launcher's XX.<name>.ELF): those are looked up in the pack's index, in memory, before the game's own drive
+  is asked. A pack built now lists PS1 games as well, so a picture it does not hold costs no drive access. **Build the
+  pack again** (Settings > Game Sources > Cache > ART Pack) to get this.
+- **The list page's art fades in as one** on every theme (the icon, the cover and the background came in apart), at
+  most 0.6 s after the first; it never delays a load.
+- **RIPPS2's info page turns the cover to its back cover** and home again, on the screenshots' time.
+- **Rating stars on the info pages at RIPFLOW's size** (143 x 18) on RIPPS2, RIPGRID, Adapt and Adapt Rx.
+- **List Title and Description** (Settings > Interface): the CFG title and description beside the game list, as the
+  theme has them, On or Off. RIPPS2's own theme leaves them off; the info page keeps them.
+- **Sizes on MMCE** (read from the file's end where its driver gives no size); a "0 MiB" is no longer shown.
+- **PS1 Duplicates** (Settings > Interface): a game that is both a POPSTARTER VCD and an Ember image shows once, as the
+  one you pick (Both by default).
+- **POPStarterGameInstaller's numbered PS1 games show their names** from conf_apps.cfg (display only).
+- **The boot keeps the pillars rising** while a theme kept on a drive comes up, instead of holding the sky.
+
+**Navigation**
+- **The sidebar's new flow.** Circle on a page opens the sidebar on the drawer of the page you are on; Left or Circle
+  there collapses it to the icons; from the icons Circle closes it (Left too when the bar was out of sight).
+- **Select and Back hints** while the sidebar has the pad, on the info page and on Launch Disc and Memory Files.
+- **RIPFLOW without the sidebar:** L2 / R2 step through the covers as L1 / R1 do, and Up / Down tip the case.
+- **Tooltips stay 6.9 s** (were 4.2 s).
+- **Set Metadata's top line** names the library and the file.
+- **Starting a drive for a launch** shows an estimate (from that drive's last start) with a bar, and waits 75 s (a Manual
+  HDD could take longer than the old 30 s, so the first Cross gave up).
+
+**Controllers: .pad (RIPPS2 leads it)**
+- **The .pad format, version 1** (docs/plans/pad-spec.md): one text file a USB pad, named by its ID (2563_0575.pad),
+  and the 180-byte block a launcher hands PADEMU. The reference reader, packer and decoder are src/padfile.c in the
+  patch series, for any launcher to use. **Settings > Controllers > My Pads** lists the profiles in the PADS folder
+  beside RIPPS2 and says what is wrong with any it refuses. PADEMU reading them comes in a later build.
+
+**PS1 and POPSTARTER**
+- **POPSTARTER's in-game reset pictures in RIPPS2's look** (extras/POPS: IGR_BG.TM2, IGR_YES.TM2, IGR_NO.TM2): copy them
+  into POPS beside POPSTARTER.ELF. Drawn with RIPPS2's own in-game menu renderer.
+
+**Builds**
+- **RIPPS2-lite.elf**, a second, smaller ELF (about 2.2 MB against 2.7 MB) without the programs RIPPS2 carries as data:
+  PS2BBL (BIBLE) and Neutrino. Their installs say so and write nothing; everything else is the same.
+- **A Neutrino install on a memory card gets an icon** (the browser called the folder corrupted data).
+
+**From RiptOPL (build 127, backend only)**
+- The ShanWan PS3 copy pad (2563:0575), Neutrino's SMB backend, faster BDM VMC saves, Jak and Daxter defaults, the
+  .hack IOP overrun pads, background music that stops on a stream with no audio, MX4SIO writes a sector at a time,
+  the CDVDMAN streaming callback, and the root certificates trimmed.
+
+**CHEATS in the in-game menu (build 126)**
 
 Contributed by NathanNeurotic (Ripto); not tested on a console yet.
 
