@@ -44,11 +44,13 @@ rounds, regen with `tools/dev/regen_patch.sh`), unless the user wants them folde
 - Rebase onto main (it sits on b125's 14adac2; main has the merge db69c6b), apply patch 0126 in the RiptOPL clone,
   CI green, lab: In-Game Menu > Cheats on, a game with a .cht, toggle, RESUME. Merge the PR.
 
-### Round 0b: merge RiptOPL rebuild/main (today's commits)
-- Merge, don't replay (memory `ripps2-build103` recipe; update elf/RIPTOPL_UPSTREAM's version line), regen every
-  touched patch, CI green. Lab: boot, a game launch, Neutrino; the ShanWan pad and DS3/DS4 regression go on the
-  hardware Test me list (PCSX2 can't pass USB pads). Check RIPPS2's pad.c analog re-ask (build 115) doesn't fight
-  the clone pad, which has an ANALOG mode button and no PS button.
+### Round 0b: RiptOPL backend fixes only (the user, 10/31: no GUI, we are our own tangent)
+- No wholesale merge. Port backend commits from rebuild/main as patch 0127's first part: #1195 ShanWan PS3 clone
+  pad (ds34usb + pademu), #1198 CDVDMAN streaming callback, #1201 BDM VMC saves + Jak and Daxter defaults,
+  #1196 Neutrino SMB backend, #1173 .hack IOP overrun pads, #1175 BGM stop on a stream with no audio; check each
+  against RIPPS2's code first (some may touch GUI files: take only the backend part).
+- CI green; lab: boot, a game launch, Neutrino; the clone pad and DS3/DS4 regression go on the hardware Test me
+  list. Check pad.c's analog re-ask doesn't fight the clone pad (ANALOG mode button, no PS button).
 
 ### Round 1: crashes, hangs and audio (highest risk first)
 1. **Deleted AUDIO folder = load loop that blocks the pad** (SFX off doesn't help; going back to an HDD art.tar
