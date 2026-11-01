@@ -182,6 +182,18 @@ index 0000000..9268320
 +void padTranslate(const pad_def_t *def, const unsigned char *report, int len, unsigned short *buttons, unsigned char axes[4]);
 +
 +#endif
+diff --git a/include/ripps2.h b/include/ripps2.h
+index c82e340..e676d9c 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -326,6 +326,7 @@ void ripps2ViewSaveIcon(const char *path); // build 98: a PS2 save icon (.ico /
+ // build 98: the icon as OBJ (a shape each) + MTL + PNG in mass0:/RIPPS2/ICONS/<its folder>/ (in outDir); NULL = done
+ const char *ripps2RipSaveIcon(const char *iconPath, char *outDir, int outSize);
+ int ripps2CardFolderIcon(const char *dir); // build 98: the dead elf's hat on RIPPS2's card folder (icon.sys + ripps2.icn)
++int ripps2CardFolderIconNamed(const char *dir, const char *title); // build 126: an icon for a folder RIPPS2 makes on a card
+ void ripps2PlayVideo(const char *path);
+ void ripps2OpenMedia(const char *path);
+ void ripps2SetOrbInput(int showPaths, int boost); // Memory Files: L2 shows the paths, R2 builds the orbs to 2x
 diff --git a/include/ripps2biossnd.h b/include/ripps2biossnd.h
 index 63ef708..343798d 100644
 --- a/include/ripps2biossnd.h
@@ -1433,10 +1445,37 @@ index cb45dec..bbc8eca 100644
      snprintf(msg, sizeof(msg), _t("%d sounds from this console's BIOS are in %s and playing now."), n, dir);
      guiMsgBox(msg, 0, NULL);
 diff --git a/src/ripps2boot.c b/src/ripps2boot.c
-index 11cef7f..633f558 100644
+index 11cef7f..8ddf8f1 100644
 --- a/src/ripps2boot.c
 +++ b/src/ripps2boot.c
-@@ -1865,6 +1865,13 @@ static void blRestoreCard(int port)
+@@ -1002,6 +1002,26 @@ int ripps2CardFolderIcon(const char *dir)
+     return blWrite(path, (const char *)sys, size_icon_sys) == 0;
+ }
+ 
++static int blWriteIcons(const char *dir, const char *first, const char *second);
++
++// build 126 (the user, 10/31: "neutrino injection placement?? memory card showed corrupted data when elf was injected to boot
++// card"): a folder RIPPS2 makes at a memory card's top (Neutrino's) gets an icon, as BIBLE's does: the browser calls a folder
++// without icon.sys corrupted data. Someone else's icon.sys is kept. 1 = it has one
++int ripps2CardFolderIconNamed(const char *dir, const char *title)
++{
++    char path[96];
++    int fd;
++
++    if (strncmp(dir, "mc", 2) || dir[2] == 'm')
++        return 1; // not a memory card (mmce: a drive)
++    snprintf(path, sizeof(path), "%s/icon.sys", dir);
++    if ((fd = open(path, O_RDONLY)) >= 0) {
++        close(fd);
++        return 1;
++    }
++    return blWriteIcons(dir, title, "RIPPS2");
++}
++
+ static int blWriteIcons(const char *dir, const char *first, const char *second)
+ {
+     unsigned char sys[1024];
+@@ -1865,6 +1885,13 @@ static void blRestoreCard(int port)
  // BOOT LOADER > MANAGE: what each card starts, and BIBLE to install or repair
  void ripps2BibleManage(void)
  {
@@ -1505,10 +1544,19 @@ index 442b5b2..7a7df4b 100644
      while (1) {
          readPads();
 diff --git a/src/ripps2ember.c b/src/ripps2ember.c
-index 8b2e109..17f3152 100644
+index 8b2e109..02353ce 100644
 --- a/src/ripps2ember.c
 +++ b/src/ripps2ember.c
-@@ -138,7 +138,13 @@ static int ripps2NeutrinoUnpack(const char *dir)
+@@ -129,6 +129,8 @@ static int ripps2NeutrinoUnpack(const char *dir)
+     if (ok) {
+         ntMkdirs(dir);
+         ok = ntWrite(tar, dir, 0, &written) && ntWrite(tar, dir, 1, &written);
++        if (ok) // build 126: on a memory card, an icon, or the browser calls the folder corrupted data
++            ripps2CardFolderIconNamed(dir, "NEUTRINO");
+     }
+     free(tar);
+     LOG("NEUTRINO: %s %s (%d files)\n", ok ? "installed in" : "install failed in", dir, written);
+@@ -138,7 +140,13 @@ static int ripps2NeutrinoUnpack(const char *dir)
  // build 80: Status installs it where the user picks, outside a launch
  int ripps2NeutrinoInstallTo(const char *dir)
  {
@@ -1522,7 +1570,7 @@ index 8b2e109..17f3152 100644
  }
  
  // No Neutrino anywhere RIPPS2 looks: offer the one it carries, where the user picks. out gets the
-@@ -152,6 +158,12 @@ int ripps2NeutrinoOffer(const char *activePrefix, char *out, int outSize)
+@@ -152,6 +160,12 @@ int ripps2NeutrinoOffer(const char *activePrefix, char *out, int outSize)
  
      if (!guiIsActive())
          return 0;

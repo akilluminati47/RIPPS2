@@ -411,12 +411,13 @@ if 'ripflow.o' in rd('Makefile') or 'ripps2roboto.o' not in rd('Makefile'):
 if not (repo / 'elf/theme/fonts/ripps2_roboto.ttf').exists() or (repo / 'elf/theme/fonts/ripflow.ttf').exists():
     fail.append('elf/theme/fonts: ripps2_roboto.ttf replaces ripflow.ttf and ripflow_bold.ttf')
 
-# ---- one ELF (the user 10/23: no lite ELF), FreeType, fonts
+# ---- the full ELF (the user 10/23: no lite ELF; 10/31: a lite one beside it), FreeType, fonts
 mk = rd('Makefile')
 need(mk, (('bible_xlf.o bible_mx4sio_xlf.o bible_hdd_xlf.o', 'BIBLE is carried'), ('neutrino_tgz.o', 'Neutrino is carried')), 'Makefile')
-for f in ('Makefile', 'src/fntsys.c', 'src/ripps2boot.c', 'src/ripps2ember.c', 'src/ripps2status.c', 'src/textures.c'):
-    if 'RIPPS2_LITE' in raw(f):
-        fail.append('%s: one RIPPS2.elf, no lite variant' % f)
+# build 126 (the user, 10/31, asked: "a second, smaller ELF"): the lite ELF is a second build beside the full one, never
+# instead of it; the full RIPPS2.elf still carries both
+if 'ifeq ($(RIPPS2_LITE),1)' not in raw('Makefile') or not (root / 'src/ripps2lite.c').exists():
+    fail.append('Makefile: the lite ELF only with RIPPS2_LITE=1 (ripps2lite.c stands in)')
 if '{INCEBTION_PICTURE, "incebtion", &incebtion_png}' not in rd('src/textures.c'):
     fail.append('textures.c: OPL\'s background is carried for its built-in look')
 fnt = rd('src/fntsys.c')
@@ -431,8 +432,8 @@ for gone in ('t1_driver_class', 'bdf_driver_class', 'pcf_driver_class', 'pfr_dri
 bsh = (repo / 'elf/build.sh').read_text(encoding='utf-8')
 need(bsh, (('strip_fonts.py', 'the compiled-in fonts are stripped'),), 'build.sh')
 wf = (repo / '.github/workflows/build-elf.yml').read_text(encoding='utf-8')
-if 'RIPPS2_LITE' in bsh or 'lite' in wf.lower():
-    fail.append('build.sh / build-elf.yml: one RIPPS2.elf, no lite build or artifact')
+if 'cp -f "$ELF" "$OUT/RIPPS2.elf"' not in bsh or 'RIPPS2-lite.elf' not in bsh or 'out/RIPPS2-lite.elf' not in wf:
+    fail.append('build.sh / build-elf.yml: RIPPS2.elf, and RIPPS2-lite.elf beside it')
 
 # ---- compiled: the APA check against synthetic disks
 cc = shutil.which('gcc') or shutil.which('cc')
