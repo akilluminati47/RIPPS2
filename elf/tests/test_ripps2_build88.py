@@ -85,7 +85,8 @@ static int put(const char *file, const unsigned char *adp, int size, void *ctx)
     int i, loud = 0;
     (void)ctx;
     if (size < 48 || memcmp(adp, "APCM", 4) || adp[4] != 1 || adp[5] != 1) { printf("bad header %s\n", file); exit(3); }
-    if ((adp[8] | adp[9] << 8) != 0x800) { printf("pitch %s\n", file); exit(4); }
+    /* build 126: the bank's 0x800 is against 44.1 kHz, so the .adp keeps 0x800 * 44100 / 48000 */
+    if ((adp[8] | adp[9] << 8) != 0x75A) { printf("pitch %s\n", file); exit(4); }
     for (i = 16; i < size; i += 16) loud |= adp[i] & 0xF0 || memcmp(adp + i + 2, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 14);
     if (!loud) { printf("silent %s\n", file); exit(5); }
     seen++;

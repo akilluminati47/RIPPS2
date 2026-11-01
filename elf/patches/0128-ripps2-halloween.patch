@@ -1,13 +1,14 @@
 diff --git a/misc/theme_ripgrid.cfg b/misc/theme_ripgrid.cfg
-index 1952991..96b3b6f 100644
+index 1952991..6753e0d 100644
 --- a/misc/theme_ripgrid.cfg
 +++ b/misc/theme_ripgrid.cfg
-@@ -166,15 +166,17 @@ info3:
+@@ -166,15 +166,18 @@ info3:
  	tilt_x=320
  	tilt_y=260
  	tilt_scale=75
 +# build 126 (the user, 10/31: "stars on info pages too small"): the rating at RIPFLOW's size (143 x 18); its stars fill the
-+# right 82 of the 143, so the box starts at -6 to keep the first star on the text's edge (55), on the same middle (186)
++# right 82 of the 143, so a box at 1 puts the first star at 62, just inside the text's edge (55: a box left of 0 would
++# count from the right edge, off the screen), on the same middle (186)
  info4:
  	type=AttributeImage
  	attribute=Rating
@@ -17,7 +18,7 @@ index 1952991..96b3b6f 100644
 -	y=179
 -	width=111
 -	height=14
-+	x=-6
++	x=1
 +	y=177
 +	width=143
 +	height=18
@@ -108,6 +109,21 @@ index bf40e38..df9e322 100644
          configSetStr(configOPL, CONFIG_OPL_THEME, thmGetValue());
          configSetStr(configOPL, CONFIG_OPL_LANGUAGE, lngGetValue());
          configSetColor(configOPL, CONFIG_OPL_BGCOLOR, gDefaultBgColor);
+diff --git a/src/ripps2biossnd.c b/src/ripps2biossnd.c
+index cb45dec..7c9e3d2 100644
+--- a/src/ripps2biossnd.c
++++ b/src/ripps2biossnd.c
+@@ -496,6 +496,10 @@ static rbs_u8 *rbsRender(const rbs_u8 *hd, int hdLen, const rbs_u8 *bd, int bdLe
+     addr = rbsLe32(e + 16);
+     if (pitch < 0x100 || pitch > 0x4000 || (smp = rbsAdpcm(bd, bdLen, addr, &n, &loop)) == NULL)
+         return NULL;
++    // build 126 (testers: "the sfx are higher pitched than the actual bios sounds"): the browser plays a menu sound's
++    // pitch against 44.1 kHz (0x1000 = 44100), not the SPU2's 48 kHz; measured in the BIOS's own playback, the rips ran
++    // 8.8% high (x0.916). The music's notes were already right (0 cents off the clock's)
++    pitch = (pitch * 44100u + 24000u) / 48000u;
+     rate = (int)(pitch * 48000u / 4096u); // the sample's own rate: the file keeps it, at the same pitch
+     n48 = (int)((long long)n * 4096 / pitch) + 1;
+     cap = n + rate * 3 / 2 + rate / 50; // room for the hall's tail
 diff --git a/src/ripps2edit.c b/src/ripps2edit.c
 index 442b5b2..7a7df4b 100644
 --- a/src/ripps2edit.c

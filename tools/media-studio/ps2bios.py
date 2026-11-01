@@ -235,7 +235,9 @@ def render_osd(files, index, wet=0.3, hold=None):
     hd, bd = files['SNDOSDDH'], files['SNDOSDDB']
     e = osd_sounds(hd)[index]
     smp, loop = adpcm(bd, e['addr'])
-    pitch = e['pitch'] / 4096.0
+    # the browser plays a menu sound's pitch against 44.1 kHz (0x1000 = 44100), not the SPU2's 48 kHz: measured
+    # against the BIOS's own playback (RIPPS2 build 126), at 48 kHz the sounds ran 8.8% high. The music is right as is
+    pitch = e['pitch'] / 4096.0 * 44100 / RATE
     n = int(len(smp) / max(pitch, 1e-6)) + 1
     if loop is not None:
         n = int(RATE * (hold or 1.5))
