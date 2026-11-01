@@ -1,3 +1,61 @@
+diff --git a/include/dialogs.h b/include/dialogs.h
+index 776614f..e04a1b0 100644
+--- a/include/dialogs.h
++++ b/include/dialogs.h
+@@ -404,6 +404,7 @@ enum UI_ITEMS {
+     UICFG_RIPPS2_MMCE_PADFIRST, // build 115: MMCE > Pad First (experimental)
+     RIPPS2_ARTPACK_BUTTON,      // build 118: Cache > ART Pack (ripps2artpack.c)
+     RIPPS2_ARTPACK_ROW,         // and the line saying which pack is in use
++    UICFG_RIPPS2_LIST_CFG_TEXT, // build 126: Interface > List Title and Description (Theme, On, Off)
+ 
+ #ifdef PADEMU
+     PADEMU_GLOBAL_BUTTON,
+diff --git a/include/gui.h b/include/gui.h
+index 4696282..2db8ebb 100644
+--- a/include/gui.h
++++ b/include/gui.h
+@@ -129,6 +129,7 @@ int guiIsActive(void);
+ void guiCycleTheme(void); // build 79: the next theme (SELECT held 4.2 s)
+ enum { RIPPS2_HOLD_LIST = 0, RIPPS2_HOLD_CYCLE, RIPPS2_HOLD_OFF };
+ extern int gRipps2SelectHold; // build 114: Settings > Interface > Hold SELECT (SELECT held 4.2 s on a list)
++extern int gRipps2ListCfgText; // build 126: Settings > Interface > List Title and Description: 0 the theme's, 1 on, 2 off
+ void guiRenderPage(void); // build 114: the current page drawn once (under a panel)
+ int guiThemeCount(void);  // build 115: how many themes the theme list shows
+ int guiPickTheme(void);   // build 114: the theme list (SELECT held 4.2 s, Hold SELECT: List); 0: the one in use, refresh
+diff --git a/include/themes.h b/include/themes.h
+index 1d0c23e..4e73b17 100644
+--- a/include/themes.h
++++ b/include/themes.h
+@@ -74,6 +74,7 @@ typedef struct
+     char *currentValue;
+     char *wrappedValue; // owned, word-wrapped copy of currentValue for SIZING_WRAP (issue #44)
+     clock_t rollStart;  // RIPPS2: when this game's text began showing (a long description rolls from it)
++    int listCfg;        // build 126: a list page's Title or Description (Settings > List Title and Description)
+ } mutable_text_t;
+ 
+ typedef struct
+@@ -287,6 +288,7 @@ typedef struct theme
+     int sbAutoHide;                     // build 115: sidebar_hide=1: the sidebar slides away until Circle calls it
+     int flowTilt;                       // build 117: flowtilt=1: RIPFLOW's Up / Down (left stick) tip the centre case
+     int infoSidebar;                    // build 119: info_sidebar=1: the sidebar stays on the info page (none built in does)
++    int listCfgText;                    // build 126: list_cfg_text=0: the list pages leave out the CFG Title and Description
+     int hintsFade;                      // build 115: hints_fade (1, the default): a hint glyph that changes fades in
+     int hintsFlank, hintsFlankGap;      // build 115: hints_flank=1: RUN and SOURCE either side of the source name; the gap
+     int badgeSet;                       // build 115: badge_set=ripps2 (1): RIPPS2's built-in badges, none of its own
+diff --git a/lng_tmpl/_base.yml b/lng_tmpl/_base.yml
+index 0368288..2839a2d 100644
+--- a/lng_tmpl/_base.yml
++++ b/lng_tmpl/_base.yml
+@@ -2242,5 +2242,9 @@ gui_strings:
+   string: ART Pack
+ - label: RIPPS2_ART_PACK_BUILD
+   string: Build or Remove
++- label: RIPPS2_LIST_CFG_TEXT
++  string: List Title and Description
++- label: HINT_RIPPS2_LIST_CFG_TEXT
++  string: "The game's Title and Description from its CFG beside the game list. Theme: as the theme has them (RIPPS2's own theme leaves them off). The info page keeps them either way."
+ - label: HINT_RIPPS2_ART_PACK
+   string: "Packs the ART folder of every started drive into one art.tar on the drive you pick (the fastest is offered first). Covers then load from one file with one index, never a lookup per game, so the menus and the music stay smooth. The ART folders stay as they are."
 diff --git a/misc/theme_ripgrid.cfg b/misc/theme_ripgrid.cfg
 index 1952991..6753e0d 100644
 --- a/misc/theme_ripgrid.cfg
@@ -45,6 +103,69 @@ index d0fbada..e20d63f 100644
  #define DIA_TIP_OUT_S  0.35f
  #define DIA_TIP_FONT   (gTheme->diaTipFont) // build 96: Roboto Condensed on every theme
  
+diff --git a/src/dialogs.c b/src/dialogs.c
+index 177660e..0da507a 100644
+--- a/src/dialogs.c
++++ b/src/dialogs.c
+@@ -874,6 +874,11 @@ struct UIItem diaUIConfig[] = {
+     {UI_SPACER},
+     {UI_BOOL, UICFG_CFG_TITLES, 1, 1, _STR_HINT_CFG_TITLES, 0, 0, {.intvalue = {0, 0}}},
+     {UI_BREAK},
++    // build 126 (the user, 10/31: "CFG title and description toggle for all themes and set it off on ripps2 by default")
++    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_LIST_CFG_TEXT}}},
++    {UI_SPACER},
++    {UI_ENUM, UICFG_RIPPS2_LIST_CFG_TEXT, 1, 1, _STR_HINT_RIPPS2_LIST_CFG_TEXT, 0, 0, {.intvalue = {0, 0}}},
++    {UI_BREAK},
+ 
+     {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_THEME}}},
+     {UI_SPACER},
+diff --git a/src/gui.c b/src/gui.c
+index ee55388..80a5a18 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -911,6 +911,8 @@ static const char *guiStarSides[] = {N_("Theme"), N_("Left"), N_("Right"), N_("H
+ // build 114 (the user, 10/23): Interface > Hold SELECT: the theme list (the default), the next theme, or nothing
+ int gRipps2SelectHold = RIPPS2_HOLD_LIST;
+ static const char *guiHoldModes[] = {N_("List"), N_("Cycle"), N_("Off"), NULL};
++int gRipps2ListCfgText = 0; // build 126: the theme says (RIPPS2's own leaves them off)
++static const char *guiListCfgModes[] = {N_("Theme"), N_("On"), N_("Off"), NULL};
+ 
+ // RIPPS2 build 114 (the settings audit): Game Sources > BDM Devices, the drives BDM reads on a page of their own (they
+ // made Game Sources scroll). Returns 1 when one was turned on or off: Game Sources applies it with the rest of its page.
+@@ -1525,6 +1527,8 @@ reshow_ui:
+     diaSetInt(diaUIConfig, UICFG_THEME, guiThemeShown(thmGetGuiValue()));
+     diaSetEnum(diaUIConfig, UICFG_RIPPS2_SELECT_HOLD, guiHoldModes); // build 114
+     diaSetInt(diaUIConfig, UICFG_RIPPS2_SELECT_HOLD, gRipps2SelectHold);
++    diaSetEnum(diaUIConfig, UICFG_RIPPS2_LIST_CFG_TEXT, guiListCfgModes); // build 126
++    diaSetInt(diaUIConfig, UICFG_RIPPS2_LIST_CFG_TEXT, gRipps2ListCfgText);
+     diaSetInt(diaUIConfig, UICFG_LANG, lngGetGuiValue());
+     diaSetInt(diaUIConfig, UICFG_AUTOSORT, gAutosort);
+     diaSetInt(diaUIConfig, UICFG_AUTOREFRESH, gAutoRefresh);
+@@ -1579,6 +1583,7 @@ reshow_ui:
+         diaGetInt(diaUIConfig, UICFG_THEME, &themeID);
+         themeID = guiThemeId(themeID);
+         diaGetInt(diaUIConfig, UICFG_RIPPS2_SELECT_HOLD, &gRipps2SelectHold); // build 114
++        diaGetInt(diaUIConfig, UICFG_RIPPS2_LIST_CFG_TEXT, &gRipps2ListCfgText); // build 126
+         diaGetInt(diaUIConfig, UICFG_AUTOSORT, &gAutosort);
+         diaGetInt(diaUIConfig, UICFG_AUTOREFRESH, &gAutoRefresh);
+         diaGetInt(diaUIConfig, UICFG_NOTIFICATIONS, &gEnableNotifications);
+@@ -4167,6 +4172,8 @@ static int guiSettingsShowInterface(void)
+     diaSetInt(ui, UICFG_THEME, guiThemeShown(thmGetGuiValue()));
+     diaSetEnum(ui, UICFG_RIPPS2_SELECT_HOLD, guiHoldModes); // build 114
+     diaSetInt(ui, UICFG_RIPPS2_SELECT_HOLD, gRipps2SelectHold);
++    diaSetEnum(ui, UICFG_RIPPS2_LIST_CFG_TEXT, guiListCfgModes); // build 126
++    diaSetInt(ui, UICFG_RIPPS2_LIST_CFG_TEXT, gRipps2ListCfgText);
+     diaSetInt(ui, UICFG_LANG, lngGetGuiValue());
+     diaSetInt(ui, UICFG_AUTOSORT, gAutosort);
+     diaSetInt(ui, UICFG_AUTOREFRESH, gAutoRefresh);
+@@ -4211,6 +4218,7 @@ reshow_interface:
+         diaGetInt(ui, UICFG_THEME, &themeID);
+         themeID = guiThemeId(themeID);
+         diaGetInt(ui, UICFG_RIPPS2_SELECT_HOLD, &gRipps2SelectHold); // build 114
++        diaGetInt(ui, UICFG_RIPPS2_LIST_CFG_TEXT, &gRipps2ListCfgText); // build 126
+         diaGetInt(ui, UICFG_AUTOSORT, &gAutosort);
+         diaGetInt(ui, UICFG_AUTOREFRESH, &gAutoRefresh);
+         diaGetInt(ui, UICFG_NOTIFICATIONS, &gEnableNotifications);
 diff --git a/src/menusys.c b/src/menusys.c
 index c5c6f6b..cf0fc52 100644
 --- a/src/menusys.c
@@ -97,10 +218,20 @@ index c5c6f6b..cf0fc52 100644
              menuSourceCycle(); // build 80: the cancel button cycles the sources on Coverflow / Grid
      } else if (getKeyOn(KEY_CROSS)) {
 diff --git a/src/opl.c b/src/opl.c
-index bf40e38..df9e322 100644
+index bf40e38..b06839b 100644
 --- a/src/opl.c
 +++ b/src/opl.c
-@@ -4817,7 +4817,7 @@ static void _saveConfig()
+@@ -4423,6 +4423,9 @@ static void _loadConfig()
+             configGetInt(configOPL, "ripps2_select_hold", &gRipps2SelectHold); // build 114: Hold SELECT
+             if (gRipps2SelectHold < RIPPS2_HOLD_LIST || gRipps2SelectHold > RIPPS2_HOLD_OFF)
+                 gRipps2SelectHold = RIPPS2_HOLD_LIST;
++            configGetInt(configOPL, "ripps2_list_cfg_text", &gRipps2ListCfgText); // build 126
++            if (gRipps2ListCfgText < 0 || gRipps2ListCfgText > 2)
++                gRipps2ListCfgText = 0;
+             if (gRipps2StarSide < 0 || gRipps2StarSide > 3)
+                 gRipps2StarSide = 0;
+         }
+@@ -4817,7 +4820,7 @@ static void _saveConfig()
          configSetInt(configOPL, "ripps2_grid_wide", gRipps2GridWide); // build 98
          configSetInt(configOPL, "ripps2_bg_blur", gRipps2BgBlur);     // build 98
          configSetInt(configOPL, "ripps2_transition", gRipps2Transition); // build 92
@@ -109,6 +240,14 @@ index bf40e38..df9e322 100644
          configSetStr(configOPL, CONFIG_OPL_THEME, thmGetValue());
          configSetStr(configOPL, CONFIG_OPL_LANGUAGE, lngGetValue());
          configSetColor(configOPL, CONFIG_OPL_BGCOLOR, gDefaultBgColor);
+@@ -4957,6 +4960,7 @@ static void _saveConfig()
+         configSetInt(configOPL, "ripps2_star_side", gRipps2StarSide); // build 106
+         configSetInt(configOPL, "ripps2_star_side_last", gRipps2StarSideLast); // build 115
+         configSetInt(configOPL, "ripps2_select_hold", gRipps2SelectHold); // build 114: Hold SELECT
++        configSetInt(configOPL, "ripps2_list_cfg_text", gRipps2ListCfgText); // build 126: List Title and Description
+         configSetInt(configOPL, CONFIG_OPL_XSENSITIVITY, gXSensitivity);
+         configSetInt(configOPL, CONFIG_OPL_YSENSITIVITY, gYSensitivity);
+ 
 diff --git a/src/ripps2biossnd.c b/src/ripps2biossnd.c
 index cb45dec..7c9e3d2 100644
 --- a/src/ripps2biossnd.c
@@ -316,3 +455,44 @@ index 6cb5dc5..4783897 100644
              sfxBootPending = 1;                                // (sfxBootPlay, from the GUI's frame tick)
      }
      sfxLoadedCount = loaded;
+diff --git a/src/themes.c b/src/themes.c
+index fff6e8a..45239b0 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -345,6 +345,7 @@ static mutable_text_t *initMutableText(const char *themePath, config_set_t *them
+     mutableText->currentValue = NULL;
+     mutableText->wrappedValue = NULL;
+     mutableText->alias = NULL;
++    mutableText->listCfg = 0; // build 126: initAttributeText sets it
+ 
+     char elemProp[64];
+ 
+@@ -706,6 +707,10 @@ static void drawAttributeText(struct menu_list *menu, struct submenu_list *item,
+     if (item == NULL)
+         return;
+     mutable_text_t *mutableText = (mutable_text_t *)elem->extended;
++    // build 126: a list page's CFG Title and Description, as Settings > List Title and Description says (the theme's by
++    // default: RIPPS2's own leaves them off, list_cfg_text=0)
++    if (mutableText->listCfg && (gRipps2ListCfgText == 2 || (gRipps2ListCfgText == 0 && !gTheme->listCfgText)))
++        return;
+     if (config) {
+         if (mutableText->currentConfigId != config->uid) {
+             // force refresh
+@@ -793,6 +798,9 @@ static void initAttributeText(const char *themePath, config_set_t *themeConfig,
+         elem->extended = initMutableText(themePath, themeConfig, theme, name, ELEM_TYPE_ATTRIBUTE_TEXT, elem, attribute, NULL, DISPLAY_ALWAYS, SIZING_NONE);
+         elem->endElem = &endMutableText;
+         elem->drawElem = &drawAttributeText;
++        // build 126: a list page's (main, appsMain, vcdMain, favsMain ...) Title or Description
++        ((mutable_text_t *)elem->extended)->listCfg = (!strcmp(attribute, "Title") || !strcmp(attribute, "Description")) &&
++                                                       (!strncmp(name, "main", 4) || strstr(name, "Main") != NULL);
+     } else
+         LOG("THEMES AttributeText %s: NO attribute, elem disabled !!\n", name);
+ }
+@@ -6783,6 +6791,7 @@ static int thmLoad(const char *themePath)
+         // in and Circle back, so the sidebar stays on the list. info_sidebar=1 keeps it there for a theme that wants it
+         // (Left reaches it); none of the built-in themes does
+         newT->infoSidebar = configGetInt(themeConfig, "info_sidebar", &intValue) && intValue == 1;
++        newT->listCfgText = !(configGetInt(themeConfig, "list_cfg_text", &intValue) && intValue == 0); // build 126
+         configGetColor(themeConfig, "sidebar_color", newT->sbColor);
+         configGetColor(themeConfig, "sidebar_accent_color", newT->sbAccent);
+         if (configGetInt(themeConfig, "sidebar_tint", &intValue) && intValue >= 0 && intValue <= 128)
