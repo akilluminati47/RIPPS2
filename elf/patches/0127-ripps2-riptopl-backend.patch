@@ -139,6 +139,19 @@ index d7cd1e6..dacf508 100644
  struct ds3report
  {
      union
+diff --git a/include/mmcesupport.h b/include/mmcesupport.h
+index f9c43c8..f4f6428 100644
+--- a/include/mmcesupport.h
++++ b/include/mmcesupport.h
+@@ -33,6 +33,8 @@ int mmceSendGameID(const char *startup, const char *protectMcPath, int vmcSlotMa
+ int mmceGameIdSettle(int timeoutMs);
+ // RIPPS2 build 115: 1 while the MMCE card says it is busy (copying or making a memory card); nothing is read from it then
+ int mmceCardBusy(void);
++// RIPPS2 build 126: 1 once MMCE's modules are in (mmce0:/ and mmce1:/ can answer)
++int mmceModulesLoaded(void);
+ // Arm the GameID transport at menu/settings time (idempotent; no-op when the feature is off).
+ void mmceArmGameIDTransport(void);
+ // Reset present MMCE cards (SD2PSX/MemCard PRO2) to default channel (Card 1 / Channel 1) and clear GameID.
 diff --git a/include/ranet.h b/include/ranet.h
 index b06f137..4b48ca6 100644
 --- a/include/ranet.h
@@ -6485,7 +6498,7 @@ index 885b5bd..03054c7 100644
  extern int cdvdman_sendSCmd(u8 cmd, const void *in, u16 in_size, void *out, u16 out_size);
  extern void cdvdman_cb_event(int reason);
 diff --git a/modules/iopcore/cdvdman/ioops.c b/modules/iopcore/cdvdman/ioops.c
-index f97f0a6..5e73b41 100644
+index f97f0a6..470f128 100644
 --- a/modules/iopcore/cdvdman/ioops.c
 +++ b/modules/iopcore/cdvdman/ioops.c
 @@ -405,7 +405,7 @@ static int cdrom_dopen(iop_file_t *f, const char *dirname)
@@ -6509,7 +6522,7 @@ index f97f0a6..5e73b41 100644
              tocEntryPointer = (struct dirTocEntry *)&cdvdman_fs_buf[fh->position];
              if (tocEntryPointer->length == 0)
                  break;
-@@ -427,16 +432,22 @@ static int cdrom_dread(iop_file_t *f, iox_dirent_t *dirent)
+@@ -427,14 +432,16 @@ static int cdrom_dread(iop_file_t *f, iox_dirent_t *dirent)
              r = 1;
          } while (tocEntryPointer->filenameLength == 1);
  
@@ -6531,15 +6544,8 @@ index f97f0a6..5e73b41 100644
 +            dirent->name[tocEntryPointer->filenameLength] = '\0';
 +        }
  
--        DPRINTF("cdrom_dread r=%d mode=%04x name=%s\n", r, (int)mode, dirent->name);
-+        // No entry (r == 0) leaves the caller's name untouched, so it is printed only for an entry.
-+        if (r > 0)
-+            DPRINTF("cdrom_dread r=%d mode=%04x name=%s\n", r, (int)mode, dirent->name);
-+        else
-+            DPRINTF("cdrom_dread r=%d\n", r);
+         DPRINTF("cdrom_dread r=%d mode=%04x name=%s\n", r, (int)mode, dirent->name);
      } else
-         DPRINTF("cdrom_dread r=%d\n", r);
- 
 diff --git a/modules/iopcore/cdvdman/searchfile.c b/modules/iopcore/cdvdman/searchfile.c
 index 29bffc3..31c4167 100644
 --- a/modules/iopcore/cdvdman/searchfile.c
@@ -7554,75 +7560,10 @@ index 6aa8d21..360d8df 100644
  
      // Not the owner thread: never touch the slots at all. See gArtIndexOwnerThread.
 diff --git a/src/bdmsupport.c b/src/bdmsupport.c
-index 134b7c3..8fe50b7 100644
+index 134b7c3..0ae0d18 100644
 --- a/src/bdmsupport.c
 +++ b/src/bdmsupport.c
-@@ -2691,12 +2691,13 @@ void bdmLaunchGame(item_list_t *itemList, int id, config_set_t *configSet)
-     }
- 
-     char vmc_name[32], vmc_path[256];
--    int vmc_id, have_error, size_mcemu_irx = 0;
-+    int vmc_id, have_error, vmc_fragments, size_mcemu_irx = 0;
-     bdm_vmc_infos_t bdm_vmc_infos;
-     vmc_superblock_t vmc_superblock;
- 
-     for (vmc_id = 0; vmc_id < 2 && pDeviceData->bdmDeviceType != BDM_TYPE_PCCF; vmc_id++) {
-         have_error = NATIVE_VMC_OK;
-+        vmc_fragments = 0;
-         memset(&bdm_vmc_infos, 0, sizeof(bdm_vmc_infos_t));
-         configGetVMC(configSet, vmc_name, sizeof(vmc_name), vmc_id);
-         if (vmc_name[0]) {
-@@ -2715,10 +2716,9 @@ void bdmLaunchGame(item_list_t *itemList, int id, config_set_t *configSet)
-                 if (fd >= 0) {
-                     iop_fd = ps2sdk_get_iop_fd(fd);
-                     u64 startingLBA;
--                    int fragments;
--                    have_error = bdmCheckNativeVmcLayout(iop_fd, vmcSizeInMb, &startingLBA, &fragments);
-+                    have_error = bdmCheckNativeVmcLayout(iop_fd, vmcSizeInMb, &startingLBA, &vmc_fragments);
-                     LOG("BDMSUPPORT VMC slot %d layout: reason=%d fragments=%d start=0x%08x%08x\n",
--                        vmc_id, have_error, fragments, (u32)(startingLBA >> 32), (u32)startingLBA);
-+                        vmc_id, have_error, vmc_fragments, (u32)(startingLBA >> 32), (u32)startingLBA);
-                     if (have_error == NATIVE_VMC_OK) {
-                         bdm_vmc_infos.active = 1;
-                         bdm_vmc_infos.start_sector = startingLBA;
-@@ -2732,7 +2732,11 @@ void bdmLaunchGame(item_list_t *itemList, int id, config_set_t *configSet)
-         if (gAutoLaunchBDMGame == NULL) {
-             if (have_error) {
-                 char error[256];
--                if (have_error == NATIVE_VMC_FRAGMENTED)
-+                // Diagnostic-only port: belomaxorka/YAOPL c19eed08. Reuse the
-+                // verified layout count; fragmented native VMCs stay inactive.
-+                if (have_error == NATIVE_VMC_FRAGMENTED && vmc_fragments > 1)
-+                    snprintf(error, sizeof(error), _l(_STR_ERR_VMC_FRAGMENTS_CONTINUE), vmc_name, vmc_fragments, (vmc_id + 1));
-+                else if (have_error == NATIVE_VMC_FRAGMENTED)
-                     snprintf(error, sizeof(error), _l(_STR_ERR_VMC_FRAGMENTED_CONTINUE), vmc_name, (vmc_id + 1));
-                 else if (have_error == NATIVE_VMC_LBA_RANGE)
-                     snprintf(error, sizeof(error), _l(_STR_ERR_VMC_LBA_RANGE_CONTINUE), vmc_name, (vmc_id + 1));
-@@ -2741,6 +2745,8 @@ void bdmLaunchGame(item_list_t *itemList, int id, config_set_t *configSet)
-                 else
-                     snprintf(error, sizeof(error), _l(_STR_ERR_VMC_CONTINUE), vmc_name, (vmc_id + 1));
-                 if (!guiMsgBox(error, 1, NULL)) {
-+                    if (have_error == NATIVE_VMC_FRAGMENTED && vmc_fragments > 1)
-+                        guiMsgBox(_l(_STR_VMC_DEFRAGMENT_HINT), 0, NULL);
-                     return;
-                 }
-             }
-@@ -3395,6 +3401,14 @@ int bdmUpdateDeviceData(item_list_t *itemList)
-             moduleUpdateMenu(itemList->mode, 0, 0);
-         }
-         pDeviceData->bdmMissCount = 0;
-+        // The one thing re-read: another server may now answer in this network slot, so its
-+        // read-only verdict is decided again. One small write, and only for UDPBD.
-+        if (pDeviceData->bdmDeviceType == BDM_TYPE_UDPBD) {
-+            if (!bdmCheckWritable(itemList->mode))
-+                itemList->flags |= MODE_FLAG_READ_ONLY;
-+            else
-+                itemList->flags &= ~MODE_FLAG_READ_ONLY;
-+        }
-         LOG("bdmUpdateDeviceData: device %d reappeared intact -- restoring page, no rescan\n", itemList->mode);
-         bdmLogIdentityDiagnosticLive("update-fast-reappearance", itemList, NULL);
-         fileXioDclose(dir);
-@@ -3736,6 +3750,38 @@ static int bdmReadLiteralMassIdentity(int slot, int *outType)
+@@ -3736,6 +3736,38 @@ static int bdmReadLiteralMassIdentity(int slot, int *outType)
      return 1;
  }
  
@@ -7661,7 +7602,7 @@ index 134b7c3..8fe50b7 100644
  // Resolve an explicit massN: boot identity without treating it as an invitation to search every
  // mounted BDM device. The launcher has already named the filesystem slot; after IOP reset the only
  // work required is to let a possible transport register THAT slot, then query its own driver/device
-@@ -3886,10 +3932,36 @@ static int bdmResolveBootDirWithBudget(char *bootDir, int bootDirSize, const cha
+@@ -3886,10 +3918,36 @@ static int bdmResolveBootDirWithBudget(char *bootDir, int bootDirSize, const cha
      }
  
      // A numeric massN: names one filesystem slot. Do not use the boot ELF as a reason to scan
@@ -7822,6 +7763,22 @@ index 773acc1..4117ea2 100644
          if (maxLBA > 0 && maxLBA < ziso_total_block) {   // dual layer check
              settings->common.layer1_start = maxLBA - 16; // adjust second layer start
          }
+diff --git a/src/mmcesupport.c b/src/mmcesupport.c
+index 622fd7e..bbb3c71 100644
+--- a/src/mmcesupport.c
++++ b/src/mmcesupport.c
+@@ -135,6 +135,11 @@ static sb_snap_t mmceSnap;
+ static int mmceModLoaded = 0;          // latched by mmceLoadModules; read by mmceSendGameID's arm check
+ static char mmceGameIdTarget[8] = {0}; // last device a GameID 0x8 switch was SENT to (mmceGameIdSettle polls it)
+ 
++int mmceModulesLoaded(void) // build 126
++{
++    return mmceModLoaded;
++}
++
+ int mmceSendGameID(const char *startup, const char *protectMcPath, int vmcSlotMask)
+ {
+     char mmceDevice[sizeof(mmcePrefix)];
 diff --git a/src/nbns.c b/src/nbns.c
 index 280fc2b..0ec0de9 100644
 --- a/src/nbns.c
@@ -8204,10 +8161,122 @@ index 7c99fb9..25947bd 100644
      return rc;
  }
 diff --git a/src/sound.c b/src/sound.c
-index 1954394..e5026d6 100644
+index 1954394..6cb5dc5 100644
 --- a/src/sound.c
 +++ b/src/sound.c
-@@ -1310,6 +1310,7 @@ void bgmBootTick(void)
+@@ -27,6 +27,7 @@
+ #include "include/themes.h"
+ #include "include/pad.h"
+ #include "include/bdmsupport.h" // bdmSlotEverConnected: the AUDIO folder on a drive (build 74)
++#include "include/mmcesupport.h" // build 126: mmceModulesLoaded, MMCE asked for AUDIO once it can answer
+ 
+ // Silence unused variable warnings from vorbisfile.h
+ static ov_callbacks OV_CALLBACKS_DEFAULT __attribute__((unused));
+@@ -401,10 +402,41 @@ static volatile int audioBaseFound = 0;
+ 
+ // searchDrives: only on the IO worker (the boot's sound load, ripps2AudioLateCheck): a memory card must never
+ // be asked from two threads at once. Every other caller takes what was found.
++// build 126 (the user, 10/31: with the AUDIO folder deleted the menu stalled and the pad went dead, SFX off or not):
++// with no AUDIO anywhere, the late check asked every card and drive again every 4 s for three minutes, about 50
++// directory opens a time on the IO worker, the MMCE ones over the controller's bus. Now each place is asked once, when
++// it can first answer (a card at boot, a USB slot once it has connected, MMCE once its modules are in, the HDD once it
++// is up), and the late check runs only when one of them has become ready since.
++static const char *const audioRoots[] = {"mc0:/", "mc1:/", "mass0:/", "mass1:/", "mass2:/", "mass3:/", "mass4:/", "mass5:/",
++                                         "mass6:/", "mass7:/", "mmce0:/", "mmce1:/", NULL};
++#define AUDIO_ASKED_HDD (1u << 30)
++#define AUDIO_ASKED_PFS (1u << 31)
++static volatile unsigned int audioAsked = 0; // bit i: audioRoots[i] asked; and the HDD's data home, pfs0:
++
++static int audioRootReady(int i)
++{
++    const char *r = audioRoots[i];
++    if (!strncmp(r, "mass", 4))
++        return bdmSlotEverConnected(BDM_MODE + (r[4] - '0'));
++    if (!strncmp(r, "mmce", 4))
++        return mmceModulesLoaded();
++    return 1; // the memory cards
++}
++
++// 1 when a place not asked yet can answer now (the GUI's cheap look, no I/O)
++static int audioNewPlaceReady(void)
++{
++    int i;
++    for (i = 0; audioRoots[i] != NULL; i++)
++        if (!(audioAsked & (1u << i)) && audioRootReady(i))
++            return 1;
++    if (gHDDPrefix != NULL && !(audioAsked & AUDIO_ASKED_PFS))
++        return 1;
++    return gHDDPrefix != NULL && gHDDPrefix[0] && !(audioAsked & AUDIO_ASKED_HDD);
++}
++
+ int ripps2AudioBase(char *out, int size, int searchDrives)
+ {
+-    static const char *const roots[] = {"mc0:/", "mc1:/", "mass0:/", "mass1:/", "mass2:/", "mass3:/", "mass4:/", "mass5:/",
+-                                        "mass6:/", "mass7:/", "mmce0:/", "mmce1:/", NULL};
+     static const char *const subs[] = {"", "APPS/"};
+     char base[256];
+     int i, j;
+@@ -417,24 +449,31 @@ int ripps2AudioBase(char *out, int size, int searchDrives)
+         return snprintf(out, size, "%s", audioBase) < size;
+     }
+     if (searchDrives) {
+-        if (gHDDPrefix != NULL && gHDDPrefix[0] && audioHas(gHDDPrefix)) {
+-            snprintf(audioBase, sizeof(audioBase), "%s", gHDDPrefix);
+-            audioBaseFound = 1;
++        if (gHDDPrefix != NULL && gHDDPrefix[0] && !(audioAsked & AUDIO_ASKED_HDD)) {
++            audioAsked |= AUDIO_ASKED_HDD;
++            if (audioHas(gHDDPrefix)) {
++                snprintf(audioBase, sizeof(audioBase), "%s", gHDDPrefix);
++                audioBaseFound = 1;
++            }
+         }
+-        for (i = 0; !audioBaseFound && roots[i] != NULL; i++) {
+-            if (!strncmp(roots[i], "mass", 4) && !bdmSlotEverConnected(BDM_MODE + (roots[i][4] - '0')))
+-                continue; // never ask an empty slot
++        for (i = 0; !audioBaseFound && audioRoots[i] != NULL; i++) {
++            if (!audioRootReady(i) || (audioAsked & (1u << i)))
++                continue; // never ask an empty slot, nor one already asked (build 126)
++            audioAsked |= 1u << i;
+             for (j = 0; j < 2 && !audioBaseFound; j++) {
+-                snprintf(base, sizeof(base), "%s%s", roots[i], subs[j]);
++                snprintf(base, sizeof(base), "%s%s", audioRoots[i], subs[j]);
+                 if (audioHas(base)) {
+                     snprintf(audioBase, sizeof(audioBase), "%s", base);
+                     audioBaseFound = 1;
+                 }
+             }
+         }
+-        if (!audioBaseFound && gHDDPrefix != NULL && (audioHas("pfs0:/") || audioHas("pfs0:/APPS/"))) {
+-            snprintf(audioBase, sizeof(audioBase), audioHas("pfs0:/") ? "pfs0:/" : "pfs0:/APPS/");
+-            audioBaseFound = 1;
++        if (!audioBaseFound && gHDDPrefix != NULL && !(audioAsked & AUDIO_ASKED_PFS)) {
++            audioAsked |= AUDIO_ASKED_PFS;
++            if (audioHas("pfs0:/") || audioHas("pfs0:/APPS/")) {
++                snprintf(audioBase, sizeof(audioBase), audioHas("pfs0:/") ? "pfs0:/" : "pfs0:/APPS/");
++                audioBaseFound = 1;
++            }
+         }
+         if (audioBaseFound)
+             LOG("AUDIO: using the AUDIO folder in %s\n", audioBase);
+@@ -1222,13 +1261,13 @@ static void audioLateWork(void)
+ 
+ static void audioLateTick(void)
+ {
+-    static clock_t next = 0, until = 0;
++    static clock_t next = 0;
+     clock_t now = clock();
+     if (audioBaseFound || audioLatePending || thmGetFilePath(thmGetGuiValue()) != NULL)
+         return;
+-    if (until == 0)
+-        until = now + 180 * CLOCKS_PER_SEC;
+-    if ((long)(now - until) > 0 || (long)(now - next) < 0)
++    // build 126: only a card or drive that has become ready since the last look is asked (no more three minutes of
++    // asking every place every 4 s when there is no AUDIO folder at all); at most one look every 4 s
++    if ((long)(now - next) < 0 || !audioNewPlaceReady())
+         return;
+     next = now + 4 * CLOCKS_PER_SEC;
+     audioLatePending = 1;
+@@ -1310,6 +1349,7 @@ void bgmBootTick(void)
  #define BGM_RING_BUFFER_COUNT      192 // 768 KB buffer (~4.35s): extra headroom for long device/list bursts (#364)
  #define BGM_RING_BUFFER_SIZE       4096
  #define BGM_STOP_WAIT_SLICES       16
@@ -8215,7 +8284,7 @@ index 1954394..e5026d6 100644
  // RIPPS2: the reserve art, info pages and disc IDs wait for. It was 1.1 s / 1.8 s, and on a console
  // whose frames run long the decoder could hover under 1.8 s for as long as the music played -- every
  // cover, every info page's details and every PS1 disc ID waited the whole time (build 66 on hardware:
-@@ -2059,7 +2060,7 @@ static void bgmDecodePriority(void)
+@@ -2059,7 +2099,7 @@ static void bgmDecodePriority(void)
  
  static void bgmIoThread(void *arg)
  {
@@ -8224,7 +8293,7 @@ index 1954394..e5026d6 100644
  
      bgmIoThreadRunning = 1;
      bgmIoStarted = 1; // build 102
-@@ -2099,7 +2100,17 @@ static void bgmIoThread(void *arg)
+@@ -2099,7 +2139,17 @@ static void bgmIoThread(void *arg)
              if (ret > 0) {
                  bufferPtr += ret;
                  decodeTotal -= ret;
