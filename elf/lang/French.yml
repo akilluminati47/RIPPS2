@@ -3,6 +3,9 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: French
 strings:
+  "START %s": "DÉMARRER %s"
+  "NETWORK": "RÉSEAU"
+  "%s did not answer. Is it connected?": "%s n'a pas répondu. Est-il branché ?"
   ENTER ACCEPTS, ESC CANCELS. ANY BUTTON SHOWS THE KEYS.: ENTRÉE VALIDE, ÉCHAP ANNULE. UN BOUTON AFFICHE LES TOUCHES.
   USB KEYBOARD: CLAVIER USB
   Access: Accès

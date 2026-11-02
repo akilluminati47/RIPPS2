@@ -3,6 +3,9 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Arabic
 strings:
+  "START %s": "تشغيل %s"
+  "NETWORK": "الشبكة"
+  "%s did not answer. Is it connected?": "لم يستجب %s. هل هو متصل؟"
   ENTER ACCEPTS, ESC CANCELS. ANY BUTTON SHOWS THE KEYS.: ENTER للقبول، ESC للإلغاء. أي زر يعرض المفاتيح.
   USB KEYBOARD: لوحة مفاتيح USB
   Access: الوصول

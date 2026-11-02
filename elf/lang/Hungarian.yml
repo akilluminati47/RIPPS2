@@ -3,6 +3,9 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Hungarian
 strings:
+  "START %s": "INDÍTÁS: %s"
+  "NETWORK": "HÁLÓZAT"
+  "%s did not answer. Is it connected?": "A(z) %s nem válaszolt. Csatlakoztatva van?"
   ENTER ACCEPTS, ESC CANCELS. ANY BUTTON SHOWS THE KEYS.: AZ ENTER ELFOGAD, AZ ESC MÉGSE. BÁRMELYIK GOMB MEGMUTATJA A BILLENTYŰKET.
   USB KEYBOARD: USB BILLENTYŰZET
   Access: Hozzáférés

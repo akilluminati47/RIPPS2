@@ -3,6 +3,9 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Danish
 strings:
+  "START %s": "START %s"
+  "NETWORK": "NETVÆRK"
+  "%s did not answer. Is it connected?": "%s svarede ikke. Er det tilsluttet?"
   ENTER ACCEPTS, ESC CANCELS. ANY BUTTON SHOWS THE KEYS.: ENTER BEKRÆFTER, ESC ANNULLERER. ENHVER KNAP VISER TASTERNE.
   USB KEYBOARD: USB-TASTATUR
   Access: Adgang

@@ -49,7 +49,7 @@ index cf0fc52..8ae2cc5 100644
      selected_item->item->current = it;
      int itms = ((items_list_t *)gTheme->itemsList->extended)->displayedItems;
 diff --git a/src/mixsupport.c b/src/mixsupport.c
-index 5a15835..64db8e4 100644
+index 5a15835..6aeb3fd 100644
 --- a/src/mixsupport.c
 +++ b/src/mixsupport.c
 @@ -162,6 +162,9 @@ static const int mixSourceModes[] = {HDD_MODE, BDM_MODE, BDM_MODE1, BDM_MODE2, B
@@ -58,7 +58,7 @@ index 5a15835..64db8e4 100644
                                                        "MMCE", N_("the SMB share"), "UDPFS", "HTTP"};
 +#define MIX_KIND_START   99 // build 130: a START row (a drive on Manual with nothing saved for it), not a game
 +// build 130: the name a START row gives each kind of source
-+static const char *const mixStartName[MIX_FAM_COUNT] = {"HDD", "HDD", "USB", "MX4SIO", "ILINK", "", "MMCE", N_("NETWORK"), "UDPFS", "HTTP"};
++static const char *const mixStartName[MIX_FAM_COUNT] = {"HDD", "HDD (EXFAT)", "USB", "MX4SIO", "ILINK", "", "MMCE", N_("NETWORK"), "UDPFS", "HTTP"};
  #define MIX_WAIT_S       40.0 // a started source that has not answered by then drops its saved games
  #define MIX_MASTER_FILE  "allgames.bin"
  #define MIX_MASTER_MAGIC "RIPALL01"
@@ -152,7 +152,7 @@ index 5a15835..64db8e4 100644
  int mixMasterGames(void)
  {
      return mixMasterSaved > 0 ? mixMasterSaved : 0;
-@@ -1180,6 +1236,75 @@ static void mixStartMeasured(int fam, double secs)
+@@ -1180,6 +1236,81 @@ static void mixStartMeasured(int fam, double secs)
      configSetInt(configGetByType(CONFIG_OPL), key, (int)(secs + 0.5) < 1 ? 1 : (int)(secs + 0.5)); // saved with the settings
  }
  
@@ -195,8 +195,9 @@ index 5a15835..64db8e4 100644
 +static int mixStartRowRun(struct menu_item *menu, item_list_t *rows, int fam)
 +{
 +    int backKey = gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE, estimate = mixStartEstimate(fam);
-+    double since = ripps2Seconds(), poked = since;
++    double since = ripps2Seconds(), poked = since, sibling = 0.0;
 +    char line[300];
++    int f2;
 +
 +    ripps2StartSourceMode(mixFamilyMode(fam));
 +    readPads();
@@ -210,7 +211,12 @@ index 5a15835..64db8e4 100644
 +            mixStartMeasured(fam, ripps2Seconds() - since);
 +            return 0;
 +        }
-+        if (ripps2Seconds() - since > MIX_LAUNCH_WAIT_S) {
++        // USB, MX4SIO, iLink and the exFAT HDD start together (BDM): once another of them has listed, this one has a
++        // few seconds more, then it is not there
++        for (f2 = 0; sibling == 0.0 && f2 < MIX_FAM_COUNT; f2++)
++            if (f2 != fam && mixAnswered[f2] && mixFamilyMode(f2) == mixFamilyMode(fam))
++                sibling = ripps2Seconds();
++        if (ripps2Seconds() - since > MIX_LAUNCH_WAIT_S || (sibling > 0.0 && ripps2Seconds() - sibling > 5.0)) {
 +            snprintf(line, sizeof(line), _t("%s did not answer. Is it connected?"), _t(mixFamName[fam]));
 +            guiMsgBoxSound(SFX_ERROR);
 +            guiMsgBox(line, 0, NULL);
@@ -228,7 +234,7 @@ index 5a15835..64db8e4 100644
  int mixWaitForRow(struct menu_item *menu)
  {
      char name[256], startup[64], line[300];
-@@ -1205,6 +1330,8 @@ int mixWaitForRow(struct menu_item *menu)
+@@ -1205,6 +1336,8 @@ int mixWaitForRow(struct menu_item *menu)
      mixUnlock();
      if (fam < 0 || fam >= MIX_FAM_COUNT)
          fam = MIX_FAM_BDM;
@@ -237,7 +243,7 @@ index 5a15835..64db8e4 100644
  
      // build 116 (the user, 10/27: a Manual HDD game would not launch from All Games, "hdd not connected"): only the game's own
      // drive starts. Build 115 started every source on Manual at once, the network's among them, whose start can hold the
-@@ -1255,33 +1382,7 @@ int mixWaitForRow(struct menu_item *menu)
+@@ -1255,33 +1388,7 @@ int mixWaitForRow(struct menu_item *menu)
              guiMsgBox(line, 0, NULL);
              return 0;
          }

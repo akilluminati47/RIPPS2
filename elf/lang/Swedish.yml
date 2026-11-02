@@ -3,6 +3,9 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Swedish
 strings:
+  "START %s": "STARTA %s"
+  "NETWORK": "NÄTVERK"
+  "%s did not answer. Is it connected?": "%s svarade inte. Är den ansluten?"
   ENTER ACCEPTS, ESC CANCELS. ANY BUTTON SHOWS THE KEYS.: ENTER BEKRÄFTAR, ESC AVBRYTER. VALFRI KNAPP VISAR TANGENTERNA.
   USB KEYBOARD: USB-TANGENTBORD
   Access: Åtkomst

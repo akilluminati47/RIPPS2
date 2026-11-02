@@ -3,6 +3,9 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Polish
 strings:
+  "START %s": "URUCHOM %s"
+  "NETWORK": "SIEĆ"
+  "%s did not answer. Is it connected?": "%s nie odpowiedział. Czy jest podłączony?"
   ENTER ACCEPTS, ESC CANCELS. ANY BUTTON SHOWS THE KEYS.: ENTER ZATWIERDZA, ESC ANULUJE. DOWOLNY PRZYCISK POKAZUJE KLAWISZE.
   USB KEYBOARD: KLAWIATURA USB
   Access: Dostęp

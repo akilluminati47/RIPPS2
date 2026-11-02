@@ -3,6 +3,9 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Filipino
 strings:
+  "START %s": "SIMULAN ANG %s"
+  "NETWORK": "NETWORK"
+  "%s did not answer. Is it connected?": "Hindi sumagot ang %s. Nakakonekta ba ito?"
   ENTER ACCEPTS, ESC CANCELS. ANY BUTTON SHOWS THE KEYS.: ENTER PARA TANGGAPIN, ESC PARA KANSELAHIN. ANUMANG BUTTON AY NAGPAPAKITA NG MGA KEY.
   USB KEYBOARD: USB KEYBOARD
   Access: Access

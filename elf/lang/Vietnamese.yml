@@ -3,6 +3,9 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Vietnamese
 strings:
+  "START %s": "KHỞI ĐỘNG %s"
+  "NETWORK": "MẠNG"
+  "%s did not answer. Is it connected?": "%s không phản hồi. Đã kết nối chưa?"
   ENTER ACCEPTS, ESC CANCELS. ANY BUTTON SHOWS THE KEYS.: ENTER ĐỂ XÁC NHẬN, ESC ĐỂ HỦY. NÚT BẤT KỲ HIỆN CÁC PHÍM.
   USB KEYBOARD: BÀN PHÍM USB
   Access: Truy cập

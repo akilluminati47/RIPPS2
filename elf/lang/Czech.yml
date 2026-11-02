@@ -3,6 +3,9 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Czech
 strings:
+  "START %s": "SPUSTIT %s"
+  "NETWORK": "SÍŤ"
+  "%s did not answer. Is it connected?": "%s neodpověděl. Je připojen?"
   ENTER ACCEPTS, ESC CANCELS. ANY BUTTON SHOWS THE KEYS.: ENTER POTVRDÍ, ESC ZRUŠÍ. LIBOVOLNÉ TLAČÍTKO UKÁŽE KLÁVESY.
   USB KEYBOARD: USB KLÁVESNICE
   Access: Přístup

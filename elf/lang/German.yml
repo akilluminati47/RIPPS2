@@ -3,6 +3,9 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: German
 strings:
+  "START %s": "%s STARTEN"
+  "NETWORK": "NETZWERK"
+  "%s did not answer. Is it connected?": "%s hat nicht geantwortet. Ist es angeschlossen?"
   ENTER ACCEPTS, ESC CANCELS. ANY BUTTON SHOWS THE KEYS.: ENTER BESTÄTIGT, ESC BRICHT AB. JEDE TASTE ZEIGT DIE TASTATUR.
   USB KEYBOARD: USB-TASTATUR
   Access: Zugriff

@@ -3,6 +3,9 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Russian
 strings:
+  "START %s": "ЗАПУСТИТЬ %s"
+  "NETWORK": "СЕТЬ"
+  "%s did not answer. Is it connected?": "%s не ответил. Он подключён?"
   ENTER ACCEPTS, ESC CANCELS. ANY BUTTON SHOWS THE KEYS.: ENTER ПРИНИМАЕТ, ESC ОТМЕНЯЕТ. ЛЮБАЯ КНОПКА ПОКАЗЫВАЕТ КЛАВИШИ.
   USB KEYBOARD: USB-КЛАВИАТУРА
   Access: Доступ

@@ -3,6 +3,9 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Portuguese
 strings:
+  "START %s": "INICIAR %s"
+  "NETWORK": "REDE"
+  "%s did not answer. Is it connected?": "%s não respondeu. Está ligado?"
   ENTER ACCEPTS, ESC CANCELS. ANY BUTTON SHOWS THE KEYS.: ENTER ACEITA, ESC CANCELA. QUALQUER BOTÃO MOSTRA AS TECLAS.
   USB KEYBOARD: TECLADO USB
   Access: Acesso

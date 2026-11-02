@@ -3,6 +3,9 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Spanish
 strings:
+  "START %s": "INICIAR %s"
+  "NETWORK": "RED"
+  "%s did not answer. Is it connected?": "%s no respondió. ¿Está conectado?"
   ENTER ACCEPTS, ESC CANCELS. ANY BUTTON SHOWS THE KEYS.: ENTER ACEPTA, ESC CANCELA. CUALQUIER BOTÓN MUESTRA LAS TECLAS.
   USB KEYBOARD: TECLADO USB
   Access: Acceso

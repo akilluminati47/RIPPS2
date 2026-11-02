@@ -3,6 +3,9 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Dutch
 strings:
+  "START %s": "START %s"
+  "NETWORK": "NETWERK"
+  "%s did not answer. Is it connected?": "%s gaf geen antwoord. Is het aangesloten?"
   ENTER ACCEPTS, ESC CANCELS. ANY BUTTON SHOWS THE KEYS.: ENTER BEVESTIGT, ESC ANNULEERT. ELKE KNOP TOONT DE TOETSEN.
   USB KEYBOARD: USB-TOETSENBORD
   Access: Toegang

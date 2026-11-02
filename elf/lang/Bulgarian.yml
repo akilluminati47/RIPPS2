@@ -3,6 +3,9 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Bulgarian
 strings:
+  "START %s": "СТАРТ %s"
+  "NETWORK": "МРЕЖА"
+  "%s did not answer. Is it connected?": "%s не отговори. Свързан ли е?"
   ENTER ACCEPTS, ESC CANCELS. ANY BUTTON SHOWS THE KEYS.: ENTER ПОТВЪРЖДАВА, ESC ОТКАЗВА. ВСЕКИ БУТОН ПОКАЗВА КЛАВИШИТЕ.
   USB KEYBOARD: USB КЛАВИАТУРА
   Access: Достъп

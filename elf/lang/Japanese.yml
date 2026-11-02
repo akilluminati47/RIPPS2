@@ -3,6 +3,9 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Japanese
 strings:
+  "START %s": "%s を開始"
+  "NETWORK": "ネットワーク"
+  "%s did not answer. Is it connected?": "%s が応答しません。接続されていますか？"
   ENTER ACCEPTS, ESC CANCELS. ANY BUTTON SHOWS THE KEYS.: ENTER で確定、ESC で取消。いずれかのボタンでキーを表示。
   USB KEYBOARD: USB キーボード
   Access: アクセス方式

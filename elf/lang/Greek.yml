@@ -3,6 +3,9 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Greek
 strings:
+  "START %s": "ΕΝΑΡΞΗ %s"
+  "NETWORK": "ΔΙΚΤΥΟ"
+  "%s did not answer. Is it connected?": "Το %s δεν απάντησε. Είναι συνδεδεμένο;"
   ENTER ACCEPTS, ESC CANCELS. ANY BUTTON SHOWS THE KEYS.: ΤΟ ENTER ΕΠΙΒΕΒΑΙΩΝΕΙ, ΤΟ ESC ΑΚΥΡΩΝΕΙ. ΟΠΟΙΟΔΗΠΟΤΕ ΚΟΥΜΠΙ ΔΕΙΧΝΕΙ ΤΑ ΠΛΗΚΤΡΑ.
   USB KEYBOARD: ΠΛΗΚΤΡΟΛΟΓΙΟ USB
   Access: Πρόσβαση

@@ -3,6 +3,9 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: TChinese
 strings:
+  "START %s": "啟動 %s"
+  "NETWORK": "網路"
+  "%s did not answer. Is it connected?": "%s 沒有回應。是否已連接？"
   ENTER ACCEPTS, ESC CANCELS. ANY BUTTON SHOWS THE KEYS.: ENTER 確認，ESC 取消。按任意按鈕顯示按鍵。
   USB KEYBOARD: USB 鍵盤
   Access: 存取方式

@@ -3,6 +3,9 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Indonesian
 strings:
+  "START %s": "MULAI %s"
+  "NETWORK": "JARINGAN"
+  "%s did not answer. Is it connected?": "%s tidak menjawab. Apakah tersambung?"
   ENTER ACCEPTS, ESC CANCELS. ANY BUTTON SHOWS THE KEYS.: ENTER MENERIMA, ESC MEMBATALKAN. TOMBOL APA SAJA MENAMPILKAN TUTS.
   USB KEYBOARD: KEYBOARD USB
   Access: Akses

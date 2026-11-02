@@ -3,6 +3,9 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Croatian
 strings:
+  "START %s": "POKRENI %s"
+  "NETWORK": "MREŽA"
+  "%s did not answer. Is it connected?": "%s se nije javio. Je li spojen?"
   ENTER ACCEPTS, ESC CANCELS. ANY BUTTON SHOWS THE KEYS.: ENTER PRIHVAĆA, ESC ODUSTAJE. BILO KOJA TIPKA PRIKAZUJE TIPKE.
   USB KEYBOARD: USB TIPKOVNICA
   Access: Pristup

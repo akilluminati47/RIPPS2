@@ -3,6 +3,9 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Serbian
 strings:
+  "START %s": "POKRENI %s"
+  "NETWORK": "MREŽA"
+  "%s did not answer. Is it connected?": "%s se nije javio. Da li je povezan?"
   ENTER ACCEPTS, ESC CANCELS. ANY BUTTON SHOWS THE KEYS.: ENTER POTVRĐUJE, ESC OTKAZUJE. BILO KOJE DUGME PRIKAZUJE TASTERE.
   USB KEYBOARD: USB TASTATURA
   Access: Pristup

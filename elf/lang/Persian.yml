@@ -3,6 +3,9 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Persian
 strings:
+  "START %s": "شروع %s"
+  "NETWORK": "شبکه"
+  "%s did not answer. Is it connected?": "%s پاسخ نداد. آیا وصل است؟"
   ENTER ACCEPTS, ESC CANCELS. ANY BUTTON SHOWS THE KEYS.: ENTER برای پذیرفتن، ESC برای لغو. هر دکمه‌ای کلیدها را نشان می‌دهد.
   USB KEYBOARD: صفحه‌کلید USB
   Access: دسترسی

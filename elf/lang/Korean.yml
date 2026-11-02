@@ -3,6 +3,9 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Korean
 strings:
+  "START %s": "%s 시작"
+  "NETWORK": "네트워크"
+  "%s did not answer. Is it connected?": "%s이(가) 응답하지 않았습니다. 연결되어 있나요?"
   ENTER ACCEPTS, ESC CANCELS. ANY BUTTON SHOWS THE KEYS.: ENTER는 확인, ESC는 취소. 아무 버튼이나 누르면 키가 표시됩니다.
   USB KEYBOARD: USB 키보드
   Access: 접근 방식

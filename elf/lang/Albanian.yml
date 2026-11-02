@@ -3,6 +3,9 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Albanian
 strings:
+  "START %s": "NIS %s"
+  "NETWORK": "RRJETI"
+  "%s did not answer. Is it connected?": "%s nuk u përgjigj. A është i lidhur?"
   ENTER ACCEPTS, ESC CANCELS. ANY BUTTON SHOWS THE KEYS.: ENTER PRANON, ESC ANULON. ÇDO BUTON SHFAQ TASTET.
   USB KEYBOARD: TASTIERË USB
   Access: Qasja

@@ -3,6 +3,9 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Italian
 strings:
+  "START %s": "AVVIA %s"
+  "NETWORK": "RETE"
+  "%s did not answer. Is it connected?": "%s non ha risposto. È collegato?"
   ENTER ACCEPTS, ESC CANCELS. ANY BUTTON SHOWS THE KEYS.: INVIO CONFERMA, ESC ANNULLA. QUALSIASI TASTO MOSTRA I TASTI.
   USB KEYBOARD: TASTIERA USB
   Access: Accesso
