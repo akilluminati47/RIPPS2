@@ -1,0 +1,263 @@
+diff --git a/include/ripps2.h b/include/ripps2.h
+index e676d9c..2eeff1d 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -142,6 +142,7 @@ void ripps2SetCategory(int cat);    // switch screens and fly the PS2 mark
+ void ripps2StepCategory(int dir);   // -1 / +1, clamped at the ends
+ int ripps2Legacy(void); // build 113: a theme without categories=three: Storage alone, the others in the START menu
+ void ripps2RenderCategoryBar(void); // the three labels plus the mark
++void ripps2RenderInfoCategoryBar(float k); // build 132: on an info page (info_catbar=1), its alpha times k
+ int ripps2CatSlot(int cat);         // build 113: a category's place on the bar (Category Order), and the category at a place
+ 
+ // ---- build 114: START DRIVES from STATUS (ripps2files.c) ----
+@@ -214,6 +215,7 @@ int ripps2StickSide(void);                                          // build 82:
+ 
+ // ---- Storage art panel glass (theme element Ripps2PanelGlass) ----
+ void ripps2DrawPanelGlass(int x, int y, int w, int h, int hasItem);
++void ripps2DrawPanelShade(int x, int y, int w, int h, int clearPct); // build 132: art clear above clearPct
+ int ripps2MakeFrost(const GSTEXTURE *src, GSTEXTURE *dst); // build 78: src shrunk to a soft 80x60 copy (frosted glass)
+ void ripps2DrawFrost(GSTEXTURE *frost, int x, int y, int w, int h, int crop, int alpha); // ... the part of it under x,y,w,h
+ void ripps2DrawPanelFlat(int x, int y, int w, int h, const unsigned char *rgb, int alpha, int frame); // build 79: constant glass
+diff --git a/include/themes.h b/include/themes.h
+index df331f1..f5b2763 100644
+--- a/include/themes.h
++++ b/include/themes.h
+@@ -136,6 +136,7 @@ typedef struct theme_element
+     int glassTint;        // RIPPS2 build 79: Ripps2PanelGlass constant tint 0..128 (<name>_tint), -1 = the gradient
+     int glassFrame;       // RIPPS2 build 79: Ripps2PanelGlass frame line (<name>_frame, default 1)
+     unsigned char glassColor[3]; // RIPPS2 build 79: the tint's colour (<name>_tint_color, default RIPPS2 navy)
++    int glassClear;       // RIPPS2 build 132: Ripps2PanelGlass leaves the art clear down to this % of its height (<name>_clear), 0 = all tinted
+     int wideCrop;         // RIPPS2 build 79: Background in 16:9 shows the middle 3/4 of its height (<name>_widecrop=1); build 119: -1 (unset) = on its own for a game's pictures, 0 = never
+     int artBottom;        // RIPPS2 build 102: GameImage art stands on its box's bottom (<name>_valign=bottom)
+     // Per-device element filter (theme key devices=usb,hdd,...): bitmask over the thmDeviceVocab
+@@ -291,6 +292,7 @@ typedef struct theme
+     int sbAutoHide;                     // build 115: sidebar_hide=1: the sidebar slides away until Circle calls it
+     int flowTilt;                       // build 117: flowtilt=1: RIPFLOW's Up / Down (left stick) tip the centre case
+     int infoSidebar;                    // build 119: info_sidebar=1: the sidebar stays on the info page (none built in does)
++    int infoCatBar;                     // build 132: info_catbar=1: the category bar on the info page too, at its setting (RIPFLOW)
+     int listCfgText;                    // build 126: list_cfg_text=0: the list pages leave out the CFG Title and Description
+     int hintsFade;                      // build 115: hints_fade (1, the default): a hint glyph that changes fades in
+     int hintsFlank, hintsFlankGap;      // build 115: hints_flank=1: RUN and SOURCE either side of the source name; the gap
+diff --git a/misc/theme_coverflow.cfg b/misc/theme_coverflow.cfg
+index 82c0720..023136d 100644
+--- a/misc/theme_coverflow.cfg
++++ b/misc/theme_coverflow.cfg
+@@ -12,6 +12,8 @@ sidebar_hide=1
+ flowtilt=1
+ # build 115: OSDSYS-style hints, RUN left of the source name and SOURCE right of it
+ hints_flank=1
++# build 132 (the user, 11/02): LAUNCH DISC / STORAGE / MEMORY FILES on the info page too, as Category Bar says
++info_catbar=1
+ # build 119: the source's name shown under the covers (Source Name: Pop In or Pop In and Name bring the big name back)
+ source_name=shown
+ # RIPPS2 build 91: as a game launches its disc comes in (Flow and Grid > Launch Disc can change it); build 122 (the user,
+diff --git a/src/menusys.c b/src/menusys.c
+index 8ae2cc5..21e1462 100644
+--- a/src/menusys.c
++++ b/src/menusys.c
+@@ -2776,6 +2776,16 @@ void menuRenderInfo(void)
+     // stayed, where the list page has it; build 119: out of sight until Left brings it out (or always, info_sidebar=1)
+     if (menuInfoSidebar() || (menuInfoSidebarReach() && ripps2SidebarFocused()))
+         ripps2SidebarRender();
++    // build 132: a theme with info_catbar=1 (RIPFLOW) keeps the bar here, at its setting, faded in on the screenshots'
++    // fade time (1 s) each time the info page opens
++    if (gTheme->infoCatBar) {
++        static clock_t infoOpenAt = 0, infoLastAt = 0;
++        clock_t now = clock();
++        if (infoLastAt == 0 || (float)(now - infoLastAt) / CLOCKS_PER_SEC > 0.25f)
++            infoOpenAt = now;
++        infoLastAt = now;
++        ripps2RenderInfoCategoryBar(fminf(1.0f, (float)(now - infoOpenAt) / CLOCKS_PER_SEC / 1.0f));
++    }
+ }
+ 
+ // build 119 (the user, 10/27): the info page is the game's, on every theme, the ones made for OPL included: the sidebar is
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index 31738bc..2c330d4 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -959,12 +959,27 @@ int ripps2Legacy(void)
+     return (gTheme != NULL && gTheme->catLegacy) || gRipps2CatLayout == 3;
+ }
+ 
++static float catBarScale = 1.0f; // build 132: the info page's fade in, over the setting's own alpha
++
++// build 132 (the user, 11/02: on RIPFLOW's info page LAUNCH DISC / STORAGE / MEMORY FILES "should fade like the setting
++// for it does ... instead of hidden"): the bar on an info page whose theme says info_catbar=1, at its setting's alpha
++// times k (menusys.c fades k in on the screenshots' fade time). No bar there on a legacy theme or with the sidebar.
++void ripps2RenderInfoCategoryBar(float k)
++{
++    if (ripps2Legacy() || ripps2SidebarOn() || k <= 0.0f)
++        return;
++    catBarScale = k;
++    ripps2RenderCategoryBar();
++    catBarScale = 1.0f;
++}
++
+ void ripps2RenderCategoryBar(void)
+ {
+     int i;
+     int font = catFont(1);
+ 
+-    catTransitionDraw(); // build 92: over the page, under the bar
++    if (catBarScale >= 1.0f)
++        catTransitionDraw(); // build 92: over the page, under the bar
+     if (ripps2Legacy()) // build 113: a legacy theme has no bar; Launch Disc and Memory Files are in the START menu
+         return;
+     if (ripps2SidebarOn()) { // build 113: the glyphs down the side bar instead of the words (ripps2side.c)
+@@ -981,7 +996,7 @@ void ripps2RenderCategoryBar(void)
+         } else if (enter < 0.0f)
+             enter = 0.0f;
+     }
+-    float barA = ripps2CatBarAlpha(); // RIPPSettings: shown, faded when idle, or hidden
++    float barA = ripps2CatBarAlpha() * catBarScale; // RIPPSettings: shown, faded when idle, or hidden
+     int alpha = (int)(0x80 * fminf(1.0f, enter * 1.6f) * barA);
+     u64 lit = (COLOR_LIT & ~(0xFFULL << 24)) | ((u64)alpha << 24);
+     u64 dim = (COLOR_DIM & ~(0xFFULL << 24)) | ((u64)alpha << 24);
+@@ -2487,6 +2502,20 @@ void ripps2DrawPanelGlass(int x, int y, int w, int h, int hasItem)
+     panelFrame(x, y, w, h);
+ }
+ 
++// build 132 (the user, 11/02: "arts on top of the glass in the viewport for full color"): the info page's art untinted
++// down to clearPct of the glass's height, then the glass's deep shade coming in over 8% so the title and details read
++void ripps2DrawPanelShade(int x, int y, int w, int h, int clearPct)
++{
++    int y1 = y + (h * clearPct) / 100, y2 = y + (h * (clearPct + 8)) / 100;
++    u64 none = RGBA_PRIM(0x03, 0x08, 0x22, 0x00), deep = RGBA_PRIM(0x03, 0x08, 0x22, 0x5C);
++    if (y2 > y + h)
++        y2 = y + h;
++    rmDrawQuadGouraud(x, y1, none, x + w, y1, none, x, y2, deep, x + w, y2, deep);
++    if (y2 < y + h)
++        rmDrawQuadGouraud(x, y2, deep, x + w, y2, deep, x, y + h, deep, x + w, y + h, deep);
++    panelFrame(x, y, w, h);
++}
++
+ // ---- STORAGE and INFO pages: right-stick view tilt ----
+ // The stick tips the art viewport with everything on it (and, on the info page, the disc and case in
+ // the same plane) a few degrees in any direction about the group's centre. The view eases after the
+diff --git a/src/themes.c b/src/themes.c
+index 1951f71..61a3943 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -1318,6 +1318,10 @@ static void drawRipps2PanelGlass(struct menu_list *menu, struct submenu_list *it
+         ripps2DrawPanelFlat(x, y, elem->width, elem->height, elem->glassColor, elem->glassTint, elem->glassFrame);
+         return;
+     }
++    if (elem->glassClear > 0 && item != NULL) { // build 132: the game's art at full colour, a shade behind the text only
++        ripps2DrawPanelShade(x, y, elem->width, elem->height, elem->glassClear);
++        return;
++    }
+     ripps2DrawPanelGlass(x, y, elem->width, elem->height, item != NULL);
+ }
+ 
+@@ -4113,6 +4117,7 @@ static theme_element_t *initBasic(const char *themePath, config_set_t *themeConf
+     elem->tiltScale = 100;
+     elem->glassTint = -1; // build 79: the gradient unless the theme sets tint=
+     elem->glassFrame = 1;
++    elem->glassClear = 0; // build 132: tinted all over unless the theme sets clear=
+     elem->glassColor[0] = 0x04;
+     elem->glassColor[1] = 0x0C;
+     elem->glassColor[2] = 0x2E;
+@@ -4249,6 +4254,9 @@ static theme_element_t *initBasic(const char *themePath, config_set_t *themeConf
+         elem->glassFrame = intValue ? 1 : 0;
+     snprintf(elemProp, sizeof(elemProp), "%s_tint_color", name);
+     configGetColor(themeConfig, elemProp, elem->glassColor);
++    snprintf(elemProp, sizeof(elemProp), "%s_clear", name); // build 132
++    if (configGetInt(themeConfig, elemProp, &intValue) && intValue >= 0 && intValue <= 90)
++        elem->glassClear = intValue;
+     snprintf(elemProp, sizeof(elemProp), "%s_widecrop", name);
+     if (configGetInt(themeConfig, elemProp, &intValue))
+         elem->wideCrop = intValue ? 1 : 0;
+@@ -4333,6 +4341,36 @@ static int thmIsInfoFamily(const theme_elems_t *f)
+             f == &gTheme->favsVcdInfoElems || f == &gTheme->favsAppsInfoElems);
+ }
+ 
++// build 132 (the user, 11/02: "Idle on game for 4.2 seconds fade with cover timing to square info n triangle settings
++// glyphs flank instead of the x and o and stays until game change"): how far a list page's flank hints have turned
++// from RUN / SOURCE to INFO / OPTIONS, 0..1. After 4.2 s on one game they turn over the screenshots' fade time
++// (SLIDE_FADE_S); a move to another game, the sidebar or another page turns them back the same way
++#define FLANK_IDLE_S 4.2f
++static float flankInfo = 0.0f;
++
++static float flankInfoK(struct menu_list *menu)
++{
++    static const void *on = NULL;
++    static clock_t since = 0, last = 0;
++    clock_t now = clock();
++    const void *cur = menu != NULL && menu->item != NULL ? (const void *)menu->item->current : NULL;
++    float dt = last != 0 ? (float)(now - last) / CLOCKS_PER_SEC : 0.0f;
++    last = now;
++    if (cur != on || dt > 0.25f) { // another game, or the page was away
++        on = cur;
++        since = now;
++    }
++    if (dt > 0.25f) {
++        flankInfo = 0.0f;
++        dt = 0.0f;
++    }
++    if (cur != NULL && !ripps2SidebarFocused() && (float)(now - since) / CLOCKS_PER_SEC >= FLANK_IDLE_S)
++        flankInfo = fminf(1.0f, flankInfo + dt / SLIDE_FADE_S);
++    else
++        flankInfo = fmaxf(0.0f, flankInfo - dt / SLIDE_FADE_S);
++    return flankInfo;
++}
++
+ static void drawMenuText(struct menu_list *menu, struct submenu_list *item, config_set_t *config, struct theme_element *elem)
+ {
+     GSTEXTURE *leftIconTex = NULL, *rightIconTex = NULL;
+@@ -4366,15 +4404,27 @@ static void drawMenuText(struct menu_list *menu, struct submenu_list *item, conf
+         if (srcA <= 0.0f)
+             return;
+         int confirm = gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON, half = rmUnScaleX(fntCalcDimensions(elem->font, text)) / 2;
++        int info = thmIsInfoFamily(elem->family);
++        float k = info ? 0.0f : flankInfoK(menu), a;
++        int pass;
+         u64 c = (elem->color & ~(0xFFULL << 24)) | ((u64)(int)(((elem->color >> 24) & 0xFF) * srcA) << 24);
+-        u64 ic = GS_SETREG_RGBA(0x80, 0x80, 0x80, (int)(0x80 * srcA));
+-        guiDrawIconAndTextNoFade(confirm, _STR_RUN, elem->font, elem->posX - half - gTheme->hintsFlankGap - guiIconTextWidth(confirm, _STR_RUN, elem->font),
+-                                 elem->posY - 10, c, ic);
+-        // build 125 (the user, 10/29): on the info page the cancel button goes back, so it says BACK there
+-        if (thmIsInfoFamily(elem->family))
+-            guiDrawIconAndTextNoFade(guiCancelIcon(), _STR_BACK, elem->font, elem->posX + half + gTheme->hintsFlankGap, elem->posY - 10, c, ic);
+-        else if (findMenuNext(menu) != 0 || findMenuPrev(menu) != 0)
+-            guiDrawIconAndTextNoFade(guiCancelIcon(), _STR_RIPPS2_SOURCE, elem->font, elem->posX + half + gTheme->hintsFlankGap, elem->posY - 10, c, ic);
++        // build 132: RUN / SOURCE, and over them INFO / OPTIONS as a game is rested on (flankInfoK)
++        for (pass = 0; pass < 2; pass++) {
++            a = srcA * (pass ? k : 1.0f - k);
++            if (a <= 0.0f)
++                continue;
++            u64 tc = (elem->color & ~(0xFFULL << 24)) | ((u64)(int)(((elem->color >> 24) & 0xFF) * a) << 24);
++            u64 ic = GS_SETREG_RGBA(0x80, 0x80, 0x80, (int)(0x80 * a));
++            int lIcon = pass ? SQUARE_ICON : confirm, lText = pass ? _STR_INFO : _STR_RUN;
++            guiDrawIconAndTextNoFade(lIcon, lText, elem->font, elem->posX - half - gTheme->hintsFlankGap - guiIconTextWidth(lIcon, lText, elem->font),
++                                     elem->posY - 10, tc, ic);
++            if (pass)
++                guiDrawIconAndTextNoFade(TRIANGLE_ICON, _STR_OPTIONS, elem->font, elem->posX + half + gTheme->hintsFlankGap, elem->posY - 10, tc, ic);
++            else if (info) // build 125 (the user, 10/29): on the info page the cancel button goes back, so it says BACK there
++                guiDrawIconAndTextNoFade(guiCancelIcon(), _STR_BACK, elem->font, elem->posX + half + gTheme->hintsFlankGap, elem->posY - 10, tc, ic);
++            else if (findMenuNext(menu) != 0 || findMenuPrev(menu) != 0)
++                guiDrawIconAndTextNoFade(guiCancelIcon(), _STR_RIPPS2_SOURCE, elem->font, elem->posX + half + gTheme->hintsFlankGap, elem->posY - 10, tc, ic);
++        }
+         fntRenderString(elem->font, elem->posX, elem->posY, elem->aligned, 0, 0, text, c);
+         return;
+     }
+@@ -4919,7 +4969,10 @@ static void drawHintText(struct menu_list *menu, struct submenu_list *item, conf
+         int n = 0, i, j, labels = ripps2HintLabels();
+         for (h = hint; h != NULL && n < 16; h = h->next)
+             if (sidebar || (ripps2HintShown(ripps2HintToken(h->text_id, h->icon_id)) &&
+-                            !(flank && ripps2HintToken(h->text_id, h->icon_id) == RIPPS2_HINT_RUN)))
++                            !(flank && ripps2HintToken(h->text_id, h->icon_id) == RIPPS2_HINT_RUN) &&
++                            // build 132: INFO and OPTIONS leave the row while they flank the source name
++                            !(flank && flankInfo >= 0.5f && (ripps2HintToken(h->text_id, h->icon_id) == RIPPS2_HINT_INFO ||
++                                                             ripps2HintToken(h->text_id, h->icon_id) == RIPPS2_HINT_OPTIONS))))
+                 row[n++] = h;
+         for (i = sidebar ? n : 1; i < n; i++) {
+             menu_hint_item_t *k = row[i];
+@@ -6921,6 +6974,7 @@ static int thmLoad(const char *themePath)
+         // in and Circle back, so the sidebar stays on the list. info_sidebar=1 keeps it there for a theme that wants it
+         // (Left reaches it); none of the built-in themes does
+         newT->infoSidebar = configGetInt(themeConfig, "info_sidebar", &intValue) && intValue == 1;
++        newT->infoCatBar = configGetInt(themeConfig, "info_catbar", &intValue) && intValue == 1; // build 132
+         newT->listCfgText = !(configGetInt(themeConfig, "list_cfg_text", &intValue) && intValue == 0); // build 126
+         configGetColor(themeConfig, "sidebar_color", newT->sbColor);
+         configGetColor(themeConfig, "sidebar_accent_color", newT->sbAccent);
