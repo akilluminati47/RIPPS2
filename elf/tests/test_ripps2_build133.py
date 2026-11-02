@@ -26,8 +26,10 @@ if 'void ripps2DrawRestSky(void)' not in bg or 'void ripps2DrawSkyVignette(void)
     fail.append('ripps2bg.c must draw the rest sky and its vignette')
 if 'ripps2DrawRestSky(); // build 133' not in themes:
     fail.append('a towers=0 theme draws the sky where it filled bg_color')
-if 'elem->drawElem = &drawGameBackground;' not in themes or 'gTheme->noTowers && !thmElemIsInfo(elem)' not in themes:
+if 'elem->drawElem = &drawGameBackground;' not in themes or '!gTheme->noTowers || thmElemIsInfo(elem)' not in themes:
     fail.append('the vignette goes over a towers=0 list page\'s game art, never on the info page')
+if 'vignetteAfter = next;' not in themes or 'if (elem == vignetteAfter) {' not in themes:
+    fail.append('a full-screen frosted glass after the Background draws the vignette over its frost')
 
 print('\n'.join(fail) or 'build133: RIPGRID L1 / R1 pages with the sidebar, the star at the right edge, the sky and its vignette OK')
 sys.exit(1 if fail else 0)

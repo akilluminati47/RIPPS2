@@ -68,7 +68,7 @@ index ee9fdda..741c334 100644
  static void gridLine(v3 a, v3 b, u64 c)
  {
 diff --git a/src/themes.c b/src/themes.c
-index 6992072..d48a562 100644
+index 6992072..2ab5bf0 100644
 --- a/src/themes.c
 +++ b/src/themes.c
 @@ -1233,7 +1233,7 @@ static void ripps2PanelRect(struct theme_element *elem, int *x, int *y)
@@ -80,7 +80,30 @@ index 6992072..d48a562 100644
      else
          ripps2DrawBackground();
  }
-@@ -4297,6 +4297,15 @@ static void drawBackground(struct menu_list *menu, struct submenu_list *item, co
+@@ -1307,7 +1307,22 @@ static int thmBlurPercent(void)
+     return gTheme != NULL ? gTheme->bgBlurDef : 100;
+ }
+ 
++// build 133: the sky vignette waits for the full-screen frosted glass straight after a list page's Background (Adapt,
++// RIPGRID), or the frost laid over the art covered it
++static const struct theme_element *vignetteAfter = NULL;
++
++static void drawRipps2PanelGlassBody(struct menu_list *menu, struct submenu_list *item, config_set_t *config, struct theme_element *elem);
++
+ static void drawRipps2PanelGlass(struct menu_list *menu, struct submenu_list *item, config_set_t *config, struct theme_element *elem)
++{
++    drawRipps2PanelGlassBody(menu, item, config, elem);
++    if (elem == vignetteAfter) {
++        vignetteAfter = NULL;
++        ripps2DrawSkyVignette();
++    }
++}
++
++static void drawRipps2PanelGlassBody(struct menu_list *menu, struct submenu_list *item, config_set_t *config, struct theme_element *elem)
+ {
+     int x, y;
+     ripps2PanelRect(elem, &x, &y);
+@@ -4297,6 +4312,21 @@ static void drawBackground(struct menu_list *menu, struct submenu_list *item, co
      thmDrawEmptyBackdrop(); // RIPPS2: theme pages draw the bare pillars
  }
  
@@ -88,15 +111,21 @@ index 6992072..d48a562 100644
 +// sky vignette goes over the art, under everything after it
 +static void drawGameBackground(struct menu_list *menu, struct submenu_list *item, config_set_t *config, struct theme_element *elem)
 +{
++    struct theme_element *next = elem->next;
 +    drawGameImage(menu, item, config, elem);
-+    if (gTheme != NULL && gTheme->noTowers && !thmElemIsInfo(elem))
++    if (gTheme == NULL || !gTheme->noTowers || thmElemIsInfo(elem))
++        return;
++    if (next != NULL && next->type == ELEM_TYPE_RIPPS2_PANEL_GLASS && next->drawElem != NULL && next->posX <= 0 && next->posY <= 0 &&
++        next->width >= 640 && next->height >= 480)
++        vignetteAfter = next; // over the frost, drawn by that glass
++    else
 +        ripps2DrawSkyVignette();
 +}
 +
  static void initBackground(const char *themePath, config_set_t *themeConfig, theme_t *theme, theme_element_t *elem, const char *name, const char *pattern, int count, const char *texture)
  {
      mutable_image_t *mutableImage = initMutableImage(themePath, themeConfig, theme, name, elem->type, pattern, count, texture, NULL);
-@@ -4304,7 +4313,7 @@ static void initBackground(const char *themePath, config_set_t *themeConfig, the
+@@ -4304,7 +4334,7 @@ static void initBackground(const char *themePath, config_set_t *themeConfig, the
      elem->endElem = &endMutableImage;
  
      if (mutableImage->cache)
@@ -105,7 +134,7 @@ index 6992072..d48a562 100644
      else if (mutableImage->defaultTexture)
          elem->drawElem = &drawStaticImage;
      else
-@@ -4619,6 +4628,11 @@ static void drawItemsList(struct menu_list *menu, struct submenu_list *item, con
+@@ -4619,6 +4649,11 @@ static void drawItemsList(struct menu_list *menu, struct submenu_list *item, con
          int roomEnd = elem->posX + (itemsList->decoratorImage != NULL ? DECORATOR_SIZE : 0) + elem->textRoom;
          if (decoRight && roomEnd > elem->posX + elem->width - DECORATOR_SIZE - 6)
              roomEnd = elem->posX + elem->width - DECORATOR_SIZE - 6;
@@ -117,7 +146,7 @@ index 6992072..d48a562 100644
          int textRoom = elem->textRoom > 0 ? roomEnd - textX : 0;
          GSTEXTURE *starTex = itemsList->starImage != NULL ? &itemsList->starImage->source : thmGetTexture(FAV_MARK);
          if (elem->textRoom > 0 && textRoom < 40)
-@@ -4687,13 +4701,14 @@ static void drawItemsList(struct menu_list *menu, struct submenu_list *item, con
+@@ -4687,13 +4722,14 @@ static void drawItemsList(struct menu_list *menu, struct submenu_list *item, con
              // RIPPS2: the star. Build 111 (user: "the favourites star wasn't on the centreline of the title next to it"): centred
              // on the row, where the title's centreline is (textDy), not at posY, which keeps the row icons' old 3 px drop
              if (ps->item.favourited && starSide != THM_STAR_HIDDEN && starTex != NULL && starTex->Mem != NULL)
@@ -133,7 +162,7 @@ index 6992072..d48a562 100644
      }
  }
  
-@@ -4749,7 +4764,9 @@ static void initItemsList(const char *themePath, config_set_t *themeConfig, them
+@@ -4749,7 +4785,9 @@ static void initItemsList(const char *themePath, config_set_t *themeConfig, them
      snprintf(elemProp, sizeof(elemProp), "%s_hidden", name);
      configGetInt(themeConfig, elemProp, &itemsList->hidden);
      // build 106: the star, the highlight and the row icons
