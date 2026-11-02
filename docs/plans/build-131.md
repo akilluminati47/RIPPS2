@@ -50,3 +50,13 @@ PCSX2 takes with the capture on (`rec`, then `wait:8` before the end, see memory
 - Back in the middle of a film: silence until the browser is back.
 - L1 / R1 in the 2 h 41 film (item 4).
 - Then CI (build + host tests), push to main. Release and Discord only on the user's word.
+
+## Lab results (11/02, PCSX2, NTSC, CI run 41501662858 for 0bae410; build 130 = the v1.3.0-beta ELF)
+
+Captures in `B:\Videos - Projects\.montages\hyperframes\ripps2-recap\clips\p13?_*.mp4`, sound measured per 100 ms:
+- **Pause, Betty Boop** (Cross at 5 s, again at 10 s): 130 plays on to 6.5 s, then a flat -31 dB repeat to 10.7 s.
+  131: sound to silence (-180 dB) by 5.7 s, the frame held from 5.5 s, sound back at 10.8 s with the picture.
+- **End, AVI00011** (sound 0.14 s shorter than the picture): 130 repeats a block at -33 dB for 4 s and the last
+  frames jump in at 6.5 s. 131: silence at 2.7 s, the last frames on time.
+- **End, AVI00000**: 130 cut the last 0.15 s of sound (the camera's stop click); 131 plays it, then silence.
+- **Back mid-film**: silence on both (131 0.4 s sooner). **L1 / R1**: no repeat, at most a 0.1 s gap.

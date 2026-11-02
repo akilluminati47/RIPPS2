@@ -1,5 +1,19 @@
 # RIPPS2 changelog
 
+## Build 131 (beta, in testing), changes since build 130
+
+The user's notes on the video player (11/02), from watching a film on the console.
+
+**Video**
+- **A paused video is silent on its held frame.** The sound played on for about a second after Cross, then the
+  player stopped sending it and the PS2's sound service, run dry, repeated what it held until the pause ended (the
+  stutter the in-game menu used to have). Now the sound fades out in a tenth of a second and silence follows for as
+  long as the pause lasts; on resume it fades back in, in step with the picture.
+- **A video ends cleanly.** At the end, the last bit of sound repeated for seconds while each of the last frames
+  waited for a clock that had stopped, then they jumped in. Now the sound plays to its true end, silence follows,
+  and the last frames keep the film's pace. Back or Select mid-video goes quiet the same way, and so does an L1 / R1
+  skip.
+
 ## Build 130 (beta, v1.3.0-beta), changes since build 129
 
 Tester ahavasi's report on 128 and the user's notes (11/01). The video fixes passed in the PCSX2 lab; this release asks testers to play them on real consoles.
