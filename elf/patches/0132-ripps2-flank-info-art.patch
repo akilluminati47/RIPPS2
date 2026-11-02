@@ -39,7 +39,7 @@ index df331f1..f5b2763 100644
      int hintsFade;                      // build 115: hints_fade (1, the default): a hint glyph that changes fades in
      int hintsFlank, hintsFlankGap;      // build 115: hints_flank=1: RUN and SOURCE either side of the source name; the gap
 diff --git a/misc/theme_coverflow.cfg b/misc/theme_coverflow.cfg
-index 82c0720..023136d 100644
+index 82c0720..06f13ea 100644
 --- a/misc/theme_coverflow.cfg
 +++ b/misc/theme_coverflow.cfg
 @@ -12,6 +12,8 @@ sidebar_hide=1
@@ -51,6 +51,98 @@ index 82c0720..023136d 100644
  # build 119: the source's name shown under the covers (Source Name: Pop In or Pop In and Name bring the big name back)
  source_name=shown
  # RIPPS2 build 91: as a game launches its disc comes in (Flow and Grid > Launch Disc can change it); build 122 (the user,
+@@ -445,40 +447,49 @@ info14:
+ 	aligned=0
+ 	width=16
+ 	height=16
++# build 132 (the user, 11/02: "hide the size: description: etc. like the others and increase the title size, add the
++# genre developer and other info pieces ... size right aligned with some info left aligned same line"): bare values
++# (display=2) as on RIPPS2's info page; the title in RIPFLOW's bold at 22; Genre with the Size right-aligned on the
++# description's right edge (623), Developer with the Release the same way, then the description. A right-aligned
++# value's y is its middle (aligned=2), so it sits 8 below its left-hand partner's. Up to build 131 a second info16 (the
++# SaveIcon, now info29) replaced the Developer line, so it never showed.
+ info15:
+ 	type=AttributeText
+ 	attribute=Title
++	font=12
+ 	color=#ffffff
+-	display=0
++	display=2
+ 	aligned=0
+ 	x=33
+-	y=70
++	y=62
+ info16:
+ 	type=AttributeText
+ 	attribute=Developer
+-	color=#ffffff
+-	display=0
++	font=13
++	color=#C4D2F0
++	display=2
+ 	aligned=0
+ 	x=33
+-	y=89
++	y=112
+ info17:
+ 	type=AttributeText
+ 	attribute=#Size
+-	color=#ffffff
+-	display=0
+-	aligned=0
+-	x=33
+-	y=108
++	font=13
++	color=#C4D2F0
++	display=2
++	aligned=2
++	x=623
++	y=101
+ info18:
+ 	type=AttributeText
+ 	attribute=Description
+-	display=0
++	display=2
+ 	color=#ffffff
+ 	aligned=0
+ 	x=33
+-	y=127
++	y=136
+ 	width=590
+-	height=60
++	height=84
+ 	wrap=1
+ # build 102 (user: "ripflows badges and ratings sizes need to be refined"): the badges at their images' own shape (51 x 26,
+ # so 44 x 22), 6 apart, the first's left edge on the text's (33); up to build 101 they were 32 x 16 at 31 apart, a pixel
+@@ -591,9 +602,27 @@ info28:
+ 	y=-30
+ 	aligned=1
+ 	color=#5C6478
+-info16:
++info29:
+ 	type=SaveIcon
+ 	x=319
+ 	y=-150
+ 	width=56
+ 	height=100
++info30:
++	type=AttributeText
++	attribute=Genre
++	font=13
++	color=#C4D2F0
++	display=2
++	aligned=0
++	x=33
++	y=93
++info31:
++	type=AttributeText
++	attribute=Release
++	font=13
++	color=#C4D2F0
++	display=2
++	aligned=2
++	x=623
++	y=120
 diff --git a/src/menusys.c b/src/menusys.c
 index 8ae2cc5..21e1462 100644
 --- a/src/menusys.c

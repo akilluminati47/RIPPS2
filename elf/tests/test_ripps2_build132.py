@@ -40,5 +40,21 @@ m = re.search(r'info4:\n(?:\t[^\n]*\n)*?\tclear=(\d+)', conf.replace('\r\n', '\n
 if not m or not 40 <= int(m.group(1)) <= 60:
     fail.append('the RIPPS2 info page glass (info4) must set clear= above the title (about 52)')
 
+# RIPFLOW's info page (the user, 11/02): bare values, a bigger title, Genre / Size and Developer / Release lines
+cfg = flow.replace('\r\n', '\n')
+if len(re.findall(r'(?m)^info16:', cfg)) != 1:
+    fail.append('RIPFLOW must have one info16 (a second one replaced the Developer line)')
+want = {'Title': '0', 'Developer': '0', '#Size': '2', 'Description': '0', 'Genre': '0', 'Release': '2'}
+for b in re.findall(r'(?m)^info\d+:\n((?:\t[^\n]*\n)*)', cfg):
+    m = re.search(r'attribute=(\S+)', b)
+    if m and m.group(1) in want:
+        if 'display=2' not in b or '\taligned=%s\n' % want[m.group(1)] not in b:
+            fail.append('RIPFLOW info %s: a bare value (display=2), aligned=%s' % (m.group(1), want[m.group(1)]))
+        want.pop(m.group(1))
+if want:
+    fail.append('RIPFLOW info page lacks ' + ', '.join(want))
+if not re.search(r'attribute=Title\n\tfont=12\n', cfg):
+    fail.append('the RIPFLOW info Title in the bigger bold font (font12)')
+
 print('\n'.join(fail) or 'build132: flank INFO / OPTIONS after 4.2 s, the bar on RIPFLOW\'s info page, the RIPPS2 info art in full colour OK')
 sys.exit(1 if fail else 0)
