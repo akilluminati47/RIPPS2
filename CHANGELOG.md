@@ -10,6 +10,10 @@ The user's notes on RIPFLOW and the info pages (11/02).
   INFO and OPTIONS leave the hint row. A START row keeps RUN (it opens nothing else). Every theme with flank hints.
 - **LAUNCH DISC / STORAGE / MEMORY FILES stay on RIPFLOW's info page**, fading in as it opens and following
   Category Bar (Shown, Fade When Idle, Hidden) instead of always going away. A theme asks for it with info_catbar=1.
+- **RIPFLOW's info page reads like the others**: the bare values without "Title:", "Size:" and "Description:", the
+  title larger and bold, then the genre with the size on the right and the developer with the release date on the
+  right, then the description. The developer never showed before: a second block with its number (the save icon)
+  replaced it. Theme text with aligned=2 now really ends at its x.
 
 **RIPPS2's info page**
 - **The background art and the screenshots in full colour.** The viewport's glass tinted all of them. Now the art
