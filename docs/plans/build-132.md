@@ -40,3 +40,12 @@ The user's notes (11/02), with their answers the same day:
 - RIPFLOW info page with Category Bar on Shown, Fade When Idle, Hidden.
 - RIPPS2 theme info page: a game with BG and screenshots, grabbed beside build 131's to compare the colour.
 - Tiled grabs for the user. CI, push to main; release only on the user's word.
+
+## Lab results (11/02, PCSX2, NTSC, CI run 41511627073 for 2ef0e0a)
+
+- RIPFLOW (Source Name Shown): a START row keeps RUN / SOURCE after 5 s; State of Emergency shows INFO / OPTIONS by
+  4.8 s; a move back cross-fades to RUN / SOURCE (media/b132/ripflow-flank.jpg). The first take showed no source
+  name: the reel card's ripps2_srcname=3 (Pop In) leaves the flank hints out by design.
+- RIPFLOW info page: the bar fades in (0.4 s dim, 2 s full) at Shown (media/b132/new-02-ripflow-info-bar.jpg).
+- RIPPS2 info page, 131 against 132: BG art and screenshots brighter above the title, text band as before
+  (media/b132/info-bg-131-vs-132.jpg, info-scr-131-vs-132.jpg).

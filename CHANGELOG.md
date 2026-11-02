@@ -1,5 +1,21 @@
 # RIPPS2 changelog
 
+## Build 132 (beta, in testing), changes since build 131
+
+The user's notes on RIPFLOW and the info pages (11/02).
+
+**RIPFLOW**
+- **The hints beside the source name turn to Square INFO and Triangle OPTIONS** when you rest on a game for 4.2 s,
+  over the screenshots' one-second fade, and stay until you move; then RUN and SOURCE fade back. While they are there
+  INFO and OPTIONS leave the hint row. A START row keeps RUN (it opens nothing else). Every theme with flank hints.
+- **LAUNCH DISC / STORAGE / MEMORY FILES stay on RIPFLOW's info page**, fading in as it opens and following
+  Category Bar (Shown, Fade When Idle, Hidden) instead of always going away. A theme asks for it with info_catbar=1.
+
+**RIPPS2's info page**
+- **The background art and the screenshots in full colour.** The viewport's glass tinted all of them. Now the art
+  is clear down to the title and the glass shades only the band the title, badges and details are written on
+  (a theme's Ripps2PanelGlass takes clear=, the percent of its height left clear).
+
 ## Build 131 (beta, in testing), changes since build 130
 
 The user's notes on the video player (11/02), from watching a film on the console.
