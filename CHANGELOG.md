@@ -1,5 +1,43 @@
 # RIPPS2 changelog
 
+## Build 130 (beta, in testing), changes since build 129
+
+Tester ahavasi's report on 128 and the user's notes (11/01). The video fixes ship once they play on a console.
+
+**Video**
+- **Long videos open.** A two-hour film stopped at "Opening the video". The player kept 12 bytes for every chunk of
+  its index, grown an entry at a time (a 2 h 41 min film is 636,000 chunks, 7.6 MB in hundreds of copies), and wrote
+  through a grow that failed. The index now keeps a bit per frame, the key frames and each sound chunk's place, sized
+  once from the file's own counts: 1.6 MB for that film. Skipping (L1 / R1) works through all of it.
+- **Every video opens faster, a short one too.** Each small read that missed the player's buffer went to the drive as
+  a seek and a 4-byte read, twice for every number in the index: a short clip's index cost tens of thousands of trips
+  to the drive, minutes over MMCE. Small reads now come out of the buffer.
+- **VIDEO.TXT.** Each step of opening a video (the file, its index, the codec, the screen, the sound, the first frame)
+  goes to VIDEO.TXT beside RIPPS2 until the picture shows, and to DIAG.TXT, so a video that never starts says where it
+  stopped. A video RIPPS2 cannot play (a camera's MJPEG, say) says so and goes back to the list.
+- An index that would go past the end of memory is not kept: the video plays, without skipping.
+
+**PS1 names**
+- **A game named by a code shows its name.** POPStarterGameInstaller names a game's files with a code and writes its
+  name into conf_apps.cfg on the drive it put the game on. That file is now read from the drive the POPS folder is on
+  (its root, or its OPL folder), as well as from RIPPS2's own settings: on the list and on the info page. Nothing is
+  renamed: art, cheats, VMCs and the launch keep the code.
+
+**All Games**
+- **START rows.** A drive on Manual with nothing saved for it left All Games (and its own page) blank. Each such drive
+  now has a row, START HDD / START HDD (EXFAT) / START USB / START MX4SIO / START MMCE / START NETWORK, after every game.
+  Cross starts the drive and its games take the row's place. A START row is never saved, starred, opened or set up,
+  and the random game never lands on one.
+
+**Memory Files**
+- **A file copied onto a memory card stays.** It was copied, then failed its read-back check and was removed ("READ
+  OR WRITE ERROR: CHECK conf_apps.cfg"): a memory card cannot answer the 64-bit seek the check used.
+- **A memory card folder lists in one read**, names, folders and sizes together, as uLaunchELF reads it, instead of
+  a look-up for every entry: a 64 MB card full of saves was painfully slow.
+
+**Languages**
+- Every new line in all 32 translations.
+
 ## Build 129 (beta, v1.2.9-beta), changes since build 128
 
 .pad, phase 2: the USB pad profiles RIPPS2 leads (docs/plans/pad-spec.md) now reach the games and the menu, and RIPPS2
