@@ -3,6 +3,12 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Dutch
 strings:
+  "FILE NAME": "BESTANDSNAAM"
+  "GAME LIST": "SPELLENLIJST"
+  "%s in %s": "%s in %s"
+  "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "Schrijfbewerkingen staan uit, dus RIPPS2 kan de gegevens van een spel niet opslaan of het hernoemen. Aanzetten?"
+  "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "BIBLE is gebouwd op El Isra's PS2BBL, met de versies voor kaart en HDD ondertekend voor RIPPS2 (GPL-3)"
+  "This is RIPPS2 lite, which carries no Neutrino. Put Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in a neutrino folder on a memory card or the game's drive, or use the full RIPPS2.elf, which installs it for you.": "Dit is RIPPS2 lite, zonder Neutrino. Zet Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in een map neutrino op een geheugenkaart of de schijf van het spel, of gebruik de volledige RIPPS2.elf, die het voor je installeert."
   "START %s": "START %s"
   "NETWORK": "NETWERK"
   "%s did not answer. Is it connected?": "%s gaf geen antwoord. Is het aangesloten?"
@@ -97,7 +103,6 @@ strings:
   BACK: TERUG
   Back (keeps both): Terug (houdt beide)
   This MMCE card cannot rename a file, which compression needs for its last step. Update its sd2psXtd firmware to 1.4.0 or newer (sd2psxtd.github.io/download), then try again. Nothing was changed.: Deze MMCE-kaart kan geen bestand hernoemen, en dat heeft het comprimeren nodig voor de laatste stap. Werk de sd2psXtd-firmware bij naar 1.4.0 of nieuwer (sd2psxtd.github.io/download) en probeer het opnieuw. Er is niets veranderd.
-  BIBLE is PS2BBL 1.2.0, El Isra's signed builds (card and HDD), unchanged (GPL-3): BIBLE is PS2BBL 1.2.0, de ondertekende builds van El Isra (kaart en HDD), ongewijzigd (GPL-3)
   BIOS Sounds > Rip plays them as the SPU2 does; no BIOS ships: BIOS-geluiden > Rippen speelt ze af zoals de SPU2 dat doet; er wordt geen BIOS meegeleverd
   BOOT LOCK AND BIBLE: BOOT LOCK EN BIBLE
   BOOT LOCK edits its config too: BOOT LOCK bewerkt ook de configuratie ervan
@@ -224,8 +229,8 @@ strings:
   : ' Een geheugenkaart hier heeft een eigen PS2BBL/CONFIG.INI, die PS2BBL leest vóór die van de HDD: haal die kaart eruit bij aanzetten, of start RIPPS2 vanaf de kaart en installeer opnieuw.'
   ' Hold TRIANGLE at power on for the browser, START for a disc.': ' Houd DRIEHOEK ingedrukt bij aanzetten voor de browser, START voor een schijf.'
   ' Hold TRIANGLE for the browser, START for a disc. Config: %s.': ' Houd DRIEHOEK ingedrukt voor de browser, START voor een schijf. Configuratie: %s.'
-  ? ' RIPPS2 can install BIBLE, PS2BBL 1.2.0 set up to start RIPPS2, on a memory card; what starts from it now is kept in a backup folder. Install BIBLE?'
-  : ' RIPPS2 kan BIBLE, PS2BBL 1.2.0 ingesteld om RIPPS2 te starten, op een geheugenkaart installeren; wat er nu vanaf start, wordt in een back-upmap bewaard. BIBLE installeren?'
+  ? ' RIPPS2 can install BIBLE, PS2BBL set up to start RIPPS2, on a memory card; what starts from it now is kept in a backup folder. Install BIBLE?'
+  : ' RIPPS2 kan BIBLE, PS2BBL ingesteld om RIPPS2 te starten, op een geheugenkaart installeren; wat er nu vanaf start, wordt in een back-upmap bewaard. BIBLE installeren?'
   ' The HDD''s old boot program is kept (MANAGE > RESTORE).': ' Het oude opstartprogramma van de HDD is bewaard (BEHEREN > HERSTELLEN).'
   ' The console would not take the setting that starts its HDD at power on: set it with the HDD utility, or install again.': ' De console accepteerde de instelling niet die de HDD bij aanzetten start: stel die in met het HDD-hulpprogramma, of installeer opnieuw.'
   ' What was there before is kept in mc%d:/%s%s.': ' Wat er eerst stond, is bewaard in mc%d:/%s%s.'
@@ -267,7 +272,7 @@ strings:
 
     - The HDD''s boot program now in __mbr is read out and kept in %s/RIPPS2 (RESTORE puts it back).
 
-    - PS2BBL 1.2.0''s HDD build is written in its place, and the console set to start it at power on.
+    - PS2BBL''s HDD build is written in its place, and the console set to start it at power on.
 
     - Its config (%s) starts RIPPS2 from %s first%s%s, BOOT LOCK on.
 
@@ -278,7 +283,7 @@ strings:
 
     - Het opstartprogramma van de HDD dat nu in __mbr staat, wordt uitgelezen en bewaard in %s/RIPPS2 (HERSTELLEN zet het terug).
 
-    - De HDD-build van PS2BBL 1.2.0 wordt op die plek geschreven en de console wordt ingesteld om hem bij aanzetten te starten.
+    - De HDD-build van PS2BBL wordt op die plek geschreven en de console wordt ingesteld om hem bij aanzetten te starten.
 
     - De configuratie ervan (%s) start RIPPS2 eerst vanaf %s%s%s, BOOT LOCK aan.
 
@@ -783,7 +788,7 @@ strings:
   POPSTARTER NETWORK: POPSTARTER-NETWERK
   POPSTARTER and Ember: POPSTARTER en Ember
   PS1 SETTINGS: PS1-INSTELLINGEN
-  PS2BBL 1.2.0 for RIPPS2: PS2BBL 1.2.0 voor RIPPS2
+  PS2BBL for RIPPS2: PS2BBL voor RIPPS2
   RIP THIS CONSOLE'S SOUNDS: DE GELUIDEN VAN DEZE CONSOLE RIPPEN
   STATUS: STATUS
   a drive of unknown kind: een schijf van onbekende soort
@@ -1169,20 +1174,20 @@ strings:
   ' (%d KB free)': ' (%d KB vrij)'
   ' (%u MB free)': ' (%u MB vrij)'
   'BESIDE RIPPS2: %sAUDIO%s, read first at boot': 'NAAST RIPPS2: %sAUDIO%s, als eerste gelezen bij het starten'
-  ? '- PS2BBL 1.2.0 is bound to this card by the console and written as %s/%s.
+  ? '- PS2BBL is bound to this card by the console and written as %s/%s.
   
-    - Its config, mc%d:/PS2BBL/CONFIG.INI, starts RIPPS2 where it is (%s) with no wait (0 ms, which PS2BBL Extended does not allow), BOOT LOCK on. RIPPS2 itself is not copied.
+    - Its config, mc%d:/SYS-CONF/PS2BBL.INI, starts RIPPS2 where it is (%s) with no wait (0 ms, which PS2BBL Extended does not allow), BOOT LOCK on. RIPPS2 itself is not copied.
   
     The I/O processor restarts for this and every drive read stops until it is done; music and drives come back after. Keep the card in and the console on until it says done.'
-  : '- PS2BBL 1.2.0 wordt door de console aan deze kaart gebonden en geschreven als %s/%s.
+  : '- PS2BBL wordt door de console aan deze kaart gebonden en geschreven als %s/%s.
   
-    - Zijn configuratie, mc%d:/PS2BBL/CONFIG.INI, start RIPPS2 waar het staat (%s) zonder wachten (0 ms, wat PS2BBL Extended niet toestaat), BOOT LOCK aan. RIPPS2 zelf wordt niet gekopieerd.
+    - Zijn configuratie, mc%d:/SYS-CONF/PS2BBL.INI, start RIPPS2 waar het staat (%s) zonder wachten (0 ms, wat PS2BBL Extended niet toestaat), BOOT LOCK aan. RIPPS2 zelf wordt niet gekopieerd.
   
     De I/O-processor herstart hiervoor en elk lezen van schijven stopt tot het klaar is; muziek en schijven komen daarna terug. Laat de kaart erin en de console aan tot het klaar meldt.'
   ? 'An SD2PSX or MMCE card may protect itself after a refused write: if the memory card or the MMCE drive is missing now, turn the console off and on.'
   : 'Een SD2PSX- of MMCE-kaart kan zichzelf beschermen na een geweigerde schrijfactie: ontbreken de geheugenkaart of de MMCE-schijf nu, zet de console dan uit en weer aan.'
   BOOT LOCK ON: BOOT LOCK AAN
-  'Done: the memory card in slot %d starts what it started before BBL 1.20. BBL 1.20 is kept in mc%d:/%s.': 'Klaar: de geheugenkaart in sleuf %d start wat hij vóór BBL 1.20 startte. BBL 1.20 blijft bewaard in mc%d:/%s.'
+  'Done: the memory card in slot %d starts what it started before BIBLE. BIBLE is kept in mc%d:/%s.': 'Klaar: de geheugenkaart in sleuf %d start wat hij vóór BIBLE startte. BIBLE blijft bewaard in mc%d:/%s.'
   ? 'For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 2''s config before slot 1''s.
   
     '
@@ -1190,60 +1195,60 @@ strings:
   
     '
   MEMORY CARD IN SLOT %d  (%s): GEHEUGENKAART IN SLEUF %d  (%s)
-  ? PS2BBL 1.2.0 cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
-  : PS2BBL 1.2.0 kan RIPPS2 niet starten vanaf waar het nu staat (het bereikt geheugenkaarten, USB-schijven en MX4SIO), en RIPPS2 kopieert zichzelf niet. Zet RIPPS2.ELF op een geheugenkaart of een USB-schijf en start het van daaruit, of gebruik PS2BBL Extended, dat MMCE en de harde schijf leest.
+  ? PS2BBL cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
+  : PS2BBL kan RIPPS2 niet starten vanaf waar het nu staat (het bereikt geheugenkaarten, USB-schijven en MX4SIO), en RIPPS2 kopieert zichzelf niet. Zet RIPPS2.ELF op een geheugenkaart of een USB-schijf en start het van daaruit, of gebruik PS2BBL Extended, dat MMCE en de harde schijf leest.
   RESTORE SLOT %d'S OLD BOOT LOADER: OUDE BOOTLOADER VAN SLEUF %d TERUGZETTEN
-  ? 'RIPPS2: BBL 1.20 is set up on the memory card in slot %d (mc%d:/%s/%s), BOOT LOCK on: at power on it starts RIPPS2 from %s, at once.'
-  : 'RIPPS2: BBL 1.20 staat op de geheugenkaart in sleuf %d (mc%d:/%s/%s), BOOT LOCK aan: bij het aanzetten start het RIPPS2 meteen vanaf %s.'
-  ? 'RIPPS2: Setting up BBL 1.20
+  ? 'RIPPS2: BIBLE is set up on the memory card in slot %d (mc%d:/%s/%s), BOOT LOCK on: at power on it starts RIPPS2 from %s, at once.'
+  : 'RIPPS2: BIBLE staat op de geheugenkaart in sleuf %d (mc%d:/%s/%s), BOOT LOCK aan: bij het aanzetten start het RIPPS2 meteen vanaf %s.'
+  ? 'RIPPS2: Setting up BIBLE
   
     '
-  : 'RIPPS2: BBL 1.20 instellen
+  : 'RIPPS2: BIBLE instellen
   
     '
-  ? 'RIPPS2: Setting up BBL 1.20
+  ? 'RIPPS2: Setting up BIBLE
   
-    RIPPS2 runs from %s, which PS2BBL 1.2.0 cannot read (it reads memory cards, USB and MX4SIO), and RIPPS2 does not copy itself. The PS2BBL Extended config on this card (%s) reads it: START turns BOOT LOCK on, so it starts RIPPS2 from %s at power on. Nothing else on the card changes.'
-  : 'RIPPS2: BBL 1.20 instellen
+    RIPPS2 runs from %s, which PS2BBL cannot read (it reads memory cards, USB and MX4SIO), and RIPPS2 does not copy itself. The PS2BBL Extended config on this card (%s) reads it: START turns BOOT LOCK on, so it starts RIPPS2 from %s at power on. Nothing else on the card changes.'
+  : 'RIPPS2: BIBLE instellen
   
-    RIPPS2 draait vanaf %s, dat PS2BBL 1.2.0 niet kan lezen (het leest geheugenkaarten, USB en MX4SIO), en RIPPS2 kopieert zichzelf niet. De PS2BBL Extended-configuratie op deze kaart (%s) leest het wel: START zet BOOT LOCK aan, zodat die RIPPS2 bij het aanzetten vanaf %s start. Verder verandert er niets op de kaart.'
-  ? 'RIPPS2: Setting up BBL 1.20
+    RIPPS2 draait vanaf %s, dat PS2BBL niet kan lezen (het leest geheugenkaarten, USB en MX4SIO), en RIPPS2 kopieert zichzelf niet. De PS2BBL Extended-configuratie op deze kaart (%s) leest het wel: START zet BOOT LOCK aan, zodat die RIPPS2 bij het aanzetten vanaf %s start. Verder verandert er niets op de kaart.'
+  ? 'RIPPS2: Setting up BIBLE
   
-    RIPPS2 runs from %s, which PS2BBL 1.2.0 cannot read: it starts programs from a memory card, a USB drive or MX4SIO, and RIPPS2 does not copy itself. Put RIPPS2.ELF on one of those (a memory card''s APPS folder, or a USB drive), start it from there, then set up BIBLE again.'
-  : 'RIPPS2: BBL 1.20 instellen
+    RIPPS2 runs from %s, which PS2BBL cannot read: it starts programs from a memory card, a USB drive or MX4SIO, and RIPPS2 does not copy itself. Put RIPPS2.ELF on one of those (a memory card''s APPS folder, or a USB drive), start it from there, then set up BIBLE again.'
+  : 'RIPPS2: BIBLE instellen
   
-    RIPPS2 draait vanaf %s, dat PS2BBL 1.2.0 niet kan lezen: het start programma''s vanaf een geheugenkaart, een USB-schijf of MX4SIO, en RIPPS2 kopieert zichzelf niet. Zet RIPPS2.ELF op een daarvan (de APPS-map van een geheugenkaart of een USB-schijf), start het van daaruit en stel BIBLE daarna opnieuw in.'
-  ? 'RIPPS2: Setting up BBL 1.20
+    RIPPS2 draait vanaf %s, dat PS2BBL niet kan lezen: het start programma''s vanaf een geheugenkaart, een USB-schijf of MX4SIO, en RIPPS2 kopieert zichzelf niet. Zet RIPPS2.ELF op een daarvan (de APPS-map van een geheugenkaart of een USB-schijf), start het van daaruit en stel BIBLE daarna opnieuw in.'
+  ? 'RIPPS2: Setting up BIBLE
   
-    The memory card in slot %d: BBL 1.20 (mc%d:/%s) moves aside, and what it replaced (mc%d:/%s) goes back in its place. Nothing is deleted. The PS2BBL config stays as it is (BOOT LOCK can turn the lock off).'
-  : 'RIPPS2: BBL 1.20 instellen
+    The memory card in slot %d: BIBLE (mc%d:/%s) moves aside, and what it replaced (mc%d:/%s) goes back in its place. Nothing is deleted. The PS2BBL config stays as it is (BOOT LOCK can turn the lock off).'
+  : 'RIPPS2: BIBLE instellen
   
-    De geheugenkaart in sleuf %d: BBL 1.20 (mc%d:/%s) gaat opzij, en wat het verving (mc%d:/%s) komt terug op zijn plek. Er wordt niets verwijderd. De PS2BBL-configuratie blijft zoals hij is (BOOT LOCK kan de vergrendeling uitzetten).'
-  'RIPPS2: Setting up BBL 1.20 (binding PS2BBL to the memory card)': 'RIPPS2: BBL 1.20 instellen (PS2BBL aan de geheugenkaart binden)'
-  'RIPPS2: Setting up BBL 1.20 (putting back what was there)': 'RIPPS2: BBL 1.20 instellen (terugzetten wat er stond)'
-  'RIPPS2: Setting up BBL 1.20 (restarting the I/O processor)': 'RIPPS2: BBL 1.20 instellen (de I/O-processor herstart)'
-  'RIPPS2: Setting up BBL 1.20 (writing it to the memory card)': 'RIPPS2: BBL 1.20 instellen (schrijven naar de geheugenkaart)'
-  SET UP BBL 1.20: BBL 1.20 INSTELLEN
+    De geheugenkaart in sleuf %d: BIBLE (mc%d:/%s) gaat opzij, en wat het verving (mc%d:/%s) komt terug op zijn plek. Er wordt niets verwijderd. De PS2BBL-configuratie blijft zoals hij is (BOOT LOCK kan de vergrendeling uitzetten).'
+  'RIPPS2: Setting up BIBLE (binding PS2BBL to the memory card)': 'RIPPS2: BIBLE instellen (PS2BBL aan de geheugenkaart binden)'
+  'RIPPS2: Setting up BIBLE (putting back what was there)': 'RIPPS2: BIBLE instellen (terugzetten wat er stond)'
+  'RIPPS2: Setting up BIBLE (restarting the I/O processor)': 'RIPPS2: BIBLE instellen (de I/O-processor herstart)'
+  'RIPPS2: Setting up BIBLE (writing it to the memory card)': 'RIPPS2: BIBLE instellen (schrijven naar de geheugenkaart)'
+  SET UP BIBLE: BIBLE INSTELLEN
   ? 'SLOT 1: %s
   
     SLOT 2: %s
   
     %s
   
-    RIPPS2: Setting up BBL 1.20. PS2BBL 1.2.0 by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
+    RIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
   : 'SLEUF 1: %s
   
     SLEUF 2: %s
   
     %s
   
-    RIPPS2: BBL 1.20 instellen. PS2BBL 1.2.0 van El Isra, door RIPPS2 ingesteld op een gewone PS2-geheugenkaart van 8 MB of de interne harde schijf: een start van 0 ms bij het aanzetten (PS2BBL Extended staat 0 niet toe), RIPPS2 eerst vanaf waar het staat (het wordt nooit gekopieerd), en een knop die je bij het aanzetten vasthoudt brengt je nog steeds naar de browser (TRIANGLE), een schijf (START) en wat er eerst was (CIRCLE). Instellen, herstellen of terugzetten wat het verving?'
-  The memory card in slot %d has %d KB free, and BBL 1.20 needs %d KB there. Free some space, then try again.: De geheugenkaart in sleuf %d heeft %d KB vrij en BBL 1.20 heeft daar %d KB nodig. Maak wat ruimte vrij en probeer het opnieuw.
+    RIPPS2: BIBLE instellen. PS2BBL van El Isra, door RIPPS2 ingesteld op een gewone PS2-geheugenkaart van 8 MB of de interne harde schijf: een start van 0 ms bij het aanzetten (PS2BBL Extended staat 0 niet toe), RIPPS2 eerst vanaf waar het staat (het wordt nooit gekopieerd), en een knop die je bij het aanzetten vasthoudt brengt je nog steeds naar de browser (TRIANGLE), een schijf (START) en wat er eerst was (CIRCLE). Instellen, herstellen of terugzetten wat het verving?'
+  The memory card in slot %d has %d KB free, and BIBLE needs %d KB there. Free some space, then try again.: De geheugenkaart in sleuf %d heeft %d KB vrij en BIBLE heeft daar %d KB nodig. Maak wat ruimte vrij en probeer het opnieuw.
   ? The memory card in slot %d refused PS2BBL, so RIPPS2 put the card back as it was. Check its free space, then try again. (DIAG.TXT beside RIPPS2 has what the card said.)
   : De geheugenkaart in sleuf %d weigerde PS2BBL, dus RIPPS2 liet de kaart zoals hij was. Controleer de vrije ruimte en probeer het opnieuw. (DIAG.TXT naast RIPPS2 bevat wat de kaart antwoordde.)
-  ? The memory card in slot %d would not move BBL 1.20 aside, so nothing was changed. (DIAG.TXT beside RIPPS2 has what the card said.)
-  : De geheugenkaart in sleuf %d wilde BBL 1.20 niet opzij zetten, dus er is niets veranderd. (DIAG.TXT naast RIPPS2 bevat wat de kaart antwoordde.)
-  The memory card in slot %d would not take %s back, so BBL 1.20 stayed. (DIAG.TXT beside RIPPS2 has what the card said.): De geheugenkaart in sleuf %d wilde %s niet terugnemen, dus BBL 1.20 is gebleven. (DIAG.TXT naast RIPPS2 bevat wat de kaart antwoordde.)
+  ? The memory card in slot %d would not move BIBLE aside, so nothing was changed. (DIAG.TXT beside RIPPS2 has what the card said.)
+  : De geheugenkaart in sleuf %d wilde BIBLE niet opzij zetten, dus er is niets veranderd. (DIAG.TXT naast RIPPS2 bevat wat de kaart antwoordde.)
+  The memory card in slot %d would not take %s back, so BIBLE stayed. (DIAG.TXT beside RIPPS2 has what the card said.): De geheugenkaart in sleuf %d wilde %s niet terugnemen, dus BIBLE is gebleven. (DIAG.TXT naast RIPPS2 bevat wat de kaart antwoordde.)
   MUSIC: MUZIEK
   '%s%s has no %s. RIPPOPS found Sony''s PS1 emulator on %s: START copies %s here and starts the game.': '%s%s heeft geen %s. RIPPOPS vond de PS1-emulator van Sony op %s: START kopieert %s hierheen en start de game.'
   ? 'RIPPS2 does not see %s in %s%s. POPSTARTER needs POPS_IOX.PAK with POPS.PAK, or with POPS.ELF and IOPRP252.IMG: Sony''s PS1 emulator, from your own console. It may find them where RIPPS2 does not look (if your games start, it does). START launches, and this drive is not asked about again.'
@@ -1258,8 +1263,8 @@ strings:
   BOOT LOCK is off. Your boot loader starts what it started before (%s).: BOOT LOCK staat uit. Je opstartlader start wat hij eerder startte (%s).
   ? BOOT LOCK is on. %s now starts RIPPS2 at power on (%s), and an empty IGR Path sends a game's EXIT back the same way. Hold one of its buttons while the console starts to reach anything else.%s
   : BOOT LOCK staat aan. %s start RIPPS2 nu bij aanzetten (%s), en een leeg IGR pad stuurt de EXIT van een game langs dezelfde weg terug. Houd een van zijn knoppen ingedrukt terwijl de console start om iets anders te bereiken.%s
-  ? 'BOOT LOCK put RIPPS2 first in OSDMenu''s menu (%s). OSDMenu starts nothing by itself: pick RIPPS2 there, and a game''s EXIT comes back to that menu. For a console that starts RIPPS2 at once, BIBLE puts PS2BBL 1.2.0 on a memory card (Boot Loader).'
-  : 'BOOT LOCK heeft RIPPS2 bovenaan het menu van OSDMenu gezet (%s). OSDMenu start uit zichzelf niets: kies daar RIPPS2, en de EXIT van een game komt terug in dat menu. Voor een console die RIPPS2 meteen start, zet BIBLE PS2BBL 1.2.0 op een geheugenkaart (Opstartlader).'
+  ? 'BOOT LOCK put RIPPS2 first in OSDMenu''s menu (%s). OSDMenu starts nothing by itself: pick RIPPS2 there, and a game''s EXIT comes back to that menu. For a console that starts RIPPS2 at once, BIBLE puts PS2BBL on a memory card (Boot Loader).'
+  : 'BOOT LOCK heeft RIPPS2 bovenaan het menu van OSDMenu gezet (%s). OSDMenu start uit zichzelf niets: kies daar RIPPS2, en de EXIT van een game komt terug in dat menu. Voor een console die RIPPS2 meteen start, zet BIBLE PS2BBL op een geheugenkaart (Opstartlader).'
   BOOT LOCK works through a boot loader on a memory card (PS2BBL, FMCB or OSDMenu), and there is none here.: BOOT LOCK werkt via een opstartlader op een geheugenkaart (PS2BBL, FMCB of OSDMenu), en die is hier niet.
   The memory card in slot %d starts %s at power on, and BOOT LOCK found no config of it to change (it looks for %s).: De geheugenkaart in sleuf %d start %s bij aanzetten, en BOOT LOCK vond geen configuratie ervan om te wijzigen (het zoekt %s).
   'The memory card in slot %d starts %s at power on, which BOOT LOCK cannot set: it works through PS2BBL, FMCB and OSDMenu.': 'De geheugenkaart in sleuf %d start %s bij aanzetten, wat BOOT LOCK niet kan instellen: het werkt via PS2BBL, FMCB en OSDMenu.'

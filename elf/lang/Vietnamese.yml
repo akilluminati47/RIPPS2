@@ -3,6 +3,12 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Vietnamese
 strings:
+  "FILE NAME": "TÊN TỆP"
+  "GAME LIST": "DANH SÁCH TRÒ CHƠI"
+  "%s in %s": "%s trong %s"
+  "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "Thao tác ghi đang tắt, nên RIPPS2 không thể lưu thông tin trò chơi hay đổi tên nó. Bật lên?"
+  "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "BIBLE được xây trên PS2BBL của El Isra, các bản cho thẻ và HDD đã được ký cho RIPPS2 (GPL-3)"
+  "This is RIPPS2 lite, which carries no Neutrino. Put Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in a neutrino folder on a memory card or the game's drive, or use the full RIPPS2.elf, which installs it for you.": "Đây là RIPPS2 lite, không kèm Neutrino. Đặt Neutrino (rickgaiser, github.com/rickgaiser/neutrino) vào thư mục neutrino trên thẻ nhớ hoặc ổ đĩa của trò chơi, hoặc dùng RIPPS2.elf đầy đủ, bản này cài nó cho bạn."
   "START %s": "KHỞI ĐỘNG %s"
   "NETWORK": "MẠNG"
   "%s did not answer. Is it connected?": "%s không phản hồi. Đã kết nối chưa?"
@@ -97,7 +103,6 @@ strings:
   BACK: QUAY LẠI
   Back (keeps both): Quay lại (giữ cả hai)
   This MMCE card cannot rename a file, which compression needs for its last step. Update its sd2psXtd firmware to 1.4.0 or newer (sd2psxtd.github.io/download), then try again. Nothing was changed.: Thẻ MMCE này không đổi tên tệp được, mà bước cuối của việc nén cần điều đó. Hãy cập nhật firmware sd2psXtd của thẻ lên 1.4.0 hoặc mới hơn (sd2psxtd.github.io/download), rồi thử lại. Không có gì bị thay đổi.
-  BIBLE is PS2BBL 1.2.0, El Isra's signed builds (card and HDD), unchanged (GPL-3): BIBLE là PS2BBL 1.2.0, các bản ký của El Isra (thẻ và HDD), không chỉnh sửa (GPL-3)
   BIOS Sounds > Rip plays them as the SPU2 does; no BIOS ships: Âm thanh BIOS > Trích xuất phát chúng như SPU2; không kèm BIOS nào
   BOOT LOCK AND BIBLE: BOOT LOCK VÀ BIBLE
   BOOT LOCK edits its config too: BOOT LOCK cũng sửa cấu hình của nó
@@ -224,8 +229,8 @@ strings:
   : ' Một thẻ nhớ ở đây có PS2BBL/CONFIG.INI riêng, PS2BBL đọc nó trước tệp trên HDD: hãy rút thẻ đó khi bật máy, hoặc chạy RIPPS2 từ thẻ đó rồi cài lại.'
   ' Hold TRIANGLE at power on for the browser, START for a disc.': ' Giữ TAM GIÁC khi bật máy để vào trình duyệt, START để vào đĩa.'
   ' Hold TRIANGLE for the browser, START for a disc. Config: %s.': ' Giữ TAM GIÁC để vào trình duyệt, START để vào đĩa. Cấu hình: %s.'
-  ? ' RIPPS2 can install BIBLE, PS2BBL 1.2.0 set up to start RIPPS2, on a memory card; what starts from it now is kept in a backup folder. Install BIBLE?'
-  : ' RIPPS2 có thể cài BIBLE, tức PS2BBL 1.2.0 được thiết lập để chạy RIPPS2, lên thẻ nhớ; thứ hiện đang chạy từ thẻ đó sẽ được giữ trong thư mục sao lưu. Cài BIBLE?'
+  ? ' RIPPS2 can install BIBLE, PS2BBL set up to start RIPPS2, on a memory card; what starts from it now is kept in a backup folder. Install BIBLE?'
+  : ' RIPPS2 có thể cài BIBLE, tức PS2BBL được thiết lập để chạy RIPPS2, lên thẻ nhớ; thứ hiện đang chạy từ thẻ đó sẽ được giữ trong thư mục sao lưu. Cài BIBLE?'
   ' The HDD''s old boot program is kept (MANAGE > RESTORE).': ' Chương trình khởi động cũ của HDD đã được giữ lại (QUẢN LÝ > KHÔI PHỤC).'
   ' The console would not take the setting that starts its HDD at power on: set it with the HDD utility, or install again.': ' Máy không nhận thiết lập khởi động HDD khi bật máy: hãy đặt nó bằng tiện ích HDD, hoặc cài lại.'
   ' What was there before is kept in mc%d:/%s%s.': ' Thứ có trước đó được giữ trong mc%d:/%s%s.'
@@ -267,7 +272,7 @@ strings:
 
     - The HDD''s boot program now in __mbr is read out and kept in %s/RIPPS2 (RESTORE puts it back).
 
-    - PS2BBL 1.2.0''s HDD build is written in its place, and the console set to start it at power on.
+    - PS2BBL''s HDD build is written in its place, and the console set to start it at power on.
 
     - Its config (%s) starts RIPPS2 from %s first%s%s, BOOT LOCK on.
 
@@ -278,7 +283,7 @@ strings:
 
     - Chương trình khởi động của HDD hiện ở __mbr được đọc ra và giữ trong %s/RIPPS2 (KHÔI PHỤC sẽ đặt nó lại).
 
-    - Bản HDD của PS2BBL 1.2.0 được ghi vào chỗ đó, và máy được đặt để chạy nó khi bật máy.
+    - Bản HDD của PS2BBL được ghi vào chỗ đó, và máy được đặt để chạy nó khi bật máy.
 
     - Cấu hình của nó (%s) chạy RIPPS2 từ %s%s%s trước, BOOT LOCK bật.
 
@@ -783,7 +788,7 @@ strings:
   POPSTARTER NETWORK: MẠNG POPSTARTER
   POPSTARTER and Ember: POPSTARTER và Ember
   PS1 SETTINGS: CÀI ĐẶT PS1
-  PS2BBL 1.2.0 for RIPPS2: PS2BBL 1.2.0 cho RIPPS2
+  PS2BBL for RIPPS2: PS2BBL cho RIPPS2
   RIP THIS CONSOLE'S SOUNDS: TRÍCH ÂM THANH CỦA MÁY NÀY
   STATUS: TRẠNG THÁI
   a drive of unknown kind: một ổ không rõ loại
@@ -1171,20 +1176,20 @@ strings:
   ' (%d KB free)': ' (trống %d KB)'
   ' (%u MB free)': ' (trống %u MB)'
   'BESIDE RIPPS2: %sAUDIO%s, read first at boot': 'CẠNH RIPPS2: %sAUDIO%s, được đọc trước tiên khi khởi động'
-  ? '- PS2BBL 1.2.0 is bound to this card by the console and written as %s/%s.
+  ? '- PS2BBL is bound to this card by the console and written as %s/%s.
   
-    - Its config, mc%d:/PS2BBL/CONFIG.INI, starts RIPPS2 where it is (%s) with no wait (0 ms, which PS2BBL Extended does not allow), BOOT LOCK on. RIPPS2 itself is not copied.
+    - Its config, mc%d:/SYS-CONF/PS2BBL.INI, starts RIPPS2 where it is (%s) with no wait (0 ms, which PS2BBL Extended does not allow), BOOT LOCK on. RIPPS2 itself is not copied.
   
     The I/O processor restarts for this and every drive read stops until it is done; music and drives come back after. Keep the card in and the console on until it says done.'
-  : '- PS2BBL 1.2.0 được máy gắn với thẻ này và ghi thành %s/%s.
+  : '- PS2BBL được máy gắn với thẻ này và ghi thành %s/%s.
   
-    - Cấu hình của nó, mc%d:/PS2BBL/CONFIG.INI, chạy RIPPS2 ngay tại chỗ (%s) không chờ (0 ms, điều PS2BBL Extended không cho phép), BOOT LOCK bật. Bản thân RIPPS2 không bị sao chép.
+    - Cấu hình của nó, mc%d:/SYS-CONF/PS2BBL.INI, chạy RIPPS2 ngay tại chỗ (%s) không chờ (0 ms, điều PS2BBL Extended không cho phép), BOOT LOCK bật. Bản thân RIPPS2 không bị sao chép.
   
     Bộ xử lý I/O khởi động lại cho việc này và mọi lần đọc ổ dừng cho đến khi xong; nhạc và các ổ sẽ quay lại sau. Giữ thẻ trong máy và máy bật cho đến khi báo xong.'
   ? 'An SD2PSX or MMCE card may protect itself after a refused write: if the memory card or the MMCE drive is missing now, turn the console off and on.'
   : 'Thẻ SD2PSX hoặc MMCE có thể tự bảo vệ sau một lần ghi bị từ chối: nếu giờ thẻ nhớ hoặc ổ MMCE biến mất, hãy tắt rồi bật lại máy.'
   BOOT LOCK ON: BOOT LOCK BẬT
-  'Done: the memory card in slot %d starts what it started before BBL 1.20. BBL 1.20 is kept in mc%d:/%s.': 'Xong: thẻ nhớ ở khe %d chạy thứ nó chạy trước BBL 1.20. BBL 1.20 được giữ trong mc%d:/%s.'
+  'Done: the memory card in slot %d starts what it started before BIBLE. BIBLE is kept in mc%d:/%s.': 'Xong: thẻ nhớ ở khe %d chạy thứ nó chạy trước BIBLE. BIBLE được giữ trong mc%d:/%s.'
   ? 'For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 2''s config before slot 1''s.
   
     '
@@ -1192,60 +1197,60 @@ strings:
   
     '
   MEMORY CARD IN SLOT %d  (%s): THẺ NHỚ Ở KHE %d  (%s)
-  ? PS2BBL 1.2.0 cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
-  : PS2BBL 1.2.0 không thể chạy RIPPS2 từ chỗ hiện tại (nó chỉ tới được thẻ nhớ, ổ USB và MX4SIO), và RIPPS2 không tự sao chép. Hãy đặt RIPPS2.ELF lên thẻ nhớ hoặc ổ USB rồi chạy từ đó, hoặc dùng PS2BBL Extended, vốn đọc được MMCE và ổ cứng.
+  ? PS2BBL cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
+  : PS2BBL không thể chạy RIPPS2 từ chỗ hiện tại (nó chỉ tới được thẻ nhớ, ổ USB và MX4SIO), và RIPPS2 không tự sao chép. Hãy đặt RIPPS2.ELF lên thẻ nhớ hoặc ổ USB rồi chạy từ đó, hoặc dùng PS2BBL Extended, vốn đọc được MMCE và ổ cứng.
   RESTORE SLOT %d'S OLD BOOT LOADER: KHÔI PHỤC TRÌNH NẠP CŨ Ở KHE %d
-  ? 'RIPPS2: BBL 1.20 is set up on the memory card in slot %d (mc%d:/%s/%s), BOOT LOCK on: at power on it starts RIPPS2 from %s, at once.'
-  : 'RIPPS2: BBL 1.20 đã được cài trên thẻ nhớ ở khe %d (mc%d:/%s/%s), BOOT LOCK bật: khi bật máy nó chạy RIPPS2 từ %s ngay lập tức.'
-  ? 'RIPPS2: Setting up BBL 1.20
+  ? 'RIPPS2: BIBLE is set up on the memory card in slot %d (mc%d:/%s/%s), BOOT LOCK on: at power on it starts RIPPS2 from %s, at once.'
+  : 'RIPPS2: BIBLE đã được cài trên thẻ nhớ ở khe %d (mc%d:/%s/%s), BOOT LOCK bật: khi bật máy nó chạy RIPPS2 từ %s ngay lập tức.'
+  ? 'RIPPS2: Setting up BIBLE
   
     '
-  : 'RIPPS2: đang cài BBL 1.20
+  : 'RIPPS2: đang cài BIBLE
   
     '
-  ? 'RIPPS2: Setting up BBL 1.20
+  ? 'RIPPS2: Setting up BIBLE
   
-    RIPPS2 runs from %s, which PS2BBL 1.2.0 cannot read (it reads memory cards, USB and MX4SIO), and RIPPS2 does not copy itself. The PS2BBL Extended config on this card (%s) reads it: START turns BOOT LOCK on, so it starts RIPPS2 from %s at power on. Nothing else on the card changes.'
-  : 'RIPPS2: đang cài BBL 1.20
+    RIPPS2 runs from %s, which PS2BBL cannot read (it reads memory cards, USB and MX4SIO), and RIPPS2 does not copy itself. The PS2BBL Extended config on this card (%s) reads it: START turns BOOT LOCK on, so it starts RIPPS2 from %s at power on. Nothing else on the card changes.'
+  : 'RIPPS2: đang cài BIBLE
   
-    RIPPS2 đang chạy từ %s, nơi PS2BBL 1.2.0 không đọc được (nó đọc thẻ nhớ, USB và MX4SIO), và RIPPS2 không tự sao chép. Cấu hình PS2BBL Extended trên thẻ này (%s) đọc được: START bật BOOT LOCK để nó chạy RIPPS2 từ %s khi bật máy. Không có gì khác trên thẻ thay đổi.'
-  ? 'RIPPS2: Setting up BBL 1.20
+    RIPPS2 đang chạy từ %s, nơi PS2BBL không đọc được (nó đọc thẻ nhớ, USB và MX4SIO), và RIPPS2 không tự sao chép. Cấu hình PS2BBL Extended trên thẻ này (%s) đọc được: START bật BOOT LOCK để nó chạy RIPPS2 từ %s khi bật máy. Không có gì khác trên thẻ thay đổi.'
+  ? 'RIPPS2: Setting up BIBLE
   
-    RIPPS2 runs from %s, which PS2BBL 1.2.0 cannot read: it starts programs from a memory card, a USB drive or MX4SIO, and RIPPS2 does not copy itself. Put RIPPS2.ELF on one of those (a memory card''s APPS folder, or a USB drive), start it from there, then set up BIBLE again.'
-  : 'RIPPS2: đang cài BBL 1.20
+    RIPPS2 runs from %s, which PS2BBL cannot read: it starts programs from a memory card, a USB drive or MX4SIO, and RIPPS2 does not copy itself. Put RIPPS2.ELF on one of those (a memory card''s APPS folder, or a USB drive), start it from there, then set up BIBLE again.'
+  : 'RIPPS2: đang cài BIBLE
   
-    RIPPS2 đang chạy từ %s, nơi PS2BBL 1.2.0 không đọc được: nó chạy chương trình từ thẻ nhớ, ổ USB hoặc MX4SIO, và RIPPS2 không tự sao chép. Hãy đặt RIPPS2.ELF lên một trong số đó (thư mục APPS của thẻ nhớ, hoặc ổ USB), chạy từ đó, rồi cài lại BIBLE.'
-  ? 'RIPPS2: Setting up BBL 1.20
+    RIPPS2 đang chạy từ %s, nơi PS2BBL không đọc được: nó chạy chương trình từ thẻ nhớ, ổ USB hoặc MX4SIO, và RIPPS2 không tự sao chép. Hãy đặt RIPPS2.ELF lên một trong số đó (thư mục APPS của thẻ nhớ, hoặc ổ USB), chạy từ đó, rồi cài lại BIBLE.'
+  ? 'RIPPS2: Setting up BIBLE
   
-    The memory card in slot %d: BBL 1.20 (mc%d:/%s) moves aside, and what it replaced (mc%d:/%s) goes back in its place. Nothing is deleted. The PS2BBL config stays as it is (BOOT LOCK can turn the lock off).'
-  : 'RIPPS2: đang cài BBL 1.20
+    The memory card in slot %d: BIBLE (mc%d:/%s) moves aside, and what it replaced (mc%d:/%s) goes back in its place. Nothing is deleted. The PS2BBL config stays as it is (BOOT LOCK can turn the lock off).'
+  : 'RIPPS2: đang cài BIBLE
   
-    Thẻ nhớ ở khe %d: BBL 1.20 (mc%d:/%s) được dời sang một bên, và thứ nó đã thay (mc%d:/%s) trở về chỗ cũ. Không có gì bị xóa. Cấu hình PS2BBL giữ nguyên (BOOT LOCK có thể tắt khóa).'
-  'RIPPS2: Setting up BBL 1.20 (binding PS2BBL to the memory card)': 'RIPPS2: đang cài BBL 1.20 (gắn PS2BBL với thẻ nhớ)'
-  'RIPPS2: Setting up BBL 1.20 (putting back what was there)': 'RIPPS2: đang cài BBL 1.20 (đưa lại thứ đã có)'
-  'RIPPS2: Setting up BBL 1.20 (restarting the I/O processor)': 'RIPPS2: đang cài BBL 1.20 (khởi động lại bộ xử lý I/O)'
-  'RIPPS2: Setting up BBL 1.20 (writing it to the memory card)': 'RIPPS2: đang cài BBL 1.20 (ghi vào thẻ nhớ)'
-  SET UP BBL 1.20: CÀI BBL 1.20
+    Thẻ nhớ ở khe %d: BIBLE (mc%d:/%s) được dời sang một bên, và thứ nó đã thay (mc%d:/%s) trở về chỗ cũ. Không có gì bị xóa. Cấu hình PS2BBL giữ nguyên (BOOT LOCK có thể tắt khóa).'
+  'RIPPS2: Setting up BIBLE (binding PS2BBL to the memory card)': 'RIPPS2: đang cài BIBLE (gắn PS2BBL với thẻ nhớ)'
+  'RIPPS2: Setting up BIBLE (putting back what was there)': 'RIPPS2: đang cài BIBLE (đưa lại thứ đã có)'
+  'RIPPS2: Setting up BIBLE (restarting the I/O processor)': 'RIPPS2: đang cài BIBLE (khởi động lại bộ xử lý I/O)'
+  'RIPPS2: Setting up BIBLE (writing it to the memory card)': 'RIPPS2: đang cài BIBLE (ghi vào thẻ nhớ)'
+  SET UP BIBLE: CÀI BIBLE
   ? 'SLOT 1: %s
   
     SLOT 2: %s
   
     %s
   
-    RIPPS2: Setting up BBL 1.20. PS2BBL 1.2.0 by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
+    RIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
   : 'KHE 1: %s
   
     KHE 2: %s
   
     %s
   
-    RIPPS2: đang cài BBL 1.20. PS2BBL 1.2.0 của El Isra, được RIPPS2 cài trên thẻ nhớ PS2 tiêu chuẩn 8 MB hoặc ổ cứng trong: khởi động 0 ms khi bật máy (PS2BBL Extended không cho phép 0), RIPPS2 trước tiên từ chỗ của nó (không bao giờ bị sao chép), và giữ một nút khi bật máy vẫn đưa tới trình duyệt (TRIANGLE), một đĩa (START) và thứ có trước đó (CIRCLE). Cài, sửa, hay khôi phục thứ nó đã thay?'
-  The memory card in slot %d has %d KB free, and BBL 1.20 needs %d KB there. Free some space, then try again.: Thẻ nhớ ở khe %d còn trống %d KB, và BBL 1.20 cần %d KB ở đó. Hãy giải phóng chút chỗ rồi thử lại.
+    RIPPS2: đang cài BIBLE. PS2BBL của El Isra, được RIPPS2 cài trên thẻ nhớ PS2 tiêu chuẩn 8 MB hoặc ổ cứng trong: khởi động 0 ms khi bật máy (PS2BBL Extended không cho phép 0), RIPPS2 trước tiên từ chỗ của nó (không bao giờ bị sao chép), và giữ một nút khi bật máy vẫn đưa tới trình duyệt (TRIANGLE), một đĩa (START) và thứ có trước đó (CIRCLE). Cài, sửa, hay khôi phục thứ nó đã thay?'
+  The memory card in slot %d has %d KB free, and BIBLE needs %d KB there. Free some space, then try again.: Thẻ nhớ ở khe %d còn trống %d KB, và BIBLE cần %d KB ở đó. Hãy giải phóng chút chỗ rồi thử lại.
   ? The memory card in slot %d refused PS2BBL, so RIPPS2 put the card back as it was. Check its free space, then try again. (DIAG.TXT beside RIPPS2 has what the card said.)
   : Thẻ nhớ ở khe %d đã từ chối PS2BBL, nên RIPPS2 để thẻ như cũ. Kiểm tra chỗ trống rồi thử lại. (DIAG.TXT cạnh RIPPS2 có phản hồi của thẻ.)
-  ? The memory card in slot %d would not move BBL 1.20 aside, so nothing was changed. (DIAG.TXT beside RIPPS2 has what the card said.)
-  : Thẻ nhớ ở khe %d không chịu dời BBL 1.20 sang bên, nên không có gì thay đổi. (DIAG.TXT cạnh RIPPS2 có phản hồi của thẻ.)
-  The memory card in slot %d would not take %s back, so BBL 1.20 stayed. (DIAG.TXT beside RIPPS2 has what the card said.): Thẻ nhớ ở khe %d không chịu nhận lại %s, nên BBL 1.20 vẫn ở đó. (DIAG.TXT cạnh RIPPS2 có phản hồi của thẻ.)
+  ? The memory card in slot %d would not move BIBLE aside, so nothing was changed. (DIAG.TXT beside RIPPS2 has what the card said.)
+  : Thẻ nhớ ở khe %d không chịu dời BIBLE sang bên, nên không có gì thay đổi. (DIAG.TXT cạnh RIPPS2 có phản hồi của thẻ.)
+  The memory card in slot %d would not take %s back, so BIBLE stayed. (DIAG.TXT beside RIPPS2 has what the card said.): Thẻ nhớ ở khe %d không chịu nhận lại %s, nên BIBLE vẫn ở đó. (DIAG.TXT cạnh RIPPS2 có phản hồi của thẻ.)
   MUSIC: NHẠC
   '%s%s has no %s. RIPPOPS found Sony''s PS1 emulator on %s: START copies %s here and starts the game.': '%s%s không có %s. RIPPOPS đã tìm thấy trình giả lập PS1 của Sony trên %s: START sao chép %s vào đây và chạy trò chơi.'
   ? 'RIPPS2 does not see %s in %s%s. POPSTARTER needs POPS_IOX.PAK with POPS.PAK, or with POPS.ELF and IOPRP252.IMG: Sony''s PS1 emulator, from your own console. It may find them where RIPPS2 does not look (if your games start, it does). START launches, and this drive is not asked about again.'
@@ -1260,8 +1265,8 @@ strings:
   BOOT LOCK is off. Your boot loader starts what it started before (%s).: BOOT LOCK đang tắt. Trình khởi động của bạn chạy thứ nó đã chạy trước đây (%s).
   ? BOOT LOCK is on. %s now starts RIPPS2 at power on (%s), and an empty IGR Path sends a game's EXIT back the same way. Hold one of its buttons while the console starts to reach anything else.%s
   : BOOT LOCK đang bật. Giờ %s chạy RIPPS2 khi bật máy (%s), và khi Vá IGR để trống, EXIT của trò chơi quay về theo cùng đường đó. Giữ một trong các nút của nó trong lúc máy khởi động để vào thứ khác.%s
-  ? 'BOOT LOCK put RIPPS2 first in OSDMenu''s menu (%s). OSDMenu starts nothing by itself: pick RIPPS2 there, and a game''s EXIT comes back to that menu. For a console that starts RIPPS2 at once, BIBLE puts PS2BBL 1.2.0 on a memory card (Boot Loader).'
-  : 'BOOT LOCK đã đặt RIPPS2 lên đầu menu của OSDMenu (%s). OSDMenu không tự chạy gì cả: hãy chọn RIPPS2 ở đó, và EXIT của trò chơi quay về menu ấy. Để máy chạy RIPPS2 ngay, BIBLE cài PS2BBL 1.2.0 lên thẻ nhớ (Trình khởi động).'
+  ? 'BOOT LOCK put RIPPS2 first in OSDMenu''s menu (%s). OSDMenu starts nothing by itself: pick RIPPS2 there, and a game''s EXIT comes back to that menu. For a console that starts RIPPS2 at once, BIBLE puts PS2BBL on a memory card (Boot Loader).'
+  : 'BOOT LOCK đã đặt RIPPS2 lên đầu menu của OSDMenu (%s). OSDMenu không tự chạy gì cả: hãy chọn RIPPS2 ở đó, và EXIT của trò chơi quay về menu ấy. Để máy chạy RIPPS2 ngay, BIBLE cài PS2BBL lên thẻ nhớ (Trình khởi động).'
   BOOT LOCK works through a boot loader on a memory card (PS2BBL, FMCB or OSDMenu), and there is none here.: BOOT LOCK hoạt động qua một trình khởi động trên thẻ nhớ (PS2BBL, FMCB hoặc OSDMenu), và ở đây không có.
   The memory card in slot %d starts %s at power on, and BOOT LOCK found no config of it to change (it looks for %s).: Thẻ nhớ ở khe %d chạy %s khi bật máy, và BOOT LOCK không tìm thấy cấu hình nào của nó để thay đổi (nó tìm %s).
   'The memory card in slot %d starts %s at power on, which BOOT LOCK cannot set: it works through PS2BBL, FMCB and OSDMenu.': 'Thẻ nhớ ở khe %d chạy %s khi bật máy, thứ mà BOOT LOCK không thể đặt: nó hoạt động qua PS2BBL, FMCB và OSDMenu.'

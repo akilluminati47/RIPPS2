@@ -3,6 +3,12 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Greek
 strings:
+  "FILE NAME": "ΟΝΟΜΑ ΑΡΧΕΙΟΥ"
+  "GAME LIST": "ΛΙΣΤΑ ΠΑΙΧΝΙΔΙΩΝ"
+  "%s in %s": "%s στο %s"
+  "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "Οι εγγραφές είναι απενεργοποιημένες, οπότε το RIPPS2 δεν μπορεί να αποθηκεύσει τα στοιχεία ενός παιχνιδιού ή να το μετονομάσει. Να ενεργοποιηθούν;"
+  "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "Το BIBLE βασίζεται στο PS2BBL του El Isra, με τις εκδόσεις για κάρτα και HDD υπογεγραμμένες για το RIPPS2 (GPL-3)"
+  "This is RIPPS2 lite, which carries no Neutrino. Put Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in a neutrino folder on a memory card or the game's drive, or use the full RIPPS2.elf, which installs it for you.": "Αυτό είναι το RIPPS2 lite, που δεν περιέχει Neutrino. Βάλτε το Neutrino (rickgaiser, github.com/rickgaiser/neutrino) σε φάκελο neutrino σε κάρτα μνήμης ή στον δίσκο του παιχνιδιού, ή χρησιμοποιήστε το πλήρες RIPPS2.elf, που το εγκαθιστά για εσάς."
   "START %s": "ΕΝΑΡΞΗ %s"
   "NETWORK": "ΔΙΚΤΥΟ"
   "%s did not answer. Is it connected?": "Το %s δεν απάντησε. Είναι συνδεδεμένο;"
@@ -97,7 +103,6 @@ strings:
   BACK: ΠΙΣΩ
   Back (keeps both): Πίσω (κρατά και τα δύο)
   This MMCE card cannot rename a file, which compression needs for its last step. Update its sd2psXtd firmware to 1.4.0 or newer (sd2psxtd.github.io/download), then try again. Nothing was changed.: Αυτή η κάρτα MMCE δεν μπορεί να μετονομάσει αρχείο, κάτι που χρειάζεται η συμπίεση στο τελευταίο της βήμα. Ενημερώστε το υλικολογισμικό sd2psXtd της στην 1.4.0 ή νεότερη (sd2psxtd.github.io/download) και δοκιμάστε ξανά. Δεν άλλαξε τίποτα.
-  BIBLE is PS2BBL 1.2.0, El Isra's signed builds (card and HDD), unchanged (GPL-3): Το BIBLE είναι το PS2BBL 1.2.0, οι υπογεγραμμένες εκδόσεις του El Isra (κάρτα και HDD), χωρίς αλλαγές (GPL-3)
   BIOS Sounds > Rip plays them as the SPU2 does; no BIOS ships: Το Ήχοι BIOS > Εξαγωγή τους παίζει όπως η SPU2· δεν συνοδεύει κανένα BIOS
   BOOT LOCK AND BIBLE: BOOT LOCK ΚΑΙ BIBLE
   BOOT LOCK edits its config too: Το BOOT LOCK επεξεργάζεται και τις ρυθμίσεις του
@@ -224,8 +229,8 @@ strings:
   : ' Μια κάρτα μνήμης εδώ έχει δικό της PS2BBL/CONFIG.INI, που το PS2BBL το διαβάζει πριν από αυτό του HDD: βγάλτε αυτή την κάρτα στο άναμμα, ή ξεκινήστε το RIPPS2 από την κάρτα και εγκαταστήστε ξανά.'
   ' Hold TRIANGLE at power on for the browser, START for a disc.': ' Κρατήστε το ΤΡΙΓΩΝΟ στο άναμμα για τον περιηγητή, το START για δίσκο.'
   ' Hold TRIANGLE for the browser, START for a disc. Config: %s.': ' Κρατήστε το ΤΡΙΓΩΝΟ για τον περιηγητή, το START για δίσκο. Ρυθμίσεις: %s.'
-  ? ' RIPPS2 can install BIBLE, PS2BBL 1.2.0 set up to start RIPPS2, on a memory card; what starts from it now is kept in a backup folder. Install BIBLE?'
-  : ' Το RIPPS2 μπορεί να εγκαταστήσει το BIBLE, το PS2BBL 1.2.0 ρυθμισμένο να ξεκινά το RIPPS2, σε κάρτα μνήμης· ό,τι ξεκινά τώρα από αυτήν φυλάγεται σε φάκελο αντιγράφων ασφαλείας. Εγκατάσταση του BIBLE;'
+  ? ' RIPPS2 can install BIBLE, PS2BBL set up to start RIPPS2, on a memory card; what starts from it now is kept in a backup folder. Install BIBLE?'
+  : ' Το RIPPS2 μπορεί να εγκαταστήσει το BIBLE, το PS2BBL ρυθμισμένο να ξεκινά το RIPPS2, σε κάρτα μνήμης· ό,τι ξεκινά τώρα από αυτήν φυλάγεται σε φάκελο αντιγράφων ασφαλείας. Εγκατάσταση του BIBLE;'
   ' The HDD''s old boot program is kept (MANAGE > RESTORE).': ' Το παλιό πρόγραμμα εκκίνησης του HDD φυλάχτηκε (ΔΙΑΧΕΙΡΙΣΗ > ΕΠΑΝΑΦΟΡΑ).'
   ' The console would not take the setting that starts its HDD at power on: set it with the HDD utility, or install again.': ' Η κονσόλα δεν δέχτηκε τη ρύθμιση που ξεκινά τον HDD της στο άναμμα: ορίστε την με το βοηθητικό πρόγραμμα HDD, ή εγκαταστήστε ξανά.'
   ' What was there before is kept in mc%d:/%s%s.': ' Ό,τι υπήρχε πριν φυλάγεται στο mc%d:/%s%s.'
@@ -267,7 +272,7 @@ strings:
 
     - The HDD''s boot program now in __mbr is read out and kept in %s/RIPPS2 (RESTORE puts it back).
 
-    - PS2BBL 1.2.0''s HDD build is written in its place, and the console set to start it at power on.
+    - PS2BBL''s HDD build is written in its place, and the console set to start it at power on.
 
     - Its config (%s) starts RIPPS2 from %s first%s%s, BOOT LOCK on.
 
@@ -278,7 +283,7 @@ strings:
 
     - Το πρόγραμμα εκκίνησης του HDD που είναι τώρα στο __mbr διαβάζεται και φυλάγεται στο %s/RIPPS2 (η ΕΠΑΝΑΦΟΡΑ το επιστρέφει).
 
-    - Η έκδοση HDD του PS2BBL 1.2.0 γράφεται στη θέση του, και η κονσόλα ρυθμίζεται να το ξεκινά στο άναμμα.
+    - Η έκδοση HDD του PS2BBL γράφεται στη θέση του, και η κονσόλα ρυθμίζεται να το ξεκινά στο άναμμα.
 
     - Οι ρυθμίσεις του (%s) ξεκινούν το RIPPS2 πρώτα από %s%s%s, BOOT LOCK ενεργό.
 
@@ -783,7 +788,7 @@ strings:
   POPSTARTER NETWORK: ΔΙΚΤΥΟ POPSTARTER
   POPSTARTER and Ember: POPSTARTER και Ember
   PS1 SETTINGS: ΡΥΘΜΙΣΕΙΣ PS1
-  PS2BBL 1.2.0 for RIPPS2: PS2BBL 1.2.0 για το RIPPS2
+  PS2BBL for RIPPS2: PS2BBL για το RIPPS2
   RIP THIS CONSOLE'S SOUNDS: ΕΞΑΓΩΓΗ ΤΩΝ ΗΧΩΝ ΑΥΤΗΣ ΤΗΣ ΚΟΝΣΟΛΑΣ
   STATUS: ΚΑΤΑΣΤΑΣΗ
   a drive of unknown kind: δίσκος άγνωστου είδους
@@ -1171,20 +1176,20 @@ strings:
   ' (%d KB free)': ' (%d KB ελεύθερα)'
   ' (%u MB free)': ' (%u MB ελεύθερα)'
   'BESIDE RIPPS2: %sAUDIO%s, read first at boot': 'ΔΙΠΛΑ ΣΤΟ RIPPS2: %sAUDIO%s, διαβάζεται πρώτο στην εκκίνηση'
-  ? '- PS2BBL 1.2.0 is bound to this card by the console and written as %s/%s.
+  ? '- PS2BBL is bound to this card by the console and written as %s/%s.
   
-    - Its config, mc%d:/PS2BBL/CONFIG.INI, starts RIPPS2 where it is (%s) with no wait (0 ms, which PS2BBL Extended does not allow), BOOT LOCK on. RIPPS2 itself is not copied.
+    - Its config, mc%d:/SYS-CONF/PS2BBL.INI, starts RIPPS2 where it is (%s) with no wait (0 ms, which PS2BBL Extended does not allow), BOOT LOCK on. RIPPS2 itself is not copied.
   
     The I/O processor restarts for this and every drive read stops until it is done; music and drives come back after. Keep the card in and the console on until it says done.'
-  : '- Η κονσόλα δένει το PS2BBL 1.2.0 σε αυτή την κάρτα και το γράφει ως %s/%s.
+  : '- Η κονσόλα δένει το PS2BBL σε αυτή την κάρτα και το γράφει ως %s/%s.
   
-    - Οι ρυθμίσεις του, mc%d:/PS2BBL/CONFIG.INI, ξεκινούν το RIPPS2 εκεί που βρίσκεται (%s) χωρίς αναμονή (0 ms, που το PS2BBL Extended δεν επιτρέπει), BOOT LOCK ενεργό. Το ίδιο το RIPPS2 δεν αντιγράφεται.
+    - Οι ρυθμίσεις του, mc%d:/SYS-CONF/PS2BBL.INI, ξεκινούν το RIPPS2 εκεί που βρίσκεται (%s) χωρίς αναμονή (0 ms, που το PS2BBL Extended δεν επιτρέπει), BOOT LOCK ενεργό. Το ίδιο το RIPPS2 δεν αντιγράφεται.
   
     Ο επεξεργαστής εισόδου/εξόδου επανεκκινείται γι'' αυτό και κάθε ανάγνωση μονάδων σταματά μέχρι να τελειώσει· η μουσική και οι μονάδες επιστρέφουν μετά. Άφησε την κάρτα μέσα και την κονσόλα ανοιχτή μέχρι να πει ότι τελείωσε.'
   ? 'An SD2PSX or MMCE card may protect itself after a refused write: if the memory card or the MMCE drive is missing now, turn the console off and on.'
   : 'Μια κάρτα SD2PSX ή MMCE μπορεί να προστατευτεί μετά από μια εγγραφή που απορρίφθηκε: αν τώρα λείπει η κάρτα μνήμης ή η μονάδα MMCE, σβήσε και άναψε την κονσόλα.'
   BOOT LOCK ON: BOOT LOCK ΕΝΕΡΓΟ
-  'Done: the memory card in slot %d starts what it started before BBL 1.20. BBL 1.20 is kept in mc%d:/%s.': 'Έγινε: η κάρτα μνήμης στην υποδοχή %d ξεκινά ό,τι ξεκινούσε πριν από το BBL 1.20. Το BBL 1.20 φυλάσσεται στο mc%d:/%s.'
+  'Done: the memory card in slot %d starts what it started before BIBLE. BIBLE is kept in mc%d:/%s.': 'Έγινε: η κάρτα μνήμης στην υποδοχή %d ξεκινά ό,τι ξεκινούσε πριν από το BIBLE. Το BIBLE φυλάσσεται στο mc%d:/%s.'
   ? 'For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 2''s config before slot 1''s.
   
     '
@@ -1192,60 +1197,60 @@ strings:
   
     '
   MEMORY CARD IN SLOT %d  (%s): ΚΑΡΤΑ ΜΝΗΜΗΣ ΣΤΗΝ ΥΠΟΔΟΧΗ %d  (%s)
-  ? PS2BBL 1.2.0 cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
-  : Το PS2BBL 1.2.0 δεν μπορεί να ξεκινήσει το RIPPS2 από εκεί που είναι τώρα (φτάνει σε κάρτες μνήμης, μονάδες USB και MX4SIO), και το RIPPS2 δεν αντιγράφει τον εαυτό του. Βάλε το RIPPS2.ELF σε κάρτα μνήμης ή μονάδα USB και ξεκίνα το από εκεί, ή χρησιμοποίησε το PS2BBL Extended, που διαβάζει MMCE και τον σκληρό δίσκο.
+  ? PS2BBL cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
+  : Το PS2BBL δεν μπορεί να ξεκινήσει το RIPPS2 από εκεί που είναι τώρα (φτάνει σε κάρτες μνήμης, μονάδες USB και MX4SIO), και το RIPPS2 δεν αντιγράφει τον εαυτό του. Βάλε το RIPPS2.ELF σε κάρτα μνήμης ή μονάδα USB και ξεκίνα το από εκεί, ή χρησιμοποίησε το PS2BBL Extended, που διαβάζει MMCE και τον σκληρό δίσκο.
   RESTORE SLOT %d'S OLD BOOT LOADER: ΕΠΑΝΑΦΟΡΑ ΤΟΥ ΠΑΛΙΟΥ ΦΟΡΤΩΤΗ ΣΤΗΝ ΥΠΟΔΟΧΗ %d
-  ? 'RIPPS2: BBL 1.20 is set up on the memory card in slot %d (mc%d:/%s/%s), BOOT LOCK on: at power on it starts RIPPS2 from %s, at once.'
-  : 'RIPPS2: το BBL 1.20 στήθηκε στην κάρτα μνήμης της υποδοχής %d (mc%d:/%s/%s), BOOT LOCK ενεργό: στην εκκίνηση ξεκινά αμέσως το RIPPS2 από %s.'
-  ? 'RIPPS2: Setting up BBL 1.20
+  ? 'RIPPS2: BIBLE is set up on the memory card in slot %d (mc%d:/%s/%s), BOOT LOCK on: at power on it starts RIPPS2 from %s, at once.'
+  : 'RIPPS2: το BIBLE στήθηκε στην κάρτα μνήμης της υποδοχής %d (mc%d:/%s/%s), BOOT LOCK ενεργό: στην εκκίνηση ξεκινά αμέσως το RIPPS2 από %s.'
+  ? 'RIPPS2: Setting up BIBLE
   
     '
-  : 'RIPPS2: στήσιμο του BBL 1.20
+  : 'RIPPS2: στήσιμο του BIBLE
   
     '
-  ? 'RIPPS2: Setting up BBL 1.20
+  ? 'RIPPS2: Setting up BIBLE
   
-    RIPPS2 runs from %s, which PS2BBL 1.2.0 cannot read (it reads memory cards, USB and MX4SIO), and RIPPS2 does not copy itself. The PS2BBL Extended config on this card (%s) reads it: START turns BOOT LOCK on, so it starts RIPPS2 from %s at power on. Nothing else on the card changes.'
-  : 'RIPPS2: στήσιμο του BBL 1.20
+    RIPPS2 runs from %s, which PS2BBL cannot read (it reads memory cards, USB and MX4SIO), and RIPPS2 does not copy itself. The PS2BBL Extended config on this card (%s) reads it: START turns BOOT LOCK on, so it starts RIPPS2 from %s at power on. Nothing else on the card changes.'
+  : 'RIPPS2: στήσιμο του BIBLE
   
-    Το RIPPS2 τρέχει από %s, που το PS2BBL 1.2.0 δεν μπορεί να διαβάσει (διαβάζει κάρτες μνήμης, USB και MX4SIO), και το RIPPS2 δεν αντιγράφει τον εαυτό του. Οι ρυθμίσεις PS2BBL Extended αυτής της κάρτας (%s) το διαβάζουν: το START ενεργοποιεί το BOOT LOCK, ώστε στην εκκίνηση να ξεκινά το RIPPS2 από %s. Τίποτε άλλο στην κάρτα δεν αλλάζει.'
-  ? 'RIPPS2: Setting up BBL 1.20
+    Το RIPPS2 τρέχει από %s, που το PS2BBL δεν μπορεί να διαβάσει (διαβάζει κάρτες μνήμης, USB και MX4SIO), και το RIPPS2 δεν αντιγράφει τον εαυτό του. Οι ρυθμίσεις PS2BBL Extended αυτής της κάρτας (%s) το διαβάζουν: το START ενεργοποιεί το BOOT LOCK, ώστε στην εκκίνηση να ξεκινά το RIPPS2 από %s. Τίποτε άλλο στην κάρτα δεν αλλάζει.'
+  ? 'RIPPS2: Setting up BIBLE
   
-    RIPPS2 runs from %s, which PS2BBL 1.2.0 cannot read: it starts programs from a memory card, a USB drive or MX4SIO, and RIPPS2 does not copy itself. Put RIPPS2.ELF on one of those (a memory card''s APPS folder, or a USB drive), start it from there, then set up BIBLE again.'
-  : 'RIPPS2: στήσιμο του BBL 1.20
+    RIPPS2 runs from %s, which PS2BBL cannot read: it starts programs from a memory card, a USB drive or MX4SIO, and RIPPS2 does not copy itself. Put RIPPS2.ELF on one of those (a memory card''s APPS folder, or a USB drive), start it from there, then set up BIBLE again.'
+  : 'RIPPS2: στήσιμο του BIBLE
   
-    Το RIPPS2 τρέχει από %s, που το PS2BBL 1.2.0 δεν μπορεί να διαβάσει: ξεκινά προγράμματα από κάρτα μνήμης, μονάδα USB ή MX4SIO, και το RIPPS2 δεν αντιγράφει τον εαυτό του. Βάλε το RIPPS2.ELF σε ένα από αυτά (στον φάκελο APPS μιας κάρτας μνήμης ή σε μονάδα USB), ξεκίνα το από εκεί και μετά στήσε ξανά το BIBLE.'
-  ? 'RIPPS2: Setting up BBL 1.20
+    Το RIPPS2 τρέχει από %s, που το PS2BBL δεν μπορεί να διαβάσει: ξεκινά προγράμματα από κάρτα μνήμης, μονάδα USB ή MX4SIO, και το RIPPS2 δεν αντιγράφει τον εαυτό του. Βάλε το RIPPS2.ELF σε ένα από αυτά (στον φάκελο APPS μιας κάρτας μνήμης ή σε μονάδα USB), ξεκίνα το από εκεί και μετά στήσε ξανά το BIBLE.'
+  ? 'RIPPS2: Setting up BIBLE
   
-    The memory card in slot %d: BBL 1.20 (mc%d:/%s) moves aside, and what it replaced (mc%d:/%s) goes back in its place. Nothing is deleted. The PS2BBL config stays as it is (BOOT LOCK can turn the lock off).'
-  : 'RIPPS2: στήσιμο του BBL 1.20
+    The memory card in slot %d: BIBLE (mc%d:/%s) moves aside, and what it replaced (mc%d:/%s) goes back in its place. Nothing is deleted. The PS2BBL config stays as it is (BOOT LOCK can turn the lock off).'
+  : 'RIPPS2: στήσιμο του BIBLE
   
-    Η κάρτα μνήμης στην υποδοχή %d: το BBL 1.20 (mc%d:/%s) μπαίνει στην άκρη και ό,τι αντικατέστησε (mc%d:/%s) γυρίζει στη θέση του. Τίποτα δεν διαγράφεται. Οι ρυθμίσεις PS2BBL μένουν ως έχουν (το BOOT LOCK μπορεί να κλείσει το κλείδωμα).'
-  'RIPPS2: Setting up BBL 1.20 (binding PS2BBL to the memory card)': 'RIPPS2: στήσιμο του BBL 1.20 (δέσιμο του PS2BBL στην κάρτα μνήμης)'
-  'RIPPS2: Setting up BBL 1.20 (putting back what was there)': 'RIPPS2: στήσιμο του BBL 1.20 (επαναφορά ό,τι υπήρχε)'
-  'RIPPS2: Setting up BBL 1.20 (restarting the I/O processor)': 'RIPPS2: στήσιμο του BBL 1.20 (επανεκκίνηση του επεξεργαστή εισόδου/εξόδου)'
-  'RIPPS2: Setting up BBL 1.20 (writing it to the memory card)': 'RIPPS2: στήσιμο του BBL 1.20 (εγγραφή στην κάρτα μνήμης)'
-  SET UP BBL 1.20: ΣΤΗΣΙΜΟ BBL 1.20
+    Η κάρτα μνήμης στην υποδοχή %d: το BIBLE (mc%d:/%s) μπαίνει στην άκρη και ό,τι αντικατέστησε (mc%d:/%s) γυρίζει στη θέση του. Τίποτα δεν διαγράφεται. Οι ρυθμίσεις PS2BBL μένουν ως έχουν (το BOOT LOCK μπορεί να κλείσει το κλείδωμα).'
+  'RIPPS2: Setting up BIBLE (binding PS2BBL to the memory card)': 'RIPPS2: στήσιμο του BIBLE (δέσιμο του PS2BBL στην κάρτα μνήμης)'
+  'RIPPS2: Setting up BIBLE (putting back what was there)': 'RIPPS2: στήσιμο του BIBLE (επαναφορά ό,τι υπήρχε)'
+  'RIPPS2: Setting up BIBLE (restarting the I/O processor)': 'RIPPS2: στήσιμο του BIBLE (επανεκκίνηση του επεξεργαστή εισόδου/εξόδου)'
+  'RIPPS2: Setting up BIBLE (writing it to the memory card)': 'RIPPS2: στήσιμο του BIBLE (εγγραφή στην κάρτα μνήμης)'
+  SET UP BIBLE: ΣΤΗΣΙΜΟ BIBLE
   ? 'SLOT 1: %s
   
     SLOT 2: %s
   
     %s
   
-    RIPPS2: Setting up BBL 1.20. PS2BBL 1.2.0 by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
+    RIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
   : 'ΥΠΟΔΟΧΗ 1: %s
   
     ΥΠΟΔΟΧΗ 2: %s
   
     %s
   
-    RIPPS2: στήσιμο του BBL 1.20. Το PS2BBL 1.2.0 του El Isra, στημένο από το RIPPS2 σε κοινή κάρτα μνήμης PS2 των 8 MB ή στον εσωτερικό σκληρό δίσκο: εκκίνηση σε 0 ms (το PS2BBL Extended δεν επιτρέπει 0), πρώτα το RIPPS2 από εκεί που είναι (δεν αντιγράφεται ποτέ), και ένα κουμπί πατημένο στην εκκίνηση οδηγεί ακόμα στον browser (TRIANGLE), σε δίσκο (START) και σε ό,τι υπήρχε πριν (CIRCLE). Να στηθεί, να επισκευαστεί ή να επανέλθει ό,τι αντικατέστησε;'
-  The memory card in slot %d has %d KB free, and BBL 1.20 needs %d KB there. Free some space, then try again.: Η κάρτα μνήμης στην υποδοχή %d έχει %d KB ελεύθερα και το BBL 1.20 χρειάζεται εκεί %d KB. Ελευθέρωσε λίγο χώρο και δοκίμασε ξανά.
+    RIPPS2: στήσιμο του BIBLE. Το PS2BBL του El Isra, στημένο από το RIPPS2 σε κοινή κάρτα μνήμης PS2 των 8 MB ή στον εσωτερικό σκληρό δίσκο: εκκίνηση σε 0 ms (το PS2BBL Extended δεν επιτρέπει 0), πρώτα το RIPPS2 από εκεί που είναι (δεν αντιγράφεται ποτέ), και ένα κουμπί πατημένο στην εκκίνηση οδηγεί ακόμα στον browser (TRIANGLE), σε δίσκο (START) και σε ό,τι υπήρχε πριν (CIRCLE). Να στηθεί, να επισκευαστεί ή να επανέλθει ό,τι αντικατέστησε;'
+  The memory card in slot %d has %d KB free, and BIBLE needs %d KB there. Free some space, then try again.: Η κάρτα μνήμης στην υποδοχή %d έχει %d KB ελεύθερα και το BIBLE χρειάζεται εκεί %d KB. Ελευθέρωσε λίγο χώρο και δοκίμασε ξανά.
   ? The memory card in slot %d refused PS2BBL, so RIPPS2 put the card back as it was. Check its free space, then try again. (DIAG.TXT beside RIPPS2 has what the card said.)
   : Η κάρτα μνήμης στην υποδοχή %d απέρριψε το PS2BBL, οπότε το RIPPS2 άφησε την κάρτα όπως ήταν. Έλεγξε τον ελεύθερο χώρο και δοκίμασε ξανά. (Το DIAG.TXT δίπλα στο RIPPS2 έχει την απάντηση της κάρτας.)
-  ? The memory card in slot %d would not move BBL 1.20 aside, so nothing was changed. (DIAG.TXT beside RIPPS2 has what the card said.)
-  : Η κάρτα μνήμης στην υποδοχή %d δεν έβαλε στην άκρη το BBL 1.20, οπότε δεν άλλαξε τίποτα. (Το DIAG.TXT δίπλα στο RIPPS2 έχει την απάντηση της κάρτας.)
-  The memory card in slot %d would not take %s back, so BBL 1.20 stayed. (DIAG.TXT beside RIPPS2 has what the card said.): Η κάρτα μνήμης στην υποδοχή %d δεν δέχτηκε πίσω το %s, οπότε το BBL 1.20 έμεινε. (Το DIAG.TXT δίπλα στο RIPPS2 έχει την απάντηση της κάρτας.)
+  ? The memory card in slot %d would not move BIBLE aside, so nothing was changed. (DIAG.TXT beside RIPPS2 has what the card said.)
+  : Η κάρτα μνήμης στην υποδοχή %d δεν έβαλε στην άκρη το BIBLE, οπότε δεν άλλαξε τίποτα. (Το DIAG.TXT δίπλα στο RIPPS2 έχει την απάντηση της κάρτας.)
+  The memory card in slot %d would not take %s back, so BIBLE stayed. (DIAG.TXT beside RIPPS2 has what the card said.): Η κάρτα μνήμης στην υποδοχή %d δεν δέχτηκε πίσω το %s, οπότε το BIBLE έμεινε. (Το DIAG.TXT δίπλα στο RIPPS2 έχει την απάντηση της κάρτας.)
   MUSIC: ΜΟΥΣΙΚΗ
   '%s%s has no %s. RIPPOPS found Sony''s PS1 emulator on %s: START copies %s here and starts the game.': 'Το %s%s δεν έχει %s. Το RIPPOPS βρήκε τον εξομοιωτή PS1 της Sony στο %s: το START αντιγράφει εδώ το %s και ξεκινά το παιχνίδι.'
   ? 'RIPPS2 does not see %s in %s%s. POPSTARTER needs POPS_IOX.PAK with POPS.PAK, or with POPS.ELF and IOPRP252.IMG: Sony''s PS1 emulator, from your own console. It may find them where RIPPS2 does not look (if your games start, it does). START launches, and this drive is not asked about again.'
@@ -1260,8 +1265,8 @@ strings:
   BOOT LOCK is off. Your boot loader starts what it started before (%s).: Το BOOT LOCK είναι ανενεργό. Ο φορτωτής εκκίνησής σας ξεκινά ό,τι ξεκινούσε πριν (%s).
   ? BOOT LOCK is on. %s now starts RIPPS2 at power on (%s), and an empty IGR Path sends a game's EXIT back the same way. Hold one of its buttons while the console starts to reach anything else.%s
   : Το BOOT LOCK είναι ενεργό. Το %s ξεκινά τώρα το RIPPS2 στο άναμμα (%s), και με κενό «Προορισμός Μετά Από IGR» το EXIT ενός παιχνιδιού επιστρέφει από τον ίδιο δρόμο. Κρατήστε ένα από τα κουμπιά του όσο ξεκινά η κονσόλα για να φτάσετε κάπου αλλού.%s
-  ? 'BOOT LOCK put RIPPS2 first in OSDMenu''s menu (%s). OSDMenu starts nothing by itself: pick RIPPS2 there, and a game''s EXIT comes back to that menu. For a console that starts RIPPS2 at once, BIBLE puts PS2BBL 1.2.0 on a memory card (Boot Loader).'
-  : 'Το BOOT LOCK έβαλε το RIPPS2 πρώτο στο μενού του OSDMenu (%s). Το OSDMenu δεν ξεκινά τίποτα μόνο του: επιλέξτε εκεί το RIPPS2, και το EXIT ενός παιχνιδιού επιστρέφει σε εκείνο το μενού. Για κονσόλα που ξεκινά αμέσως το RIPPS2, το BIBLE βάζει το PS2BBL 1.2.0 σε κάρτα μνήμης (Φορτωτής εκκίνησης).'
+  ? 'BOOT LOCK put RIPPS2 first in OSDMenu''s menu (%s). OSDMenu starts nothing by itself: pick RIPPS2 there, and a game''s EXIT comes back to that menu. For a console that starts RIPPS2 at once, BIBLE puts PS2BBL on a memory card (Boot Loader).'
+  : 'Το BOOT LOCK έβαλε το RIPPS2 πρώτο στο μενού του OSDMenu (%s). Το OSDMenu δεν ξεκινά τίποτα μόνο του: επιλέξτε εκεί το RIPPS2, και το EXIT ενός παιχνιδιού επιστρέφει σε εκείνο το μενού. Για κονσόλα που ξεκινά αμέσως το RIPPS2, το BIBLE βάζει το PS2BBL σε κάρτα μνήμης (Φορτωτής εκκίνησης).'
   BOOT LOCK works through a boot loader on a memory card (PS2BBL, FMCB or OSDMenu), and there is none here.: Το BOOT LOCK λειτουργεί μέσω ενός φορτωτή εκκίνησης σε κάρτα μνήμης (PS2BBL, FMCB ή OSDMenu), και εδώ δεν υπάρχει κανένας.
   The memory card in slot %d starts %s at power on, and BOOT LOCK found no config of it to change (it looks for %s).: Η κάρτα μνήμης στην υποδοχή %d ξεκινά στο άναμμα το %s, και το BOOT LOCK δεν βρήκε ρυθμίσεις του για αλλαγή (ψάχνει το %s).
   'The memory card in slot %d starts %s at power on, which BOOT LOCK cannot set: it works through PS2BBL, FMCB and OSDMenu.': 'Η κάρτα μνήμης στην υποδοχή %d ξεκινά στο άναμμα το %s, που το BOOT LOCK δεν μπορεί να ρυθμίσει: λειτουργεί μέσω PS2BBL, FMCB και OSDMenu.'

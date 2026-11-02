@@ -3,6 +3,12 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Turkish
 strings:
+  "FILE NAME": "DOSYA ADI"
+  "GAME LIST": "OYUN LİSTESİ"
+  "%s in %s": "%s, %s içinde"
+  "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "Yazma işlemleri kapalı, bu yüzden RIPPS2 bir oyunun bilgilerini kaydedemez veya adını değiştiremez. Açılsın mı?"
+  "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "BIBLE, El Isra'nın PS2BBL'i üzerine kurulu; kart ve HDD sürümleri RIPPS2 için imzalı (GPL-3)"
+  "This is RIPPS2 lite, which carries no Neutrino. Put Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in a neutrino folder on a memory card or the game's drive, or use the full RIPPS2.elf, which installs it for you.": "Bu, Neutrino taşımayan RIPPS2 lite. Neutrino'yu (rickgaiser, github.com/rickgaiser/neutrino) bir hafıza kartında veya oyunun sürücüsünde neutrino klasörüne koyun ya da sizin için kuran tam RIPPS2.elf'i kullanın."
   "START %s": "%s BAŞLAT"
   "NETWORK": "AĞ"
   "%s did not answer. Is it connected?": "%s yanıt vermedi. Bağlı mı?"
@@ -97,7 +103,6 @@ strings:
   BACK: GERİ
   Back (keeps both): Geri (ikisi de kalır)
   This MMCE card cannot rename a file, which compression needs for its last step. Update its sd2psXtd firmware to 1.4.0 or newer (sd2psxtd.github.io/download), then try again. Nothing was changed.: Bu MMCE kartı bir dosyayı yeniden adlandıramıyor; sıkıştırmanın son adımı buna ihtiyaç duyar. sd2psXtd yazılımını 1.4.0 veya daha yenisine güncelleyin (sd2psxtd.github.io/download), sonra yeniden deneyin. Hiçbir şey değiştirilmedi.
-  BIBLE is PS2BBL 1.2.0, El Isra's signed builds (card and HDD), unchanged (GPL-3): BIBLE, El Isra'nın imzalı derlemeleri (kart ve HDD) olan PS2BBL 1.2.0'dır, değiştirilmemiştir (GPL-3)
   BIOS Sounds > Rip plays them as the SPU2 does; no BIOS ships: BIOS Sesleri > Çıkar onları SPU2'nin çaldığı gibi çalar; BIOS dahil değildir
   BOOT LOCK AND BIBLE: BOOT LOCK VE BIBLE
   BOOT LOCK edits its config too: BOOT LOCK onun yapılandırmasını da düzenler
@@ -224,8 +229,8 @@ strings:
   : ' Buradaki bir hafıza kartının kendi PS2BBL/CONFIG.INI dosyası var ve PS2BBL onu HDD''ninkinden önce okur: açılışta o kartı çıkarın ya da RIPPS2''yi o karttan başlatıp yeniden kurun.'
   ' Hold TRIANGLE at power on for the browser, START for a disc.': ' Tarayıcı için açılışta ÜÇGEN''e, disk için START''a basılı tutun.'
   ' Hold TRIANGLE for the browser, START for a disc. Config: %s.': ' Tarayıcı için ÜÇGEN''e, disk için START''a basılı tutun. Yapılandırma: %s.'
-  ? ' RIPPS2 can install BIBLE, PS2BBL 1.2.0 set up to start RIPPS2, on a memory card; what starts from it now is kept in a backup folder. Install BIBLE?'
-  : ' RIPPS2, bir hafıza kartına BIBLE''ı (RIPPS2''yi başlatacak şekilde ayarlanmış PS2BBL 1.2.0) kurabilir; şu anda o karttan başlayan şey bir yedek klasöründe saklanır. BIBLE kurulsun mu?'
+  ? ' RIPPS2 can install BIBLE, PS2BBL set up to start RIPPS2, on a memory card; what starts from it now is kept in a backup folder. Install BIBLE?'
+  : ' RIPPS2, bir hafıza kartına BIBLE''ı (RIPPS2''yi başlatacak şekilde ayarlanmış PS2BBL) kurabilir; şu anda o karttan başlayan şey bir yedek klasöründe saklanır. BIBLE kurulsun mu?'
   ' The HDD''s old boot program is kept (MANAGE > RESTORE).': ' HDD''nin eski önyükleme programı saklandı (YÖNET > GERİ YÜKLE).'
   ' The console would not take the setting that starts its HDD at power on: set it with the HDD utility, or install again.': ' Konsol, açılışta HDD''yi başlatan ayarı kabul etmedi: bunu HDD yardımcı programıyla ayarlayın veya yeniden kurun.'
   ' What was there before is kept in mc%d:/%s%s.': ' Daha önce orada olan şey mc%d:/%s%s içinde saklanıyor.'
@@ -267,7 +272,7 @@ strings:
 
     - The HDD''s boot program now in __mbr is read out and kept in %s/RIPPS2 (RESTORE puts it back).
 
-    - PS2BBL 1.2.0''s HDD build is written in its place, and the console set to start it at power on.
+    - PS2BBL''s HDD build is written in its place, and the console set to start it at power on.
 
     - Its config (%s) starts RIPPS2 from %s first%s%s, BOOT LOCK on.
 
@@ -278,7 +283,7 @@ strings:
 
     - HDD''nin şu anda __mbr içindeki önyükleme programı okunur ve %s/RIPPS2 içinde saklanır (GERİ YÜKLE onu geri koyar).
 
-    - Yerine PS2BBL 1.2.0''ın HDD derlemesi yazılır ve konsol açılışta onu başlatacak şekilde ayarlanır.
+    - Yerine PS2BBL''ın HDD derlemesi yazılır ve konsol açılışta onu başlatacak şekilde ayarlanır.
 
     - Yapılandırması (%s) RIPPS2''yi önce %s%s%s konumundan başlatır, BOOT LOCK açık.
 
@@ -783,7 +788,7 @@ strings:
   POPSTARTER NETWORK: POPSTARTER AĞI
   POPSTARTER and Ember: POPSTARTER ve Ember
   PS1 SETTINGS: PS1 AYARLARI
-  PS2BBL 1.2.0 for RIPPS2: RIPPS2 için PS2BBL 1.2.0
+  PS2BBL for RIPPS2: RIPPS2 için PS2BBL
   RIP THIS CONSOLE'S SOUNDS: BU KONSOLUN SESLERİNİ ÇIKAR
   STATUS: DURUM
   a drive of unknown kind: türü bilinmeyen bir sürücü
@@ -1171,20 +1176,20 @@ strings:
   ' (%d KB free)': ' (%d KB boş)'
   ' (%u MB free)': ' (%u MB boş)'
   'BESIDE RIPPS2: %sAUDIO%s, read first at boot': 'RIPPS2''NİN YANINDA: %sAUDIO%s, açılışta ilk okunur'
-  ? '- PS2BBL 1.2.0 is bound to this card by the console and written as %s/%s.
+  ? '- PS2BBL is bound to this card by the console and written as %s/%s.
   
-    - Its config, mc%d:/PS2BBL/CONFIG.INI, starts RIPPS2 where it is (%s) with no wait (0 ms, which PS2BBL Extended does not allow), BOOT LOCK on. RIPPS2 itself is not copied.
+    - Its config, mc%d:/SYS-CONF/PS2BBL.INI, starts RIPPS2 where it is (%s) with no wait (0 ms, which PS2BBL Extended does not allow), BOOT LOCK on. RIPPS2 itself is not copied.
   
     The I/O processor restarts for this and every drive read stops until it is done; music and drives come back after. Keep the card in and the console on until it says done.'
-  : '- PS2BBL 1.2.0 konsol tarafından bu karta bağlanır ve %s/%s olarak yazılır.
+  : '- PS2BBL konsol tarafından bu karta bağlanır ve %s/%s olarak yazılır.
   
-    - Ayarları, mc%d:/PS2BBL/CONFIG.INI, RIPPS2''yi bulunduğu yerden (%s) beklemeden başlatır (0 ms, PS2BBL Extended buna izin vermez), BOOT LOCK açık. RIPPS2''nin kendisi kopyalanmaz.
+    - Ayarları, mc%d:/SYS-CONF/PS2BBL.INI, RIPPS2''yi bulunduğu yerden (%s) beklemeden başlatır (0 ms, PS2BBL Extended buna izin vermez), BOOT LOCK açık. RIPPS2''nin kendisi kopyalanmaz.
   
     Bunun için G/Ç işlemcisi yeniden başlar ve bitene kadar tüm sürücü okumaları durur; müzik ve sürücüler sonra geri gelir. Bitti diyene kadar kartı takılı, konsolu açık bırak.'
   ? 'An SD2PSX or MMCE card may protect itself after a refused write: if the memory card or the MMCE drive is missing now, turn the console off and on.'
   : 'Bir SD2PSX ya da MMCE kartı reddedilen bir yazmadan sonra kendini koruyabilir: şimdi hafıza kartı ya da MMCE sürücüsü görünmüyorsa konsolu kapatıp aç.'
   BOOT LOCK ON: BOOT LOCK AÇIK
-  'Done: the memory card in slot %d starts what it started before BBL 1.20. BBL 1.20 is kept in mc%d:/%s.': 'Tamam: %d. yuvadaki hafıza kartı, BBL 1.20''den önce başlattığını başlatıyor. BBL 1.20, mc%d:/%s içinde saklanıyor.'
+  'Done: the memory card in slot %d starts what it started before BIBLE. BIBLE is kept in mc%d:/%s.': 'Tamam: %d. yuvadaki hafıza kartı, BIBLE''den önce başlattığını başlatıyor. BIBLE, mc%d:/%s içinde saklanıyor.'
   ? 'For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 2''s config before slot 1''s.
   
     '
@@ -1192,60 +1197,60 @@ strings:
   
     '
   MEMORY CARD IN SLOT %d  (%s): '%d. YUVADAKİ HAFIZA KARTI  (%s)'
-  ? PS2BBL 1.2.0 cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
-  : PS2BBL 1.2.0, RIPPS2'yi şu an bulunduğu yerden başlatamaz (hafıza kartlarına, USB sürücülerine ve MX4SIO'ya ulaşır) ve RIPPS2 kendini kopyalamaz. RIPPS2.ELF'i bir hafıza kartına ya da USB sürücüsüne koyup oradan başlat, ya da MMCE'yi ve sabit diski okuyan PS2BBL Extended'ı kullan.
+  ? PS2BBL cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
+  : PS2BBL, RIPPS2'yi şu an bulunduğu yerden başlatamaz (hafıza kartlarına, USB sürücülerine ve MX4SIO'ya ulaşır) ve RIPPS2 kendini kopyalamaz. RIPPS2.ELF'i bir hafıza kartına ya da USB sürücüsüne koyup oradan başlat, ya da MMCE'yi ve sabit diski okuyan PS2BBL Extended'ı kullan.
   RESTORE SLOT %d'S OLD BOOT LOADER: '%d. YUVANIN ESKİ ÖNYÜKLEYİCİSİNİ GERİ GETİR'
-  ? 'RIPPS2: BBL 1.20 is set up on the memory card in slot %d (mc%d:/%s/%s), BOOT LOCK on: at power on it starts RIPPS2 from %s, at once.'
-  : 'RIPPS2: BBL 1.20, %d. yuvadaki hafıza kartına kuruldu (mc%d:/%s/%s), BOOT LOCK açık: açılışta RIPPS2''yi hemen %s konumundan başlatır.'
-  ? 'RIPPS2: Setting up BBL 1.20
+  ? 'RIPPS2: BIBLE is set up on the memory card in slot %d (mc%d:/%s/%s), BOOT LOCK on: at power on it starts RIPPS2 from %s, at once.'
+  : 'RIPPS2: BIBLE, %d. yuvadaki hafıza kartına kuruldu (mc%d:/%s/%s), BOOT LOCK açık: açılışta RIPPS2''yi hemen %s konumundan başlatır.'
+  ? 'RIPPS2: Setting up BIBLE
   
     '
-  : 'RIPPS2: BBL 1.20 kuruluyor
+  : 'RIPPS2: BIBLE kuruluyor
   
     '
-  ? 'RIPPS2: Setting up BBL 1.20
+  ? 'RIPPS2: Setting up BIBLE
   
-    RIPPS2 runs from %s, which PS2BBL 1.2.0 cannot read (it reads memory cards, USB and MX4SIO), and RIPPS2 does not copy itself. The PS2BBL Extended config on this card (%s) reads it: START turns BOOT LOCK on, so it starts RIPPS2 from %s at power on. Nothing else on the card changes.'
-  : 'RIPPS2: BBL 1.20 kuruluyor
+    RIPPS2 runs from %s, which PS2BBL cannot read (it reads memory cards, USB and MX4SIO), and RIPPS2 does not copy itself. The PS2BBL Extended config on this card (%s) reads it: START turns BOOT LOCK on, so it starts RIPPS2 from %s at power on. Nothing else on the card changes.'
+  : 'RIPPS2: BIBLE kuruluyor
   
-    RIPPS2, PS2BBL 1.2.0''ın okuyamadığı %s konumundan çalışıyor (hafıza kartlarını, USB''yi ve MX4SIO''yu okur) ve RIPPS2 kendini kopyalamaz. Bu karttaki PS2BBL Extended ayarları (%s) onu okuyabilir: START, BOOT LOCK''u açar, böylece açılışta RIPPS2''yi %s konumundan başlatır. Kartta başka hiçbir şey değişmez.'
-  ? 'RIPPS2: Setting up BBL 1.20
+    RIPPS2, PS2BBL''ın okuyamadığı %s konumundan çalışıyor (hafıza kartlarını, USB''yi ve MX4SIO''yu okur) ve RIPPS2 kendini kopyalamaz. Bu karttaki PS2BBL Extended ayarları (%s) onu okuyabilir: START, BOOT LOCK''u açar, böylece açılışta RIPPS2''yi %s konumundan başlatır. Kartta başka hiçbir şey değişmez.'
+  ? 'RIPPS2: Setting up BIBLE
   
-    RIPPS2 runs from %s, which PS2BBL 1.2.0 cannot read: it starts programs from a memory card, a USB drive or MX4SIO, and RIPPS2 does not copy itself. Put RIPPS2.ELF on one of those (a memory card''s APPS folder, or a USB drive), start it from there, then set up BIBLE again.'
-  : 'RIPPS2: BBL 1.20 kuruluyor
+    RIPPS2 runs from %s, which PS2BBL cannot read: it starts programs from a memory card, a USB drive or MX4SIO, and RIPPS2 does not copy itself. Put RIPPS2.ELF on one of those (a memory card''s APPS folder, or a USB drive), start it from there, then set up BIBLE again.'
+  : 'RIPPS2: BIBLE kuruluyor
   
-    RIPPS2, PS2BBL 1.2.0''ın okuyamadığı %s konumundan çalışıyor: o, programları hafıza kartından, USB sürücüsünden ya da MX4SIO''dan başlatır ve RIPPS2 kendini kopyalamaz. RIPPS2.ELF''i bunlardan birine koy (bir hafıza kartının APPS klasörüne ya da USB sürücüsüne), oradan başlat, sonra BIBLE''ı yeniden kur.'
-  ? 'RIPPS2: Setting up BBL 1.20
+    RIPPS2, PS2BBL''ın okuyamadığı %s konumundan çalışıyor: o, programları hafıza kartından, USB sürücüsünden ya da MX4SIO''dan başlatır ve RIPPS2 kendini kopyalamaz. RIPPS2.ELF''i bunlardan birine koy (bir hafıza kartının APPS klasörüne ya da USB sürücüsüne), oradan başlat, sonra BIBLE''ı yeniden kur.'
+  ? 'RIPPS2: Setting up BIBLE
   
-    The memory card in slot %d: BBL 1.20 (mc%d:/%s) moves aside, and what it replaced (mc%d:/%s) goes back in its place. Nothing is deleted. The PS2BBL config stays as it is (BOOT LOCK can turn the lock off).'
-  : 'RIPPS2: BBL 1.20 kuruluyor
+    The memory card in slot %d: BIBLE (mc%d:/%s) moves aside, and what it replaced (mc%d:/%s) goes back in its place. Nothing is deleted. The PS2BBL config stays as it is (BOOT LOCK can turn the lock off).'
+  : 'RIPPS2: BIBLE kuruluyor
   
-    %d. yuvadaki hafıza kartı: BBL 1.20 (mc%d:/%s) kenara alınır ve yerini aldığı şey (mc%d:/%s) geri yerine gelir. Hiçbir şey silinmez. PS2BBL ayarları olduğu gibi kalır (BOOT LOCK kilidi kapatabilir).'
-  'RIPPS2: Setting up BBL 1.20 (binding PS2BBL to the memory card)': 'RIPPS2: BBL 1.20 kuruluyor (PS2BBL hafıza kartına bağlanıyor)'
-  'RIPPS2: Setting up BBL 1.20 (putting back what was there)': 'RIPPS2: BBL 1.20 kuruluyor (önceki geri getiriliyor)'
-  'RIPPS2: Setting up BBL 1.20 (restarting the I/O processor)': 'RIPPS2: BBL 1.20 kuruluyor (G/Ç işlemcisi yeniden başlıyor)'
-  'RIPPS2: Setting up BBL 1.20 (writing it to the memory card)': 'RIPPS2: BBL 1.20 kuruluyor (hafıza kartına yazılıyor)'
-  SET UP BBL 1.20: BBL 1.20'Yİ KUR
+    %d. yuvadaki hafıza kartı: BIBLE (mc%d:/%s) kenara alınır ve yerini aldığı şey (mc%d:/%s) geri yerine gelir. Hiçbir şey silinmez. PS2BBL ayarları olduğu gibi kalır (BOOT LOCK kilidi kapatabilir).'
+  'RIPPS2: Setting up BIBLE (binding PS2BBL to the memory card)': 'RIPPS2: BIBLE kuruluyor (PS2BBL hafıza kartına bağlanıyor)'
+  'RIPPS2: Setting up BIBLE (putting back what was there)': 'RIPPS2: BIBLE kuruluyor (önceki geri getiriliyor)'
+  'RIPPS2: Setting up BIBLE (restarting the I/O processor)': 'RIPPS2: BIBLE kuruluyor (G/Ç işlemcisi yeniden başlıyor)'
+  'RIPPS2: Setting up BIBLE (writing it to the memory card)': 'RIPPS2: BIBLE kuruluyor (hafıza kartına yazılıyor)'
+  SET UP BIBLE: BIBLE'Yİ KUR
   ? 'SLOT 1: %s
   
     SLOT 2: %s
   
     %s
   
-    RIPPS2: Setting up BBL 1.20. PS2BBL 1.2.0 by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
+    RIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
   : 'YUVA 1: %s
   
     YUVA 2: %s
   
     %s
   
-    RIPPS2: BBL 1.20 kuruluyor. El Isra''nın PS2BBL 1.2.0''ı, RIPPS2 tarafından standart 8 MB''lık bir PS2 hafıza kartına ya da dahili sabit diske kurulur: açılışta 0 ms''lik başlangıç (PS2BBL Extended 0''a izin vermez), önce bulunduğu yerden RIPPS2 (asla kopyalanmaz) ve açılışta basılı tutulan bir tuş yine tarayıcıya (TRIANGLE), bir diske (START) ve öncekine (CIRCLE) götürür. Kurulsun mu, onarılsın mı, yoksa yerini aldığı şey geri mi getirilsin?'
-  The memory card in slot %d has %d KB free, and BBL 1.20 needs %d KB there. Free some space, then try again.: '%d. yuvadaki hafıza kartında %d KB boş ve BBL 1.20''nin orada %d KB''ye ihtiyacı var. Biraz yer aç, sonra yeniden dene.'
+    RIPPS2: BIBLE kuruluyor. El Isra''nın PS2BBL''ı, RIPPS2 tarafından standart 8 MB''lık bir PS2 hafıza kartına ya da dahili sabit diske kurulur: açılışta 0 ms''lik başlangıç (PS2BBL Extended 0''a izin vermez), önce bulunduğu yerden RIPPS2 (asla kopyalanmaz) ve açılışta basılı tutulan bir tuş yine tarayıcıya (TRIANGLE), bir diske (START) ve öncekine (CIRCLE) götürür. Kurulsun mu, onarılsın mı, yoksa yerini aldığı şey geri mi getirilsin?'
+  The memory card in slot %d has %d KB free, and BIBLE needs %d KB there. Free some space, then try again.: '%d. yuvadaki hafıza kartında %d KB boş ve BIBLE''nin orada %d KB''ye ihtiyacı var. Biraz yer aç, sonra yeniden dene.'
   ? The memory card in slot %d refused PS2BBL, so RIPPS2 put the card back as it was. Check its free space, then try again. (DIAG.TXT beside RIPPS2 has what the card said.)
   : '%d. yuvadaki hafıza kartı PS2BBL''yi reddetti, bu yüzden RIPPS2 kartı olduğu gibi bıraktı. Boş alanını kontrol et, sonra yeniden dene. (RIPPS2''nin yanındaki DIAG.TXT kartın yanıtını içerir.)'
-  ? The memory card in slot %d would not move BBL 1.20 aside, so nothing was changed. (DIAG.TXT beside RIPPS2 has what the card said.)
-  : '%d. yuvadaki hafıza kartı BBL 1.20''yi kenara almadı, bu yüzden hiçbir şey değişmedi. (RIPPS2''nin yanındaki DIAG.TXT kartın yanıtını içerir.)'
-  The memory card in slot %d would not take %s back, so BBL 1.20 stayed. (DIAG.TXT beside RIPPS2 has what the card said.): '%d. yuvadaki hafıza kartı %s öğesini geri almadı, bu yüzden BBL 1.20 kaldı. (RIPPS2''nin yanındaki DIAG.TXT kartın yanıtını içerir.)'
+  ? The memory card in slot %d would not move BIBLE aside, so nothing was changed. (DIAG.TXT beside RIPPS2 has what the card said.)
+  : '%d. yuvadaki hafıza kartı BIBLE''yi kenara almadı, bu yüzden hiçbir şey değişmedi. (RIPPS2''nin yanındaki DIAG.TXT kartın yanıtını içerir.)'
+  The memory card in slot %d would not take %s back, so BIBLE stayed. (DIAG.TXT beside RIPPS2 has what the card said.): '%d. yuvadaki hafıza kartı %s öğesini geri almadı, bu yüzden BIBLE kaldı. (RIPPS2''nin yanındaki DIAG.TXT kartın yanıtını içerir.)'
   MUSIC: MÜZİK
   '%s%s has no %s. RIPPOPS found Sony''s PS1 emulator on %s: START copies %s here and starts the game.': '%s%s içinde %s yok. RIPPOPS, Sony''nin PS1 emülatörünü %s konumunda buldu: START, %s öğesini buraya kopyalar ve oyunu başlatır.'
   ? 'RIPPS2 does not see %s in %s%s. POPSTARTER needs POPS_IOX.PAK with POPS.PAK, or with POPS.ELF and IOPRP252.IMG: Sony''s PS1 emulator, from your own console. It may find them where RIPPS2 does not look (if your games start, it does). START launches, and this drive is not asked about again.'
@@ -1260,8 +1265,8 @@ strings:
   BOOT LOCK is off. Your boot loader starts what it started before (%s).: BOOT LOCK kapalı. Önyükleyiciniz önceden başlattığını başlatıyor (%s).
   ? BOOT LOCK is on. %s now starts RIPPS2 at power on (%s), and an empty IGR Path sends a game's EXIT back the same way. Hold one of its buttons while the console starts to reach anything else.%s
   : BOOT LOCK açık. %s artık açılışta RIPPS2'yi başlatır (%s) ve boş bir IGR Yolu, bir oyunun EXIT'ini aynı yoldan geri gönderir. Başka bir şeye ulaşmak için konsol başlarken düğmelerinden birine basılı tutun.%s
-  ? 'BOOT LOCK put RIPPS2 first in OSDMenu''s menu (%s). OSDMenu starts nothing by itself: pick RIPPS2 there, and a game''s EXIT comes back to that menu. For a console that starts RIPPS2 at once, BIBLE puts PS2BBL 1.2.0 on a memory card (Boot Loader).'
-  : 'BOOT LOCK, RIPPS2''yi OSDMenu''nün menüsünde en başa koydu (%s). OSDMenu kendi kendine hiçbir şey başlatmaz: orada RIPPS2''yi seçin, bir oyunun EXIT''i de o menüye döner. RIPPS2''yi hemen başlatan bir konsol için BIBLE, PS2BBL 1.2.0''ı bir hafıza kartına kurar (Önyükleyici).'
+  ? 'BOOT LOCK put RIPPS2 first in OSDMenu''s menu (%s). OSDMenu starts nothing by itself: pick RIPPS2 there, and a game''s EXIT comes back to that menu. For a console that starts RIPPS2 at once, BIBLE puts PS2BBL on a memory card (Boot Loader).'
+  : 'BOOT LOCK, RIPPS2''yi OSDMenu''nün menüsünde en başa koydu (%s). OSDMenu kendi kendine hiçbir şey başlatmaz: orada RIPPS2''yi seçin, bir oyunun EXIT''i de o menüye döner. RIPPS2''yi hemen başlatan bir konsol için BIBLE, PS2BBL''ı bir hafıza kartına kurar (Önyükleyici).'
   BOOT LOCK works through a boot loader on a memory card (PS2BBL, FMCB or OSDMenu), and there is none here.: BOOT LOCK bir hafıza kartındaki önyükleyici üzerinden çalışır (PS2BBL, FMCB ya da OSDMenu) ve burada hiç yok.
   The memory card in slot %d starts %s at power on, and BOOT LOCK found no config of it to change (it looks for %s).: '%d. yuvadaki hafıza kartı açılışta şunu başlatıyor: %s; BOOT LOCK onun değiştirilecek bir yapılandırmasını bulamadı (%s dosyasını arar).'
   'The memory card in slot %d starts %s at power on, which BOOT LOCK cannot set: it works through PS2BBL, FMCB and OSDMenu.': '%d. yuvadaki hafıza kartı açılışta şunu başlatıyor: %s; BOOT LOCK bunu ayarlayamaz: PS2BBL, FMCB ve OSDMenu üzerinden çalışır.'

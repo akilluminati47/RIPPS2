@@ -3,6 +3,12 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Czech
 strings:
+  "FILE NAME": "NÁZEV SOUBORU"
+  "GAME LIST": "SEZNAM HER"
+  "%s in %s": "%s v %s"
+  "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "Zápisové operace jsou vypnuté, takže RIPPS2 nemůže uložit údaje hry ani ji přejmenovat. Zapnout je?"
+  "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "BIBLE je postaven na PS2BBL od El Isry, jeho verze pro kartu a HDD jsou podepsané pro RIPPS2 (GPL-3)"
+  "This is RIPPS2 lite, which carries no Neutrino. Put Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in a neutrino folder on a memory card or the game's drive, or use the full RIPPS2.elf, which installs it for you.": "Toto je RIPPS2 lite, který nenese Neutrino. Dejte Neutrino (rickgaiser, github.com/rickgaiser/neutrino) do složky neutrino na paměťové kartě nebo na disku hry, nebo použijte plný RIPPS2.elf, který ho nainstaluje za vás."
   "START %s": "SPUSTIT %s"
   "NETWORK": "SÍŤ"
   "%s did not answer. Is it connected?": "%s neodpověděl. Je připojen?"
@@ -97,7 +103,6 @@ strings:
   BACK: ZPĚT
   Back (keeps both): Zpět (ponechá oba)
   This MMCE card cannot rename a file, which compression needs for its last step. Update its sd2psXtd firmware to 1.4.0 or newer (sd2psxtd.github.io/download), then try again. Nothing was changed.: Tato karta MMCE neumí přejmenovat soubor, což komprese potřebuje v posledním kroku. Aktualizujte její firmware sd2psXtd na 1.4.0 nebo novější (sd2psxtd.github.io/download) a zkuste to znovu. Nic nebylo změněno.
-  BIBLE is PS2BBL 1.2.0, El Isra's signed builds (card and HDD), unchanged (GPL-3): BIBLE je PS2BBL 1.2.0, podepsaná sestavení El Isry (karta a HDD), beze změn (GPL-3)
   BIOS Sounds > Rip plays them as the SPU2 does; no BIOS ships: Zvuky BIOS > Vyjmout je přehrává tak jako SPU2; žádný BIOS se nepřibaluje
   BOOT LOCK AND BIBLE: BOOT LOCK A BIBLE
   BOOT LOCK edits its config too: BOOT LOCK upravuje i jeho nastavení
@@ -224,8 +229,8 @@ strings:
   : ' Jedna paměťová karta tu má vlastní PS2BBL/CONFIG.INI, který PS2BBL čte dřív než ten z HDD: při zapnutí tu kartu vyjměte, nebo z ní spusťte RIPPS2 a nainstalujte znovu.'
   ' Hold TRIANGLE at power on for the browser, START for a disc.': ' Při zapnutí držte TROJÚHELNÍK pro prohlížeč, START pro disk.'
   ' Hold TRIANGLE for the browser, START for a disc. Config: %s.': ' Držte TROJÚHELNÍK pro prohlížeč, START pro disk. Nastavení: %s.'
-  ? ' RIPPS2 can install BIBLE, PS2BBL 1.2.0 set up to start RIPPS2, on a memory card; what starts from it now is kept in a backup folder. Install BIBLE?'
-  : ' RIPPS2 může na paměťovou kartu nainstalovat BIBLE, tedy PS2BBL 1.2.0 nastavený tak, aby spouštěl RIPPS2; to, co se z karty spouští teď, se uchová ve složce zálohy. Nainstalovat BIBLE?'
+  ? ' RIPPS2 can install BIBLE, PS2BBL set up to start RIPPS2, on a memory card; what starts from it now is kept in a backup folder. Install BIBLE?'
+  : ' RIPPS2 může na paměťovou kartu nainstalovat BIBLE, tedy PS2BBL nastavený tak, aby spouštěl RIPPS2; to, co se z karty spouští teď, se uchová ve složce zálohy. Nainstalovat BIBLE?'
   ' The HDD''s old boot program is kept (MANAGE > RESTORE).': ' Starý zaváděcí program HDD je uchován (SPRAVOVAT > OBNOVIT).'
   ' The console would not take the setting that starts its HDD at power on: set it with the HDD utility, or install again.': ' Konzole nepřijala nastavení, které při zapnutí spouští její HDD: nastavte ho nástrojem pro HDD, nebo nainstalujte znovu.'
   ' What was there before is kept in mc%d:/%s%s.': ' Co tam bylo předtím, je uchováno v mc%d:/%s%s.'
@@ -267,7 +272,7 @@ strings:
 
     - The HDD''s boot program now in __mbr is read out and kept in %s/RIPPS2 (RESTORE puts it back).
 
-    - PS2BBL 1.2.0''s HDD build is written in its place, and the console set to start it at power on.
+    - PS2BBL''s HDD build is written in its place, and the console set to start it at power on.
 
     - Its config (%s) starts RIPPS2 from %s first%s%s, BOOT LOCK on.
 
@@ -278,7 +283,7 @@ strings:
 
     - Zaváděcí program HDD, který je teď v __mbr, se přečte a uchová v %s/RIPPS2 (OBNOVIT ho vrátí).
 
-    - Na jeho místo se zapíše sestavení PS2BBL 1.2.0 pro HDD a konzole se nastaví, aby ho při zapnutí spouštěla.
+    - Na jeho místo se zapíše sestavení PS2BBL pro HDD a konzole se nastaví, aby ho při zapnutí spouštěla.
 
     - Jeho nastavení (%s) spouští RIPPS2 nejdřív z %s%s%s, BOOT LOCK zapnutý.
 
@@ -783,7 +788,7 @@ strings:
   POPSTARTER NETWORK: SÍŤ POPSTARTER
   POPSTARTER and Ember: POPSTARTER a Ember
   PS1 SETTINGS: NASTAVENÍ PS1
-  PS2BBL 1.2.0 for RIPPS2: PS2BBL 1.2.0 pro RIPPS2
+  PS2BBL for RIPPS2: PS2BBL pro RIPPS2
   RIP THIS CONSOLE'S SOUNDS: VYJMOUT ZVUKY TÉTO KONZOLE
   STATUS: STAV
   a drive of unknown kind: disk neznámého druhu
@@ -1171,20 +1176,20 @@ strings:
   ' (%d KB free)': ' (%d KB volno)'
   ' (%u MB free)': ' (%u MB volno)'
   'BESIDE RIPPS2: %sAUDIO%s, read first at boot': 'VEDLE RIPPS2: %sAUDIO%s, při startu se čte jako první'
-  ? '- PS2BBL 1.2.0 is bound to this card by the console and written as %s/%s.
+  ? '- PS2BBL is bound to this card by the console and written as %s/%s.
   
-    - Its config, mc%d:/PS2BBL/CONFIG.INI, starts RIPPS2 where it is (%s) with no wait (0 ms, which PS2BBL Extended does not allow), BOOT LOCK on. RIPPS2 itself is not copied.
+    - Its config, mc%d:/SYS-CONF/PS2BBL.INI, starts RIPPS2 where it is (%s) with no wait (0 ms, which PS2BBL Extended does not allow), BOOT LOCK on. RIPPS2 itself is not copied.
   
     The I/O processor restarts for this and every drive read stops until it is done; music and drives come back after. Keep the card in and the console on until it says done.'
-  : '- Konzole sváže PS2BBL 1.2.0 s touto kartou a zapíše ho jako %s/%s.
+  : '- Konzole sváže PS2BBL s touto kartou a zapíše ho jako %s/%s.
   
-    - Jeho konfigurace, mc%d:/PS2BBL/CONFIG.INI, spouští RIPPS2 tam, kde je (%s), bez čekání (0 ms, což PS2BBL Extended nedovoluje), BOOT LOCK zapnutý. Samotné RIPPS2 se nekopíruje.
+    - Jeho konfigurace, mc%d:/SYS-CONF/PS2BBL.INI, spouští RIPPS2 tam, kde je (%s), bez čekání (0 ms, což PS2BBL Extended nedovoluje), BOOT LOCK zapnutý. Samotné RIPPS2 se nekopíruje.
   
     Vstupně-výstupní procesor se kvůli tomu restartuje a veškeré čtení jednotek se zastaví, dokud to neskončí; hudba a jednotky se pak vrátí. Nech kartu vloženou a konzoli zapnutou, dokud nenapíše hotovo.'
   ? 'An SD2PSX or MMCE card may protect itself after a refused write: if the memory card or the MMCE drive is missing now, turn the console off and on.'
   : 'Karta SD2PSX nebo MMCE se může po odmítnutém zápisu chránit: pokud teď chybí paměťová karta nebo jednotka MMCE, vypni a zapni konzoli.'
   BOOT LOCK ON: BOOT LOCK ZAPNUTÝ
-  'Done: the memory card in slot %d starts what it started before BBL 1.20. BBL 1.20 is kept in mc%d:/%s.': 'Hotovo: paměťová karta ve slotu %d spouští to, co spouštěla před BBL 1.20. BBL 1.20 zůstává v mc%d:/%s.'
+  'Done: the memory card in slot %d starts what it started before BIBLE. BIBLE is kept in mc%d:/%s.': 'Hotovo: paměťová karta ve slotu %d spouští to, co spouštěla před BIBLE. BIBLE zůstává v mc%d:/%s.'
   ? 'For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 2''s config before slot 1''s.
   
     '
@@ -1192,60 +1197,60 @@ strings:
   
     '
   MEMORY CARD IN SLOT %d  (%s): PAMĚŤOVÁ KARTA VE SLOTU %d  (%s)
-  ? PS2BBL 1.2.0 cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
-  : PS2BBL 1.2.0 nemůže spustit RIPPS2 z místa, kde teď je (dosáhne na paměťové karty, USB jednotky a MX4SIO), a RIPPS2 se samo nekopíruje. Dej RIPPS2.ELF na paměťovou kartu nebo USB jednotku a spusť ho odtud, nebo použij PS2BBL Extended, který čte MMCE a pevný disk.
+  ? PS2BBL cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
+  : PS2BBL nemůže spustit RIPPS2 z místa, kde teď je (dosáhne na paměťové karty, USB jednotky a MX4SIO), a RIPPS2 se samo nekopíruje. Dej RIPPS2.ELF na paměťovou kartu nebo USB jednotku a spusť ho odtud, nebo použij PS2BBL Extended, který čte MMCE a pevný disk.
   RESTORE SLOT %d'S OLD BOOT LOADER: OBNOVIT STARÝ ZAVADĚČ VE SLOTU %d
-  ? 'RIPPS2: BBL 1.20 is set up on the memory card in slot %d (mc%d:/%s/%s), BOOT LOCK on: at power on it starts RIPPS2 from %s, at once.'
-  : 'RIPPS2: BBL 1.20 je nastavený na paměťové kartě ve slotu %d (mc%d:/%s/%s), BOOT LOCK zapnutý: při zapnutí hned spustí RIPPS2 z %s.'
-  ? 'RIPPS2: Setting up BBL 1.20
+  ? 'RIPPS2: BIBLE is set up on the memory card in slot %d (mc%d:/%s/%s), BOOT LOCK on: at power on it starts RIPPS2 from %s, at once.'
+  : 'RIPPS2: BIBLE je nastavený na paměťové kartě ve slotu %d (mc%d:/%s/%s), BOOT LOCK zapnutý: při zapnutí hned spustí RIPPS2 z %s.'
+  ? 'RIPPS2: Setting up BIBLE
   
     '
-  : 'RIPPS2: nastavuje se BBL 1.20
+  : 'RIPPS2: nastavuje se BIBLE
   
     '
-  ? 'RIPPS2: Setting up BBL 1.20
+  ? 'RIPPS2: Setting up BIBLE
   
-    RIPPS2 runs from %s, which PS2BBL 1.2.0 cannot read (it reads memory cards, USB and MX4SIO), and RIPPS2 does not copy itself. The PS2BBL Extended config on this card (%s) reads it: START turns BOOT LOCK on, so it starts RIPPS2 from %s at power on. Nothing else on the card changes.'
-  : 'RIPPS2: nastavuje se BBL 1.20
+    RIPPS2 runs from %s, which PS2BBL cannot read (it reads memory cards, USB and MX4SIO), and RIPPS2 does not copy itself. The PS2BBL Extended config on this card (%s) reads it: START turns BOOT LOCK on, so it starts RIPPS2 from %s at power on. Nothing else on the card changes.'
+  : 'RIPPS2: nastavuje se BIBLE
   
-    RIPPS2 běží z %s, což PS2BBL 1.2.0 neumí číst (čte paměťové karty, USB a MX4SIO), a RIPPS2 se samo nekopíruje. Konfigurace PS2BBL Extended na této kartě (%s) to čte: START zapne BOOT LOCK, takže při zapnutí spustí RIPPS2 z %s. Nic jiného se na kartě nezmění.'
-  ? 'RIPPS2: Setting up BBL 1.20
+    RIPPS2 běží z %s, což PS2BBL neumí číst (čte paměťové karty, USB a MX4SIO), a RIPPS2 se samo nekopíruje. Konfigurace PS2BBL Extended na této kartě (%s) to čte: START zapne BOOT LOCK, takže při zapnutí spustí RIPPS2 z %s. Nic jiného se na kartě nezmění.'
+  ? 'RIPPS2: Setting up BIBLE
   
-    RIPPS2 runs from %s, which PS2BBL 1.2.0 cannot read: it starts programs from a memory card, a USB drive or MX4SIO, and RIPPS2 does not copy itself. Put RIPPS2.ELF on one of those (a memory card''s APPS folder, or a USB drive), start it from there, then set up BIBLE again.'
-  : 'RIPPS2: nastavuje se BBL 1.20
+    RIPPS2 runs from %s, which PS2BBL cannot read: it starts programs from a memory card, a USB drive or MX4SIO, and RIPPS2 does not copy itself. Put RIPPS2.ELF on one of those (a memory card''s APPS folder, or a USB drive), start it from there, then set up BIBLE again.'
+  : 'RIPPS2: nastavuje se BIBLE
   
-    RIPPS2 běží z %s, což PS2BBL 1.2.0 neumí číst: spouští programy z paměťové karty, USB jednotky nebo MX4SIO, a RIPPS2 se samo nekopíruje. Dej RIPPS2.ELF na jednu z nich (do složky APPS paměťové karty nebo na USB jednotku), spusť ho odtud a pak BIBLE nastav znovu.'
-  ? 'RIPPS2: Setting up BBL 1.20
+    RIPPS2 běží z %s, což PS2BBL neumí číst: spouští programy z paměťové karty, USB jednotky nebo MX4SIO, a RIPPS2 se samo nekopíruje. Dej RIPPS2.ELF na jednu z nich (do složky APPS paměťové karty nebo na USB jednotku), spusť ho odtud a pak BIBLE nastav znovu.'
+  ? 'RIPPS2: Setting up BIBLE
   
-    The memory card in slot %d: BBL 1.20 (mc%d:/%s) moves aside, and what it replaced (mc%d:/%s) goes back in its place. Nothing is deleted. The PS2BBL config stays as it is (BOOT LOCK can turn the lock off).'
-  : 'RIPPS2: nastavuje se BBL 1.20
+    The memory card in slot %d: BIBLE (mc%d:/%s) moves aside, and what it replaced (mc%d:/%s) goes back in its place. Nothing is deleted. The PS2BBL config stays as it is (BOOT LOCK can turn the lock off).'
+  : 'RIPPS2: nastavuje se BIBLE
   
-    Paměťová karta ve slotu %d: BBL 1.20 (mc%d:/%s) se odsune stranou a to, co nahradil (mc%d:/%s), se vrátí na své místo. Nic se nemaže. Konfigurace PS2BBL zůstane, jak je (BOOT LOCK může zámek vypnout).'
-  'RIPPS2: Setting up BBL 1.20 (binding PS2BBL to the memory card)': 'RIPPS2: nastavuje se BBL 1.20 (svazování PS2BBL s paměťovou kartou)'
-  'RIPPS2: Setting up BBL 1.20 (putting back what was there)': 'RIPPS2: nastavuje se BBL 1.20 (vrací se to, co tu bylo)'
-  'RIPPS2: Setting up BBL 1.20 (restarting the I/O processor)': 'RIPPS2: nastavuje se BBL 1.20 (restartuje se vstupně-výstupní procesor)'
-  'RIPPS2: Setting up BBL 1.20 (writing it to the memory card)': 'RIPPS2: nastavuje se BBL 1.20 (zápis na paměťovou kartu)'
-  SET UP BBL 1.20: NASTAVIT BBL 1.20
+    Paměťová karta ve slotu %d: BIBLE (mc%d:/%s) se odsune stranou a to, co nahradil (mc%d:/%s), se vrátí na své místo. Nic se nemaže. Konfigurace PS2BBL zůstane, jak je (BOOT LOCK může zámek vypnout).'
+  'RIPPS2: Setting up BIBLE (binding PS2BBL to the memory card)': 'RIPPS2: nastavuje se BIBLE (svazování PS2BBL s paměťovou kartou)'
+  'RIPPS2: Setting up BIBLE (putting back what was there)': 'RIPPS2: nastavuje se BIBLE (vrací se to, co tu bylo)'
+  'RIPPS2: Setting up BIBLE (restarting the I/O processor)': 'RIPPS2: nastavuje se BIBLE (restartuje se vstupně-výstupní procesor)'
+  'RIPPS2: Setting up BIBLE (writing it to the memory card)': 'RIPPS2: nastavuje se BIBLE (zápis na paměťovou kartu)'
+  SET UP BIBLE: NASTAVIT BIBLE
   ? 'SLOT 1: %s
   
     SLOT 2: %s
   
     %s
   
-    RIPPS2: Setting up BBL 1.20. PS2BBL 1.2.0 by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
+    RIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
   : 'SLOT 1: %s
   
     SLOT 2: %s
   
     %s
   
-    RIPPS2: nastavuje se BBL 1.20. PS2BBL 1.2.0 od El Isry, nastavený z RIPPS2 na běžné 8MB paměťové kartě PS2 nebo interním pevném disku: start za 0 ms při zapnutí (PS2BBL Extended 0 nedovoluje), nejdřív RIPPS2 z místa, kde je (nikdy se nekopíruje), a tlačítko držené při zapnutí pořád vede do prohlížeče (TRIANGLE), na disk (START) a k tomu, co tu bylo předtím (CIRCLE). Nastavit, opravit, nebo obnovit to, co nahradil?'
-  The memory card in slot %d has %d KB free, and BBL 1.20 needs %d KB there. Free some space, then try again.: Paměťová karta ve slotu %d má volných %d KB a BBL 1.20 na ní potřebuje %d KB. Uvolni trochu místa a zkus to znovu.
+    RIPPS2: nastavuje se BIBLE. PS2BBL od El Isry, nastavený z RIPPS2 na běžné 8MB paměťové kartě PS2 nebo interním pevném disku: start za 0 ms při zapnutí (PS2BBL Extended 0 nedovoluje), nejdřív RIPPS2 z místa, kde je (nikdy se nekopíruje), a tlačítko držené při zapnutí pořád vede do prohlížeče (TRIANGLE), na disk (START) a k tomu, co tu bylo předtím (CIRCLE). Nastavit, opravit, nebo obnovit to, co nahradil?'
+  The memory card in slot %d has %d KB free, and BIBLE needs %d KB there. Free some space, then try again.: Paměťová karta ve slotu %d má volných %d KB a BIBLE na ní potřebuje %d KB. Uvolni trochu místa a zkus to znovu.
   ? The memory card in slot %d refused PS2BBL, so RIPPS2 put the card back as it was. Check its free space, then try again. (DIAG.TXT beside RIPPS2 has what the card said.)
   : Paměťová karta ve slotu %d odmítla PS2BBL, takže RIPPS2 nechalo kartu, jak byla. Zkontroluj volné místo a zkus to znovu. (DIAG.TXT vedle RIPPS2 obsahuje odpověď karty.)
-  ? The memory card in slot %d would not move BBL 1.20 aside, so nothing was changed. (DIAG.TXT beside RIPPS2 has what the card said.)
-  : Paměťová karta ve slotu %d nechtěla odsunout BBL 1.20, takže se nic nezměnilo. (DIAG.TXT vedle RIPPS2 obsahuje odpověď karty.)
-  The memory card in slot %d would not take %s back, so BBL 1.20 stayed. (DIAG.TXT beside RIPPS2 has what the card said.): Paměťová karta ve slotu %d nechtěla vzít zpět %s, takže BBL 1.20 zůstal. (DIAG.TXT vedle RIPPS2 obsahuje odpověď karty.)
+  ? The memory card in slot %d would not move BIBLE aside, so nothing was changed. (DIAG.TXT beside RIPPS2 has what the card said.)
+  : Paměťová karta ve slotu %d nechtěla odsunout BIBLE, takže se nic nezměnilo. (DIAG.TXT vedle RIPPS2 obsahuje odpověď karty.)
+  The memory card in slot %d would not take %s back, so BIBLE stayed. (DIAG.TXT beside RIPPS2 has what the card said.): Paměťová karta ve slotu %d nechtěla vzít zpět %s, takže BIBLE zůstal. (DIAG.TXT vedle RIPPS2 obsahuje odpověď karty.)
   MUSIC: HUDBA
   '%s%s has no %s. RIPPOPS found Sony''s PS1 emulator on %s: START copies %s here and starts the game.': '%s%s nemá %s. RIPPOPS našel emulátor PS1 od Sony na %s: START sem zkopíruje %s a spustí hru.'
   ? 'RIPPS2 does not see %s in %s%s. POPSTARTER needs POPS_IOX.PAK with POPS.PAK, or with POPS.ELF and IOPRP252.IMG: Sony''s PS1 emulator, from your own console. It may find them where RIPPS2 does not look (if your games start, it does). START launches, and this drive is not asked about again.'
@@ -1260,8 +1265,8 @@ strings:
   BOOT LOCK is off. Your boot loader starts what it started before (%s).: BOOT LOCK je vypnutý. Váš zavaděč spouští to, co spouštěl dřív (%s).
   ? BOOT LOCK is on. %s now starts RIPPS2 at power on (%s), and an empty IGR Path sends a game's EXIT back the same way. Hold one of its buttons while the console starts to reach anything else.%s
   : BOOT LOCK je zapnutý. %s teď při zapnutí spouští RIPPS2 (%s) a prázdná Cesta k IGR vrací EXIT ze hry stejnou cestou. Abyste se dostali jinam, držte při startu konzole jedno z jeho tlačítek.%s
-  ? 'BOOT LOCK put RIPPS2 first in OSDMenu''s menu (%s). OSDMenu starts nothing by itself: pick RIPPS2 there, and a game''s EXIT comes back to that menu. For a console that starts RIPPS2 at once, BIBLE puts PS2BBL 1.2.0 on a memory card (Boot Loader).'
-  : 'BOOT LOCK dal RIPPS2 na první místo v menu OSDMenu (%s). OSDMenu samo nic nespouští: vyberte tam RIPPS2 a EXIT ze hry se vrací do toho menu. Pro konzoli, která spustí RIPPS2 hned, nainstaluje BIBLE PS2BBL 1.2.0 na paměťovou kartu (Zavaděč).'
+  ? 'BOOT LOCK put RIPPS2 first in OSDMenu''s menu (%s). OSDMenu starts nothing by itself: pick RIPPS2 there, and a game''s EXIT comes back to that menu. For a console that starts RIPPS2 at once, BIBLE puts PS2BBL on a memory card (Boot Loader).'
+  : 'BOOT LOCK dal RIPPS2 na první místo v menu OSDMenu (%s). OSDMenu samo nic nespouští: vyberte tam RIPPS2 a EXIT ze hry se vrací do toho menu. Pro konzoli, která spustí RIPPS2 hned, nainstaluje BIBLE PS2BBL na paměťovou kartu (Zavaděč).'
   BOOT LOCK works through a boot loader on a memory card (PS2BBL, FMCB or OSDMenu), and there is none here.: BOOT LOCK funguje přes zavaděč na paměťové kartě (PS2BBL, FMCB nebo OSDMenu) a tady žádný není.
   The memory card in slot %d starts %s at power on, and BOOT LOCK found no config of it to change (it looks for %s).: Paměťová karta ve slotu %d při zapnutí spouští %s a BOOT LOCK nenašel žádné jeho nastavení ke změně (hledá %s).
   'The memory card in slot %d starts %s at power on, which BOOT LOCK cannot set: it works through PS2BBL, FMCB and OSDMenu.': 'Paměťová karta ve slotu %d při zapnutí spouští %s, který BOOT LOCK nastavit neumí: funguje přes PS2BBL, FMCB a OSDMenu.'

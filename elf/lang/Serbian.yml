@@ -3,6 +3,12 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Serbian
 strings:
+  "FILE NAME": "NAZIV DATOTEKE"
+  "GAME LIST": "SPISAK IGARA"
+  "%s in %s": "%s u %s"
+  "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "Operacije upisa su isključene, pa RIPPS2 ne može da sačuva podatke igre niti da je preimenuje. Da ih uključim?"
+  "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "BIBLE je napravljen na El Isrinom PS2BBL-u, a njegove verzije za karticu i HDD su potpisane za RIPPS2 (GPL-3)"
+  "This is RIPPS2 lite, which carries no Neutrino. Put Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in a neutrino folder on a memory card or the game's drive, or use the full RIPPS2.elf, which installs it for you.": "Ovo je RIPPS2 lite, koji ne nosi Neutrino. Stavite Neutrino (rickgaiser, github.com/rickgaiser/neutrino) u fasciklu neutrino na memorijskoj kartici ili na disku igre, ili koristite puni RIPPS2.elf, koji ga sam instalira."
   "START %s": "POKRENI %s"
   "NETWORK": "MREŽA"
   "%s did not answer. Is it connected?": "%s se nije javio. Da li je povezan?"
@@ -97,7 +103,6 @@ strings:
   BACK: NAZAD
   Back (keeps both): Nazad (zadržava oba)
   This MMCE card cannot rename a file, which compression needs for its last step. Update its sd2psXtd firmware to 1.4.0 or newer (sd2psxtd.github.io/download), then try again. Nothing was changed.: Ova MMCE kartica ne može da preimenuje datoteku, a kompresiji je to potrebno u poslednjem koraku. Ažurirajte njen sd2psXtd firmver na 1.4.0 ili noviji (sd2psxtd.github.io/download), pa pokušajte ponovo. Ništa nije promenjeno.
-  BIBLE is PS2BBL 1.2.0, El Isra's signed builds (card and HDD), unchanged (GPL-3): BIBLE je PS2BBL 1.2.0, potpisana izdanja El Isre (kartica i HDD), bez izmena (GPL-3)
   BIOS Sounds > Rip plays them as the SPU2 does; no BIOS ships: BIOS zvuci > Izdvoji ih reprodukuje kao SPU2; BIOS nije priložen
   BOOT LOCK AND BIBLE: BOOT LOCK I BIBLE
   BOOT LOCK edits its config too: BOOT LOCK menja i njegovu konfiguraciju
@@ -224,8 +229,8 @@ strings:
   : ' Jedna memorijska kartica ovde ima sopstveni PS2BBL/CONFIG.INI, koji PS2BBL čita pre onog na HDD-u: izvadite tu karticu pri uključivanju ili pokrenite RIPPS2 sa nje i instalirajte ponovo.'
   ' Hold TRIANGLE at power on for the browser, START for a disc.': ' Držite TROUGAO pri uključivanju za pregledač, START za disk.'
   ' Hold TRIANGLE for the browser, START for a disc. Config: %s.': ' Držite TROUGAO za pregledač, START za disk. Konfiguracija: %s.'
-  ? ' RIPPS2 can install BIBLE, PS2BBL 1.2.0 set up to start RIPPS2, on a memory card; what starts from it now is kept in a backup folder. Install BIBLE?'
-  : ' RIPPS2 može da instalira BIBLE, PS2BBL 1.2.0 podešen da pokreće RIPPS2, na memorijsku karticu; ono što se sada pokreće sa nje čuva se u fascikli rezervne kopije. Instalirati BIBLE?'
+  ? ' RIPPS2 can install BIBLE, PS2BBL set up to start RIPPS2, on a memory card; what starts from it now is kept in a backup folder. Install BIBLE?'
+  : ' RIPPS2 može da instalira BIBLE, PS2BBL podešen da pokreće RIPPS2, na memorijsku karticu; ono što se sada pokreće sa nje čuva se u fascikli rezervne kopije. Instalirati BIBLE?'
   ' The HDD''s old boot program is kept (MANAGE > RESTORE).': ' Stari program za pokretanje HDD-a je sačuvan (UPRAVLJAJ > VRATI).'
   ' The console would not take the setting that starts its HDD at power on: set it with the HDD utility, or install again.': ' Konzola nije prihvatila podešavanje koje pokreće njen HDD pri uključivanju: podesite ga HDD alatkom ili instalirajte ponovo.'
   ' What was there before is kept in mc%d:/%s%s.': ' Ono što je ranije bilo tamo čuva se u mc%d:/%s%s.'
@@ -267,7 +272,7 @@ strings:
 
     - The HDD''s boot program now in __mbr is read out and kept in %s/RIPPS2 (RESTORE puts it back).
 
-    - PS2BBL 1.2.0''s HDD build is written in its place, and the console set to start it at power on.
+    - PS2BBL''s HDD build is written in its place, and the console set to start it at power on.
 
     - Its config (%s) starts RIPPS2 from %s first%s%s, BOOT LOCK on.
 
@@ -278,7 +283,7 @@ strings:
 
     - Program za pokretanje HDD-a koji je sada u __mbr se čita i čuva u %s/RIPPS2 (VRATI ga vraća).
 
-    - Na njegovo mesto se upisuje HDD verzija PS2BBL 1.2.0, a konzola se podešava da je pokreće pri uključivanju.
+    - Na njegovo mesto se upisuje HDD verzija PS2BBL, a konzola se podešava da je pokreće pri uključivanju.
 
     - Njena konfiguracija (%s) prvo pokreće RIPPS2 sa %s%s%s, BOOT LOCK uključen.
 
@@ -783,7 +788,7 @@ strings:
   POPSTARTER NETWORK: POPSTARTER MREŽA
   POPSTARTER and Ember: POPSTARTER i Ember
   PS1 SETTINGS: PS1 PODEŠAVANJA
-  PS2BBL 1.2.0 for RIPPS2: PS2BBL 1.2.0 za RIPPS2
+  PS2BBL for RIPPS2: PS2BBL za RIPPS2
   RIP THIS CONSOLE'S SOUNDS: IZDVOJI ZVUKE OVE KONZOLE
   STATUS: STATUS
   a drive of unknown kind: uređaj nepoznate vrste
@@ -1171,20 +1176,20 @@ strings:
   ' (%d KB free)': ' (%d KB slobodno)'
   ' (%u MB free)': ' (%u MB slobodno)'
   'BESIDE RIPPS2: %sAUDIO%s, read first at boot': 'PORED RIPPS2: %sAUDIO%s, čita se prvo pri pokretanju'
-  ? '- PS2BBL 1.2.0 is bound to this card by the console and written as %s/%s.
+  ? '- PS2BBL is bound to this card by the console and written as %s/%s.
   
-    - Its config, mc%d:/PS2BBL/CONFIG.INI, starts RIPPS2 where it is (%s) with no wait (0 ms, which PS2BBL Extended does not allow), BOOT LOCK on. RIPPS2 itself is not copied.
+    - Its config, mc%d:/SYS-CONF/PS2BBL.INI, starts RIPPS2 where it is (%s) with no wait (0 ms, which PS2BBL Extended does not allow), BOOT LOCK on. RIPPS2 itself is not copied.
   
     The I/O processor restarts for this and every drive read stops until it is done; music and drives come back after. Keep the card in and the console on until it says done.'
-  : '- Konzola vezuje PS2BBL 1.2.0 za ovu karticu i upisuje ga kao %s/%s.
+  : '- Konzola vezuje PS2BBL za ovu karticu i upisuje ga kao %s/%s.
   
-    - Njegova konfiguracija, mc%d:/PS2BBL/CONFIG.INI, pokreće RIPPS2 tamo gde jeste (%s) bez čekanja (0 ms, što PS2BBL Extended ne dozvoljava), BOOT LOCK uključen. Sam RIPPS2 se ne kopira.
+    - Njegova konfiguracija, mc%d:/SYS-CONF/PS2BBL.INI, pokreće RIPPS2 tamo gde jeste (%s) bez čekanja (0 ms, što PS2BBL Extended ne dozvoljava), BOOT LOCK uključen. Sam RIPPS2 se ne kopira.
   
     U/I procesor se zbog toga ponovo pokreće i svako čitanje diskova staje dok se ne završi; muzika i diskovi se vraćaju posle. Ostavi karticu unutra i konzolu uključenu dok ne javi da je gotovo.'
   ? 'An SD2PSX or MMCE card may protect itself after a refused write: if the memory card or the MMCE drive is missing now, turn the console off and on.'
   : 'Kartica SD2PSX ili MMCE može da se zaštiti posle odbijenog upisa: ako sada nedostaje memorijska kartica ili MMCE disk, isključi i ponovo uključi konzolu.'
   BOOT LOCK ON: BOOT LOCK UKLJUČEN
-  'Done: the memory card in slot %d starts what it started before BBL 1.20. BBL 1.20 is kept in mc%d:/%s.': 'Gotovo: memorijska kartica u slotu %d pokreće ono što je pokretala pre BBL 1.20. BBL 1.20 se čuva u mc%d:/%s.'
+  'Done: the memory card in slot %d starts what it started before BIBLE. BIBLE is kept in mc%d:/%s.': 'Gotovo: memorijska kartica u slotu %d pokreće ono što je pokretala pre BIBLE. BIBLE se čuva u mc%d:/%s.'
   ? 'For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 2''s config before slot 1''s.
   
     '
@@ -1192,60 +1197,60 @@ strings:
   
     '
   MEMORY CARD IN SLOT %d  (%s): MEMORIJSKA KARTICA U SLOTU %d  (%s)
-  ? PS2BBL 1.2.0 cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
-  : PS2BBL 1.2.0 ne može da pokrene RIPPS2 sa mesta gde je sada (dohvata memorijske kartice, USB diskove i MX4SIO), a RIPPS2 ne kopira sam sebe. Stavi RIPPS2.ELF na memorijsku karticu ili USB disk i pokreni ga odatle, ili koristi PS2BBL Extended, koji čita MMCE i hard disk.
+  ? PS2BBL cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
+  : PS2BBL ne može da pokrene RIPPS2 sa mesta gde je sada (dohvata memorijske kartice, USB diskove i MX4SIO), a RIPPS2 ne kopira sam sebe. Stavi RIPPS2.ELF na memorijsku karticu ili USB disk i pokreni ga odatle, ili koristi PS2BBL Extended, koji čita MMCE i hard disk.
   RESTORE SLOT %d'S OLD BOOT LOADER: VRATI STARI UČITAVAČ U SLOTU %d
-  ? 'RIPPS2: BBL 1.20 is set up on the memory card in slot %d (mc%d:/%s/%s), BOOT LOCK on: at power on it starts RIPPS2 from %s, at once.'
-  : 'RIPPS2: BBL 1.20 je podešen na memorijskoj kartici u slotu %d (mc%d:/%s/%s), BOOT LOCK uključen: pri uključivanju odmah pokreće RIPPS2 sa %s.'
-  ? 'RIPPS2: Setting up BBL 1.20
+  ? 'RIPPS2: BIBLE is set up on the memory card in slot %d (mc%d:/%s/%s), BOOT LOCK on: at power on it starts RIPPS2 from %s, at once.'
+  : 'RIPPS2: BIBLE je podešen na memorijskoj kartici u slotu %d (mc%d:/%s/%s), BOOT LOCK uključen: pri uključivanju odmah pokreće RIPPS2 sa %s.'
+  ? 'RIPPS2: Setting up BIBLE
   
     '
-  : 'RIPPS2: podešavanje BBL 1.20
+  : 'RIPPS2: podešavanje BIBLE
   
     '
-  ? 'RIPPS2: Setting up BBL 1.20
+  ? 'RIPPS2: Setting up BIBLE
   
-    RIPPS2 runs from %s, which PS2BBL 1.2.0 cannot read (it reads memory cards, USB and MX4SIO), and RIPPS2 does not copy itself. The PS2BBL Extended config on this card (%s) reads it: START turns BOOT LOCK on, so it starts RIPPS2 from %s at power on. Nothing else on the card changes.'
-  : 'RIPPS2: podešavanje BBL 1.20
+    RIPPS2 runs from %s, which PS2BBL cannot read (it reads memory cards, USB and MX4SIO), and RIPPS2 does not copy itself. The PS2BBL Extended config on this card (%s) reads it: START turns BOOT LOCK on, so it starts RIPPS2 from %s at power on. Nothing else on the card changes.'
+  : 'RIPPS2: podešavanje BIBLE
   
-    RIPPS2 radi sa %s, što PS2BBL 1.2.0 ne može da čita (čita memorijske kartice, USB i MX4SIO), a RIPPS2 ne kopira sam sebe. Konfiguracija PS2BBL Extended na ovoj kartici (%s) to čita: START uključuje BOOT LOCK, pa pri uključivanju pokreće RIPPS2 sa %s. Ništa drugo na kartici se ne menja.'
-  ? 'RIPPS2: Setting up BBL 1.20
+    RIPPS2 radi sa %s, što PS2BBL ne može da čita (čita memorijske kartice, USB i MX4SIO), a RIPPS2 ne kopira sam sebe. Konfiguracija PS2BBL Extended na ovoj kartici (%s) to čita: START uključuje BOOT LOCK, pa pri uključivanju pokreće RIPPS2 sa %s. Ništa drugo na kartici se ne menja.'
+  ? 'RIPPS2: Setting up BIBLE
   
-    RIPPS2 runs from %s, which PS2BBL 1.2.0 cannot read: it starts programs from a memory card, a USB drive or MX4SIO, and RIPPS2 does not copy itself. Put RIPPS2.ELF on one of those (a memory card''s APPS folder, or a USB drive), start it from there, then set up BIBLE again.'
-  : 'RIPPS2: podešavanje BBL 1.20
+    RIPPS2 runs from %s, which PS2BBL cannot read: it starts programs from a memory card, a USB drive or MX4SIO, and RIPPS2 does not copy itself. Put RIPPS2.ELF on one of those (a memory card''s APPS folder, or a USB drive), start it from there, then set up BIBLE again.'
+  : 'RIPPS2: podešavanje BIBLE
   
-    RIPPS2 radi sa %s, što PS2BBL 1.2.0 ne može da čita: pokreće programe sa memorijske kartice, USB diska ili MX4SIO, a RIPPS2 ne kopira sam sebe. Stavi RIPPS2.ELF na jedno od toga (fasciklu APPS memorijske kartice ili USB disk), pokreni ga odatle, pa ponovo podesi BIBLE.'
-  ? 'RIPPS2: Setting up BBL 1.20
+    RIPPS2 radi sa %s, što PS2BBL ne može da čita: pokreće programe sa memorijske kartice, USB diska ili MX4SIO, a RIPPS2 ne kopira sam sebe. Stavi RIPPS2.ELF na jedno od toga (fasciklu APPS memorijske kartice ili USB disk), pokreni ga odatle, pa ponovo podesi BIBLE.'
+  ? 'RIPPS2: Setting up BIBLE
   
-    The memory card in slot %d: BBL 1.20 (mc%d:/%s) moves aside, and what it replaced (mc%d:/%s) goes back in its place. Nothing is deleted. The PS2BBL config stays as it is (BOOT LOCK can turn the lock off).'
-  : 'RIPPS2: podešavanje BBL 1.20
+    The memory card in slot %d: BIBLE (mc%d:/%s) moves aside, and what it replaced (mc%d:/%s) goes back in its place. Nothing is deleted. The PS2BBL config stays as it is (BOOT LOCK can turn the lock off).'
+  : 'RIPPS2: podešavanje BIBLE
   
-    Memorijska kartica u slotu %d: BBL 1.20 (mc%d:/%s) se sklanja, a ono što je zamenio (mc%d:/%s) se vraća na svoje mesto. Ništa se ne briše. Konfiguracija PS2BBL ostaje kakva jeste (BOOT LOCK može da isključi zaključavanje).'
-  'RIPPS2: Setting up BBL 1.20 (binding PS2BBL to the memory card)': 'RIPPS2: podešavanje BBL 1.20 (vezivanje PS2BBL za memorijsku karticu)'
-  'RIPPS2: Setting up BBL 1.20 (putting back what was there)': 'RIPPS2: podešavanje BBL 1.20 (vraćanje onoga što je bilo)'
-  'RIPPS2: Setting up BBL 1.20 (restarting the I/O processor)': 'RIPPS2: podešavanje BBL 1.20 (ponovno pokretanje U/I procesora)'
-  'RIPPS2: Setting up BBL 1.20 (writing it to the memory card)': 'RIPPS2: podešavanje BBL 1.20 (upis na memorijsku karticu)'
-  SET UP BBL 1.20: PODESI BBL 1.20
+    Memorijska kartica u slotu %d: BIBLE (mc%d:/%s) se sklanja, a ono što je zamenio (mc%d:/%s) se vraća na svoje mesto. Ništa se ne briše. Konfiguracija PS2BBL ostaje kakva jeste (BOOT LOCK može da isključi zaključavanje).'
+  'RIPPS2: Setting up BIBLE (binding PS2BBL to the memory card)': 'RIPPS2: podešavanje BIBLE (vezivanje PS2BBL za memorijsku karticu)'
+  'RIPPS2: Setting up BIBLE (putting back what was there)': 'RIPPS2: podešavanje BIBLE (vraćanje onoga što je bilo)'
+  'RIPPS2: Setting up BIBLE (restarting the I/O processor)': 'RIPPS2: podešavanje BIBLE (ponovno pokretanje U/I procesora)'
+  'RIPPS2: Setting up BIBLE (writing it to the memory card)': 'RIPPS2: podešavanje BIBLE (upis na memorijsku karticu)'
+  SET UP BIBLE: PODESI BIBLE
   ? 'SLOT 1: %s
   
     SLOT 2: %s
   
     %s
   
-    RIPPS2: Setting up BBL 1.20. PS2BBL 1.2.0 by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
+    RIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
   : 'SLOT 1: %s
   
     SLOT 2: %s
   
     %s
   
-    RIPPS2: podešavanje BBL 1.20. PS2BBL 1.2.0 autora El Isre, koji RIPPS2 podešava na običnoj PS2 memorijskoj kartici od 8 MB ili unutrašnjem hard disku: pokretanje za 0 ms pri uključivanju (PS2BBL Extended ne dozvoljava 0), prvo RIPPS2 sa mesta gde jeste (nikad se ne kopira), a taster držan pri uključivanju i dalje vodi do pregledača (TRIANGLE), diska (START) i onoga što je bilo pre (CIRCLE). Podesiti, popraviti ili vratiti ono što je zamenio?'
-  The memory card in slot %d has %d KB free, and BBL 1.20 needs %d KB there. Free some space, then try again.: Memorijska kartica u slotu %d ima %d KB slobodno, a BBL 1.20 na njoj treba %d KB. Oslobodi malo mesta pa pokušaj ponovo.
+    RIPPS2: podešavanje BIBLE. PS2BBL autora El Isre, koji RIPPS2 podešava na običnoj PS2 memorijskoj kartici od 8 MB ili unutrašnjem hard disku: pokretanje za 0 ms pri uključivanju (PS2BBL Extended ne dozvoljava 0), prvo RIPPS2 sa mesta gde jeste (nikad se ne kopira), a taster držan pri uključivanju i dalje vodi do pregledača (TRIANGLE), diska (START) i onoga što je bilo pre (CIRCLE). Podesiti, popraviti ili vratiti ono što je zamenio?'
+  The memory card in slot %d has %d KB free, and BIBLE needs %d KB there. Free some space, then try again.: Memorijska kartica u slotu %d ima %d KB slobodno, a BIBLE na njoj treba %d KB. Oslobodi malo mesta pa pokušaj ponovo.
   ? The memory card in slot %d refused PS2BBL, so RIPPS2 put the card back as it was. Check its free space, then try again. (DIAG.TXT beside RIPPS2 has what the card said.)
   : Memorijska kartica u slotu %d je odbila PS2BBL, pa je RIPPS2 ostavio karticu kakva je bila. Proveri slobodno mesto pa pokušaj ponovo. (DIAG.TXT pored RIPPS2 sadrži odgovor kartice.)
-  ? The memory card in slot %d would not move BBL 1.20 aside, so nothing was changed. (DIAG.TXT beside RIPPS2 has what the card said.)
-  : Memorijska kartica u slotu %d nije htela da skloni BBL 1.20, pa se ništa nije promenilo. (DIAG.TXT pored RIPPS2 sadrži odgovor kartice.)
-  The memory card in slot %d would not take %s back, so BBL 1.20 stayed. (DIAG.TXT beside RIPPS2 has what the card said.): Memorijska kartica u slotu %d nije htela da vrati %s, pa je BBL 1.20 ostao. (DIAG.TXT pored RIPPS2 sadrži odgovor kartice.)
+  ? The memory card in slot %d would not move BIBLE aside, so nothing was changed. (DIAG.TXT beside RIPPS2 has what the card said.)
+  : Memorijska kartica u slotu %d nije htela da skloni BIBLE, pa se ništa nije promenilo. (DIAG.TXT pored RIPPS2 sadrži odgovor kartice.)
+  The memory card in slot %d would not take %s back, so BIBLE stayed. (DIAG.TXT beside RIPPS2 has what the card said.): Memorijska kartica u slotu %d nije htela da vrati %s, pa je BIBLE ostao. (DIAG.TXT pored RIPPS2 sadrži odgovor kartice.)
   MUSIC: MUZIKA
   '%s%s has no %s. RIPPOPS found Sony''s PS1 emulator on %s: START copies %s here and starts the game.': '%s%s nema %s. RIPPOPS je pronašao Sony PS1 emulator na %s: START kopira %s ovde i pokreće igru.'
   ? 'RIPPS2 does not see %s in %s%s. POPSTARTER needs POPS_IOX.PAK with POPS.PAK, or with POPS.ELF and IOPRP252.IMG: Sony''s PS1 emulator, from your own console. It may find them where RIPPS2 does not look (if your games start, it does). START launches, and this drive is not asked about again.'
@@ -1260,8 +1265,8 @@ strings:
   BOOT LOCK is off. Your boot loader starts what it started before (%s).: BOOT LOCK je isključen. Vaš učitavač pokreće ono što je pokretao ranije (%s).
   ? BOOT LOCK is on. %s now starts RIPPS2 at power on (%s), and an empty IGR Path sends a game's EXIT back the same way. Hold one of its buttons while the console starts to reach anything else.%s
   : BOOT LOCK je uključen. %s sada pokreće RIPPS2 pri uključivanju (%s), a prazna IGR Putanja vraća EXIT iz igre istim putem. Držite jedan od njegovih tastera dok se konzola pokreće da biste stigli do nečeg drugog.%s
-  ? 'BOOT LOCK put RIPPS2 first in OSDMenu''s menu (%s). OSDMenu starts nothing by itself: pick RIPPS2 there, and a game''s EXIT comes back to that menu. For a console that starts RIPPS2 at once, BIBLE puts PS2BBL 1.2.0 on a memory card (Boot Loader).'
-  : 'BOOT LOCK je stavio RIPPS2 na prvo mesto u meniju OSDMenu-a (%s). OSDMenu sam ništa ne pokreće: izaberite tamo RIPPS2, a EXIT iz igre se vraća u taj meni. Za konzolu koja odmah pokreće RIPPS2, BIBLE stavlja PS2BBL 1.2.0 na memorijsku karticu (Učitavač).'
+  ? 'BOOT LOCK put RIPPS2 first in OSDMenu''s menu (%s). OSDMenu starts nothing by itself: pick RIPPS2 there, and a game''s EXIT comes back to that menu. For a console that starts RIPPS2 at once, BIBLE puts PS2BBL on a memory card (Boot Loader).'
+  : 'BOOT LOCK je stavio RIPPS2 na prvo mesto u meniju OSDMenu-a (%s). OSDMenu sam ništa ne pokreće: izaberite tamo RIPPS2, a EXIT iz igre se vraća u taj meni. Za konzolu koja odmah pokreće RIPPS2, BIBLE stavlja PS2BBL na memorijsku karticu (Učitavač).'
   BOOT LOCK works through a boot loader on a memory card (PS2BBL, FMCB or OSDMenu), and there is none here.: BOOT LOCK radi preko učitavača na memorijskoj kartici (PS2BBL, FMCB ili OSDMenu), a ovde ga nema.
   The memory card in slot %d starts %s at power on, and BOOT LOCK found no config of it to change (it looks for %s).: Memorijska kartica u slotu %d pri uključivanju pokreće %s, a BOOT LOCK nije pronašao njegovu konfiguraciju za izmenu (traži %s).
   'The memory card in slot %d starts %s at power on, which BOOT LOCK cannot set: it works through PS2BBL, FMCB and OSDMenu.': 'Memorijska kartica u slotu %d pri uključivanju pokreće %s, koji BOOT LOCK ne može da podesi: radi preko PS2BBL-a, FMCB-a i OSDMenu-a.'

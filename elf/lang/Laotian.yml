@@ -3,6 +3,12 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Laotian
 strings:
+  "FILE NAME": "ຊື່ໄຟລ໌"
+  "GAME LIST": "ລາຍຊື່ເກມ"
+  "%s in %s": "%s ໃນ %s"
+  "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "ການຂຽນຖືກປິດຢູ່, ສະນັ້ນ RIPPS2 ບໍ່ສາມາດບັນທຶກລາຍລະອຽດຂອງເກມ ຫຼື ປ່ຽນຊື່ໄດ້. ເປີດບໍ?"
+  "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "BIBLE ສ້າງຂຶ້ນຈາກ PS2BBL ຂອງ El Isra, ສະບັບສຳລັບກາດ ແລະ HDD ຖືກເຊັນສຳລັບ RIPPS2 (GPL-3)"
+  "This is RIPPS2 lite, which carries no Neutrino. Put Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in a neutrino folder on a memory card or the game's drive, or use the full RIPPS2.elf, which installs it for you.": "ນີ້ແມ່ນ RIPPS2 lite, ທີ່ບໍ່ມີ Neutrino. ໃສ່ Neutrino (rickgaiser, github.com/rickgaiser/neutrino) ໃນໂຟນເດີ neutrino ເທິງເມມໂມຣີກາດ ຫຼື ໄດຣຟ໌ຂອງເກມ, ຫຼື ໃຊ້ RIPPS2.elf ເຕັມ, ທີ່ຕິດຕັ້ງໃຫ້ທ່ານ."
   "START %s": "ເລີ່ມ %s"
   "NETWORK": "ເຄືອຂ່າຍ"
   "%s did not answer. Is it connected?": "%s ບໍ່ຕອບ. ເຊື່ອມຕໍ່ແລ້ວບໍ?"
@@ -97,7 +103,6 @@ strings:
   BACK: ກັບຄືນ
   Back (keeps both): ກັບຄືນ (ເກັບໄວ້ທັງສອງ)
   This MMCE card cannot rename a file, which compression needs for its last step. Update its sd2psXtd firmware to 1.4.0 or newer (sd2psxtd.github.io/download), then try again. Nothing was changed.: ບັດ MMCE ນີ້ປ່ຽນຊື່ໄຟລ໌ບໍ່ໄດ້, ເຊິ່ງການບີບອັດຕ້ອງໃຊ້ໃນຂັ້ນຕອນສຸດທ້າຍ. ອັບເດດເຟີມແວ sd2psXtd ຂອງມັນເປັນ 1.4.0 ຫຼື ໃໝ່ກວ່າ (sd2psxtd.github.io/download), ແລ້ວລອງໃໝ່. ບໍ່ມີຫຍັງຖືກປ່ຽນ.
-  BIBLE is PS2BBL 1.2.0, El Isra's signed builds (card and HDD), unchanged (GPL-3): BIBLE ແມ່ນ PS2BBL 1.2.0, ບິວທີ່ເຊັນແລ້ວ ຂອງ El Isra (ກາດ ແລະ HDD), ບໍ່ໄດ້ປ່ຽນແປງ (GPL-3)
   BIOS Sounds > Rip plays them as the SPU2 does; no BIOS ships: ສຽງ BIOS > ຖອດ ຫຼິ້ນພວກມັນຄືກັບ SPU2; ບໍ່ມີ BIOS ມາພ້ອມ
   BOOT LOCK AND BIBLE: BOOT LOCK ແລະ BIBLE
   BOOT LOCK edits its config too: BOOT LOCK ແກ້ໄຂ ການຕັ້ງຄ່າຂອງມັນດ້ວຍ
@@ -224,8 +229,8 @@ strings:
   : ' ເມມໂມຣີກາດໜຶ່ງ ຢູ່ນີ້ ມີ PS2BBL/CONFIG.INI ຂອງມັນເອງ, ເຊິ່ງ PS2BBL ອ່ານກ່ອນ ອັນຂອງ HDD: ຖອດກາດນັ້ນອອກ ຕອນເປີດເຄື່ອງ, ຫຼື ເລີ່ມ RIPPS2 ຈາກກາດ ແລ້ວ ຕິດຕັ້ງໃໝ່.'
   ' Hold TRIANGLE at power on for the browser, START for a disc.': ' ກົດ ສາມຫຼ່ຽມ ຄ້າງໄວ້ ຕອນເປີດເຄື່ອງ ສຳລັບໂຕທ່ອງ, START ສຳລັບແຜ່ນ.'
   ' Hold TRIANGLE for the browser, START for a disc. Config: %s.': ' ກົດ ສາມຫຼ່ຽມ ຄ້າງໄວ້ ສຳລັບໂຕທ່ອງ, START ສຳລັບແຜ່ນ. ການຕັ້ງຄ່າ: %s.'
-  ? ' RIPPS2 can install BIBLE, PS2BBL 1.2.0 set up to start RIPPS2, on a memory card; what starts from it now is kept in a backup folder. Install BIBLE?'
-  : ' RIPPS2 ຕິດຕັ້ງ BIBLE ໄດ້, ຄື PS2BBL 1.2.0 ທີ່ຕັ້ງໃຫ້ເລີ່ມ RIPPS2, ເທິງເມມໂມຣີກາດ; ສິ່ງທີ່ເລີ່ມຈາກມັນດຽວນີ້ ຈະຖືກເກັບໄວ້ ໃນໂຟນເດີສຳຮອງ. ຕິດຕັ້ງ BIBLE ບໍ?'
+  ? ' RIPPS2 can install BIBLE, PS2BBL set up to start RIPPS2, on a memory card; what starts from it now is kept in a backup folder. Install BIBLE?'
+  : ' RIPPS2 ຕິດຕັ້ງ BIBLE ໄດ້, ຄື PS2BBL ທີ່ຕັ້ງໃຫ້ເລີ່ມ RIPPS2, ເທິງເມມໂມຣີກາດ; ສິ່ງທີ່ເລີ່ມຈາກມັນດຽວນີ້ ຈະຖືກເກັບໄວ້ ໃນໂຟນເດີສຳຮອງ. ຕິດຕັ້ງ BIBLE ບໍ?'
   ' The HDD''s old boot program is kept (MANAGE > RESTORE).': ' ໂປຣແກຣມບູດເກົ່າ ຂອງ HDD ຖືກເກັບໄວ້ (ຈັດການ > ກູ້ຄືນ).'
   ' The console would not take the setting that starts its HDD at power on: set it with the HDD utility, or install again.': ' ເຄື່ອງ ບໍ່ຮັບການຕັ້ງຄ່າ ທີ່ເລີ່ມ HDD ຂອງມັນ ຕອນເປີດເຄື່ອງ: ຕັ້ງມັນດ້ວຍເຄື່ອງມື HDD, ຫຼື ຕິດຕັ້ງໃໝ່.'
   ' What was there before is kept in mc%d:/%s%s.': ' ສິ່ງທີ່ເຄີຍຢູ່ນັ້ນ ຖືກເກັບໄວ້ໃນ mc%d:/%s%s.'
@@ -267,7 +272,7 @@ strings:
 
     - The HDD''s boot program now in __mbr is read out and kept in %s/RIPPS2 (RESTORE puts it back).
 
-    - PS2BBL 1.2.0''s HDD build is written in its place, and the console set to start it at power on.
+    - PS2BBL''s HDD build is written in its place, and the console set to start it at power on.
 
     - Its config (%s) starts RIPPS2 from %s first%s%s, BOOT LOCK on.
 
@@ -278,7 +283,7 @@ strings:
 
     - ໂປຣແກຣມບູດຂອງ HDD ທີ່ຢູ່ໃນ __mbr ດຽວນີ້ ຖືກອ່ານ ແລະ ເກັບໄວ້ໃນ %s/RIPPS2 (ກູ້ຄືນ ໃສ່ມັນຄືນ).
 
-    - ບິວ HDD ຂອງ PS2BBL 1.2.0 ຖືກຂຽນແທນທີ່, ແລະ ເຄື່ອງຖືກຕັ້ງໃຫ້ເລີ່ມມັນ ຕອນເປີດເຄື່ອງ.
+    - ບິວ HDD ຂອງ PS2BBL ຖືກຂຽນແທນທີ່, ແລະ ເຄື່ອງຖືກຕັ້ງໃຫ້ເລີ່ມມັນ ຕອນເປີດເຄື່ອງ.
 
     - ການຕັ້ງຄ່າຂອງມັນ (%s) ເລີ່ມ RIPPS2 ຈາກ %s ກ່ອນ%s%s, BOOT LOCK ເປີດ.
 
@@ -783,7 +788,7 @@ strings:
   POPSTARTER NETWORK: ເຄືອຂ່າຍ POPSTARTER
   POPSTARTER and Ember: POPSTARTER ແລະ Ember
   PS1 SETTINGS: ການຕັ້ງຄ່າ PS1
-  PS2BBL 1.2.0 for RIPPS2: PS2BBL 1.2.0 ສຳລັບ RIPPS2
+  PS2BBL for RIPPS2: PS2BBL ສຳລັບ RIPPS2
   RIP THIS CONSOLE'S SOUNDS: ຖອດສຽງ ຂອງເຄື່ອງນີ້
   STATUS: ສະຖານະ
   a drive of unknown kind: ໄດຣຟ໌ ປະເພດທີ່ບໍ່ຮູ້ຈັກ
@@ -1171,20 +1176,20 @@ strings:
   ' (%d KB free)': ' (ຫວ່າງ %d KB)'
   ' (%u MB free)': ' (ຫວ່າງ %u MB)'
   'BESIDE RIPPS2: %sAUDIO%s, read first at boot': 'ຂ້າງ RIPPS2: %sAUDIO%s, ອ່ານກ່ອນໝູ່ຕອນເລີ່ມ'
-  ? '- PS2BBL 1.2.0 is bound to this card by the console and written as %s/%s.
+  ? '- PS2BBL is bound to this card by the console and written as %s/%s.
   
-    - Its config, mc%d:/PS2BBL/CONFIG.INI, starts RIPPS2 where it is (%s) with no wait (0 ms, which PS2BBL Extended does not allow), BOOT LOCK on. RIPPS2 itself is not copied.
+    - Its config, mc%d:/SYS-CONF/PS2BBL.INI, starts RIPPS2 where it is (%s) with no wait (0 ms, which PS2BBL Extended does not allow), BOOT LOCK on. RIPPS2 itself is not copied.
   
     The I/O processor restarts for this and every drive read stops until it is done; music and drives come back after. Keep the card in and the console on until it says done.'
-  : '- ເຄື່ອງຈະຜູກ PS2BBL 1.2.0 ກັບກາດນີ້ ແລະ ຂຽນເປັນ %s/%s.
+  : '- ເຄື່ອງຈະຜູກ PS2BBL ກັບກາດນີ້ ແລະ ຂຽນເປັນ %s/%s.
   
-    - ການຕັ້ງຄ່າຂອງມັນ, mc%d:/PS2BBL/CONFIG.INI, ເລີ່ມ RIPPS2 ຈາກບ່ອນທີ່ມັນຢູ່ (%s) ໂດຍບໍ່ລໍຖ້າ (0 ms, ເຊິ່ງ PS2BBL Extended ບໍ່ອະນຸຍາດ), BOOT LOCK ເປີດ. ບໍ່ສຳເນົາ RIPPS2 ເອງ.
+    - ການຕັ້ງຄ່າຂອງມັນ, mc%d:/SYS-CONF/PS2BBL.INI, ເລີ່ມ RIPPS2 ຈາກບ່ອນທີ່ມັນຢູ່ (%s) ໂດຍບໍ່ລໍຖ້າ (0 ms, ເຊິ່ງ PS2BBL Extended ບໍ່ອະນຸຍາດ), BOOT LOCK ເປີດ. ບໍ່ສຳເນົາ RIPPS2 ເອງ.
   
     ໂປຣເຊສເຊີ I/O ຈະເລີ່ມໃໝ່ເພື່ອການນີ້ ແລະ ການອ່ານໄດຣຟ໌ທັງໝົດຈະຢຸດຈົນກວ່າຈະແລ້ວ; ດົນຕີ ແລະ ໄດຣຟ໌ຈະກັບມາຫຼັງຈາກນັ້ນ. ໃຫ້ສຽບກາດໄວ້ ແລະ ເປີດເຄື່ອງໄວ້ຈົນກວ່າມັນບອກວ່າແລ້ວ.'
   ? 'An SD2PSX or MMCE card may protect itself after a refused write: if the memory card or the MMCE drive is missing now, turn the console off and on.'
   : 'ກາດ SD2PSX ຫຼື MMCE ອາດປ້ອງກັນຕົວເອງຫຼັງຈາກການຂຽນຖືກປະຕິເສດ: ຖ້າຕອນນີ້ເມມໂມຣີກາດ ຫຼື ໄດຣຟ໌ MMCE ຫາຍໄປ, ໃຫ້ປິດເຄື່ອງແລ້ວເປີດໃໝ່.'
   BOOT LOCK ON: BOOT LOCK ເປີດ
-  'Done: the memory card in slot %d starts what it started before BBL 1.20. BBL 1.20 is kept in mc%d:/%s.': 'ແລ້ວ: ເມມໂມຣີກາດໃນຊ່ອງ %d ເລີ່ມສິ່ງທີ່ມັນເຄີຍເລີ່ມກ່ອນ BBL 1.20. ເກັບ BBL 1.20 ໄວ້ໃນ mc%d:/%s.'
+  'Done: the memory card in slot %d starts what it started before BIBLE. BIBLE is kept in mc%d:/%s.': 'ແລ້ວ: ເມມໂມຣີກາດໃນຊ່ອງ %d ເລີ່ມສິ່ງທີ່ມັນເຄີຍເລີ່ມກ່ອນ BIBLE. ເກັບ BIBLE ໄວ້ໃນ mc%d:/%s.'
   ? 'For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 2''s config before slot 1''s.
   
     '
@@ -1192,60 +1197,60 @@ strings:
   
     '
   MEMORY CARD IN SLOT %d  (%s): ເມມໂມຣີກາດໃນຊ່ອງ %d  (%s)
-  ? PS2BBL 1.2.0 cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
-  : PS2BBL 1.2.0 ເລີ່ມ RIPPS2 ຈາກບ່ອນທີ່ມັນຢູ່ຕອນນີ້ບໍ່ໄດ້ (ມັນເຂົ້າເຖິງເມມໂມຣີກາດ, ໄດຣຟ໌ USB ແລະ MX4SIO), ແລະ RIPPS2 ບໍ່ສຳເນົາຕົວເອງ. ໃຫ້ວາງ RIPPS2.ELF ໄວ້ໃນເມມໂມຣີກາດ ຫຼື ໄດຣຟ໌ USB ແລ້ວເລີ່ມຈາກບ່ອນນັ້ນ, ຫຼື ໃຊ້ PS2BBL Extended ທີ່ອ່ານ MMCE ແລະ ຮາດດິດໄດ້.
+  ? PS2BBL cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
+  : PS2BBL ເລີ່ມ RIPPS2 ຈາກບ່ອນທີ່ມັນຢູ່ຕອນນີ້ບໍ່ໄດ້ (ມັນເຂົ້າເຖິງເມມໂມຣີກາດ, ໄດຣຟ໌ USB ແລະ MX4SIO), ແລະ RIPPS2 ບໍ່ສຳເນົາຕົວເອງ. ໃຫ້ວາງ RIPPS2.ELF ໄວ້ໃນເມມໂມຣີກາດ ຫຼື ໄດຣຟ໌ USB ແລ້ວເລີ່ມຈາກບ່ອນນັ້ນ, ຫຼື ໃຊ້ PS2BBL Extended ທີ່ອ່ານ MMCE ແລະ ຮາດດິດໄດ້.
   RESTORE SLOT %d'S OLD BOOT LOADER: ກູ້ຄືນຕົວໂຫຼດບູດເກົ່າຂອງຊ່ອງ %d
-  ? 'RIPPS2: BBL 1.20 is set up on the memory card in slot %d (mc%d:/%s/%s), BOOT LOCK on: at power on it starts RIPPS2 from %s, at once.'
-  : 'RIPPS2: ຕັ້ງ BBL 1.20 ໄວ້ໃນເມມໂມຣີກາດຊ່ອງ %d ແລ້ວ (mc%d:/%s/%s), BOOT LOCK ເປີດ: ຕອນເປີດເຄື່ອງມັນເລີ່ມ RIPPS2 ຈາກ %s ທັນທີ.'
-  ? 'RIPPS2: Setting up BBL 1.20
+  ? 'RIPPS2: BIBLE is set up on the memory card in slot %d (mc%d:/%s/%s), BOOT LOCK on: at power on it starts RIPPS2 from %s, at once.'
+  : 'RIPPS2: ຕັ້ງ BIBLE ໄວ້ໃນເມມໂມຣີກາດຊ່ອງ %d ແລ້ວ (mc%d:/%s/%s), BOOT LOCK ເປີດ: ຕອນເປີດເຄື່ອງມັນເລີ່ມ RIPPS2 ຈາກ %s ທັນທີ.'
+  ? 'RIPPS2: Setting up BIBLE
   
     '
-  : 'RIPPS2: ກຳລັງຕັ້ງ BBL 1.20
+  : 'RIPPS2: ກຳລັງຕັ້ງ BIBLE
   
     '
-  ? 'RIPPS2: Setting up BBL 1.20
+  ? 'RIPPS2: Setting up BIBLE
   
-    RIPPS2 runs from %s, which PS2BBL 1.2.0 cannot read (it reads memory cards, USB and MX4SIO), and RIPPS2 does not copy itself. The PS2BBL Extended config on this card (%s) reads it: START turns BOOT LOCK on, so it starts RIPPS2 from %s at power on. Nothing else on the card changes.'
-  : 'RIPPS2: ກຳລັງຕັ້ງ BBL 1.20
+    RIPPS2 runs from %s, which PS2BBL cannot read (it reads memory cards, USB and MX4SIO), and RIPPS2 does not copy itself. The PS2BBL Extended config on this card (%s) reads it: START turns BOOT LOCK on, so it starts RIPPS2 from %s at power on. Nothing else on the card changes.'
+  : 'RIPPS2: ກຳລັງຕັ້ງ BIBLE
   
-    RIPPS2 ແລ່ນຈາກ %s, ເຊິ່ງ PS2BBL 1.2.0 ອ່ານບໍ່ໄດ້ (ມັນອ່ານເມມໂມຣີກາດ, USB ແລະ MX4SIO), ແລະ RIPPS2 ບໍ່ສຳເນົາຕົວເອງ. ການຕັ້ງຄ່າ PS2BBL Extended ໃນກາດນີ້ (%s) ອ່ານມັນໄດ້: START ເປີດ BOOT LOCK, ເພື່ອໃຫ້ມັນເລີ່ມ RIPPS2 ຈາກ %s ຕອນເປີດເຄື່ອງ. ບໍ່ມີຫຍັງອື່ນໃນກາດປ່ຽນ.'
-  ? 'RIPPS2: Setting up BBL 1.20
+    RIPPS2 ແລ່ນຈາກ %s, ເຊິ່ງ PS2BBL ອ່ານບໍ່ໄດ້ (ມັນອ່ານເມມໂມຣີກາດ, USB ແລະ MX4SIO), ແລະ RIPPS2 ບໍ່ສຳເນົາຕົວເອງ. ການຕັ້ງຄ່າ PS2BBL Extended ໃນກາດນີ້ (%s) ອ່ານມັນໄດ້: START ເປີດ BOOT LOCK, ເພື່ອໃຫ້ມັນເລີ່ມ RIPPS2 ຈາກ %s ຕອນເປີດເຄື່ອງ. ບໍ່ມີຫຍັງອື່ນໃນກາດປ່ຽນ.'
+  ? 'RIPPS2: Setting up BIBLE
   
-    RIPPS2 runs from %s, which PS2BBL 1.2.0 cannot read: it starts programs from a memory card, a USB drive or MX4SIO, and RIPPS2 does not copy itself. Put RIPPS2.ELF on one of those (a memory card''s APPS folder, or a USB drive), start it from there, then set up BIBLE again.'
-  : 'RIPPS2: ກຳລັງຕັ້ງ BBL 1.20
+    RIPPS2 runs from %s, which PS2BBL cannot read: it starts programs from a memory card, a USB drive or MX4SIO, and RIPPS2 does not copy itself. Put RIPPS2.ELF on one of those (a memory card''s APPS folder, or a USB drive), start it from there, then set up BIBLE again.'
+  : 'RIPPS2: ກຳລັງຕັ້ງ BIBLE
   
-    RIPPS2 ແລ່ນຈາກ %s, ເຊິ່ງ PS2BBL 1.2.0 ອ່ານບໍ່ໄດ້: ມັນເລີ່ມໂປຣແກຣມຈາກເມມໂມຣີກາດ, ໄດຣຟ໌ USB ຫຼື MX4SIO, ແລະ RIPPS2 ບໍ່ສຳເນົາຕົວເອງ. ໃຫ້ວາງ RIPPS2.ELF ໄວ້ໃນອັນໃດອັນໜຶ່ງ (ໂຟນເດີ APPS ຂອງເມມໂມຣີກາດ, ຫຼື ໄດຣຟ໌ USB), ເລີ່ມຈາກບ່ອນນັ້ນ, ແລ້ວຕັ້ງ BIBLE ອີກຄັ້ງ.'
-  ? 'RIPPS2: Setting up BBL 1.20
+    RIPPS2 ແລ່ນຈາກ %s, ເຊິ່ງ PS2BBL ອ່ານບໍ່ໄດ້: ມັນເລີ່ມໂປຣແກຣມຈາກເມມໂມຣີກາດ, ໄດຣຟ໌ USB ຫຼື MX4SIO, ແລະ RIPPS2 ບໍ່ສຳເນົາຕົວເອງ. ໃຫ້ວາງ RIPPS2.ELF ໄວ້ໃນອັນໃດອັນໜຶ່ງ (ໂຟນເດີ APPS ຂອງເມມໂມຣີກາດ, ຫຼື ໄດຣຟ໌ USB), ເລີ່ມຈາກບ່ອນນັ້ນ, ແລ້ວຕັ້ງ BIBLE ອີກຄັ້ງ.'
+  ? 'RIPPS2: Setting up BIBLE
   
-    The memory card in slot %d: BBL 1.20 (mc%d:/%s) moves aside, and what it replaced (mc%d:/%s) goes back in its place. Nothing is deleted. The PS2BBL config stays as it is (BOOT LOCK can turn the lock off).'
-  : 'RIPPS2: ກຳລັງຕັ້ງ BBL 1.20
+    The memory card in slot %d: BIBLE (mc%d:/%s) moves aside, and what it replaced (mc%d:/%s) goes back in its place. Nothing is deleted. The PS2BBL config stays as it is (BOOT LOCK can turn the lock off).'
+  : 'RIPPS2: ກຳລັງຕັ້ງ BIBLE
   
-    ເມມໂມຣີກາດໃນຊ່ອງ %d: ຍ້າຍ BBL 1.20 (mc%d:/%s) ໄປໄວ້ຂ້າງໆ, ແລະ ສິ່ງທີ່ມັນແທນ (mc%d:/%s) ກັບໄປບ່ອນເດີມ. ບໍ່ລຶບຫຍັງ. ການຕັ້ງຄ່າ PS2BBL ຍັງຄືເກົ່າ (BOOT LOCK ປິດການລັອກໄດ້).'
-  'RIPPS2: Setting up BBL 1.20 (binding PS2BBL to the memory card)': 'RIPPS2: ກຳລັງຕັ້ງ BBL 1.20 (ກຳລັງຜູກ PS2BBL ກັບເມມໂມຣີກາດ)'
-  'RIPPS2: Setting up BBL 1.20 (putting back what was there)': 'RIPPS2: ກຳລັງຕັ້ງ BBL 1.20 (ກຳລັງເອົາຂອງເກົ່າຄືນ)'
-  'RIPPS2: Setting up BBL 1.20 (restarting the I/O processor)': 'RIPPS2: ກຳລັງຕັ້ງ BBL 1.20 (ກຳລັງເລີ່ມໂປຣເຊສເຊີ I/O ໃໝ່)'
-  'RIPPS2: Setting up BBL 1.20 (writing it to the memory card)': 'RIPPS2: ກຳລັງຕັ້ງ BBL 1.20 (ກຳລັງຂຽນລົງເມມໂມຣີກາດ)'
-  SET UP BBL 1.20: ຕັ້ງ BBL 1.20
+    ເມມໂມຣີກາດໃນຊ່ອງ %d: ຍ້າຍ BIBLE (mc%d:/%s) ໄປໄວ້ຂ້າງໆ, ແລະ ສິ່ງທີ່ມັນແທນ (mc%d:/%s) ກັບໄປບ່ອນເດີມ. ບໍ່ລຶບຫຍັງ. ການຕັ້ງຄ່າ PS2BBL ຍັງຄືເກົ່າ (BOOT LOCK ປິດການລັອກໄດ້).'
+  'RIPPS2: Setting up BIBLE (binding PS2BBL to the memory card)': 'RIPPS2: ກຳລັງຕັ້ງ BIBLE (ກຳລັງຜູກ PS2BBL ກັບເມມໂມຣີກາດ)'
+  'RIPPS2: Setting up BIBLE (putting back what was there)': 'RIPPS2: ກຳລັງຕັ້ງ BIBLE (ກຳລັງເອົາຂອງເກົ່າຄືນ)'
+  'RIPPS2: Setting up BIBLE (restarting the I/O processor)': 'RIPPS2: ກຳລັງຕັ້ງ BIBLE (ກຳລັງເລີ່ມໂປຣເຊສເຊີ I/O ໃໝ່)'
+  'RIPPS2: Setting up BIBLE (writing it to the memory card)': 'RIPPS2: ກຳລັງຕັ້ງ BIBLE (ກຳລັງຂຽນລົງເມມໂມຣີກາດ)'
+  SET UP BIBLE: ຕັ້ງ BIBLE
   ? 'SLOT 1: %s
   
     SLOT 2: %s
   
     %s
   
-    RIPPS2: Setting up BBL 1.20. PS2BBL 1.2.0 by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
+    RIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
   : 'ຊ່ອງ 1: %s
   
     ຊ່ອງ 2: %s
   
     %s
   
-    RIPPS2: ກຳລັງຕັ້ງ BBL 1.20. PS2BBL 1.2.0 ຂອງ El Isra, ທີ່ RIPPS2 ຕັ້ງໄວ້ໃນເມມໂມຣີກາດ PS2 ມາດຕະຖານ 8 MB ຫຼື ຮາດດິດພາຍໃນ: ເລີ່ມໃນ 0 ms ຕອນເປີດເຄື່ອງ (PS2BBL Extended ບໍ່ອະນຸຍາດ 0), RIPPS2 ກ່ອນຈາກບ່ອນທີ່ມັນຢູ່ (ບໍ່ເຄີຍສຳເນົາ), ແລະ ປຸ່ມທີ່ກົດຄ້າງຕອນເປີດເຄື່ອງຍັງພາໄປຫາບຣາວເຊີ (TRIANGLE), ແຜ່ນດິສກ໌ (START) ແລະ ສິ່ງທີ່ມີກ່ອນ (CIRCLE). ຕັ້ງ, ສ້ອມແປງ ຫຼື ກູ້ຄືນສິ່ງທີ່ມັນແທນ?'
-  The memory card in slot %d has %d KB free, and BBL 1.20 needs %d KB there. Free some space, then try again.: ເມມໂມຣີກາດໃນຊ່ອງ %d ມີບ່ອນຫວ່າງ %d KB, ແລະ BBL 1.20 ຕ້ອງການ %d KB ຢູ່ນັ້ນ. ໃຫ້ລ້າງພື້ນທີ່ບາງສ່ວນ ແລ້ວລອງໃໝ່.
+    RIPPS2: ກຳລັງຕັ້ງ BIBLE. PS2BBL ຂອງ El Isra, ທີ່ RIPPS2 ຕັ້ງໄວ້ໃນເມມໂມຣີກາດ PS2 ມາດຕະຖານ 8 MB ຫຼື ຮາດດິດພາຍໃນ: ເລີ່ມໃນ 0 ms ຕອນເປີດເຄື່ອງ (PS2BBL Extended ບໍ່ອະນຸຍາດ 0), RIPPS2 ກ່ອນຈາກບ່ອນທີ່ມັນຢູ່ (ບໍ່ເຄີຍສຳເນົາ), ແລະ ປຸ່ມທີ່ກົດຄ້າງຕອນເປີດເຄື່ອງຍັງພາໄປຫາບຣາວເຊີ (TRIANGLE), ແຜ່ນດິສກ໌ (START) ແລະ ສິ່ງທີ່ມີກ່ອນ (CIRCLE). ຕັ້ງ, ສ້ອມແປງ ຫຼື ກູ້ຄືນສິ່ງທີ່ມັນແທນ?'
+  The memory card in slot %d has %d KB free, and BIBLE needs %d KB there. Free some space, then try again.: ເມມໂມຣີກາດໃນຊ່ອງ %d ມີບ່ອນຫວ່າງ %d KB, ແລະ BIBLE ຕ້ອງການ %d KB ຢູ່ນັ້ນ. ໃຫ້ລ້າງພື້ນທີ່ບາງສ່ວນ ແລ້ວລອງໃໝ່.
   ? The memory card in slot %d refused PS2BBL, so RIPPS2 put the card back as it was. Check its free space, then try again. (DIAG.TXT beside RIPPS2 has what the card said.)
   : ເມມໂມຣີກາດໃນຊ່ອງ %d ປະຕິເສດ PS2BBL, ສະນັ້ນ RIPPS2 ປ່ອຍກາດໄວ້ຄືເກົ່າ. ກວດບ່ອນຫວ່າງຂອງມັນ ແລ້ວລອງໃໝ່. (DIAG.TXT ຂ້າງ RIPPS2 ມີຄຳຕອບຂອງກາດ.)
-  ? The memory card in slot %d would not move BBL 1.20 aside, so nothing was changed. (DIAG.TXT beside RIPPS2 has what the card said.)
-  : ເມມໂມຣີກາດໃນຊ່ອງ %d ບໍ່ຍອມຍ້າຍ BBL 1.20 ໄປຂ້າງໆ, ສະນັ້ນບໍ່ມີຫຍັງປ່ຽນ. (DIAG.TXT ຂ້າງ RIPPS2 ມີຄຳຕອບຂອງກາດ.)
-  The memory card in slot %d would not take %s back, so BBL 1.20 stayed. (DIAG.TXT beside RIPPS2 has what the card said.): ເມມໂມຣີກາດໃນຊ່ອງ %d ບໍ່ຍອມຮັບ %s ຄືນ, ສະນັ້ນ BBL 1.20 ຍັງຢູ່. (DIAG.TXT ຂ້າງ RIPPS2 ມີຄຳຕອບຂອງກາດ.)
+  ? The memory card in slot %d would not move BIBLE aside, so nothing was changed. (DIAG.TXT beside RIPPS2 has what the card said.)
+  : ເມມໂມຣີກາດໃນຊ່ອງ %d ບໍ່ຍອມຍ້າຍ BIBLE ໄປຂ້າງໆ, ສະນັ້ນບໍ່ມີຫຍັງປ່ຽນ. (DIAG.TXT ຂ້າງ RIPPS2 ມີຄຳຕອບຂອງກາດ.)
+  The memory card in slot %d would not take %s back, so BIBLE stayed. (DIAG.TXT beside RIPPS2 has what the card said.): ເມມໂມຣີກາດໃນຊ່ອງ %d ບໍ່ຍອມຮັບ %s ຄືນ, ສະນັ້ນ BIBLE ຍັງຢູ່. (DIAG.TXT ຂ້າງ RIPPS2 ມີຄຳຕອບຂອງກາດ.)
   MUSIC: ດົນຕີ
   '%s%s has no %s. RIPPOPS found Sony''s PS1 emulator on %s: START copies %s here and starts the game.': '%s%s ບໍ່ມີ %s. RIPPOPS ພົບໂປຣແກຣມຈຳລອງ PS1 ຂອງ Sony ຢູ່ %s: START ສຳເນົາ %s ມາບ່ອນນີ້ ແລ້ວເລີ່ມເກມ.'
   ? 'RIPPS2 does not see %s in %s%s. POPSTARTER needs POPS_IOX.PAK with POPS.PAK, or with POPS.ELF and IOPRP252.IMG: Sony''s PS1 emulator, from your own console. It may find them where RIPPS2 does not look (if your games start, it does). START launches, and this drive is not asked about again.'
@@ -1260,8 +1265,8 @@ strings:
   BOOT LOCK is off. Your boot loader starts what it started before (%s).: BOOT LOCK ປິດ. ໂຕໂຫຼດບູດຂອງທ່ານ ເລີ່ມສິ່ງທີ່ມັນເຄີຍເລີ່ມ (%s).
   ? BOOT LOCK is on. %s now starts RIPPS2 at power on (%s), and an empty IGR Path sends a game's EXIT back the same way. Hold one of its buttons while the console starts to reach anything else.%s
   : BOOT LOCK ເປີດ. %s ດຽວນີ້ເລີ່ມ RIPPS2 ຕອນເປີດເຄື່ອງ (%s), ແລະ ເມື່ອເສັ້ນທາງ IGR ວ່າງ, EXIT ຂອງເກມ ກັບມາທາງດຽວກັນ. ກົດປຸ່ມໃດໜຶ່ງຂອງມັນຄ້າງໄວ້ ຕອນເຄື່ອງເລີ່ມ ເພື່ອໄປສິ່ງອື່ນ.%s
-  ? 'BOOT LOCK put RIPPS2 first in OSDMenu''s menu (%s). OSDMenu starts nothing by itself: pick RIPPS2 there, and a game''s EXIT comes back to that menu. For a console that starts RIPPS2 at once, BIBLE puts PS2BBL 1.2.0 on a memory card (Boot Loader).'
-  : 'BOOT LOCK ວາງ RIPPS2 ໄວ້ອັນທຳອິດ ໃນເມນູຂອງ OSDMenu (%s). OSDMenu ບໍ່ເລີ່ມຫຍັງເອງ: ເລືອກ RIPPS2 ຢູ່ບ່ອນນັ້ນ, ແລະ EXIT ຂອງເກມ ກັບມາເມນູນັ້ນ. ສຳລັບເຄື່ອງທີ່ເລີ່ມ RIPPS2 ທັນທີ, BIBLE ວາງ PS2BBL 1.2.0 ໄວ້ໃນເມມໂມຣີກາດ (ໂຕໂຫຼດບູດ).'
+  ? 'BOOT LOCK put RIPPS2 first in OSDMenu''s menu (%s). OSDMenu starts nothing by itself: pick RIPPS2 there, and a game''s EXIT comes back to that menu. For a console that starts RIPPS2 at once, BIBLE puts PS2BBL on a memory card (Boot Loader).'
+  : 'BOOT LOCK ວາງ RIPPS2 ໄວ້ອັນທຳອິດ ໃນເມນູຂອງ OSDMenu (%s). OSDMenu ບໍ່ເລີ່ມຫຍັງເອງ: ເລືອກ RIPPS2 ຢູ່ບ່ອນນັ້ນ, ແລະ EXIT ຂອງເກມ ກັບມາເມນູນັ້ນ. ສຳລັບເຄື່ອງທີ່ເລີ່ມ RIPPS2 ທັນທີ, BIBLE ວາງ PS2BBL ໄວ້ໃນເມມໂມຣີກາດ (ໂຕໂຫຼດບູດ).'
   BOOT LOCK works through a boot loader on a memory card (PS2BBL, FMCB or OSDMenu), and there is none here.: BOOT LOCK ເຮັດວຽກ ຜ່ານໂຕໂຫຼດບູດ ໃນເມມໂມຣີກາດ (PS2BBL, FMCB ຫຼື OSDMenu), ແລະ ຢູ່ນີ້ບໍ່ມີເລີຍ.
   The memory card in slot %d starts %s at power on, and BOOT LOCK found no config of it to change (it looks for %s).: ເມມໂມຣີກາດໃນຊ່ອງ %d ເລີ່ມ %s ຕອນເປີດເຄື່ອງ, ແລະ BOOT LOCK ບໍ່ພົບການຕັ້ງຄ່າຂອງມັນ ທີ່ຈະປ່ຽນ (ມັນຊອກຫາ %s).
   'The memory card in slot %d starts %s at power on, which BOOT LOCK cannot set: it works through PS2BBL, FMCB and OSDMenu.': 'ເມມໂມຣີກາດໃນຊ່ອງ %d ເລີ່ມ %s ຕອນເປີດເຄື່ອງ, ເຊິ່ງ BOOT LOCK ຕັ້ງບໍ່ໄດ້: ມັນເຮັດວຽກ ຜ່ານ PS2BBL, FMCB ແລະ OSDMenu.'

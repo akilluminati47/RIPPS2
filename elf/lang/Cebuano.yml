@@ -3,6 +3,12 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Cebuano
 strings:
+  "FILE NAME": "NGALAN SA FILE"
+  "GAME LIST": "LISTAHAN SA DULA"
+  "%s in %s": "%s sa %s"
+  "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "Gipalong ang Write Operations, mao nga dili ma-save sa RIPPS2 ang detalye sa dula o ma-rename kini. I-on ba?"
+  "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "Ang BIBLE gitukod sa PS2BBL ni El Isra, ang mga build niini para sa card ug HDD gipirmahan para sa RIPPS2 (GPL-3)"
+  "This is RIPPS2 lite, which carries no Neutrino. Put Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in a neutrino folder on a memory card or the game's drive, or use the full RIPPS2.elf, which installs it for you.": "Kini ang RIPPS2 lite, nga walay Neutrino. Ibutang ang Neutrino (rickgaiser, github.com/rickgaiser/neutrino) sa usa ka neutrino nga folder sa memory card o sa drive sa dula, o gamita ang tibuok RIPPS2.elf, nga mo-install niini para nimo."
   "START %s": "SUGDI ANG %s"
   "NETWORK": "NETWORK"
   "%s did not answer. Is it connected?": "Wala motubag ang %s. Nakonektar ba kini?"
@@ -97,7 +103,6 @@ strings:
   BACK: BALIK
   Back (keeps both): Balik (tipigan ang duha)
   This MMCE card cannot rename a file, which compression needs for its last step. Update its sd2psXtd firmware to 1.4.0 or newer (sd2psxtd.github.io/download), then try again. Nothing was changed.: Kining MMCE card dili maka-rename og file, nga gikinahanglan sa compression sa katapusang lakang niini. I-update ang sd2psXtd firmware niini ngadto sa 1.4.0 o mas bag-o (sd2psxtd.github.io/download), dayon sulayi pag-usab. Walay nausab.
-  BIBLE is PS2BBL 1.2.0, El Isra's signed builds (card and HDD), unchanged (GPL-3): Ang BIBLE mao ang PS2BBL 1.2.0, ang mga signed build ni El Isra (card ug HDD), walay giusab (GPL-3)
   BIOS Sounds > Rip plays them as the SPU2 does; no BIOS ships: Gipatugtog sila sa BIOS Sounds > Rip sama sa SPU2; walay BIOS nga apil
   BOOT LOCK AND BIBLE: BOOT LOCK UG BIBLE
   BOOT LOCK edits its config too: Giusab usab sa BOOT LOCK ang config niini
@@ -224,8 +229,8 @@ strings:
   : ' Usa ka memory card dinhi adunay kaugalingong PS2BBL/CONFIG.INI, nga gibasa sa PS2BBL una sa sa HDD: kuhaa kanang card sa pag-on, o sugdi ang RIPPS2 gikan sa card ug i-install pag-usab.'
   ' Hold TRIANGLE at power on for the browser, START for a disc.': ' Pindota og dugay ang TRIANGLE sa pag-on alang sa browser, START alang sa disc.'
   ' Hold TRIANGLE for the browser, START for a disc. Config: %s.': ' Pindota og dugay ang TRIANGLE alang sa browser, START alang sa disc. Config: %s.'
-  ? ' RIPPS2 can install BIBLE, PS2BBL 1.2.0 set up to start RIPPS2, on a memory card; what starts from it now is kept in a backup folder. Install BIBLE?'
-  : ' Makahimo ang RIPPS2 sa pag-install sa BIBLE, ang PS2BBL 1.2.0 nga gi-set aron sugdan ang RIPPS2, sa memory card; ang gisugdan niini karon itipig sa backup folder. I-install ang BIBLE?'
+  ? ' RIPPS2 can install BIBLE, PS2BBL set up to start RIPPS2, on a memory card; what starts from it now is kept in a backup folder. Install BIBLE?'
+  : ' Makahimo ang RIPPS2 sa pag-install sa BIBLE, ang PS2BBL nga gi-set aron sugdan ang RIPPS2, sa memory card; ang gisugdan niini karon itipig sa backup folder. I-install ang BIBLE?'
   ' The HDD''s old boot program is kept (MANAGE > RESTORE).': ' Gitipigan ang daan nga boot program sa HDD (DUMALAHA > IBALIK).'
   ' The console would not take the setting that starts its HDD at power on: set it with the HDD utility, or install again.': ' Wala gidawat sa console ang setting nga mosugod sa HDD niini sa pag-on: i-set kini gamit ang HDD utility, o i-install pag-usab.'
   ' What was there before is kept in mc%d:/%s%s.': ' Ang naa didto kaniadto gitipigan sa mc%d:/%s%s.'
@@ -267,7 +272,7 @@ strings:
 
     - The HDD''s boot program now in __mbr is read out and kept in %s/RIPPS2 (RESTORE puts it back).
 
-    - PS2BBL 1.2.0''s HDD build is written in its place, and the console set to start it at power on.
+    - PS2BBL''s HDD build is written in its place, and the console set to start it at power on.
 
     - Its config (%s) starts RIPPS2 from %s first%s%s, BOOT LOCK on.
 
@@ -278,7 +283,7 @@ strings:
 
     - Gibasa ang boot program sa HDD nga anaa karon sa __mbr ug gitipigan sa %s/RIPPS2 (ibalik kini sa IBALIK).
 
-    - Isulat ang HDD build sa PS2BBL 1.2.0 puli niini, ug i-set ang console aron sugdan kini sa pag-on.
+    - Isulat ang HDD build sa PS2BBL puli niini, ug i-set ang console aron sugdan kini sa pag-on.
 
     - Ang config niini (%s) mosugod una sa RIPPS2 gikan sa %s%s%s, naka-on ang BOOT LOCK.
 
@@ -783,7 +788,7 @@ strings:
   POPSTARTER NETWORK: NETWORK SA POPSTARTER
   POPSTARTER and Ember: POPSTARTER ug Ember
   PS1 SETTINGS: MGA SETTING SA PS1
-  PS2BBL 1.2.0 for RIPPS2: PS2BBL 1.2.0 alang sa RIPPS2
+  PS2BBL for RIPPS2: PS2BBL alang sa RIPPS2
   RIP THIS CONSOLE'S SOUNDS: I-RIP ANG MGA TUNOG NIINING CONSOLE
   STATUS: STATUS
   a drive of unknown kind: drive nga wala mailhi ang klase
@@ -1167,20 +1172,20 @@ strings:
   ' (%d KB free)': ' (%d KB bakante)'
   ' (%u MB free)': ' (%u MB bakante)'
   'BESIDE RIPPS2: %sAUDIO%s, read first at boot': 'TUPAD SA RIPPS2: %sAUDIO%s, una nga basahon sa boot'
-  ? '- PS2BBL 1.2.0 is bound to this card by the console and written as %s/%s.
+  ? '- PS2BBL is bound to this card by the console and written as %s/%s.
   
-    - Its config, mc%d:/PS2BBL/CONFIG.INI, starts RIPPS2 where it is (%s) with no wait (0 ms, which PS2BBL Extended does not allow), BOOT LOCK on. RIPPS2 itself is not copied.
+    - Its config, mc%d:/SYS-CONF/PS2BBL.INI, starts RIPPS2 where it is (%s) with no wait (0 ms, which PS2BBL Extended does not allow), BOOT LOCK on. RIPPS2 itself is not copied.
   
     The I/O processor restarts for this and every drive read stops until it is done; music and drives come back after. Keep the card in and the console on until it says done.'
-  : '- Ihigot sa console ang PS2BBL 1.2.0 niining card ug isulat kini isip %s/%s.
+  : '- Ihigot sa console ang PS2BBL niining card ug isulat kini isip %s/%s.
   
-    - Ang iyang config, mc%d:/PS2BBL/CONFIG.INI, magsugod sa RIPPS2 diin kini naa (%s) nga walay paghulat (0 ms, nga dili tugotan sa PS2BBL Extended), naka-on ang BOOT LOCK. Dili kopyahon ang RIPPS2 mismo.
+    - Ang iyang config, mc%d:/SYS-CONF/PS2BBL.INI, magsugod sa RIPPS2 diin kini naa (%s) nga walay paghulat (0 ms, nga dili tugotan sa PS2BBL Extended), naka-on ang BOOT LOCK. Dili kopyahon ang RIPPS2 mismo.
   
     Mag-restart ang I/O processor alang niini ug mohunong ang matag pagbasa sa drive hangtod mahuman; mobalik ang musika ug mga drive human niini. Ibilin ang card nga nakasulod ug ang console nga naka-on hangtod moingon kini nga nahuman na.'
   ? 'An SD2PSX or MMCE card may protect itself after a refused write: if the memory card or the MMCE drive is missing now, turn the console off and on.'
   : 'Ang SD2PSX o MMCE card mahimong manalipod sa kaugalingon human sa gisalikway nga pagsulat: kon nawala karon ang memory card o ang MMCE drive, palonga ug ablihi pag-usab ang console.'
   BOOT LOCK ON: NAKA-ON ANG BOOT LOCK
-  'Done: the memory card in slot %d starts what it started before BBL 1.20. BBL 1.20 is kept in mc%d:/%s.': 'Nahuman: ang memory card sa slot %d magsugod sa gisugdan niini sa wala pa ang BBL 1.20. Gitipigan ang BBL 1.20 sa mc%d:/%s.'
+  'Done: the memory card in slot %d starts what it started before BIBLE. BIBLE is kept in mc%d:/%s.': 'Nahuman: ang memory card sa slot %d magsugod sa gisugdan niini sa wala pa ang BIBLE. Gitipigan ang BIBLE sa mc%d:/%s.'
   ? 'For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 2''s config before slot 1''s.
   
     '
@@ -1188,60 +1193,60 @@ strings:
   
     '
   MEMORY CARD IN SLOT %d  (%s): MEMORY CARD SA SLOT %d  (%s)
-  ? PS2BBL 1.2.0 cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
-  : Dili masugdan sa PS2BBL 1.2.0 ang RIPPS2 gikan sa kung asa kini karon (makaabot kini sa mga memory card, USB drive ug MX4SIO), ug dili kopyahon sa RIPPS2 ang iyang kaugalingon. Ibutang ang RIPPS2.ELF sa memory card o USB drive ug sugdi kini gikan didto, o gamita ang PS2BBL Extended, nga makabasa sa MMCE ug sa HDD.
+  ? PS2BBL cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
+  : Dili masugdan sa PS2BBL ang RIPPS2 gikan sa kung asa kini karon (makaabot kini sa mga memory card, USB drive ug MX4SIO), ug dili kopyahon sa RIPPS2 ang iyang kaugalingon. Ibutang ang RIPPS2.ELF sa memory card o USB drive ug sugdi kini gikan didto, o gamita ang PS2BBL Extended, nga makabasa sa MMCE ug sa HDD.
   RESTORE SLOT %d'S OLD BOOT LOADER: IBALIK ANG DAANG BOOT LOADER SA SLOT %d
-  ? 'RIPPS2: BBL 1.20 is set up on the memory card in slot %d (mc%d:/%s/%s), BOOT LOCK on: at power on it starts RIPPS2 from %s, at once.'
-  : 'RIPPS2: Na-set up na ang BBL 1.20 sa memory card sa slot %d (mc%d:/%s/%s), naka-on ang BOOT LOCK: sa pag-on, dayon niini sugdan ang RIPPS2 gikan sa %s.'
-  ? 'RIPPS2: Setting up BBL 1.20
+  ? 'RIPPS2: BIBLE is set up on the memory card in slot %d (mc%d:/%s/%s), BOOT LOCK on: at power on it starts RIPPS2 from %s, at once.'
+  : 'RIPPS2: Na-set up na ang BIBLE sa memory card sa slot %d (mc%d:/%s/%s), naka-on ang BOOT LOCK: sa pag-on, dayon niini sugdan ang RIPPS2 gikan sa %s.'
+  ? 'RIPPS2: Setting up BIBLE
   
     '
-  : 'RIPPS2: Gi-set up ang BBL 1.20
+  : 'RIPPS2: Gi-set up ang BIBLE
   
     '
-  ? 'RIPPS2: Setting up BBL 1.20
+  ? 'RIPPS2: Setting up BIBLE
   
-    RIPPS2 runs from %s, which PS2BBL 1.2.0 cannot read (it reads memory cards, USB and MX4SIO), and RIPPS2 does not copy itself. The PS2BBL Extended config on this card (%s) reads it: START turns BOOT LOCK on, so it starts RIPPS2 from %s at power on. Nothing else on the card changes.'
-  : 'RIPPS2: Gi-set up ang BBL 1.20
+    RIPPS2 runs from %s, which PS2BBL cannot read (it reads memory cards, USB and MX4SIO), and RIPPS2 does not copy itself. The PS2BBL Extended config on this card (%s) reads it: START turns BOOT LOCK on, so it starts RIPPS2 from %s at power on. Nothing else on the card changes.'
+  : 'RIPPS2: Gi-set up ang BIBLE
   
-    Nagdagan ang RIPPS2 gikan sa %s, nga dili mabasa sa PS2BBL 1.2.0 (nagbasa kini og memory card, USB ug MX4SIO), ug dili kopyahon sa RIPPS2 ang iyang kaugalingon. Mabasa kini sa PS2BBL Extended config niining card (%s): i-on sa START ang BOOT LOCK, aron sugdan niini ang RIPPS2 gikan sa %s sa pag-on. Wala nay laing mausab sa card.'
-  ? 'RIPPS2: Setting up BBL 1.20
+    Nagdagan ang RIPPS2 gikan sa %s, nga dili mabasa sa PS2BBL (nagbasa kini og memory card, USB ug MX4SIO), ug dili kopyahon sa RIPPS2 ang iyang kaugalingon. Mabasa kini sa PS2BBL Extended config niining card (%s): i-on sa START ang BOOT LOCK, aron sugdan niini ang RIPPS2 gikan sa %s sa pag-on. Wala nay laing mausab sa card.'
+  ? 'RIPPS2: Setting up BIBLE
   
-    RIPPS2 runs from %s, which PS2BBL 1.2.0 cannot read: it starts programs from a memory card, a USB drive or MX4SIO, and RIPPS2 does not copy itself. Put RIPPS2.ELF on one of those (a memory card''s APPS folder, or a USB drive), start it from there, then set up BIBLE again.'
-  : 'RIPPS2: Gi-set up ang BBL 1.20
+    RIPPS2 runs from %s, which PS2BBL cannot read: it starts programs from a memory card, a USB drive or MX4SIO, and RIPPS2 does not copy itself. Put RIPPS2.ELF on one of those (a memory card''s APPS folder, or a USB drive), start it from there, then set up BIBLE again.'
+  : 'RIPPS2: Gi-set up ang BIBLE
   
-    Nagdagan ang RIPPS2 gikan sa %s, nga dili mabasa sa PS2BBL 1.2.0: nagsugod kini og mga programa gikan sa memory card, USB drive o MX4SIO, ug dili kopyahon sa RIPPS2 ang iyang kaugalingon. Ibutang ang RIPPS2.ELF sa usa niini (ang APPS folder sa memory card, o USB drive), sugdi kini gikan didto, unya i-set up pag-usab ang BIBLE.'
-  ? 'RIPPS2: Setting up BBL 1.20
+    Nagdagan ang RIPPS2 gikan sa %s, nga dili mabasa sa PS2BBL: nagsugod kini og mga programa gikan sa memory card, USB drive o MX4SIO, ug dili kopyahon sa RIPPS2 ang iyang kaugalingon. Ibutang ang RIPPS2.ELF sa usa niini (ang APPS folder sa memory card, o USB drive), sugdi kini gikan didto, unya i-set up pag-usab ang BIBLE.'
+  ? 'RIPPS2: Setting up BIBLE
   
-    The memory card in slot %d: BBL 1.20 (mc%d:/%s) moves aside, and what it replaced (mc%d:/%s) goes back in its place. Nothing is deleted. The PS2BBL config stays as it is (BOOT LOCK can turn the lock off).'
-  : 'RIPPS2: Gi-set up ang BBL 1.20
+    The memory card in slot %d: BIBLE (mc%d:/%s) moves aside, and what it replaced (mc%d:/%s) goes back in its place. Nothing is deleted. The PS2BBL config stays as it is (BOOT LOCK can turn the lock off).'
+  : 'RIPPS2: Gi-set up ang BIBLE
   
-    Ang memory card sa slot %d: ibalhin sa kilid ang BBL 1.20 (mc%d:/%s), ug mobalik sa iyang dapit ang iyang gipulihan (mc%d:/%s). Walay gipapas. Magpabilin ang PS2BBL config (mapalong sa BOOT LOCK ang lock).'
-  'RIPPS2: Setting up BBL 1.20 (binding PS2BBL to the memory card)': 'RIPPS2: Gi-set up ang BBL 1.20 (gihigot ang PS2BBL sa memory card)'
-  'RIPPS2: Setting up BBL 1.20 (putting back what was there)': 'RIPPS2: Gi-set up ang BBL 1.20 (gibalik ang naa kaniadto)'
-  'RIPPS2: Setting up BBL 1.20 (restarting the I/O processor)': 'RIPPS2: Gi-set up ang BBL 1.20 (gi-restart ang I/O processor)'
-  'RIPPS2: Setting up BBL 1.20 (writing it to the memory card)': 'RIPPS2: Gi-set up ang BBL 1.20 (gisulat sa memory card)'
-  SET UP BBL 1.20: I-SET UP ANG BBL 1.20
+    Ang memory card sa slot %d: ibalhin sa kilid ang BIBLE (mc%d:/%s), ug mobalik sa iyang dapit ang iyang gipulihan (mc%d:/%s). Walay gipapas. Magpabilin ang PS2BBL config (mapalong sa BOOT LOCK ang lock).'
+  'RIPPS2: Setting up BIBLE (binding PS2BBL to the memory card)': 'RIPPS2: Gi-set up ang BIBLE (gihigot ang PS2BBL sa memory card)'
+  'RIPPS2: Setting up BIBLE (putting back what was there)': 'RIPPS2: Gi-set up ang BIBLE (gibalik ang naa kaniadto)'
+  'RIPPS2: Setting up BIBLE (restarting the I/O processor)': 'RIPPS2: Gi-set up ang BIBLE (gi-restart ang I/O processor)'
+  'RIPPS2: Setting up BIBLE (writing it to the memory card)': 'RIPPS2: Gi-set up ang BIBLE (gisulat sa memory card)'
+  SET UP BIBLE: I-SET UP ANG BIBLE
   ? 'SLOT 1: %s
   
     SLOT 2: %s
   
     %s
   
-    RIPPS2: Setting up BBL 1.20. PS2BBL 1.2.0 by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
+    RIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
   : 'SLOT 1: %s
   
     SLOT 2: %s
   
     %s
   
-    RIPPS2: Gi-set up ang BBL 1.20. PS2BBL 1.2.0 ni El Isra, gi-set up sa RIPPS2 sa naandang 8 MB nga PS2 memory card o sa internal HDD: 0 ms nga pagsugod sa pag-on (dili tugotan sa PS2BBL Extended ang 0), una ang RIPPS2 gikan sa kung asa kini (dili gyud kini kopyahon), ug ang button nga gikuptan sa pag-on modala gihapon sa browser (TRIANGLE), sa disc (START) ug sa naa kaniadto (CIRCLE). I-set up, ayohon, o ibalik ang iyang gipulihan?'
-  The memory card in slot %d has %d KB free, and BBL 1.20 needs %d KB there. Free some space, then try again.: Ang memory card sa slot %d adunay %d KB nga bakante, ug kinahanglan sa BBL 1.20 ang %d KB didto. Pagbakante og gamay nga luna, unya sulayi pag-usab.
+    RIPPS2: Gi-set up ang BIBLE. PS2BBL ni El Isra, gi-set up sa RIPPS2 sa naandang 8 MB nga PS2 memory card o sa internal HDD: 0 ms nga pagsugod sa pag-on (dili tugotan sa PS2BBL Extended ang 0), una ang RIPPS2 gikan sa kung asa kini (dili gyud kini kopyahon), ug ang button nga gikuptan sa pag-on modala gihapon sa browser (TRIANGLE), sa disc (START) ug sa naa kaniadto (CIRCLE). I-set up, ayohon, o ibalik ang iyang gipulihan?'
+  The memory card in slot %d has %d KB free, and BIBLE needs %d KB there. Free some space, then try again.: Ang memory card sa slot %d adunay %d KB nga bakante, ug kinahanglan sa BIBLE ang %d KB didto. Pagbakante og gamay nga luna, unya sulayi pag-usab.
   ? The memory card in slot %d refused PS2BBL, so RIPPS2 put the card back as it was. Check its free space, then try again. (DIAG.TXT beside RIPPS2 has what the card said.)
   : Gisalikway sa memory card sa slot %d ang PS2BBL, mao nga gibilin sa RIPPS2 ang card sama kaniadto. Susiha ang bakante niini, unya sulayi pag-usab. (Ang DIAG.TXT tupad sa RIPPS2 adunay tubag sa card.)
-  ? The memory card in slot %d would not move BBL 1.20 aside, so nothing was changed. (DIAG.TXT beside RIPPS2 has what the card said.)
-  : Wala ibalhin sa memory card sa slot %d ang BBL 1.20 sa kilid, mao nga walay nausab. (Ang DIAG.TXT tupad sa RIPPS2 adunay tubag sa card.)
-  The memory card in slot %d would not take %s back, so BBL 1.20 stayed. (DIAG.TXT beside RIPPS2 has what the card said.): Wala dawata pagbalik sa memory card sa slot %d ang %s, mao nga nagpabilin ang BBL 1.20. (Ang DIAG.TXT tupad sa RIPPS2 adunay tubag sa card.)
+  ? The memory card in slot %d would not move BIBLE aside, so nothing was changed. (DIAG.TXT beside RIPPS2 has what the card said.)
+  : Wala ibalhin sa memory card sa slot %d ang BIBLE sa kilid, mao nga walay nausab. (Ang DIAG.TXT tupad sa RIPPS2 adunay tubag sa card.)
+  The memory card in slot %d would not take %s back, so BIBLE stayed. (DIAG.TXT beside RIPPS2 has what the card said.): Wala dawata pagbalik sa memory card sa slot %d ang %s, mao nga nagpabilin ang BIBLE. (Ang DIAG.TXT tupad sa RIPPS2 adunay tubag sa card.)
   MUSIC: MUSIKA
   '%s%s has no %s. RIPPOPS found Sony''s PS1 emulator on %s: START copies %s here and starts the game.': 'Ang %s%s walay %s. Nakit-an sa RIPPOPS ang PS1 emulator sa Sony sa %s: kopyahon sa START ang %s dinhi ug sugdan ang dula.'
   ? 'RIPPS2 does not see %s in %s%s. POPSTARTER needs POPS_IOX.PAK with POPS.PAK, or with POPS.ELF and IOPRP252.IMG: Sony''s PS1 emulator, from your own console. It may find them where RIPPS2 does not look (if your games start, it does). START launches, and this drive is not asked about again.'
@@ -1256,8 +1261,8 @@ strings:
   BOOT LOCK is off. Your boot loader starts what it started before (%s).: Gipalong ang BOOT LOCK. Gisugdan sa imong boot loader ang gisugdan niini kaniadto (%s).
   ? BOOT LOCK is on. %s now starts RIPPS2 at power on (%s), and an empty IGR Path sends a game's EXIT back the same way. Hold one of its buttons while the console starts to reach anything else.%s
   : Gibuksan ang BOOT LOCK. Gisugdan na sa %s ang RIPPS2 sa pag-on (%s), ug kung blangko ang IGR path, mobalik ang EXIT sa dula sa samang dalan. Pindota og dugay ang usa sa mga button niini samtang nagsugod ang console aron makaadto sa uban.%s
-  ? 'BOOT LOCK put RIPPS2 first in OSDMenu''s menu (%s). OSDMenu starts nothing by itself: pick RIPPS2 there, and a game''s EXIT comes back to that menu. For a console that starts RIPPS2 at once, BIBLE puts PS2BBL 1.2.0 on a memory card (Boot Loader).'
-  : 'Gibutang sa BOOT LOCK ang RIPPS2 nga una sa menu sa OSDMenu (%s). Walay gisugdan ang OSDMenu sa kaugalingon: pilia didto ang RIPPS2, ug mobalik sa maong menu ang EXIT sa dula. Para sa console nga dayon mosugod sa RIPPS2, ibutang sa BIBLE ang PS2BBL 1.2.0 sa memory card (Boot Loader).'
+  ? 'BOOT LOCK put RIPPS2 first in OSDMenu''s menu (%s). OSDMenu starts nothing by itself: pick RIPPS2 there, and a game''s EXIT comes back to that menu. For a console that starts RIPPS2 at once, BIBLE puts PS2BBL on a memory card (Boot Loader).'
+  : 'Gibutang sa BOOT LOCK ang RIPPS2 nga una sa menu sa OSDMenu (%s). Walay gisugdan ang OSDMenu sa kaugalingon: pilia didto ang RIPPS2, ug mobalik sa maong menu ang EXIT sa dula. Para sa console nga dayon mosugod sa RIPPS2, ibutang sa BIBLE ang PS2BBL sa memory card (Boot Loader).'
   BOOT LOCK works through a boot loader on a memory card (PS2BBL, FMCB or OSDMenu), and there is none here.: Molihok ang BOOT LOCK pinaagi sa boot loader sa memory card (PS2BBL, FMCB o OSDMenu), ug walay bisan usa dinhi.
   The memory card in slot %d starts %s at power on, and BOOT LOCK found no config of it to change (it looks for %s).: Gisugdan sa memory card sa slot %d ang %s sa pag-on, ug walay nakit-ang config niini ang BOOT LOCK nga usbon (gipangita niini ang %s).
   'The memory card in slot %d starts %s at power on, which BOOT LOCK cannot set: it works through PS2BBL, FMCB and OSDMenu.': 'Gisugdan sa memory card sa slot %d ang %s sa pag-on, nga dili ma-set sa BOOT LOCK: molihok kini pinaagi sa PS2BBL, FMCB ug OSDMenu.'

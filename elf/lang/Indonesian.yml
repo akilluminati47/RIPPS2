@@ -3,6 +3,12 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Indonesian
 strings:
+  "FILE NAME": "NAMA FILE"
+  "GAME LIST": "DAFTAR GAME"
+  "%s in %s": "%s di %s"
+  "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "Operasi tulis mati, jadi RIPPS2 tidak bisa menyimpan detail game atau mengganti namanya. Nyalakan?"
+  "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "BIBLE dibangun di atas PS2BBL milik El Isra, dengan versi kartu dan HDD-nya ditandatangani untuk RIPPS2 (GPL-3)"
+  "This is RIPPS2 lite, which carries no Neutrino. Put Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in a neutrino folder on a memory card or the game's drive, or use the full RIPPS2.elf, which installs it for you.": "Ini RIPPS2 lite, yang tidak membawa Neutrino. Taruh Neutrino (rickgaiser, github.com/rickgaiser/neutrino) di folder neutrino pada memory card atau drive game, atau pakai RIPPS2.elf lengkap, yang memasangnya untukmu."
   "START %s": "MULAI %s"
   "NETWORK": "JARINGAN"
   "%s did not answer. Is it connected?": "%s tidak menjawab. Apakah tersambung?"
@@ -97,7 +103,6 @@ strings:
   BACK: KEMBALI
   Back (keeps both): Kembali (simpan keduanya)
   This MMCE card cannot rename a file, which compression needs for its last step. Update its sd2psXtd firmware to 1.4.0 or newer (sd2psxtd.github.io/download), then try again. Nothing was changed.: Kartu MMCE ini tidak bisa mengganti nama file, padahal kompresi memerlukannya di langkah terakhir. Perbarui firmware sd2psXtd-nya ke 1.4.0 atau yang lebih baru (sd2psxtd.github.io/download), lalu coba lagi. Tidak ada yang diubah.
-  BIBLE is PS2BBL 1.2.0, El Isra's signed builds (card and HDD), unchanged (GPL-3): BIBLE adalah PS2BBL 1.2.0, build bertanda tangan El Isra (kartu dan HDD), tanpa perubahan (GPL-3)
   BIOS Sounds > Rip plays them as the SPU2 does; no BIOS ships: Suara BIOS > Rip memutarnya seperti SPU2; tidak ada BIOS yang dibawa
   BOOT LOCK AND BIBLE: BOOT LOCK DAN BIBLE
   BOOT LOCK edits its config too: BOOT LOCK juga mengedit konfigurasinya
@@ -224,8 +229,8 @@ strings:
   : ' Sebuah kartu memori di sini punya PS2BBL/CONFIG.INI sendiri, yang dibaca PS2BBL sebelum milik HDD: keluarkan kartu itu saat menyalakan, atau jalankan RIPPS2 dari kartu itu dan instal lagi.'
   ' Hold TRIANGLE at power on for the browser, START for a disc.': ' Tahan SEGITIGA saat menyalakan untuk peramban, START untuk disk.'
   ' Hold TRIANGLE for the browser, START for a disc. Config: %s.': ' Tahan SEGITIGA untuk peramban, START untuk disk. Konfigurasi: %s.'
-  ? ' RIPPS2 can install BIBLE, PS2BBL 1.2.0 set up to start RIPPS2, on a memory card; what starts from it now is kept in a backup folder. Install BIBLE?'
-  : ' RIPPS2 bisa menginstal BIBLE, PS2BBL 1.2.0 yang diatur untuk menjalankan RIPPS2, di kartu memori; apa yang sekarang berjalan dari kartu itu disimpan di folder cadangan. Instal BIBLE?'
+  ? ' RIPPS2 can install BIBLE, PS2BBL set up to start RIPPS2, on a memory card; what starts from it now is kept in a backup folder. Install BIBLE?'
+  : ' RIPPS2 bisa menginstal BIBLE, PS2BBL yang diatur untuk menjalankan RIPPS2, di kartu memori; apa yang sekarang berjalan dari kartu itu disimpan di folder cadangan. Instal BIBLE?'
   ' The HDD''s old boot program is kept (MANAGE > RESTORE).': ' Program boot lama HDD disimpan (KELOLA > PULIHKAN).'
   ' The console would not take the setting that starts its HDD at power on: set it with the HDD utility, or install again.': ' Konsol tidak menerima pengaturan yang menjalankan HDD-nya saat menyala: atur dengan utilitas HDD, atau instal lagi.'
   ' What was there before is kept in mc%d:/%s%s.': ' Isi sebelumnya disimpan di mc%d:/%s%s.'
@@ -267,7 +272,7 @@ strings:
 
     - The HDD''s boot program now in __mbr is read out and kept in %s/RIPPS2 (RESTORE puts it back).
 
-    - PS2BBL 1.2.0''s HDD build is written in its place, and the console set to start it at power on.
+    - PS2BBL''s HDD build is written in its place, and the console set to start it at power on.
 
     - Its config (%s) starts RIPPS2 from %s first%s%s, BOOT LOCK on.
 
@@ -278,7 +283,7 @@ strings:
 
     - Program boot HDD yang sekarang ada di __mbr dibaca dan disimpan di %s/RIPPS2 (PULIHKAN mengembalikannya).
 
-    - Build HDD PS2BBL 1.2.0 ditulis di tempatnya, dan konsol diatur untuk menjalankannya saat menyala.
+    - Build HDD PS2BBL ditulis di tempatnya, dan konsol diatur untuk menjalankannya saat menyala.
 
     - Konfigurasinya (%s) menjalankan RIPPS2 dari %s%s%s lebih dulu, BOOT LOCK menyala.
 
@@ -783,7 +788,7 @@ strings:
   POPSTARTER NETWORK: JARINGAN POPSTARTER
   POPSTARTER and Ember: POPSTARTER dan Ember
   PS1 SETTINGS: PENGATURAN PS1
-  PS2BBL 1.2.0 for RIPPS2: PS2BBL 1.2.0 untuk RIPPS2
+  PS2BBL for RIPPS2: PS2BBL untuk RIPPS2
   RIP THIS CONSOLE'S SOUNDS: RIP SUARA KONSOL INI
   STATUS: STATUS
   a drive of unknown kind: drive jenis tak dikenal
@@ -1170,20 +1175,20 @@ strings:
   ' (%d KB free)': ' (%d KB kosong)'
   ' (%u MB free)': ' (%u MB kosong)'
   'BESIDE RIPPS2: %sAUDIO%s, read first at boot': 'DI SAMPING RIPPS2: %sAUDIO%s, dibaca pertama saat mulai'
-  ? '- PS2BBL 1.2.0 is bound to this card by the console and written as %s/%s.
+  ? '- PS2BBL is bound to this card by the console and written as %s/%s.
   
-    - Its config, mc%d:/PS2BBL/CONFIG.INI, starts RIPPS2 where it is (%s) with no wait (0 ms, which PS2BBL Extended does not allow), BOOT LOCK on. RIPPS2 itself is not copied.
+    - Its config, mc%d:/SYS-CONF/PS2BBL.INI, starts RIPPS2 where it is (%s) with no wait (0 ms, which PS2BBL Extended does not allow), BOOT LOCK on. RIPPS2 itself is not copied.
   
     The I/O processor restarts for this and every drive read stops until it is done; music and drives come back after. Keep the card in and the console on until it says done.'
-  : '- PS2BBL 1.2.0 diikat ke kartu ini oleh konsol dan ditulis sebagai %s/%s.
+  : '- PS2BBL diikat ke kartu ini oleh konsol dan ditulis sebagai %s/%s.
   
-    - Konfigurasinya, mc%d:/PS2BBL/CONFIG.INI, menjalankan RIPPS2 di tempatnya (%s) tanpa menunggu (0 ms, yang tidak diizinkan PS2BBL Extended), BOOT LOCK aktif. RIPPS2 sendiri tidak disalin.
+    - Konfigurasinya, mc%d:/SYS-CONF/PS2BBL.INI, menjalankan RIPPS2 di tempatnya (%s) tanpa menunggu (0 ms, yang tidak diizinkan PS2BBL Extended), BOOT LOCK aktif. RIPPS2 sendiri tidak disalin.
   
     Prosesor I/O dimulai ulang untuk ini dan setiap pembacaan drive berhenti sampai selesai; musik dan drive kembali setelahnya. Biarkan kartu terpasang dan konsol menyala sampai ia bilang selesai.'
   ? 'An SD2PSX or MMCE card may protect itself after a refused write: if the memory card or the MMCE drive is missing now, turn the console off and on.'
   : 'Kartu SD2PSX atau MMCE bisa melindungi dirinya setelah penulisan ditolak: jika kartu memori atau drive MMCE sekarang hilang, matikan lalu nyalakan konsol.'
   BOOT LOCK ON: BOOT LOCK AKTIF
-  'Done: the memory card in slot %d starts what it started before BBL 1.20. BBL 1.20 is kept in mc%d:/%s.': 'Selesai: kartu memori di slot %d menjalankan apa yang dijalankannya sebelum BBL 1.20. BBL 1.20 disimpan di mc%d:/%s.'
+  'Done: the memory card in slot %d starts what it started before BIBLE. BIBLE is kept in mc%d:/%s.': 'Selesai: kartu memori di slot %d menjalankan apa yang dijalankannya sebelum BIBLE. BIBLE disimpan di mc%d:/%s.'
   ? 'For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 2''s config before slot 1''s.
   
     '
@@ -1191,60 +1196,60 @@ strings:
   
     '
   MEMORY CARD IN SLOT %d  (%s): KARTU MEMORI DI SLOT %d  (%s)
-  ? PS2BBL 1.2.0 cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
-  : PS2BBL 1.2.0 tidak bisa menjalankan RIPPS2 dari tempatnya sekarang (ia menjangkau kartu memori, drive USB, dan MX4SIO), dan RIPPS2 tidak menyalin dirinya sendiri. Taruh RIPPS2.ELF di kartu memori atau drive USB lalu jalankan dari sana, atau gunakan PS2BBL Extended, yang membaca MMCE dan hard disk.
+  ? PS2BBL cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
+  : PS2BBL tidak bisa menjalankan RIPPS2 dari tempatnya sekarang (ia menjangkau kartu memori, drive USB, dan MX4SIO), dan RIPPS2 tidak menyalin dirinya sendiri. Taruh RIPPS2.ELF di kartu memori atau drive USB lalu jalankan dari sana, atau gunakan PS2BBL Extended, yang membaca MMCE dan hard disk.
   RESTORE SLOT %d'S OLD BOOT LOADER: PULIHKAN BOOT LOADER LAMA DI SLOT %d
-  ? 'RIPPS2: BBL 1.20 is set up on the memory card in slot %d (mc%d:/%s/%s), BOOT LOCK on: at power on it starts RIPPS2 from %s, at once.'
-  : 'RIPPS2: BBL 1.20 terpasang di kartu memori slot %d (mc%d:/%s/%s), BOOT LOCK aktif: saat dinyalakan ia langsung menjalankan RIPPS2 dari %s.'
-  ? 'RIPPS2: Setting up BBL 1.20
+  ? 'RIPPS2: BIBLE is set up on the memory card in slot %d (mc%d:/%s/%s), BOOT LOCK on: at power on it starts RIPPS2 from %s, at once.'
+  : 'RIPPS2: BIBLE terpasang di kartu memori slot %d (mc%d:/%s/%s), BOOT LOCK aktif: saat dinyalakan ia langsung menjalankan RIPPS2 dari %s.'
+  ? 'RIPPS2: Setting up BIBLE
   
     '
-  : 'RIPPS2: memasang BBL 1.20
+  : 'RIPPS2: memasang BIBLE
   
     '
-  ? 'RIPPS2: Setting up BBL 1.20
+  ? 'RIPPS2: Setting up BIBLE
   
-    RIPPS2 runs from %s, which PS2BBL 1.2.0 cannot read (it reads memory cards, USB and MX4SIO), and RIPPS2 does not copy itself. The PS2BBL Extended config on this card (%s) reads it: START turns BOOT LOCK on, so it starts RIPPS2 from %s at power on. Nothing else on the card changes.'
-  : 'RIPPS2: memasang BBL 1.20
+    RIPPS2 runs from %s, which PS2BBL cannot read (it reads memory cards, USB and MX4SIO), and RIPPS2 does not copy itself. The PS2BBL Extended config on this card (%s) reads it: START turns BOOT LOCK on, so it starts RIPPS2 from %s at power on. Nothing else on the card changes.'
+  : 'RIPPS2: memasang BIBLE
   
-    RIPPS2 berjalan dari %s, yang tidak bisa dibaca PS2BBL 1.2.0 (ia membaca kartu memori, USB, dan MX4SIO), dan RIPPS2 tidak menyalin dirinya sendiri. Konfigurasi PS2BBL Extended di kartu ini (%s) bisa membacanya: START menyalakan BOOT LOCK, sehingga ia menjalankan RIPPS2 dari %s saat dinyalakan. Tidak ada hal lain di kartu yang berubah.'
-  ? 'RIPPS2: Setting up BBL 1.20
+    RIPPS2 berjalan dari %s, yang tidak bisa dibaca PS2BBL (ia membaca kartu memori, USB, dan MX4SIO), dan RIPPS2 tidak menyalin dirinya sendiri. Konfigurasi PS2BBL Extended di kartu ini (%s) bisa membacanya: START menyalakan BOOT LOCK, sehingga ia menjalankan RIPPS2 dari %s saat dinyalakan. Tidak ada hal lain di kartu yang berubah.'
+  ? 'RIPPS2: Setting up BIBLE
   
-    RIPPS2 runs from %s, which PS2BBL 1.2.0 cannot read: it starts programs from a memory card, a USB drive or MX4SIO, and RIPPS2 does not copy itself. Put RIPPS2.ELF on one of those (a memory card''s APPS folder, or a USB drive), start it from there, then set up BIBLE again.'
-  : 'RIPPS2: memasang BBL 1.20
+    RIPPS2 runs from %s, which PS2BBL cannot read: it starts programs from a memory card, a USB drive or MX4SIO, and RIPPS2 does not copy itself. Put RIPPS2.ELF on one of those (a memory card''s APPS folder, or a USB drive), start it from there, then set up BIBLE again.'
+  : 'RIPPS2: memasang BIBLE
   
-    RIPPS2 berjalan dari %s, yang tidak bisa dibaca PS2BBL 1.2.0: ia menjalankan program dari kartu memori, drive USB, atau MX4SIO, dan RIPPS2 tidak menyalin dirinya sendiri. Taruh RIPPS2.ELF di salah satunya (folder APPS di kartu memori, atau drive USB), jalankan dari sana, lalu pasang BIBLE lagi.'
-  ? 'RIPPS2: Setting up BBL 1.20
+    RIPPS2 berjalan dari %s, yang tidak bisa dibaca PS2BBL: ia menjalankan program dari kartu memori, drive USB, atau MX4SIO, dan RIPPS2 tidak menyalin dirinya sendiri. Taruh RIPPS2.ELF di salah satunya (folder APPS di kartu memori, atau drive USB), jalankan dari sana, lalu pasang BIBLE lagi.'
+  ? 'RIPPS2: Setting up BIBLE
   
-    The memory card in slot %d: BBL 1.20 (mc%d:/%s) moves aside, and what it replaced (mc%d:/%s) goes back in its place. Nothing is deleted. The PS2BBL config stays as it is (BOOT LOCK can turn the lock off).'
-  : 'RIPPS2: memasang BBL 1.20
+    The memory card in slot %d: BIBLE (mc%d:/%s) moves aside, and what it replaced (mc%d:/%s) goes back in its place. Nothing is deleted. The PS2BBL config stays as it is (BOOT LOCK can turn the lock off).'
+  : 'RIPPS2: memasang BIBLE
   
-    Kartu memori di slot %d: BBL 1.20 (mc%d:/%s) dipindah ke samping, dan yang digantikannya (mc%d:/%s) kembali ke tempatnya. Tidak ada yang dihapus. Konfigurasi PS2BBL tetap seperti adanya (BOOT LOCK bisa mematikan kuncinya).'
-  'RIPPS2: Setting up BBL 1.20 (binding PS2BBL to the memory card)': 'RIPPS2: memasang BBL 1.20 (mengikat PS2BBL ke kartu memori)'
-  'RIPPS2: Setting up BBL 1.20 (putting back what was there)': 'RIPPS2: memasang BBL 1.20 (mengembalikan yang sebelumnya)'
-  'RIPPS2: Setting up BBL 1.20 (restarting the I/O processor)': 'RIPPS2: memasang BBL 1.20 (memulai ulang prosesor I/O)'
-  'RIPPS2: Setting up BBL 1.20 (writing it to the memory card)': 'RIPPS2: memasang BBL 1.20 (menulisnya ke kartu memori)'
-  SET UP BBL 1.20: PASANG BBL 1.20
+    Kartu memori di slot %d: BIBLE (mc%d:/%s) dipindah ke samping, dan yang digantikannya (mc%d:/%s) kembali ke tempatnya. Tidak ada yang dihapus. Konfigurasi PS2BBL tetap seperti adanya (BOOT LOCK bisa mematikan kuncinya).'
+  'RIPPS2: Setting up BIBLE (binding PS2BBL to the memory card)': 'RIPPS2: memasang BIBLE (mengikat PS2BBL ke kartu memori)'
+  'RIPPS2: Setting up BIBLE (putting back what was there)': 'RIPPS2: memasang BIBLE (mengembalikan yang sebelumnya)'
+  'RIPPS2: Setting up BIBLE (restarting the I/O processor)': 'RIPPS2: memasang BIBLE (memulai ulang prosesor I/O)'
+  'RIPPS2: Setting up BIBLE (writing it to the memory card)': 'RIPPS2: memasang BIBLE (menulisnya ke kartu memori)'
+  SET UP BIBLE: PASANG BIBLE
   ? 'SLOT 1: %s
   
     SLOT 2: %s
   
     %s
   
-    RIPPS2: Setting up BBL 1.20. PS2BBL 1.2.0 by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
+    RIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
   : 'SLOT 1: %s
   
     SLOT 2: %s
   
     %s
   
-    RIPPS2: memasang BBL 1.20. PS2BBL 1.2.0 karya El Isra, dipasang oleh RIPPS2 di kartu memori PS2 standar 8 MB atau hard disk internal: mulai dalam 0 ms saat dinyalakan (PS2BBL Extended tidak mengizinkan 0), RIPPS2 lebih dulu dari tempatnya (tidak pernah disalin), dan tombol yang ditahan saat dinyalakan tetap membawa ke browser (TRIANGLE), ke disk (START), dan ke yang sebelumnya (CIRCLE). Pasang, perbaiki, atau pulihkan yang digantikannya?'
-  The memory card in slot %d has %d KB free, and BBL 1.20 needs %d KB there. Free some space, then try again.: Kartu memori di slot %d punya %d KB kosong, dan BBL 1.20 butuh %d KB di sana. Kosongkan sedikit ruang, lalu coba lagi.
+    RIPPS2: memasang BIBLE. PS2BBL karya El Isra, dipasang oleh RIPPS2 di kartu memori PS2 standar 8 MB atau hard disk internal: mulai dalam 0 ms saat dinyalakan (PS2BBL Extended tidak mengizinkan 0), RIPPS2 lebih dulu dari tempatnya (tidak pernah disalin), dan tombol yang ditahan saat dinyalakan tetap membawa ke browser (TRIANGLE), ke disk (START), dan ke yang sebelumnya (CIRCLE). Pasang, perbaiki, atau pulihkan yang digantikannya?'
+  The memory card in slot %d has %d KB free, and BIBLE needs %d KB there. Free some space, then try again.: Kartu memori di slot %d punya %d KB kosong, dan BIBLE butuh %d KB di sana. Kosongkan sedikit ruang, lalu coba lagi.
   ? The memory card in slot %d refused PS2BBL, so RIPPS2 put the card back as it was. Check its free space, then try again. (DIAG.TXT beside RIPPS2 has what the card said.)
   : Kartu memori di slot %d menolak PS2BBL, jadi RIPPS2 membiarkan kartu seperti semula. Periksa ruang kosongnya, lalu coba lagi. (DIAG.TXT di samping RIPPS2 berisi jawaban kartu.)
-  ? The memory card in slot %d would not move BBL 1.20 aside, so nothing was changed. (DIAG.TXT beside RIPPS2 has what the card said.)
-  : Kartu memori di slot %d tidak mau memindahkan BBL 1.20, jadi tidak ada yang berubah. (DIAG.TXT di samping RIPPS2 berisi jawaban kartu.)
-  The memory card in slot %d would not take %s back, so BBL 1.20 stayed. (DIAG.TXT beside RIPPS2 has what the card said.): Kartu memori di slot %d tidak mau menerima kembali %s, jadi BBL 1.20 tetap ada. (DIAG.TXT di samping RIPPS2 berisi jawaban kartu.)
+  ? The memory card in slot %d would not move BIBLE aside, so nothing was changed. (DIAG.TXT beside RIPPS2 has what the card said.)
+  : Kartu memori di slot %d tidak mau memindahkan BIBLE, jadi tidak ada yang berubah. (DIAG.TXT di samping RIPPS2 berisi jawaban kartu.)
+  The memory card in slot %d would not take %s back, so BIBLE stayed. (DIAG.TXT beside RIPPS2 has what the card said.): Kartu memori di slot %d tidak mau menerima kembali %s, jadi BIBLE tetap ada. (DIAG.TXT di samping RIPPS2 berisi jawaban kartu.)
   MUSIC: MUSIK
   '%s%s has no %s. RIPPOPS found Sony''s PS1 emulator on %s: START copies %s here and starts the game.': '%s%s tidak punya %s. RIPPOPS menemukan emulator PS1 Sony di %s: START menyalin %s ke sini dan menjalankan gimnya.'
   ? 'RIPPS2 does not see %s in %s%s. POPSTARTER needs POPS_IOX.PAK with POPS.PAK, or with POPS.ELF and IOPRP252.IMG: Sony''s PS1 emulator, from your own console. It may find them where RIPPS2 does not look (if your games start, it does). START launches, and this drive is not asked about again.'
@@ -1259,8 +1264,8 @@ strings:
   BOOT LOCK is off. Your boot loader starts what it started before (%s).: BOOT LOCK mati. Boot loader-mu menjalankan apa yang dijalankannya sebelumnya (%s).
   ? BOOT LOCK is on. %s now starts RIPPS2 at power on (%s), and an empty IGR Path sends a game's EXIT back the same way. Hold one of its buttons while the console starts to reach anything else.%s
   : BOOT LOCK menyala. %s sekarang menjalankan RIPPS2 saat menyala (%s), dan Pintasan IGR yang kosong mengirim EXIT dari game kembali lewat jalan yang sama. Tahan salah satu tombolnya saat konsol mulai untuk menuju hal lain.%s
-  ? 'BOOT LOCK put RIPPS2 first in OSDMenu''s menu (%s). OSDMenu starts nothing by itself: pick RIPPS2 there, and a game''s EXIT comes back to that menu. For a console that starts RIPPS2 at once, BIBLE puts PS2BBL 1.2.0 on a memory card (Boot Loader).'
-  : 'BOOT LOCK menaruh RIPPS2 di urutan pertama menu OSDMenu (%s). OSDMenu tidak menjalankan apa pun sendiri: pilih RIPPS2 di sana, dan EXIT dari game kembali ke menu itu. Untuk konsol yang langsung menjalankan RIPPS2, BIBLE memasang PS2BBL 1.2.0 di kartu memori (Boot Loader).'
+  ? 'BOOT LOCK put RIPPS2 first in OSDMenu''s menu (%s). OSDMenu starts nothing by itself: pick RIPPS2 there, and a game''s EXIT comes back to that menu. For a console that starts RIPPS2 at once, BIBLE puts PS2BBL on a memory card (Boot Loader).'
+  : 'BOOT LOCK menaruh RIPPS2 di urutan pertama menu OSDMenu (%s). OSDMenu tidak menjalankan apa pun sendiri: pilih RIPPS2 di sana, dan EXIT dari game kembali ke menu itu. Untuk konsol yang langsung menjalankan RIPPS2, BIBLE memasang PS2BBL di kartu memori (Boot Loader).'
   BOOT LOCK works through a boot loader on a memory card (PS2BBL, FMCB or OSDMenu), and there is none here.: BOOT LOCK bekerja lewat boot loader di kartu memori (PS2BBL, FMCB, atau OSDMenu), dan di sini tidak ada.
   The memory card in slot %d starts %s at power on, and BOOT LOCK found no config of it to change (it looks for %s).: 'Kartu memori di slot %d menjalankan %s saat menyala, dan BOOT LOCK tidak menemukan konfigurasinya untuk diubah (yang dicari: %s).'
   'The memory card in slot %d starts %s at power on, which BOOT LOCK cannot set: it works through PS2BBL, FMCB and OSDMenu.': 'Kartu memori di slot %d menjalankan %s saat menyala, yang tidak bisa diatur BOOT LOCK: ia bekerja lewat PS2BBL, FMCB, dan OSDMenu.'

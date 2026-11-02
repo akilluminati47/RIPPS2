@@ -3,6 +3,12 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Hungarian
 strings:
+  "FILE NAME": "FÁJLNÉV"
+  "GAME LIST": "JÁTÉKLISTA"
+  "%s in %s": "%s itt: %s"
+  "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "Az írási műveletek ki vannak kapcsolva, így a RIPPS2 nem tudja menteni egy játék adatait vagy átnevezni. Bekapcsolja?"
+  "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "A BIBLE El Isra PS2BBL-jére épül, kártyás és HDD-s változata a RIPPS2-höz van aláírva (GPL-3)"
+  "This is RIPPS2 lite, which carries no Neutrino. Put Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in a neutrino folder on a memory card or the game's drive, or use the full RIPPS2.elf, which installs it for you.": "Ez a RIPPS2 lite, amely nem tartalmazza a Neutrinót. Tegye a Neutrinót (rickgaiser, github.com/rickgaiser/neutrino) egy neutrino mappába egy memóriakártyán vagy a játék meghajtóján, vagy használja a teljes RIPPS2.elf-et, amely telepíti."
   "START %s": "INDÍTÁS: %s"
   "NETWORK": "HÁLÓZAT"
   "%s did not answer. Is it connected?": "A(z) %s nem válaszolt. Csatlakoztatva van?"
@@ -97,7 +103,6 @@ strings:
   BACK: VISSZA
   Back (keeps both): Vissza (mindkettő marad)
   This MMCE card cannot rename a file, which compression needs for its last step. Update its sd2psXtd firmware to 1.4.0 or newer (sd2psxtd.github.io/download), then try again. Nothing was changed.: Ez az MMCE kártya nem tud fájlt átnevezni, pedig a tömörítés utolsó lépéséhez erre van szükség. Frissítse az sd2psXtd firmware-ét 1.4.0-s vagy újabb verzióra (sd2psxtd.github.io/download), majd próbálja újra. Semmi sem változott.
-  BIBLE is PS2BBL 1.2.0, El Isra's signed builds (card and HDD), unchanged (GPL-3): A BIBLE a PS2BBL 1.2.0, El Isra aláírt buildjei (kártya és HDD), változatlanul (GPL-3)
   BIOS Sounds > Rip plays them as the SPU2 does; no BIOS ships: A BIOS hangok > Kinyerés úgy játssza le őket, ahogy az SPU2; BIOS nincs mellékelve
   BOOT LOCK AND BIBLE: BOOT LOCK ÉS BIBLE
   BOOT LOCK edits its config too: A BOOT LOCK a beállításait is szerkeszti
@@ -224,8 +229,8 @@ strings:
   : ' Az itteni egyik memóriakártyán saját PS2BBL/CONFIG.INI van, amelyet a PS2BBL a HDD-é előtt olvas be: bekapcsoláskor vedd ki azt a kártyát, vagy indítsd a RIPPS2-t arról a kártyáról, és telepítsd újra.'
   ' Hold TRIANGLE at power on for the browser, START for a disc.': ' Bekapcsoláskor tartsd lenyomva a HÁROMSZÖGET a böngészőhöz, a START-ot a lemezhez.'
   ' Hold TRIANGLE for the browser, START for a disc. Config: %s.': ' Tartsd lenyomva a HÁROMSZÖGET a böngészőhöz, a START-ot a lemezhez. Beállítás: %s.'
-  ? ' RIPPS2 can install BIBLE, PS2BBL 1.2.0 set up to start RIPPS2, on a memory card; what starts from it now is kept in a backup folder. Install BIBLE?'
-  : ' A RIPPS2 telepítheti egy memóriakártyára a BIBLE-t, vagyis a RIPPS2 indítására beállított PS2BBL 1.2.0-t; ami most arról indul, egy biztonsági mappába kerül. Telepíted a BIBLE-t?'
+  ? ' RIPPS2 can install BIBLE, PS2BBL set up to start RIPPS2, on a memory card; what starts from it now is kept in a backup folder. Install BIBLE?'
+  : ' A RIPPS2 telepítheti egy memóriakártyára a BIBLE-t, vagyis a RIPPS2 indítására beállított PS2BBL-t; ami most arról indul, egy biztonsági mappába kerül. Telepíted a BIBLE-t?'
   ' The HDD''s old boot program is kept (MANAGE > RESTORE).': ' A HDD régi rendszerindító programja megmaradt (KEZELÉS > VISSZAÁLLÍTÁS).'
   ' The console would not take the setting that starts its HDD at power on: set it with the HDD utility, or install again.': ' A konzol nem fogadta el a beállítást, amely bekapcsoláskor elindítja a HDD-jét: állítsd be a HDD segédprogrammal, vagy telepítsd újra.'
   ' What was there before is kept in mc%d:/%s%s.': ' Ami ott volt korábban, itt maradt meg: mc%d:/%s%s.'
@@ -267,7 +272,7 @@ strings:
 
     - The HDD''s boot program now in __mbr is read out and kept in %s/RIPPS2 (RESTORE puts it back).
 
-    - PS2BBL 1.2.0''s HDD build is written in its place, and the console set to start it at power on.
+    - PS2BBL''s HDD build is written in its place, and the console set to start it at power on.
 
     - Its config (%s) starts RIPPS2 from %s first%s%s, BOOT LOCK on.
 
@@ -278,7 +283,7 @@ strings:
 
     - A HDD jelenleg __mbr-ben lévő rendszerindító programja kiolvasásra és megőrzésre kerül itt: %s/RIPPS2 (a VISSZAÁLLÍTÁS visszateszi).
 
-    - A helyére a PS2BBL 1.2.0 HDD-s buildje kerül, és a konzol úgy lesz beállítva, hogy bekapcsoláskor azt indítsa.
+    - A helyére a PS2BBL HDD-s buildje kerül, és a konzol úgy lesz beállítva, hogy bekapcsoláskor azt indítsa.
 
     - A beállítása (%s) a RIPPS2-t először innen indítja: %s%s%s, BOOT LOCK bekapcsolva.
 
@@ -783,7 +788,7 @@ strings:
   POPSTARTER NETWORK: POPSTARTER HÁLÓZAT
   POPSTARTER and Ember: POPSTARTER és Ember
   PS1 SETTINGS: PS1 BEÁLLÍTÁSOK
-  PS2BBL 1.2.0 for RIPPS2: PS2BBL 1.2.0 a RIPPS2-höz
+  PS2BBL for RIPPS2: PS2BBL a RIPPS2-höz
   RIP THIS CONSOLE'S SOUNDS: A KONZOL HANGJAINAK KINYERÉSE
   STATUS: ÁLLAPOT
   a drive of unknown kind: ismeretlen fajtájú meghajtó
@@ -1171,20 +1176,20 @@ strings:
   ' (%d KB free)': ' (%d KB szabad)'
   ' (%u MB free)': ' (%u MB szabad)'
   'BESIDE RIPPS2: %sAUDIO%s, read first at boot': 'A RIPPS2 MELLETT: %sAUDIO%s, induláskor ezt olvassa először'
-  ? '- PS2BBL 1.2.0 is bound to this card by the console and written as %s/%s.
+  ? '- PS2BBL is bound to this card by the console and written as %s/%s.
   
-    - Its config, mc%d:/PS2BBL/CONFIG.INI, starts RIPPS2 where it is (%s) with no wait (0 ms, which PS2BBL Extended does not allow), BOOT LOCK on. RIPPS2 itself is not copied.
+    - Its config, mc%d:/SYS-CONF/PS2BBL.INI, starts RIPPS2 where it is (%s) with no wait (0 ms, which PS2BBL Extended does not allow), BOOT LOCK on. RIPPS2 itself is not copied.
   
     The I/O processor restarts for this and every drive read stops until it is done; music and drives come back after. Keep the card in and the console on until it says done.'
-  : '- A konzol a PS2BBL 1.2.0-t ehhez a kártyához köti, és %s/%s néven írja ki.
+  : '- A konzol a PS2BBL-t ehhez a kártyához köti, és %s/%s néven írja ki.
   
-    - A konfigurációja, mc%d:/PS2BBL/CONFIG.INI, ott indítja a RIPPS2-t, ahol van (%s), várakozás nélkül (0 ms, amit a PS2BBL Extended nem enged), BOOT LOCK bekapcsolva. Magát a RIPPS2-t nem másolja.
+    - A konfigurációja, mc%d:/SYS-CONF/PS2BBL.INI, ott indítja a RIPPS2-t, ahol van (%s), várakozás nélkül (0 ms, amit a PS2BBL Extended nem enged), BOOT LOCK bekapcsolva. Magát a RIPPS2-t nem másolja.
   
     Ehhez az I/O processzor újraindul, és minden meghajtóolvasás leáll, amíg el nem készül; a zene és a meghajtók utána visszatérnek. Hagyd benn a kártyát és a konzolt bekapcsolva, amíg azt nem írja, hogy kész.'
   ? 'An SD2PSX or MMCE card may protect itself after a refused write: if the memory card or the MMCE drive is missing now, turn the console off and on.'
   : 'Egy SD2PSX vagy MMCE kártya védheti magát egy elutasított írás után: ha most hiányzik a memóriakártya vagy az MMCE meghajtó, kapcsold ki és be a konzolt.'
   BOOT LOCK ON: BOOT LOCK BE
-  'Done: the memory card in slot %d starts what it started before BBL 1.20. BBL 1.20 is kept in mc%d:/%s.': 'Kész: a(z) %d. foglalat memóriakártyája azt indítja, amit a BBL 1.20 előtt. A BBL 1.20 megmarad itt: mc%d:/%s.'
+  'Done: the memory card in slot %d starts what it started before BIBLE. BIBLE is kept in mc%d:/%s.': 'Kész: a(z) %d. foglalat memóriakártyája azt indítja, amit a BIBLE előtt. A BIBLE megmarad itt: mc%d:/%s.'
   ? 'For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 2''s config before slot 1''s.
   
     '
@@ -1192,60 +1197,60 @@ strings:
   
     '
   MEMORY CARD IN SLOT %d  (%s): MEMÓRIAKÁRTYA A(Z) %d. FOGLALATBAN  (%s)
-  ? PS2BBL 1.2.0 cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
-  : A PS2BBL 1.2.0 nem tudja elindítani a RIPPS2-t onnan, ahol most van (memóriakártyákat, USB-meghajtókat és MX4SIO-t ér el), és a RIPPS2 nem másolja magát. Tedd a RIPPS2.ELF-et memóriakártyára vagy USB-meghajtóra, és onnan indítsd, vagy használd a PS2BBL Extendedet, amely olvassa az MMCE-t és a merevlemezt.
+  ? PS2BBL cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
+  : A PS2BBL nem tudja elindítani a RIPPS2-t onnan, ahol most van (memóriakártyákat, USB-meghajtókat és MX4SIO-t ér el), és a RIPPS2 nem másolja magát. Tedd a RIPPS2.ELF-et memóriakártyára vagy USB-meghajtóra, és onnan indítsd, vagy használd a PS2BBL Extendedet, amely olvassa az MMCE-t és a merevlemezt.
   RESTORE SLOT %d'S OLD BOOT LOADER: A(Z) %d. FOGLALAT RÉGI BETÖLTŐJÉNEK VISSZAÁLLÍTÁSA
-  ? 'RIPPS2: BBL 1.20 is set up on the memory card in slot %d (mc%d:/%s/%s), BOOT LOCK on: at power on it starts RIPPS2 from %s, at once.'
-  : 'RIPPS2: a BBL 1.20 be van állítva a(z) %d. foglalat memóriakártyáján (mc%d:/%s/%s), BOOT LOCK be: bekapcsoláskor azonnal elindítja a RIPPS2-t innen: %s.'
-  ? 'RIPPS2: Setting up BBL 1.20
+  ? 'RIPPS2: BIBLE is set up on the memory card in slot %d (mc%d:/%s/%s), BOOT LOCK on: at power on it starts RIPPS2 from %s, at once.'
+  : 'RIPPS2: a BIBLE be van állítva a(z) %d. foglalat memóriakártyáján (mc%d:/%s/%s), BOOT LOCK be: bekapcsoláskor azonnal elindítja a RIPPS2-t innen: %s.'
+  ? 'RIPPS2: Setting up BIBLE
   
     '
-  : 'RIPPS2: a BBL 1.20 beállítása
+  : 'RIPPS2: a BIBLE beállítása
   
     '
-  ? 'RIPPS2: Setting up BBL 1.20
+  ? 'RIPPS2: Setting up BIBLE
   
-    RIPPS2 runs from %s, which PS2BBL 1.2.0 cannot read (it reads memory cards, USB and MX4SIO), and RIPPS2 does not copy itself. The PS2BBL Extended config on this card (%s) reads it: START turns BOOT LOCK on, so it starts RIPPS2 from %s at power on. Nothing else on the card changes.'
-  : 'RIPPS2: a BBL 1.20 beállítása
+    RIPPS2 runs from %s, which PS2BBL cannot read (it reads memory cards, USB and MX4SIO), and RIPPS2 does not copy itself. The PS2BBL Extended config on this card (%s) reads it: START turns BOOT LOCK on, so it starts RIPPS2 from %s at power on. Nothing else on the card changes.'
+  : 'RIPPS2: a BIBLE beállítása
   
-    A RIPPS2 innen fut: %s, ezt a PS2BBL 1.2.0 nem tudja olvasni (memóriakártyákat, USB-t és MX4SIO-t olvas), és a RIPPS2 nem másolja magát. A kártya PS2BBL Extended konfigurációja (%s) olvassa: a START bekapcsolja a BOOT LOCK-ot, így bekapcsoláskor innen indítja a RIPPS2-t: %s. A kártyán más nem változik.'
-  ? 'RIPPS2: Setting up BBL 1.20
+    A RIPPS2 innen fut: %s, ezt a PS2BBL nem tudja olvasni (memóriakártyákat, USB-t és MX4SIO-t olvas), és a RIPPS2 nem másolja magát. A kártya PS2BBL Extended konfigurációja (%s) olvassa: a START bekapcsolja a BOOT LOCK-ot, így bekapcsoláskor innen indítja a RIPPS2-t: %s. A kártyán más nem változik.'
+  ? 'RIPPS2: Setting up BIBLE
   
-    RIPPS2 runs from %s, which PS2BBL 1.2.0 cannot read: it starts programs from a memory card, a USB drive or MX4SIO, and RIPPS2 does not copy itself. Put RIPPS2.ELF on one of those (a memory card''s APPS folder, or a USB drive), start it from there, then set up BIBLE again.'
-  : 'RIPPS2: a BBL 1.20 beállítása
+    RIPPS2 runs from %s, which PS2BBL cannot read: it starts programs from a memory card, a USB drive or MX4SIO, and RIPPS2 does not copy itself. Put RIPPS2.ELF on one of those (a memory card''s APPS folder, or a USB drive), start it from there, then set up BIBLE again.'
+  : 'RIPPS2: a BIBLE beállítása
   
-    A RIPPS2 innen fut: %s, ezt a PS2BBL 1.2.0 nem tudja olvasni: memóriakártyáról, USB-meghajtóról vagy MX4SIO-ról indít programokat, és a RIPPS2 nem másolja magát. Tedd a RIPPS2.ELF-et ezek egyikére (egy memóriakártya APPS mappájába vagy USB-meghajtóra), indítsd onnan, majd állítsd be újra a BIBLE-t.'
-  ? 'RIPPS2: Setting up BBL 1.20
+    A RIPPS2 innen fut: %s, ezt a PS2BBL nem tudja olvasni: memóriakártyáról, USB-meghajtóról vagy MX4SIO-ról indít programokat, és a RIPPS2 nem másolja magát. Tedd a RIPPS2.ELF-et ezek egyikére (egy memóriakártya APPS mappájába vagy USB-meghajtóra), indítsd onnan, majd állítsd be újra a BIBLE-t.'
+  ? 'RIPPS2: Setting up BIBLE
   
-    The memory card in slot %d: BBL 1.20 (mc%d:/%s) moves aside, and what it replaced (mc%d:/%s) goes back in its place. Nothing is deleted. The PS2BBL config stays as it is (BOOT LOCK can turn the lock off).'
-  : 'RIPPS2: a BBL 1.20 beállítása
+    The memory card in slot %d: BIBLE (mc%d:/%s) moves aside, and what it replaced (mc%d:/%s) goes back in its place. Nothing is deleted. The PS2BBL config stays as it is (BOOT LOCK can turn the lock off).'
+  : 'RIPPS2: a BIBLE beállítása
   
-    A(z) %d. foglalat memóriakártyája: a BBL 1.20 (mc%d:/%s) félrekerül, és amit lecserélt (mc%d:/%s), visszakerül a helyére. Semmi sem törlődik. A PS2BBL konfiguráció marad, ahogy van (a BOOT LOCK kikapcsolhatja a zárat).'
-  'RIPPS2: Setting up BBL 1.20 (binding PS2BBL to the memory card)': 'RIPPS2: a BBL 1.20 beállítása (a PS2BBL hozzákötése a memóriakártyához)'
-  'RIPPS2: Setting up BBL 1.20 (putting back what was there)': 'RIPPS2: a BBL 1.20 beállítása (az előző visszaállítása)'
-  'RIPPS2: Setting up BBL 1.20 (restarting the I/O processor)': 'RIPPS2: a BBL 1.20 beállítása (az I/O processzor újraindul)'
-  'RIPPS2: Setting up BBL 1.20 (writing it to the memory card)': 'RIPPS2: a BBL 1.20 beállítása (írás a memóriakártyára)'
-  SET UP BBL 1.20: BBL 1.20 BEÁLLÍTÁSA
+    A(z) %d. foglalat memóriakártyája: a BIBLE (mc%d:/%s) félrekerül, és amit lecserélt (mc%d:/%s), visszakerül a helyére. Semmi sem törlődik. A PS2BBL konfiguráció marad, ahogy van (a BOOT LOCK kikapcsolhatja a zárat).'
+  'RIPPS2: Setting up BIBLE (binding PS2BBL to the memory card)': 'RIPPS2: a BIBLE beállítása (a PS2BBL hozzákötése a memóriakártyához)'
+  'RIPPS2: Setting up BIBLE (putting back what was there)': 'RIPPS2: a BIBLE beállítása (az előző visszaállítása)'
+  'RIPPS2: Setting up BIBLE (restarting the I/O processor)': 'RIPPS2: a BIBLE beállítása (az I/O processzor újraindul)'
+  'RIPPS2: Setting up BIBLE (writing it to the memory card)': 'RIPPS2: a BIBLE beállítása (írás a memóriakártyára)'
+  SET UP BIBLE: BIBLE BEÁLLÍTÁSA
   ? 'SLOT 1: %s
   
     SLOT 2: %s
   
     %s
   
-    RIPPS2: Setting up BBL 1.20. PS2BBL 1.2.0 by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
+    RIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
   : '1. FOGLALAT: %s
   
     2. FOGLALAT: %s
   
     %s
   
-    RIPPS2: a BBL 1.20 beállítása. El Isra PS2BBL 1.2.0-ja, amelyet a RIPPS2 egy szabványos 8 MB-os PS2 memóriakártyára vagy a belső merevlemezre állít be: 0 ms-os indulás bekapcsoláskor (a PS2BBL Extended nem enged 0-t), először a RIPPS2 onnan, ahol van (soha nem másolja), és a bekapcsoláskor nyomva tartott gomb továbbra is a böngészőbe (TRIANGLE), egy lemezhez (START) és az előzőhöz (CIRCLE) visz. Beállítod, javítod, vagy visszaállítod, amit lecserélt?'
-  The memory card in slot %d has %d KB free, and BBL 1.20 needs %d KB there. Free some space, then try again.: A(z) %d. foglalat memóriakártyáján %d KB szabad, és a BBL 1.20-nak %d KB kell rajta. Szabadíts fel egy kis helyet, majd próbáld újra.
+    RIPPS2: a BIBLE beállítása. El Isra PS2BBL-ja, amelyet a RIPPS2 egy szabványos 8 MB-os PS2 memóriakártyára vagy a belső merevlemezre állít be: 0 ms-os indulás bekapcsoláskor (a PS2BBL Extended nem enged 0-t), először a RIPPS2 onnan, ahol van (soha nem másolja), és a bekapcsoláskor nyomva tartott gomb továbbra is a böngészőbe (TRIANGLE), egy lemezhez (START) és az előzőhöz (CIRCLE) visz. Beállítod, javítod, vagy visszaállítod, amit lecserélt?'
+  The memory card in slot %d has %d KB free, and BIBLE needs %d KB there. Free some space, then try again.: A(z) %d. foglalat memóriakártyáján %d KB szabad, és a BIBLE-nak %d KB kell rajta. Szabadíts fel egy kis helyet, majd próbáld újra.
   ? The memory card in slot %d refused PS2BBL, so RIPPS2 put the card back as it was. Check its free space, then try again. (DIAG.TXT beside RIPPS2 has what the card said.)
   : A(z) %d. foglalat memóriakártyája elutasította a PS2BBL-t, ezért a RIPPS2 úgy hagyta a kártyát, ahogy volt. Ellenőrizd a szabad helyet, majd próbáld újra. (A RIPPS2 melletti DIAG.TXT tartalmazza a kártya válaszát.)
-  ? The memory card in slot %d would not move BBL 1.20 aside, so nothing was changed. (DIAG.TXT beside RIPPS2 has what the card said.)
-  : A(z) %d. foglalat memóriakártyája nem tette félre a BBL 1.20-at, ezért semmi sem változott. (A RIPPS2 melletti DIAG.TXT tartalmazza a kártya válaszát.)
-  The memory card in slot %d would not take %s back, so BBL 1.20 stayed. (DIAG.TXT beside RIPPS2 has what the card said.): 'A(z) %d. foglalat memóriakártyája nem vette vissza ezt: %s, ezért a BBL 1.20 maradt. (A RIPPS2 melletti DIAG.TXT tartalmazza a kártya válaszát.)'
+  ? The memory card in slot %d would not move BIBLE aside, so nothing was changed. (DIAG.TXT beside RIPPS2 has what the card said.)
+  : A(z) %d. foglalat memóriakártyája nem tette félre a BIBLE-at, ezért semmi sem változott. (A RIPPS2 melletti DIAG.TXT tartalmazza a kártya válaszát.)
+  The memory card in slot %d would not take %s back, so BIBLE stayed. (DIAG.TXT beside RIPPS2 has what the card said.): 'A(z) %d. foglalat memóriakártyája nem vette vissza ezt: %s, ezért a BIBLE maradt. (A RIPPS2 melletti DIAG.TXT tartalmazza a kártya válaszát.)'
   MUSIC: ZENE
   '%s%s has no %s. RIPPOPS found Sony''s PS1 emulator on %s: START copies %s here and starts the game.': '%s%s helyen nincs %s. A RIPPOPS megtalálta a Sony PS1 emulátorát itt: %s: a START ide másolja ezt: %s, és elindítja a játékot.'
   ? 'RIPPS2 does not see %s in %s%s. POPSTARTER needs POPS_IOX.PAK with POPS.PAK, or with POPS.ELF and IOPRP252.IMG: Sony''s PS1 emulator, from your own console. It may find them where RIPPS2 does not look (if your games start, it does). START launches, and this drive is not asked about again.'
@@ -1260,8 +1265,8 @@ strings:
   BOOT LOCK is off. Your boot loader starts what it started before (%s).: A BOOT LOCK ki van kapcsolva. A rendszerbetöltőd azt indítja, amit korábban (%s).
   ? BOOT LOCK is on. %s now starts RIPPS2 at power on (%s), and an empty IGR Path sends a game's EXIT back the same way. Hold one of its buttons while the console starts to reach anything else.%s
   : A BOOT LOCK be van kapcsolva. A(z) %s most bekapcsoláskor a RIPPS2-t indítja (%s), és üres IGR útvonal esetén egy játék EXIT-je ugyanazon az úton tér vissza. Ha máshová szeretnél jutni, tartsd lenyomva valamelyik gombját, miközben a konzol indul.%s
-  ? 'BOOT LOCK put RIPPS2 first in OSDMenu''s menu (%s). OSDMenu starts nothing by itself: pick RIPPS2 there, and a game''s EXIT comes back to that menu. For a console that starts RIPPS2 at once, BIBLE puts PS2BBL 1.2.0 on a memory card (Boot Loader).'
-  : 'A BOOT LOCK a RIPPS2-t az OSDMenu menüjének első helyére tette (%s). Az OSDMenu magától semmit sem indít: ott válaszd a RIPPS2-t, és egy játék EXIT-je abba a menübe tér vissza. Ha a konzol azonnal a RIPPS2-t indítsa, a BIBLE a PS2BBL 1.2.0-t memóriakártyára teszi (Rendszerbetöltő).'
+  ? 'BOOT LOCK put RIPPS2 first in OSDMenu''s menu (%s). OSDMenu starts nothing by itself: pick RIPPS2 there, and a game''s EXIT comes back to that menu. For a console that starts RIPPS2 at once, BIBLE puts PS2BBL on a memory card (Boot Loader).'
+  : 'A BOOT LOCK a RIPPS2-t az OSDMenu menüjének első helyére tette (%s). Az OSDMenu magától semmit sem indít: ott válaszd a RIPPS2-t, és egy játék EXIT-je abba a menübe tér vissza. Ha a konzol azonnal a RIPPS2-t indítsa, a BIBLE a PS2BBL-t memóriakártyára teszi (Rendszerbetöltő).'
   BOOT LOCK works through a boot loader on a memory card (PS2BBL, FMCB or OSDMenu), and there is none here.: A BOOT LOCK egy memóriakártyán lévő rendszerbetöltőn keresztül működik (PS2BBL, FMCB vagy OSDMenu), és itt nincs ilyen.
   The memory card in slot %d starts %s at power on, and BOOT LOCK found no config of it to change (it looks for %s).: 'A(z) %d. foglalat memóriakártyája bekapcsoláskor ezt indítja: %s, és a BOOT LOCK nem talált hozzá módosítható beállítást (ezt keresi: %s).'
   'The memory card in slot %d starts %s at power on, which BOOT LOCK cannot set: it works through PS2BBL, FMCB and OSDMenu.': 'A(z) %d. foglalat memóriakártyája bekapcsoláskor ezt indítja: %s, amit a BOOT LOCK nem tud beállítani: a PS2BBL-en, az FMCB-n és az OSDMenun keresztül működik.'

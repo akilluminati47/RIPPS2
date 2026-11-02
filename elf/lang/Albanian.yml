@@ -3,6 +3,12 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Albanian
 strings:
+  "FILE NAME": "EMRI I SKEDARIT"
+  "GAME LIST": "LISTA E LOJËRAVE"
+  "%s in %s": "%s në %s"
+  "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "Veprimet e shkrimit janë të fikura, ndaj RIPPS2 nuk mund të ruajë të dhënat e një loje ose ta riemërtojë. T'i ndez?"
+  "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "BIBLE është ndërtuar mbi PS2BBL të El Isra, me versionet për kartë dhe HDD të nënshkruara për RIPPS2 (GPL-3)"
+  "This is RIPPS2 lite, which carries no Neutrino. Put Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in a neutrino folder on a memory card or the game's drive, or use the full RIPPS2.elf, which installs it for you.": "Ky është RIPPS2 lite, që nuk mbart Neutrino. Vendos Neutrino (rickgaiser, github.com/rickgaiser/neutrino) në një dosje neutrino në një kartë memorie ose në diskun e lojës, ose përdor RIPPS2.elf të plotë, që e instalon vetë."
   "START %s": "NIS %s"
   "NETWORK": "RRJETI"
   "%s did not answer. Is it connected?": "%s nuk u përgjigj. A është i lidhur?"
@@ -97,7 +103,6 @@ strings:
   BACK: PRAPA
   Back (keeps both): Prapa (i mban të dyja)
   This MMCE card cannot rename a file, which compression needs for its last step. Update its sd2psXtd firmware to 1.4.0 or newer (sd2psxtd.github.io/download), then try again. Nothing was changed.: Kjo kartë MMCE nuk mund të riemërtojë një skedar, gjë që ngjeshja e kërkon në hapin e fundit. Përditësoni firmware-in e saj sd2psXtd në 1.4.0 ose më të ri (sd2psxtd.github.io/download), pastaj provoni përsëri. Asgjë nuk u ndryshua.
-  BIBLE is PS2BBL 1.2.0, El Isra's signed builds (card and HDD), unchanged (GPL-3): BIBLE është PS2BBL 1.2.0, ndërtimet e nënshkruara të El Isra (kartë dhe HDD), pa ndryshime (GPL-3)
   BIOS Sounds > Rip plays them as the SPU2 does; no BIOS ships: Tingujt e BIOS > Nxirr i luan siç bën SPU2; asnjë BIOS nuk përfshihet
   BOOT LOCK AND BIBLE: BOOT LOCK DHE BIBLE
   BOOT LOCK edits its config too: BOOT LOCK ndryshon edhe konfigurimin e tij
@@ -224,8 +229,8 @@ strings:
   : ' Një kartë memorieje këtu ka PS2BBL/CONFIG.INI të vetin, të cilin PS2BBL e lexon para atij të HDD: hiqe atë kartë në ndezje, ose nis RIPPS2 nga karta dhe instalo përsëri.'
   ' Hold TRIANGLE at power on for the browser, START for a disc.': ' Mbaj TREKËNDËSHIN në ndezje për shfletuesin, START për një disk.'
   ' Hold TRIANGLE for the browser, START for a disc. Config: %s.': ' Mbaj TREKËNDËSHIN për shfletuesin, START për një disk. Konfigurimi: %s.'
-  ? ' RIPPS2 can install BIBLE, PS2BBL 1.2.0 set up to start RIPPS2, on a memory card; what starts from it now is kept in a backup folder. Install BIBLE?'
-  : ' RIPPS2 mund të instalojë BIBLE, PS2BBL 1.2.0 të përgatitur për të nisur RIPPS2, në një kartë memorieje; ajo që niset prej saj tani ruhet në një dosje rezervë. Të instalohet BIBLE?'
+  ? ' RIPPS2 can install BIBLE, PS2BBL set up to start RIPPS2, on a memory card; what starts from it now is kept in a backup folder. Install BIBLE?'
+  : ' RIPPS2 mund të instalojë BIBLE, PS2BBL të përgatitur për të nisur RIPPS2, në një kartë memorieje; ajo që niset prej saj tani ruhet në një dosje rezervë. Të instalohet BIBLE?'
   ' The HDD''s old boot program is kept (MANAGE > RESTORE).': ' Programi i vjetër i nisjes së HDD ruhet (MENAXHO > RIKTHE).'
   ' The console would not take the setting that starts its HDD at power on: set it with the HDD utility, or install again.': ' Konsola nuk e pranoi cilësimin që nis HDD-në e saj në ndezje: vendose me mjetin e HDD, ose instalo përsëri.'
   ' What was there before is kept in mc%d:/%s%s.': ' Ajo që ishte atje më parë ruhet në mc%d:/%s%s.'
@@ -267,7 +272,7 @@ strings:
 
     - The HDD''s boot program now in __mbr is read out and kept in %s/RIPPS2 (RESTORE puts it back).
 
-    - PS2BBL 1.2.0''s HDD build is written in its place, and the console set to start it at power on.
+    - PS2BBL''s HDD build is written in its place, and the console set to start it at power on.
 
     - Its config (%s) starts RIPPS2 from %s first%s%s, BOOT LOCK on.
 
@@ -278,7 +283,7 @@ strings:
 
     - Programi i nisjes së HDD që është tani në __mbr lexohet dhe ruhet në %s/RIPPS2 (RIKTHE e kthen).
 
-    - Ndërtimi për HDD i PS2BBL 1.2.0 shkruhet në vend të tij, dhe konsola vendoset ta nisë në ndezje.
+    - Ndërtimi për HDD i PS2BBL shkruhet në vend të tij, dhe konsola vendoset ta nisë në ndezje.
 
     - Konfigurimi i tij (%s) nis RIPPS2 së pari nga %s%s%s, me BOOT LOCK të ndezur.
 
@@ -783,7 +788,7 @@ strings:
   POPSTARTER NETWORK: RRJETI I POPSTARTER
   POPSTARTER and Ember: POPSTARTER dhe Ember
   PS1 SETTINGS: CILËSIMET E PS1
-  PS2BBL 1.2.0 for RIPPS2: PS2BBL 1.2.0 për RIPPS2
+  PS2BBL for RIPPS2: PS2BBL për RIPPS2
   RIP THIS CONSOLE'S SOUNDS: NXIRR TINGUJT E KËSAJ KONSOLE
   STATUS: GJENDJA
   a drive of unknown kind: një njësi e llojit të panjohur
@@ -1170,20 +1175,20 @@ strings:
   ' (%d KB free)': ' (%d KB të lira)'
   ' (%u MB free)': ' (%u MB të lira)'
   'BESIDE RIPPS2: %sAUDIO%s, read first at boot': 'PRANË RIPPS2: %sAUDIO%s, lexohet i pari në nisje'
-  ? '- PS2BBL 1.2.0 is bound to this card by the console and written as %s/%s.
+  ? '- PS2BBL is bound to this card by the console and written as %s/%s.
   
-    - Its config, mc%d:/PS2BBL/CONFIG.INI, starts RIPPS2 where it is (%s) with no wait (0 ms, which PS2BBL Extended does not allow), BOOT LOCK on. RIPPS2 itself is not copied.
+    - Its config, mc%d:/SYS-CONF/PS2BBL.INI, starts RIPPS2 where it is (%s) with no wait (0 ms, which PS2BBL Extended does not allow), BOOT LOCK on. RIPPS2 itself is not copied.
   
     The I/O processor restarts for this and every drive read stops until it is done; music and drives come back after. Keep the card in and the console on until it says done.'
-  : '- PS2BBL 1.2.0 lidhet me këtë kartë nga konsola dhe shkruhet si %s/%s.
+  : '- PS2BBL lidhet me këtë kartë nga konsola dhe shkruhet si %s/%s.
   
-    - Konfigurimi i tij, mc%d:/PS2BBL/CONFIG.INI, nis RIPPS2 aty ku është (%s) pa pritje (0 ms, që PS2BBL Extended nuk e lejon), BOOT LOCK ndezur. Vetë RIPPS2 nuk kopjohet.
+    - Konfigurimi i tij, mc%d:/SYS-CONF/PS2BBL.INI, nis RIPPS2 aty ku është (%s) pa pritje (0 ms, që PS2BBL Extended nuk e lejon), BOOT LOCK ndezur. Vetë RIPPS2 nuk kopjohet.
   
     Procesori I/O rinis për këtë dhe çdo lexim i disqeve ndalon derisa të mbarojë; muzika dhe disqet kthehen pas kësaj. Lëre kartën brenda dhe konsolën ndezur derisa të thotë që mbaroi.'
   ? 'An SD2PSX or MMCE card may protect itself after a refused write: if the memory card or the MMCE drive is missing now, turn the console off and on.'
   : 'Një kartë SD2PSX ose MMCE mund të mbrohet pas një shkrimi të refuzuar: nëse tani mungon karta e memories ose disku MMCE, fike dhe ndize konsolën.'
   BOOT LOCK ON: BOOT LOCK NDEZUR
-  'Done: the memory card in slot %d starts what it started before BBL 1.20. BBL 1.20 is kept in mc%d:/%s.': 'U krye: karta e memories në folenë %d nis atë që niste para BBL 1.20. BBL 1.20 ruhet në mc%d:/%s.'
+  'Done: the memory card in slot %d starts what it started before BIBLE. BIBLE is kept in mc%d:/%s.': 'U krye: karta e memories në folenë %d nis atë që niste para BIBLE. BIBLE ruhet në mc%d:/%s.'
   ? 'For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 2''s config before slot 1''s.
   
     '
@@ -1191,60 +1196,60 @@ strings:
   
     '
   MEMORY CARD IN SLOT %d  (%s): KARTA E MEMORIES NË FOLENË %d  (%s)
-  ? PS2BBL 1.2.0 cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
-  : PS2BBL 1.2.0 nuk mund ta nisë RIPPS2 nga vendi ku është tani (arrin te kartat e memories, disqet USB dhe MX4SIO), dhe RIPPS2 nuk e kopjon veten. Vendose RIPPS2.ELF në një kartë memorieje ose disk USB dhe nise prej andej, ose përdor PS2BBL Extended, që lexon MMCE dhe diskun e ngurtë.
+  ? PS2BBL cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
+  : PS2BBL nuk mund ta nisë RIPPS2 nga vendi ku është tani (arrin te kartat e memories, disqet USB dhe MX4SIO), dhe RIPPS2 nuk e kopjon veten. Vendose RIPPS2.ELF në një kartë memorieje ose disk USB dhe nise prej andej, ose përdor PS2BBL Extended, që lexon MMCE dhe diskun e ngurtë.
   RESTORE SLOT %d'S OLD BOOT LOADER: RIKTHE NGARKUESIN E VJETËR TË FOLESË %d
-  ? 'RIPPS2: BBL 1.20 is set up on the memory card in slot %d (mc%d:/%s/%s), BOOT LOCK on: at power on it starts RIPPS2 from %s, at once.'
-  : 'RIPPS2: BBL 1.20 u vendos në kartën e memories në folenë %d (mc%d:/%s/%s), BOOT LOCK ndezur: në ndezje nis menjëherë RIPPS2 nga %s.'
-  ? 'RIPPS2: Setting up BBL 1.20
+  ? 'RIPPS2: BIBLE is set up on the memory card in slot %d (mc%d:/%s/%s), BOOT LOCK on: at power on it starts RIPPS2 from %s, at once.'
+  : 'RIPPS2: BIBLE u vendos në kartën e memories në folenë %d (mc%d:/%s/%s), BOOT LOCK ndezur: në ndezje nis menjëherë RIPPS2 nga %s.'
+  ? 'RIPPS2: Setting up BIBLE
   
     '
-  : 'RIPPS2: po vendoset BBL 1.20
+  : 'RIPPS2: po vendoset BIBLE
   
     '
-  ? 'RIPPS2: Setting up BBL 1.20
+  ? 'RIPPS2: Setting up BIBLE
   
-    RIPPS2 runs from %s, which PS2BBL 1.2.0 cannot read (it reads memory cards, USB and MX4SIO), and RIPPS2 does not copy itself. The PS2BBL Extended config on this card (%s) reads it: START turns BOOT LOCK on, so it starts RIPPS2 from %s at power on. Nothing else on the card changes.'
-  : 'RIPPS2: po vendoset BBL 1.20
+    RIPPS2 runs from %s, which PS2BBL cannot read (it reads memory cards, USB and MX4SIO), and RIPPS2 does not copy itself. The PS2BBL Extended config on this card (%s) reads it: START turns BOOT LOCK on, so it starts RIPPS2 from %s at power on. Nothing else on the card changes.'
+  : 'RIPPS2: po vendoset BIBLE
   
-    RIPPS2 punon nga %s, që PS2BBL 1.2.0 nuk e lexon dot (lexon karta memorieje, USB dhe MX4SIO), dhe RIPPS2 nuk e kopjon veten. Konfigurimi PS2BBL Extended në këtë kartë (%s) e lexon: START ndez BOOT LOCK, që në ndezje të nisë RIPPS2 nga %s. Asgjë tjetër nuk ndryshon në kartë.'
-  ? 'RIPPS2: Setting up BBL 1.20
+    RIPPS2 punon nga %s, që PS2BBL nuk e lexon dot (lexon karta memorieje, USB dhe MX4SIO), dhe RIPPS2 nuk e kopjon veten. Konfigurimi PS2BBL Extended në këtë kartë (%s) e lexon: START ndez BOOT LOCK, që në ndezje të nisë RIPPS2 nga %s. Asgjë tjetër nuk ndryshon në kartë.'
+  ? 'RIPPS2: Setting up BIBLE
   
-    RIPPS2 runs from %s, which PS2BBL 1.2.0 cannot read: it starts programs from a memory card, a USB drive or MX4SIO, and RIPPS2 does not copy itself. Put RIPPS2.ELF on one of those (a memory card''s APPS folder, or a USB drive), start it from there, then set up BIBLE again.'
-  : 'RIPPS2: po vendoset BBL 1.20
+    RIPPS2 runs from %s, which PS2BBL cannot read: it starts programs from a memory card, a USB drive or MX4SIO, and RIPPS2 does not copy itself. Put RIPPS2.ELF on one of those (a memory card''s APPS folder, or a USB drive), start it from there, then set up BIBLE again.'
+  : 'RIPPS2: po vendoset BIBLE
   
-    RIPPS2 punon nga %s, që PS2BBL 1.2.0 nuk e lexon dot: ai nis programe nga një kartë memorieje, një disk USB ose MX4SIO, dhe RIPPS2 nuk e kopjon veten. Vendose RIPPS2.ELF në një prej tyre (dosjen APPS të një karte memorieje ose një disk USB), nise prej andej, pastaj vendos sërish BIBLE.'
-  ? 'RIPPS2: Setting up BBL 1.20
+    RIPPS2 punon nga %s, që PS2BBL nuk e lexon dot: ai nis programe nga një kartë memorieje, një disk USB ose MX4SIO, dhe RIPPS2 nuk e kopjon veten. Vendose RIPPS2.ELF në një prej tyre (dosjen APPS të një karte memorieje ose një disk USB), nise prej andej, pastaj vendos sërish BIBLE.'
+  ? 'RIPPS2: Setting up BIBLE
   
-    The memory card in slot %d: BBL 1.20 (mc%d:/%s) moves aside, and what it replaced (mc%d:/%s) goes back in its place. Nothing is deleted. The PS2BBL config stays as it is (BOOT LOCK can turn the lock off).'
-  : 'RIPPS2: po vendoset BBL 1.20
+    The memory card in slot %d: BIBLE (mc%d:/%s) moves aside, and what it replaced (mc%d:/%s) goes back in its place. Nothing is deleted. The PS2BBL config stays as it is (BOOT LOCK can turn the lock off).'
+  : 'RIPPS2: po vendoset BIBLE
   
-    Karta e memories në folenë %d: BBL 1.20 (mc%d:/%s) lëviz mënjanë dhe ajo që zëvendësoi (mc%d:/%s) kthehet në vendin e saj. Asgjë nuk fshihet. Konfigurimi i PS2BBL mbetet siç është (BOOT LOCK mund ta fikë bllokimin).'
-  'RIPPS2: Setting up BBL 1.20 (binding PS2BBL to the memory card)': 'RIPPS2: po vendoset BBL 1.20 (PS2BBL po lidhet me kartën e memories)'
-  'RIPPS2: Setting up BBL 1.20 (putting back what was there)': 'RIPPS2: po vendoset BBL 1.20 (po rikthehet ajo që ishte)'
-  'RIPPS2: Setting up BBL 1.20 (restarting the I/O processor)': 'RIPPS2: po vendoset BBL 1.20 (procesori I/O po riniset)'
-  'RIPPS2: Setting up BBL 1.20 (writing it to the memory card)': 'RIPPS2: po vendoset BBL 1.20 (po shkruhet në kartën e memories)'
-  SET UP BBL 1.20: VENDOS BBL 1.20
+    Karta e memories në folenë %d: BIBLE (mc%d:/%s) lëviz mënjanë dhe ajo që zëvendësoi (mc%d:/%s) kthehet në vendin e saj. Asgjë nuk fshihet. Konfigurimi i PS2BBL mbetet siç është (BOOT LOCK mund ta fikë bllokimin).'
+  'RIPPS2: Setting up BIBLE (binding PS2BBL to the memory card)': 'RIPPS2: po vendoset BIBLE (PS2BBL po lidhet me kartën e memories)'
+  'RIPPS2: Setting up BIBLE (putting back what was there)': 'RIPPS2: po vendoset BIBLE (po rikthehet ajo që ishte)'
+  'RIPPS2: Setting up BIBLE (restarting the I/O processor)': 'RIPPS2: po vendoset BIBLE (procesori I/O po riniset)'
+  'RIPPS2: Setting up BIBLE (writing it to the memory card)': 'RIPPS2: po vendoset BIBLE (po shkruhet në kartën e memories)'
+  SET UP BIBLE: VENDOS BIBLE
   ? 'SLOT 1: %s
   
     SLOT 2: %s
   
     %s
   
-    RIPPS2: Setting up BBL 1.20. PS2BBL 1.2.0 by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
+    RIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
   : 'FOLEJA 1: %s
   
     FOLEJA 2: %s
   
     %s
   
-    RIPPS2: po vendoset BBL 1.20. PS2BBL 1.2.0 nga El Isra, i vendosur nga RIPPS2 në një kartë memorieje PS2 standarde 8 MB ose në diskun e brendshëm: një nisje 0 ms në ndezje (PS2BBL Extended nuk lejon 0), RIPPS2 i pari nga vendi ku është (nuk kopjohet kurrë), dhe një buton i mbajtur në ndezje të çon ende te shfletuesi (TRIANGLE), te një disk (START) dhe te ajo që ishte më parë (CIRCLE). Ta vendosësh, ta riparosh apo ta rikthesh atë që zëvendësoi?'
-  The memory card in slot %d has %d KB free, and BBL 1.20 needs %d KB there. Free some space, then try again.: Karta e memories në folenë %d ka %d KB të lira dhe BBL 1.20 ka nevojë për %d KB atje. Liro pak hapësirë, pastaj provo sërish.
+    RIPPS2: po vendoset BIBLE. PS2BBL nga El Isra, i vendosur nga RIPPS2 në një kartë memorieje PS2 standarde 8 MB ose në diskun e brendshëm: një nisje 0 ms në ndezje (PS2BBL Extended nuk lejon 0), RIPPS2 i pari nga vendi ku është (nuk kopjohet kurrë), dhe një buton i mbajtur në ndezje të çon ende te shfletuesi (TRIANGLE), te një disk (START) dhe te ajo që ishte më parë (CIRCLE). Ta vendosësh, ta riparosh apo ta rikthesh atë që zëvendësoi?'
+  The memory card in slot %d has %d KB free, and BIBLE needs %d KB there. Free some space, then try again.: Karta e memories në folenë %d ka %d KB të lira dhe BIBLE ka nevojë për %d KB atje. Liro pak hapësirë, pastaj provo sërish.
   ? The memory card in slot %d refused PS2BBL, so RIPPS2 put the card back as it was. Check its free space, then try again. (DIAG.TXT beside RIPPS2 has what the card said.)
   : Karta e memories në folenë %d refuzoi PS2BBL, kështu që RIPPS2 e la kartën siç ishte. Kontrollo hapësirën e lirë, pastaj provo sërish. (DIAG.TXT pranë RIPPS2 ka përgjigjen e kartës.)
-  ? The memory card in slot %d would not move BBL 1.20 aside, so nothing was changed. (DIAG.TXT beside RIPPS2 has what the card said.)
-  : Karta e memories në folenë %d nuk e lëvizi mënjanë BBL 1.20, kështu që nuk ndryshoi asgjë. (DIAG.TXT pranë RIPPS2 ka përgjigjen e kartës.)
-  The memory card in slot %d would not take %s back, so BBL 1.20 stayed. (DIAG.TXT beside RIPPS2 has what the card said.): Karta e memories në folenë %d nuk e mori mbrapsht %s, kështu që BBL 1.20 mbeti. (DIAG.TXT pranë RIPPS2 ka përgjigjen e kartës.)
+  ? The memory card in slot %d would not move BIBLE aside, so nothing was changed. (DIAG.TXT beside RIPPS2 has what the card said.)
+  : Karta e memories në folenë %d nuk e lëvizi mënjanë BIBLE, kështu që nuk ndryshoi asgjë. (DIAG.TXT pranë RIPPS2 ka përgjigjen e kartës.)
+  The memory card in slot %d would not take %s back, so BIBLE stayed. (DIAG.TXT beside RIPPS2 has what the card said.): Karta e memories në folenë %d nuk e mori mbrapsht %s, kështu që BIBLE mbeti. (DIAG.TXT pranë RIPPS2 ka përgjigjen e kartës.)
   MUSIC: MUZIKA
   '%s%s has no %s. RIPPOPS found Sony''s PS1 emulator on %s: START copies %s here and starts the game.': '%s%s nuk ka %s. RIPPOPS gjeti emulatorin PS1 të Sony në %s: START kopjon %s këtu dhe nis lojën.'
   ? 'RIPPS2 does not see %s in %s%s. POPSTARTER needs POPS_IOX.PAK with POPS.PAK, or with POPS.ELF and IOPRP252.IMG: Sony''s PS1 emulator, from your own console. It may find them where RIPPS2 does not look (if your games start, it does). START launches, and this drive is not asked about again.'
@@ -1259,8 +1264,8 @@ strings:
   BOOT LOCK is off. Your boot loader starts what it started before (%s).: BOOT LOCK është fikur. Ngarkuesi yt i nisjes nis atë që niste më parë (%s).
   ? BOOT LOCK is on. %s now starts RIPPS2 at power on (%s), and an empty IGR Path sends a game's EXIT back the same way. Hold one of its buttons while the console starts to reach anything else.%s
   : BOOT LOCK është ndezur. %s tani nis RIPPS2 në ndezje (%s), dhe një Shteg IGR bosh e kthen EXIT-in e një loje nga e njëjta rrugë. Mbaj një nga butonat e tij ndërsa konsola niset për të arritur diçka tjetër.%s
-  ? 'BOOT LOCK put RIPPS2 first in OSDMenu''s menu (%s). OSDMenu starts nothing by itself: pick RIPPS2 there, and a game''s EXIT comes back to that menu. For a console that starts RIPPS2 at once, BIBLE puts PS2BBL 1.2.0 on a memory card (Boot Loader).'
-  : 'BOOT LOCK e vuri RIPPS2 të parin në menynë e OSDMenu (%s). OSDMenu nuk nis asgjë vetë: zgjidh atje RIPPS2, dhe EXIT-i i një loje kthehet te ajo meny. Për një konsolë që nis RIPPS2 menjëherë, BIBLE vendos PS2BBL 1.2.0 në një kartë memorieje (Ngarkuesi i nisjes).'
+  ? 'BOOT LOCK put RIPPS2 first in OSDMenu''s menu (%s). OSDMenu starts nothing by itself: pick RIPPS2 there, and a game''s EXIT comes back to that menu. For a console that starts RIPPS2 at once, BIBLE puts PS2BBL on a memory card (Boot Loader).'
+  : 'BOOT LOCK e vuri RIPPS2 të parin në menynë e OSDMenu (%s). OSDMenu nuk nis asgjë vetë: zgjidh atje RIPPS2, dhe EXIT-i i një loje kthehet te ajo meny. Për një konsolë që nis RIPPS2 menjëherë, BIBLE vendos PS2BBL në një kartë memorieje (Ngarkuesi i nisjes).'
   BOOT LOCK works through a boot loader on a memory card (PS2BBL, FMCB or OSDMenu), and there is none here.: BOOT LOCK punon përmes një ngarkuesi nisjeje në një kartë memorieje (PS2BBL, FMCB ose OSDMenu), dhe këtu nuk ka asnjë.
   The memory card in slot %d starts %s at power on, and BOOT LOCK found no config of it to change (it looks for %s).: Karta e memories në folenë %d nis %s në ndezje, dhe BOOT LOCK nuk gjeti asnjë konfigurim të tij për të ndryshuar (kërkon %s).
   'The memory card in slot %d starts %s at power on, which BOOT LOCK cannot set: it works through PS2BBL, FMCB and OSDMenu.': 'Karta e memories në folenë %d nis %s në ndezje, të cilin BOOT LOCK nuk mund ta vendosë: punon përmes PS2BBL, FMCB dhe OSDMenu.'

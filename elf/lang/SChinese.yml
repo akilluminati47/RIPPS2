@@ -3,6 +3,12 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: SChinese
 strings:
+  "FILE NAME": "文件名"
+  "GAME LIST": "游戏列表"
+  "%s in %s": "%s 于 %s"
+  "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "写入操作已关闭，因此 RIPPS2 无法保存游戏的信息或重命名游戏。要打开吗？"
+  "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "BIBLE 基于 El Isra 的 PS2BBL，其记忆卡版和 HDD 版已为 RIPPS2 签名（GPL-3）"
+  "This is RIPPS2 lite, which carries no Neutrino. Put Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in a neutrino folder on a memory card or the game's drive, or use the full RIPPS2.elf, which installs it for you.": "这是不带 Neutrino 的 RIPPS2 lite。请把 Neutrino（rickgaiser，github.com/rickgaiser/neutrino）放到记忆卡或游戏所在驱动器上的 neutrino 文件夹，或者使用会替你安装它的完整版 RIPPS2.elf。"
   "START %s": "启动 %s"
   "NETWORK": "网络"
   "%s did not answer. Is it connected?": "%s 没有响应。是否已连接？"
@@ -97,7 +103,6 @@ strings:
   BACK: 返回
   Back (keeps both): 返回（两个都保留）
   This MMCE card cannot rename a file, which compression needs for its last step. Update its sd2psXtd firmware to 1.4.0 or newer (sd2psxtd.github.io/download), then try again. Nothing was changed.: 这张 MMCE 卡无法重命名文件，而压缩的最后一步需要这样做。请将其 sd2psXtd 固件更新到 1.4.0 或更高版本（sd2psxtd.github.io/download），然后重试。未做任何更改。
-  BIBLE is PS2BBL 1.2.0, El Isra's signed builds (card and HDD), unchanged (GPL-3): BIBLE 是 PS2BBL 1.2.0，El Isra 签名的版本（记忆卡和硬盘），未修改（GPL-3）
   BIOS Sounds > Rip plays them as the SPU2 does; no BIOS ships: BIOS 音效 > 提取会像 SPU2 一样播放它们；不附带任何 BIOS
   BOOT LOCK AND BIBLE: BOOT LOCK 与 BIBLE
   BOOT LOCK edits its config too: BOOT LOCK 也会编辑它的配置
@@ -224,8 +229,8 @@ strings:
   : ' 这里的一张记忆卡有自己的 PS2BBL/CONFIG.INI，PS2BBL 会先读它再读硬盘的：开机时取出这张卡，或从这张卡启动 RIPPS2 后重新安装。'
   ' Hold TRIANGLE at power on for the browser, START for a disc.': ' 开机时按住三角键进入浏览器，按住 START 进入光盘。'
   ' Hold TRIANGLE for the browser, START for a disc. Config: %s.': ' 按住三角键进入浏览器，START 进入光盘。配置：%s。'
-  ? ' RIPPS2 can install BIBLE, PS2BBL 1.2.0 set up to start RIPPS2, on a memory card; what starts from it now is kept in a backup folder. Install BIBLE?'
-  : ' RIPPS2 可以在记忆卡上安装 BIBLE（为启动 RIPPS2 而设置的 PS2BBL 1.2.0）；当前从这张卡启动的内容会保存在备份文件夹中。安装 BIBLE 吗？'
+  ? ' RIPPS2 can install BIBLE, PS2BBL set up to start RIPPS2, on a memory card; what starts from it now is kept in a backup folder. Install BIBLE?'
+  : ' RIPPS2 可以在记忆卡上安装 BIBLE（为启动 RIPPS2 而设置的 PS2BBL）；当前从这张卡启动的内容会保存在备份文件夹中。安装 BIBLE 吗？'
   ' The HDD''s old boot program is kept (MANAGE > RESTORE).': ' 硬盘原来的引导程序已保留（管理 > 恢复）。'
   ' The console would not take the setting that starts its HDD at power on: set it with the HDD utility, or install again.': ' 主机不接受开机时启动硬盘的设置：请用硬盘工具设置，或重新安装。'
   ' What was there before is kept in mc%d:/%s%s.': ' 原有的内容保存在 mc%d:/%s%s。'
@@ -267,7 +272,7 @@ strings:
 
     - The HDD''s boot program now in __mbr is read out and kept in %s/RIPPS2 (RESTORE puts it back).
 
-    - PS2BBL 1.2.0''s HDD build is written in its place, and the console set to start it at power on.
+    - PS2BBL''s HDD build is written in its place, and the console set to start it at power on.
 
     - Its config (%s) starts RIPPS2 from %s first%s%s, BOOT LOCK on.
 
@@ -278,7 +283,7 @@ strings:
 
     - 读出当前位于 __mbr 的硬盘引导程序，保存在 %s/RIPPS2（恢复会把它放回）。
 
-    - 在它的位置写入 PS2BBL 1.2.0 的硬盘版，并把主机设置为开机时启动它。
+    - 在它的位置写入 PS2BBL 的硬盘版，并把主机设置为开机时启动它。
 
     - 它的配置（%s）先从 %s%s%s 启动 RIPPS2，开启 BOOT LOCK。
 
@@ -783,7 +788,7 @@ strings:
   POPSTARTER NETWORK: POPSTARTER 网络
   POPSTARTER and Ember: POPSTARTER 与 Ember
   PS1 SETTINGS: PS1 设置
-  PS2BBL 1.2.0 for RIPPS2: 供 RIPPS2 使用的 PS2BBL 1.2.0
+  PS2BBL for RIPPS2: 供 RIPPS2 使用的 PS2BBL
   RIP THIS CONSOLE'S SOUNDS: 提取这台主机的音效
   STATUS: 状态
   a drive of unknown kind: 未知类型的驱动器
@@ -1171,20 +1176,20 @@ strings:
   ' (%d KB free)': ' (剩余 %d KB)'
   ' (%u MB free)': ' (剩余 %u MB)'
   'BESIDE RIPPS2: %sAUDIO%s, read first at boot': RIPPS2 旁边：%sAUDIO%s，启动时最先读取
-  ? '- PS2BBL 1.2.0 is bound to this card by the console and written as %s/%s.
+  ? '- PS2BBL is bound to this card by the console and written as %s/%s.
   
-    - Its config, mc%d:/PS2BBL/CONFIG.INI, starts RIPPS2 where it is (%s) with no wait (0 ms, which PS2BBL Extended does not allow), BOOT LOCK on. RIPPS2 itself is not copied.
+    - Its config, mc%d:/SYS-CONF/PS2BBL.INI, starts RIPPS2 where it is (%s) with no wait (0 ms, which PS2BBL Extended does not allow), BOOT LOCK on. RIPPS2 itself is not copied.
   
     The I/O processor restarts for this and every drive read stops until it is done; music and drives come back after. Keep the card in and the console on until it says done.'
-  : '- 主机把 PS2BBL 1.2.0 绑定到这张卡，写为 %s/%s。
+  : '- 主机把 PS2BBL 绑定到这张卡，写为 %s/%s。
   
-    - 它的设置 mc%d:/PS2BBL/CONFIG.INI 从 RIPPS2 现在的位置 (%s) 无等待启动它 (0 ms，PS2BBL Extended 不允许)，BOOT LOCK 开启。RIPPS2 本身不会被复制。
+    - 它的设置 mc%d:/SYS-CONF/PS2BBL.INI 从 RIPPS2 现在的位置 (%s) 无等待启动它 (0 ms，PS2BBL Extended 不允许)，BOOT LOCK 开启。RIPPS2 本身不会被复制。
   
     为此 I/O 处理器会重启，所有驱动器读取会暂停直到完成；音乐和驱动器随后恢复。在提示完成之前，请保持卡插着、主机开着。'
   ? 'An SD2PSX or MMCE card may protect itself after a refused write: if the memory card or the MMCE drive is missing now, turn the console off and on.'
   : SD2PSX 或 MMCE 卡在写入被拒后可能会自我保护：如果现在记忆卡或 MMCE 驱动器不见了，请关闭主机再打开。
   BOOT LOCK ON: BOOT LOCK 开启
-  'Done: the memory card in slot %d starts what it started before BBL 1.20. BBL 1.20 is kept in mc%d:/%s.': 完成：插槽 %d 的记忆卡会启动 BBL 1.20 之前启动的内容。BBL 1.20 保留在 mc%d:/%s。
+  'Done: the memory card in slot %d starts what it started before BIBLE. BIBLE is kept in mc%d:/%s.': 完成：插槽 %d 的记忆卡会启动 BIBLE 之前启动的内容。BIBLE 保留在 mc%d:/%s。
   ? 'For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 2''s config before slot 1''s.
   
     '
@@ -1192,60 +1197,60 @@ strings:
   
     '
   MEMORY CARD IN SLOT %d  (%s): 插槽 %d 的记忆卡  (%s)
-  ? PS2BBL 1.2.0 cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
-  : PS2BBL 1.2.0 无法从 RIPPS2 现在的位置启动它 (它只能访问记忆卡、USB 驱动器和 MX4SIO)，而 RIPPS2 不会复制自己。请把 RIPPS2.ELF 放到记忆卡或 USB 驱动器上并从那里启动，或使用能读取 MMCE 和硬盘的 PS2BBL Extended。
+  ? PS2BBL cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
+  : PS2BBL 无法从 RIPPS2 现在的位置启动它 (它只能访问记忆卡、USB 驱动器和 MX4SIO)，而 RIPPS2 不会复制自己。请把 RIPPS2.ELF 放到记忆卡或 USB 驱动器上并从那里启动，或使用能读取 MMCE 和硬盘的 PS2BBL Extended。
   RESTORE SLOT %d'S OLD BOOT LOADER: 恢复插槽 %d 原来的启动程序
-  ? 'RIPPS2: BBL 1.20 is set up on the memory card in slot %d (mc%d:/%s/%s), BOOT LOCK on: at power on it starts RIPPS2 from %s, at once.'
-  : RIPPS2：BBL 1.20 已设置在插槽 %d 的记忆卡上 (mc%d:/%s/%s)，BOOT LOCK 开启：开机时立即从 %s 启动 RIPPS2。
-  ? 'RIPPS2: Setting up BBL 1.20
+  ? 'RIPPS2: BIBLE is set up on the memory card in slot %d (mc%d:/%s/%s), BOOT LOCK on: at power on it starts RIPPS2 from %s, at once.'
+  : RIPPS2：BIBLE 已设置在插槽 %d 的记忆卡上 (mc%d:/%s/%s)，BOOT LOCK 开启：开机时立即从 %s 启动 RIPPS2。
+  ? 'RIPPS2: Setting up BIBLE
   
     '
-  : 'RIPPS2：正在设置 BBL 1.20
+  : 'RIPPS2：正在设置 BIBLE
   
     '
-  ? 'RIPPS2: Setting up BBL 1.20
+  ? 'RIPPS2: Setting up BIBLE
   
-    RIPPS2 runs from %s, which PS2BBL 1.2.0 cannot read (it reads memory cards, USB and MX4SIO), and RIPPS2 does not copy itself. The PS2BBL Extended config on this card (%s) reads it: START turns BOOT LOCK on, so it starts RIPPS2 from %s at power on. Nothing else on the card changes.'
-  : 'RIPPS2：正在设置 BBL 1.20
+    RIPPS2 runs from %s, which PS2BBL cannot read (it reads memory cards, USB and MX4SIO), and RIPPS2 does not copy itself. The PS2BBL Extended config on this card (%s) reads it: START turns BOOT LOCK on, so it starts RIPPS2 from %s at power on. Nothing else on the card changes.'
+  : 'RIPPS2：正在设置 BIBLE
   
-    RIPPS2 正在从 %s 运行，而 PS2BBL 1.2.0 读不了那里 (它读取记忆卡、USB 和 MX4SIO)，RIPPS2 也不会复制自己。这张卡上的 PS2BBL Extended 设置 (%s) 可以读取：START 会开启 BOOT LOCK，让它在开机时从 %s 启动 RIPPS2。卡上的其他内容不变。'
-  ? 'RIPPS2: Setting up BBL 1.20
+    RIPPS2 正在从 %s 运行，而 PS2BBL 读不了那里 (它读取记忆卡、USB 和 MX4SIO)，RIPPS2 也不会复制自己。这张卡上的 PS2BBL Extended 设置 (%s) 可以读取：START 会开启 BOOT LOCK，让它在开机时从 %s 启动 RIPPS2。卡上的其他内容不变。'
+  ? 'RIPPS2: Setting up BIBLE
   
-    RIPPS2 runs from %s, which PS2BBL 1.2.0 cannot read: it starts programs from a memory card, a USB drive or MX4SIO, and RIPPS2 does not copy itself. Put RIPPS2.ELF on one of those (a memory card''s APPS folder, or a USB drive), start it from there, then set up BIBLE again.'
-  : 'RIPPS2：正在设置 BBL 1.20
+    RIPPS2 runs from %s, which PS2BBL cannot read: it starts programs from a memory card, a USB drive or MX4SIO, and RIPPS2 does not copy itself. Put RIPPS2.ELF on one of those (a memory card''s APPS folder, or a USB drive), start it from there, then set up BIBLE again.'
+  : 'RIPPS2：正在设置 BIBLE
   
-    RIPPS2 正在从 %s 运行，而 PS2BBL 1.2.0 读不了那里：它只从记忆卡、USB 驱动器或 MX4SIO 启动程序，RIPPS2 也不会复制自己。请把 RIPPS2.ELF 放到其中之一 (记忆卡的 APPS 文件夹或 USB 驱动器)，从那里启动，然后再设置一次 BIBLE。'
-  ? 'RIPPS2: Setting up BBL 1.20
+    RIPPS2 正在从 %s 运行，而 PS2BBL 读不了那里：它只从记忆卡、USB 驱动器或 MX4SIO 启动程序，RIPPS2 也不会复制自己。请把 RIPPS2.ELF 放到其中之一 (记忆卡的 APPS 文件夹或 USB 驱动器)，从那里启动，然后再设置一次 BIBLE。'
+  ? 'RIPPS2: Setting up BIBLE
   
-    The memory card in slot %d: BBL 1.20 (mc%d:/%s) moves aside, and what it replaced (mc%d:/%s) goes back in its place. Nothing is deleted. The PS2BBL config stays as it is (BOOT LOCK can turn the lock off).'
-  : 'RIPPS2：正在设置 BBL 1.20
+    The memory card in slot %d: BIBLE (mc%d:/%s) moves aside, and what it replaced (mc%d:/%s) goes back in its place. Nothing is deleted. The PS2BBL config stays as it is (BOOT LOCK can turn the lock off).'
+  : 'RIPPS2：正在设置 BIBLE
   
-    插槽 %d 的记忆卡：BBL 1.20 (mc%d:/%s) 会移到一边，它替换掉的内容 (mc%d:/%s) 回到原位。不会删除任何东西。PS2BBL 设置保持不变 (BOOT LOCK 可以关闭锁定)。'
-  'RIPPS2: Setting up BBL 1.20 (binding PS2BBL to the memory card)': RIPPS2：正在设置 BBL 1.20 (正在把 PS2BBL 绑定到记忆卡)
-  'RIPPS2: Setting up BBL 1.20 (putting back what was there)': RIPPS2：正在设置 BBL 1.20 (正在放回原来的内容)
-  'RIPPS2: Setting up BBL 1.20 (restarting the I/O processor)': RIPPS2：正在设置 BBL 1.20 (正在重启 I/O 处理器)
-  'RIPPS2: Setting up BBL 1.20 (writing it to the memory card)': RIPPS2：正在设置 BBL 1.20 (正在写入记忆卡)
-  SET UP BBL 1.20: 设置 BBL 1.20
+    插槽 %d 的记忆卡：BIBLE (mc%d:/%s) 会移到一边，它替换掉的内容 (mc%d:/%s) 回到原位。不会删除任何东西。PS2BBL 设置保持不变 (BOOT LOCK 可以关闭锁定)。'
+  'RIPPS2: Setting up BIBLE (binding PS2BBL to the memory card)': RIPPS2：正在设置 BIBLE (正在把 PS2BBL 绑定到记忆卡)
+  'RIPPS2: Setting up BIBLE (putting back what was there)': RIPPS2：正在设置 BIBLE (正在放回原来的内容)
+  'RIPPS2: Setting up BIBLE (restarting the I/O processor)': RIPPS2：正在设置 BIBLE (正在重启 I/O 处理器)
+  'RIPPS2: Setting up BIBLE (writing it to the memory card)': RIPPS2：正在设置 BIBLE (正在写入记忆卡)
+  SET UP BIBLE: 设置 BIBLE
   ? 'SLOT 1: %s
   
     SLOT 2: %s
   
     %s
   
-    RIPPS2: Setting up BBL 1.20. PS2BBL 1.2.0 by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
+    RIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
   : '插槽 1：%s
   
     插槽 2：%s
   
     %s
   
-    RIPPS2：正在设置 BBL 1.20。El Isra 的 PS2BBL 1.2.0，由 RIPPS2 设置在标准 8 MB PS2 记忆卡或内置硬盘上：开机 0 ms 启动 (PS2BBL Extended 不允许 0)，先从 RIPPS2 所在的位置启动它 (从不复制)，开机时按住按钮仍可进入浏览器 (TRIANGLE)、光盘 (START) 和原来的内容 (CIRCLE)。要设置、修复，还是恢复被它替换的内容？'
-  The memory card in slot %d has %d KB free, and BBL 1.20 needs %d KB there. Free some space, then try again.: 插槽 %d 的记忆卡剩余 %d KB，而 BBL 1.20 需要 %d KB。请腾出一些空间后再试。
+    RIPPS2：正在设置 BIBLE。El Isra 的 PS2BBL，由 RIPPS2 设置在标准 8 MB PS2 记忆卡或内置硬盘上：开机 0 ms 启动 (PS2BBL Extended 不允许 0)，先从 RIPPS2 所在的位置启动它 (从不复制)，开机时按住按钮仍可进入浏览器 (TRIANGLE)、光盘 (START) 和原来的内容 (CIRCLE)。要设置、修复，还是恢复被它替换的内容？'
+  The memory card in slot %d has %d KB free, and BIBLE needs %d KB there. Free some space, then try again.: 插槽 %d 的记忆卡剩余 %d KB，而 BIBLE 需要 %d KB。请腾出一些空间后再试。
   ? The memory card in slot %d refused PS2BBL, so RIPPS2 put the card back as it was. Check its free space, then try again. (DIAG.TXT beside RIPPS2 has what the card said.)
   : 插槽 %d 的记忆卡拒绝了 PS2BBL，所以 RIPPS2 让卡保持原样。请检查剩余空间后再试。(卡的回应在 RIPPS2 旁边的 DIAG.TXT 里。)
-  ? The memory card in slot %d would not move BBL 1.20 aside, so nothing was changed. (DIAG.TXT beside RIPPS2 has what the card said.)
-  : 插槽 %d 的记忆卡没能把 BBL 1.20 移开，所以没有任何改动。(卡的回应在 RIPPS2 旁边的 DIAG.TXT 里。)
-  The memory card in slot %d would not take %s back, so BBL 1.20 stayed. (DIAG.TXT beside RIPPS2 has what the card said.): 插槽 %d 的记忆卡没能取回 %s，所以 BBL 1.20 保留了下来。(卡的回应在 RIPPS2 旁边的 DIAG.TXT 里。)
+  ? The memory card in slot %d would not move BIBLE aside, so nothing was changed. (DIAG.TXT beside RIPPS2 has what the card said.)
+  : 插槽 %d 的记忆卡没能把 BIBLE 移开，所以没有任何改动。(卡的回应在 RIPPS2 旁边的 DIAG.TXT 里。)
+  The memory card in slot %d would not take %s back, so BIBLE stayed. (DIAG.TXT beside RIPPS2 has what the card said.): 插槽 %d 的记忆卡没能取回 %s，所以 BIBLE 保留了下来。(卡的回应在 RIPPS2 旁边的 DIAG.TXT 里。)
   MUSIC: 音乐
   '%s%s has no %s. RIPPOPS found Sony''s PS1 emulator on %s: START copies %s here and starts the game.': '%s%s 里没有 %s。RIPPOPS 在 %s 找到了 Sony 的 PS1 模拟器：START 会把 %s 复制到这里并启动游戏。'
   ? 'RIPPS2 does not see %s in %s%s. POPSTARTER needs POPS_IOX.PAK with POPS.PAK, or with POPS.ELF and IOPRP252.IMG: Sony''s PS1 emulator, from your own console. It may find them where RIPPS2 does not look (if your games start, it does). START launches, and this drive is not asked about again.'
@@ -1260,8 +1265,8 @@ strings:
   BOOT LOCK is off. Your boot loader starts what it started before (%s).: BOOT LOCK 已关闭。你的引导程序会启动它以前启动的内容（%s）。
   ? BOOT LOCK is on. %s now starts RIPPS2 at power on (%s), and an empty IGR Path sends a game's EXIT back the same way. Hold one of its buttons while the console starts to reach anything else.%s
   : BOOT LOCK 已开启。%s 现在开机时启动 RIPPS2（%s），IGR路径留空时，游戏的 EXIT 也会沿同一条路返回。主机启动时按住它的任一按键可以进入其他内容。%s
-  ? 'BOOT LOCK put RIPPS2 first in OSDMenu''s menu (%s). OSDMenu starts nothing by itself: pick RIPPS2 there, and a game''s EXIT comes back to that menu. For a console that starts RIPPS2 at once, BIBLE puts PS2BBL 1.2.0 on a memory card (Boot Loader).'
-  : BOOT LOCK 已把 RIPPS2 放在 OSDMenu 菜单的第一项（%s）。OSDMenu 自己不会启动任何东西：请在那里选择 RIPPS2，游戏的 EXIT 会回到那个菜单。若要主机开机直接启动 RIPPS2，BIBLE 会把 PS2BBL 1.2.0 装到记忆卡上（引导程序）。
+  ? 'BOOT LOCK put RIPPS2 first in OSDMenu''s menu (%s). OSDMenu starts nothing by itself: pick RIPPS2 there, and a game''s EXIT comes back to that menu. For a console that starts RIPPS2 at once, BIBLE puts PS2BBL on a memory card (Boot Loader).'
+  : BOOT LOCK 已把 RIPPS2 放在 OSDMenu 菜单的第一项（%s）。OSDMenu 自己不会启动任何东西：请在那里选择 RIPPS2，游戏的 EXIT 会回到那个菜单。若要主机开机直接启动 RIPPS2，BIBLE 会把 PS2BBL 装到记忆卡上（引导程序）。
   BOOT LOCK works through a boot loader on a memory card (PS2BBL, FMCB or OSDMenu), and there is none here.: BOOT LOCK 通过记忆卡上的引导程序工作（PS2BBL、FMCB 或 OSDMenu），而这里一个也没有。
   The memory card in slot %d starts %s at power on, and BOOT LOCK found no config of it to change (it looks for %s).: 插槽 %d 的记忆卡开机时启动 %s，但 BOOT LOCK 没有找到它可更改的配置（它查找 %s）。
   'The memory card in slot %d starts %s at power on, which BOOT LOCK cannot set: it works through PS2BBL, FMCB and OSDMenu.': 插槽 %d 的记忆卡开机时启动 %s，BOOT LOCK 无法设置它：BOOT LOCK 通过 PS2BBL、FMCB 和 OSDMenu 工作。

@@ -1,0 +1,636 @@
+diff --git a/include/ripps2.h b/include/ripps2.h
+index d9ee5c2..a6c09ef 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -37,6 +37,8 @@ void ripps2PillarMusic(int on); // ripps2bg.c: the towers settle and light up to
+ 
+ // ---- BOOT LOCK (ripps2boot.c): PS2BBL starts RIPPS2 at power on ----
+ int ripps2BootLockState(void);              // 1 when the config of the loader the console starts has RIPPS2's lock in it
++int ripps2BootLockKnown(void);              // build 134: the last scan's answer (scans when there is none)
++void ripps2BootLockForget(void);            // build 134: the next ripps2BootLockKnown scans again
+ void ripps2BootLockApply(int on);           // writes it into (or out of) every PS2BBL, FMCB and OSDMenu config found; says how it went
+ int ripps2BootLockIgrPath(char *out, int size); // RIPPS2's path in the IGR Path's own form; 0 when the IGR cannot reach it
+ void ripps2ExitPathCheck(void);                  // build 115: is a memory-card IGR Path there (the boot card in)
+diff --git a/src/gui.c b/src/gui.c
+index 4796bd6..779792f 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -694,7 +694,7 @@ static int bootLockWas = 0;
+ 
+ static void guiBootLockBegin(struct UIItem *ui)
+ {
+-    bootLockWas = ripps2BootLockState();
++    bootLockWas = ripps2BootLockKnown(); // build 134: scanned once, not on every open
+     diaSetInt(ui, CFG_RIPPS2_BOOTLOCK, bootLockWas);
+ }
+ 
+diff --git a/src/menusys.c b/src/menusys.c
+index 7eacdf7..0e89f26 100644
+--- a/src/menusys.c
++++ b/src/menusys.c
+@@ -845,6 +845,33 @@ void menuReinitMainMenu(void)
+ static int gameMenuCanRename = 0; // build 115: Set Metadata (Rename) offers the rename (menuInitGameMenu)
+ static int appMenuCanRename = 0;  // build 115: the same for apps and PS1 games (menuInitAppMenu, menuInitVcdMenu)
+ 
++// build 115: a PS2 game's page can rename it: writing on, and its drive renames (Favorites keeps it so it can explain
++// why not). The APA HDD page neither renames nor deletes PS2 games: both would edit the partition table.
++static int gameCanRename(item_list_t *support)
++{
++    int fav = support != NULL && support->mode == FAV_MODE;
++    item_list_t *rs = support; // an All Games row renames on its own drive
++    if (support != NULL && MODE_IS_MIX(support->mode) && selected_item != NULL && selected_item->item->current != NULL) {
++        int sm = mixGetItemSourceMode(support->mode, selected_item->item->current->item.id);
++        opl_io_module_t *m = sm >= 0 ? oplGetModule(sm) : NULL;
++        rs = m != NULL ? m->support : NULL;
++    }
++    return gEnableWrite && (fav || (rs != NULL && rs->itemRename != NULL && rs->mode != HDD_MODE));
++}
++
++// build 134 (the user, 11/02: Set Metadata should "ask for write permissions if they are off so it will work"): with
++// Write Operations off, opening it asks to turn them on (and saves that). 0 when they stay off: nothing opens.
++static int menuAskWrite(void)
++{
++    if (gEnableWrite)
++        return 1;
++    if (!guiMsgBox(_t("Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?"), 1, NULL))
++        return 0;
++    gEnableWrite = 1;
++    saveConfig(CONFIG_OPL, 0);
++    return 1;
++}
++
+ void menuInitGameMenu(item_list_t *support)
+ {
+     if (gameMenu)
+@@ -867,17 +894,8 @@ void menuInitGameMenu(item_list_t *support)
+     // game's details, and its ACTIONS (Triangle) rename the game itself. Where the page cannot rename, "Set Metadata".
+     // Offer only what the page can do. Favorites keeps rename so it can explain why not. The APA HDD page neither renames
+     // nor deletes PS2 games: both would edit the partition table.
+-    {
+-        int fav = support != NULL && support->mode == FAV_MODE;
+-        item_list_t *rs = support; // build 115: an All Games row renames on its own drive
+-        if (support != NULL && MODE_IS_MIX(support->mode) && selected_item != NULL && selected_item->item->current != NULL) {
+-            int sm = mixGetItemSourceMode(support->mode, selected_item->item->current->item.id);
+-            opl_io_module_t *m = sm >= 0 ? oplGetModule(sm) : NULL;
+-            rs = m != NULL ? m->support : NULL;
+-        }
+-        gameMenuCanRename = gEnableWrite && (fav || (rs != NULL && rs->itemRename != NULL && rs->mode != HDD_MODE));
+-        submenuAppendItem(&gameMenu, -1, NULL, GAME_SET_METADATA, gameMenuCanRename ? _STR_RIPPS2_SET_METADATA_RENAME : _STR_RIPPS2_SET_METADATA);
+-    }
++    gameMenuCanRename = gameCanRename(support);
++    submenuAppendItem(&gameMenu, -1, NULL, GAME_SET_METADATA, gameMenuCanRename ? _STR_RIPPS2_SET_METADATA_RENAME : _STR_RIPPS2_SET_METADATA);
+     if (gEnableWrite) {
+         // RIPPS2 build 114: LAST RITES deletes on every source but Apps (the APA HDD by its partition), and Hide Game
+         if (support != NULL && support->mode != APP_MODE) {
+@@ -3105,8 +3123,12 @@ void menuHandleInputGameMenu()
+ #endif
+             if (menuID == GAME_SET_METADATA) {
+             // RIPPS2: the user's own details go in the game's CFG and win over the metadata database. Build 115: its
+-            // RENAME action renames the game (its details kept first, when they changed)
+-            int r = ripps2EditMetadata(itemConfig, selected_item->item->current->item.text, gameMenuCanRename);
++            // RENAME action renames the game (its details kept first, when they changed). Build 134: writing off, it asks
++            int r = 0;
++            if (menuAskWrite()) {
++                gameMenuCanRename = gameCanRename(selected_item->item->userdata);
++                r = ripps2EditMetadata(itemConfig, selected_item->item->current->item.text, gameMenuCanRename);
++            }
+             if (r == 1) {
+                 if (menuSaveConfig())
+                     guiMsgBox(_l(_STR_GAME_SETTINGS_SAVED), 0, NULL);
+@@ -3334,8 +3356,14 @@ void menuHandleInputAppMenu()
+             menuRenameGame(&appMenu);
+         } else if (menuID == APP_SET_METADATA) {
+             // build 115: the PS2 games' editor, on the app's own title.cfg or the PS1 game's CFG; its ACTIONS rename
+-            config_set_t *cfg = gameMenuLoadConfig(NULL);
+-            int r = cfg != NULL ? ripps2EditMetadata(cfg, selected_item->item->current->item.text, appMenuCanRename) : -1;
++            // build 134: writing off, it asks first (on, apps and PS1 games can always be renamed here)
++            config_set_t *cfg = NULL;
++            int r = 0;
++            if (menuAskWrite()) {
++                appMenuCanRename = 1;
++                cfg = gameMenuLoadConfig(NULL);
++                r = cfg != NULL ? ripps2EditMetadata(cfg, selected_item->item->current->item.text, appMenuCanRename) : -1;
++            }
+             if (r < 0)
+                 guiMsgBox(_l(_STR_ERROR_SAVING_SETTINGS), 0, NULL);
+             else if (r == 1) {
+diff --git a/src/ripps2about.c b/src/ripps2about.c
+index 72684be..03d8ac0 100644
+--- a/src/ripps2about.c
++++ b/src/ripps2about.c
+@@ -117,7 +117,7 @@ static const ab_row_t abRows[] = {
+     {'H', N_("BOOT LOCK AND BIBLE")},
+     {'T', N_("PS2BBL by El Isra (israpps)")},
+     {'S', N_("the PlayStation 2 Basic BootLoader: BOOT LOCK starts RIPPS2 with it")},
+-    {'S', N_("BIBLE is PS2BBL 1.2.0, El Isra's signed builds (card and HDD), unchanged (GPL-3)")},
++    {'S', N_("BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)")}, // build 134
+     {'S', N_("source: github.com/israpps/PlayStation2-Basic-BootLoader")},
+     {'T', N_("PS2BBL Extended by saildot4k")},
+     {'S', N_("BOOT LOCK edits its config too")},
+diff --git a/src/ripps2boot.c b/src/ripps2boot.c
+index 8ddf8f1..8e8f662 100644
+--- a/src/ripps2boot.c
++++ b/src/ripps2boot.c
+@@ -371,7 +371,7 @@ static void blScanCard(int port)
+             c->kind = BL_FMCB;
+             return;
+         }
+-        snprintf(path, sizeof(path), "mc%d:/PS2BBL/CONFIG.INI", port);
++        snprintf(path, sizeof(path), "mc%d:/SYS-CONF/PS2BBL.INI", port);
+         if (blFileExists(path)) {
+             c->kind = BL_PS2BBL;
+             return;
+@@ -731,6 +731,8 @@ static void blSetLocked(int locked)
+ // starts, in any config: PS2BBL may start from the HDD). A lock in the config of a card another loader
+ // starts past is no lock at all, so it shows off, and turning it on says why. Build 116: PS2BBL, FMCB or
+ // OSDMenu; the answer is kept for EXIT (blSetLocked).
++static int blLockKnown = -1; // build 134: the last scan's answer, -1 = none yet
++
+ int ripps2BootLockState(void)
+ {
+     int i, boot = blScan(), kind = boot >= 0 ? blCards[boot].kind : BL_NONE, locked = 0;
+@@ -738,9 +740,23 @@ int ripps2BootLockState(void)
+         for (i = 0; blConfigs[i] != NULL && !locked; i++)
+             locked = (boot < 0 || blDialect(blConfigs[i]) == kind) && blRead(blConfigs[i]) >= 0 && strstr(blText, BL_MARKER) != NULL;
+     blSetLocked(locked);
++    blLockKnown = locked;
+     return locked;
+ }
+ 
++// build 134 (the user, 11/02: "General and system tab of setting has a frame drop/lag spike?"): the page asked every time it
++// opened, and the answer reads both memory cards and every loader config on the menu's thread. Now the first open asks;
++// later ones reuse that answer until RIPPS2 changes the lock or runs Manage (ripps2BootLockForget)
++int ripps2BootLockKnown(void)
++{
++    return blLockKnown >= 0 ? blLockKnown : ripps2BootLockState();
++}
++
++void ripps2BootLockForget(void)
++{
++    blLockKnown = -1;
++}
++
+ // The path BIBLE's install chose for RIPPS2 (PS2BBL 1.2.0's form), which every config then takes:
+ // PS2BBL reads a drive's config and slot 2's before slot 1's, so all of them must say the same (blChosenPath, above)
+ 
+@@ -795,6 +811,7 @@ void ripps2BootLockApply(int on)
+ {
+     char msg[700], where[200], from[256];
+     int changed, failed, unreachable, boot, removed, kind, bit, n;
++    ripps2BootLockForget(); // build 134: the next open of General & System asks the cards again
+ 
+     boot = blScan();
+     removed = blCleanStrays();
+@@ -827,7 +844,7 @@ void ripps2BootLockApply(int on)
+         if (changed && n < (int)sizeof(msg))
+             n += snprintf(msg + n, sizeof(msg) - n, _t(" (The configs found were set: %s.)"), where);
+         if (n < (int)sizeof(msg))
+-            snprintf(msg + n, sizeof(msg) - n, _t(" RIPPS2 can install BIBLE, PS2BBL 1.2.0 set up to start RIPPS2, on a memory card; what starts from it now is kept in a backup folder. Install BIBLE?"));
++            snprintf(msg + n, sizeof(msg) - n, _t(" RIPPS2 can install BIBLE, PS2BBL set up to start RIPPS2, on a memory card; what starts from it now is kept in a backup folder. Install BIBLE?"));
+         guiMsgBoxSound(SFX_MESSAGE);
+         if (guiMsgBox(msg, 1, NULL) == 1)
+             blInstall();
+@@ -837,13 +854,13 @@ void ripps2BootLockApply(int on)
+     blSetLocked(changed && (boot < 0 || (blKindsChanged & bit)));
+     if (boot < 0 || (blKindsChanged & bit)) {
+         if (kind == BL_OSDMENU) // no automatic entry: RIPPS2 first in its menu
+-            snprintf(msg, sizeof(msg), _t("BOOT LOCK put RIPPS2 first in OSDMenu's menu (%s). OSDMenu starts nothing by itself: pick RIPPS2 there, and a game's EXIT comes back to that menu. For a console that starts RIPPS2 at once, BIBLE puts PS2BBL 1.2.0 on a memory card (Boot Loader)."), where);
++            snprintf(msg, sizeof(msg), _t("BOOT LOCK put RIPPS2 first in OSDMenu's menu (%s). OSDMenu starts nothing by itself: pick RIPPS2 there, and a game's EXIT comes back to that menu. For a console that starts RIPPS2 at once, BIBLE puts PS2BBL on a memory card (Boot Loader)."), where);
+         else
+             snprintf(msg, sizeof(msg), _t("BOOT LOCK is on. %s now starts RIPPS2 at power on (%s), and an empty IGR Path sends a game's EXIT back the same way. Hold one of its buttons while the console starts to reach anything else.%s"),
+                      _t(blKindName[kind]), where, removed ? _t(" A SYS-CONF/PS2BBL.INI build 68 wrote for a loader that never reads it was removed.") : "");
+     } else if (blKindsUnreachable & bit) {
+         if (kind == BL_PS2BBL)
+-            snprintf(msg, sizeof(msg), _t("PS2BBL 1.2.0 cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD."));
++            snprintf(msg, sizeof(msg), _t("PS2BBL cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD."));
+         else {
+             if (!ripps2GetBootPath(from, sizeof(from)))
+                 snprintf(from, sizeof(from), "?");
+@@ -1134,7 +1151,7 @@ typedef struct
+ static int blBibleConfig(const char *alt, const char *backupKelf)
+ {
+     int n = snprintf(blText, sizeof(blText),
+-                     "# BIBLE: PS2BBL 1.2.0 by El Isra (GPL-3, github.com/israpps/PlayStation2-Basic-BootLoader), set up by RIPPS2\r\n"
++                     "# BIBLE: PS2BBL by El Isra (GPL-3, github.com/israpps/PlayStation2-Basic-BootLoader), set up by RIPPS2\r\n"
+                      "# Hold at power on: TRIANGLE the browser, START or CROSS a disc, R1 wLaunchELF, CIRCLE what started here before\r\n"
+                      "KEY_READ_WAIT_TIME = 0\r\nSKIP_PS2LOGO = 0\r\nOSDHISTORY_READ = 1\r\nLOGO_DISPLAY = 0\r\nEJECT_TRAY = 0\r\n\r\n"
+                      "LK_AUTO_E1 = $OSDSYS\r\n%s%s%s"
+@@ -1163,7 +1180,7 @@ static void blInstallOn(int port, const blWhere_t *w, const char *alt)
+ 
+     // the IOP again, with ps2sdk's SECRMAN in the ROM's place: the console binds a KELF through it. ripps2RebootIopWith
+     // stops every drive read first (art, lists, music), so nothing else is on the card while it is written
+-    guiRenderTextScreen(_t("RIPPS2: Setting up BBL 1.20 (restarting the I/O processor)"));
++    guiRenderTextScreen(_t("RIPPS2: Setting up BIBLE (restarting the I/O processor)"));
+     if ((img = blMakeIoprp("SECRMAN", secrman_irx, size_secrman_irx, &imgSize)) == NULL) {
+         guiMsgBoxSound(SFX_ERROR);
+         guiMsgBox(_t("BIBLE ran out of memory before it started. Nothing was changed."), 0, NULL);
+@@ -1176,7 +1193,7 @@ static void blInstallOn(int port, const blWhere_t *w, const char *alt)
+         guiMsgBox(_t("RIPPS2 was busy reading a drive and could not restart the I/O processor. Nothing was changed: try again in a moment."), 0, NULL);
+         return;
+     }
+-    guiRenderTextScreen(_t("RIPPS2: Setting up BBL 1.20 (binding PS2BBL to the memory card)"));
++    guiRenderTextScreen(_t("RIPPS2: Setting up BIBLE (binding PS2BBL to the memory card)"));
+     if (sysLoadModuleBuffer(secrsif_irx, size_secrsif_irx, 0, NULL) != 0) {
+         guiMsgBoxSound(SFX_ERROR);
+         guiMsgBox(_t("The security module would not start on this console. Nothing on the memory card was changed."), 0, NULL);
+@@ -1223,7 +1240,7 @@ static void blInstallOn(int port, const blWhere_t *w, const char *alt)
+     }
+ 
+     // BIBLE: the bound file, read back to be sure, its icon, and the folder marked as a system one
+-    guiRenderTextScreen(_t("RIPPS2: Setting up BBL 1.20 (writing it to the memory card)"));
++    guiRenderTextScreen(_t("RIPPS2: Setting up BIBLE (writing it to the memory card)"));
+     mkdir(dir, 0777);
+     snprintf(path, sizeof(path), "%s/%s", dir, blSysFile);
+     ok = blWrite(path, (const char *)buf, kelfSize) == 0;
+@@ -1280,6 +1297,22 @@ static void blInstallOn(int port, const blWhere_t *w, const char *alt)
+             return;
+         }
+     }
++    // build 134: BIBLE (PS2BBL Extended's config search) reads mc?:/SYS-CONF/PS2BBL.INI and never PS2BBL/CONFIG.INI, which
++    // only PS2BBL 1.2.0 read: without this copy it stopped on its own screen instead of starting RIPPS2. The same text
++    // (BIBLE reads 1.2.0's keys) goes there, unless the card has one of its own (a PS2BBL Extended owner's: kept, and
++    // BOOT LOCK below sets it). SYS-CONF gets an icon when RIPPS2 makes it: the browser calls a folder without one
++    // corrupted data.
++    {
++        char sys[32], sysConf[48];
++        snprintf(sys, sizeof(sys), "mc%d:/SYS-CONF", port);
++        snprintf(sysConf, sizeof(sysConf), "%s/PS2BBL.INI", sys);
++        if (!blFileExists(sysConf)) {
++            mkdir(sys, 0777);
++            ripps2CardFolderIconNamed(sys, "SYS-CONF");
++            if (blWrite(sysConf, blText, strlen(blText)) != 0)
++                ripps2Diag("bible: %s could not be written", sysConf);
++        }
++    }
+ 
+     // BOOT LOCK on, with the chosen path, in this config and every other one PS2BBL might read
+     // first (a drive's and slot 2's come before slot 1's)
+@@ -1294,7 +1327,7 @@ static void blInstallOn(int port, const blWhere_t *w, const char *alt)
+ 
+     guiMsgBoxSound(SFX_SAVE);
+     {
+-        int n = snprintf(msg, sizeof(msg), _t("RIPPS2: BBL 1.20 is set up on the memory card in slot %d (mc%d:/%s/%s), BOOT LOCK on: at power on it starts RIPPS2 from %s, at once."),
++        int n = snprintf(msg, sizeof(msg), _t("RIPPS2: BIBLE is set up on the memory card in slot %d (mc%d:/%s/%s), BOOT LOCK on: at power on it starts RIPPS2 from %s, at once."),
+                          port + 1, port, blSysFolder, blSysFile, w->path);
+         if (n < (int)sizeof(msg) && backup[0])
+             n += snprintf(msg + n, sizeof(msg) - n, _t(" What was there before is kept in mc%d:/%s%s."), port, backup, backupKelf[0] ? _t(" (hold CIRCLE at power on to start it)") : "");
+@@ -1511,20 +1544,21 @@ static void blHddInstall(void)
+             guiMsgBox(_t("This HDD has no __sysconf partition, so BIBLE's config has to go on a memory card (PS2BBL reads a card's first), and there is none in either slot. Insert one, then try again."), 0, NULL);
+             return;
+         }
+-        snprintf(conf, sizeof(conf), "mc%d:/PS2BBL/CONFIG.INI", port);
++        // build 134: BIBLE's HDD build reads a card's SYS-CONF/PS2BBL.INI, never PS2BBL/CONFIG.INI (PS2BBL 1.2.0's)
++        snprintf(conf, sizeof(conf), "mc%d:/SYS-CONF/PS2BBL.INI", port);
+     }
+ 
+     snprintf(msg, sizeof(msg),
+              _t("INSTALL BIBLE ON THE INTERNAL HDD\n"
+              "- RIPPS2 is copied to %s.\n"
+              "- The HDD's boot program now in __mbr is read out and kept in %s/RIPPS2 (RESTORE puts it back).\n"
+-             "- PS2BBL 1.2.0's HDD build is written in its place, and the console set to start it at power on.\n"
++             "- PS2BBL's HDD build is written in its place, and the console set to start it at power on.\n"
+              "- Its config (%s) starts RIPPS2 from %s first%s%s, BOOT LOCK on.\n"
+              "This needs a console that boots from its HDD (a fat PS2 with the network adapter). Keep it on until it says done."),
+              blHddElf, blHddPart, mcConfig ? conf : "hdd0:__sysconf:pfs:/PS2BBL/CONFIG.INI", first,
+              second[0] ? _t(", then ") : "", second);
+     guiMsgBoxSound(SFX_MESSAGE);
+-    guiMsgBoxStartOption(_t("SET UP BBL 1.20"));
++    guiMsgBoxStartOption(_t("SET UP BIBLE"));
+     if (guiMsgBox(msg, 0, NULL) != 2)
+         return;
+ 
+@@ -1573,8 +1607,9 @@ static void blHddInstall(void)
+         snprintf(conf, sizeof(conf), "%s", blHddPath("PS2BBL/CONFIG.INI"));
+     } else {
+         char dir[24];
+-        snprintf(dir, sizeof(dir), "%.4s/PS2BBL", conf);
++        snprintf(dir, sizeof(dir), "%.4s/SYS-CONF", conf); // build 134 (was PS2BBL), with an icon if RIPPS2 makes it
+         mkdir(dir, 0777);
++        ripps2CardFolderIconNamed(dir, "SYS-CONF");
+     }
+     len = 0;
+     if (blRead(conf) >= 0) {
+@@ -1764,7 +1799,7 @@ static void blInstall(void)
+                 break;
+         if (blConfigs[i2] != NULL && blRipps2Path(1, ext, sizeof(ext))) {
+             snprintf(msg, sizeof(msg),
+-                     _t("RIPPS2: Setting up BBL 1.20\nRIPPS2 runs from %s, which PS2BBL 1.2.0 cannot read (it reads memory cards, USB and MX4SIO), and RIPPS2 does not copy itself. The PS2BBL Extended config on this card (%s) reads it: START turns BOOT LOCK on, so it starts RIPPS2 from %s at power on. Nothing else on the card changes."),
++                     _t("RIPPS2: Setting up BIBLE\nRIPPS2 runs from %s, which PS2BBL cannot read (it reads memory cards, USB and MX4SIO), and RIPPS2 does not copy itself. The PS2BBL Extended config on this card (%s) reads it: START turns BOOT LOCK on, so it starts RIPPS2 from %s at power on. Nothing else on the card changes."),
+                      boot[0] ? boot : "?", blConfigs[i2], ext);
+             guiMsgBoxSound(SFX_MESSAGE);
+             guiMsgBoxStartOption(_t("BOOT LOCK ON"));
+@@ -1774,7 +1809,7 @@ static void blInstall(void)
+         }
+         guiMsgBoxSound(SFX_ERROR);
+         snprintf(msg, sizeof(msg),
+-                 _t("RIPPS2: Setting up BBL 1.20\nRIPPS2 runs from %s, which PS2BBL 1.2.0 cannot read: it starts programs from a memory card, a USB drive or MX4SIO, and RIPPS2 does not copy itself. Put RIPPS2.ELF on one of those (a memory card's APPS folder, or a USB drive), start it from there, then set up BIBLE again."),
++                 _t("RIPPS2: Setting up BIBLE\nRIPPS2 runs from %s, which PS2BBL cannot read: it starts programs from a memory card, a USB drive or MX4SIO, and RIPPS2 does not copy itself. Put RIPPS2.ELF on one of those (a memory card's APPS folder, or a USB drive), start it from there, then set up BIBLE again."),
+                  boot[0] ? boot : "?");
+         guiMsgBox(msg, 0, NULL);
+         return;
+@@ -1787,7 +1822,7 @@ static void blInstall(void)
+         int need = kelfKb + (size_save_icn + 1023) / 1024 + 2 + (size_ripps2_icn + 1023) / 1024 + 2 + 4;
+         if (blCards[port].freeKb < need) {
+             guiMsgBoxSound(SFX_ERROR);
+-            snprintf(msg, sizeof(msg), _t("The memory card in slot %d has %d KB free, and BBL 1.20 needs %d KB there. Free some space, then try again."), port + 1, blCards[port].freeKb, need);
++            snprintf(msg, sizeof(msg), _t("The memory card in slot %d has %d KB free, and BIBLE needs %d KB there. Free some space, then try again."), port + 1, blCards[port].freeKb, need);
+             guiMsgBox(msg, 0, NULL);
+             return;
+         }
+@@ -1798,19 +1833,19 @@ static void blInstall(void)
+         const blCard_t *c = &blCards[port];
+         // build 115 (the user, 10/26): the title names what goes on. 10/26 evening: "RIPPS2: Setting up BBL 1.20", for an
+         // 8 MB memory card, and which slot
+-        int o = snprintf(msg, sizeof(msg), _t("RIPPS2: Setting up BBL 1.20\n"));
++        int o = snprintf(msg, sizeof(msg), _t("RIPPS2: Setting up BIBLE\n"));
+         o += snprintf(msg + o, sizeof(msg) - o, _t("For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 2's config before slot 1's.\n"), port + 1);
+         char sysDir[48];
+         snprintf(sysDir, sizeof(sysDir), "mc%d:/%s", port, blSysFolder);
+         if (blDirExists(sysDir) && !(c->bible && !strcmp(c->folder, blSysFolder)))
+             o += snprintf(msg + o, sizeof(msg) - o, _t("- %s (%s) moves to a backup folder first, whole.\n"), sysDir, _t(blKindName[c->kind]));
+         if (o < (int)sizeof(msg))
+-            o += snprintf(msg + o, sizeof(msg) - o, _t("- PS2BBL 1.2.0 is bound to this card by the console and written as %s/%s.\n- Its config, mc%d:/PS2BBL/CONFIG.INI, starts RIPPS2 where it is (%s) with no wait (0 ms, which PS2BBL Extended does not allow), BOOT LOCK on. RIPPS2 itself is not copied.\n"
++            o += snprintf(msg + o, sizeof(msg) - o, _t("- PS2BBL is bound to this card by the console and written as %s/%s.\n- Its config, mc%d:/SYS-CONF/PS2BBL.INI, starts RIPPS2 where it is (%s) with no wait (0 ms, which PS2BBL Extended does not allow), BOOT LOCK on. RIPPS2 itself is not copied.\n"
+                                                     "The I/O processor restarts for this and every drive read stops until it is done; music and drives come back after. Keep the card in and the console on until it says done."),
+                           sysDir, blSysFile, port, where[pick].path);
+     }
+     guiMsgBoxSound(SFX_MESSAGE);
+-    guiMsgBoxStartOption(_t("SET UP BBL 1.20"));
++    guiMsgBoxStartOption(_t("SET UP BIBLE"));
+     if (guiMsgBox(msg, 0, NULL) != 2)
+         return;
+     blInstallOn(port, &where[pick], alt);
+@@ -1844,7 +1879,7 @@ static void blRestoreCard(int port)
+     if (!blBackupOf(port, backup, sizeof(backup)))
+         return;
+     snprintf(msg, sizeof(msg),
+-             _t("RIPPS2: Setting up BBL 1.20\nThe memory card in slot %d: BBL 1.20 (mc%d:/%s) moves aside, and what it replaced (mc%d:/%s) goes back in its place. Nothing is deleted. The PS2BBL config stays as it is (BOOT LOCK can turn the lock off)."),
++             _t("RIPPS2: Setting up BIBLE\nThe memory card in slot %d: BIBLE (mc%d:/%s) moves aside, and what it replaced (mc%d:/%s) goes back in its place. Nothing is deleted. The PS2BBL config stays as it is (BOOT LOCK can turn the lock off)."),
+              port + 1, port, blSysFolder, port, backup);
+     guiMsgBoxSound(SFX_MESSAGE);
+     guiMsgBoxStartOption(_t("RESTORE"));
+@@ -1859,11 +1894,11 @@ static void blRestoreCard(int port)
+         if (!blDirExists(path))
+             break;
+     }
+-    guiRenderTextScreen(_t("RIPPS2: Setting up BBL 1.20 (putting back what was there)"));
++    guiRenderTextScreen(_t("RIPPS2: Setting up BIBLE (putting back what was there)"));
+     blScan(); // waits for the IO worker's own card work to finish first
+     if (!blMcRename(port, blSysFolder, aside)) {
+         guiMsgBoxSound(SFX_ERROR);
+-        snprintf(msg, sizeof(msg), _t("The memory card in slot %d would not move BBL 1.20 aside, so nothing was changed. (DIAG.TXT beside RIPPS2 has what the card said.)"), port + 1);
++        snprintf(msg, sizeof(msg), _t("The memory card in slot %d would not move BIBLE aside, so nothing was changed. (DIAG.TXT beside RIPPS2 has what the card said.)"), port + 1);
+         ripps2DiagBeforeLaunch();
+         guiMsgBox(msg, 0, NULL);
+         return;
+@@ -1871,20 +1906,21 @@ static void blRestoreCard(int port)
+     if (!blMcRename(port, backup, blSysFolder)) {
+         blMcRename(port, aside, blSysFolder); // as it was
+         guiMsgBoxSound(SFX_ERROR);
+-        snprintf(msg, sizeof(msg), _t("The memory card in slot %d would not take %s back, so BBL 1.20 stayed. (DIAG.TXT beside RIPPS2 has what the card said.)"), port + 1, backup);
++        snprintf(msg, sizeof(msg), _t("The memory card in slot %d would not take %s back, so BIBLE stayed. (DIAG.TXT beside RIPPS2 has what the card said.)"), port + 1, backup);
+         ripps2DiagBeforeLaunch();
+         guiMsgBox(msg, 0, NULL);
+         return;
+     }
+     ripps2BootLockState(); // build 116: EXIT follows what starts now
+     guiMsgBoxSound(SFX_SAVE);
+-    snprintf(msg, sizeof(msg), _t("Done: the memory card in slot %d starts what it started before BBL 1.20. BBL 1.20 is kept in mc%d:/%s."), port + 1, port, aside);
++    snprintf(msg, sizeof(msg), _t("Done: the memory card in slot %d starts what it started before BIBLE. BIBLE is kept in mc%d:/%s."), port + 1, port, aside);
+     guiMsgBox(msg, 0, NULL);
+ }
+ 
+ // BOOT LOADER > MANAGE: what each card starts, and BIBLE to install or repair
+ void ripps2BibleManage(void)
+ {
++    ripps2BootLockForget(); // build 134: an install or a restore can change what starts
+ #ifdef RIPPS2_LITE
+     // build 126: the lite ELF carries no PS2BBL, so BIBLE is the full RIPPS2.elf's to install
+     guiMsgBox(_t("This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and "
+@@ -1902,7 +1938,7 @@ void ripps2BibleManage(void)
+         blCardWhat(port, boot, what[port], sizeof(what[port]));
+     snprintf(msg, sizeof(msg),
+              _t("SLOT 1: %s\nSLOT 2: %s\n%s\n"
+-             "RIPPS2: Setting up BBL 1.20. PS2BBL 1.2.0 by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?"),
++             "RIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?"),
+              what[0], what[1],
+              removed ? _t("(Removed a SYS-CONF/PS2BBL.INI build 68 wrote for a loader that never reads it.)\n") : "");
+     guiMsgBoxSound(SFX_MESSAGE);
+diff --git a/src/ripps2edit.c b/src/ripps2edit.c
+index 7a7df4b..760c95f 100644
+--- a/src/ripps2edit.c
++++ b/src/ripps2edit.c
+@@ -416,8 +416,12 @@ static const char *const scanChoices[] = {"scan/480i", "scan/480p", "scan/576i",
+ static const char *const playersChoices[] = {"players/1", "players/2", "players/3", "players/4", "players/8", NULL};
+ static const char *const ratingChoices[] = {"rating/0", "rating/1", "rating/2", "rating/3", "rating/4", "rating/5", NULL};
+ 
++// build 134 (the user, 11/02: "Set metadata (rename) isn't fully incorporated with title and filename filled in"): the
++// TITLE shows the list's name when neither you nor the database gave one, and FILE NAME (no key: it is not a detail)
++// shows the game's file, where Cross renames it on a page that can
+ static const ed_field_t mdFields[] = {
+     {"Title", N_("TITLE"), NULL},
++    {NULL, N_("FILE NAME"), NULL},
+     {"Description", N_("DESCRIPTION"), NULL},
+     {"Genre", N_("GENRE"), NULL},
+     {"Developer", N_("DEVELOPER"), NULL},
+@@ -447,6 +451,9 @@ static struct
+     char (*user)[CONFIG_KEY_VALUE_LEN];
+     char (*db)[CONFIG_KEY_VALUE_LEN];
+     const char *title;
++    const char *file;  // build 134: the FILE NAME row's value
++    int titleFromList; // build 134: the TITLE shown is the list's name
++    int canRename;
+     int cursor, top, modified;
+ } mdView;
+ 
+@@ -464,19 +471,29 @@ static void mdDraw(void)
+             rmDrawRect(ED_X - 6, y - 1, 3, 32, ED_PRIM(0x6A, 0x9A, 0xFF, 0x80));
+         }
+         fntRenderString(ED_FONT, ED_X + 4, y + 8, ALIGN_VCENTER, 0, 0, _t(mdFields[f].label), cur ? ED_LIT : ED_SOFT);
++        if (mdFields[f].key == NULL) { // build 134: FILE NAME, renamed with Cross where the page can
++            fntRenderString(RIPPS2_CASE_FONT, ED_X + 4, y + 22, ALIGN_VCENTER, ED_RIGHT - ED_X - 120, 0, mdView.file[0] ? mdView.file : "-", ED_SOFT);
++            if (mdView.canRename)
++                fntRenderString(ED_FONT, ED_RIGHT - fntCalcDimensions(ED_FONT, _t("RENAME")), y + 8, ALIGN_VCENTER, 0, 0, _t("RENAME"), ED_DIM);
++            continue;
++        }
+         if (mdFields[f].choices && v[0])
+             mdPretty(v, shown, sizeof(shown));
+         else
+             snprintf(shown, sizeof(shown), "%s", v[0] ? v : "-");
+         // bright: the user's own value; dim: what the metadata database says
+         fntRenderString(RIPPS2_CASE_FONT, ED_X + 4, y + 22, ALIGN_VCENTER, ED_RIGHT - ED_X - 120, 0, shown, mdView.user[f][0] ? ED_LIT : ED_DIM);
+-        if (!mdView.user[f][0] && mdView.db[f][0])
+-            fntRenderString(ED_FONT, ED_RIGHT - fntCalcDimensions(ED_FONT, _t("DATABASE")), y + 8, ALIGN_VCENTER, 0, 0, _t("DATABASE"), ED_DIM);
++        if (!mdView.user[f][0] && mdView.db[f][0]) {
++            const char *from = f == 0 && mdView.titleFromList ? _t("GAME LIST") : _t("DATABASE");
++            fntRenderString(ED_FONT, ED_RIGHT - fntCalcDimensions(ED_FONT, from), y + 8, ALIGN_VCENTER, 0, 0, from, ED_DIM);
++        }
+         else if (mdView.user[f][0])
+             fntRenderString(ED_FONT, ED_RIGHT - fntCalcDimensions(ED_FONT, _t("YOURS")), y + 8, ALIGN_VCENTER, 0, 0, _t("YOURS"), ED_SOFT);
+     }
+     int hx = 44;
+-    edHint(gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON, mdFields[mdView.cursor].choices ? _t("NEXT VALUE") : _t("EDIT"), &hx, 448);
++    if (mdFields[mdView.cursor].key != NULL || mdView.canRename)
++        edHint(gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON,
++               mdFields[mdView.cursor].key == NULL ? _t("RENAME") : mdFields[mdView.cursor].choices ? _t("NEXT VALUE") : _t("EDIT"), &hx, 448);
+     edHint(SQUARE_ICON, _t("CLEAR"), &hx, 448);
+     edHint(TRIANGLE_ICON, _t("ACTIONS"), &hx, 448);
+     edHint(gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON, _t("CLOSE"), &hx, 448);
+@@ -488,8 +505,9 @@ int ripps2EditMetadata(config_set_t *config, const char *gameName, int canRename
+     static const char *const actions[] = {N_("SAVE"), N_("CLEAR THIS FIELD"), N_("CLOSE"), N_("RENAME THE GAME")};
+     char user[MD_COUNT][CONFIG_KEY_VALUE_LEN]; // the user's own values ("" = none, the database shows)
+     char db[MD_COUNT][CONFIG_KEY_VALUE_LEN];
+-    int cursor = 0, top = 0, modified = 0, i;
++    int cursor = 0, top = 0, modified = 0, i, titleFromList = 0;
+     char title[256];
++    static char fileShown[CONFIG_KEY_VALUE_LEN + 8]; // build 134: FILE NAME
+ 
+     if (config == NULL)
+         return 0;
+@@ -497,6 +515,8 @@ int ripps2EditMetadata(config_set_t *config, const char *gameName, int canRename
+         const char *v = NULL;
+         char rk[CONFIG_KEY_NAME_LEN];
+         user[i][0] = db[i][0] = '\0';
++        if (mdFields[i].key == NULL) // build 134: FILE NAME, not a detail
++            continue;
+         if (configGetStr(config, mdFields[i].key, &v) && v != NULL)
+             snprintf(user[i], sizeof(user[i]), "%s", v);
+         snprintf(rk, sizeof(rk), "#%s", mdFields[i].key);
+@@ -520,6 +540,12 @@ int ripps2EditMetadata(config_set_t *config, const char *gameName, int canRename
+         else
+             snprintf(both, sizeof(both), "%s", gameName ? gameName : "");
+         snprintf(title, sizeof(title), _t("SET METADATA: %s"), both);
++        snprintf(fileShown, sizeof(fileShown), "%s", file);
++    }
++    // build 134: the TITLE filled in from the list when neither you nor the database named the game
++    if (!user[0][0] && !db[0][0] && gameName != NULL && gameName[0]) {
++        snprintf(db[0], sizeof(db[0]), "%s", gameName);
++        titleFromList = 1;
+     }
+ 
+     while (1) {
+@@ -535,6 +561,9 @@ int ripps2EditMetadata(config_set_t *config, const char *gameName, int canRename
+         mdView.cursor = cursor;
+         mdView.top = top;
+         mdView.modified = modified;
++        mdView.file = fileShown;
++        mdView.titleFromList = titleFromList;
++        mdView.canRename = canRename;
+         rmStartFrame();
+         mdDraw();
+         rmEndFrame();
+@@ -551,6 +580,21 @@ int ripps2EditMetadata(config_set_t *config, const char *gameName, int canRename
+             step = -1;
+         } else if (getKey(KEY_RIGHT) && fd->choices) {
+             step = 1;
++        } else if (getKeyOn(gSelectButton) && fd->key == NULL) {
++            if (canRename) { // build 134: FILE NAME renames, the details as they are now going in first
++                sfxPlay(SFX_CONFIRM);
++                if (modified)
++                    for (i = 0; i < MD_COUNT; i++) {
++                        if (mdFields[i].key == NULL)
++                            continue;
++                        if (user[i][0])
++                            configSetStr(config, mdFields[i].key, user[i]);
++                        else
++                            configRemoveKey(config, mdFields[i].key);
++                    }
++                readPads();
++                return modified ? 3 : 2;
++            }
+         } else if (getKeyOn(gSelectButton)) {
+             if (fd->choices)
+                 step = 1;
+@@ -577,6 +621,8 @@ int ripps2EditMetadata(config_set_t *config, const char *gameName, int canRename
+             if (a == 3) { // rename: the details as they are now go in first (the caller writes them when they changed)
+                 if (modified)
+                     for (i = 0; i < MD_COUNT; i++) {
++                        if (mdFields[i].key == NULL)
++                            continue;
+                         if (user[i][0])
+                             configSetStr(config, mdFields[i].key, user[i]);
+                         else
+@@ -587,6 +633,8 @@ int ripps2EditMetadata(config_set_t *config, const char *gameName, int canRename
+             }
+             if (a == 0) {
+                 for (i = 0; i < MD_COUNT; i++) {
++                    if (mdFields[i].key == NULL)
++                        continue;
+                     if (user[i][0])
+                         configSetStr(config, mdFields[i].key, user[i]);
+                     else
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index ed3439f..ca64881 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -212,6 +212,12 @@ static const char *fbDevices[] = {"mc0:/", "mc1:/", "mass0:/", "mass1:/", "mass2
+ 
+ static char fbToastDetail[128]; // build 115: room for the SD2PSX's wait
+ 
++// build 134 (the user, 11/02: "the copy feature should say how many ... pop a modal instead of the silent toast style from
++// ule. User can read the file number and understand the write before dismissing"): a finished paste, move or unpack is
++// reported in a box, how many and where, that waits for OK. The worker writes it; the page's input handler shows it.
++static char fbPop[384];
++static volatile int fbPopReady = 0;
++
+ static void fbSetToast(const char *text)
+ {
+     snprintf(fbToast, sizeof(fbToast), "%s", text);
+@@ -1275,6 +1281,11 @@ static void fbReport(const char *verb, int done)
+     if (fbFailed > 0)
+         snprintf(text + n, sizeof(text) - n, _t(", %d FAILED"), fbFailed);
+     fbSetToast(text);
++    if (fbOp == FB_OP_PASTE || fbOp == FB_OP_UNPACK) { // build 134: the box, with where it went
++        snprintf(fbPop, sizeof(fbPop), _t("%s in %s"), text, fbPath);
++        if (fbFailWhat[0])
++            snprintf(fbPop + strlen(fbPop), sizeof(fbPop) - strlen(fbPop), "\n\n%s", fbFailWhat);
++    }
+     if (fbFailWhat[0]) // the first failure, named under it for longer
+         snprintf(fbToastDetail, sizeof(fbToastDetail), "%s", fbFailWhat);
+     else if (ok > 0 && fbIsMc(fbPath) && (fbPath[2] == '0' || fbPath[2] == '1') && fbMmceSlot[fbPath[2] - '0']) {
+@@ -1283,6 +1294,8 @@ static void fbReport(const char *verb, int done)
+         // 400 KB a second. Turned off before then, the write is lost. Say how long to wait.
+         int secs = 2 + (int)(fbDoneBytes / (400 * 1024));
+         snprintf(fbToastDetail, sizeof(fbToastDetail), _t("Saving to the SD2PSX's SD: wait %d s before turning off."), secs);
++        if (fbOp == FB_OP_PASTE || fbOp == FB_OP_UNPACK)
++            snprintf(fbPop + strlen(fbPop), sizeof(fbPop) - strlen(fbPop), "\n\n%s", fbToastDetail);
+         ripps2Diag("files: onto an SD2PSX card (%s), %u bytes, saved in about %d s", fbPath, (unsigned)fbDoneBytes, secs);
+     } else
+         fbToastDetail[0] = '\0';
+@@ -1324,6 +1337,8 @@ static void fbWorker(void)
+         fbSizeWork();
+     if (fbOp != FB_OP_SCAN && fbOp != FB_OP_SIZE)
+         configCacheClear(); // build 125: a game's CFG may have been pasted over, moved or deleted
++    if ((fbOp == FB_OP_PASTE || fbOp == FB_OP_UNPACK) && fbPop[0])
++        fbPopReady = 1; // build 134: shown once the list is read again (ripps2HandleInputFiles)
+     ioLaunchCancel();
+     if (fbPath[0])
+         fbScanDir();
+@@ -3035,6 +3050,14 @@ void ripps2HandleInputFiles(void)
+ 
+     if (fbBusy)
+         return;
++    if (fbPopReady) { // build 134: what a paste wrote, how many and where, until OK
++        fbPopReady = 0;
++        guiMsgBox(fbPop, 0, NULL);
++        fbPop[0] = '\0';
++        fbToast[0] = '\0'; // said in the box
++        readPads();
++        return;
++    }
+ 
+     if (fbGridOpen) { // the settings grid has the pad
+         fbHandleGrid();
+diff --git a/src/ripps2status.c b/src/ripps2status.c
+index 48f733d..66bee74 100644
+--- a/src/ripps2status.c
++++ b/src/ripps2status.c
+@@ -332,7 +332,7 @@ static void stScan(void)
+         _t("The IP and SMB share POPSTARTER uses for PS1 games over the network.");
+ 
+     // BIBLE: what starts at power on is MANAGE's to show, card by card
+-    stAdd(ROW_HEAD, ACT_NONE, "BIBLE", _t("PS2BBL 1.2.0 for RIPPS2"));
++    stAdd(ROW_HEAD, ACT_NONE, "BIBLE", _t("PS2BBL for RIPPS2"));
+     {
+         int locked = ripps2BootLockState();
+         st_row_t *r = stAdd(ROW_STATUS, ACT_NONE,

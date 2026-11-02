@@ -62,11 +62,11 @@ python3 "$HERE/theme/tools/strip_fonts.py" "$SRC"/misc/ripps2_font.ttf "$SRC"/mi
 # The Memory Files ELF, compiled in and launched from RAM (patch 0004)
 # Built-in textures: glass info panel and PS2 selector mark (patch 0006)
 cp -f "$HERE"/theme/gfx/*.png "$SRC/gfx/"
-# BIBLE (patch 0069): PS2BBL 1.2.0 by El Isra, signed and unchanged, carried as data (GPL-3; see
+# BIBLE (patch 0069; build 134: BIBLE f31c8d5, built on El Isra's PS2BBL, signed for RIPPS2), carried as data (GPL-3; see
 # elf/bible/README.md for its licence and source)
 cp -f "$HERE/bible/SYSTEM.XLF" "$SRC/misc/bible_system.xlf"
 cp -f "$HERE/bible/MX4SIO/SYSTEM.XLF" "$SRC/misc/bible_mx4sio_system.xlf"
-# BIBLE on the HDD (build 73): PS2BBL 1.2.0's HDD build, HSYSTEM.XLF from the same release, unchanged
+# BIBLE on the HDD (build 73): its HDD build, HSYSTEM.XLF (build 134: BIBLE's, signed with the card builds)
 cp -f "$HERE/bible/HSYSTEM.XLF" "$SRC/misc/bible_hdd_system.xlf"
 # Ember and POPSTARTER are the user's own from build 113, found and launched, not carried (elf/ember, elf/popstarter)
 # Neutrino (build 77; build 115: its development build v1.8.0-61-g7be8de2): the release folder as a gzip'd tar, AFL-3.0 (elf/neutrino/README.md);
