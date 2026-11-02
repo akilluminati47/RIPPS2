@@ -228,7 +228,7 @@ index 31738bc..2c330d4 100644
  // The stick tips the art viewport with everything on it (and, on the info page, the disc and case in
  // the same plane) a few degrees in any direction about the group's centre. The view eases after the
 diff --git a/src/themes.c b/src/themes.c
-index 1951f71..d7d992f 100644
+index 1951f71..6992072 100644
 --- a/src/themes.c
 +++ b/src/themes.c
 @@ -21,6 +21,7 @@
@@ -239,7 +239,18 @@ index 1951f71..d7d992f 100644
  #ifdef RETROACHIEVEMENTS
  #include "include/rabadge.h" // RA: mark over the cover
  #endif
-@@ -1318,6 +1319,10 @@ static void drawRipps2PanelGlass(struct menu_list *menu, struct submenu_list *it
+@@ -574,6 +575,10 @@ static void thmComputeTextRooms(theme_elems_t *elems)
+ // otherwise exactly as before. Returns the end x.
+ static int thmDrawElemText(theme_element_t *elem, int sizingMode, const char *text, int scroll)
+ {
++    // build 132: aligned=2 (right) ends the text at x; the font draws left or centred only, so it started there
++    if ((elem->aligned & ALIGN_RIGHT) && !(elem->aligned & ALIGN_HCENTER) && sizingMode != SIZING_WRAP && text != NULL)
++        return fntRenderString(elem->font, elem->posX - rmUnScaleX(fntCalcDimensions(elem->font, text)), elem->posY,
++                               elem->aligned & ~ALIGN_RIGHT, 0, 0, text, elem->color);
+     if (elem->textRoom > 0 && sizingMode != SIZING_WRAP)
+         return fntRenderStringFit(elem->font, elem->posX, elem->posY, elem->aligned, elem->textRoom, text, elem->color, scroll);
+     if (sizingMode == SIZING_NONE)
+@@ -1318,6 +1323,10 @@ static void drawRipps2PanelGlass(struct menu_list *menu, struct submenu_list *it
          ripps2DrawPanelFlat(x, y, elem->width, elem->height, elem->glassColor, elem->glassTint, elem->glassFrame);
          return;
      }
@@ -250,7 +261,7 @@ index 1951f71..d7d992f 100644
      ripps2DrawPanelGlass(x, y, elem->width, elem->height, item != NULL);
  }
  
-@@ -4113,6 +4118,7 @@ static theme_element_t *initBasic(const char *themePath, config_set_t *themeConf
+@@ -4113,6 +4122,7 @@ static theme_element_t *initBasic(const char *themePath, config_set_t *themeConf
      elem->tiltScale = 100;
      elem->glassTint = -1; // build 79: the gradient unless the theme sets tint=
      elem->glassFrame = 1;
@@ -258,7 +269,7 @@ index 1951f71..d7d992f 100644
      elem->glassColor[0] = 0x04;
      elem->glassColor[1] = 0x0C;
      elem->glassColor[2] = 0x2E;
-@@ -4249,6 +4255,9 @@ static theme_element_t *initBasic(const char *themePath, config_set_t *themeConf
+@@ -4249,6 +4259,9 @@ static theme_element_t *initBasic(const char *themePath, config_set_t *themeConf
          elem->glassFrame = intValue ? 1 : 0;
      snprintf(elemProp, sizeof(elemProp), "%s_tint_color", name);
      configGetColor(themeConfig, elemProp, elem->glassColor);
@@ -268,7 +279,7 @@ index 1951f71..d7d992f 100644
      snprintf(elemProp, sizeof(elemProp), "%s_widecrop", name);
      if (configGetInt(themeConfig, elemProp, &intValue))
          elem->wideCrop = intValue ? 1 : 0;
-@@ -4333,6 +4342,38 @@ static int thmIsInfoFamily(const theme_elems_t *f)
+@@ -4333,6 +4346,38 @@ static int thmIsInfoFamily(const theme_elems_t *f)
              f == &gTheme->favsVcdInfoElems || f == &gTheme->favsAppsInfoElems);
  }
  
@@ -307,7 +318,7 @@ index 1951f71..d7d992f 100644
  static void drawMenuText(struct menu_list *menu, struct submenu_list *item, config_set_t *config, struct theme_element *elem)
  {
      GSTEXTURE *leftIconTex = NULL, *rightIconTex = NULL;
-@@ -4366,15 +4407,27 @@ static void drawMenuText(struct menu_list *menu, struct submenu_list *item, conf
+@@ -4366,15 +4411,27 @@ static void drawMenuText(struct menu_list *menu, struct submenu_list *item, conf
          if (srcA <= 0.0f)
              return;
          int confirm = gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON, half = rmUnScaleX(fntCalcDimensions(elem->font, text)) / 2;
@@ -343,7 +354,7 @@ index 1951f71..d7d992f 100644
          fntRenderString(elem->font, elem->posX, elem->posY, elem->aligned, 0, 0, text, c);
          return;
      }
-@@ -4919,7 +4972,10 @@ static void drawHintText(struct menu_list *menu, struct submenu_list *item, conf
+@@ -4919,7 +4976,10 @@ static void drawHintText(struct menu_list *menu, struct submenu_list *item, conf
          int n = 0, i, j, labels = ripps2HintLabels();
          for (h = hint; h != NULL && n < 16; h = h->next)
              if (sidebar || (ripps2HintShown(ripps2HintToken(h->text_id, h->icon_id)) &&
@@ -355,7 +366,7 @@ index 1951f71..d7d992f 100644
                  row[n++] = h;
          for (i = sidebar ? n : 1; i < n; i++) {
              menu_hint_item_t *k = row[i];
-@@ -6921,6 +6977,7 @@ static int thmLoad(const char *themePath)
+@@ -6921,6 +6981,7 @@ static int thmLoad(const char *themePath)
          // in and Circle back, so the sidebar stays on the list. info_sidebar=1 keeps it there for a theme that wants it
          // (Left reaches it); none of the built-in themes does
          newT->infoSidebar = configGetInt(themeConfig, "info_sidebar", &intValue) && intValue == 1;
