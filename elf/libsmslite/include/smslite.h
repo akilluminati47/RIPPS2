@@ -28,6 +28,12 @@ void smsLiteShutdown(void);
 int smsLitePlayFullscreen(const char* path);
 #endif
 
+/* RIPPS2 build 130: each step of opening a video (the file, its index, the codec, the screen, the sound, the first
+   frame) and anything that went wrong, one line at a time, to fn (NULL: none). A console run of a video that never
+   starts then says how far it got. fn is called from the player's threads too, so it must be quick and thread-safe. */
+void smsLiteSetStageLog(void (*fn)(const char* line));
+void smsLiteStage(const char* fmt, ...) __attribute__((format(printf, 1, 2)));
+
 /* Request an in progress smsLitePlayFullscreen() to stop early.. safe to call from another thread.. no op if nothing is playing. */
 void smsLiteStop(void);
 

@@ -16,6 +16,7 @@
 
 #include <malloc.h>
 #include <stdio.h>
+#include <string.h>
 
 char g_pAVIStr[] __attribute__((aligned(1), section(".data"))) = "AVI";
 
@@ -25,19 +26,29 @@ char g_pAVIStr[] __attribute__((aligned(1), section(".data"))) = "AVI";
 #define AVIIF_INDEX        0x10
 #define AVIF_ISINTERLEAVED 0x00000100
 
-typedef struct _AVIdxEntry {
+/* RIPPS2 build 130: the index, small. SMS kept 12 bytes for every chunk of every stream, grown one entry at a time:
+   a two-hour film is over 600,000 chunks, 7.6 MB grown in hundreds of copies, and a failed grow was written through.
+   A video stream keeps a bit per frame (key or not) and its key frames' places; any other stream keeps each chunk's
+   place (and its running length when its chunks are sized by bytes). Sized once from the header's counts. */
+typedef struct _AVIdxKey {
 
- uint32_t m_Pos    __attribute__(  ( packed )  );
- uint32_t m_CumLen __attribute__(  ( packed )  );
- uint32_t m_fKey   __attribute__(  ( packed )  );
+ uint32_t m_Pos;
+ uint32_t m_Frame;
 
-} _AVIdxEntry;
+} _AVIdxKey;
 
 typedef struct _AVIStream {
 
  int64_t      m_StartTime;
- _AVIdxEntry* m_pIdx;
- uint32_t     m_IdxAllocSize;
+ uint8_t*     m_pKeyBits;  /* video: bit n set when chunk n is a key frame */
+ _AVIdxKey*   m_pKeys;     /* video: the key frames, in order */
+ uint32_t*    m_pPos;      /* other streams: each chunk's place */
+ uint32_t*    m_pCum;      /* other streams sized by bytes: each chunk's running length */
+ uint32_t     m_IdxCap;    /* chunks the arrays have room for */
+ uint32_t     m_KeyCap;
+ uint32_t     m_nKeys;
+ uint32_t     m_IdxHint;   /* the header's count of chunks (dwLength) */
+ uint32_t     m_FirstPos;
  uint32_t     m_nIdx;
  int32_t      m_Idx;
  int32_t      m_Rate;
@@ -63,6 +74,8 @@ typedef struct _AVIContainer {
  uint32_t m_MoviListList[ 8 ];
  char     m_fODML;
  char     m_fOffsetBug;
+ char     m_fNoIdx;   /* build 130: no room for the index: it plays, without skipping */
+ uint32_t m_IdxMax;   /* build 130: idx1's entry count, the most any stream can have */
 
 } _AVIContainer;
 
@@ -92,7 +105,10 @@ static int _ProbeFile ( FileContext* apFileCtx, uint32_t* apRiffEnd ) {
 
 static void _DestroyStream ( SMS_Stream* apStm ) {
 
- if (  MYSTRM( apStm ) -> m_pIdx  ) free (  MYSTRM( apStm ) -> m_pIdx  );
+ free (  MYSTRM( apStm ) -> m_pKeyBits  );
+ free (  MYSTRM( apStm ) -> m_pKeys     );
+ free (  MYSTRM( apStm ) -> m_pPos      );
+ free (  MYSTRM( apStm ) -> m_pCum      );
 
 }  /* end _DestroyStream */
 
@@ -126,14 +142,144 @@ static SMS_Stream* _NewStream ( SMS_Container* apCont ) {
 
 }  /* end _NewStream */
 
+extern void smsLiteStage ( const char*, ... );
+
+static void _IdxDrop ( SMS_Container* apCont ) {
+
+ uint32_t i;
+
+ for ( i = 0; i < apCont -> m_nStm; ++i ) {
+
+  _AVIStream* lpStm = MYSTRM( apCont -> m_pStm[ i ] );
+
+  free ( lpStm -> m_pKeyBits );
+  free ( lpStm -> m_pKeys    );
+  free ( lpStm -> m_pPos     );
+  free ( lpStm -> m_pCum     );
+  lpStm -> m_pKeyBits = NULL;
+  lpStm -> m_pKeys    = NULL;
+  lpStm -> m_pPos     = lpStm -> m_pCum = NULL;
+  lpStm -> m_IdxCap   = lpStm -> m_KeyCap = lpStm -> m_nKeys = lpStm -> m_nIdx = 0;
+
+ }  /* end for */
+
+ MYCONT( apCont ) -> m_fNoIdx = 1;
+ apCont -> m_Flags &= ~SMS_CONT_FLAGS_SEEKABLE;
+
+}  /* end _IdxDrop */
+
+/* one chunk into its stream's index; 0 when there was no room (then there is no index at all) */
+static int _IdxAdd ( SMS_Container* apCont, SMS_Stream* apStm, uint32_t aPos, uint32_t aLen, int afKey ) {
+
+ _AVIStream* lpStm  = MYSTRM( apStm );
+ uint32_t    lN     = lpStm -> m_nIdx;
+ int         lfKeyd = !(  apStm -> m_Flags & ( SMS_STRM_FLAGS_AUDIO | SMS_STRM_FLAGS_SUBTL )  );
+
+ if (  MYCONT( apCont ) -> m_fNoIdx  ) return 0;
+
+ if ( !lN ) lpStm -> m_FirstPos = aPos;
+
+ if ( lN >= lpStm -> m_IdxCap ) {
+
+  uint32_t lMax = MYCONT( apCont ) -> m_IdxMax ? MYCONT( apCont ) -> m_IdxMax : ( 1U << 22 );
+  uint32_t lCap = lN ? lN + lN / 4 + 1024 : lpStm -> m_IdxHint + 64;
+
+  if ( !lN && lCap > lMax + 64 ) lCap = lMax + 64;
+
+  if ( lfKeyd ) {
+
+   uint32_t lOld = ( lpStm -> m_IdxCap + 7 ) >> 3, lNew = ( lCap + 7 ) >> 3;
+   uint8_t* lpBits = ( uint8_t* )realloc ( lpStm -> m_pKeyBits, lNew );
+
+   if ( !lpBits ) goto fail;
+   memset ( lpBits + lOld, 0, lNew - lOld );
+   lpStm -> m_pKeyBits = lpBits;
+
+  } else {
+
+   uint32_t* lpPos = ( uint32_t* )realloc (  lpStm -> m_pPos, lCap * sizeof ( uint32_t )  );
+
+   if ( !lpPos ) goto fail;
+   lpStm -> m_pPos = lpPos;
+
+   if ( lpStm -> m_SampleSize ) {
+
+    uint32_t* lpCum = ( uint32_t* )realloc (  lpStm -> m_pCum, lCap * sizeof ( uint32_t )  );
+
+    if ( !lpCum ) goto fail;
+    lpStm -> m_pCum = lpCum;
+
+   }  /* end if */
+
+  }  /* end else */
+
+  lpStm -> m_IdxCap = lCap;
+
+ }  /* end if */
+
+ if ( lfKeyd ) {
+
+  if ( afKey ) {
+
+   if ( lpStm -> m_nKeys >= lpStm -> m_KeyCap ) {
+
+    uint32_t   lCap = lpStm -> m_KeyCap ? lpStm -> m_KeyCap * 2 : lpStm -> m_IdxHint / 64 + 64;
+    _AVIdxKey* lpKeys = ( _AVIdxKey* )realloc (  lpStm -> m_pKeys, lCap * sizeof ( _AVIdxKey )  );
+
+    if ( !lpKeys ) goto fail;
+    lpStm -> m_pKeys  = lpKeys;
+    lpStm -> m_KeyCap = lCap;
+
+   }  /* end if */
+
+   lpStm -> m_pKeys[ lpStm -> m_nKeys   ].m_Pos   = aPos;
+   lpStm -> m_pKeys[ lpStm -> m_nKeys++ ].m_Frame = lN;
+   lpStm -> m_pKeyBits[ lN >> 3 ] |= ( uint8_t )( 1 << ( lN & 7 ) );
+
+  }  /* end if */
+
+ } else {
+
+  lpStm -> m_pPos[ lN ] = aPos;
+  if ( lpStm -> m_SampleSize ) lpStm -> m_pCum[ lN ] = lpStm -> m_CumLen;
+
+ }  /* end else */
+
+ lpStm -> m_CumLen += aLen;
+ lpStm -> m_nIdx    = lN + 1;
+
+ return 1;
+fail:
+ smsLiteStage ( "index: no room at chunk %u of stream %d: playing without skipping", lN, lpStm -> m_Idx );
+ _IdxDrop ( apCont );
+ return 0;
+
+}  /* end _IdxAdd */
+
+static uint32_t _IdxBytes ( SMS_Container* apCont ) {
+
+ uint32_t i, lBytes = 0;
+
+ for ( i = 0; i < apCont -> m_nStm; ++i ) {
+
+  _AVIStream* lpStm = MYSTRM( apCont -> m_pStm[ i ] );
+
+  lBytes += lpStm -> m_pKeyBits ? ( lpStm -> m_IdxCap + 7 ) >> 3 : 0;
+  lBytes += lpStm -> m_KeyCap * sizeof ( _AVIdxKey );
+  lBytes += lpStm -> m_pPos ? lpStm -> m_IdxCap * 4 : 0;
+  lBytes += lpStm -> m_pCum ? lpStm -> m_IdxCap * 4 : 0;
+
+ }  /* end for */
+
+ return lBytes;
+
+}  /* end _IdxBytes */
+
 static int _Load_idx1 ( SMS_Container* apCtx, int aSize ) {
 
  int          i, lnIdx = aSize / 16;
  uint32_t     lIdx, lTag, lFlags, lPos, lLen, lPerc;
  SMS_Stream*  lpBaseStm;
- _AVIStream*  lpStm;
- _AVIdxEntry* lpIndices;
- _AVIdxEntry* lpIndex;
  FileContext* lpFileCtx    = apCtx -> m_pFileCtx;
  int          lPrevIdx     = -1;
  int          lnSameIdx    =  1;
@@ -144,6 +290,8 @@ static int _Load_idx1 ( SMS_Container* apCtx, int aSize ) {
  lpFileCtx -> Stream ( lpFileCtx, lpFileCtx -> m_CurPos, 64 );
 
  lPerc = lnIdx / 100 + 1;
+ MYCONT( apCtx ) -> m_IdxMax = lnIdx;
+ smsLiteStage ( "index: idx1, %d entries", lnIdx );
 
  for ( i = 0; i < lnIdx; ++i ) {
 
@@ -172,29 +320,17 @@ static int _Load_idx1 ( SMS_Container* apCtx, int aSize ) {
 
   }  /* end else */
 
-  lpStm = MYSTRM( apCtx -> m_pStm[ lIdx ] );
-
-  lpIndices = SMS_Realloc (
-   lpStm -> m_pIdx, ( unsigned int * )( &lpStm -> m_IdxAllocSize ),
-   ( lpStm -> m_nIdx + 1 ) * sizeof ( _AVIdxEntry )
-  );
-
-  lpStm -> m_pIdx = lpIndices;
-
-  lpIndex = &lpIndices[ lpStm -> m_nIdx++ ];
-  lpIndex -> m_fKey   = ( lFlags & AVIIF_INDEX ) != 0;
-  lpIndex -> m_Pos    = lPos;
-  lpIndex -> m_CumLen = lpStm -> m_CumLen;
-
-  lpStm -> m_CumLen += lLen;
+  _IdxAdd (  apCtx, lpBaseStm, lPos, lLen, ( lFlags & AVIIF_INDEX ) != 0  );
 
  }  /* end for */
+
+ smsLiteStage ( "index: done, %u KB", _IdxBytes ( apCtx ) >> 10 );
 
  if ( lnMaxSameIdx < lnSameIdx ) lnMaxSameIdx = lnSameIdx;
 
  lpFileCtx -> Stream ( lpFileCtx, lpFileCtx -> m_CurPos, 0 );
 
- return 1;//lnMaxSameIdx > 256 ? -1 : 1;
+ return MYCONT( apCtx ) -> m_fNoIdx ? 0 : 1;//lnMaxSameIdx > 256 ? -1 : 1;
 
 }  /* end _Load_idx1 */
 
@@ -243,11 +379,8 @@ static int _LoadODMLIdx ( SMS_Container* apCont, int* apNum ) {
  int64_t      lLastPos  = -1;
  int64_t      lFileSize = lpFileCtx -> m_Size;
  SMS_Stream*  lpStm;
- _AVIStream*  lpAVIStm;
- _AVIdxEntry* lpIndices;
- _AVIdxEntry* lpIndex;
 
- if (  ( uint32_t )lStID > apCont -> m_nStm || lStID < 0  ) return 0;
+ if (  ( uint32_t )lStID >= apCont -> m_nStm || lStID < 0  ) return 0;
 
  lpStm = apCont -> m_pStm[ lStID ];
 
@@ -268,7 +401,7 @@ static int _LoadODMLIdx ( SMS_Container* apCont, int* apNum ) {
 
  }  /* end if */
 
- lpAVIStm = MYSTRM( lpStm );
+ if ( apNum[ 0 ] <= 1 ) smsLiteStage ( "index: OpenDML, stream %d, %d entries", lStID, lnEntries );
 
  for ( i = 0; i < lnEntries; ++i ) {
 
@@ -277,16 +410,7 @@ static int _LoadODMLIdx ( SMS_Container* apCont, int* apNum ) {
    int     lLen = File_GetUInt ( lpFileCtx );
    int     lKey = lLen >= 0;
    lLen &= 0x7FFFFFFF;
-   lpIndices = SMS_Realloc (
-    lpAVIStm -> m_pIdx, ( unsigned int * )( &lpAVIStm -> m_IdxAllocSize ),
-    ( lpAVIStm -> m_nIdx + 1 ) * sizeof ( _AVIdxEntry )
-   );
-   lpAVIStm -> m_pIdx = lpIndices;
-   lpIndex = &lpIndices[ lpAVIStm -> m_nIdx++ ];
-   lpIndex -> m_fKey   = lKey;
-   lpIndex -> m_Pos    = ( uint32_t )lPos;
-   lpIndex -> m_CumLen = lpAVIStm -> m_CumLen;
-   lpAVIStm -> m_CumLen  += lLen;
+   _IdxAdd (  apCont, lpStm, ( uint32_t )lPos, lLen, lKey  );
    lLastPos = lPos;
   } else {
    int64_t lOffset, lPos;
@@ -360,7 +484,7 @@ static void _CheckOffsetBug ( SMS_Container* apCont ) {
   char     lBuf[ 2 ];
   uint32_t lPos  = lpFileCtx -> m_CurPos;
 
-  lpFileCtx -> Seek ( lpFileCtx, lpStm -> m_pIdx[ 0 ].m_Pos );
+  lpFileCtx -> Seek ( lpFileCtx, lpStm -> m_FirstPos );
   lpFileCtx -> Read ( lpFileCtx, lBuf, 2 );
   lpFileCtx -> Seek ( lpFileCtx, lPos );
 
@@ -487,6 +611,7 @@ static int _ReadHeader ( SMS_Container* apCtx ) {
 
                    File_GetUInt ( lpFileCtx );  /* dwStart  */
         lnFrames = File_GetUInt ( lpFileCtx );  /* dwLength */
+        MYSTRM( lpStm ) -> m_IdxHint = lnFrames;
 
         MYSTRM( lpStm ) -> m_StartTime = SMS_INT64( 0 );
         lpStm -> m_Duration  = SMS_Rescale (
@@ -531,6 +656,7 @@ static int _ReadHeader ( SMS_Container* apCtx ) {
         File_GetUInt ( lpFileCtx );  /* dwQuality             */
 
         MYSTRM( lpStm ) -> m_SampleSize = File_GetUInt ( lpFileCtx );  /* dwSampleSize */
+        MYSTRM( lpStm ) -> m_IdxHint    = MYSTRM( lpStm ) -> m_SampleSize ? 0 : lLen;  /* by bytes: no chunk count */
         MYSTRM( lpStm ) -> m_StartTime  = 0;
 
         if (  MYSTRM( lpStm ) -> m_Rate ) lpStm -> m_Duration = ( int64_t )lLen * SMS_TIME_BASE / MYSTRM( lpStm ) -> m_Rate;
@@ -712,7 +838,8 @@ error: retVal = 0;
   _FillChunkList ( apCtx );
 
   if (  MYCONT( apCtx ) -> m_fODML  ) {
-   apCtx -> m_Flags |= SMS_CONT_FLAGS_SEEKABLE;
+   if (  !MYCONT( apCtx ) -> m_fNoIdx  ) apCtx -> m_Flags |= SMS_CONT_FLAGS_SEEKABLE;
+   smsLiteStage ( "index: done, %u KB", _IdxBytes ( apCtx ) >> 10 );
   } else retVal = _LoadIndex ( apCtx );
 
   _CheckOffsetBug ( apCtx );
@@ -846,8 +973,8 @@ static int _ReadPacket ( SMS_Container* apCont, int* apIdx ) {
 
      if ( lpStm -> m_pCodec -> m_Type == SMS_CodecTypeVideo ) {
 
-      if (  lpAVIStm -> m_FrameOffset < lpAVIStm -> m_nIdx &&
-            lpAVIStm -> m_pIdx[ lpAVIStm -> m_FrameOffset ].m_fKey
+      if (  lpAVIStm -> m_FrameOffset < lpAVIStm -> m_nIdx && lpAVIStm -> m_pKeyBits &&
+            (  ( lpAVIStm -> m_pKeyBits[ lpAVIStm -> m_FrameOffset >> 3 ] >> ( lpAVIStm -> m_FrameOffset & 7 ) ) & 1  )
       ) lpPkt -> m_Flags |= SMS_PKT_FLAG_KEY;
 
      } else lpPkt -> m_Flags |= SMS_PKT_FLAG_KEY;
@@ -1053,37 +1180,60 @@ static void _CalcFrameRate ( SMS_Container* apCont ) {
 
 }  /* end _CalcFrameRate */
 
-static int _LocateFrame ( _AVIdxEntry* apEnt, int anEnt, int aPos ) {
+/* the last chunk placed at or before aPos (0 when none is) */
+static uint32_t _LocateFrame ( const uint32_t* apPos, uint32_t anPos, uint32_t aPos ) {
 
- uint32_t lA, lB, lM, lPos;
+ uint32_t lA = 0, lB = anPos;
 
- lA = 0;
- lB = anEnt - 1;
+ while ( lA < lB ) {
 
- while ( lA <= lB ) {
+  uint32_t lM = ( lA + lB ) >> 1;
 
-  lM   = ( lA + lB ) >> 1;
-  lPos = apEnt[ lM ].m_Pos;
-
-  if ( lPos == aPos || !lM )
-
-   goto found;
-
-  else if ( lPos > aPos )
-
-   lB = lM - 1;
-
-  else lA = lM + 1;
+  if ( apPos[ lM ] <= aPos ) lA = lM + 1; else lB = lM;
 
  }  /* end while */
 
- lM = lA;
-
- if ( lM > 0 ) --lM;
-found:
- return lM;
+ return lA ? lA - 1 : 0;
 
 }  /* end _LocateFrame */
+
+/* the key frame at or after frame aPos (aDir >= 0) or at or before it (aDir < 0): its place in m_pKeys, or -1 */
+static int _KeyFor ( const _AVIStream* apStm, uint32_t aPos, int aDir ) {
+
+ uint32_t lA = 0, lB = apStm -> m_nKeys;
+
+ while ( lA < lB ) {
+
+  uint32_t lM = ( lA + lB ) >> 1;
+
+  if ( apStm -> m_pKeys[ lM ].m_Frame < aPos ) lA = lM + 1; else lB = lM;
+
+ }  /* end while */
+
+ if ( aDir >= 0 ) return lA < apStm -> m_nKeys ? ( int )lA : -1;
+
+ if (  lA < apStm -> m_nKeys && apStm -> m_pKeys[ lA ].m_Frame == aPos  ) return lA;
+
+ return ( int )lA - 1;
+
+}  /* end _KeyFor */
+
+/* the last key frame placed at or before aPos (0 when none is) */
+static uint32_t _KeyAtPos ( const _AVIStream* apStm, uint32_t aPos ) {
+
+ uint32_t lA = 0, lB = apStm -> m_nKeys;
+
+ while ( lA < lB ) {
+
+  uint32_t lM = ( lA + lB ) >> 1;
+
+  if ( apStm -> m_pKeys[ lM ].m_Pos <= aPos ) lA = lM + 1; else lB = lM;
+
+ }  /* end while */
+
+ return lA ? lA - 1 : 0;
+
+}  /* end _KeyAtPos */
 
 static int _FixOffsets ( SMS_Container* apCont, uint32_t aPos ) {
 
@@ -1112,17 +1262,30 @@ static int _Seek ( SMS_Container* apCont, int anIdx, int aDir, uint32_t aPos ) {
 
  int         i;
  _AVIStream* lpStm = MYSTRM( apCont -> m_pStm[ anIdx ] );
- uint32_t    lEnd  = aDir > 0 ? lpStm -> m_nIdx : 0;
  uint32_t    lPos;
 
  if ( aPos >= lpStm -> m_nIdx ) return 0;
 
- while (  aPos != lEnd && !lpStm -> m_pIdx[ aPos ].m_fKey ) aPos += aDir;
+ if ( lpStm -> m_pKeys ) {  /* build 130: to the key frame on that side (backwards with none: the first) */
 
- if ( aPos == lpStm -> m_nIdx ) return 0;
+  int k = _KeyFor ( lpStm, aPos, aDir );
 
- lpStm -> m_NewFrameOffset = aPos;
- lPos                      = lpStm -> m_pIdx[ aPos ].m_Pos;
+  if ( k < 0 ) {
+
+   if ( aDir >= 0 || !lpStm -> m_nKeys ) return 0;
+   k = 0;
+
+  }  /* end if */
+
+  lpStm -> m_NewFrameOffset = lpStm -> m_pKeys[ k ].m_Frame;
+  lPos                      = lpStm -> m_pKeys[ k ].m_Pos;
+
+ } else if ( lpStm -> m_pPos ) {
+
+  lpStm -> m_NewFrameOffset = aPos;
+  lPos                      = lpStm -> m_pPos[ aPos ];
+
+ } else return 0;
 
  for (  i = 0; i < ( int )apCont -> m_nStm; ++i  ) {
 
@@ -1134,15 +1297,23 @@ static int _Seek ( SMS_Container* apCont, int anIdx, int aDir, uint32_t aPos ) {
 
    if ( lpStm -> m_nIdx <= 0 ) return 0;
 
-   j = _LocateFrame ( lpStm -> m_pIdx, lpStm -> m_nIdx, lPos );
+   if ( lpStm -> m_pPos ) {
 
-   if (  ( j + 1 ) < lpStm -> m_nIdx ) ++j;
+    j = _LocateFrame ( lpStm -> m_pPos, lpStm -> m_nIdx, lPos );
 
-   if ( lpStm -> m_SampleSize == 0 )
+    if (  ( j + 1 ) < lpStm -> m_nIdx ) ++j;
 
-    lpStm -> m_NewFrameOffset = j;
+    if ( lpStm -> m_SampleSize == 0 )
 
-   else lpStm -> m_NewFrameOffset = lpStm -> m_pIdx[ j ].m_CumLen;
+     lpStm -> m_NewFrameOffset = j;
+
+    else lpStm -> m_NewFrameOffset = lpStm -> m_pCum[ j ];
+
+   } else if ( lpStm -> m_pKeys ) {
+
+    lpStm -> m_NewFrameOffset = lpStm -> m_pKeys[  _KeyAtPos ( lpStm, lPos )  ].m_Frame;
+
+   } else return 0;
 
   }  /* end if */
 
@@ -1212,11 +1383,12 @@ int smsLiteAviKeyFrame ( SMS_Container* apCont, int anIdx, int aDir, int aPos ) 
 
  lpStm = MYSTRM( apCont -> m_pStm[ anIdx ] );
 
- if ( !lpStm || !lpStm -> m_pIdx || aPos < 0 || aPos >= ( int )lpStm -> m_nIdx ) return -1;
+ if ( !lpStm || !lpStm -> m_pKeys || aPos < 0 || aPos >= ( int )lpStm -> m_nIdx ) return -1;
 
- while (  aPos >= 0 && aPos < ( int )lpStm -> m_nIdx && !lpStm -> m_pIdx[ aPos ].m_fKey  ) aPos += aDir < 0 ? -1 : 1;
-
- return aPos >= 0 && aPos < ( int )lpStm -> m_nIdx ? aPos : -1;
+ {
+  int k = _KeyFor (  lpStm, ( uint32_t )aPos, aDir < 0 ? -1 : 1  );
+  return k < 0 ? -1 : ( int )lpStm -> m_pKeys[ k ].m_Frame;
+ }
 }
 
 int smsLiteAviTiming ( SMS_Container* apCont, int anIdx, int32_t* apScale, int32_t* apRate, uint32_t* apN )
@@ -1228,7 +1400,7 @@ int smsLiteAviTiming ( SMS_Container* apCont, int anIdx, int32_t* apScale, int32
 
  lpStm = MYSTRM( apCont -> m_pStm[ anIdx ] );
 
- if ( !lpStm || !lpStm -> m_pIdx || lpStm -> m_Scale <= 0 || lpStm -> m_Rate <= 0 || !lpStm -> m_nIdx ) return -1;
+ if ( !lpStm || ( !lpStm -> m_pKeys && !lpStm -> m_pPos ) || lpStm -> m_Scale <= 0 || lpStm -> m_Rate <= 0 || !lpStm -> m_nIdx ) return -1;
 
  *apScale = lpStm -> m_Scale;
  *apRate  = lpStm -> m_Rate;

@@ -1,0 +1,89 @@
+diff --git a/src/ripps2media.c b/src/ripps2media.c
+index eb245d4..0638892 100644
+--- a/src/ripps2media.c
++++ b/src/ripps2media.c
+@@ -45,6 +45,8 @@
+ #include "include/ripps2tr.h" // build 104: _t, RIPPS2's words in the chosen language
+ #ifdef RIPPS2_SMSLITE
+ #include <smslite.h>
++#include "include/ripps2diag.h" // build 130: the video player's steps
++#include "include/ripps2_build.h" // build 130: VIDEO.TXT names its build
+ #endif
+ 
+ #define VIEW_MAX_W 720
+@@ -1102,9 +1104,51 @@ static void videoPadThread(void *arg)
+     ExitDeleteThread();
+ }
+ 
++// build 130: the player's steps (smsLiteSetStageLog) to the log, to DIAG.TXT's ring and, until the picture shows, to
++// VIDEO.TXT beside RIPPS2, a line at a time, so a console run that never starts says where it stopped
++static char vpLogPath[300];
++static volatile int vpLogFile = 0;
++
++static void videoStageLog(const char *line)
++{
++    int fd;
++
++    LOG("VIDEO: %s\n", line);
++    ripps2Diag("video: %s", line);
++    if (!vpLogFile)
++        return;
++    if ((fd = open(vpLogPath, O_WRONLY | O_CREAT, 0666)) >= 0) {
++        lseek(fd, 0, SEEK_END);
++        write(fd, line, strlen(line));
++        write(fd, "\r\n", 2);
++        close(fd);
++    }
++    if (!strncmp(line, "playing:", 8) || !strncmp(line, "stopped:", 8))
++        vpLogFile = 0; // from here the drive is the video's
++}
++
++// the largest block malloc gives now, in KB
++static unsigned int videoLargestFreeKb(void)
++{
++    unsigned int lo = 0, hi = 32 * 1024, mid;
++    void *p;
++
++    while (lo < hi) {
++        mid = (lo + hi + 1) / 2;
++        if ((p = malloc(mid * 1024)) != NULL) {
++            free(p);
++            lo = mid;
++        } else
++            hi = mid - 1;
++    }
++    return lo;
++}
++
+ void ripps2PlayVideo(const char *path)
+ {
+     static int ready = 0;
++    char dir[256];
++    int fd;
+     extern void *_gp;
+     ee_thread_t th;
+     int tid, music = isBgmPlaying(), r;
+@@ -1136,7 +1180,23 @@ void ripps2PlayVideo(const char *path)
+         StartThread(tid, NULL);
+ 
+     LOG("MEDIA: video %s\n", path);
++    vpLogFile = 0;
++    if (oplGetRipps2Dir(dir, sizeof(dir))) {
++        snprintf(vpLogPath, sizeof(vpLogPath), "%sVIDEO.TXT", dir);
++        if ((fd = open(vpLogPath, O_WRONLY | O_CREAT | O_TRUNC, 0666)) >= 0) {
++            char head[96];
++            snprintf(head, sizeof(head), "RIPPS2 build %d: the video player's steps, until the picture shows\r\n", RIPPS2_BUILD);
++            write(fd, head, strlen(head));
++            close(fd);
++            vpLogFile = 1;
++        }
++    }
++    smsLiteSetStageLog(videoStageLog);
++    smsLiteStage("memory: largest free block %u KB", videoLargestFreeKb());
+     r = smsLitePlayFullscreen(path);
++    smsLiteStage("stopped: returned %d", r);
++    smsLiteSetStageLog(NULL);
++    vpLogFile = 0;
+     LOG("MEDIA: video returned %d\n", r);
+ 
+     videoPadRun = 0;

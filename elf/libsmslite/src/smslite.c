@@ -39,6 +39,27 @@
 #endif
 
 static volatile int s_smsLitePaused = 0; /* RIPPS2: smsLitePause() */
+
+/* RIPPS2 build 130: the stage log (smsLiteSetStageLog) */
+static void (*s_smsLiteStageLog)(const char* line) = NULL;
+
+void smsLiteSetStageLog(void (*fn)(const char* line))
+{
+    s_smsLiteStageLog = fn;
+}
+
+void smsLiteStage(const char* fmt, ...)
+{
+    char line[160];
+    va_list ap;
+
+    if (!s_smsLiteStageLog)
+        return;
+    va_start(ap, fmt);
+    vsnprintf(line, sizeof(line), fmt, ap);
+    va_end(ap);
+    s_smsLiteStageLog(line);
+}
 /* RIPPS2 build 125: the volume, skip and loop the host's pad asks for (smsLiteSetVolume, smsLiteSkip, smsLiteSetLoop) */
 static volatile int s_smsLiteVolume = 100;
 static int s_smsLiteGain = 32768; /* where the sound is now, Q15: eased toward the volume */
@@ -276,7 +297,7 @@ static FileContext* smsLiteOpenFileContext(const char* path)
     int statResult;
 
     fd = fileXioOpen(path, FIO_O_RDONLY);
-
+    smsLiteStage("file: open %d", fd);
 
     if (fd < 0)
         return NULL;
@@ -296,8 +317,14 @@ static FileContext* smsLiteOpenFileContext(const char* path)
 
     statResult = fileXioGetStat(path, &s_smsLiteStat);
 
-
     ctx->m_Size = statResult >= 0 ? s_smsLiteStat.size : 0;
+    if (statResult < 0 || !ctx->m_Size) { /* build 130: a drive that cannot stat: the size from the file's end */
+        int end = fileXioLseek(fd, 0, FIO_SEEK_END);
+        fileXioLseek(fd, 0, FIO_SEEK_SET);
+        if (end > 0)
+            ctx->m_Size = (unsigned int)end;
+    }
+    smsLiteStage("file: %u bytes (stat %d)", ctx->m_Size, statResult);
     ctx->m_StreamSize = ctx->m_Size;
     ctx->m_BufSize = sizeof(s_smsLiteFileBuffer);
     ctx->m_pBuff[0] = s_smsLiteFileBuffer;
@@ -693,6 +720,7 @@ static void smsLiteAudioSetFormat(SMSLitePlayback* playback, int aRate, int aCha
     {
         int fr = audsrv_set_format(&fmt);
         smsLiteDbg("a fmt %d %d/%d\n", fr, aRate, aChannels);
+        smsLiteStage("sound: %d Hz, %d channels: %d", aRate, aChannels, fr);
         if (fr != 0)
             return;
     }
@@ -826,6 +854,7 @@ static void smsLiteAudioOpen(SMSLitePlayback* playback)
     if (!s_smsLiteAudsrvReady) {
         int ir = audsrv_init();
         smsLiteDbg("a init %d\n", ir);
+        smsLiteStage("sound: audsrv_init %d", ir);
         if (ir != 0)
             return;
         s_smsLiteAudsrvReady = 1;
@@ -1116,10 +1145,15 @@ static void smsLiteOverlayFree(void)
         SignalSema(s_ovSema);
 }
 
+static int s_smsLiteFramesShown = 0; /* build 130: the first one goes in the stage log */
+
 static void smsLitePlaybackShowFrame(SMSLitePlayback* playback, SMS_FrameBuffer* frame)
 {
     s64 pts = frame->m_StartPTS;
     s64 delta;
+
+    if (!s_smsLiteFramesShown++)
+        smsLiteStage("playing: first frame on screen");
 
     if (playback->havePTS && pts != SMS_NOPTS_VALUE) {
         delta = pts - playback->lastPTS;
@@ -1211,10 +1245,13 @@ static int smsLitePlaybackOpen(SMSLitePlayback* playback, const char* path)
     playback->container.AllocPacket = smsLiteAllocPacket;
 
     smsLiteDbg("pb parse avi\n");
+    smsLiteStage("avi: reading its header and index");
     
     ret = SMS_GetContainerAVI(&playback->container);
 
     smsLiteDbg("pb parsed %d\n", ret);
+    smsLiteStage("avi: %s, %u streams%s", ret ? "read" : "not an AVI RIPPS2 can read", playback->container.m_nStm,
+                 playback->container.m_Flags & SMS_CONT_FLAGS_SEEKABLE ? ", skipping on" : ", no skipping");
 
 
     if (ret && playback->container.m_nStm > 0)
@@ -1236,6 +1273,7 @@ static int smsLitePlaybackOpen(SMSLitePlayback* playback, const char* path)
     playback->codec = playback->videoStream->m_pCodec;
 
     smsLiteDbg("pb codec id %d\n", playback->codec->m_ID);
+    smsLiteStage("video: codec %d, %d x %d", playback->codec->m_ID, playback->codec->m_Width, playback->codec->m_Height);
 
 
     if (playback->codec->m_ID != SMS_CodecID_MPEG4) {
@@ -1265,13 +1303,16 @@ static int smsLitePlaybackOpen(SMSLitePlayback* playback, const char* path)
     initOK = playback->codec->m_pCodec->Init ? playback->codec->m_pCodec->Init(playback->codec) : 0;
 
     smsLiteDbg("pb codec init ret %d\n", initOK);
+    smsLiteStage("video: decoder %s", initOK ? "ready" : "refused");
 
     if (!initOK)
         return SMSLITE_ERR_CODEC;
 
     playback->outputMemory = memalign(64, SMSLITE_VIDEO_OUTPUT_BUFFER_SIZE);
-    if (!playback->outputMemory)
+    if (!playback->outputMemory) {
+        smsLiteStage("memory: no room for the picture buffer (%d KB)", SMSLITE_VIDEO_OUTPUT_BUFFER_SIZE >> 10);
         return SMSLITE_ERR_DECODE;
+    }
 
     playback->outputBuffer = SMS_RingBufferInit(
         playback->outputMemory,
@@ -1281,10 +1322,14 @@ static int smsLitePlaybackOpen(SMSLitePlayback* playback, const char* path)
     if (!playback->outputBuffer)
         return SMSLITE_ERR_DECODE;
 
-    if (!smsLiteInitPacketBuffers(&playback->container, playback->packetBuffers))
+    if (!smsLiteInitPacketBuffers(&playback->container, playback->packetBuffers)) {
+        smsLiteStage("memory: no room for the packet buffers");
         return SMSLITE_ERR_PACKET;
+    }
 
+    smsLiteStage("screen: setting up");
     ret = smsLitePlaybackInitDisplay(playback);
+    smsLiteStage("screen: %s", ret == SMSLITE_OK ? "ready" : "failed");
     if (ret != SMSLITE_OK)
         return ret;
 
@@ -1297,7 +1342,9 @@ static int smsLitePlaybackOpen(SMSLitePlayback* playback, const char* path)
 
     FlushCache(0);
 
+    smsLiteStage("sound: opening");
     smsLiteAudioOpen(playback);
+    smsLiteStage("sound: %s", playback->audioActive ? "playing" : "none (the video plays silent)");
 
     return SMSLITE_OK;
 }
@@ -1995,6 +2042,8 @@ int smsLitePlayFullscreen(const char* path)
     smsLiteResetStreams();
 
     smsLiteDbg("play start\n");
+    s_smsLiteFramesShown = 0;
+    smsLiteStage("play: %s", path);
 
     s_smsLiteUserStop = 0; /* RIPPS2 build 125: a new playback: full volume, no skip asked, not looping, nothing over it */
     s_smsLiteSeekPending = 0;
@@ -2005,9 +2054,11 @@ int smsLitePlayFullscreen(const char* path)
 
     ret = smsLitePlaybackOpen(&playback, path);
     if (ret != SMSLITE_OK) {
+        smsLiteStage("stopped: open returned %d", ret);
         smsLitePlaybackClose(&playback);
         return ret;
     }
+    smsLiteStage("threads: starting");
 
     ret = smsLitePlaybackRun(&playback, 0, 0x7FFFFFFF);
 
@@ -2328,8 +2379,10 @@ static int smsLitePreviewOpenInternal(SMSLitePlayback* playback, const char* pat
         return SMSLITE_ERR_CODEC;
 
     playback->outputMemory = memalign(64, SMSLITE_VIDEO_OUTPUT_BUFFER_SIZE);
-    if (!playback->outputMemory)
+    if (!playback->outputMemory) {
+        smsLiteStage("memory: no room for the picture buffer (%d KB)", SMSLITE_VIDEO_OUTPUT_BUFFER_SIZE >> 10);
         return SMSLITE_ERR_DECODE;
+    }
 
     playback->outputBuffer = SMS_RingBufferInit(
         playback->outputMemory,
