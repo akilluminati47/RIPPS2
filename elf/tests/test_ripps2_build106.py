@@ -44,7 +44,8 @@ check(re.search(r'#define PH\s+126', igr) is not None and re.search(r'#define RO
 
 # 2. the star: left by default, the user's setting first, the row icon moved out of its way
 init = fn(themes, 'static void initItemsList(')
-check('itemsList->starSide = THM_STAR_LEFT;' in init, 'the star defaults to the left')
+# build 133: left on the built-in themes, right on a theme from a drive
+check('itemsList->starSide = themePath != NULL ? THM_STAR_RIGHT : THM_STAR_LEFT;' in init, 'the star defaults to the left (right on a theme from a drive)')
 for key in ('_star"', '_highlight"', '"star_image"', '"decorator_all"', '"decorator_ps2"', '"decorator_ps1"', '"decorator_app"'):
     check(key in init, 'the list reads %s' % key)
 check('elem->endElem = &endItemsList;' in init and 'freeImageTexture(list->decoKind[i]);' in themes, 'the list frees its pictures')
@@ -52,7 +53,7 @@ draw = fn(themes, 'static void drawItemsList(')
 check('gRipps2StarSide > 0 ? gRipps2StarSide - 1 : itemsList->starSide' in draw, "the user's setting wins over the theme")
 check('int decoRight = haveDeco && starSide == THM_STAR_LEFT;' in draw, 'a left star sends the row icon right')
 check('decoRight ? posX + elem->width - DECORATOR_SIZE : posX + starCol' in draw, 'the row icon is drawn at the row end')
-check('starSide == THM_STAR_LEFT ? posX : textEndX + 4' in draw and 'starSide != THM_STAR_HIDDEN' in draw, 'the star draws left, right or not at all')
+check('starSide == THM_STAR_LEFT ? posX : starRightX' in draw and 'starSide != THM_STAR_HIDDEN' in draw, 'the star draws left, right (build 133: at the row end) or not at all')
 check('itemsList->highlight == THM_HL_LINE' in draw and 'itemsList->highlight == THM_HL_BAR' in draw, 'the highlight is a bar, a line or none')
 check('itemsList->decoKind[thmRowKind(list, ps)]' in draw and 'itemsList->decoAll' in draw, 'row icons by kind, then for all')
 check('enum { THM_STAR_LEFT = 0, THM_STAR_RIGHT, THM_STAR_HIDDEN };' in th, 'the star sides')

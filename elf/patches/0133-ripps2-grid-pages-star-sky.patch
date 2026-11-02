@@ -1,0 +1,146 @@
+diff --git a/include/ripps2.h b/include/ripps2.h
+index 2eeff1d..d9ee5c2 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -238,6 +238,8 @@ void ripps2DrawPanelMorph(int ax, int ay, int aw, int ah, int bx, int by, int bw
+ 
+ // ---- Native backgrounds (ripps2bg.c), drawn in place of the plasma ----
+ void ripps2DrawBackground(void); // orbs on Memory Files, pillars everywhere else
++void ripps2DrawRestSky(void);     // build 133: Storage's sky at rest, in the Color Theme (a towers=0 theme's backdrop)
++void ripps2DrawSkyVignette(void); // build 133: that sky's top and floor faded over a list page's game art
+ void ripps2DrawPillars(void);
+ void ripps2DrawOrbs(void);
+ double ripps2Seconds(void); // ripps2bg.c: seconds since the first frame, from the 64-bit timer (clock() wraps every 71.6 min)
+diff --git a/src/menusys.c b/src/menusys.c
+index 21e1462..7eacdf7 100644
+--- a/src/menusys.c
++++ b/src/menusys.c
+@@ -2646,7 +2646,9 @@ void menuHandleInputMain()
+         menuNextV();
+     } else if (getKeyOn(KEY_L1)) {
+         if (sb) {
+-            if (ripps2PageButtons() != 2)
++            // build 133 (the user, 11/02: RIPGRID's L1 / R1 "the same as l2/r2 pages of the grids"): on a grid with the
++            // sidebar they turn its pages too, Page Buttons on L2 / R2 or not (they did nothing there)
++            if (ripps2PageButtons() != 2 || gridSide)
+                 menuPrevPage(); // build 117: the pages, as OPL turns them
+         } else if (ripps2PageButtons() == 1 || ripps2Legacy())
+             menuPrevPage(); // build 96: Page Buttons L1 / R1 (build 113: and a legacy theme's, as OPL had them)
+@@ -2654,7 +2656,7 @@ void menuHandleInputMain()
+             ripps2StepCategory(-1); // RIPPS2 build 69: L1/R1 switch categories (Launch Disc / Memory Files)
+     } else if (getKeyOn(KEY_R1)) {
+         if (sb) {
+-            if (ripps2PageButtons() != 2)
++            if (ripps2PageButtons() != 2 || gridSide)
+                 menuNextPage();
+         } else if (ripps2PageButtons() == 1 || ripps2Legacy())
+             menuNextPage();
+diff --git a/src/ripps2bg.c b/src/ripps2bg.c
+index ee9fdda..741c334 100644
+--- a/src/ripps2bg.c
++++ b/src/ripps2bg.c
+@@ -298,6 +298,27 @@ static void drawSky(u64 top, u64 horizon, u64 floor)
+     rmDrawQuadGouraud(0, 290, horizon, 640, 290, horizon, 0, 480, floor, 640, 480, floor);
+ }
+ 
++// build 133 (the user, 11/02: "Adapt and ripgrid to use sky of theme choice instead of flat bg colors for smoother
++// transitions to storage"): Storage's sky at rest (no glow), in the Color Theme in effect, where a theme without
++// towers filled its bg_color
++void ripps2DrawRestSky(void)
++{
++    ripps2PaletteSync();
++    drawSky(RGBA(0x01, 0x02, 0x09, 0x80), RGBA(0x0B, 0x19, 0x4C, 0x80), RGBA(0x02, 0x04, 0x10, 0x80));
++}
++
++// build 133 ("create a vignette (rip it directly from the sky so it blends) for the upper and lower"): the same sky's
++// top colour fading down from the top edge and its floor colour fading up from the bottom, laid over a game's
++// background art on the list page so the art meets the bar and the hints the way the sky does
++void ripps2DrawSkyVignette(void)
++{
++    u64 top = RGBA(0x01, 0x02, 0x09, 0x70), topClear = RGBA(0x01, 0x02, 0x09, 0x00);
++    u64 floor = RGBA(0x02, 0x04, 0x10, 0x78), floorClear = RGBA(0x02, 0x04, 0x10, 0x00);
++    ripps2PaletteSync();
++    rmDrawQuadGouraud(0, 0, top, 640, 0, top, 0, 130, topClear, 640, 130, topClear);
++    rmDrawQuadGouraud(0, 330, floorClear, 640, 330, floorClear, 0, 480, floor, 640, 480, floor);
++}
++
+ // A floor line, clipped against a near plane so the low boot camera keeps the grid under it
+ static void gridLine(v3 a, v3 b, u64 c)
+ {
+diff --git a/src/themes.c b/src/themes.c
+index 6992072..d48a562 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -1233,7 +1233,7 @@ static void ripps2PanelRect(struct theme_element *elem, int *x, int *y)
+ static void thmDrawEmptyBackdrop(void)
+ {
+     if (gTheme != NULL && gTheme->noTowers)
+-        rmDrawRect(0, 0, screenWidth, screenHeight, GS_SETREG_RGBA(gTheme->bgColor[0], gTheme->bgColor[1], gTheme->bgColor[2], 0x80));
++        ripps2DrawRestSky(); // build 133: Storage's sky, not a flat bg_color (it was), so going to Storage does not jump
+     else
+         ripps2DrawBackground();
+ }
+@@ -4297,6 +4297,15 @@ static void drawBackground(struct menu_list *menu, struct submenu_list *item, co
+     thmDrawEmptyBackdrop(); // RIPPS2: theme pages draw the bare pillars
+ }
+ 
++// build 133: a page Background with a game's art (pattern=BG); on a towers=0 theme's list page (Adapt, RIPGRID) the
++// sky vignette goes over the art, under everything after it
++static void drawGameBackground(struct menu_list *menu, struct submenu_list *item, config_set_t *config, struct theme_element *elem)
++{
++    drawGameImage(menu, item, config, elem);
++    if (gTheme != NULL && gTheme->noTowers && !thmElemIsInfo(elem))
++        ripps2DrawSkyVignette();
++}
++
+ static void initBackground(const char *themePath, config_set_t *themeConfig, theme_t *theme, theme_element_t *elem, const char *name, const char *pattern, int count, const char *texture)
+ {
+     mutable_image_t *mutableImage = initMutableImage(themePath, themeConfig, theme, name, elem->type, pattern, count, texture, NULL);
+@@ -4304,7 +4313,7 @@ static void initBackground(const char *themePath, config_set_t *themeConfig, the
+     elem->endElem = &endMutableImage;
+ 
+     if (mutableImage->cache)
+-        elem->drawElem = &drawGameImage;
++        elem->drawElem = &drawGameBackground; // the game's art, and on a towers=0 list page the sky vignette (build 133)
+     else if (mutableImage->defaultTexture)
+         elem->drawElem = &drawStaticImage;
+     else
+@@ -4619,6 +4628,11 @@ static void drawItemsList(struct menu_list *menu, struct submenu_list *item, con
+         int roomEnd = elem->posX + (itemsList->decoratorImage != NULL ? DECORATOR_SIZE : 0) + elem->textRoom;
+         if (decoRight && roomEnd > elem->posX + elem->width - DECORATOR_SIZE - 6)
+             roomEnd = elem->posX + elem->width - DECORATOR_SIZE - 6;
++        // build 133 (the user, 11/02: "the star on the right side mean all the way not end of characters"): a right star
++        // stands at the row's right edge (the screen's, if the row runs past it), and the titles stop short of it
++        int starRightX = (posX + elem->width < screenWidth - 8 ? posX + elem->width : screenWidth - 8) - MENU_ITEM_HEIGHT;
++        if (starSide == THM_STAR_RIGHT && roomEnd > starRightX - 6)
++            roomEnd = starRightX - 6;
+         int textRoom = elem->textRoom > 0 ? roomEnd - textX : 0;
+         GSTEXTURE *starTex = itemsList->starImage != NULL ? &itemsList->starImage->source : thmGetTexture(FAV_MARK);
+         if (elem->textRoom > 0 && textRoom < 40)
+@@ -4687,13 +4701,14 @@ static void drawItemsList(struct menu_list *menu, struct submenu_list *item, con
+             // RIPPS2: the star. Build 111 (user: "the favourites star wasn't on the centreline of the title next to it"): centred
+             // on the row, where the title's centreline is (textDy), not at posY, which keeps the row icons' old 3 px drop
+             if (ps->item.favourited && starSide != THM_STAR_HIDDEN && starTex != NULL && starTex->Mem != NULL)
+-                rmDrawPixmap(starTex, starSide == THM_STAR_LEFT ? posX : textEndX + 4, rowTop + (rowStep - MENU_ITEM_HEIGHT) / 2, elem->aligned,
++                rmDrawPixmap(starTex, starSide == THM_STAR_LEFT ? posX : starRightX, rowTop + (rowStep - MENU_ITEM_HEIGHT) / 2, elem->aligned,
+                              MENU_ITEM_HEIGHT, MENU_ITEM_HEIGHT, elem->scaled, gDefaultCol, 0);
+ 
+             posY += rowStep;
+             rowTop += rowStep;
+             ps = ps->next;
+         }
++        (void)textEndX; // build 133: the right star no longer follows the title
+     }
+ }
+ 
+@@ -4749,7 +4764,9 @@ static void initItemsList(const char *themePath, config_set_t *themeConfig, them
+     snprintf(elemProp, sizeof(elemProp), "%s_hidden", name);
+     configGetInt(themeConfig, elemProp, &itemsList->hidden);
+     // build 106: the star, the highlight and the row icons
+-    itemsList->starSide = THM_STAR_LEFT;
++    // build 133 (the user, 11/02: "make Adapt and legacy themes default the favorite star to right side"): a theme on a
++    // drive (themePath set) without <name>_star has it on the right; RIPPS2, RIPFLOW and RIPGRID keep the left
++    itemsList->starSide = themePath != NULL ? THM_STAR_RIGHT : THM_STAR_LEFT;
+     snprintf(elemProp, sizeof(elemProp), "%s_star", name);
+     if (configGetStr(themeConfig, elemProp, &value) && value != NULL)
+         itemsList->starSide = !strcasecmp(value, "right") ? THM_STAR_RIGHT : !strcasecmp(value, "hidden") ? THM_STAR_HIDDEN : THM_STAR_LEFT;
