@@ -1,0 +1,20 @@
+psx-place bump for v1.3.0 beta (build 130). The user posts it. Paste from the [CENTER] line. In the first post, only the "Current release" line and the two sizes change (psxplace-post.bbcode has them).
+
+[CENTER][MEDIA=youtube]OEa8b5rbyco[/MEDIA]
+[SIZE=2]The tour: everything RIPPS2 does, 10:48, chapters in its description[/SIZE]
+
+[SIZE=5][B]RIPPS2 v1.3.0 beta (build 130)[/B][/SIZE]
+[URL='https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf']RIPPS2.elf[/URL] (2,747 KB)  |  [URL='https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf']RIPPS2-lite.elf[/URL] (2,203 KB, without PS2BBL and Neutrino)  |  [URL='https://github.com/akilluminati47/RIPPS2-themes/releases/latest']Theme pack, edition 128[/URL]  |  [URL='https://github.com/akilluminati47/RIPPS2/blob/main/CHANGELOG.md']Changelog[/URL][/CENTER]
+
+[B]Long videos open.[/B] A two-hour film stuck at "Opening the video": the player's index outgrew the PS2's memory. It is now a fraction of the size (1.6 MB for a 2 h 41 min film), and L1 / R1 skip through all of it.
+
+[LIST]
+[*][B]Every video opens faster[/B], over MMCE most of all: the index is read from the player's buffer, not 4 bytes at a time from the drive.
+[*][B]VIDEO.TXT[/B] beside RIPPS2 lists each step of opening a video, so one that never starts says where it stopped. A video RIPPS2 cannot play (a camera's MJPEG) says so and goes back to the list.
+[*][B]PS1 games named by a code show their name[/B], read from conf_apps.cfg on the drive the POPS folder is on, on the list and the info page.
+[*][B]START rows[/B]: a drive on Manual with nothing saved gets a START row in All Games. Cross starts the drive and its games take the row's place.
+[*][B]Memory Files[/B]: a file copied onto a memory card stays, and a full 64 MB card lists in one read.
+[*]Every new line translated in all 32 languages.
+[/LIST]
+
+[B]Play your videos.[/B] A long film, a short clip and a phone clip, from MMCE and from USB, with L1 / R1. If one stops or never starts, [URL='https://github.com/akilluminati47/RIPPS2/issues']open an issue[/URL] with its VIDEO.TXT, your console model and the drive.
