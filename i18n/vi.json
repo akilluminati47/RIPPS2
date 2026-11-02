@@ -147,10 +147,6 @@
   "en": "51d585932990",
   "t": "| [Video giới thiệu bản dựng 83](https://youtu.be/A27N9s6tumk) và [short của nó](https://youtube.com/shorts/4QBe5UO2KxM) | | Bản dựng 83, alpha |"
  },
- "5326d010024e": {
-  "en": "5326d010024e",
-  "t": "> [Có gì mới trong các bản dựng 126 đến 129](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.2.9-beta) | [Changelog](CHANGELOG.md) | **[Video](#videos)** | [Mọi bản phát hành](https://github.com/akilluminati47/RIPPS2/releases) | [Thảo luận trên psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
- },
  "540fc82eab7e": {
   "en": "540fc82eab7e",
   "t": "- [ESR](https://gitlab.com/ffgriever/esr/) của ffgriever: Launch Disc chạy bản của bạn cho đĩa ESR."
@@ -178,10 +174,6 @@
  "5b8af474eebc": {
   "en": "5b8af474eebc",
   "t": "- **Cover Art** (Settings > Network) mà chính PS2 tải cho mọi game PS2 chưa có bìa, từ ps2-covers của xlenore trên GitHub (cần cáp mạng và internet): chọn **HD** (280 × 400, sắc nét hơn trên màn hình HD) hoặc **Standard** (140 × 200, như bìa của Open PS2 Loader), cả hai 8 bit có dithering; game đã có bìa thì giữ nguyên (bản dựng 125). **720p và 1080i** được vẽ trong một lượt: một khung rộng 640 điểm ảnh với mọi dòng của chế độ đó, được mạch hiển thị của chính máy kéo giãn ra màn hình, nên mọi hoạt ảnh giữ tốc độ. **RIPFLOW hiện năm bìa trên hình 16:9** (720p, 1080i, hoặc Widescreen bật) và ba bìa trên 4:3, và tự giãn ra trừ khi bạn chọn số lượng (bản dựng 125). Thư mục **AUDIO** của bạn được tìm thấy trên bất kỳ ổ nào, và tháp cùng quả cầu xoay suốt đêm ở 60 fps ổn định."
- },
- "5ea970fcdc1b": {
-  "en": "5ea970fcdc1b",
-  "t": "> 1. **[Tải RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (luôn là bản phát hành mới nhất) (một tệp, 2.743 KB; hoặc **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2.200 KB, giống vậy nhưng không có PS2BBL cho BIBLE và không có Neutrino), nếu muốn thì thêm **[gói giao diện](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt và Adapt Rx, phiên bản 128: mỗi cái một cấu hình và một ảnh; RIPGRID và RIPFLOW có sẵn bên trong), và **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** để dùng RIPPS2 bằng ngôn ngữ của bạn (33 ngôn ngữ; đi kèm mọi bản phát hành)."
  },
  "607b100516eb": {
   "en": "607b100516eb",
@@ -223,9 +215,9 @@
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | Các quả cầu |"
  },
- "82d607db68dd": {
-  "en": "82d607db68dd",
-  "t": "> ### Rip nào: RIPPS2 bản dựng 129, v1.2.9 beta"
+ "85b93356c9f9": {
+  "en": "85b93356c9f9",
+  "t": "> ### Rip nào: RIPPS2 bản dựng 130, v1.3.0 beta"
  },
  "85be5f3270be": {
   "en": "85be5f3270be",
@@ -282,6 +274,10 @@
  "a4f2c110a598": {
   "en": "a4f2c110a598",
   "t": "| **Launch Disc** | Các cột trụ, với một vụ nổ kép giữa sân |"
+ },
+ "a65cfe5da270": {
+  "en": "a65cfe5da270",
+  "t": "> [Có gì mới trong bản dựng 130](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.0-beta) | [Changelog](CHANGELOG.md) | **[Video](#videos)** | [Mọi bản phát hành](https://github.com/akilluminati47/RIPPS2/releases) | [Thảo luận trên psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "a70e85fb5ee7": {
   "en": "a70e85fb5ee7",
@@ -438,6 +434,10 @@
  "e1e11a9f5baf": {
   "en": "e1e11a9f5baf",
   "t": "- **LAUNCH DISC** chạy đĩa PS2, PS1 và DVD video, cho biết game nào đang ở trong ổ trước khi chạy, và phát CD nhạc trong khi các tòa tháp biến thành bộ phân tích phổ. **RIPDISC** (bản dựng 105) rip đĩa trong ổ: game vào bộ nhớ lưu trữ của bạn, CD hoặc DVD video vào tệp của bạn."
+ },
+ "e35df5aa8b8e": {
+  "en": "e35df5aa8b8e",
+  "t": "> 1. **[Tải RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (luôn là bản phát hành mới nhất) (một tệp, 2.747 KB; hoặc **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2.203 KB, giống vậy nhưng không có PS2BBL cho BIBLE và không có Neutrino), nếu muốn thì thêm **[gói giao diện](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt và Adapt Rx, phiên bản 128: mỗi cái một cấu hình và một ảnh; RIPGRID và RIPFLOW có sẵn bên trong), và **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** để dùng RIPPS2 bằng ngôn ngữ của bạn (33 ngôn ngữ; đi kèm mọi bản phát hành)."
  },
  "e5c8e488b993": {
   "en": "e5c8e488b993",

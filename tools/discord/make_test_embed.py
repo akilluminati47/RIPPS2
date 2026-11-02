@@ -245,6 +245,8 @@ def main():
     ap.add_argument('--attach', action='append', default=[])
     ap.add_argument('--video', action='append', default=[], help='a video link for the message text (Discord plays it), one per --video')
     ap.add_argument('--readme', action='store_true', help="also write the banner to media/ripps2-test-me.png (the README's header)")
+    ap.add_argument('--mention', action='append', default=[],
+                    help='an environment variable holding a Discord user id to tag (read only when posting, never written to a file)')
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
     bn, ic = os.path.join(a.out, 'test-me-%d.png' % a.build), os.path.join(a.out, 'ripps2-icon.png')
@@ -260,6 +262,12 @@ def main():
     for f in a.attach:
         data['attachments'].append({'id': len(data['attachments']), 'filename': os.path.basename(f)})
     if a.post:
+        ids = [os.environ.get(v, '') for v in a.mention]
+        if not all(i.isdigit() for i in ids):
+            sys.exit('a --mention variable is not set to a Discord user id')
+        if ids:
+            data['content'] = ' '.join('<@%s>' % i for i in ids) + (' ' + data['content'] if data['content'] else '')
+            data['allowed_mentions'] = {'parse': [], 'users': ids}
         post(data, [bn, ic], a.attach)
 
 

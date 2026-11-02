@@ -147,10 +147,6 @@
   "en": "51d585932990",
   "t": "| [عرض الإصدار 83](https://youtu.be/A27N9s6tumk) و[مقطع Short الخاص به](https://youtube.com/shorts/4QBe5UO2KxM) | | الإصدار 83، ألفا |"
  },
- "5326d010024e": {
-  "en": "5326d010024e",
-  "t": "> [الجديد في الإصدارات 126 إلى 129](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.2.9-beta) | [Changelog](CHANGELOG.md) | **[الفيديوهات](#videos)** | [كل الإصدارات](https://github.com/akilluminati47/RIPPS2/releases) | [تحدّث عنه في psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
- },
  "540fc82eab7e": {
   "en": "540fc82eab7e",
   "t": "- [ESR](https://gitlab.com/ffgriever/esr/) من ffgriever: يشغّل Launch Disc نسختك الخاصة لأقراص ESR."
@@ -178,10 +174,6 @@
  "5b8af474eebc": {
   "en": "5b8af474eebc",
   "t": "- **Cover Art** (Settings > Network) ينزّلها PS2 نفسه لكل لعبة PS2 ليس لها غلاف، من مستودع ps2-covers الخاص بـ xlenore على GitHub (يحتاج كابل الشبكة والإنترنت): اختر **HD** (280 × 400، أوضح على شاشة HD) أو **Standard** (140 × 200، مثل أغلفة Open PS2 Loader)، وكلاهما بعمق 8 بت مع تنقيط؛ واللعبة التي لها غلاف تحتفظ به (الإصدار 125). **720p و1080i** تُرسمان في تمريرة واحدة: إطار بعرض 640 بكسل بكل سطور الوضع، تمدّه دائرة العرض في الجهاز نفسه على الشاشة، فتحافظ كل حركة على سرعتها. **يعرض RIPFLOW خمسة أغلفة على صورة 16:9** (720p أو 1080i أو مع تفعيل Widescreen) وثلاثة على 4:3، ويتسع تلقائيًا ما لم تختر عددًا (الإصدار 125). يُعثر على مجلد **AUDIO** على أي محرّك، وتعمل الأبراج والكرات طوال الليل بثبات عند 60 إطارًا في الثانية."
- },
- "5ea970fcdc1b": {
-  "en": "5ea970fcdc1b",
-  "t": "> 1. **[نزّل RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (دائمًا أحدث إصدار) (ملف واحد، 2.743 KB؛ أو **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**، 2.200 KB، الشيء نفسه دون PS2BBL الخاص بـ BIBLE ودون Neutrino)، و**[حزمة السمات](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** إن شئت (Adapt وAdapt Rx، الإصدار 128: إعداد واحد وصورة واحدة لكل منهما؛ RIPGRID وRIPFLOW مدمجتان)، و**[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** ليظهر RIPPS2 بلغتك (33 لغة؛ يأتي مع كل إصدار)."
  },
  "607b100516eb": {
   "en": "607b100516eb",
@@ -223,9 +215,9 @@
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | الكرات |"
  },
- "82d607db68dd": {
-  "en": "82d607db68dd",
-  "t": "> ### اسحبه: RIPPS2 الإصدار 129، v1.2.9 بيتا"
+ "85b93356c9f9": {
+  "en": "85b93356c9f9",
+  "t": "> ### اسحبه: RIPPS2 الإصدار 130، v1.3.0 بيتا"
  },
  "85be5f3270be": {
   "en": "85be5f3270be",
@@ -282,6 +274,10 @@
  "a4f2c110a598": {
   "en": "a4f2c110a598",
   "t": "| **Launch Disc** | الأعمدة، مع انفجار مزدوج يُطلق في منتصف الساحة |"
+ },
+ "a65cfe5da270": {
+  "en": "a65cfe5da270",
+  "t": "> [الجديد في الإصدار 130](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.0-beta) | [Changelog](CHANGELOG.md) | **[الفيديوهات](#videos)** | [كل الإصدارات](https://github.com/akilluminati47/RIPPS2/releases) | [تحدّث عنه في psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "a70e85fb5ee7": {
   "en": "a70e85fb5ee7",
@@ -438,6 +434,10 @@
  "e1e11a9f5baf": {
   "en": "e1e11a9f5baf",
   "t": "- **LAUNCH DISC** يشغّل أقراص PS2 وPS1 وأقراص DVD الفيديو، ويخبرك أي لعبة في المحرّك قبل أن تبدأها، ويشغّل أقراص CD الصوتية بينما تتحول الأبراج إلى محلّل طيف. **RIPDISC** (الإصدار 105) يسحب القرص الموجود في المحرّك: اللعبة إلى وحدة التخزين، وقرص CD أو DVD الفيديو إلى ملفاتك."
+ },
+ "e35df5aa8b8e": {
+  "en": "e35df5aa8b8e",
+  "t": "> 1. **[نزّل RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (دائمًا أحدث إصدار) (ملف واحد، 2.747 KB؛ أو **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**، 2.203 KB، الشيء نفسه دون PS2BBL الخاص بـ BIBLE ودون Neutrino)، و**[حزمة السمات](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** إن شئت (Adapt وAdapt Rx، الإصدار 128: إعداد واحد وصورة واحدة لكل منهما؛ RIPGRID وRIPFLOW مدمجتان)، و**[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** ليظهر RIPPS2 بلغتك (33 لغة؛ يأتي مع كل إصدار)."
  },
  "e5c8e488b993": {
   "en": "e5c8e488b993",

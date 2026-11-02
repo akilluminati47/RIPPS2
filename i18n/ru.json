@@ -147,10 +147,6 @@
   "en": "51d585932990",
   "t": "| [Ролик сборки 83](https://youtu.be/A27N9s6tumk) и [его Short](https://youtube.com/shorts/4QBe5UO2KxM) | | Сборка 83, альфа |"
  },
- "5326d010024e": {
-  "en": "5326d010024e",
-  "t": "> [Что нового в сборках 126–129](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.2.9-beta) | [Changelog](CHANGELOG.md) | **[Видео](#videos)** | [Все выпуски](https://github.com/akilluminati47/RIPPS2/releases) | [Обсудить на psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
- },
  "540fc82eab7e": {
   "en": "540fc82eab7e",
   "t": "- [ESR](https://gitlab.com/ffgriever/esr/) от ffgriever: Launch Disc запускает твою собственную копию для дисков ESR."
@@ -178,10 +174,6 @@
  "5b8af474eebc": {
   "en": "5b8af474eebc",
   "t": "- **Cover Art** (Settings > Network) скачиваются самой PS2 для каждой игры PS2, у которой их нет, из ps2-covers от xlenore на GitHub (нужны сетевой кабель и интернет): выбери **HD** (280 × 400, чётче на HD-экране) или **Standard** (140 × 200, как в Open PS2 Loader), обе 8-битные с дизерингом; игра, у которой обложка уже есть, оставляет её себе (сборка 125). **720p и 1080i** рисуются за один проход: кадр шириной 640 пикселей со всеми строками режима, растянутый на экран собственной схемой вывода консоли, так что каждая анимация сохраняет свою скорость. **RIPFLOW показывает пять обложек на картинке 16:9** (720p, 1080i или включённый Widescreen) и три на 4:3, расширяясь сам, если ты не выберешь количество (сборка 125). Твоя папка **AUDIO** находится на любом накопителе, а башни и шары всю ночь идут на ровных 60 fps."
- },
- "5ea970fcdc1b": {
-  "en": "5ea970fcdc1b",
-  "t": "> 1. **[Скачай RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (всегда самый новый выпуск) (один файл, 2743 КБ; или **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2200 КБ, то же самое без PS2BBL для BIBLE и без Neutrino), а если хочешь, ещё **[пакет тем](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt, Adapt Rx, выпуск 128: по одной конфигурации и одной картинке; RIPGRID и RIPFLOW встроены) и **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** для RIPPS2 на твоём языке (33 языка; есть в каждом выпуске)."
  },
  "607b100516eb": {
   "en": "607b100516eb",
@@ -223,9 +215,9 @@
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | Шары |"
  },
- "82d607db68dd": {
-  "en": "82d607db68dd",
-  "t": "> ### Рипни его: RIPPS2 сборка 129, v1.2.9 бета"
+ "85b93356c9f9": {
+  "en": "85b93356c9f9",
+  "t": "> ### Рипни его: RIPPS2 сборка 130, v1.3.0 бета"
  },
  "85be5f3270be": {
   "en": "85be5f3270be",
@@ -282,6 +274,10 @@
  "a4f2c110a598": {
   "en": "a4f2c110a598",
   "t": "| **Launch Disc** | Колонны с двойным взрывом в центре поля |"
+ },
+ "a65cfe5da270": {
+  "en": "a65cfe5da270",
+  "t": "> [Что нового в сборке 130](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.0-beta) | [Changelog](CHANGELOG.md) | **[Видео](#videos)** | [Все выпуски](https://github.com/akilluminati47/RIPPS2/releases) | [Обсудить на psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "a70e85fb5ee7": {
   "en": "a70e85fb5ee7",
@@ -438,6 +434,10 @@
  "e1e11a9f5baf": {
   "en": "e1e11a9f5baf",
   "t": "- **LAUNCH DISC** запускает диски PS2, PS1 и DVD-видео, говорит, какая игра в приводе, ещё до запуска, и играет аудио-CD, превращая башни в анализатор спектра. **RIPDISC** (сборка 105) рипает диск из привода: игру на твоё хранилище, CD или DVD-видео в твои файлы."
+ },
+ "e35df5aa8b8e": {
+  "en": "e35df5aa8b8e",
+  "t": "> 1. **[Скачай RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (всегда самый новый выпуск) (один файл, 2747 КБ; или **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2203 КБ, то же самое без PS2BBL для BIBLE и без Neutrino), а если хочешь, ещё **[пакет тем](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt, Adapt Rx, выпуск 128: по одной конфигурации и одной картинке; RIPGRID и RIPFLOW встроены) и **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** для RIPPS2 на твоём языке (33 языка; есть в каждом выпуске)."
  },
  "e5c8e488b993": {
   "en": "e5c8e488b993",

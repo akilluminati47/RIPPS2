@@ -147,10 +147,6 @@
   "en": "51d585932990",
   "t": "| [빌드 83 소개 릴](https://youtu.be/A27N9s6tumk)과 [그 쇼츠](https://youtube.com/shorts/4QBe5UO2KxM) | | 빌드 83, 알파 |"
  },
- "5326d010024e": {
-  "en": "5326d010024e",
-  "t": "> [빌드 126부터 129까지의 새 기능](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.2.9-beta) | [Changelog](CHANGELOG.md) | **[영상](#videos)** | [모든 릴리스](https://github.com/akilluminati47/RIPPS2/releases) | [psx-place에서 이야기하기](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
- },
  "540fc82eab7e": {
   "en": "540fc82eab7e",
   "t": "- [ESR](https://gitlab.com/ffgriever/esr/), ffgriever: Launch Disc는 ESR 디스크에 내 것을 실행합니다."
@@ -178,10 +174,6 @@
  "5b8af474eebc": {
   "en": "5b8af474eebc",
   "t": "- **Cover Art** (Settings > Network): 커버가 없는 PS2 게임의 커버를 PS2가 직접 xlenore의 GitHub ps2-covers에서 내려받습니다 (네트워크 케이블과 인터넷 필요). **HD** (280 × 400, HD 화면에서 더 선명) 또는 **Standard** (140 × 200, Open PS2 Loader 커버와 같음)를 고르세요. 둘 다 8비트에 디더링. 이미 커버가 있는 게임은 그것을 유지합니다 (빌드 125). **720p와 1080i**는 한 번에 그려집니다: 그 모드의 모든 줄을 가진 폭 640픽셀의 프레임을 콘솔 자신의 디스플레이 회로가 화면에 늘이므로, 모든 애니메이션이 속도를 유지합니다. **RIPFLOW는 16:9 화면에서 커버 다섯 장을 보여 주고** (720p, 1080i, 또는 Widescreen 켜짐) 4:3에서는 세 장을, 수를 고르지 않으면 스스로 넓어집니다 (빌드 125). **AUDIO** 폴더는 어느 드라이브에서든 찾아지며, 탑과 구슬은 밤새 60 fps로 부드럽게 돕니다."
- },
- "5ea970fcdc1b": {
-  "en": "5ea970fcdc1b",
-  "t": "> 1. **[RIPPS2.elf 다운로드](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (항상 최신 릴리스) (파일 하나, 2,743 KB. 또는 **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2,200 KB, BIBLE용 PS2BBL과 Neutrino를 뺀 같은 것), 원하면 **[테마 팩](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt와 Adapt Rx, 에디션 128: 각각 설정 하나와 이미지 하나. RIPGRID와 RIPFLOW는 내장), 그리고 RIPPS2를 내 언어로 쓰기 위한 **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** (33개 언어. 모든 릴리스에 포함)."
  },
  "607b100516eb": {
   "en": "607b100516eb",
@@ -223,9 +215,9 @@
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | 구슬 |"
  },
- "82d607db68dd": {
-  "en": "82d607db68dd",
-  "t": "> ### 립하세요: RIPPS2 빌드 129, v1.2.9 베타"
+ "85b93356c9f9": {
+  "en": "85b93356c9f9",
+  "t": "> ### 립하세요: RIPPS2 빌드 130, v1.3.0 베타"
  },
  "85be5f3270be": {
   "en": "85be5f3270be",
@@ -282,6 +274,10 @@
  "a4f2c110a598": {
   "en": "a4f2c110a598",
   "t": "| **Launch Disc** | 기둥, 필드 가운데의 이중 폭발과 함께 |"
+ },
+ "a65cfe5da270": {
+  "en": "a65cfe5da270",
+  "t": "> [빌드 130의 새 기능](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.0-beta) | [Changelog](CHANGELOG.md) | **[영상](#videos)** | [모든 릴리스](https://github.com/akilluminati47/RIPPS2/releases) | [psx-place에서 이야기하기](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "a70e85fb5ee7": {
   "en": "a70e85fb5ee7",
@@ -438,6 +434,10 @@
  "e1e11a9f5baf": {
   "en": "e1e11a9f5baf",
   "t": "- **LAUNCH DISC**는 PS2, PS1, DVD 비디오 디스크를 실행하고, 실행하기 전에 드라이브에 든 게임을 알려 주며, 음악 CD를 재생하는 동안 탑이 스펙트럼 분석기로 바뀝니다. **RIPDISC** (빌드 105)는 드라이브의 디스크를 립합니다: 게임은 저장소로, CD나 DVD 비디오는 파일로."
+ },
+ "e35df5aa8b8e": {
+  "en": "e35df5aa8b8e",
+  "t": "> 1. **[RIPPS2.elf 다운로드](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (항상 최신 릴리스) (파일 하나, 2,747 KB. 또는 **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2,203 KB, BIBLE용 PS2BBL과 Neutrino를 뺀 같은 것), 원하면 **[테마 팩](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt와 Adapt Rx, 에디션 128: 각각 설정 하나와 이미지 하나. RIPGRID와 RIPFLOW는 내장), 그리고 RIPPS2를 내 언어로 쓰기 위한 **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** (33개 언어. 모든 릴리스에 포함)."
  },
  "e5c8e488b993": {
   "en": "e5c8e488b993",

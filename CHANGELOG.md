@@ -1,8 +1,8 @@
 # RIPPS2 changelog
 
-## Build 130 (beta, in testing), changes since build 129
+## Build 130 (beta, v1.3.0-beta), changes since build 129
 
-Tester ahavasi's report on 128 and the user's notes (11/01). The video fixes ship once they play on a console.
+Tester ahavasi's report on 128 and the user's notes (11/01). The video fixes passed in the PCSX2 lab; this release asks testers to play them on real consoles.
 
 **Video**
 - **Long videos open.** A two-hour film stopped at "Opening the video". The player kept 12 bytes for every chunk of

@@ -147,10 +147,6 @@
   "en": "51d585932990",
   "t": "| [ビルド 83 紹介リール](https://youtu.be/A27N9s6tumk) と [そのショート](https://youtube.com/shorts/4QBe5UO2KxM) | | ビルド 83、アルファ |"
  },
- "5326d010024e": {
-  "en": "5326d010024e",
-  "t": "> [ビルド 126 から 129 の新機能](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.2.9-beta) | [Changelog](CHANGELOG.md) | **[動画](#videos)** | [すべてのリリース](https://github.com/akilluminati47/RIPPS2/releases) | [psx-place で話そう](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
- },
  "540fc82eab7e": {
   "en": "540fc82eab7e",
   "t": "- [ESR](https://gitlab.com/ffgriever/esr/) by ffgriever: Launch Disc は ESR ディスクに自分で用意したものを起動します。"
@@ -178,10 +174,6 @@
  "5b8af474eebc": {
   "en": "5b8af474eebc",
   "t": "- **Cover Art** (Settings > Network): カバーのない PS2 ゲームのカバーを、PS2 自身が xlenore の GitHub の ps2-covers からダウンロードします (ネットワークケーブルとインターネットが必要)。**HD** (280 × 400、HD 画面でよりシャープ) か **Standard** (140 × 200、Open PS2 Loader のカバーと同じ) を選びます。どちらも 8 ビットでディザリング付き。すでにカバーがあるゲームはそれを保ちます (ビルド 125)。**720p と 1080i** は 1 パスで描かれます: そのモードの全ラインを持つ幅 640 ピクセルのフレームを、コンソール自身の表示回路が画面に引き伸ばすので、どのアニメーションも速度を保ちます。**RIPFLOW は 16:9 の映像で 5 枚のカバーを表示し** (720p、1080i、または Widescreen オン)、4:3 では 3 枚、数を選ばない限り自分で広がります (ビルド 125)。**AUDIO** フォルダーはどのドライブ上でも見つかり、塔とオーブは一晩中 60 fps で滑らかに回ります。"
- },
- "5ea970fcdc1b": {
-  "en": "5ea970fcdc1b",
-  "t": "> 1. **[RIPPS2.elf をダウンロード](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (常に最新リリース) (ファイル 1 つ、2,743 KB。または **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**、2,200 KB、BIBLE 用の PS2BBL と Neutrino を除いた同じもの)、必要なら **[テーマパック](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt と Adapt Rx、エディション 128: それぞれ設定 1 つと画像 1 枚。RIPGRID と RIPFLOW は内蔵)、そして RIPPS2 を自分の言語で使うための **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** (33 言語。毎リリースに同梱)。"
  },
  "607b100516eb": {
   "en": "607b100516eb",
@@ -223,9 +215,9 @@
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | オーブ |"
  },
- "82d607db68dd": {
-  "en": "82d607db68dd",
-  "t": "> ### リップしよう: RIPPS2 ビルド 129、v1.2.9 ベータ"
+ "85b93356c9f9": {
+  "en": "85b93356c9f9",
+  "t": "> ### リップしよう: RIPPS2 ビルド 130、v1.3.0 ベータ"
  },
  "85be5f3270be": {
   "en": "85be5f3270be",
@@ -282,6 +274,10 @@
  "a4f2c110a598": {
   "en": "a4f2c110a598",
   "t": "| **Launch Disc** | 柱、フィールド中央の二重バースト付き |"
+ },
+ "a65cfe5da270": {
+  "en": "a65cfe5da270",
+  "t": "> [ビルド 130 の新機能](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.0-beta) | [Changelog](CHANGELOG.md) | **[動画](#videos)** | [すべてのリリース](https://github.com/akilluminati47/RIPPS2/releases) | [psx-place で話そう](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "a70e85fb5ee7": {
   "en": "a70e85fb5ee7",
@@ -438,6 +434,10 @@
  "e1e11a9f5baf": {
   "en": "e1e11a9f5baf",
   "t": "- **LAUNCH DISC** は PS2、PS1、DVD ビデオのディスクを起動し、起動前にドライブのゲームを教え、音楽 CD を再生している間は塔がスペクトラムアナライザーになります。**RIPDISC** (ビルド 105) はドライブのディスクをリップします: ゲームはストレージへ、CD や DVD ビデオはファイルへ。"
+ },
+ "e35df5aa8b8e": {
+  "en": "e35df5aa8b8e",
+  "t": "> 1. **[RIPPS2.elf をダウンロード](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (常に最新リリース) (ファイル 1 つ、2,747 KB。または **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**、2,203 KB、BIBLE 用の PS2BBL と Neutrino を除いた同じもの)、必要なら **[テーマパック](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt と Adapt Rx、エディション 128: それぞれ設定 1 つと画像 1 枚。RIPGRID と RIPFLOW は内蔵)、そして RIPPS2 を自分の言語で使うための **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** (33 言語。毎リリースに同梱)。"
  },
  "e5c8e488b993": {
   "en": "e5c8e488b993",

@@ -147,10 +147,6 @@
   "en": "51d585932990",
   "t": "| [Le reel de la build 83](https://youtu.be/A27N9s6tumk) et [son Short](https://youtube.com/shorts/4QBe5UO2KxM) | | La build 83, alpha |"
  },
- "5326d010024e": {
-  "en": "5326d010024e",
-  "t": "> [Nouveautés des builds 126 à 129](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.2.9-beta) | [Changelog](CHANGELOG.md) | **[Vidéos](#videos)** | [Toutes les versions](https://github.com/akilluminati47/RIPPS2/releases) | [En discuter sur psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
- },
  "540fc82eab7e": {
   "en": "540fc82eab7e",
   "t": "- [ESR](https://gitlab.com/ffgriever/esr/) de ffgriever : Launch Disc démarre votre propre copie pour les disques ESR."
@@ -178,10 +174,6 @@
  "5b8af474eebc": {
   "en": "5b8af474eebc",
   "t": "- **Cover Art** (Settings > Network) téléchargées par la PS2 elle-même pour chaque jeu PS2 qui n'en a pas, depuis ps2-covers de xlenore sur GitHub (il faut le câble réseau et internet) : choisissez **HD** (280 × 400, plus net sur un écran HD) ou **Standard** (140 × 200, comme celles d'Open PS2 Loader), toutes deux en 8 bits avec tramage ; un jeu qui a déjà une jaquette la garde (build 125). **720p et 1080i** dessinés en une passe : une image de 640 pixels de large avec toutes les lignes du mode, étirée sur l'écran par le propre circuit d'affichage de la console, ainsi chaque animation garde sa vitesse. **RIPFLOW affiche cinq jaquettes sur une image 16:9** (720p, 1080i, ou Widescreen activé) et trois en 4:3, en s'élargissant tout seul sauf si vous choisissez un nombre (build 125). Votre dossier **AUDIO** est trouvé sur n'importe quel lecteur, et tours et orbes tournent toute la nuit à 60 fps constants."
- },
- "5ea970fcdc1b": {
-  "en": "5ea970fcdc1b",
-  "t": "> 1. **[Téléchargez RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (toujours la dernière version) (un seul fichier, 2 743 Ko ; ou **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2 200 Ko, le même sans le PS2BBL de BIBLE ni Neutrino), et le **[pack de thèmes](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** si vous voulez (Adapt, Adapt Rx, édition 128 : une configuration et une image chacun ; RIPGRID et RIPFLOW sont intégrés), et **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** pour avoir RIPPS2 dans votre langue (33 au total ; chaque version le fournit)."
  },
  "607b100516eb": {
   "en": "607b100516eb",
@@ -223,9 +215,9 @@
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | Les orbes |"
  },
- "82d607db68dd": {
-  "en": "82d607db68dd",
-  "t": "> ### Rippez-le : RIPPS2 build 129, v1.2.9 bêta"
+ "85b93356c9f9": {
+  "en": "85b93356c9f9",
+  "t": "> ### Rippez-le : RIPPS2 build 130, v1.3.0 bêta"
  },
  "85be5f3270be": {
   "en": "85be5f3270be",
@@ -282,6 +274,10 @@
  "a4f2c110a598": {
   "en": "a4f2c110a598",
   "t": "| **Launch Disc** | Les piliers, avec une double explosion tirée au centre du champ |"
+ },
+ "a65cfe5da270": {
+  "en": "a65cfe5da270",
+  "t": "> [Nouveautés de la build 130](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.0-beta) | [Changelog](CHANGELOG.md) | **[Vidéos](#videos)** | [Toutes les versions](https://github.com/akilluminati47/RIPPS2/releases) | [En discuter sur psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "a70e85fb5ee7": {
   "en": "a70e85fb5ee7",
@@ -438,6 +434,10 @@
  "e1e11a9f5baf": {
   "en": "e1e11a9f5baf",
   "t": "- **LAUNCH DISC** démarre les disques PS2, PS1 et DVD vidéo, indique quel jeu est dans le lecteur avant que vous le lanciez, et lit les CD audio avec les tours transformées en analyseur de spectre. **RIPDISC** (build 105) extrait le disque du lecteur : un jeu vers votre stockage, un CD ou un DVD vidéo vers vos fichiers."
+ },
+ "e35df5aa8b8e": {
+  "en": "e35df5aa8b8e",
+  "t": "> 1. **[Téléchargez RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (toujours la dernière version) (un seul fichier, 2 747 Ko ; ou **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2 203 Ko, le même sans le PS2BBL de BIBLE ni Neutrino), et le **[pack de thèmes](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** si vous voulez (Adapt, Adapt Rx, édition 128 : une configuration et une image chacun ; RIPGRID et RIPFLOW sont intégrés), et **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** pour avoir RIPPS2 dans votre langue (33 au total ; chaque version le fournit)."
  },
  "e5c8e488b993": {
   "en": "e5c8e488b993",

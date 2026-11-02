@@ -147,10 +147,6 @@
   "en": "51d585932990",
   "t": "| [构建 83 介绍短片](https://youtu.be/A27N9s6tumk) 和 [它的短片](https://youtube.com/shorts/4QBe5UO2KxM) | | 构建 83，alpha |"
  },
- "5326d010024e": {
-  "en": "5326d010024e",
-  "t": "> [构建 126 到 129 的新内容](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.2.9-beta) | [Changelog](CHANGELOG.md) | **[视频](#videos)** | [所有版本](https://github.com/akilluminati47/RIPPS2/releases) | [在 psx-place 讨论](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
- },
  "540fc82eab7e": {
   "en": "540fc82eab7e",
   "t": "- [ESR](https://gitlab.com/ffgriever/esr/)，由 ffgriever 开发：Launch Disc 会为 ESR 光盘运行你自己的副本。"
@@ -178,10 +174,6 @@
  "5b8af474eebc": {
   "en": "5b8af474eebc",
   "t": "- **Cover Art** (Settings > Network)：PS2 自己从 xlenore 在 GitHub 上的 ps2-covers 为每个没有封面的 PS2 游戏下载封面（需要网线和互联网）：选择 **HD**（280 × 400，在 HD 画面上更清晰）或 **Standard**（140 × 200，和 Open PS2 Loader 的封面一样），都是 8 位并带抖动；已有封面的游戏会保留原封面（构建 125）。**720p 和 1080i** 一次绘制完成：一个 640 像素宽、包含该模式所有行的帧，由主机自己的显示电路拉伸到屏幕上，因此每个动画都保持速度。**RIPFLOW 在 16:9 画面上显示五张封面**（720p、1080i 或开启 Widescreen），4:3 上显示三张，除非你选择数量，否则会自动展开（构建 125）。你的 **AUDIO** 文件夹在任何驱动器上都能找到，高塔和光球整夜以稳定的 60 fps 旋转。"
- },
- "5ea970fcdc1b": {
-  "en": "5ea970fcdc1b",
-  "t": "> 1. **[下载 RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)**（始终是最新版本）（一个文件，2,743 KB；或 **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**，2,200 KB，同样的内容但不含 BIBLE 用的 PS2BBL 和 Neutrino），需要的话再下载 **[主题包](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)**（Adapt 和 Adapt Rx，第 128 版：各一个配置和一张图片；RIPGRID 和 RIPFLOW 为内置），以及 **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)**，用你的语言使用 RIPPS2（33 种语言；每个版本都附带）。"
  },
  "607b100516eb": {
   "en": "607b100516eb",
@@ -223,9 +215,9 @@
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | 光球 |"
  },
- "82d607db68dd": {
-  "en": "82d607db68dd",
-  "t": "> ### 开始提取：RIPPS2 构建 129，v1.2.9 测试版"
+ "85b93356c9f9": {
+  "en": "85b93356c9f9",
+  "t": "> ### 开始提取：RIPPS2 构建 130，v1.3.0 测试版"
  },
  "85be5f3270be": {
   "en": "85be5f3270be",
@@ -282,6 +274,10 @@
  "a4f2c110a598": {
   "en": "a4f2c110a598",
   "t": "| **Launch Disc** | 柱子，场地中央伴有双重爆发 |"
+ },
+ "a65cfe5da270": {
+  "en": "a65cfe5da270",
+  "t": "> [构建 130 的新内容](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.0-beta) | [Changelog](CHANGELOG.md) | **[视频](#videos)** | [所有版本](https://github.com/akilluminati47/RIPPS2/releases) | [在 psx-place 讨论](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "a70e85fb5ee7": {
   "en": "a70e85fb5ee7",
@@ -438,6 +434,10 @@
  "e1e11a9f5baf": {
   "en": "e1e11a9f5baf",
   "t": "- **LAUNCH DISC** 启动 PS2、PS1 和 DVD 视频光盘，在启动前告诉你光驱里是什么游戏，播放音乐 CD 时高塔会变成频谱分析仪。**RIPDISC**（构建 105）提取光驱中的光盘：游戏存到你的存储设备，CD 或 DVD 视频存到你的文件。"
+ },
+ "e35df5aa8b8e": {
+  "en": "e35df5aa8b8e",
+  "t": "> 1. **[下载 RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)**（始终是最新版本）（一个文件，2,747 KB；或 **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**，2,203 KB，同样的内容但不含 BIBLE 用的 PS2BBL 和 Neutrino），需要的话再下载 **[主题包](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)**（Adapt 和 Adapt Rx，第 128 版：各一个配置和一张图片；RIPGRID 和 RIPFLOW 为内置），以及 **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)**，用你的语言使用 RIPPS2（33 种语言；每个版本都附带）。"
  },
  "e5c8e488b993": {
   "en": "e5c8e488b993",

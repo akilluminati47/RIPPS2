@@ -44,13 +44,13 @@
 
 # RIPPS2
 
-> ### リップしよう: RIPPS2 ビルド 129、v1.2.9 ベータ
+> ### リップしよう: RIPPS2 ビルド 130、v1.3.0 ベータ
 > **RIP PS2、ELF キラー。** 単体で動き、決して破壊しない: ほかの ELF は[棚](https://akilluminati47.github.io/RIPPS2/)に無事なまま残り (頼まない限り何も消されません)、ふさわしい休息を取るだけです。
-> 1. **[RIPPS2.elf をダウンロード](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (常に最新リリース) (ファイル 1 つ、2,743 KB。または **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**、2,200 KB、BIBLE 用の PS2BBL と Neutrino を除いた同じもの)、必要なら **[テーマパック](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt と Adapt Rx、エディション 128: それぞれ設定 1 つと画像 1 枚。RIPGRID と RIPFLOW は内蔵)、そして RIPPS2 を自分の言語で使うための **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** (33 言語。毎リリースに同梱)。
+> 1. **[RIPPS2.elf をダウンロード](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (常に最新リリース) (ファイル 1 つ、2,747 KB。または **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**、2,203 KB、BIBLE 用の PS2BBL と Neutrino を除いた同じもの)、必要なら **[テーマパック](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt と Adapt Rx、エディション 128: それぞれ設定 1 つと画像 1 枚。RIPGRID と RIPFLOW は内蔵)、そして RIPPS2 を自分の言語で使うための **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** (33 言語。毎リリースに同梱)。
 > 2. USB メモリかメモリーカードにコピーし、FreeMcBoot、PS2BBL、wLaunchELF など homebrew の起動に使っているもので起動します。PCSX2 では **System > Start File** で `RIPPS2.elf` を選びます。
 > 3. 感想を聞かせてください: [psx-place のスレッド](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)、[issue](https://github.com/akilluminati47/RIPPS2/issues)、または開発者 Discord の **#RIPPS2**、[discord.gg/Z7m9u5kby](https://discord.gg/Z7m9u5kby) (招待は 2026 年 12 月 1 日まで有効)。
 >
-> [ビルド 126 から 129 の新機能](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.2.9-beta) | [Changelog](CHANGELOG.md) | **[動画](#videos)** | [すべてのリリース](https://github.com/akilluminati47/RIPPS2/releases) | [psx-place で話そう](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>
+> [ビルド 130 の新機能](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.0-beta) | [Changelog](CHANGELOG.md) | **[動画](#videos)** | [すべてのリリース](https://github.com/akilluminati47/RIPPS2/releases) | [psx-place で話そう](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>
 > [RIPPS2 のテーマを作る](https://github.com/akilluminati47/RIPPS2-themes) (再ビルド不要、エージェント向け) | [AUDIO と MEDIA フォルダーを埋める](#the-sound-ripps2-was-made-with) [RIPPS2 Media Studio](tools/media-studio) で (サウンド、音楽、動画。[Windows 版をダウンロード](https://github.com/akilluminati47/RIPPS2/releases/download/media-studio/RIPPS2-Media-Studio.zip)) | [テーマを本物の 720p と 1080i で見る: RIPPCSX2](https://github.com/akilluminati47/RIPPCSX2/releases/latest) (HDTV 出力付き PCSX2)
 
 RIPPS2 は単一の `.elf` に収まった PS2 フロントエンドです: [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader) (Open PS2 Loader のフォーク) を開いて組み直し、rickgaiser の [Neutrino](https://github.com/rickgaiser/neutrino) を 2 つ目のゲームコアとして内蔵し、独自の見た目、ランチャー、ファイルブラウザー、ストレージツールを備えています。ガラスの塔がゲームの後ろに立ち、軌道の隊形がファイルの後ろに並び、すべて PS2 がリアルタイムで描きます。

@@ -147,10 +147,6 @@
   "en": "51d585932990",
   "t": "| [Derleme 83 reel'i](https://youtu.be/A27N9s6tumk) ve [Short'u](https://youtube.com/shorts/4QBe5UO2KxM) | | Derleme 83, alfa |"
  },
- "5326d010024e": {
-  "en": "5326d010024e",
-  "t": "> [126-129 derlemelerindeki yenilikler](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.2.9-beta) | [Changelog](CHANGELOG.md) | **[Videolar](#videos)** | [Tüm sürümler](https://github.com/akilluminati47/RIPPS2/releases) | [psx-place'te konuş](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
- },
  "540fc82eab7e": {
   "en": "540fc82eab7e",
   "t": "- ffgriever'ın [ESR](https://gitlab.com/ffgriever/esr/)'si: Launch Disc ESR diskleri için senin kendi kopyanı başlatır."
@@ -178,10 +174,6 @@
  "5b8af474eebc": {
   "en": "5b8af474eebc",
   "t": "- **Cover Art** (Settings > Network) kapağı olmayan her PS2 oyunu için PS2'nin kendisi tarafından, GitHub'daki xlenore'un ps2-covers deposundan indirilir (ağ kablosu ve internet gerekir): **HD** (280 × 400, HD ekranda daha keskin) ya da **Standard** (140 × 200, Open PS2 Loader'ınkiler gibi) seç, ikisi de titreklemeli 8 bit; zaten kapağı olan bir oyun onu korur (derleme 125). **720p ve 1080i** tek geçişte çizilir: modun her satırına sahip 640 piksel genişliğinde bir kare, konsolun kendi görüntü devresiyle ekrana gerilir; böylece her animasyon hızını korur. **RIPFLOW 16:9 bir resimde beş kapak gösterir** (720p, 1080i ya da Widescreen açık) ve 4:3'te üç, sen bir sayı seçmedikçe kendiliğinden genişler (derleme 125). **AUDIO** klasörün her sürücüde bulunur, kuleler ve küreler bütün gece sabit 60 fps'de döner."
- },
- "5ea970fcdc1b": {
-  "en": "5ea970fcdc1b",
-  "t": "> 1. **[RIPPS2.elf dosyasını indir](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (her zaman en yeni sürüm) (tek dosya, 2.743 KB; ya da **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2.200 KB, BIBLE için PS2BBL ve Neutrino olmadan aynısı), istersen **[tema paketini](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt, Adapt Rx, 128. baskı: her biri bir yapılandırma ve bir resim; RIPGRID ve RIPFLOW yerleşik), ve RIPPS2'yi kendi dilinde kullanmak için **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** (33 dil; her sürümde var)."
  },
  "607b100516eb": {
   "en": "607b100516eb",
@@ -223,9 +215,9 @@
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | Küreler |"
  },
- "82d607db68dd": {
-  "en": "82d607db68dd",
-  "t": "> ### Rip'le: RIPPS2 build 129, v1.2.9 beta"
+ "85b93356c9f9": {
+  "en": "85b93356c9f9",
+  "t": "> ### Rip'le: RIPPS2 build 130, v1.3.0 beta"
  },
  "85be5f3270be": {
   "en": "85be5f3270be",
@@ -282,6 +274,10 @@
  "a4f2c110a598": {
   "en": "a4f2c110a598",
   "t": "| **Launch Disc** | Sütunlar, alanın ortasına ateşlenen çift patlamayla |"
+ },
+ "a65cfe5da270": {
+  "en": "a65cfe5da270",
+  "t": "> [130 derlemesindeki yenilikler](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.0-beta) | [Changelog](CHANGELOG.md) | **[Videolar](#videos)** | [Tüm sürümler](https://github.com/akilluminati47/RIPPS2/releases) | [psx-place'te konuş](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "a70e85fb5ee7": {
   "en": "a70e85fb5ee7",
@@ -438,6 +434,10 @@
  "e1e11a9f5baf": {
   "en": "e1e11a9f5baf",
   "t": "- **LAUNCH DISC** PS2, PS1 ve DVD video disklerini başlatır, başlatmadan önce sürücüde hangi oyun olduğunu söyler ve kuleleri bir spektrum analizörüne çevirerek ses CD'leri çalar. **RIPDISC** (derleme 105) sürücüdeki diski rip'ler: bir oyunu depolamana, bir CD'yi ya da DVD videoyu dosyalarına."
+ },
+ "e35df5aa8b8e": {
+  "en": "e35df5aa8b8e",
+  "t": "> 1. **[RIPPS2.elf dosyasını indir](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (her zaman en yeni sürüm) (tek dosya, 2.747 KB; ya da **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2.203 KB, BIBLE için PS2BBL ve Neutrino olmadan aynısı), istersen **[tema paketini](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt, Adapt Rx, 128. baskı: her biri bir yapılandırma ve bir resim; RIPGRID ve RIPFLOW yerleşik), ve RIPPS2'yi kendi dilinde kullanmak için **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** (33 dil; her sürümde var)."
  },
  "e5c8e488b993": {
   "en": "e5c8e488b993",
