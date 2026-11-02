@@ -1,0 +1,14 @@
+diff --git a/src/ripps2media.c b/src/ripps2media.c
+index 0132464..b114d7f 100644
+--- a/src/ripps2media.c
++++ b/src/ripps2media.c
+@@ -1012,7 +1012,8 @@ static void videoPadThread(void *arg)
+         }
+         if (getKeyOn(confirm)) {
+             paused = !paused;
+-            smsLitePause(paused);
++            smsLitePause(paused); // build 131: the player fades the sound out and holds the frame, then fades it back
++            LOG("MEDIA: video %s\n", paused ? "paused" : "resumed");
+             hintsShown = hintsDirty = 1;
+             hintsAt = clock();
+         }

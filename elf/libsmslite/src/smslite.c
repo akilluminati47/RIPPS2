@@ -502,6 +502,8 @@ typedef struct SMSLitePlayback {
     volatile int videoDone;
     volatile int audioDone;
     volatile int audioRenderDone;
+    volatile int audioEnded;      /* RIPPS2 build 131: the last sound has gone to audsrv */
+    u64 audioEndTicks;            /* RIPPS2 build 131: when the picture saw that (bus clock), 0 = not yet */
 
     /* vsync-based pacing */
     int vsyncHz;
@@ -761,9 +763,9 @@ static void smsLiteAudioSetFormat(SMSLitePlayback* playback, int aRate, int aCha
 /* RIPPS2 build 125: the volume, on the samples (audsrv's own stays at its top): each piece goes from where the last
    left off toward the level asked for, at most a quarter of the way in a piece, so 100 to 0 takes four pieces
    (about a tenth of a second) and a step of 5 is one smooth ramp */
-static void smsLiteApplyGain(short* s, int n)
+static void smsLiteApplyGain(short* s, int n, int quiet)
 {
-    int target = s_smsLiteVolume * 32768 / 100, from = s_smsLiteGain, to = target, step, g, i;
+    int target = quiet ? 0 : s_smsLiteVolume * 32768 / 100, from = s_smsLiteGain, to = target, step, g, i;
 
     if (to - from > 8192)
         to = from + 8192;
@@ -778,13 +780,19 @@ static void smsLiteApplyGain(short* s, int n)
         s[i] = (short)(((int)s[i] * (g >> 8)) >> 15);
 }
 
-static void smsLiteAudioDrain(SMSLitePlayback* playback)
+/* RIPPS2 build 131: canFade (the player's sound thread): paused or stopped, each piece sent fades toward 0 and the
+   drain stops once it is there, so a pause no longer plays on through the whole decoded queue (about 1.4 s) */
+static void smsLiteAudioDrain(SMSLitePlayback* playback, int canFade)
 {
     unsigned char* slot;
     int len;
 
     while (playback->audioBuffer &&
            SMS_RingBufferCount(playback->audioBuffer) > 0) {
+        int quiet = canFade && (s_smsLitePaused || playback->stopRequested);
+
+        if (quiet && s_smsLiteGain == 0)
+            break;
 
         slot = (unsigned char*)SMS_RingBufferWait(playback->audioBuffer);
         len  = *(int*)(slot + 64);
@@ -808,7 +816,7 @@ static void smsLiteAudioDrain(SMSLitePlayback* playback)
             int         left     = len;
             int         accepted;
 
-            smsLiteApplyGain((short*)(slot + 80), len / 2); /* RIPPS2 build 125 */
+            smsLiteApplyGain((short*)(slot + 80), len / 2, quiet); /* RIPPS2 build 125 */
 
             while (left > 0) {
                 int sent;
@@ -832,6 +840,26 @@ static void smsLiteAudioDrain(SMSLitePlayback* playback)
         }
 
         SMS_RingBufferFree(playback->audioBuffer, len + 80);
+    }
+}
+
+/* RIPPS2 build 131: ms of silence to audsrv. Run dry, audsrv repeats what it holds (the stutter the menu music had
+   before build 102 fed it silence the same way); audsrv_wait_audio paces this to the sound's own speed. Not counted
+   in audioBytesOut: the clock the picture follows stays where the sound stopped. */
+static void smsLiteAudioSilence(SMSLitePlayback* playback, int ms)
+{
+    static short zero[512];
+    int left;
+
+    if (!playback->audioFmtSet || playback->audioByteRate <= 0)
+        return;
+    left = (playback->audioByteRate * ms / 1000) & ~3;
+    while (left > 0) {
+        int n = left > (int)sizeof(zero) ? (int)sizeof(zero) : left;
+        audsrv_wait_audio(n);
+        if (audsrv_play_audio((const char*)zero, n) <= 0)
+            break;
+        left -= n;
     }
 }
 
@@ -903,7 +931,8 @@ static void smsLiteAudioOpen(SMSLitePlayback* playback)
 #else
 
 static void smsLiteAudioOpen(SMSLitePlayback* playback)  { (void)playback; }
-static void smsLiteAudioDrain(SMSLitePlayback* playback) { (void)playback; }
+static void smsLiteAudioDrain(SMSLitePlayback* playback, int canFade) { (void)playback; (void)canFade; }
+static void smsLiteAudioSilence(SMSLitePlayback* playback, int ms) { (void)playback; (void)ms; }
 
 #endif
 
@@ -1174,6 +1203,17 @@ static void smsLiteOverlayFree(void)
 
 static int s_smsLiteFramesShown = 0; /* build 130: the first one goes in the stage log */
 
+/* RIPPS2 build 131: the time the picture follows, the sound's. Once the sound has ended before the picture its clock
+   stops, and each last frame waited the whole guard (3.3 s at 60 Hz): the end stepped. From then on it runs on. */
+static s64 smsLiteClockMs(SMSLitePlayback* playback)
+{
+    if (!playback->audioEnded)
+        return playback->audioTimeMs;
+    if (!playback->audioEndTicks)
+        playback->audioEndTicks = GetTimerSystemTime();
+    return playback->audioTimeMs + (s64)((GetTimerSystemTime() - playback->audioEndTicks) / (kBUSCLK / 1000));
+}
+
 static void smsLitePlaybackShowFrame(SMSLitePlayback* playback, SMS_FrameBuffer* frame)
 {
     s64 pts = frame->m_StartPTS;
@@ -1198,7 +1238,7 @@ static void smsLitePlaybackShowFrame(SMSLitePlayback* playback, SMS_FrameBuffer*
         int guard = 0;
 
         while (!playback->stopRequested && playback->audioTimeMs > 0 && /* RIPPS2: a stop does not wait */
-               pts - playback->audioTimeMs > 80) {
+               pts - smsLiteClockMs(playback) > 80) {
             GS_VSync();
             if (++guard > 200)
                 break;
@@ -1423,9 +1463,9 @@ static int smsLitePlaybackPump(SMSLitePlayback* playback)
                        playback->audioBuffer,
                        packetStream->m_pPktBuf
                    ) > 0)
-                smsLiteAudioDrain(playback);
+                smsLiteAudioDrain(playback, 0);
 
-            smsLiteAudioDrain(playback);
+            smsLiteAudioDrain(playback, 0);
 
             SMS_RingBufferFree(packetStream->m_pPktBuf, skipPacket->m_Size + 64);
         }
@@ -1618,13 +1658,35 @@ static void smsLiteAudioRenderThread(void* apParam)
     smsLiteDbg("thr arender go\n");
 
     for (;;) {
-        while (s_smsLitePaused && !pb->stopRequested) /* RIPPS2: paused, nothing more goes to audsrv */
-            DelayThread(10000);
-        if (pb->stopRequested && pb->audioDone) /* RIPPS2: stopped: what is queued is dropped */
-            goto arExit;
-        while (SMS_RingBufferCount(pb->audioBuffer) == 0) {
-            if (pb->audioDone)
+        /* RIPPS2 build 131: paused or stopped, what is queued fades to nothing a piece at a time (or, nothing queued,
+           is cut where it is), then audsrv gets silence instead of running dry and repeating itself. The sound
+           comes back from 0. A stop drops the rest of the queue. */
+        if (s_smsLitePaused || pb->stopRequested) {
+            smsLiteAudioDrain(pb, 1);
+            s_smsLiteGain = 0;
+            if (pb->stopRequested) {
+                smsLiteAudioSilence(pb, 150);
+                while (!pb->audioDone) { /* the decoder may be waiting for room: the rest is let go unplayed */
+                    while (SMS_RingBufferCount(pb->audioBuffer) > 0) {
+                        unsigned char* slot = (unsigned char*)SMS_RingBufferWait(pb->audioBuffer);
+                        SMS_RingBufferFree(pb->audioBuffer, *(int*)(slot + 64) + 80);
+                    }
+                    DelayThread(1000);
+                }
                 goto arExit;
+            }
+            while (s_smsLitePaused && !pb->stopRequested)
+                smsLiteAudioSilence(pb, 20);
+            continue;
+        }
+        while (SMS_RingBufferCount(pb->audioBuffer) == 0) {
+            if (pb->audioDone) {
+                pb->audioEnded = 1; /* build 131: the picture stops following the sound's clock */
+                smsLiteAudioSilence(pb, 150); /* and audsrv plays out into zeros, not its own tail again */
+                goto arExit;
+            }
+            if (s_smsLitePaused || pb->stopRequested)
+                break;
 
             DelayThread(500);
 #ifdef SMSLITE_DUMP_PCM
@@ -1632,10 +1694,11 @@ static void smsLiteAudioRenderThread(void* apParam)
 #endif
         }
 
-        smsLiteAudioDrain(pb);
+        smsLiteAudioDrain(pb, 1);
     }
 
 arExit:
+    pb->audioEnded = 1;
     pb->audioRenderDone = 1;
 }
 #endif
@@ -1652,6 +1715,8 @@ static int smsLitePlaybackRunThreaded(SMSLitePlayback* playback)
     playback->videoDone       = 0;
     playback->audioDone       = 0;
     playback->audioRenderDone = 0;
+    playback->audioEnded      = 0; /* RIPPS2 build 131 */
+    playback->audioEndTicks   = 0;
 
 #ifdef SMSLITE_DUMP_PCM
     smsDumpReset();
