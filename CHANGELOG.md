@@ -1,6 +1,36 @@
 # RIPPS2 changelog
 
-## Build 133 (beta, in testing), changes since build 132
+## Build 134 (beta, v1.3.4-beta), changes since build 133
+
+The user's notes on settings and Memory Files (11/02), and BIBLE signed for RIPPS2.
+
+**BIBLE**
+- **RIPPS2 now carries BIBLE itself**: akilluminati47's boot loader built on El Isra's PS2BBL (with its splash, keys
+  pages and HD modes), its memory card, MX4SIO and HDD builds signed for RIPPS2 on 11/02 (they were El Isra's PS2BBL
+  1.2.0 builds). Settings > General > Boot Loader > Manage installs it on the memory card or the HDD you pick, and
+  BOOT LOCK makes it start RIPPS2 at power on. No console has bound these files yet: if a console refuses the bind,
+  RIPPS2 puts the card back as it was. Please tell us how yours went.
+- **The install writes the config BIBLE reads**, mc?:/SYS-CONF/PS2BBL.INI (PS2BBL 1.2.0 read PS2BBL/CONFIG.INI, which
+  BIBLE never reads), with an icon on SYS-CONF so the browser does not call it corrupted data. The HDD install's card
+  config goes there too.
+- The screens say BIBLE where they said BBL 1.20, in every language.
+
+**Settings**
+- **Set Metadata has the title and the file name filled in**: TITLE shows the list's name when neither you nor the
+  database named the game, and a FILE NAME row shows the game's file; Cross on it renames the game.
+- **With Write Operations off, Set Metadata asks to turn them on** (and keeps your answer) instead of opening a page
+  that cannot save.
+- **General & System opens without a hitch**: it read both memory cards and every boot loader config to show BOOT
+  LOCK each time it opened. Now it reads them once, and again after RIPPS2 changes the lock or runs Manage.
+
+**Memory Files**
+- **A paste says how many and where in a box** you dismiss with OK (a move and an unpack too), with what was skipped or
+  failed and the SD2PSX's wait, instead of a toast that went by.
+
+**Languages**
+- The new lines in all 32, and the lite ELF's Neutrino line, which was still English.
+
+## Build 133 (beta, in v1.3.4-beta), changes since build 132
 
 The user's notes on the themes (11/02).
 
@@ -13,7 +43,7 @@ The user's notes on the themes (11/02).
 - **A sky vignette on their list page**: the sky's top colour fades down from the top edge and its floor colour up
   from the bottom, over the game's background art and its frosted glass, under the covers, text and hints.
 
-## Build 132 (beta, in testing), changes since build 131
+## Build 132 (beta, in v1.3.4-beta), changes since build 131
 
 The user's notes on RIPFLOW and the info pages (11/02).
 
@@ -33,7 +63,7 @@ The user's notes on RIPFLOW and the info pages (11/02).
   is clear down to the title and the glass shades only the band the title, badges and details are written on
   (a theme's Ripps2PanelGlass takes clear=, the percent of its height left clear).
 
-## Build 131 (beta, in testing), changes since build 130
+## Build 131 (beta, in v1.3.4-beta), changes since build 130
 
 The user's notes on the video player (11/02), from watching a film on the console.
 
