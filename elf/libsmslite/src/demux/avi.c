@@ -144,6 +144,19 @@ static SMS_Stream* _NewStream ( SMS_Container* apCont ) {
 
 extern void smsLiteStage ( const char*, ... );
 
+/* build 130: whether a block from realloc is real memory: below the heap's end, and on the PS2 below its 32 MB (a heap
+   that ran into the stack has handed out blocks past both) */
+static int _IdxFits ( const void* apBlock, uint32_t aSize ) {
+
+ uintptr_t lEnd = ( uintptr_t )apBlock + aSize;
+
+#ifdef __mips__
+ if (  lEnd > ( uintptr_t )EndOfHeap () || lEnd > 0x02000000U  ) return 0;
+#endif
+ return apBlock != NULL && lEnd >= ( uintptr_t )apBlock;
+
+}  /* end _IdxFits */
+
 static void _IdxDrop ( SMS_Container* apCont ) {
 
  uint32_t i;
@@ -192,6 +205,8 @@ static int _IdxAdd ( SMS_Container* apCont, SMS_Stream* apStm, uint32_t aPos, ui
    uint8_t* lpBits = ( uint8_t* )realloc ( lpStm -> m_pKeyBits, lNew );
 
    if ( !lpBits ) goto fail;
+   lpStm -> m_pKeyBits = lpBits;
+   if (  !_IdxFits ( lpBits, lNew )  ) goto fail;
    memset ( lpBits + lOld, 0, lNew - lOld );
    lpStm -> m_pKeyBits = lpBits;
 
@@ -201,6 +216,7 @@ static int _IdxAdd ( SMS_Container* apCont, SMS_Stream* apStm, uint32_t aPos, ui
 
    if ( !lpPos ) goto fail;
    lpStm -> m_pPos = lpPos;
+   if (  !_IdxFits ( lpPos, lCap * sizeof ( uint32_t ) )  ) goto fail;
 
    if ( lpStm -> m_SampleSize ) {
 
@@ -208,6 +224,7 @@ static int _IdxAdd ( SMS_Container* apCont, SMS_Stream* apStm, uint32_t aPos, ui
 
     if ( !lpCum ) goto fail;
     lpStm -> m_pCum = lpCum;
+    if (  !_IdxFits ( lpCum, lCap * sizeof ( uint32_t ) )  ) goto fail;
 
    }  /* end if */
 
@@ -229,6 +246,7 @@ static int _IdxAdd ( SMS_Container* apCont, SMS_Stream* apStm, uint32_t aPos, ui
     if ( !lpKeys ) goto fail;
     lpStm -> m_pKeys  = lpKeys;
     lpStm -> m_KeyCap = lCap;
+    if (  !_IdxFits ( lpKeys, lCap * sizeof ( _AVIdxKey ) )  ) goto fail;
 
    }  /* end if */
 
@@ -861,6 +879,7 @@ static int _ReadPacket ( SMS_Container* apCont, int* apIdx ) {
  uint16_t       lChunkID;
  uint16_t       lCond;
 
+#ifdef __mips__
  __asm__(
   ".set noat\n\t"
   "pnor $at, $zero, $zero\n\t"
@@ -868,6 +887,9 @@ static int _ReadPacket ( SMS_Container* apCont, int* apIdx ) {
   ".set at\n\t"
   : "=m"( lData ) :: "at"
  );
+#else  /* build 130: the same in C, for the host test */
+ memset ( lData, 0xFF, 8 );
+#endif
 
  while ( lpBuf -> m_CurPos < lpBuf -> m_Size ) {
 
@@ -895,6 +917,7 @@ static int _ReadPacket ( SMS_Container* apCont, int* apIdx ) {
 
   lSize = File_GetByte ( lpBuf );
 
+#ifdef __mips__
   __asm__(
    ".set noat\n\t"
    "ld      $at, %0\n\t"
@@ -906,6 +929,15 @@ static int _ReadPacket ( SMS_Container* apCont, int* apIdx ) {
    ".set at\n\t"
    : "=m"( lData ), "=r"( lSize ) : "r"( lSize ): "at"
   );
+#else  /* build 130: the same in C (the window slides a byte, the new one on top; the size is its top half) */
+  {
+   uint64_t lWin;
+   memcpy ( &lWin, lData, 8 );
+   lWin = ( lWin >> 8 ) | (  ( uint64_t )( lSize & 0xFF ) << 56  );
+   memcpy ( lData, &lWin, 8 );
+   lSize = ( int32_t )( lWin >> 32 );
+  }
+#endif
 
   lCount = (  ( int )lData[ 2 ] - '0' ) * 10 + (  ( int )lData[ 3 ] - '0'  );
   lCond  = (  lCount < ( int32_t )apCont -> m_nStm  ) + (  i + lSize <= ( uint32_t )lpAVICont -> m_MoviEnd  );
@@ -1343,7 +1375,7 @@ int SMS_GetContainerAVI ( SMS_Container* apCont ) {
  int      retVal = 0;
  uint32_t lRiffEnd;
 
- if (  ( int )apCont -> m_pFileCtx <= 0  ) return retVal;
+ if (  ( intptr_t )apCont -> m_pFileCtx <= 0  ) return retVal;  /* build 130: intptr_t, the same on the PS2 */
 
  if (  _ProbeFile ( apCont -> m_pFileCtx, &lRiffEnd )  ) {
 

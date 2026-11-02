@@ -1,5 +1,5 @@
 diff --git a/src/ripps2media.c b/src/ripps2media.c
-index eb245d4..0638892 100644
+index eb245d4..0132464 100644
 --- a/src/ripps2media.c
 +++ b/src/ripps2media.c
 @@ -45,6 +45,8 @@
@@ -11,7 +11,7 @@ index eb245d4..0638892 100644
  #endif
  
  #define VIEW_MAX_W 720
-@@ -1102,9 +1104,51 @@ static void videoPadThread(void *arg)
+@@ -1102,9 +1104,58 @@ static void videoPadThread(void *arg)
      ExitDeleteThread();
  }
  
@@ -38,19 +38,26 @@ index eb245d4..0638892 100644
 +        vpLogFile = 0; // from here the drive is the video's
 +}
 +
-+// the largest block malloc gives now, in KB
++// the largest block malloc gives now that is real memory (below the heap's end and the PS2's 32 MB), in KB
 +static unsigned int videoLargestFreeKb(void)
 +{
 +    unsigned int lo = 0, hi = 32 * 1024, mid;
++    u32 top = (u32)EndOfHeap();
 +    void *p;
 +
++    if (top > 0x02000000)
++        top = 0x02000000;
 +    while (lo < hi) {
 +        mid = (lo + hi + 1) / 2;
 +        if ((p = malloc(mid * 1024)) != NULL) {
++            int real = (u32)p + mid * 1024 <= top;
 +            free(p);
-+            lo = mid;
-+        } else
-+            hi = mid - 1;
++            if (real) {
++                lo = mid;
++                continue;
++            }
++        }
++        hi = mid - 1;
 +    }
 +    return lo;
 +}
@@ -63,7 +70,7 @@ index eb245d4..0638892 100644
      extern void *_gp;
      ee_thread_t th;
      int tid, music = isBgmPlaying(), r;
-@@ -1136,7 +1180,23 @@ void ripps2PlayVideo(const char *path)
+@@ -1136,7 +1187,28 @@ void ripps2PlayVideo(const char *path)
          StartThread(tid, NULL);
  
      LOG("MEDIA: video %s\n", path);
@@ -79,7 +86,12 @@ index eb245d4..0638892 100644
 +        }
 +    }
 +    smsLiteSetStageLog(videoStageLog);
-+    smsLiteStage("memory: largest free block %u KB", videoLargestFreeKb());
++    {
++        void *probe = malloc(16);
++        smsLiteStage("memory: heap ends at %08x, next block at %08x; largest free block %u KB", (unsigned)(u32)EndOfHeap(),
++                     (unsigned)(u32)probe, videoLargestFreeKb());
++        free(probe);
++    }
      r = smsLitePlayFullscreen(path);
 +    smsLiteStage("stopped: returned %d", r);
 +    smsLiteSetStageLog(NULL);
@@ -87,3 +99,167 @@ index eb245d4..0638892 100644
      LOG("MEDIA: video returned %d\n", r);
  
      videoPadRun = 0;
+diff --git a/src/vcdsupport.c b/src/vcdsupport.c
+index e13d007..b160633 100644
+--- a/src/vcdsupport.c
++++ b/src/vcdsupport.c
+@@ -193,6 +193,7 @@ const char *vcdDisplayName(int mode, const char *text)
+    conf_apps.cfg line launches shows that line's name. Display only: the row's identity (art, CFG, launch) stays the file
+    name. The lines are read into a table, by the launcher's name, once each time conf_apps.cfg changes */
+ #define VCD_APPS_MAX 512
++static char vcdSep(const char *devPrefix);
+ static struct
+ {
+     char base[64];  // the launcher's file name without XX. and .ELF, upper case
+@@ -206,51 +207,123 @@ static int vcdAppsCmp(const void *a, const void *b)
+     return strcmp((const char *)a, (const char *)b); // base is the first member
+ }
+ 
++// A launcher line's file name, without XX. and .ELF, upper case, into out (64 bytes); 0 for any other line
++static int vcdAppsBase(const struct config_value_t *v, char *out)
++{
++    const char *base = strrchr(v->val, '/'), *colon = strrchr(v->val, ':');
++    size_t len;
++    if (v->key[0] == '$' || v->key[0] == '#' || v->key[0] == '\0')
++        return 0;
++    if (base == NULL || (colon != NULL && colon > base))
++        base = colon;
++    base = base != NULL ? base + 1 : v->val;
++    if (!strncasecmp(base, "XX.", 3))
++        base += 3;
++    len = strlen(base);
++    if (len < 5 || strcasecmp(base + len - 4, ".ELF") || len - 4 >= sizeof(vcdApps[0].base))
++        return 0;
++    for (size_t i = 0; i < len - 4; i++)
++        out[i] = (char)toupper((unsigned char)base[i]);
++    out[len - 4] = '\0';
++    return 1;
++}
++
+ static void vcdAppsLoad(config_set_t *apps)
+ {
+     struct config_value_t *v;
+     vcdAppsCount = 0;
+     for (v = apps != NULL ? apps->head : NULL; v != NULL && vcdAppsCount < VCD_APPS_MAX; v = v->next) {
+-        const char *base = strrchr(v->val, '/'), *colon = strrchr(v->val, ':');
+-        size_t len;
+-        if (v->key[0] == '$' || v->key[0] == '#' || v->key[0] == '\0')
++        if (!vcdAppsBase(v, vcdApps[vcdAppsCount].base))
+             continue;
+-        if (base == NULL || (colon != NULL && colon > base))
+-            base = colon;
+-        base = base != NULL ? base + 1 : v->val;
+-        if (!strncasecmp(base, "XX.", 3))
+-            base += 3;
+-        len = strlen(base);
+-        if (len < 5 || strcasecmp(base + len - 4, ".ELF") || len - 4 >= sizeof(vcdApps[0].base))
+-            continue;
+-        for (size_t i = 0; i < len - 4; i++)
+-            vcdApps[vcdAppsCount].base[i] = (char)toupper((unsigned char)base[i]);
+-        vcdApps[vcdAppsCount].base[len - 4] = '\0';
+         snprintf(vcdApps[vcdAppsCount].title, sizeof(vcdApps[0].title), "%s", v->key);
+         vcdAppsCount++;
+     }
+     qsort(vcdApps, vcdAppsCount, sizeof(vcdApps[0]), vcdAppsCmp);
+ }
+ 
++/* build 130 (ahavasi, 11/01: the names showed once conf_apps.cfg was copied to mc0, so RIPPS2 read only its own):
++   POPStarterGameInstaller writes conf_apps.cfg on the drive it put the games on, at its root (or in its OPL folder).
++   When a drive's PS1 games are listed, the lines there that name one of those games are read too: display only,
++   never written. Each drive keeps a small table of its own, rewritten in place by its next listing */
++#define VCD_DRIVE_SLOTS 4
++#define VCD_DRIVE_MAX   128
++static struct
++{
++    char prefix[24];
++    volatile int count;
++    struct
++    {
++        char base[64];
++        char title[64];
++    } e[VCD_DRIVE_MAX];
++} vcdDrv[VCD_DRIVE_SLOTS];
++
++static void vcdDriveAppsLoad(const char *devPrefix, const vcd_entry_t *vcds, int n)
++{
++    static const char *const where[] = {"conf_apps.cfg", "OPL/conf_apps.cfg"};
++    char path[256], base[64];
++    struct config_value_t *v;
++    int slot, w, i, count = 0;
++
++    if (devPrefix == NULL || n <= 0 || strlen(devPrefix) >= sizeof(vcdDrv[0].prefix) || vcdSep(devPrefix) == '\\')
++        return; // SMB: its share keeps OPL's files elsewhere
++    for (slot = 0; slot < VCD_DRIVE_SLOTS; slot++)
++        if (!vcdDrv[slot].prefix[0] || !strcmp(vcdDrv[slot].prefix, devPrefix))
++            break;
++    if (slot == VCD_DRIVE_SLOTS)
++        slot = VCD_DRIVE_SLOTS - 1;
++    vcdDrv[slot].count = 0;
++    snprintf(vcdDrv[slot].prefix, sizeof(vcdDrv[slot].prefix), "%s", devPrefix);
++    for (w = 0; w < 2; w++) {
++        config_set_t *cfg;
++        snprintf(path, sizeof(path), "%s%s", devPrefix, where[w]);
++        if ((cfg = configAlloc(0, NULL, path)) == NULL)
++            continue;
++        configRead(cfg);
++        for (v = cfg->head; v != NULL && count < VCD_DRIVE_MAX; v = v->next) {
++            if (!vcdAppsBase(v, base))
++                continue;
++            for (i = 0; i < n; i++)
++                if (!strcasecmp(base, vcds[i].name))
++                    break;
++            if (i == n)
++                continue; // a line for something else
++            memcpy(vcdDrv[slot].e[count].base, base, sizeof(base));
++            snprintf(vcdDrv[slot].e[count].title, sizeof(vcdDrv[slot].e[0].title), "%s", v->key);
++            count++;
++        }
++        configFree(cfg);
++    }
++    vcdDrv[slot].count = count;
++    LOG("VCD: %d names from %s's conf_apps.cfg\n", count, devPrefix);
++}
++
+ static const char *vcdAppsTitle(const char *name)
+ {
+     config_set_t *apps = configGetByType(CONFIG_APPS);
+     char key[64];
+     size_t i;
++    int slot, j, count;
+ 
+-    if (apps == NULL || name == NULL)
++    if (name == NULL)
+         return NULL;
+-    if (vcdAppsCount < 0 || apps->uid != vcdAppsUid) {
++    if (apps != NULL && (vcdAppsCount < 0 || apps->uid != vcdAppsUid)) {
+         vcdAppsUid = apps->uid;
+         vcdAppsLoad(apps);
+     }
+-    if (vcdAppsCount <= 0)
+-        return NULL;
+     for (i = 0; name[i] && i < sizeof(key) - 1; i++)
+         key[i] = (char)toupper((unsigned char)name[i]);
+     key[i] = '\0';
+-    const char *hit = bsearch(key, vcdApps, vcdAppsCount, sizeof(vcdApps[0]), vcdAppsCmp);
+-    return hit != NULL ? hit + sizeof(vcdApps[0].base) : NULL; // its title
++    if (vcdAppsCount > 0) {
++        const char *hit = bsearch(key, vcdApps, vcdAppsCount, sizeof(vcdApps[0]), vcdAppsCmp);
++        if (hit != NULL)
++            return hit + sizeof(vcdApps[0].base); // its title
++    }
++    for (slot = 0; slot < VCD_DRIVE_SLOTS; slot++) // build 130: the games' own drives
++        for (j = 0, count = vcdDrv[slot].count; j < count; j++)
++            if (!strcmp(key, vcdDrv[slot].e[j].base))
++                return vcdDrv[slot].e[j].title;
++    return NULL;
+ }
+ 
+ const char *vcdDisplayNameForRow(item_list_t *itemList, int id, const char *text)
+@@ -1249,6 +1322,7 @@ int vcdFillGameList(const char *devPrefix, base_game_info_t **outGames)
+     if (n < 0) {
+         return -1; // could not read the device -> preserve the caller's current list
+     }
++    vcdDriveAppsLoad(devPrefix, vcds, n); // build 130: the names POPStarterGameInstaller wrote on this drive
+     // NOTE: the art miss-memo invalidation now lives in vcdScanOpenDir (the shared scan success path) so
+     // it also covers the HDD vcdScanDirRoot path -- do NOT re-invalidate here (it already fired).
+ 

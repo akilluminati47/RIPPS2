@@ -195,10 +195,37 @@ static void smsLiteResetStreams(void)
     s_streams.channels = 0;
 }
 
+static int smsLiteFileFill(FileContext* ctx);
+
 static int smsLiteFileRead(FileContext* ctx, void* buffer, unsigned int size)
 {
     int fd;
     int ret;
+
+    /* build 130: a small read comes out of the buffer. File_GetUInt reads 4 bytes this way whenever the buffer is short
+       of them, and each went to the drive as a seek and a 4-byte read that left the buffer empty again, so every field
+       of an index after that cost two IOP calls (1.5 million for a two-hour film: minutes over MMCE) */
+    if (size < ctx->m_BufSize / 2) {
+        unsigned char* out = (unsigned char*)buffer;
+        unsigned int done = 0, n;
+
+        while (done < size) {
+            n = (unsigned int)(ctx->m_pEnd - ctx->m_pPos);
+            if (!n) {
+                if (smsLiteFileFill(ctx) <= 0)
+                    break;
+                continue;
+            }
+            if (n > size - done)
+                n = size - done;
+            memcpy(out + done, ctx->m_pPos, n);
+            ctx->m_pPos += n;
+            ctx->m_CurPos += n;
+            done += n;
+        }
+        ctx->m_Pos = ctx->m_CurPos;
+        return (int)done;
+    }
 
     fd = (int)ctx->m_pData;
 
