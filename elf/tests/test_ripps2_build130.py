@@ -205,11 +205,16 @@ with tempfile.TemporaryDirectory() as td:
     if not built:
         fail.append('avi.c must build on the PC against the made-up AVI: ' + r.stderr[-1200:])
     else:
+        env = dict(os.environ, ASAN_OPTIONS='detect_leaks=0')
         for starved in (0, 1):
-            r = subprocess.run([str(exe), str(td / 't.avi'), str(starved), str(apos_before[500])], capture_output=True, text=True, timeout=120)
+            r = subprocess.run([str(exe), str(td / 't.avi'), str(starved), str(apos_before[500])], capture_output=True, text=True,
+                               timeout=120, env=env)
             if r.returncode != 0 or 'ok' not in r.stdout:
+                # the sanitizer's own lines (what, where, the stack), not its shadow-memory dump
+                keep = [l for l in (r.stdout + r.stderr).splitlines()
+                        if any(k in l for k in ('ERROR', 'SUMMARY', 'READ of', 'WRITE of', 'located', 'runtime error', ' #'))]
                 fail.append('avi.c %s: exit %d: %s' % ('starved of memory' if starved else 'read and skipped', r.returncode,
-                                                      (r.stdout + r.stderr)[-800:]))
+                                                      '\n'.join(keep[:14]) or (r.stdout + r.stderr)[-800:]))
 
 if fail:
     print('\n'.join(fail))
