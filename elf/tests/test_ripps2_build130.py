@@ -29,6 +29,18 @@ lite = text(sms / 'src/smslite.c')
 lite_h = text(sms / 'include/smslite.h')
 media = text(root / 'src/ripps2media.c')
 vcd = text(root / 'src/vcdsupport.c')
+mix = text(root / 'src/mixsupport.c')
+opl = text(root / 'src/opl.c')
+menusys = text(root / 'src/menusys.c')
+files = text(root / 'src/ripps2files.c')
+
+
+def body(src, start):
+    i = src.find(start)
+    return src[i:src.find('\n}\n', i)] if i >= 0 else ''
+
+
+build_rows = body(mix, 'static int mixBuildRows(')
 
 checks = [
     ('SMS_Realloc' not in avi, 'avi.c: the index no longer grows through SMS_Realloc'),
@@ -37,6 +49,15 @@ checks = [
     ('void smsLiteSetStageLog' in lite_h and 'smsLiteStage("playing: first frame on screen")' in lite, 'smslite: the stage log'),
     ('smsLiteSetStageLog(videoStageLog)' in media and 'VIDEO.TXT' in media, 'ripps2media.c: VIDEO.TXT beside RIPPS2'),
     ('vcdDriveAppsLoad(devPrefix, vcds, n)' in vcd and '"OPL/conf_apps.cfg"' in vcd, 'vcdsupport.c: the drive\'s own conf_apps.cfg'),
+    # START rows: made after the master list is written (never saved), last, and only Cross acts on them
+    ('MIX_KIND_START' in build_rows and build_rows.find('mixMasterSave(') < build_rows.rfind('MIX_KIND_START'),
+     'mixBuildRows: START rows come after the master list is saved'),
+    ('return mixStartRowRun(menu, rows, fam);' in mix, 'mixWaitForRow: a START row starts its drive, never launches'),
+    (opl.count('itemIsStartRow(curMenu)') >= 3, 'opl.c: Square, Triangle and R3 leave a START row alone'),
+    ('menuRandomSkips(it)' in menusys and 'mixIsStartRow' in menusys, 'menusys.c: the random pick skips START rows'),
+    # Memory Files: a memory card folder in one mcGetDir; a copy's size check without the 64-bit seek a card lacks
+    ('fbScanMcDir(sized)' in files and 'mcGetDir(port, 0, path, 0, FB_MAX, tbl)' in files, 'ripps2files.c: mcGetDir listing'),
+    ('size = lseek(chk, 0, SEEK_END);' in files, 'ripps2files.c: the copy check falls back to lseek'),
 ]
 for ok, what in checks:
     if not ok:

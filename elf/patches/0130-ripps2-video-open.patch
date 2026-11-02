@@ -1,3 +1,317 @@
+diff --git a/include/mixsupport.h b/include/mixsupport.h
+index 35a4a80..46b10d5 100644
+--- a/include/mixsupport.h
++++ b/include/mixsupport.h
+@@ -17,7 +17,8 @@ int mixWantsPs1(void);
+ // a row from the saved list whose source has not answered; Cross on one (start, wait, then the usual launch); how
+ // many games the kept list holds
+ void mixSourceAnswered(int mode, int count); // build 116: count, the games it listed (an empty pass is no answer)
+-int mixIsWaiting(int list, int id); // build 115: list = MIX_MODE or RECENT_MODE, as below
++int mixIsWaiting(int list, int id);
++int mixIsStartRow(int list, int id); // build 130: a START row (a Manual drive with nothing saved): only Cross acts on it // build 115: list = MIX_MODE or RECENT_MODE, as below
+ struct menu_item;
+ int mixWaitForRow(struct menu_item *menu);
+ int mixMasterGames(void);
+diff --git a/src/menusys.c b/src/menusys.c
+index cf0fc52..8ae2cc5 100644
+--- a/src/menusys.c
++++ b/src/menusys.c
+@@ -1534,6 +1534,13 @@ static void menuFirstPage()
+ 
+ // RIPPS2: L2 + R2 jump to a random game (never the one already selected, never a folder row), placed
+ // a third of the way down the page
++// build 130: what the random pick never lands on: a folder row, a START row
++static int menuRandomSkips(const submenu_list_t *it)
++{
++    item_list_t *support = (item_list_t *)selected_item->item->userdata;
++    return it->item.isFolder || (support != NULL && MODE_IS_MIX(support->mode) && mixIsStartRow(support->mode, it->item.id));
++}
++
+ static void menuRandomItem(int quiet)
+ {
+     submenu_list_t *it, *cur = selected_item->item->current;
+@@ -1543,7 +1550,7 @@ static void menuRandomItem(int quiet)
+     if (cur == NULL)
+         return;
+     for (it = selected_item->item->submenu; it; it = it->next, count++)
+-        if (!it->item.isFolder)
++        if (!menuRandomSkips(it))
+             games++;
+     if (games < 2)
+         return;
+@@ -1555,7 +1562,7 @@ static void menuRandomItem(int quiet)
+         pick = rand() % count;
+         for (it = selected_item->item->submenu; pick-- > 0; it = it->next)
+             ;
+-    } while (it == cur || it->item.isFolder);
++    } while (it == cur || menuRandomSkips(it));
+ 
+     selected_item->item->current = it;
+     int itms = ((items_list_t *)gTheme->itemsList->extended)->displayedItems;
+diff --git a/src/mixsupport.c b/src/mixsupport.c
+index 5a15835..64db8e4 100644
+--- a/src/mixsupport.c
++++ b/src/mixsupport.c
+@@ -162,6 +162,9 @@ static const int mixSourceModes[] = {HDD_MODE, BDM_MODE, BDM_MODE1, BDM_MODE2, B
+ enum { MIX_FAM_APA = 0, MIX_FAM_ATA, MIX_FAM_USB, MIX_FAM_MX4SIO, MIX_FAM_ILINK, MIX_FAM_BDM, MIX_FAM_MMCE, MIX_FAM_SMB, MIX_FAM_UDPFS, MIX_FAM_HTTP, MIX_FAM_COUNT };
+ static const char *const mixFamName[MIX_FAM_COUNT] = {N_("the internal HDD (APA)"), N_("the internal HDD (exFAT)"), N_("the USB drive"), "MX4SIO", "iLink", N_("the drive"),
+                                                       "MMCE", N_("the SMB share"), "UDPFS", "HTTP"};
++#define MIX_KIND_START   99 // build 130: a START row (a drive on Manual with nothing saved for it), not a game
++// build 130: the name a START row gives each kind of source
++static const char *const mixStartName[MIX_FAM_COUNT] = {"HDD", "HDD", "USB", "MX4SIO", "ILINK", "", "MMCE", N_("NETWORK"), "UDPFS", "HTTP"};
+ #define MIX_WAIT_S       40.0 // a started source that has not answered by then drops its saved games
+ #define MIX_MASTER_FILE  "allgames.bin"
+ #define MIX_MASTER_MAGIC "RIPALL01"
+@@ -243,6 +246,21 @@ static int mixFamilyGone(int fam, int *settling)
+     return 0;
+ }
+ 
++// build 130: a source on Manual, switched on and not started yet: a START row's drive
++static int mixFamilyIdle(int fam)
++{
++    int mode = mixFamilyMode(fam);
++    opl_io_module_t *mod;
++
++    if (mode < 0 || fam == MIX_FAM_BDM || mixAnswered[fam] || ripps2ModeStartMode(mode) != START_MODE_MANUAL)
++        return 0;
++    if ((fam == MIX_FAM_USB && !gEnableUSB) || (fam == MIX_FAM_ATA && !gEnableBdmHDD) || (fam == MIX_FAM_MX4SIO && !gEnableMX4SIO) ||
++        (fam == MIX_FAM_ILINK && !gEnableILK))
++        return 0;
++    mod = oplGetModule(mode);
++    return mod == NULL || mod->support == NULL || !mod->support->enabled;
++}
++
+ // allgames.bin in the folder the settings are kept in
+ static void mixMasterPath(char *out, int size)
+ {
+@@ -637,11 +655,29 @@ static int mixBuildRows(item_list_t *itemList, mix_rec_t **out, int save)
+         waiting++;
+     }
+     itemList->updateDelay = waiting ? MENU_UPD_DELAY_GENREFRESH : MENU_UPD_DELAY_NOUPDATE;
+-    if (b.count == 0) {
++    // build 130 (the user, 11/01: a drive on Manual with nothing saved left All Games blank): a START row for it, last
++    mix_build_t st = {NULL, 0, 0};
++    if (!recent) {
++        unsigned char has[MIX_FAM_COUNT];
++        char label[64];
++        int fam;
++        memset(has, 0, sizeof(has));
++        for (i = 0; i < b.count; i++)
++            if (b.arr[i].family >= 0 && b.arr[i].family < MIX_FAM_COUNT)
++                has[b.arr[i].family] = 1;
++        for (fam = 0; fam < MIX_FAM_COUNT; fam++) {
++            if (has[fam] || !mixFamilyIdle(fam) || (page >= 0 && mixFamilyMode(fam) != pageMode))
++                continue;
++            snprintf(label, sizeof(label), _t("START %s"), _t(mixStartName[fam]));
++            mixAppend(&st, NULL, -1, -1, MIX_KIND_START, 1000 + fam, label, NULL, fam);
++        }
++    }
++    if (b.count == 0 && st.count == 0) {
+         free(b.arr);
+         return 0;
+     }
+-    qsort(b.arr, b.count, sizeof(mix_rec_t), &mixCompare);
++    if (b.count > 0)
++        qsort(b.arr, b.count, sizeof(mix_rec_t), &mixCompare);
+ 
+     // one row a title
+     for (i = 0; i < b.count; i++) {
+@@ -669,7 +705,16 @@ static int mixBuildRows(item_list_t *itemList, mix_rec_t **out, int save)
+         }
+         b.arr[shown++] = *r;
+     }
+-    LOG("mixUpdateItemList(%d): %d gathered, %d kept, %d shown, %d saved games waiting (view %d)\n", itemList->mode, b.count, kept, shown, waiting, view);
++    // build 130: the START rows, after every game, whatever the view
++    for (i = 0; i < st.count; i++) {
++        b.count = shown;
++        mixAppend(&b, NULL, -1, -1, MIX_KIND_START, st.arr[i].rank, st.arr[i].text, NULL, st.arr[i].family);
++        if (b.count > shown)
++            shown++;
++    }
++    mixFreeRecords(st.arr, st.count);
++    LOG("mixUpdateItemList(%d): %d gathered, %d kept, %d shown, %d saved games waiting, %d START rows (view %d)\n", itemList->mode, b.count, kept, shown,
++        waiting, st.count, view);
+     *out = b.arr;
+     return shown;
+ }
+@@ -1116,6 +1161,17 @@ int mixIsWaiting(int list, int id)
+     return waiting;
+ }
+ 
++// build 130: a START row: Cross starts its drive; nothing else acts on it
++int mixIsStartRow(int list, int id)
++{
++    mix_set_t *set = MIX_SET(list);
++    int start;
++    mixLock();
++    start = mixValidIndex(set, id) && set->arr[id].owner == NULL && set->arr[id].kind == MIX_KIND_START;
++    mixUnlock();
++    return start;
++}
++
+ int mixMasterGames(void)
+ {
+     return mixMasterSaved > 0 ? mixMasterSaved : 0;
+@@ -1180,6 +1236,75 @@ static void mixStartMeasured(int fam, double secs)
+     configSetInt(configGetByType(CONFIG_OPL), key, (int)(secs + 0.5) < 1 ? 1 : (int)(secs + 0.5)); // saved with the settings
+ }
+ 
++// One frame of the starting screen: the drive, what waits on it, the estimate and the time so far, CANCEL
++static void mixDrawStarting(int fam, const char *name, double since, int estimate)
++{
++    char line[300];
++    rmStartFrame();
++    ripps2DrawBackground();
++    ripps2DrawPagePanel();
++    snprintf(line, sizeof(line), _t("STARTING %s"), _t(mixFamName[fam]));
++    fntRenderStringFit(gTheme->fonts[4], 320, 200, ALIGN_CENTER, 540, line, GS_SETREG_RGBA(0x80, 0x80, 0x80, 0x80), 0);
++    if (name != NULL && name[0])
++        fntRenderStringFit(gTheme->fonts[5], 320, 228, ALIGN_CENTER, 540, name, GS_SETREG_RGBA(0x67, 0x6C, 0x7A, 0x80), 0);
++    {
++        // build 126: the estimate, from the last start of this drive, and the time so far
++        int gone = (int)(ripps2Seconds() - since), left = estimate - gone;
++        if (left > 0)
++            snprintf(line, sizeof(line), left == 1 ? _t("About 1 second left") : _t("About %d seconds left"), left);
++        else
++            snprintf(line, sizeof(line), _t("Taking longer than its last start (%d s so far)"), gone);
++        fntRenderStringFit(gTheme->fonts[5], 320, 262, ALIGN_CENTER, 540, line, GS_SETREG_RGBA(0x47, 0x4B, 0x59, 0x80), 0);
++        float k = (float)(ripps2Seconds() - since) / (float)(estimate > 0 ? estimate : 1);
++        int w = (int)(240.0f * (k > 1.0f ? 1.0f : k));
++        rmDrawRect(200, 284, 240, 2, GS_SETREG_RGBA(0x20, 0x24, 0x34, 0x60));
++        rmDrawRect(200, 284, w, 2, GS_SETREG_RGBA(0x30, 0x80, 0xFF, 0x80));
++    }
++    {
++        GSTEXTURE *t = thmGetTexture(gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON);
++        int x = 320 - (24 + ripps2HintWidth(_t("CANCEL"))) / 2;
++        if (t != NULL)
++            rmDrawPixmap(t, x, 430, ALIGN_NONE, 20, 20, SCALING_RATIO, GS_SETREG_RGBA(0x80, 0x80, 0x80, 0x80), 0);
++        ripps2HintText(x + 24, 440, _t("CANCEL"), GS_SETREG_RGBA(0x67, 0x6C, 0x7A, 0x80));
++    }
++    rmEndFrame();
++}
++
++// build 130: Cross on a START row: its drive starts, and the screen waits until the drive has listed (its games then take
++// the row's place) or did not answer. Never launches anything: 0
++static int mixStartRowRun(struct menu_item *menu, item_list_t *rows, int fam)
++{
++    int backKey = gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE, estimate = mixStartEstimate(fam);
++    double since = ripps2Seconds(), poked = since;
++    char line[300];
++
++    ripps2StartSourceMode(mixFamilyMode(fam));
++    readPads();
++    while (1) {
++        if (!mixAnswered[fam] && ripps2Seconds() - poked > 0.5) {
++            poked = ripps2Seconds();
++            mixPokeFamily(fam);
++        }
++        guiExecDeferredOps(); // the rebuilt list reaches the menu
++        if (mixAnswered[fam] || menu->userdata != rows) {
++            mixStartMeasured(fam, ripps2Seconds() - since);
++            return 0;
++        }
++        if (ripps2Seconds() - since > MIX_LAUNCH_WAIT_S) {
++            snprintf(line, sizeof(line), _t("%s did not answer. Is it connected?"), _t(mixFamName[fam]));
++            guiMsgBoxSound(SFX_ERROR);
++            guiMsgBox(line, 0, NULL);
++            return 0;
++        }
++        mixDrawStarting(fam, NULL, since, estimate);
++        readPads();
++        if (getKeyOn(backKey)) {
++            sfxPlay(SFX_CANCEL);
++            return 0;
++        }
++    }
++}
++
+ int mixWaitForRow(struct menu_item *menu)
+ {
+     char name[256], startup[64], line[300];
+@@ -1205,6 +1330,8 @@ int mixWaitForRow(struct menu_item *menu)
+     mixUnlock();
+     if (fam < 0 || fam >= MIX_FAM_COUNT)
+         fam = MIX_FAM_BDM;
++    if (kind == MIX_KIND_START) // build 130
++        return mixStartRowRun(menu, rows, fam);
+ 
+     // build 116 (the user, 10/27: a Manual HDD game would not launch from All Games, "hdd not connected"): only the game's own
+     // drive starts. Build 115 started every source on Manual at once, the network's among them, whose start can hold the
+@@ -1255,33 +1382,7 @@ int mixWaitForRow(struct menu_item *menu)
+             guiMsgBox(line, 0, NULL);
+             return 0;
+         }
+-        rmStartFrame();
+-        ripps2DrawBackground();
+-        ripps2DrawPagePanel();
+-        snprintf(line, sizeof(line), _t("STARTING %s"), _t(mixFamName[fam]));
+-        fntRenderStringFit(gTheme->fonts[4], 320, 200, ALIGN_CENTER, 540, line, GS_SETREG_RGBA(0x80, 0x80, 0x80, 0x80), 0);
+-        fntRenderStringFit(gTheme->fonts[5], 320, 228, ALIGN_CENTER, 540, name, GS_SETREG_RGBA(0x67, 0x6C, 0x7A, 0x80), 0);
+-        {
+-            // build 126: the estimate, from the last start of this drive, and the time so far
+-            int gone = (int)(ripps2Seconds() - since), left = estimate - gone;
+-            if (left > 0)
+-                snprintf(line, sizeof(line), left == 1 ? _t("About 1 second left") : _t("About %d seconds left"), left);
+-            else
+-                snprintf(line, sizeof(line), _t("Taking longer than its last start (%d s so far)"), gone);
+-            fntRenderStringFit(gTheme->fonts[5], 320, 262, ALIGN_CENTER, 540, line, GS_SETREG_RGBA(0x47, 0x4B, 0x59, 0x80), 0);
+-            float k = (float)(ripps2Seconds() - since) / (float)(estimate > 0 ? estimate : 1);
+-            int w = (int)(240.0f * (k > 1.0f ? 1.0f : k));
+-            rmDrawRect(200, 284, 240, 2, GS_SETREG_RGBA(0x20, 0x24, 0x34, 0x60));
+-            rmDrawRect(200, 284, w, 2, GS_SETREG_RGBA(0x30, 0x80, 0xFF, 0x80));
+-        }
+-        {
+-            GSTEXTURE *t = thmGetTexture(gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON);
+-            int x = 320 - (24 + ripps2HintWidth(_t("CANCEL"))) / 2;
+-            if (t != NULL)
+-                rmDrawPixmap(t, x, 430, ALIGN_NONE, 20, 20, SCALING_RATIO, GS_SETREG_RGBA(0x80, 0x80, 0x80, 0x80), 0);
+-            ripps2HintText(x + 24, 440, _t("CANCEL"), GS_SETREG_RGBA(0x67, 0x6C, 0x7A, 0x80));
+-        }
+-        rmEndFrame();
++        mixDrawStarting(fam, name, since, estimate);
+         readPads();
+         if (getKeyOn(backKey)) {
+             sfxPlay(SFX_CANCEL);
+diff --git a/src/opl.c b/src/opl.c
+index 9e6c5de..29cb7d7 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -802,8 +802,17 @@ static void itemExecCircle(struct menu_item *curMenu)
+         itemFolderAscend(curMenu); // Circle is the cancel button here -> ascend a folder level
+ }
+ 
++// build 130: a START row is not a game: Cross starts its drive, nothing else acts on it
++static int itemIsStartRow(struct menu_item *curMenu)
++{
++    item_list_t *support = curMenu != NULL ? curMenu->userdata : NULL;
++    return support != NULL && curMenu->current != NULL && MODE_IS_MIX(support->mode) && mixIsStartRow(support->mode, curMenu->current->item.id);
++}
++
+ static void itemExecSquare(struct menu_item *curMenu)
+ {
++    if (itemIsStartRow(curMenu)) // build 130
++        return;
+     // Folder browsing: a folder row has no info screen (#Size/#DiscType would stat a directory).
+     if (curMenu->current && curMenu->current->item.isFolder)
+         return;
+@@ -900,7 +909,7 @@ static void itemExecFav(struct menu_item *curMenu)
+     if (!gFAVStartMode) // Favourites disabled -> R3 is a no-op (no hidden writes)
+         return;
+ 
+-    if (!curMenu->current)
++    if (!curMenu->current || itemIsStartRow(curMenu)) // build 130: not a START row
+         return;
+ 
+     item_list_t *support = curMenu->userdata;
+@@ -977,7 +986,7 @@ static void itemExecFav(struct menu_item *curMenu)
+ 
+ static void itemExecTriangle(struct menu_item *curMenu)
+ {
+-    if (!curMenu->current)
++    if (!curMenu->current || itemIsStartRow(curMenu)) // build 130: not a START row
+         return;
+ 
+     // Folder browsing: a folder row has no per-game settings menu.
 diff --git a/src/ripps2files.c b/src/ripps2files.c
 index 3a2be42..ed3439f 100644
 --- a/src/ripps2files.c

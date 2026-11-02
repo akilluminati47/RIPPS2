@@ -583,6 +583,9 @@ strings:
 - en: '%s did not answer, so %s cannot start. Is it connected?'
   in:
   - mixsupport.c
+- en: '%s did not answer. Is it connected?'
+  in:
+  - mixsupport.c
 - en: '%s is not on %s any more, so it has left All Games.'
   in:
   - mixsupport.c
@@ -598,6 +601,12 @@ strings:
   - ripps2cd.c
   - ripps2disc.c
   - ripps2games.c
+- en: NETWORK
+  in:
+  - mixsupport.c
+- en: START %s
+  in:
+  - mixsupport.c
 - en: STARTING %s
   in:
   - mixsupport.c
