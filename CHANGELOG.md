@@ -1,5 +1,18 @@
 # RIPPS2 changelog
 
+## Build 133 (beta, in testing), changes since build 132
+
+The user's notes on the themes (11/02).
+
+- **RIPGRID with the sidebar: L1 / R1 turn the grid's pages**, the same as L2 / R2 (they did nothing there).
+- **A star on the right stands at the row's right edge**, the stars in a column and the titles stopping short of them
+  (it followed the end of the title). **Adapt, Adapt Rx and themes made for OPL put it on the right** unless they say
+  otherwise; RIPPS2, RIPFLOW and RIPGRID keep it on the left. Starred Games Star still decides over the theme.
+- **Adapt and RIPGRID use Storage's sky** where they filled a flat colour (a game with no background art, the moment
+  before a page draws), in your Color Theme, so going to Storage, Launch Disc or Memory Files no longer jumps.
+- **A sky vignette on their list page**: the sky's top colour fades down from the top edge and its floor colour up
+  from the bottom, over the game's background art and its frosted glass, under the covers, text and hints.
+
 ## Build 132 (beta, in testing), changes since build 131
 
 The user's notes on RIPFLOW and the info pages (11/02).

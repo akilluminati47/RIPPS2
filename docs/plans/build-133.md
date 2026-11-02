@@ -46,3 +46,12 @@ The user's notes (11/02):
 - The star on Right: a short and a long title, RIPPS2 and Adapt; Adapt on Theme shows Right.
 - RIPGRID and Adapt: a game with no BG art (the sky), a game with BG art (the vignette), Storage and back, with two
   Color Themes. Grabs tiled for the user. CI, push to main; release only on the user's word.
+
+## Lab results (11/02, PCSX2, NTSC, CI run 41518800866 for 48aa749)
+
+- RIPGRID + Category Layout Sidebar: R1 to the last page's last cover, L1 a page back (media/b133/ripgrid-l1r1-pages.jpg).
+- Stars (reel card needs ripps2_star_v=115, or build 115's migration hides them): RIPPS2 on Right at the row edge,
+  titles cut short of it; Adapt on Theme: left on 132, right edge on 133.
+- Sky: Adapt with no art, flat on 132, the sky on 133; RIPGRID's sky follows Color Theme 3 (media/b133/*sky*.jpg).
+- Vignette: first try drawn under Adapt's / RIPGRID's full-screen frosted glass and barely showed; now drawn after it.
+  Brightness of the top 40 rows 64 -> 13, bottom 54 rows 76 -> 16, the middle unchanged (69 / 69).
