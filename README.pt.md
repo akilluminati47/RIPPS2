@@ -1,0 +1,272 @@
+<!-- i18n: the language bar, made by ps2-pillars tools/readme-i18n -->
+<p align="center">
+  <a href="README.md">English</a> |
+  <a href="README.es.md">Español</a> |
+  <a href="README.pt-BR.md">Português (Brasil)</a> |
+  <b>Português</b> |
+  <a href="README.fr.md">Français</a> |
+  <a href="README.de.md">Deutsch</a> |
+  <a href="README.it.md">Italiano</a> |
+  <a href="README.nl.md">Nederlands</a> |
+  <a href="README.da.md">Dansk</a> |
+  <a href="README.sv.md">Svenska</a> |
+  <a href="README.pl.md">Polski</a> |
+  <a href="README.cs.md">Čeština</a> |
+  <a href="README.hr.md">Hrvatski</a> |
+  <a href="README.sr.md">Srpski</a> |
+  <a href="README.bg.md">Български</a> |
+  <a href="README.ru.md">Русский</a> |
+  <a href="README.el.md">Ελληνικά</a> |
+  <a href="README.hu.md">Magyar</a> |
+  <a href="README.ro.md">Română</a> |
+  <a href="README.gl.md">Galego</a> |
+  <a href="README.sq.md">Shqip</a> |
+  <a href="README.tr.md">Türkçe</a> |
+  <a href="README.ar.md">العربية</a> |
+  <a href="README.fa.md">فارسی</a> |
+  <a href="README.ja.md">日本語</a> |
+  <a href="README.ko.md">한국어</a> |
+  <a href="README.zh-CN.md">简体中文</a> |
+  <a href="README.zh-TW.md">繁體中文</a> |
+  <a href="README.vi.md">Tiếng Việt</a> |
+  <a href="README.lo.md">ລາວ</a> |
+  <a href="README.id.md">Bahasa Indonesia</a> |
+  <a href="README.fil.md">Filipino</a> |
+  <a href="README.ceb.md">Cebuano</a>
+</p>
+<!-- /i18n -->
+
+<p align="center"><sub>Tradução do README em inglês; se diferirem, vale o inglês. <a href="README.md">English</a></sub></p>
+
+<p align="center"><sub><b>RIPPS2</b> &nbsp;&middot;&nbsp; <a href="https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf">Transferir</a> &nbsp;&middot;&nbsp; <a href="https://github.com/akilluminati47/BIBLE">BIBLE</a> &nbsp;&middot;&nbsp; <a href="https://github.com/akilluminati47/RIPPS2-themes">Temas</a> &nbsp;&middot;&nbsp; <a href="https://github.com/akilluminati47/RIPPCSX2">RIPPCSX2</a> &nbsp;&middot;&nbsp; <a href="https://github.com/akilluminati47/RIPPS2-fonts">Tipos de letra</a> &nbsp;&middot;&nbsp; <a href="https://akilluminati47.github.io/RIPPS2/">Site</a> &nbsp;&middot;&nbsp; <a href="https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/">psx-place</a> &nbsp;&middot;&nbsp; <a href="https://discord.gg/Z7m9u5kby">Discord</a></sub></p>
+
+<p align="center"><img src="media/ripps2-test-me.png" alt="RIPPS2: Rip it, the beta, the dead elf in its blue hat over the towers"></p>
+
+# RIPPS2
+
+> ### Extrai-o: RIPPS2 build 129, v1.2.9 beta
+> **RIP PS2, o assassino de ELF.** Autossuficiente, nunca destrutivo: os teus outros ELF continuam a salvo na [prateleira](https://akilluminati47.github.io/RIPPS2/) (nada é apagado a não ser que peças), só ganham um descanso merecido.
+> 1. **[Transfere o RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (sempre a versão mais recente) (um ficheiro, 2.743 KB; ou **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2.200 KB, o mesmo sem o PS2BBL do BIBLE e sem o Neutrino), e o **[pacote de temas](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** se quiseres (Adapt, Adapt Rx, edição 128: uma configuração e uma imagem cada; RIPGRID e RIPFLOW já vêm incluídos), e o **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** para teres o RIPPS2 na tua língua (33; todas as versões o trazem).
+> 2. Copia-o para uma pen USB ou um cartão de memória e abre-o a partir do FreeMcBoot, PS2BBL, wLaunchELF ou do que já usas para iniciar homebrew. No PCSX2: **System > Start File** e escolhe `RIPPS2.elf`.
+> 3. Diz-nos como correu: [o tópico no psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/), [uma issue](https://github.com/akilluminati47/RIPPS2/issues), ou **#RIPPS2** no Discord dos programadores, [discord.gg/Z7m9u5kby](https://discord.gg/Z7m9u5kby) (convite válido até 1 de dezembro de 2026).
+>
+> [Novidades das builds 126 a 129](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.2.9-beta) | [Changelog](CHANGELOG.md) | **[Vídeos](#videos)** | [Todas as versões](https://github.com/akilluminati47/RIPPS2/releases) | [Fala sobre ele no psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>
+> [Cria temas para o RIPPS2](https://github.com/akilluminati47/RIPPS2-themes) (sem recompilar, pensado para agentes) | [Enche as tuas pastas AUDIO e MEDIA](#the-sound-ripps2-was-made-with) com o [RIPPS2 Media Studio](tools/media-studio) (sons, música e vídeo; [transfere-o para Windows](https://github.com/akilluminati47/RIPPS2/releases/download/media-studio/RIPPS2-Media-Studio.zip)) | [Vê um tema em 720p e 1080i a sério: RIPPCSX2](https://github.com/akilluminati47/RIPPCSX2/releases/latest) (PCSX2 com saída HDTV)
+
+O RIPPS2 é um front end de PS2 num único `.elf`: uma desmontagem e reconstrução do [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader) (o fork do Open PS2 Loader), com o [Neutrino](https://github.com/rickgaiser/neutrino) de rickgaiser lá dentro como segundo núcleo de jogos, e com aspeto, lançadores, explorador de ficheiros e ferramentas de gravações próprios. Torres de vidro erguem-se atrás dos teus jogos e formações em órbita atrás dos teus ficheiros, tudo desenhado ao vivo pela PS2.
+
+- **LAUNCH DISC** arranca discos de PS2, PS1 e DVD vídeo, diz que jogo está na drive antes de o iniciares e toca CD áudio com as torres transformadas num analisador de espetro. **RIPDISC** (build 105) extrai o disco da drive: um jogo para o teu armazenamento, um CD ou DVD vídeo para os teus ficheiros.
+- **STORAGE** é a tua biblioteca de jogos: todas as unidades numa lista (All Games mostra-as todas desde a primeira imagem, incluindo uma unidade que ainda não respondeu), com arte, uma página de informação cuja arte se funde com as capturas, definições por jogo e R3 para marcar um jogo com estrela em Starred Games (a estrela fica no início da linha; Settings > Game Sources > Starred Games Star move-a ou esconde-a; manter R3 4,2 s esconde ou mostra todas as estrelas). L2 + R2 salta para um jogo ao acaso, e Recent Games guarda os teus últimos jogos iniciados. Triângulo num jogo tem **Hide Game**, **Delete** (o jogo inteiro: todas as partes da imagem, o CFG, a arte e as batotas; as gravações só se disseres), **Set Metadata (Rename)** e, para uma ISO ou ZSO, **Compress to ZSO** ou **Uncompress to ISO** (experimental: a ISO fica até o ZSO ter sido lido de volta e verificado). Os jogos de cada unidade aparecem logo a partir da última lista, e depois a unidade é lida outra vez.
+- **MEMORY FILES** é um explorador de ficheiros incluído: copia, move e apaga entre cartões de memória, USB, MMCE e o HDD (cada cópia é lida de volta e verificada); abre as imagens de cartão VMC do OPL como pastas; exporta e importa gravações PSU; edita ficheiros de texto; abre imagens, reproduz vídeo AVI **em ecrã inteiro** com **controlos de leitor** (Cross reproduz/pausa, Circle para, L1/R1 saltam 10 s, L2/R2 volume, START repete; as dicas desvanecem enquanto reproduz e ficam em pausa) (o [RIPPS2 Media Studio](tools/media-studio) transforma qualquer vídeo, até o MP4 de um telemóvel, num), e reproduz ficheiros `.mp3`, `.ogg` e `.wav`, ou marca vários e abre-os juntos para os ouvires como um disco no leitor de CD do Launch Disc; um **`.tar` é uma pasta azul** que podes abrir, onde podes colar imagens e de onde podes copiar membros (build 125); Triângulo num `.tar` junta-lhe outro `.tar` de ART ([abaixo](#covers-from-one-file-art-pack)). A **pasta aberta é a primeira linha**, com o número de entradas, as marcadas, o tamanho total e o espaço livre da unidade; Cross ou Square nela marca tudo (ou, se houver algo marcado, nada). START abre as definições, onde **SEARCH FILES** encontra qualquer ficheiro ou pasta pelo nome em todas as unidades iniciadas e abre a árvore onde está. Square num cartão de memória abre o **CARD MANAGER** (faz cópia de um cartão para um VMC, devolve as gravações de um VMC a um cartão, apaga as gravações de jogos, formata), e Square no HDD APA o **HDD MANAGER** (as partições, os tamanhos e a remoção de uma após uma verificação completa da tabela de partições).
+
+Está em **beta** desde a build 100: cem builds de alfa, testadas em consolas e no PCSX2 por ripto, nuno6573, zackcage6, eliminator1403, FifthFox e Mr.sus.60, e na beta também por lukeatmynose e ahavasi, e por todos os que testam no Discord, com um agradecimento especial a todo o carinho do YouTube. Mantém o teu carregador habitual por perto e diz-nos o que se parte: o feedback é o que faz o RIPPS2. **A melhor forma de o RIPPS2 ser atualizado é [uma issue no GitHub](https://github.com/akilluminati47/RIPPS2/issues)**: DarkNerdShawny abriu três, e a correção do FreeMcBoot da v1.1.7 veio de uma. Sê como DarkNerdShawny.
+
+<a id="videos"></a>
+
+## Vídeos
+
+| Vídeo | Duração | O que mostra |
+| --- | --- | --- |
+| [A visita](https://youtu.be/OEa8b5rbyco) | 10:48 | Tudo o que o RIPPS2 faz na v1.2.8: a página web onde começou, os teus jogos em todos os temas, os teus ficheiros, os sons da tua própria consola, o menu dentro do jogo e o que traz incluído, com capítulos na descrição |
+| [O Short da v1.1.5](https://akilluminati47.github.io/RIPPS2/media/b115/ripps2-v115-short.mp4) (no GitHub) | 0:39 | O leitor de CD para as tuas próprias faixas, Fast Boot, para onde vão as extrações, Set Metadata (Rename) |
+| [O reel da v1.1.4](https://youtu.be/UwuKWfRtUEs) | 7:55 | Tudo da v1.1.4, com capítulos na descrição |
+| [O Short das rodas da v1.1.4](https://youtube.com/shorts/iQqR9lsar9Q) ([ou no GitHub](https://akilluminati47.github.io/RIPPS2/media/b114/ripps2-v114-wheels-short.mp4)) | 1:10 | As rodas que aparecem ao manter SELECT |
+| [O passeio pelos sons da v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4) (no GitHub) | 2:11 | Cada som extraído da consola, num só take, do som de arranque até um jogo a iniciar |
+| [O reel da v1.1.0](https://youtu.be/Q8ZLd6ArV8s) | 3:57 | A v1.1.0, montada ao som de Over the Rainbow |
+| [O reel da beta](https://youtu.be/LPjdK_E1jjM) | 9:45 | A primeira beta, v1.0.0: a página web onde o RIPPS2 começou, depois os teus jogos, os teus ficheiros e o que traz incluído |
+| [O Short da build 99](https://www.youtube.com/shorts/Ov5iA-tMcI8) | Short | A última alfa |
+| [O Short da build 88](https://www.youtube.com/shorts/Sqprz22tdtg) | Short | A build 88, ao som de Slideshow |
+| [O reel da build 83](https://youtu.be/A27N9s6tumk) e [o seu Short](https://youtube.com/shorts/4QBe5UO2KxM) | | A build 83, alfa |
+| [O reel da build 55](media/ripps2-b55-reel.mp4) e [a demo da build 22](media/ripps2-b22-demo.mp4) (no GitHub) | | As primeiras alfas |
+
+<a id="highlights"></a>
+
+## Destaques
+
+- **Temas que podes tornar teus.** Painéis de vidro fosco sobre a arte de cada jogo, um elemento **Grid** de capas, inclinação com o manípulo direito que move uma página inteira como uma só folha, e o primeiro pacote, **[RIPPS2-themes](https://github.com/akilluminati47/RIPPS2-themes)**: Adapt e Adapt Rx, cada configuração a abrir com um glossário de todas as chaves, com um verificador e uma referência de chaves para quem (ou qualquer agente) quiser fazer mais. RIPGRID e RIPFLOW vêm incluídos, e os temas feitos para o Open PS2 Loader funcionam tal como estão. Mantém **SELECT** 4,2 segundos numa lista de jogos e os teus temas abrem num painel para escolheres (Settings > Interface > Hold SELECT: List, Cycle para o tema seguinte, ou Off). No RIPGRID e no RIPFLOW, mantém o manípulo direito para um lado 0,42 s e a caixa escolhida vira-se para a contracapa, e a grelha passa as páginas a deslizar.
+- **As categorias onde as quiseres.** Settings > Interface > Layout > Category Layout: LAUNCH DISC, STORAGE e MEMORY FILES como nomes **Across the Top**, como ícones numa **Sidebar** (Classic ou XL; Left numa lista ou Circle abre-a, e cada categoria tem uma gaveta com as suas páginas), ou **Menu**: sem barra, as categorias no menu START, como num tema feito para o OPL. Em Theme decide o tema: um tema feito para o OPL fica com Menu, o Adapt com a barra lateral.
+- **RIPFLOW**, o carrossel de capas incluído (e o RIPGRID, também incluído), e um disco de lançamento quando um jogo começa (Layout > Launch Disc): **Pop In**, **Spin** ou **Zoom**, que aumenta o disco até se ler bem e o mantém ali (a predefinição do RIPFLOW e do Adapt), ou Off. **Hints and Glyphs** (Interface): a tua própria disposição e ordem de dicas, emblemas e quatro conjuntos de glifos (o do tema, o do RIPPS2, Standard e White). **Colors and Text** (Interface): dez Color Themes (RIPPS2, Ember, Blood, Ectoplasm, Amethyst, Bone, Tangerine, Flamingo, Turquoise, Moonlight) ou Custom, um **Color Sweep** que passa por cinco cores (Rainbow, um feito de cada Color Theme, ou até quatro tuas) e Text Weight. O Layout tem dicas e barra de categorias que desvanecem, e o nome da origem a surgir em grande no meio da página. Os temas podem escolher tudo isto por si, e as tuas definições ganham sempre.
+- **O que precisa, incluído; o que tens, encontrado.** O [Neutrino](https://github.com/rickgaiser/neutrino) (a build mais recente) e o BIBLE vão dentro do único `.elf` e instalam-se onde escolheres; o teu próprio POPSTARTER, ficheiros POPS e Ember são procurados nas tuas unidades uma vez, memorizados e iniciados a partir de onde estão. **STATUS** no menu START mostra todas as unidades, onde cada lançador foi encontrado (LOOK FOR THEM procura de novo), o homebrew, o BIBLE e os teus sons, e **SAVE DIAGNOSTICS** escreve um `DIAG.TXT` para um relatório de erros.
+- **Um arranque rápido.** Settings > Game Sources > Cache > **Fast Boot** lê no arranque só a unidade do próprio RIPPS2: as definições e os sons ao lado do `RIPPS2.ELF`, e cada lista a partir da cache. As outras unidades esperam até carregares em SELECT na página delas ou escolheres um dos seus jogos. Um jogo escolhido enquanto o RIPPS2 ainda lê ou escreve espera atrás de um painel que diz o que falta (START NOW vai já), por isso um lançamento nunca corta uma escrita a meio.
+- **As tuas definições onde as quiseres**: Settings > General & System > Save Settings To guarda-as na gravação do RIPPS2 num cartão de memória, numa pasta RIPPS2 no HDD interno (exFAT, ou a partição OPL do HDD APA), numa pen USB, MX4SIO, iLink ou MMCE (lidas primeiro no arranque), ou numa pasta que escrevas.
+- **A imagem onde a tua TV a quer.** Settings > Interface > Screen: Video Mode (até 720p e 1080i), Widescreen, e H-POS, V-POS e Overscan, que desde a build 124 são guardados para cada modo de vídeo, por isso 1080i e 480i mantêm cada um a sua própria centragem.
+- **BIBLE e BOOT LOCK.** Settings > General & System > Boot Loader mostra o que cada cartão de memória inicia ao ligar e instala o **BIBLE**, o PS2BBL 1.2.0 preparado para o RIPPS2, num cartão de memória. **Boot Lock** ajusta o boot loader que a tua consola inicia de facto para que inicie o RIPPS2: o PS2BBL e o FreeMcBoot iniciam-no logo, o OSDMenu põe-no em primeiro no menu, e desligá-lo repõe o que lá estava antes.
+- **Um menu dentro do jogo** (Settings > Game Launching > In-Game Menu, ligado por predefinição): L1+L2+R1+R2+SELECT+START põe o jogo em pausa, em silêncio, sobre a sua própria imagem, sob Resume, Exit Game, **Screenshot** (RIPSHOT, [abaixo](#screenshots-in-game-ripshot)), Achievements e Power Off (um segundo toque desliga a PS2 ali mesmo); RESUME devolve a imagem exata, e Achievements lista o que falta caçar e como o conseguir. **Exit Game passa pelo caminho de arranque da própria consola:** com o IGR Path dessa página vazio (a predefinição), o reinício vai para o navegador, que inicia o teu boot loader (FreeMcBoot, PS2BBL, OSDMenu ou BIBLE) quando houver um instalado, e de novo o RIPPS2 com o Boot Lock ligado, tal como a consola arranca ao ligar; sem nenhum, o navegador da PS2. Desde a v1.2.1 nunca é um ecrã preto: um IGR Path só é usado quando o reinício o consegue carregar (um ELF num cartão de memória ou numa pen USB FAT32) e não é o próprio RIPPS2, e o STATUS diz quando um é ignorado.
+- **Achievements** (SpiritofRA): telemetria do RetroAchievements através do cliente [xeRAbora](https://github.com/hacan359/xerabora) no teu PC (fixado na [v0.1.0-alpha.18](https://github.com/hacan359/xerabora/releases/tag/v0.1.0-alpha.18)), emblemas nos jogos acompanhados, o disco no tabuleiro e **YOUR ACCOUNT**, todos os jogos que verificaste com o que desbloqueaste e, com o xeRAbora aberto à rede, **LEFT TO HUNT**: todas as conquistas bloqueadas e como as conseguir.
+- **Cover Art** (Settings > Network) transferidas pela própria PS2 para cada jogo de PS2 que não tenha, do ps2-covers de xlenore no GitHub (precisa do cabo de rede e da internet): escolhe **HD** (280 × 400, mais nítidas num ecrã HD) ou **Standard** (140 × 200, como as do Open PS2 Loader), ambas de 8 bits com pontilhado; um jogo que já tem capa fica com ela (build 125). **720p e 1080i** desenhados numa só passagem: uma imagem com 640 píxeis de largura com todas as linhas do modo, esticada no ecrã pelo próprio circuito de vídeo da consola, por isso cada animação mantém a velocidade. **O RIPFLOW mostra cinco capas numa imagem 16:9** (720p, 1080i, ou Widescreen ligado) e três em 4:3, alargando sozinho a não ser que escolhas um número (build 125). A tua pasta **AUDIO** é encontrada em qualquer unidade, e torres e orbes correm a noite toda a uns estáveis 60 fps.
+- **Proteções**: cada build passa as verificações de host do RiptOPL e as do próprio RIPPS2, e um novo aviso num ficheiro do RIPPS2 fá-la falhar.
+
+<a id="in-your-language"></a>
+
+## Na tua língua
+
+Desde a build 104 todas as palavras que o RIPPS2 mostra são traduzidas, tanto as suas páginas e dicas como as definições do Open PS2 Loader. Cada build vem com o **`RIPPS2-languages.zip`**: copia a pasta `LNG` dele para a raiz de uma pen USB, da partição OPL do HDD ou de um cartão MMCE (ou os ficheiros lá dentro para `mc0:/RIPPS2`), e escolhe a língua em **Settings > Interface > Language**. 33 línguas leem o RIPPS2 por inteiro, do francês, espanhol, alemão e português ao russo, grego, turco, vietnamita, laosiano, chinês, japonês e coreano, e árabe e persa da direita para a esquerda com as letras ligadas; uma língua que precisa de outras letras tem a sua fonte no pacote ao lado. Correções e novas línguas vão para [`elf/lang`](elf/lang) (um `<Language>.yml` cada; `python3 elf/lang/ripps2lang.py check` verifica-os).
+
+<p align="center">
+<img src="media/b107/06-arabic.jpg" width="32%" alt="Settings in Arabic: right to left, the letters joined">
+<img src="media/b107/07-lao.jpg" width="32%" alt="Storage in Lao, the category bar and hints in Noto Sans Lao">
+<img src="media/b107/04-star-left.jpg" width="32%" alt="Storage: a starred game's star at the start of its row, the titles lined up">
+</p>
+
+<a id="rip-a-disc"></a>
+
+## Extrai um disco
+
+Põe o disco na drive e abre o **LAUNCH DISC**. Após alguns segundos um painel de vidro oferece o **RIPDISC**: mantém **SELECT** até o anel encher. O passo seguinte diz que disco é, o tamanho, **quanto tempo deve demorar** e para onde vai; confirma e depois **START**.
+
+- **Um jogo de PS2** passa a ser uma ISO na pasta DVD ou CD de uma unidade, na tua lista de jogos. Um jogo com mais de 4 GB que vai para uma unidade FAT32 é guardado nas partes de 1 GB do Open PS2 Loader com ul.cfg; numa unidade exFAT (uma pen USB, MX4SIO, iLink ou o HDD interno) fica uma só ISO. O espaço na unidade é verificado antes de começar.
+- **Um jogo de PS1** passa a ser um BIN e um CUE em `EMBER/games/<Title>/`, jogado com o Ember.
+- **Um CD áudio ou um DVD vídeo** vai para os teus ficheiros: o Memory Files abre em **MEDIA** (ao lado de AUDIO) com o disco na área de transferência como **RIPPED**; PASTE em qualquer pasta extrai-o lá. Um CD fica em WAV (copia um para AUDIO e passa a fazer parte da música do menu), um DVD feito por ti fica com os seus ficheiros VIDEO_TS. Os filmes comprados têm proteção contra cópia e a drive não os lê.
+
+O USB da PS2 é lento (USB 1.1, cerca de 1 MB por segundo): um DVD inteiro para uma pen demora mais de uma hora; para o HDD exFAT interno, uma fração disso. A estimativa aprende a velocidade da tua consola a partir da primeira extração.
+
+<p align="center">
+<img src="media/b107/02-ripdisc-confirm.jpg" width="32%" alt="RIPDISC's confirm step: the game, its size and the ISO it becomes">
+<img src="media/b107/03-ripdisc-progress.jpg" width="32%" alt="RIPDISC ripping: how much is done and the minutes left">
+<img src="media/b107/05-search.jpg" width="32%" alt="Memory Files settings: SEARCH FILES in place of the MC exploit installer">
+</p>
+
+<a id="screenshots-in-game-ripshot"></a>
+
+## Capturas dentro do jogo (RIPSHOT)
+
+Num jogo, L1+L2+R1+R2+SELECT+START e depois **SCREENSHOT**: a imagem que estava no ecrã quando o menu abriu, sem o menu. Escolhe **ART** (a arte de capturas do jogo, 250 x 188, `_SCR`, `_SCR2`...), **MEDIA** (tamanho real, numa pasta com o nome do jogo) ou **BOTH**; cada um mostra o ficheiro em que se torna, o tamanho e as capturas que restam. **SAVE** faz o menu desvanecer, **KEEP** ou **DELETE** decidem.
+
+As capturas esperam no rolo do jogo em `MEDIA/RIPSHOT` (6 por jogo) até serem reveladas em PNG de 8 bits: à mão a partir do Memory Files (abre `MEDIA/RIPSHOT`: VIEW numa captura, ACTIONS para a revelar), ou sozinhas em segundo plano com **Develop Shots: Auto** (Settings > Game Launching > In-Game Menu). Os temas mostram todas as capturas de um jogo com a chave `SCRn`: fazem-no a apresentação da página de informação do RIPPS2, o RIPGRID, o RIPFLOW e o Adapt. O RIPSHOT funciona com jogos em USB, no HDD exFAT interno, MX4SIO, iLink e, desde a build 117, MMCE (o SD de um SD2PSX guarda os rolos); os jogos no HDD APA chegam numa build posterior.
+
+<p align="center">
+<img src="media/b108/02-where.jpg" width="32%" alt="In the game: SCREENSHOT's choices, ART, MEDIA or BOTH, with the file names, the size and the shots left">
+<img src="media/b108/03-keep.jpg" width="32%" alt="The menu faded off over the frame, KEEP or DELETE at the bottom">
+<img src="media/b108/06-info-shots.jpg" width="32%" alt="The info page slideshow showing the game's third shot">
+</p>
+<p align="center">
+<img src="media/b108/04-rolls.jpg" width="32%" alt="Memory Files: MEDIA/RIPSHOT lists each game's roll and its shots">
+<img src="media/b108/05-view.jpg" width="32%" alt="VIEW: a shot full screen, straight from the roll">
+<img src="media/b108/07-settings.jpg" width="32%" alt="The In-Game Menu page (build 108, then under General): In-Game Menu, RIPSHOT and Develop Shots, each choice with its own hint">
+</p>
+
+<a id="your-own-sounds-and-music"></a>
+
+## Os teus próprios sons e música
+
+Põe uma pasta `AUDIO` ao lado do `RIPPS2.elf`. Aceita efeitos sonoros como ficheiros `.adp` com o nome dos eventos (os do RiptOPL `boot`, `cancel`, `confirm`, `cursor`, `message`, `transition`, `bd_connect`, `bd_disconnect`, e os do RIPPS2 `page_in`, `page_out`, `error`, `save`, `launch`, `disc`, `random`), e música como qualquer `.ogg` (Ogg Vorbis sem etiquetas), `.wav` de 16 bits ou (desde a build 115) `.mp3`: `bgm_01 Title.ogg`, `bgm_02 Title.ogg` definem a ordem e o título, e desde a build 105 qualquer outro nome aparece tal como está, por isso uma faixa extraída de um CD não precisa de mudar de nome. Settings > Audio > Music escolhe a faixa. O RIPPS2 escreve um `README.txt` em AUDIO (e MEDIA) a explicar tudo isto. O **[RIPPS2 Media Studio](tools/media-studio)** faz tudo isto no teu PC (e converte os teus vídeos no AVI que o Memory Files reproduz): navega até qualquer som ou canção, ouve-o como é e como a PS2 o vai tocar, converte-o (ou uma pasta inteira) em `output/AUDIO`, e copia essa pasta para o lado do `RIPPS2.elf` com uma pen USB e o Memory Files do RIPPS2. Aponta-o para o dump da BIOS da tua própria PS2 e ele gera a partir daí os sons de menu e a música de sistema da consola, prontos a usar. (`elf/theme/tools/make_adp.py` e `make_sound_pack.py` continuam a fazer o mesmo pela linha de comandos.) O RIPPS2 não traz nenhum som nem música: desde a build 95 não tem nada incluído, por isso sem uma pasta `AUDIO` fica em silêncio, e **STATUS > SOUNDS** diz o que encontrou.
+
+**Onde ficam AUDIO e MEDIA.** Mantém `AUDIO` ao lado do `RIPPS2.elf`, na unidade de onde o RIPPS2 arranca: o arranque lê-a primeiro, e com **Fast Boot** ligado (Settings > Game Sources > Cache) o som de arranque é lido com as definições, antes de as unidades e listas começarem, por isso já está a tocar quando aparece a primeira imagem das torres (desde a build 118). RIPPS2 num cartão de memória com `AUDIO` numa unidade: depois de **BIOS Sounds > Rip**, START copia só o `boot.adp` (cerca de 360 KB) para o lado do RIPPS2 no cartão, por isso o som de arranque toca enquanto os pilares sobem, e não quando a unidade está pronta (desde a build 121). Deixa lá só o que os menus tocam. `MEDIA` (CD e DVD vídeo extraídos, capturas em tamanho real) é para a tua maior unidade: nada dela é lido no arranque, por isso a velocidade de leitura dessa unidade pouco importa.
+
+<a id="the-sound-ripps2-was-made-with"></a>
+
+### O som com que o RIPPS2 foi feito
+
+O RIPPS2 tem a voz de uma PS2 que nunca saiu da sala: **os próprios sons da consola da Sony**, música de sistema da Sony e **uma faixa da Nintendo** para navegar (as escolhas do próprio designer do RIPPS2). Nada disto vem com o RIPPS2; o **[RIPPS2 Media Studio](tools/media-studio)** leva-te lá a partir do [dump da BIOS da tua própria PS2](https://pcsx2.net/docs/setup/bios/) (o ficheiro que o PCSX2 usa) e das tuas próprias cópias das músicas. O seu **Start** extrai os sons da consola para uma pasta `AUDIO` completa; este é o mapa para onde vão. Ou dispensa o PC: **Settings > Audio > BIOS Sounds > Rip** escreve os próprios sons da consola diretamente em `AUDIO`: os sons de menu e (desde a build 89) a música de arranque e de lançamento de jogo tocadas a partir das próprias notas da BIOS. O BIOS Music ao lado extrai a música do menu, a peça do relógio (ou a do ecrã vermelho, ou ambas: build 112). **[O passeio pelos sons da v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)** toca-os todos num só take, do som de arranque até um jogo a iniciar.
+
+| | Momento | Ficheiro em `AUDIO` | O som da Sony, da tua própria PS2 (Media Studio > Your BIOS) |
+|:-:|---|---|---|
+| ▶ | Arranque, enquanto as torres sobem | `boot.adp` | o **boot** ("Bootup") |
+| ◆ | Entrar numa página de informação ou em Settings | `page_in.adp` | **Menu sound 3** |
+| ◇ | Voltar à lista | `page_out.adp` | **Menu sound 2** |
+| ↕ | Cursor | `cursor.adp` | **Menu sound 7** |
+| ✕ | Confirmar | `confirm.adp` | **Menu sound 5** |
+| ○ | Cancelar | `cancel.adp` | **Menu sound 13** |
+| ⇄ | Launch Disc, Storage, Memory Files | `transition.adp` | **Menu sound 10** |
+| ✉ | Uma mensagem, uma leitura de disco | `message.adp`, `disc.adp` | **Menu sound 11** |
+| ✓ | Guardar | `save.adp` | **Menu sound 12** |
+| ! | Erro | `error.adp` | **Menu sound 4** |
+| ★ | Lançamento de jogo | `launch.adp` | o **logótipo da PS2** ("Game Boot") |
+| ◀ | Unidade ligada | `bd_connect.adp` | **Menu sound 8** |
+| ▷ | Unidade removida | `bd_disconnect.adp` | **Menu sound 9** |
+| ⚄ | Jogo ao acaso (L2 + R2) | `random.adp` | **Menu sound 6** |
+
+<sub>Os sons de menu estão numerados como o Media Studio lista um dump de SCPH-39001. O Start já põe a maioria no sítio; para este mapa, converte save, error, random e os dois sons de unidade a partir dos sons de menu aqui indicados.</sub>
+
+| Música | Faixa | De | Como obter |
+|---|---|---|---|
+| `bgm_00 Menu.wav` | **Menu** (o relógio, 5:04) | Música de sistema da PS2 (Sony): o menu principal do navegador, a peça que o relógio toca | Extrai-a no RIPPS2: **Audio Settings > BIOS Music > THE MENU MUSIC** (da própria BIOS da tua consola). Toca quando nenhuma outra faixa está escolhida |
+| `bgm_01 Red Screen.wav` | **Red Screen** (o aviso de disco, 5:31) | Música de sistema da PS2 (Sony): a peça do ecrã vermelho de "insere um disco" | Extrai-a no RIPPS2: **Audio Settings > BIOS Music > THE RED SCREEN MUSIC** (BOTH na mesma lista extrai a do menu e a do ecrã vermelho uma após a outra, cada uma no seu ficheiro) |
+| `bgm_01 Slideshow.ogg` | **Slideshow (Daytime)** | o [News Channel](https://en.wikipedia.org/wiki/News_Channel_(Wii)) da Wii, de [Kazumi Totaka](https://en.wikipedia.org/wiki/Kazumi_Totaka) (Nintendo, 2006): a sugestão a cujo ritmo o RIPPS2 foi feito, e **a música de fundo dos vídeos do RIPPS2 no YouTube** (o reel da beta, o reel e o Short da build 83, o Short da build 88) | a tua própria cópia, convertida no teu PC com o [RIPPS2 Media Studio](tools/media-studio) |
+| `bgm_02 Details.ogg` | **Details** | x-Radar Portable, [música de sistema da PSP](https://en.wikipedia.org/wiki/PlayStation_Portable_system_software) (Sony, 2010): **a música de fundo dos vídeos do RIPPS2 no YouTube** com Slideshow (o reel da beta abre com ela, e o reel e o Short da build 83) | a tua própria cópia, convertida no teu PC com o [RIPPS2 Media Studio](tools/media-studio) |
+
+<a id="covers-from-one-file-art-pack"></a>
+
+## Capas a partir de um só ficheiro (ART Pack)
+
+Desde a build 118, **Settings > Game Sources > Cache > ART Pack** junta a pasta `ART` de cada unidade iniciada num único `art.tar` na pasta `ART` da unidade que escolheres. O RIPPS2 mede a rapidez com que cada unidade lê a sua própria arte e lista a mais rápida primeiro, para o X a escolher (o SD de um SD2PSX, por exemplo). As imagens entram tal como estão (PNG e JPG já estão comprimidos: o tar só os agrupa, e um PC abre-o como qualquer tar), e as pastas `ART` ficam intactas. A partir daí as capas carregam desse ficheiro através de um índice (escrito com o pacote, por isso o primeiro arranque não precisa de o percorrer), e à pasta `ART` de um jogo para o qual o pacote foi feito nunca se pede imagem a imagem, nem as que faltam: menos leitura na unidade de onde a música toca, e arte que acompanha o cursor. A arte que o RIPPS2 transfere ou captura depois aparece logo; a que copias num PC aparece quando voltas a criar o pacote. Podes copiar o `art.tar` para a pasta `ART` de outra unidade com o Memory Files, mas cria-o na unidade onde navegas. O mesmo botão remove o pacote.
+
+**Junta um `.tar` noutro** (build 123). Empacota uma unidade grande uma vez como mestre e, mais tarde, empacota só a arte dos jogos novos e junta esse `.tar` pequeno nele, em vez de voltar a empacotar todas as pastas ART. No Memory Files, Triângulo num `.tar` > **MERGE A .TAR INTO THIS**: esse `.tar` é o que fica, e o RIPPS2 lista os outros para juntar (nessa pasta, na pasta ART de cada unidade iniciada e na sua raiz). Cache > ART Pack oferece o mesmo para o pacote em uso, e logo depois de criar um pacote. Uma imagem que está nos dois vem do `.tar` juntado, e as duas listas de jogos passam a ser uma. A junção é escrita ao lado do `.tar` mantido e só fica com o nome dele quando cada byte está na unidade, por isso uma paragem, uma unidade cheia ou um cartão retirado deixam o mantido como estava. No fim uma caixa mostra os dois ficheiros e pergunta se apaga o juntado (START apaga, Back mantém); o mantido nunca é oferecido.
+
+<a id="your-hardware"></a>
+
+## O teu hardware
+
+- **Adaptadores de rede e o HDD interno.** O RIPPS2 controla todos os adaptadores de rede com o próprio controlador DEV9 do PS2SDK, o que os carregadores atuais usam, e distingue sozinho os dois tipos: os adaptadores da baía de expansão das consolas fat (SCPH-10281, SCPH-10350, e os adaptadores IDE e SATA feitos a partir deles) e a porta incluída da slim, e o adaptador PC CARD das primeiras consolas japonesas (SCPH-10000 a 18000). Não há controlador antigo a escolher. O HDD é lido da mesma maneira seja APA ou exFAT, e um adaptador HDPro tem o seu próprio controlador. Os jogos por SMB, o UDPBD e a transferência de arte usam todos o mesmo adaptador. Se o teu não aparecer, publica o modelo do adaptador e da consola.
+- **VMC (cartões de memória virtuais).** As definições de um jogo (as linhas VMC) dão-lhe uma imagem de cartão na pasta `VMC` da unidade do jogo, na ranhura 1 ou 2. Com o núcleo OPL funcionam em USB, MX4SIO, iLink, no HDD exFAT, no HDD APA, SMB e MMCE; numa unidade FAT32 ou exFAT o cartão tem de ser um ficheiro contínuo, que é como o RIPPS2 cria os novos, e **Rebuild** corrige um antigo que não seja. Com o Neutrino funcionam em USB, MX4SIO, iLink e no HDD exFAT, mas não no HDD APA, onde o jogo usa o cartão real dessa ranhura. Um SD2PSX também pode dar a cada jogo um cartão próprio por si (GameID nas suas definições), sem VMC nenhum.
+- **Neutrino.** O RIPPS2 traz a build mais recente do Neutrino e instala-a da primeira vez que um jogo precisa. O teu próprio Neutrino vem primeiro, seja qual for a versão: põe a pasta `neutrino` dele na unidade do jogo ou num cartão de memória, ou indica o caminho em Settings > Game Launching > Neutrino Defaults, e o RIPPS2 envia-lhe só as opções que essa versão conhece. Desde a 1.1.5 recebe o número de unidade certo quando o RIPPS2 arrancou de uma pen USB e o jogo está no HDD exFAT interno (essa mistura fazia o Neutrino fechar e a consola reiniciar).
+- **Comandos USB que o RIPPS2 não conhecia** (build 129). **Settings > Controllers > Set Up A USB Pad**: liga o comando, carrega em cada botão que o RIPPS2 pedir e ele escreve o perfil `.pad` do comando (`PADS/VVVV_PPPP.pad` ao lado do RIPPS2, texto simples: [o formato](docs/plans/pad-spec.md)). Um comando com perfil navega no menu e, com o Pad Emulator ligado, joga nos jogos; `PADS/GAMES/<game ID>.pad` troca botões para um só jogo. **My Pads** verifica cada perfil e diz o que está errado em qualquer um que recuse.
+- **Apps como o SMS.** Uma app arranca a partir do seu próprio caminho. O SMS (Simple Media System) só lê isso, por isso o RIPPS2 não lhe consegue entregar um ficheiro para reproduzir; se alguma versão do SMS aceitar um, o RIPPS2 passa-lho.
+
+<a id="how-it-is-built"></a>
+
+## Como é feito
+
+`elf/build.sh` pega no RiptOPL no commit indicado em `elf/RIPTOPL_REF`, aplica a série de patches de `elf/patches`, junta o tema, as fontes e a arte do RIPPS2 de `elf/theme` e compila o `RIPPS2.elf`. O GitHub Actions corre-o em cada push ("Build RIPPS2.elf"); o ELF é o artefacto da execução.
+
+<a id="the-web-version"></a>
+
+## A versão web
+
+O RIPPS2 nasceu como um tema web, e essa versão continua aqui: **demonstração ao vivo** em https://akilluminati47.github.io/RIPPS2/
+
+| Opção | Abre |
+| --- | --- |
+| **Launch Disc** | Os pilares, com uma explosão dupla disparada para o centro do campo |
+| **Storage** | A prateleira de elfos, à frente dos pilares |
+| **Memory Files** | Os orbes |
+
+A marca da PS2 fica sob a opção selecionada e voa entre elas: um voo rasante até à vizinha, um mergulho mais fundo com uma moeda ao ar quando vai de uma ponta à outra. As etiquetas seguem a língua do sistema do visitante (18 línguas; pode-se forçar com `?lang=fr` e semelhantes). O que a fonte do menu não consegue desenhar passa para uma sans limpa, a palavra inteira.
+
+**Prateleira de elfos:** a montra do Storage. A tábua de madeira do uOPL à frente das torres e, sobre ela, a marca do RIPPS2 dez vezes: o chapéu de feltro de um elfo morto, de aba para baixo na sua própria poça de sangue, um por cada Color Theme (RIPPS2, Ember, Blood, Ectoplasm, Amethyst, Bone, Tangerine, Flamingo, Turquoise, Moonlight). Veem-se três de cada vez, como o RIPFLOW mostra capas: o do meio vira-se para olhar para o ponteiro (quanto mais perto, mais depressa vira) e baloiça na sua mola, e Left / Right ou um toque em qualquer vizinho roda a prateleira. Para no chapéu azul do RIPPS2. Carregar num chapéu envia o seu Color Theme pelas torres (a própria matriz de cor do ELF, por isso as torres ficam como esse tema as pinta): um toque é uma rajada de cor que atravessa o campo e volta ao azul do RIPPS2; mantido, o tema fica sobre todo o render até o largares.
+
+**Telemóveis na vertical** (`letterbox.js`): o site corre num leitor com barras no topo do ecrã, só com a margem da câmara e dos cantos curvos por cima, disposto como num ecrã deitado e escalado para caber. Por baixo, uma seta para o leitor, uma nota luminosa para fazer zoom com os dedos ou rodar o telemóvel, e um interruptor entre uma caixa 16:9 e uma 4:3 (memorizado); uma nota no canto inferior direito diz RIPPS2 (vision interactive mock-up). Rodar o telemóvel volta à página inteira, na página que o leitor estava a mostrar. `?letterbox=1` mostra o leitor num computador.
+
+**Pilares:** torres de dados de vidro com arestas brilhantes, juntas, células a piscar e impulsos de energia, sobre um chão refletor. As torres erguem-se do chão ao carregar, depois respiram e ondulam; o ponteiro envia ondas e um clique dispara uma explosão. Adapta a resolução em dispositivos lentos, pausa fora do ecrã e respeita o movimento reduzido.
+
+**Orbes:** doze formações (Browser Orbit, Borromean Rings, Torus Orbit, Icosahedron, Double Helix, Strange Attractor, Trefoil Knot, Mobius Strip, Klein Bottle, Golden Spiral, Lissajous e Seven-Point Star), cada uma com tantos orbes quantos precisa, a separarem-se e a juntarem-se entre elas. Tal como no Memory Files do ELF, o contorno de cada forma desenha-se com um clarão quando o separador abre e sempre que uma formação assenta, fica uns dois segundos e desvanece. Mantém a cena premida (ou mantém `L`, ou o L2 ou Cross de um comando) para veres o caminho inteiro, parado; arrasta enquanto manténs para rodar a formação, que desliza até parar quando a largas (o manípulo direito de um comando também a roda). Muda com um deslizar, os glifos Left / Right ao lado do nome, as teclas de seta, ou a cruz direcional ou os botões de ombro de um comando.
+
+Para o correr localmente, serve a pasta (os módulos ES precisam de um servidor web) e abre http://localhost:8000:
+
+```bash
+python -m http.server 8000
+```
+
+Acrescenta `?t=12` para saltar a introdução dos pilares, ou `?f=3#memory-files` para abrir uma formação específica (as ligações antigas para `orbs.html` vão parar ao Memory Files).
+
+<a id="credits"></a>
+
+## Créditos
+
+O RIPPS2 é desenhado e dirigido por akilluminati47 e feito com o Claude (Anthropic). Testadores: ripto, nuno6573, zackcage6, eliminator1403, FifthFox, Mr.sus.60, lukeatmynose, ahavasi e todos os que testam no Discord. Issues no GitHub: DarkNerdShawny e todos os que abrem uma (uma issue é a melhor forma de o RIPPS2 ser atualizado: sê como eles e [abre uma](https://github.com/akilluminati47/RIPPS2/issues)). Um agradecimento especial também a todo o carinho do YouTube: é um prazer ajudar seja como for que me contactes.
+
+- [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader) de NathanNeurotic e a equipa do [Open PS2 Loader](https://github.com/ps2homebrew/Open-PS2-Loader) (AFL-3.0), sobre os quais o RIPPS2 é feito. Os créditos completos deles estão na página About do RIPPS2.
+- [Neutrino](https://github.com/rickgaiser/neutrino) de [rickgaiser](https://github.com/rickgaiser) (AFL-3.0), o emulador de dispositivos pequeno, rápido e modular que é o segundo núcleo de jogos do RIPPS2: o RIPPS2.elf traz a build mais recente (v1.8.0-61-g7be8de2, 31 de agosto de 2026) sem modificações e instala-a onde escolheres, e o teu próprio Neutrino de qualquer versão vem primeiro ([`elf/neutrino`](elf/neutrino/README.md)). Escolhe-o como Default Loader Core em Settings > Game Launching.
+- [xeRAbora](https://github.com/hacan359/xerabora) de [hacan359](https://github.com/hacan359): o cliente de RetroAchievements para PC e o código de RetroAchievements do lado da consola que o RIPPS2 herda através do RiptOPL (MIT / AFL-3.0). **LEFT TO HUNT** lê o `GET /state` da página de interface na porta 18280, que não faz parte do protocolo documentado da consola e pode mudar entre alfas, por isso o RIPPS2 está fixado na **[v0.1.0-alpha.18](https://github.com/hacan359/xerabora/releases/tag/v0.1.0-alpha.18)**, a versão que o autor recomenda (a alpha.10 é instável, e a chave `checked_only` que o LEFT TO HUNT lê só está no `/state` a partir da alpha.11); verificado contra o código de `/state` dessa versão, as outras não foram testadas.
+- [ESR](https://gitlab.com/ffgriever/esr/) de ffgriever: o Launch Disc inicia a tua própria cópia para discos ESR.
+- [Ember](https://github.com/Gageformer/Ember/releases) de Gageformer, o emulador de PS1 para PS2: o RIPPS2 inicia o teu próprio `ember.elf` a partir da pasta `EMBER` da unidade onde estão os teus jogos (as builds 71 a 112 traziam a sua build Beta-2; [`elf/ember`](elf/ember/README.md)). Traz a tua própria BIOS de PS1.
+- [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/) de krHACKen inicia jogos de PS1 a partir da tua própria cópia, que o RIPPS2 encontra nas tuas unidades e cartões de memória ([`elf/popstarter`](elf/popstarter/README.md)).
+- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) de El Isra (israpps) e [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) de saildot4k: o BOOT LOCK edita a configuração deles para que a consola inicie o RIPPS2 (desde a build 116, também a do FreeMcBoot e do OSDMenu). Desde a build 69, o RIPPS2.elf traz o PS2BBL 1.2.0 assinado de El Isra sem alterações, como dados, para o **Boot Loader > Manage** (BIBLE) instalar num cartão de memória. O PS2BBL é GPL-3.0: a licença e o código exato a partir do qual foi compilado ([commit a063bb3](https://github.com/israpps/PlayStation2-Basic-BootLoader/tree/a063bb3)) estão em [`elf/bible`](elf/bible/README.md). A ligação ao cartão usa o SECRMAN aberto do ps2sdk (AFL); não há chaves envolvidas.
+- **Cartões MMCE**: firmware [sd2psXtd](https://sd2psxtd.github.io/) num SD2PSX, como o cartão [SD2PSXTD](https://github.com/LinkRetro/SD2PSXTD-Hardware), lido através do [mmceman](https://github.com/ps2-mmce/mmceman) (ps2-mmce): jogos, VMC e definições no SD do cartão. **Mantém o firmware atualizado** ([sd2psxtd.github.io/download](https://sd2psxtd.github.io/download)). Comprimir um jogo no cartão precisa do sd2psXtd 1.4.0 ou mais recente (muda o nome da imagem terminada para o sítio certo); o RIPPS2 pergunta primeiro ao cartão, por isso com firmware antigo és avisado antes de começar o que quer que seja e não se pode comprimir lá. O cartão não consegue indicar o espaço livre, por isso mesmo com a 1.4.0 não há verificação de espaço antes de comprimir: deixa espaço para o jogo e o ZSO lado a lado (se o cartão encher, o trabalho para e remove o que escreveu).
+- [wLaunchELF](https://github.com/ps2homebrew/wLaunchELF) da equipa ps2homebrew, e o wLaunchELF R3Z de NathanNeurotic: as referências de comportamento do explorador do Memory Files e da sua grelha de definições.
+- [Apollo Save Tool](https://github.com/bucanero/apollo-ps2) de bucanero: a referência para as ferramentas de gravações (PSU, imagens de cartão). O código é do próprio RIPPS2, escrito a partir dos formatos.
+- [ps2sdk](https://github.com/ps2dev/ps2sdk) da equipa ps2dev: o sistema de ficheiros do cartão de memória (mcman) e o controlador de teclado USB.
+- mymc de Ross Ridge e [mymcplus](https://github.com/thestr4ng3r/mymcplus) de Florian Maerkl: é com eles que se verificam as escritas de imagens de cartão do RIPPS2.
+- [minimp3](https://github.com/lieff/minimp3) de lieff (CC0 1.0, domínio público): a reprodução de MP3 no Memory Files e no AUDIO, desde a build 115, sem alterações em `thirdparty/minimp3` do RiptOPL.
+- Planet N Compact da [Iconian Fonts](https://www.iconian.com) (`assets/master.ttf`), e Planet N Condensed (`elf/theme/fonts/ripps2_condensed.ttf`, incluída desde a build 115 como `builtin:ripps2condensed`, a letra de listas do Adapt). A [RIPPS2 Sleek](https://github.com/akilluminati47/RIPPS2-fonts) (Regular, Bold, Bold Case) foi desenhada para o RIPPS2; o seu próprio repositório tem as fontes em TTF e WOFF2 sob a OFL.
+- Versão web: [three.js](https://threejs.org) r160, MIT (ver `vendor/LICENSE`); [Albert Sans](https://github.com/usted/Albert-Sans), SIL Open Font License (ver `vendor/fonts/OFL.txt`).
+- A prateleira de elfos da maqueta web (Storage, [akilluminati47.github.io/RIPPS2](https://akilluminati47.github.io/RIPPS2/)) assenta na tábua de madeira do [uOPL](https://github.com/SlimPugGamer/uOPL) (`gfx/plank.png`, AFL-3.0).
+- A marca do RIPPS2, o elfo morto com o chapéu azul, é original: renderizada em three.js (MIT) a partir de `media/deadelf/scene.html` (todos os ângulos e cores em `media/deadelf`), com uma versão vetorial em `assets/ripps2-deadelf.svg`.
+- O reel e o Short da build 83 (no YouTube) usam Details (x-Radar Portable, música de sistema da PSP, Sony), Slideshow (Daytime) de Kazumi Totaka, do News Channel da Wii (Nintendo, 2006), e o próprio tema Menu da PS2 (Sony); o reel da build 66, Slideshow (Daytime); a música do reel da build 55 é original. A arte de jogos vista nos testes veio da base de dados de arte de OPL da comunidade e não faz parte do RIPPS2.
+
+Projeto de fãs não oficial. PlayStation, PS1, PS2, o logótipo da PlayStation e o logótipo da PS2 são marcas comerciais da Sony Interactive Entertainment. Este projeto não é afiliado nem apoiado pela Sony.
+
+<p align="center"><img src="media/deadelf/ripps2-deadelf-top.png" width="140" alt="The dead elf, from above"></p>
+
+<p align="center"><sub><b>RIPPS2</b> &nbsp;&middot;&nbsp; <a href="https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf">Transferir</a> &nbsp;&middot;&nbsp; <a href="https://github.com/akilluminati47/BIBLE">BIBLE</a> &nbsp;&middot;&nbsp; <a href="https://github.com/akilluminati47/RIPPS2-themes">Temas</a> &nbsp;&middot;&nbsp; <a href="https://github.com/akilluminati47/RIPPCSX2">RIPPCSX2</a> &nbsp;&middot;&nbsp; <a href="https://github.com/akilluminati47/RIPPS2-fonts">Tipos de letra</a> &nbsp;&middot;&nbsp; <a href="https://akilluminati47.github.io/RIPPS2/">Site</a> &nbsp;&middot;&nbsp; <a href="https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/">psx-place</a> &nbsp;&middot;&nbsp; <a href="https://discord.gg/Z7m9u5kby">Discord</a></sub></p>
+

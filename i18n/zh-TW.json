@@ -1,0 +1,486 @@
+{
+ "016f31732ad4": {
+  "en": "016f31732ad4",
+  "t": "| ▶ | 開機，高塔升起時 | `boot.adp` | **boot** (\"Bootup\") |"
+ },
+ "03be7325b77b": {
+  "en": "03be7325b77b",
+  "t": "RIPPS2 由 akilluminati47 設計和主導，與 Claude (Anthropic) 一起打造。測試者：ripto、nuno6573、zackcage6、eliminator1403、FifthFox、Mr.sus.60、lukeatmynose、ahavasi，以及所有在 Discord 上測試的人。GitHub 上的 issue：DarkNerdShawny 和每一個提 issue 的人（issue 是讓 RIPPS2 更新的最好方式：向他們學習，[提一個](https://github.com/akilluminati47/RIPPS2/issues)）。也特別感謝 YouTube 上的所有支援：無論你透過哪種方式聯絡我，我都樂意幫忙。"
+ },
+ "064d7e03de66": {
+  "en": "064d7e03de66",
+  "t": "## 影片"
+ },
+ "096bf60d4d7a": {
+  "en": "096bf60d4d7a",
+  "t": "| ○ | 取消 | `cancel.adp` | **Menu sound 13** |"
+ },
+ "0bf89c68477e": {
+  "en": "0bf89c68477e",
+  "t": "- **PS1 遊戲**會變成 `EMBER/games/<Title>/` 中的 BIN 和 CUE，可用 Ember 遊玩。"
+ },
+ "0e6d84eabbaa": {
+  "en": "0e6d84eabbaa",
+  "t": "RIPPS2 聽起來像一臺從未離開客廳的 PS2：**Sony 主機自己的聲音**、Sony 的系統音樂，以及瀏覽時的 **一首 Nintendo 曲目**（RIPPS2 設計者本人的選擇）。這些都不隨 RIPPS2 附帶；**[RIPPS2 Media Studio](tools/media-studio)** 會用 [你自己 PS2 的 BIOS 轉儲](https://pcsx2.net/docs/setup/bios/)（PCSX2 使用的檔案）和你自己的音樂帶你實現它。**Start** 把那些主機聲音提取成一個完整的 `AUDIO` 資料夾；這就是它們的對應表。或者跳過電腦：**Settings > Audio > BIOS Sounds > Rip** 直接把主機自己的聲音寫入 `AUDIO`：選單音效以及（從組建 89 起）由 BIOS 自己的樂譜演奏的開機和遊戲啟動音樂。旁邊的 BIOS Music 提取選單音樂，即時鐘的曲子（或紅屏的曲子，或兩者：組建 112）。**[v1.1.2 聲音巡覽](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)** 一鏡到底播放全部，從開機聲到啟動遊戲。"
+ },
+ "1238c5cafd27": {
+  "en": "1238c5cafd27",
+  "t": "- [xeRAbora](https://github.com/hacan359/xerabora)，由 [hacan359](https://github.com/hacan359) 開發：電腦上的 RetroAchievements 客戶端，以及 RIPPS2 透過 RiptOPL 繼承的主機端 RetroAchievements 程式碼（MIT / AFL-3.0）。**LEFT TO HUNT** 讀取儀表板在埠 18280 上的 `GET /state` 端點，它不屬於有文件的主機協議，可能在 alpha 之間變化，因此 RIPPS2 固定在 **[v0.1.0-alpha.18](https://github.com/hacan359/xerabora/releases/tag/v0.1.0-alpha.18)**，即其作者推薦的版本（alpha.10 不穩定，而 LEFT TO HUNT 讀取的 `checked_only` 鍵只在 alpha.11 及以後的 `/state` 中存在）；已對照該版本的 `/state` 程式碼核對，其他版本未經測試。"
+ },
+ "1436013beaee": {
+  "en": "1436013beaee",
+  "t": "- 網頁版：[three.js](https://threejs.org) r160，MIT（見 `vendor/LICENSE`）；[Albert Sans](https://github.com/usted/Albert-Sans)，SIL Open Font License（見 `vendor/fonts/OFL.txt`）。"
+ },
+ "151386afa752": {
+  "en": "151386afa752",
+  "t": "| 影片 | 時長 | 內容 |"
+ },
+ "1a34a34f9fd6": {
+  "en": "1a34a34f9fd6",
+  "t": "**把一個 `.tar` 合併到另一個**（組建 123）。先把一個大磁碟機打包一次作為主包，之後只打包新遊戲的圖片，再把那個小 `.tar` 合並進去，而不必重新打包所有 ART 資料夾。在 Memory Files 中，在 `.tar` 上按三角 > **MERGE A .TAR INTO THIS**：這個 `.tar` 就是要保留的那個，RIPPS2 會列出其他可合併的（同一資料夾中、每個已啟動磁碟機的 ART 資料夾及其根目錄中）。Cache > ART Pack 也會為正在使用的包，以及剛打包完時，提供同樣的選項。兩邊都有的圖片取自新加入的 `.tar`，兩個遊戲清單合而為一。合併結果寫在保留的 `.tar` 旁邊，只有在每個位元組都寫入磁碟機後才會取用它的名字，所以中途停止、磁碟機寫滿或卡被拔出，保留的那個都保持原樣。最後會彈出對話方塊，寫明兩個檔名並詢問是否刪除新加入的那個（START 刪除，Back 保留）；保留的那個永遠不會被提議刪除。"
+ },
+ "1b244f8b7fa1": {
+  "en": "1b244f8b7fa1",
+  "t": "- [minimp3](https://github.com/lieff/minimp3)，由 lieff 開發（CC0 1.0，公有領域）：Memory Files 和 AUDIO 中的 MP3 播放，從組建 115 起，原樣放在 RiptOPL 的 `thirdparty/minimp3` 中。"
+ },
+ "1cbabe77613d": {
+  "en": "1cbabe77613d",
+  "t": "| ! | 錯誤 | `error.adp` | **Menu sound 4** |"
+ },
+ "1cc8e8da2cac": {
+  "en": "1cc8e8da2cac",
+  "t": "- [Ember](https://github.com/Gageformer/Ember/releases)，由 Gageformer 開發，PS2 上的 PS1 模擬器：RIPPS2 從你的遊戲所在磁碟機的 `EMBER` 資料夾執行你自己的 `ember.elf`（組建 71 到 112 曾附帶其 Beta-2 組建；[`elf/ember`](elf/ember/README.md)）。請自備 PS1 BIOS。"
+ },
+ "1d0696b1b396": {
+  "en": "1d0696b1b396",
+  "t": "- **MMCE 卡**：SD2PSX 上的 [sd2psXtd](https://sd2psxtd.github.io/) 韌體，例如 [SD2PSXTD](https://github.com/LinkRetro/SD2PSXTD-Hardware) 卡，透過 [mmceman](https://github.com/ps2-mmce/mmceman)（ps2-mmce）讀取：遊戲、VMC 和設定都在卡的 SD 上。**請保持韌體為最新** ([sd2psxtd.github.io/download](https://sd2psxtd.github.io/download))。在卡上壓縮遊戲需要 sd2psXtd 1.4.0 或更新版本（它透過重新命名把完成的映象放到位）；RIPPS2 會先詢問卡，所以使用舊韌體時你會在開始任何操作前得知，並且無法在那裡壓縮。卡無法報告剩餘空間，所以即使是 1.4.0 也不會在壓縮前檢查空間：請為遊戲和它的 ZSO 並存留出空間（如果卡寫滿，任務會停止並刪除已寫入的內容）。"
+ },
+ "1eb610e76023": {
+  "en": "1eb610e76023",
+  "t": "- **Neutrino。** RIPPS2 附帶 Neutrino 的最新組建，並在遊戲首次需要時安裝它。你自己的 Neutrino，無論什麼版本，都優先：把它的 `neutrino` 資料夾放在遊戲所在磁碟機或記憶卡上，或在 Settings > Game Launching > Neutrino Defaults 中給出路徑，RIPPS2 只會向它傳送該版本認識的選項。從 1.1.5 起，當 RIPPS2 從 USB 磁碟機啟動而遊戲在 exFAT 內建 HDD 上時，會傳給它正確的磁碟機編號（這種組合曾導致 Neutrino 關閉、主機重啟）。"
+ },
+ "21fb04fdf89a": {
+  "en": "21fb04fdf89a",
+  "t": "| [v1.1.4 轉輪短片](https://youtube.com/shorts/iQqR9lsar9Q)（[或在 GitHub 上](https://akilluminati47.github.io/RIPPS2/media/b114/ripps2-v114-wheels-short.mp4)） | 1:10 | 按住 SELECT 出現的轉輪 |"
+ },
+ "24fdb4df1618": {
+  "en": "24fdb4df1618",
+  "t": "## 用你的語言"
+ },
+ "2642f599dfad": {
+  "en": "2642f599dfad",
+  "t": "> 2. 把它複製到 隨身碟或記憶卡，用 FreeMcBoot、PS2BBL、wLaunchELF 或你平時執行 homebrew 的工具啟動。在 PCSX2 中：**System > Start File** 並選擇 `RIPPS2.elf`。"
+ },
+ "274ed9095eb6": {
+  "en": "274ed9095eb6",
+  "t": "> [為 RIPPS2 製作主題](https://github.com/akilluminati47/RIPPS2-themes)（無需重新組建，方便AI 代理） | [填充 AUDIO 和 MEDIA 資料夾](#the-sound-ripps2-was-made-with) 使用 [RIPPS2 Media Studio](tools/media-studio)（音效、音樂和影片；[下載 Windows 版](https://github.com/akilluminati47/RIPPS2/releases/download/media-studio/RIPPS2-Media-Studio.zip)） | [以真正的 720p 和 1080i 檢視主題：RIPPCSX2](https://github.com/akilluminati47/RIPPCSX2/releases/latest)（帶 HDTV 輸出的 PCSX2）"
+ },
+ "293741c370f1": {
+  "en": "293741c370f1",
+  "t": "PS2 標誌在所選專案下方移動，並在專案之間飛行：到相鄰專案轉一圈，從一端到另一端則是更深的拋硬幣式俯衝。標籤跟隨訪客的系統語言（18 種語言，可用 `?lang=fr` 等切換）。選單字型無法繪製的內容會以整個單詞為單位改用乾淨的無襯線字型。"
+ },
+ "2a6f4616703b": {
+  "en": "2a6f4616703b",
+  "t": "| ▷ | 磁碟機斷開 | `bd_disconnect.adp` | **Menu sound 9** |"
+ },
+ "2bb78085b36f": {
+  "en": "2bb78085b36f",
+  "t": "| [組建 88 短片](https://www.youtube.com/shorts/Sqprz22tdtg) | Short | 配合 Slideshow 的組建 88 |"
+ },
+ "2f0ee80297df": {
+  "en": "2f0ee80297df",
+  "t": "- **MEMORY FILES** 是內建檔案瀏覽器：在記憶卡、USB、MMCE 和 HDD 之間複製、移動和刪除（每次複製都會重新讀取校驗）；把 OPL 的 VMC 卡映象當作資料夾開啟；匯出和匯入 PSU 存檔；編輯文字檔案；開啟圖片，**全屏**播放 AVI 影片並帶有**播放控制**（Cross 播放/暫停，Circle 停止，L1/R1 跳 10 秒，L2/R2 音量，START 迴圈；提示在播放時淡出，暫停時保留）（[RIPPS2 Media Studio](tools/media-studio) 能把任何影片，包括手機拍的 MP4，轉換成這種檔案），播放 `.mp3`、`.ogg` 和 `.wav` 檔案，或標記多個一起開啟，在 Launch Disc 的 CD 播放器中像一張光碟一樣播放；**`.tar` 是一個藍色資料夾**，你可以開啟它、往裡貼上圖片、把成員複製出來（組建 125）；在 `.tar` 上按三角可把另一個 ART 的 `.tar` 合並進來（[見下文](#covers-from-one-file-art-pack)）。**開啟的資料夾是第一行**，顯示專案數、已標記數、總大小和磁碟機剩餘空間；在它上面按 Cross 或 Square 標記全部（若已有標記則全部取消）。START 開啟它的設定，其中的 **SEARCH FILES** 可在任何已啟動的磁碟機上按名稱查詢檔案或資料夾並就地展開目錄樹。在記憶卡上按 Square 開啟 **CARD MANAGER**（把卡備份為 VMC、把 VMC 的存檔寫入卡、清除遊戲存檔、格式化），在 APA HDD 上按 Square 開啟 **HDD MANAGER**（它的分割槽、大小，以及在完整檢查分割槽表後刪除一個分割槽）。"
+ },
+ "30db0e04b1f1": {
+  "en": "30db0e04b1f1",
+  "t": "> 3. 告訴我們效果如何：[psx-place 帖子](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)、[一個 issue](https://github.com/akilluminati47/RIPPS2/issues)，或開發者 Discord 的 **#RIPPS2**，[discord.gg/Z7m9u5kby](https://discord.gg/Z7m9u5kby)（邀請有效期至 2026 年 12 月 1 日）。"
+ },
+ "324016ff9971": {
+  "en": "324016ff9971",
+  "t": "**精靈架:** Storage 的展示架。高塔前面的一塊 uOPL 木板，上面有十個 RIPPS2 標誌：一頂死去精靈的氈帽，帽簷朝下立在自己的血泊中，每個 Color Theme 一頂（RIPPS2、Ember、Blood、Ectoplasm、Amethyst、Bone、Tangerine、Flamingo、Turquoise、Moonlight）。一次可見三頂，就像 RIPFLOW 展示封面一樣：中間的帽子轉向游標（越近轉得越快）並在彈簧上搖擺，Left / Right 或點按相鄰的帽子會轉動架子。它停在藍色的 RIPPS2 帽子上。按下的帽子會把自己的 Color Theme 送到高塔上（使用 ELF 自己的顏色矩陣，所以高塔看起來和該主題繪製的一樣）：點按是一道穿過場地的色彩噴發，然後回到 RIPPS2 藍；按住則主題會覆蓋整個畫面直到你鬆開。"
+ },
+ "376d12fba45e": {
+  "en": "376d12fba45e",
+  "t": "- [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader)，由 NathanNeurotic 和 [Open PS2 Loader](https://github.com/ps2homebrew/Open-PS2-Loader) 團隊開發（AFL-3.0），RIPPS2 建立在它們之上。他們的完整鳴謝在 RIPPS2 的 About 頁面中。"
+ },
+ "39ea3ac422b6": {
+  "en": "39ea3ac422b6",
+  "t": "| ⇄ | Launch Disc、Storage、Memory Files | `transition.adp` | **Menu sound 10** |"
+ },
+ "419e7484fd4a": {
+  "en": "419e7484fd4a",
+  "t": "| [v1.1.4 介紹短片](https://youtu.be/UwuKWfRtUEs) | 7:55 | v1.1.4 的全部內容，章節見簡介 |"
+ },
+ "42ded21b4105": {
+  "en": "42ded21b4105",
+  "t": "## 你的硬體"
+ },
+ "438133fa30ae": {
+  "en": "438133fa30ae",
+  "t": "| `bgm_01 Red Screen.wav` | **Red Screen**（光碟警告，5:31） | PS2 系統音樂（Sony）：紅色 \"請放入光碟\" 畫面的曲子 | 在 RIPPS2 中提取：**Audio Settings > BIOS Music > THE RED SCREEN MUSIC**（同一清單中的 BOTH 會連續提取選單曲和紅屏曲，各存為一個檔案） |"
+ },
+ "47695ff8d2b4": {
+  "en": "47695ff8d2b4",
+  "t": "新增 `?t=12` 可跳過柱子的開場，或用 `?f=3#memory-files` 開啟特定陣列（舊的 `orbs.html` 連結會跳到 Memory Files）。"
+ },
+ "482757895f23": {
+  "en": "482757895f23",
+  "t": "| ◆ | 進入資訊頁或 Settings | `page_in.adp` | **Menu sound 3** |"
+ },
+ "49d709feecf0": {
+  "en": "49d709feecf0",
+  "t": "- **像 SMS 這樣的應用。** 應用從它自己的路徑啟動。SMS (Simple Media System) 只讀取這個路徑，所以 RIPPS2 無法交給它一個檔案去播放；如果某個版本的 SMS 接受檔案，RIPPS2 會把檔案傳過去。"
+ },
+ "4b3d5484bd60": {
+  "en": "4b3d5484bd60",
+  "t": "從組建 118 起，**Settings > Game Sources > Cache > ART Pack** 會把每個已啟動磁碟機的 `ART` 資料夾打包成你所選磁碟機 `ART` 資料夾中的單個 `art.tar`。RIPPS2 會測量每個磁碟機讀取自己圖片的速度，並把最快的放在最前面，讓 X 直接選中（例如 SD2PSX 中的 SD 卡）。圖片原樣放入（PNG 和 JPG 已經壓縮過：tar 只是把它們並排放，電腦可以像開啟任何 tar 一樣開啟它），`ART` 資料夾保持不動。此後封面透過索引從那一個檔案載入（索引與包一起寫入，所以第一次啟動無需掃描），並且永遠不會逐張圖片地查詢為其打包的遊戲的 `ART` 資料夾，即使是缺失的圖片：正在播放音樂的磁碟機讀取更少，封面能跟上游標。RIPPS2 之後下載或拍攝的圖片會立即顯示；你在電腦上覆制的圖片在重新打包後顯示。你可以用 Memory Files 把 `art.tar` 複製到另一個磁碟機的 `ART` 資料夾，但最好在你瀏覽所用的磁碟機上打包。同一個按鈕可刪除該包。"
+ },
+ "505102f81904": {
+  "en": "505102f81904",
+  "t": "- **PS2 遊戲**會變成磁碟機 DVD 或 CD 資料夾中的 ISO，出現在你的遊戲清單裡。超過 4 GB 且要存到 FAT32 磁碟機的遊戲，會改為以 Open PS2 Loader 方式的 1 GB 分塊加 ul.cfg 儲存；在 exFAT 磁碟機（隨身碟、MX4SIO、iLink 或內建 HDD）上則保持為單個 ISO。開始提取前會檢查磁碟機的空間。"
+ },
+ "5157012c15a8": {
+  "en": "5157012c15a8",
+  "t": "| `bgm_01 Slideshow.ogg` | **Slideshow (Daytime)** | Wii 的 [新聞頻道](https://en.wikipedia.org/wiki/News_Channel_(Wii))，[戶高一生](https://en.wikipedia.org/wiki/Kazumi_Totaka) 作曲（Nintendo，2006）：RIPPS2 按其節奏打造的推薦曲目，也是 **RIPPS2 YouTube 影片的背景音樂**（測試版介紹短片、組建 83 介紹短片和短片、組建 88 短片） | 你自己的副本，在電腦上用 [RIPPS2 Media Studio](tools/media-studio) 轉換 |"
+ },
+ "51d585932990": {
+  "en": "51d585932990",
+  "t": "| [組建 83 介紹短片](https://youtu.be/A27N9s6tumk) 和 [它的短片](https://youtube.com/shorts/4QBe5UO2KxM) | | 組建 83，alpha |"
+ },
+ "5326d010024e": {
+  "en": "5326d010024e",
+  "t": "> [組建 126 到 129 的新內容](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.2.9-beta) | [Changelog](CHANGELOG.md) | **[影片](#videos)** | [所有版本](https://github.com/akilluminati47/RIPPS2/releases) | [在 psx-place 討論](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
+ },
+ "540fc82eab7e": {
+  "en": "540fc82eab7e",
+  "t": "- [ESR](https://gitlab.com/ffgriever/esr/)，由 ffgriever 開發：Launch Disc 會為 ESR 光碟執行你自己的副本。"
+ },
+ "569a0601fd4f": {
+  "en": "569a0601fd4f",
+  "t": "**柱子:** 帶有發光邊緣、接縫、閃爍單元和能量脈衝的玻璃資料塔，立在反光的地面上。載入時高塔從地面升起，然後呼吸起伏；游標會推出波紋，點選會引發爆發。它會在慢速裝置上調整解析度，在螢幕外暫停，並遵守減少動態效果的設定。"
+ },
+ "5946fd60ebad": {
+  "en": "5946fd60ebad",
+  "t": "從組建 100 起進入**測試版**：一百個 alpha 組建，由 ripto、nuno6573、zackcage6、eliminator1403、FifthFox 和 Mr.sus.60 在主機和 PCSX2 上測試，測試版階段還有 lukeatmynose 和 ahavasi，以及所有在 Discord 上測試的人，特別感謝 YouTube 上的所有支援。把你常用的載入器留在手邊，告訴我們哪裡壞了：是回饋造就了 RIPPS2。**讓 RIPPS2 更新的最好方式是 [GitHub 上的 issue](https://github.com/akilluminati47/RIPPS2/issues)**：DarkNerdShawny 提了三個，v1.1.7 的 FreeMcBoot 修復就來自其中之一。向 DarkNerdShawny 學習。"
+ },
+ "5a506ef4aa18": {
+  "en": "5a506ef4aa18",
+  "t": "從組建 104 起，RIPPS2 顯示的每個詞都已翻譯，包括它自己的畫面和提示，以及 Open PS2 Loader 的設定。每個版本都附帶 **`RIPPS2-languages.zip`**：把其中的 `LNG` 資料夾複製到 隨身碟根目錄、HDD 的 OPL 分割槽或 MMCE 卡（或把裡面的檔案複製到 `mc0:/RIPPS2`），然後在 **Settings > Interface > Language** 中選擇語言。33 種語言可完整閱讀 RIPPS2，從法語、西班牙語、德語和葡萄牙語到俄語、希臘語、土耳其語、越南語、寮國語、中文、日語和韓語，阿拉伯語和波斯語則從右到左、字母相連；需要其他文字的語言，其字型放在包中旁邊。修正和新語言請提交到 [`elf/lang`](elf/lang)（每種語言一個 `<Language>.yml`；`python3 elf/lang/ripps2lang.py check` 會檢查它們）。"
+ },
+ "5ab6ef993999": {
+  "en": "5ab6ef993999",
+  "t": "**豎握的手機** (`letterbox.js`)：網站在螢幕頂部的信箱式播放器中播放，上方只有攝像頭凹口和圓角，像橫屏一樣排布並縮放以適應。下方有一個指向播放器的向上箭頭、一條提示雙指縮放或旋轉手機的發光說明，以及一個在 16:9 和 4:3 畫框之間切換的按鈕（會被記住）；右下角的腳註寫著 RIPPS2 (vision interactive mock-up)。旋轉手機會回到完整頁面，停在播放器所顯示的頁面。`?letterbox=1` 可在桌面上顯示播放器。"
+ },
+ "5b40770847c8": {
+  "en": "5b40770847c8",
+  "t": "- **可以自定義的主題。** 每個遊戲的圖片上覆蓋磨砂玻璃面板，一個用於封面的 **Grid** 元素，右搖桿傾斜可像一張紙一樣移動整個畫面，還有第一個主題包 **[RIPPS2-themes](https://github.com/akilluminati47/RIPPS2-themes)**：Adapt 和 Adapt Rx，每個配置都以所有鍵的詞彙表開頭，併為想做更多主題的人（或AI 代理）提供檢查器和鍵參考。RIPGRID 和 RIPFLOW 為內建，為 Open PS2 Loader 製作的主題原樣可用。在遊戲清單中按住 **SELECT** 4.2 秒，你的主題會在一個可選擇的面板中開啟（Settings > Interface > Hold SELECT：List，Cycle 切換到下一個主題，或 Off）。在 RIPGRID 和 RIPFLOW 中，把右搖桿向一側推 0.42 秒，選中的盒子會翻到背面封面，網格則一劃翻頁。"
+ },
+ "5b8af474eebc": {
+  "en": "5b8af474eebc",
+  "t": "- **Cover Art** (Settings > Network)：PS2 自己從 xlenore 在 GitHub 上的 ps2-covers 為每個沒有封面的 PS2 遊戲下載封面（需要網線和網際網路）：選擇 **HD**（280 × 400，在 HD 畫面上更清晰）或 **Standard**（140 × 200，和 Open PS2 Loader 的封面一樣），都是 8 位並帶抖動；已有封面的遊戲會保留原封面（組建 125）。**720p 和 1080i** 一次繪製完成：一個 640 畫素寬、包含該模式所有行的幀，由主機自己的顯示電路拉伸到螢幕上，因此每個動畫都保持速度。**RIPFLOW 在 16:9 畫面上顯示五張封面**（720p、1080i 或開啟 Widescreen），4:3 上顯示三張，除非你選擇數量，否則會自動展開（組建 125）。你的 **AUDIO** 資料夾在任何磁碟機上都能找到，高塔和光球整夜以穩定的 60 fps 旋轉。"
+ },
+ "5ea970fcdc1b": {
+  "en": "5ea970fcdc1b",
+  "t": "> 1. **[下載 RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)**（始終是最新版本）（一個檔案，2,743 KB；或 **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**，2,200 KB，同樣的內容但不含 BIBLE 用的 PS2BBL 和 Neutrino），需要的話再下載 **[主題包](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)**（Adapt 和 Adapt Rx，第 128 版：各一個配置和一張圖片；RIPGRID 和 RIPFLOW 為內建），以及 **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)**，用你的語言使用 RIPPS2（33 種語言；每個版本都附帶）。"
+ },
+ "607b100516eb": {
+  "en": "607b100516eb",
+  "t": "### RIPPS2 誕生時的聲音"
+ },
+ "60f96e9259c8": {
+  "en": "60f96e9259c8",
+  "t": "<sub>選單音效的編號按 Media Studio 列出 SCPH-39001 轉儲的順序。Start 已把大部分放好；要得到這張對應表，請從這裡列出的選單音效轉換 save、error、random 和兩個磁碟機音效。</sub>"
+ },
+ "67788a3fdaa3": {
+  "en": "67788a3fdaa3",
+  "t": "| [v1.1.2 聲音巡覽](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)（在 GitHub 上） | 2:11 | 從主機提取的每個聲音，一鏡到底，從開機聲到啟動遊戲 |"
+ },
+ "72db6e21b0bb": {
+  "en": "72db6e21b0bb",
+  "t": "| `bgm_00 Menu.wav` | **Menu**（時鐘，5:04） | PS2 系統音樂（Sony）：瀏覽器的主選單，時鐘演奏的曲子 | 在 RIPPS2 中提取：**Audio Settings > BIOS Music > THE MENU MUSIC**（來自你自己主機的 BIOS）。未選擇其他曲目時播放 |"
+ },
+ "73e5c61cfb55": {
+  "en": "73e5c61cfb55",
+  "t": "- **RIPFLOW**，內建的封面輪播（RIPGRID 也是內建的），以及遊戲啟動時的光碟（Layout > Launch Disc）：**Pop In**、**Spin**，或 **Zoom**，把光碟放大到可以看清並保持住（RIPFLOW 和 Adapt 的預設），或 Off。**Hints and Glyphs** (Interface)：自由佈局和排序提示、徽章以及四套圖示（主題的、RIPPS2 的、Standard 和 White）。**Colors and Text** (Interface)：十種 Color Themes（RIPPS2、Ember、Blood、Ectoplasm、Amethyst、Bone、Tangerine、Flamingo、Turquoise、Moonlight）或 Custom，一個在五種顏色間迴圈的 **Color Sweep**（Rainbow、由每個 Color Theme 生成的，或最多四種你自己的顏色），以及 Text Weight。Layout 中有會淡出的提示和分類欄，以及在畫面中央放大出現的來源名稱。主題可以自行選擇以上全部，而你的設定永遠優先。"
+ },
+ "748a89c6bf4d": {
+  "en": "748a89c6bf4d",
+  "t": "- [ps2sdk](https://github.com/ps2dev/ps2sdk)，由 ps2dev 團隊開發：記憶卡檔案系統（mcman）和 USB 鍵盤驅動。"
+ },
+ "75ae3c119793": {
+  "en": "75ae3c119793",
+  "t": "- [wLaunchELF](https://github.com/ps2homebrew/wLaunchELF)，由 ps2homebrew 團隊開發，以及 wLaunchELF R3Z，由 NathanNeurotic 開發：Memory Files 瀏覽器及其設定網格的行為參考。"
+ },
+ "7c613ae2e427": {
+  "en": "7c613ae2e427",
+  "t": "## 你自己的聲音和音樂"
+ },
+ "7c9cff4a1885": {
+  "en": "7c9cff4a1885",
+  "t": "| [測試版介紹短片](https://youtu.be/LPjdK_E1jjM) | 9:45 | 第一個測試版 v1.0.0：RIPPS2 起源的網頁，然後是你的遊戲、你的檔案和它附帶的東西 |"
+ },
+ "801b0c43a8b7": {
+  "en": "801b0c43a8b7",
+  "t": "| **Memory Files** | 光球 |"
+ },
+ "82d607db68dd": {
+  "en": "82d607db68dd",
+  "t": "> ### 開始提取：RIPPS2 組建 129，v1.2.9 測試版"
+ },
+ "85be5f3270be": {
+  "en": "85be5f3270be",
+  "t": "| [v1.1.0 介紹短片](https://youtu.be/Q8ZLd6ArV8s) | 3:57 | 配合 Over the Rainbow 剪輯的 v1.1.0 |"
+ },
+ "88130624f812": {
+  "en": "88130624f812",
+  "t": "- **BIBLE 和 BOOT LOCK。** Settings > General & System > Boot Loader 顯示每張記憶卡開機時執行什麼，並把 **BIBLE**，即為 RIPPS2 準備好的 PS2BBL 1.2.0，安裝到記憶卡上。**Boot Lock** 設定你主機實際執行的載入程式去執行 RIPPS2：PS2BBL 和 FreeMcBoot 會立即執行它，OSDMenu 把它放在選單首位，關閉則恢復原來的狀態。"
+ },
+ "8b21d2e8e31d": {
+  "en": "8b21d2e8e31d",
+  "t": "在遊戲中按 L1+L2+R1+R2+SELECT+START，然後選 **SCREENSHOT**：開啟選單時螢幕上的那一幀，不含選單。選擇 **ART**（遊戲截圖圖片，250 x 188，`_SCR`、`_SCR2`...）、**MEDIA**（原尺寸，存到以遊戲命名的資料夾）或 **BOTH**；每項都會顯示它生成的檔案、大小和剩餘張數。**SAVE** 讓選單淡出，**KEEP** 或 **DELETE** 做決定。"
+ },
+ "8b6811558aea": {
+  "en": "8b6811558aea",
+  "t": "> **RIP PS2，ELF 殺手。** 獨立執行，從不破壞：你的其他 ELF 安然留在[架子](https://akilluminati47.github.io/RIPPS2/)上（除非你要求，否則什麼都不會刪除），只是得到它們應得的休息。"
+ },
+ "93042ebb972b": {
+  "en": "93042ebb972b",
+  "t": "| 選項 | 開啟什麼 |"
+ },
+ "9596a9ae1c84": {
+  "en": "9596a9ae1c84",
+  "t": "| ⚄ | 隨機遊戲（L2 + R2） | `random.adp` | **Menu sound 6** |"
+ },
+ "96700b69a62e": {
+  "en": "96700b69a62e",
+  "t": "**光球:** 十二種陣列（Browser Orbit、Borromean Rings、Torus Orbit、Icosahedron、Double Helix、Strange Attractor、Trefoil Knot、Mobius Strip、Klein Bottle、Golden Spiral、Lissajous 和 Seven-Point Star），每種使用所需數量的光球，在陣列之間分開又合攏。和 ELF 的 Memory Files 一樣，標籤開啟時以及每次陣列就位時，每個形狀的軌跡都會以光芒描繪出來，停留約兩秒後淡出。按住場景（或按住 `L`，或控制器的 L2 或 Cross）可靜止地看到整條軌跡；按住時拖曳可旋轉陣列，鬆開後滑行至停止（控制器的右搖桿也可旋轉）。用滑動、名稱旁的 Left / Right 圖示、方向鍵，或控制器的方向鍵或肩鍵切換。"
+ },
+ "98eeade98be6": {
+  "en": "98eeade98be6",
+  "t": "## 亮點"
+ },
+ "993df9d58da5": {
+  "en": "993df9d58da5",
+  "t": "| [v1.1.5 短片](https://akilluminati47.github.io/RIPPS2/media/b115/ripps2-v115-short.mp4)（在 GitHub 上） | 0:39 | 播放你自己曲目的 CD 播放器、Fast Boot、提取內容的去向、Set Metadata (Rename) |"
+ },
+ "9a0b3a11db84": {
+  "en": "9a0b3a11db84",
+  "t": "`elf/build.sh` 獲取 `elf/RIPTOPL_REF` 中指定提交的 RiptOPL，應用 `elf/patches` 中的修補檔系列，加入 `elf/theme` 中 RIPPS2 的主題、字型和圖片，並組建 `RIPPS2.elf`。GitHub Actions 在每次推送時執行它（\"Build RIPPS2.elf\"）；其產物 ELF 就是釋出版。"
+ },
+ "9dbd4f271d5e": {
+  "en": "9dbd4f271d5e",
+  "t": "截圖作為遊戲的膠片在 `MEDIA/RIPSHOT` 中等待（每個遊戲 6 張），再衝洗為 8 位 PNG：在 Memory Files 中手動進行（開啟 `MEDIA/RIPSHOT`：在截圖上 VIEW，ACTIONS 沖洗），或用 **Develop Shots：Auto** (Settings > Game Launching > In-Game Menu) 在後臺自動進行。主題用 `SCRn` 鍵顯示遊戲的所有截圖：RIPPS2 資訊頁的幻燈片、RIPGRID、RIPFLOW 和 Adapt 都會這樣做。RIPSHOT 適用於 USB、exFAT 內建 HDD、MX4SIO、iLink 上的遊戲，從組建 117 起也適用於 MMCE（SD2PSX 的 SD 卡儲存膠片）；APA HDD 上的遊戲會在之後的組建中支援。"
+ },
+ "a0a4ce3e31fb": {
+  "en": "a0a4ce3e31fb",
+  "t": "## 網頁版"
+ },
+ "a2cda8a417d1": {
+  "en": "a2cda8a417d1",
+  "t": "| ◇ | 返回清單 | `page_out.adp` | **Menu sound 2** |"
+ },
+ "a4f2c110a598": {
+  "en": "a4f2c110a598",
+  "t": "| **Launch Disc** | 柱子，場地中央伴有雙重爆發 |"
+ },
+ "a70e85fb5ee7": {
+  "en": "a70e85fb5ee7",
+  "t": "- 網頁模型的精靈架（Storage，[akilluminati47.github.io/RIPPS2](https://akilluminati47.github.io/RIPPS2/)）立在 [uOPL](https://github.com/SlimPugGamer/uOPL) 的木板上（`gfx/plank.png`，AFL-3.0）。"
+ },
+ "a928afd611e2": {
+  "en": "a928afd611e2",
+  "t": "## 如何組建"
+ },
+ "aa4e7fb8def4": {
+  "en": "aa4e7fb8def4",
+  "t": "# RIPPS2"
+ },
+ "aa7c330a03a6": {
+  "en": "aa7c330a03a6",
+  "t": "- **安全護欄**：每個組建都要透過 RiptOPL 的主機檢查和 RIPPS2 自己的檢查，RIPPS2 檔案中出現任何新警告都會使其失敗。"
+ },
+ "ab5d87e8fe5b": {
+  "en": "ab5d87e8fe5b",
+  "t": "RIPPS2 是裝在單個 `.elf` 中的 PS2 前端：把 [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader)（Open PS2 Loader 的分支）拆開重組，內建 rickgaiser 的 [Neutrino](https://github.com/rickgaiser/neutrino) 作為第二個遊戲核心，並擁有自己的外觀、啟動器、檔案瀏覽器和儲存工具。玻璃塔矗立在你的遊戲後面，軌道陣列排列在你的檔案後面，全部由 PS2 實時繪製。"
+ },
+ "ad4809e8e40c": {
+  "en": "ad4809e8e40c",
+  "t": "- **遊戲內選單**（Settings > Game Launching > In-Game Menu，預設開啟）：L1+L2+R1+R2+SELECT+START 讓遊戲在自己的畫面上靜音暫停，下方顯示 Resume、Exit Game、**Screenshot**（RIPSHOT，[見下文](#screenshots-in-game-ripshot)）、Achievements 和 Power Off（再按一次就地關閉 PS2）；RESUME 精確回到同一幀，Achievements 列出還剩哪些成就以及如何獲得。**Exit Game 走主機自己的啟動路徑:** 當該頁的 IGR Path 為空（預設）時，重置會進入瀏覽器，若已安裝載入程式則執行它（FreeMcBoot、PS2BBL、OSDMenu 或 BIBLE），若 Boot Lock 開啟則再次執行 RIPPS2，和主機開機時完全一樣；都沒有則進入 PS2 瀏覽器。從 v1.2.1 起永遠不會黑屏：IGR Path 僅在重置能載入它（記憶卡或 FAT32 隨身碟上的 ELF）且不是 RIPPS2 本身時才使用，被忽略時 STATUS 會告訴你。"
+ },
+ "af3b1669b5f4": {
+  "en": "af3b1669b5f4",
+  "t": "| ↕ | 游標 | `cursor.adp` | **Menu sound 7** |"
+ },
+ "b0a6e7370567": {
+  "en": "b0a6e7370567",
+  "t": "| 音樂 | 曲目 | 來源 | 如何獲得 |"
+ },
+ "b4547f8c71ce": {
+  "en": "b4547f8c71ce",
+  "t": "非官方的粉絲專案。PlayStation、PS1、PS2、PlayStation 標誌和 PS2 標誌是 Sony Interactive Entertainment 的商標。本專案與 Sony 無關，也未獲其認可。"
+ },
+ "b62cbae3995f": {
+  "en": "b62cbae3995f",
+  "t": "## 鳴謝"
+ },
+ "b7ec1e99d662": {
+  "en": "b7ec1e99d662",
+  "t": "- [Apollo Save Tool](https://github.com/bucanero/apollo-ps2)，由 bucanero 開發：存檔工具（PSU、卡映象）的參考。程式碼是 RIPPS2 自己的，依據格式編寫。"
+ },
+ "b9a7a548f42d": {
+  "en": "b9a7a548f42d",
+  "t": "把光碟放進光碟機並開啟 **LAUNCH DISC**。幾秒後，一個玻璃面板會提供 **RIPDISC**：按住 **SELECT** 直到圓環填滿。下一步會告訴你光碟是什麼、有多大、**大約需要多久**以及會存到哪裡；確認後按 **START**。"
+ },
+ "baa8866a457f": {
+  "en": "baa8866a457f",
+  "t": "| ◀ | 磁碟機連線 | `bd_connect.adp` | **Menu sound 8** |"
+ },
+ "bae37fd667bb": {
+  "en": "bae37fd667bb",
+  "t": "- mymc，由 Ross Ridge 開發，以及 [mymcplus](https://github.com/thestr4ng3r/mymcplus)，由 Florian Maerkl 開發：RIPPS2 寫入的卡映象用它們來驗證。"
+ },
+ "bbc56f82c521": {
+  "en": "bbc56f82c521",
+  "t": "| ✉ | 訊息、讀取光碟 | `message.adp`、`disc.adp` | **Menu sound 11** |"
+ },
+ "bc213695515e": {
+  "en": "bc213695515e",
+  "t": "- **音樂 CD 或 DVD 影片**會存到你的檔案：Memory Files 在 **MEDIA**（AUDIO 旁邊）開啟，光碟以 **RIPPED** 的身份在剪貼簿中；在任何資料夾中 PASTE 就會提取到那裡。CD 以 WAV 形式得到（複製一個到 AUDIO，它就會加入選單音樂），你自制的 DVD 以 VIDEO_TS 檔案得到。購買的電影有複製保護，光碟機無法讀取。"
+ },
+ "bdb6904caf1b": {
+  "en": "bdb6904caf1b",
+  "t": "- **網路介面卡和內建 HDD。** RIPPS2 用 PS2SDK 自己的 DEV9 驅動，也就是如今載入器所用的那個，啟動任何網路介面卡，並自行區分兩種型別：胖機擴充套件槽的介面卡（SCPH-10281、SCPH-10350，以及由它們改造的 IDE 和 SATA 介面卡）和薄機的內建埠，以及早期日版主機（SCPH-10000 到 18000）的 PC CARD 介面卡。沒有舊驅動需要選擇。HDD 無論是 APA 還是 exFAT 都同樣讀取，HDPro 介面卡則使用它自己的驅動。SMB 遊戲、UDPBD 和圖片下載都使用同一個介面卡。如果你的介面卡沒有顯示，請傳送介面卡和主機的型號。"
+ },
+ "bea8ee5528d7": {
+  "en": "bea8ee5528d7",
+  "t": "| [組建 55 介紹短片](media/ripps2-b55-reel.mp4) 和 [組建 22 演示](media/ripps2-b22-demo.mp4)（在 GitHub 上） | | 早期 alpha |"
+ },
+ "c08b5433dbb0": {
+  "en": "c08b5433dbb0",
+  "t": "- **需要的已附帶；你有的會被找到。** [Neutrino](https://github.com/rickgaiser/neutrino)（其最新組建）和 BIBLE 都在同一個 `.elf` 裡，可安裝到你想要的位置；POPSTARTER、POPS 檔案和你自己的 Ember 會在磁碟機上搜尋一次、記住，並從原位置執行。START 選單中的 **STATUS** 顯示所有磁碟機、每個啟動器在哪裡找到（LOOK FOR THEM 重新搜尋）、homebrew、BIBLE 和你的聲音，**SAVE DIAGNOSTICS** 會寫出 `DIAG.TXT` 用於錯誤報告。"
+ },
+ "c1bc4a56fd54": {
+  "en": "c1bc4a56fd54",
+  "t": "- **STORAGE** 是你的遊戲庫：所有磁碟機在同一個清單中（All Games 從第一幀起就顯示全部，包括尚未響應的磁碟機），封面、圖片淡入截圖的資訊頁、每個遊戲的獨立設定，以及用 R3 把遊戲加星到 Starred Games（星標位於行首；Settings > Game Sources > Starred Games Star 可移動或隱藏它；按住 R3 4.2 秒可隱藏或顯示所有星標）。L2 + R2 跳到隨機遊戲，Recent Games 記住你最近的啟動。在遊戲上按三角開啟 **Hide Game**、**Delete**（整個遊戲：映象的所有部分、它的 CFG、封面和作弊碼；存檔僅在你要求時），**Set Metadata (Rename)**，對 ISO 或 ZSO 還有 **Compress to ZSO** 或 **Uncompress to ISO**（實驗性：在 ZSO 被重新讀取並校驗之前 ISO 會保留）。每個磁碟機的遊戲立即從其上次的清單顯示，然後重新讀取該磁碟機。"
+ },
+ "c2409d3b212c": {
+  "en": "c2409d3b212c",
+  "t": "| ✕ | 確認 | `confirm.adp` | **Menu sound 5** |"
+ },
+ "c8eb072f3f8f": {
+  "en": "c8eb072f3f8f",
+  "t": "- **畫面放在電視需要的位置。** Settings > Interface > Screen：Video Mode（最高 720p 和 1080i）、Widescreen，以及 H-POS、V-POS 和 Overscan，從組建 124 起按影片模式分別儲存，所以 1080i 和 480i 各有自己的居中。"
+ },
+ "cbb1eda01ad9": {
+  "en": "cbb1eda01ad9",
+  "t": "| [組建 99 短片](https://www.youtube.com/shorts/Ov5iA-tMcI8) | Short | 最後一個 alpha |"
+ },
+ "cbede109d442": {
+  "en": "cbede109d442",
+  "t": "| [巡覽](https://youtu.be/OEa8b5rbyco) | 10:48 | v1.2.8 中 RIPPS2 能做的一切：它起源的網頁、你的遊戲在每個主題中的樣子、你的檔案、你自己主機的聲音、遊戲內選單以及它附帶的東西，章節見簡介 |"
+ },
+ "cc3d4e294dca": {
+  "en": "cc3d4e294dca",
+  "t": "- [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/)，由 krHACKen 開發，用你自己的副本執行 PS1 遊戲，RIPPS2 會在你的磁碟機和記憶卡上找到它（[`elf/popstarter`](elf/popstarter/README.md)）。"
+ },
+ "cc72d2f38283": {
+  "en": "cc72d2f38283",
+  "t": "- [Neutrino](https://github.com/rickgaiser/neutrino)，由 [rickgaiser](https://github.com/rickgaiser) 開發（AFL-3.0），小巧、快速、模組化的裝置模擬器，是 RIPPS2 的第二個遊戲核心：RIPPS2.elf 原樣附帶其最新組建（v1.8.0-61-g7be8de2，2026 年 8 月 31 日）並安裝到你想要的位置，你自己的任何版本的 Neutrino 都優先（[`elf/neutrino`](elf/neutrino/README.md)）。在 Settings > Game Launching 中將其選為 Default Loader Core。"
+ },
+ "cd91a464e4a7": {
+  "en": "cd91a464e4a7",
+  "t": "| ✓ | 儲存 | `save.adp` | **Menu sound 12** |"
+ },
+ "d1471c7da040": {
+  "en": "d1471c7da040",
+  "t": "## 遊戲內截圖（RIPSHOT）"
+ },
+ "d27e9ed90727": {
+  "en": "d27e9ed90727",
+  "t": "PS2 上的 USB 很慢（USB 1.1，約每秒 1 MB）：一整張 DVD 存到 隨身碟要一個多小時，存到 exFAT 內建 HDD 則只需其幾分之一。預估時間會從你的第一次提取中學習主機的速度。"
+ },
+ "d31f61e4764e": {
+  "en": "d31f61e4764e",
+  "t": "RIPPS2 最初是一個網頁主題，那個版本至今仍在這裡：**線上演示** https://akilluminati47.github.io/RIPPS2/"
+ },
+ "d3c6fbcfcabb": {
+  "en": "d3c6fbcfcabb",
+  "t": "## 一個檔案提供所有封面（ART Pack）"
+ },
+ "d3f45713c5bf": {
+  "en": "d3f45713c5bf",
+  "t": "- RIPPS2 標誌，戴著藍帽子的死精靈，是原創的：用 three.js (MIT) 從 `media/deadelf/scene.html` 渲染（所有角度和顏色在 `media/deadelf` 中），向量版本在 `assets/ripps2-deadelf.svg`。"
+ },
+ "d43d31b2296b": {
+  "en": "d43d31b2296b",
+  "t": "| ★ | 啟動遊戲 | `launch.adp` | **PS2 標誌** (\"Game Boot\") |"
+ },
+ "d63978d986a8": {
+  "en": "d63978d986a8",
+  "t": "- **分類放在你想要的位置。** Settings > Interface > Layout > Category Layout：LAUNCH DISC、STORAGE 和 MEMORY FILES 以名稱顯示在 **Across the Top**，以圖示顯示在 **Sidebar**（Classic 或 XL；在清單中按 Left 或 Circle 開啟，每個分類都有其頁面的抽屜），或 **Menu**：沒有欄，分類在 START 選單中，和 OPL 主題一樣。選 Theme 時由主題決定：為 OPL 製作的主題得到 Menu，Adapt 得到側邊欄。"
+ },
+ "d7ced9872ff0": {
+  "en": "d7ced9872ff0",
+  "t": "- **VMC（虛擬記憶卡）。** 遊戲自己的設定（它的 VMC 行）會給它一個位於遊戲所在磁碟機 `VMC` 資料夾中的卡映象，放在插槽 1 或 2。在 OPL 核心下，它們適用於 USB、MX4SIO、iLink、exFAT HDD、APA HDD、SMB 和 MMCE；在 FAT32 或 exFAT 磁碟機上，卡必須是一個連續的檔案，RIPPS2 新建的卡就是這樣，**Rebuild** 可修復不是這樣的舊卡。在 Neutrino 下，它們適用於 USB、MX4SIO、iLink 和 exFAT HDD，但不適用於 APA HDD，在那裡遊戲會使用該插槽中的真實記憶卡。SD2PSX 也可以自己為每個遊戲分配獨立的卡（其設定中的 GameID），無需 VMC。"
+ },
+ "d94d1e65b49a": {
+  "en": "d94d1e65b49a",
+  "t": "| | 時刻 | `AUDIO` 檔案 | Sony 的聲音，來自你自己的 PS2 (Media Studio > Your BIOS) |"
+ },
+ "da42e53699c3": {
+  "en": "da42e53699c3",
+  "t": "- **快速啟動。** Settings > Game Sources > Cache > **Fast Boot** 開機時只讀取 RIPPS2 自己所在的磁碟機：`RIPPS2.ELF` 旁邊的設定和聲音，每個清單則從快取讀取。其他磁碟機會等到你在它們的頁面上按 SELECT 或選擇它們的某個遊戲。在 RIPPS2 讀寫時選擇的遊戲，會在一個顯示剩餘工作的面板後面等待（START NOW 立即啟動），因此啟動永遠不會把寫入中途打斷。"
+ },
+ "de8f1cb0c1f9": {
+  "en": "de8f1cb0c1f9",
+  "t": "- Planet N Compact，由 [Iconian Fonts](https://www.iconian.com) 製作（`assets/master.ttf`），以及 Planet N Condensed（`elf/theme/fonts/ripps2_condensed.ttf`，從組建 115 起以 `builtin:ripps2condensed` 內建，Adapt 清單的字型）。[RIPPS2 Sleek](https://github.com/akilluminati47/RIPPS2-fonts)（Regular、Bold、Bold Case）為 RIPPS2 繪製；它自己的儲存庫以 OFL 提供 TTF 和 WOFF2 格式的字型。"
+ },
+ "e1e11a9f5baf": {
+  "en": "e1e11a9f5baf",
+  "t": "- **LAUNCH DISC** 啟動 PS2、PS1 和 DVD 影片光碟，在啟動前告訴你光碟機裡是什麼遊戲，播放音樂 CD 時高塔會變成頻譜分析儀。**RIPDISC**（組建 105）提取光碟機中的光碟：遊戲存到你的儲存裝置，CD 或 DVD 影片存到你的檔案。"
+ },
+ "e5c8e488b993": {
+  "en": "e5c8e488b993",
+  "t": "在 `RIPPS2.elf` 旁邊放一個 `AUDIO` 資料夾。它接受以事件命名的 `.adp` 音效檔案（RiptOPL 的：`boot`、`cancel`、`confirm`、`cursor`、`message`、`transition`、`bd_connect`、`bd_disconnect`，以及 RIPPS2 的：`page_in`、`page_out`、`error`、`save`、`launch`、`disc`、`random`），音樂則接受任何 `.ogg`（無標籤的 Ogg Vorbis）、16 位 `.wav` 或（從組建 115 起）`.mp3`：`bgm_01 Title.ogg` 和 `bgm_02 Title.ogg` 決定順序和標題，從組建 105 起其他名稱也會按原樣列出，所以從 CD 提取的曲目無需改名。Settings > Audio > Music 選擇曲目。RIPPS2 會在 AUDIO（和 MEDIA）中寫一個說明這一切的 `README.txt`。**[RIPPS2 Media Studio](tools/media-studio)** 在你的電腦上完成全部工作（並把你的影片轉換成 Memory Files 能播放的 AVI）：跳到任何聲音或歌曲，聽它原本的樣子和 PS2 將播放的樣子，把它（或整個資料夾）轉換到 `output/AUDIO`，再用 隨身碟和 RIPPS2 的 Memory Files 把該資料夾複製到 `RIPPS2.elf` 旁邊。把它指向你自己 PS2 的 BIOS 轉儲，它就會從中生成主機的選單音效和系統音樂，可直接使用。（`elf/theme/tools/make_adp.py` 和 `make_sound_pack.py` 仍可在命令列中完成同樣的工作。）RIPPS2 不附帶任何聲音或音樂：從組建 95 起裡面什麼都沒有，所以沒有 `AUDIO` 資料夾時它是靜音的，**STATUS > SOUNDS** 會告訴你它找到了什麼。"
+ },
+ "e609101e73c3": {
+  "en": "e609101e73c3",
+  "t": "要在本地執行，請用伺服器提供該資料夾（ES 模組需要網頁伺服器）並開啟 http://localhost:8000:"
+ },
+ "e7fc7fe8dceb": {
+  "en": "e7fc7fe8dceb",
+  "t": "- **設定儲存在你想要的位置**：Settings > General & System > Save Settings To 可把它們儲存在記憶卡上的 RIPPS2 存檔、內建 HDD 上的 RIPPS2 資料夾（exFAT，或 APA HDD 的 OPL 分割槽）、USB、MX4SIO、iLink 或 MMCE 磁碟機上（開機時最先讀取），或你輸入的資料夾中。"
+ },
+ "e9327262f54a": {
+  "en": "e9327262f54a",
+  "t": "| **Storage** | 柱子前面的精靈架 |"
+ },
+ "eaeacc987e24": {
+  "en": "eaeacc987e24",
+  "t": "**AUDIO 和 MEDIA 放在哪裡。** 把 `AUDIO` 放在 `RIPPS2.elf` 旁邊，即 RIPPS2 啟動所在的磁碟機上：啟動時最先讀取它，開啟 **Fast Boot** (Settings > Game Sources > Cache) 時，開機聲會和設定一起在磁碟機和清單啟動前讀取，所以高塔第一幀出現時它已在播放（從組建 118 起）。RIPPS2 在記憶卡上而 `AUDIO` 在某個磁碟機上：執行 **BIOS Sounds > Rip** 後，START 只把 `boot.adp`（約 360 KB）複製到卡上 RIPPS2 旁邊，這樣開機聲會在柱子升起時響起，而不是等磁碟機就緒（從組建 121 起）。那裡只放選單會播放的東西。`MEDIA`（提取的 CD 和 DVD 影片、原尺寸截圖）適合放在你最大的磁碟機上：啟動時不讀取其中任何內容，因此該磁碟機的讀取速度無關緊要。"
+ },
+ "ee61bf5fd1dd": {
+  "en": "ee61bf5fd1dd",
+  "t": "- **Achievements** (SpiritofRA)：透過電腦上的 [xeRAbora](https://github.com/hacan359/xerabora) 客戶端實現 RetroAchievements 遙測（固定為 [v0.1.0-alpha.18](https://github.com/hacan359/xerabora/releases/tag/v0.1.0-alpha.18)），被追蹤遊戲上的徽章、托盤中的光碟，以及 **YOUR ACCOUNT**：你檢查過的每個遊戲及已解鎖的內容；當 xeRAbora 對網路開放時，還有 **LEFT TO HUNT**：每個未解鎖的成就及獲得方法。"
+ },
+ "f55efbafe641": {
+  "en": "f55efbafe641",
+  "t": "## 提取光碟"
+ },
+ "f82d2f1d0e71": {
+  "en": "f82d2f1d0e71",
+  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader)，由 El Isra (israpps) 開發，以及 [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended)，由 saildot4k 開發：BOOT LOCK 編輯它們的配置，讓主機執行 RIPPS2（從組建 116 起也編輯 FreeMcBoot 和 OSDMenu 的配置）。從組建 69 起，RIPPS2.elf 以資料形式原樣附帶 El Isra 簽名的 PS2BBL 1.2.0，供 **Boot Loader > Manage** (BIBLE) 安裝到記憶卡。PS2BBL 採用 GPL-3.0 許可：其許可證和組建所用的確切原始碼（[commit a063bb3](https://github.com/israpps/PlayStation2-Basic-BootLoader/tree/a063bb3)）在 [`elf/bible`](elf/bible/README.md) 中。與卡的繫結使用 ps2sdk 中開放的 SECRMAN (AFL)；不涉及任何金鑰。"
+ },
+ "fbfc328db8db": {
+  "en": "fbfc328db8db",
+  "t": "- **RIPPS2 不認識的 USB 控制器**（組建 129）。**Settings > Controllers > Set Up A USB Pad**：插上控制器，按下 RIPPS2 要求的每個按鈕，它就會寫出該控制器的 `.pad` 配置檔案（RIPPS2 旁邊的 `PADS/VVVV_PPPP.pad`，純文字：[格式](docs/plans/pad-spec.md)）。有配置檔案的控制器可以操作選單，開啟 Pad Emulator 後可以玩遊戲；`PADS/GAMES/<game ID>.pad` 可為單個遊戲調換按鈕。**My Pads** 會檢查每個配置檔案，並說明被拒絕的哪裡有問題。"
+ },
+ "fc11831770d3": {
+  "en": "fc11831770d3",
+  "t": "- 組建 83 的介紹短片和短片（YouTube 上）配合 Details（x-Radar Portable，PSP 系統音樂，Sony）、戶高一生為 Wii 新聞頻道創作的 Slideshow (Daytime)（Nintendo，2006）以及 PS2 自己的 Menu 主題（Sony）剪輯；組建 66 的介紹短片配合 Slideshow (Daytime)；組建 55 介紹短片的音樂是原創的。測試中出現的遊戲圖片來自社群的 OPL 圖片資料庫，不屬於 RIPPS2。"
+ },
+ "fe207194059a": {
+  "en": "fe207194059a",
+  "t": "| `bgm_02 Details.ogg` | **Details** | x-Radar Portable，[PSP 系統音樂](https://en.wikipedia.org/wiki/PlayStation_Portable_system_software)（Sony，2010）：與 Slideshow 一起作為 **RIPPS2 YouTube 影片的背景音樂**（測試版介紹短片以它開場，組建 83 介紹短片和短片也是） | 你自己的副本，在電腦上用 [RIPPS2 Media Studio](tools/media-studio) 轉換 |"
+ }
+}

@@ -1,16 +1,54 @@
+<!-- i18n: the language bar, made by ps2-pillars tools/readme-i18n -->
+<p align="center">
+  <b>English</b> |
+  <a href="README.es.md">Español</a> |
+  <a href="README.pt-BR.md">Português (Brasil)</a> |
+  <a href="README.pt.md">Português</a> |
+  <a href="README.fr.md">Français</a> |
+  <a href="README.de.md">Deutsch</a> |
+  <a href="README.it.md">Italiano</a> |
+  <a href="README.nl.md">Nederlands</a> |
+  <a href="README.da.md">Dansk</a> |
+  <a href="README.sv.md">Svenska</a> |
+  <a href="README.pl.md">Polski</a> |
+  <a href="README.cs.md">Čeština</a> |
+  <a href="README.hr.md">Hrvatski</a> |
+  <a href="README.sr.md">Srpski</a> |
+  <a href="README.bg.md">Български</a> |
+  <a href="README.ru.md">Русский</a> |
+  <a href="README.el.md">Ελληνικά</a> |
+  <a href="README.hu.md">Magyar</a> |
+  <a href="README.ro.md">Română</a> |
+  <a href="README.gl.md">Galego</a> |
+  <a href="README.sq.md">Shqip</a> |
+  <a href="README.tr.md">Türkçe</a> |
+  <a href="README.ar.md">العربية</a> |
+  <a href="README.fa.md">فارسی</a> |
+  <a href="README.ja.md">日本語</a> |
+  <a href="README.ko.md">한국어</a> |
+  <a href="README.zh-CN.md">简体中文</a> |
+  <a href="README.zh-TW.md">繁體中文</a> |
+  <a href="README.vi.md">Tiếng Việt</a> |
+  <a href="README.lo.md">ລາວ</a> |
+  <a href="README.id.md">Bahasa Indonesia</a> |
+  <a href="README.fil.md">Filipino</a> |
+  <a href="README.ceb.md">Cebuano</a>
+</p>
+<!-- /i18n -->
+
 <p align="center"><sub><b>RIPPS2</b> &nbsp;&middot;&nbsp; <a href="https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf">Download</a> &nbsp;&middot;&nbsp; <a href="https://github.com/akilluminati47/BIBLE">BIBLE</a> &nbsp;&middot;&nbsp; <a href="https://github.com/akilluminati47/RIPPS2-themes">Themes</a> &nbsp;&middot;&nbsp; <a href="https://github.com/akilluminati47/RIPPCSX2">RIPPCSX2</a> &nbsp;&middot;&nbsp; <a href="https://github.com/akilluminati47/RIPPS2-fonts">Fonts</a> &nbsp;&middot;&nbsp; <a href="https://akilluminati47.github.io/RIPPS2/">Website</a> &nbsp;&middot;&nbsp; <a href="https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/">psx-place</a> &nbsp;&middot;&nbsp; <a href="https://discord.gg/Z7m9u5kby">Discord</a></sub></p>
 
 <p align="center"><img src="media/ripps2-test-me.png" alt="RIPPS2: Rip it, the beta, the dead elf in its blue hat over the towers"></p>
 
 # RIPPS2
 
-> ### Rip it: RIPPS2 build 128, v1.2.8 beta
+> ### Rip it: RIPPS2 build 129, v1.2.9 beta
 > **RIP PS2, the ELF killer.** ELF-sufficient, never ELF-destructive: your other ELFs stay safe on the [shelf](https://akilluminati47.github.io/RIPPS2/) (nothing is deleted unless you ask), they just get a well-earned rest.
 > 1. **[Download RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (always the newest release) (one file, 2,743 KB; or **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2,200 KB, the same without PS2BBL for BIBLE and Neutrino), and the **[theme pack](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** if you like (Adapt, Adapt Rx, edition 128: a config and one picture each; RIPGRID and RIPFLOW are built in), and **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** for RIPPS2 in your language (33 of them; every release carries it).
 > 2. Copy it to a USB stick or memory card, and launch it from FreeMcBoot, PS2BBL, wLaunchELF or whatever you already use to start homebrew. In PCSX2: **System > Start File** and pick `RIPPS2.elf`.
-> 3. Tell us how it went: [the psx-place thread](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/), [an issue](https://github.com/akilluminati47/RIPPS2/issues), or **#RIPPS2** on the developers' Discord, [discord.gg/Z7m9u5kby](https://discord.gg/Z7m9u5kby) (invite good for October 2026).
+> 3. Tell us how it went: [the psx-place thread](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/), [an issue](https://github.com/akilluminati47/RIPPS2/issues), or **#RIPPS2** on the developers' Discord, [discord.gg/Z7m9u5kby](https://discord.gg/Z7m9u5kby) (invite good until December 1, 2026).
 >
-> [What's new in builds 126 to 128](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.2.8-beta) | [Changelog](CHANGELOG.md) | **[Videos](#videos)** | [Every release](https://github.com/akilluminati47/RIPPS2/releases) | [Talk about it on psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>
+> [What's new in builds 126 to 129](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.2.9-beta) | [Changelog](CHANGELOG.md) | **[Videos](#videos)** | [Every release](https://github.com/akilluminati47/RIPPS2/releases) | [Talk about it on psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>
 > [Theme RIPPS2](https://github.com/akilluminati47/RIPPS2-themes) (no rebuild, agent friendly) | [Fill your AUDIO and MEDIA folders](#the-sound-ripps2-was-made-with) with [RIPPS2 Media Studio](tools/media-studio) (sounds, music and video; [download it for Windows](https://github.com/akilluminati47/RIPPS2/releases/download/media-studio/RIPPS2-Media-Studio.zip)) | [See a theme in true 720p and 1080i: RIPPCSX2](https://github.com/akilluminati47/RIPPCSX2/releases/latest) (PCSX2 with HDTV output)
 
 RIPPS2 is a PS2 front end in a single `.elf`: a teardown and rebuild of [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader) (the Open PS2 Loader fork), with rickgaiser's [Neutrino](https://github.com/rickgaiser/neutrino) inside as its second game core, and its own look, launchers, file browser and save tools. Glass towers stand behind your games and orbit formations behind your files, all drawn live by the PS2.
