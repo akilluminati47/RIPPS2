@@ -1,3 +1,123 @@
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index 3a2be42..ed3439f 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -645,12 +645,43 @@ static void fbScanVmc(const char *save)
+     fbAddHere(n); // build 125
+ }
+ 
++// build 130 (ahavasi on 128: a 64 MB card full of saves was painfully slow here, uLaunchELF fast on the same card): a
++// memory card folder in one mcGetDir, its names, folders and sizes together, as uLaunchELF reads it. readdir and a
++// stat for each entry walked the card's folder through mcman once per entry. Entries in fbList[0..), how many, or -1
++// when the card would not answer (then readdir does it)
++static int fbScanMcDir(unsigned char *sized)
++{
++    sceMcTblGetDir *tbl;
++    char path[300];
++    int port = fbPath[2] - '0', got = -1, n = 0, i;
++
++    if ((tbl = (sceMcTblGetDir *)memalign(64, FB_MAX * sizeof(sceMcTblGetDir))) == NULL)
++        return -1;
++    snprintf(path, sizeof(path), "%s*", fbPath + 4); // "mc0:/BASLUS-21050/" -> "/BASLUS-21050/*"
++    if (mcGetDir(port, 0, path, 0, FB_MAX, tbl) == 0)
++        mcSync(0, NULL, &got);
++    for (i = 0; i < got && n < FB_MAX; i++) {
++        const char *name = (const char *)tbl[i].EntryName;
++        if (!name[0] || !strcmp(name, ".") || !strcmp(name, ".."))
++            continue;
++        fb_entry_t *e = &fbList[n];
++        memset(e, 0, sizeof(*e));
++        snprintf(e->name, sizeof(e->name), "%.32s", name);
++        e->kind = (tbl[i].AttrFile & sceMcFileAttrSubdir) ? FB_KIND_DIR : FB_KIND_FILE;
++        e->size = tbl[i].FileSizeByte;
++        sized[n++] = 1;
++    }
++    free(tbl);
++    return got < 0 ? -1 : n;
++}
++
+ static void fbScanDir(void)
+ {
+     DIR *d;
+     struct dirent *de;
+     int n = 0, i, mcRoot;
+     char child[320], save[40];
++    static unsigned char sized[FB_MAX]; // build 130: the size came with the listing
+ 
+     if (fbVmcPath(fbVmc, fbPath, save, sizeof(save))) {
+         fbScanVmc(save);
+@@ -660,20 +691,25 @@ static void fbScanDir(void)
+         fbScanTar();
+         return;
+     }
+-    d = opendir(fbPath);
+-    if (d == NULL) {
+-        fbCount = 0;
+-        return;
+-    }
+-    while (n < FB_MAX && (de = readdir(d)) != NULL) {
+-        if (!strcmp(de->d_name, ".") || !strcmp(de->d_name, ".."))
+-            continue;
+-        fb_entry_t *e = &fbList[n++];
+-        memset(e, 0, sizeof(*e));
+-        snprintf(e->name, sizeof(e->name), "%s", de->d_name);
+-        e->kind = fbIsDirEntry(fbPath, de) ? FB_KIND_DIR : FB_KIND_FILE;
++    memset(sized, 0, sizeof(sized));
++    n = fbIsMc(fbPath) ? fbScanMcDir(sized) : -1;
++    if (n < 0) {
++        n = 0;
++        d = opendir(fbPath);
++        if (d == NULL) {
++            fbCount = 0;
++            return;
++        }
++        while (n < FB_MAX && (de = readdir(d)) != NULL) {
++            if (!strcmp(de->d_name, ".") || !strcmp(de->d_name, ".."))
++                continue;
++            fb_entry_t *e = &fbList[n++];
++            memset(e, 0, sizeof(*e));
++            snprintf(e->name, sizeof(e->name), "%s", de->d_name);
++            e->kind = fbIsDirEntry(fbPath, de) ? FB_KIND_DIR : FB_KIND_FILE;
++        }
++        closedir(d);
+     }
+-    closedir(d);
+ 
+     mcRoot = fbIsMc(fbPath) && strchr(fbPath + 5, '/') == NULL; // "mc0:/" itself
+     for (i = 0; i < n; i++) {
+@@ -687,7 +723,7 @@ static void fbScanDir(void)
+         } else {
+             struct stat st;
+             fbJoin(child, sizeof(child), fbPath, e->name);
+-            if (stat(child, &st) == 0)
++            if (!sized[i] && stat(child, &st) == 0)
+                 e->size = (u32)st.st_size;
+             if (fbHasSuffix(e->name, ".elf"))
+                 e->kind = FB_KIND_ELF;
+@@ -795,7 +831,11 @@ static int fbCopyFile(const char *src, const char *dst)
+     }
+     // build 114 (the user, 10/23: the drive's format detected, safe for every copy): room for the file, and FAT's 4 GB
+     inSize = lseek64(in, 0, SEEK_END);
+-    lseek64(in, 0, SEEK_SET);
++    if (inSize < 0) { // build 130: a memory card has no 64-bit seek
++        inSize = lseek(in, 0, SEEK_END);
++        lseek(in, 0, SEEK_SET);
++    } else
++        lseek64(in, 0, SEEK_SET);
+     if (inSize > 0 && ripps2VolInfo(dst, &vol)) {
+         errno = 0;
+         if (vol.fsType != RIPPS2_FS_EXFAT && inSize > 0xFFFFFFFFLL)
+@@ -870,6 +910,10 @@ static int fbCopyFile(const char *src, const char *dst)
+     if (ok) {
+         int chk = open(target, O_RDONLY);
+         s64 size = chk >= 0 ? lseek64(chk, 0, SEEK_END) : -1;
++        // build 130 (ahavasi on 128, the lab: conf_apps.cfg pasted from USB to mc0 was "READ OR WRITE ERROR: CHECK" and
++        // the good copy removed): mcman's driver has no 64-bit seek, so a memory card's size comes from the 32-bit one
++        if (chk >= 0 && size < 0)
++            size = lseek(chk, 0, SEEK_END);
+         if (chk >= 0)
+             close(chk);
+         if (size < 0 || (u64)size != copied) {
 diff --git a/src/ripps2media.c b/src/ripps2media.c
 index eb245d4..0132464 100644
 --- a/src/ripps2media.c
@@ -99,6 +219,29 @@ index eb245d4..0132464 100644
      LOG("MEDIA: video returned %d\n", r);
  
      videoPadRun = 0;
+diff --git a/src/themes.c b/src/themes.c
+index 3025995..1951f71 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -720,9 +720,17 @@ static void drawAttributeText(struct menu_list *menu, struct submenu_list *item,
+             metaDbGetStr(config, mutableText->value, (const char **)&mutableText->currentValue); // RIPPS2: and the metadata database
+             // Metadata is optional. A missing/empty Title can still show the library name,
+             // without writing a fabricated metadata field back to the game's CFG.
++            int fromName = !strcmp(mutableText->value, CONFIG_ITEM_NAME);
+             if ((!mutableText->currentValue || !mutableText->currentValue[0]) &&
+-                !strcmp(mutableText->value, "Title"))
++                !strcmp(mutableText->value, "Title")) {
+                 configGetStr(config, CONFIG_ITEM_NAME, (const char **)&mutableText->currentValue);
++                fromName = 1;
++            }
++            // build 130: a PS1 game named by a code (POPStarterGameInstaller) has its conf_apps.cfg name here too, as in
++            // the list; a Title the game's CFG has stays
++            if (fromName && mutableText->currentValue && menu != NULL && menu->item != NULL && menu->item->userdata != NULL)
++                mutableText->currentValue = (char *)vcdDisplayNameForRow((item_list_t *)menu->item->userdata, item->item.id,
++                                                                         mutableText->currentValue);
+             if (mutableText->currentValue) {
+                 if ((mutableText->sizingMode == SIZING_WRAP) && mutableText->currentValue) {
+                     // Word-wrap a private copy, not the config's own stored string.
 diff --git a/src/vcdsupport.c b/src/vcdsupport.c
 index e13d007..b160633 100644
 --- a/src/vcdsupport.c

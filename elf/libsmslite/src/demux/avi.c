@@ -331,7 +331,7 @@ static int _Load_idx1 ( SMS_Container* apCtx, int aSize ) {
 
   else {
 
-   if ( lnMaxSameIdx < lnSameIdx && !( apCtx -> m_pStm[ lPrevIdx ] -> m_Flags & SMS_STRM_FLAGS_AUDIO ) ) lnMaxSameIdx = lnSameIdx;
+   if ( lPrevIdx >= 0 && lnMaxSameIdx < lnSameIdx && !( apCtx -> m_pStm[ lPrevIdx ] -> m_Flags & SMS_STRM_FLAGS_AUDIO ) ) lnMaxSameIdx = lnSameIdx;  /* build 130: no stream before the first (it read m_pStm[ -1 ]) */
 
    lnSameIdx = 1;
    lPrevIdx  = lIdx;
