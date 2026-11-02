@@ -67,6 +67,10 @@
   "en": "24fdb4df1618",
   "t": "## Sa sarili mong wika"
  },
+ "254b4b737bb1": {
+  "en": "254b4b737bb1",
+  "t": "> ### I-rip na: RIPPS2 build 134, v1.3.4 beta"
+ },
  "2642f599dfad": {
   "en": "2642f599dfad",
   "t": "> 2. Kopyahin ito sa USB stick o memory card at patakbuhin mula sa FreeMcBoot, PS2BBL, wLaunchELF, o anumang ginagamit mo sa homebrew. Sa PCSX2: **System > Start File** at piliin ang `RIPPS2.elf`."
@@ -183,6 +187,10 @@
   "en": "60f96e9259c8",
   "t": "<sub>May bilang ang mga tunog ng menu ayon sa paglilista ng Media Studio sa isang SCPH-39001 dump. Nailagay na ng Start ang karamihan sa lugar nila; para sa mapang ito, i-convert ang save, error, random, at ang dalawang tunog ng drive mula sa mga tunog ng menu na nakasaad dito.</sub>"
  },
+ "618c478fd292": {
+  "en": "618c478fd292",
+  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) ni El Isra (israpps) at [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) ni saildot4k: ine-edit ng BOOT LOCK ang config nila para patakbuhin ng console ang RIPPS2 (mula build 116 pati ang config ng FreeMcBoot at OSDMenu). Mula sa build 134, dala ng RIPPS2.elf ang [BIBLE](https://github.com/akilluminati47/BIBLE), ang aming bersyon ng PS2BBL na pinirmahan para sa RIPPS2, para i-install ng **Boot Loader > Manage** (ang mga build 69 hanggang 133 ay may PS2BBL 1.2.0 ni El Isra). Nasa [`elf/bible`](elf/bible/README.md) ang GPL-3.0 na lisensya at source nito; gumagamit ang pag-bind sa card ng bukas na SECRMAN ng ps2sdk (AFL), walang susi."
+ },
  "67788a3fdaa3": {
   "en": "67788a3fdaa3",
   "t": "| [v1.1.2 sounds tour](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4) (sa GitHub) | 2:11 | Bawat tunog na na-rip mula sa console, sa isang take, mula sa boot hanggang sa pagpapatakbo ng laro |"
@@ -215,17 +223,9 @@
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | Ang mga bola |"
  },
- "85b93356c9f9": {
-  "en": "85b93356c9f9",
-  "t": "> ### I-rip na: RIPPS2 build 130, v1.3.0 beta"
- },
  "85be5f3270be": {
   "en": "85be5f3270be",
   "t": "| [v1.1.0 reel](https://youtu.be/Q8ZLd6ArV8s) | 3:57 | Ang v1.1.0, inedit kasabay ng Over the Rainbow |"
- },
- "88130624f812": {
-  "en": "88130624f812",
-  "t": "- **BIBLE at BOOT LOCK.** Ipinapakita ng Settings > General & System > Boot Loader kung ano ang pinapatakbo ng bawat memory card sa pag-on at iniinstall ang **BIBLE**, ang PS2BBL 1.2.0 na inihanda para sa RIPPS2, sa memory card. Inaayos ng **Boot Lock** ang bootloader na talagang pinapatakbo ng console mo para patakbuhin ang RIPPS2: agad itong pinapatakbo ng PS2BBL at FreeMcBoot, inilalagay ito ng OSDMenu sa unahan ng menu nito, at ibinabalik ng pag-off ang dati."
  },
  "8b21d2e8e31d": {
   "en": "8b21d2e8e31d",
@@ -274,10 +274,6 @@
  "a4f2c110a598": {
   "en": "a4f2c110a598",
   "t": "| **Launch Disc** | Ang mga haligi, na may dobleng pagsabog sa gitna ng field |"
- },
- "a65cfe5da270": {
-  "en": "a65cfe5da270",
-  "t": "> [Mga bago sa build 130](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.0-beta) | [Changelog](CHANGELOG.md) | **[Mga video](#videos)** | [Lahat ng release](https://github.com/akilluminati47/RIPPS2/releases) | [Pag-usapan sa psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "a70e85fb5ee7": {
   "en": "a70e85fb5ee7",
@@ -427,6 +423,10 @@
   "en": "da42e53699c3",
   "t": "- **Mabilis na boot.** Ang Settings > Game Sources > Cache > **Fast Boot** ay binabasa lang ang sariling drive ng RIPPS2 sa pag-on: ang mga setting at tunog sa tabi ng `RIPPS2.ELF`, at bawat listahan mula sa cache nito. Naghihintay ang ibang drive hanggang pindutin mo ang SELECT sa pahina nila o pumili ng isa sa kanilang mga laro. Ang larong pinili habang nagbabasa o nagsusulat ang RIPPS2 ay naghihintay sa likod ng panel na nagsasabi kung ano pa ang natitira (agad tumatakbo sa START NOW), kaya hindi kailanman napuputol ng paglulunsad ang isang pagsusulat."
  },
+ "dabbb8b086c6": {
+  "en": "dabbb8b086c6",
+  "t": "- **BIBLE at BOOT LOCK.** Ipinapakita ng Settings > General & System > Boot Loader kung ano ang pinapatakbo ng bawat memory card sa pag-on at iniinstall ang **BIBLE**, ang PS2BBL na inihanda para sa RIPPS2, sa memory card. Inaayos ng **Boot Lock** ang bootloader na talagang pinapatakbo ng console mo para patakbuhin ang RIPPS2: agad itong pinapatakbo ng PS2BBL at FreeMcBoot, inilalagay ito ng OSDMenu sa unahan ng menu nito, at ibinabalik ng pag-off ang dati."
+ },
  "de8f1cb0c1f9": {
   "en": "de8f1cb0c1f9",
   "t": "- Planet N Compact ng [Iconian Fonts](https://www.iconian.com) (`assets/master.ttf`), at Planet N Condensed (`elf/theme/fonts/ripps2_condensed.ttf`, mula build 115 built in bilang `builtin:ripps2condensed`, ang font ng mga listahan ng Adapt). Iginuhit para sa RIPPS2 ang [RIPPS2 Sleek](https://github.com/akilluminati47/RIPPS2-fonts) (Regular, Bold, Bold Case); nasa sarili nitong repo ang mga font bilang TTF at WOFF2 sa ilalim ng OFL."
@@ -434,10 +434,6 @@
  "e1e11a9f5baf": {
   "en": "e1e11a9f5baf",
   "t": "- Pinapatakbo ng **LAUNCH DISC** ang mga disc ng PS2, PS1, at DVD video, sinasabi kung anong laro ang nasa drive bago ito patakbuhin, at nagpapatugtog ng audio CD habang nagiging spectrum analyser ang mga tore. Nire-rip ng **RIPDISC** (build 105) ang disc sa drive: ang laro sa storage mo, ang CD o DVD video sa mga file mo."
- },
- "e35df5aa8b8e": {
-  "en": "e35df5aa8b8e",
-  "t": "> 1. **[I-download ang RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (laging ang pinakabagong release) (isang file, 2,747 KB; o **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2,203 KB, pareho pero walang PS2BBL para sa BIBLE at walang Neutrino), at kung gusto mo ang **[theme pack](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt at Adapt Rx, edisyon 128: tig-isang config at isang larawan; built in na ang RIPGRID at RIPFLOW), at ang **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** para sa RIPPS2 sa sarili mong wika (33 wika; kasama sa bawat release)."
  },
  "e5c8e488b993": {
   "en": "e5c8e488b993",
@@ -467,10 +463,6 @@
   "en": "f55efbafe641",
   "t": "## Mag-rip ng disc"
  },
- "f82d2f1d0e71": {
-  "en": "f82d2f1d0e71",
-  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) ni El Isra (israpps) at [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) ni saildot4k: ine-edit ng BOOT LOCK ang config nila para patakbuhin ng console ang RIPPS2 (mula build 116 pati ang config ng FreeMcBoot at OSDMenu). Mula build 69, dala ng RIPPS2.elf ang naka-sign na PS2BBL 1.2.0 ni El Isra nang walang binago, bilang data, para iinstall ito ng **Boot Loader > Manage** (BIBLE) sa memory card. May lisensyang GPL-3.0 ang PS2BBL: nasa [`elf/bible`](elf/bible/README.md) ang lisensya nito at ang eksaktong source na pinagbuuan ([commit a063bb3](https://github.com/israpps/PlayStation2-Basic-BootLoader/tree/a063bb3)). Gumagamit ang pagkakabit sa card ng bukas na SECRMAN sa ps2sdk (AFL); walang key na kasangkot."
- },
  "fbfc328db8db": {
   "en": "fbfc328db8db",
   "t": "- **Mga USB pad na hindi kilala ng RIPPS2** (build 129). **Settings > Controllers > Set Up A USB Pad**: isaksak ang pad, pindutin ang bawat button na hinihingi ng RIPPS2, at isinusulat nito ang `.pad` profile ng pad (`PADS/VVVV_PPPP.pad` sa tabi ng RIPPS2, plain text: [ang format](docs/plans/pad-spec.md)). Kayang patakbuhin ng pad na may profile ang menu at maglaro kapag naka-on ang Pad Emulator; pinagpapalit ng `PADS/GAMES/<game ID>.pad` ang mga button para sa isang laro. Sinusuri ng **My Pads** ang bawat profile at sinasabi kung ano ang mali sa tinanggihan nito."
@@ -482,5 +474,13 @@
  "fe207194059a": {
   "en": "fe207194059a",
   "t": "| `bgm_02 Details.ogg` | **Details** | x-Radar Portable, [system music ng PSP](https://en.wikipedia.org/wiki/PlayStation_Portable_system_software) (Sony, 2010): **ang background music ng mga video ng RIPPS2 sa YouTube** kasama ng Slideshow (dito nagsisimula ang beta reel, at ang build 83 reel at Short) | Sarili mong kopya, kino-convert sa PC mo gamit ang [RIPPS2 Media Studio](tools/media-studio) |"
+ },
+ "ff8525427876": {
+  "en": "ff8525427876",
+  "t": "> [Mga bago sa build 131 hanggang 134](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.4-beta) | [Changelog](CHANGELOG.md) | **[Mga video](#videos)** | [Lahat ng release](https://github.com/akilluminati47/RIPPS2/releases) | [Pag-usapan sa psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
+ },
+ "ff925ac5d69f": {
+  "en": "ff925ac5d69f",
+  "t": "> 1. **[I-download ang RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (laging ang pinakabagong release) (isang file, 2,815 KB; o **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2,205 KB, pareho pero walang PS2BBL para sa BIBLE at walang Neutrino), at kung gusto mo ang **[theme pack](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt at Adapt Rx, edisyon 128: tig-isang config at isang larawan; built in na ang RIPGRID at RIPFLOW), at ang **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** para sa RIPPS2 sa sarili mong wika (33 wika; kasama sa bawat release)."
  }
 }

@@ -67,6 +67,10 @@
   "en": "24fdb4df1618",
   "t": "## A te nyelveden"
  },
+ "254b4b737bb1": {
+  "en": "254b4b737bb1",
+  "t": "> ### Rippeld: RIPPS2 build 134, v1.3.4 béta"
+ },
  "2642f599dfad": {
   "en": "2642f599dfad",
   "t": "> 2. Másold USB-kulcsra vagy memóriakártyára, és indítsd a FreeMcBootból, a PS2BBL-ből, a wLaunchELF-ből vagy abból, amivel eddig homebrew-t indítottál. PCSX2-ben: **System > Start File**, és válaszd a `RIPPS2.elf` fájlt."
@@ -183,6 +187,10 @@
   "en": "60f96e9259c8",
   "t": "<sub>A menühangok számozása az, ahogy a Media Studio egy SCPH-39001-es dumpot listáz. A Start a legtöbbet már a helyére teszi; ehhez a térképhez a save, error, random és a két meghajtóhang fájlt az itt megnevezett menühangokból alakítsd át.</sub>"
  },
+ "618c478fd292": {
+  "en": "618c478fd292",
+  "t": "- El Isra (israpps) [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) programja és saildot4k [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) programja: a BOOT LOCK a konfigurációjukat szerkeszti, hogy a konzol a RIPPS2-t indítsa (a 116-os buildtől a FreeMcBootét és az OSDMenuét is). A 134-es buildtől a RIPPS2.elf a [BIBLE](https://github.com/akilluminati47/BIBLE)-t hozza, a RIPPS2-höz aláírt PS2BBL-változatunkat, amelyet a **Boot Loader > Manage** telepít (a 69–133-as buildek El Isra PS2BBL 1.2.0-ját hozták). A GPL-3.0 licenc és a forrás itt van: [`elf/bible`](elf/bible/README.md); a kártyához kötés a ps2sdk nyílt SECRMAN-jét használja (AFL), kulcsok nélkül."
+ },
  "67788a3fdaa3": {
   "en": "67788a3fdaa3",
   "t": "| [A v1.1.2 hangbemutatója](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4) (GitHubon) | 2:11 | A konzolból rippelt összes hang egyetlen felvételen, az indítóhangtól egy játék indulásáig |"
@@ -215,17 +223,9 @@
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | A gömböket |"
  },
- "85b93356c9f9": {
-  "en": "85b93356c9f9",
-  "t": "> ### Rippeld: RIPPS2 build 130, v1.3.0 béta"
- },
  "85be5f3270be": {
   "en": "85be5f3270be",
   "t": "| [A v1.1.0 reelje](https://youtu.be/Q8ZLd6ArV8s) | 3:57 | A v1.1.0, az Over the Rainbow-ra vágva |"
- },
- "88130624f812": {
-  "en": "88130624f812",
-  "t": "- **BIBLE és BOOT LOCK.** A Settings > General & System > Boot Loader megmutatja, mit indít az egyes memóriakártyák bekapcsoláskor, és memóriakártyára telepíti a **BIBLE**-t, a RIPPS2-höz beállított PS2BBL 1.2.0-t. A **Boot Lock** úgy állítja be a konzolod által ténylegesen indított rendszerbetöltőt, hogy az a RIPPS2-t indítsa: a PS2BBL és a FreeMcBoot azonnal indítja, az OSDMenu a menüje elejére teszi, kikapcsolva pedig visszaáll, ami előtte volt."
  },
  "8b21d2e8e31d": {
   "en": "8b21d2e8e31d",
@@ -274,10 +274,6 @@
  "a4f2c110a598": {
   "en": "a4f2c110a598",
   "t": "| **Launch Disc** | Az oszlopokat, kettős robbanással a mező közepén |"
- },
- "a65cfe5da270": {
-  "en": "a65cfe5da270",
-  "t": "> [Újdonságok a 130-as buildben](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.0-beta) | [Changelog](CHANGELOG.md) | **[Videók](#videos)** | [Minden kiadás](https://github.com/akilluminati47/RIPPS2/releases) | [Beszélgess róla a psx-place-en](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "a70e85fb5ee7": {
   "en": "a70e85fb5ee7",
@@ -427,6 +423,10 @@
   "en": "da42e53699c3",
   "t": "- **Gyors indítás.** A Settings > Game Sources > Cache > **Fast Boot** induláskor csak a RIPPS2 saját meghajtóját olvassa: a `RIPPS2.ELF` melletti beállításokat és hangokat, és minden listát a gyorsítótárából. A többi meghajtó vár, amíg meg nem nyomod a SELECT-et az oldalukon, vagy ki nem választod az egyik játékukat. Egy játék, amelyet akkor választasz, amikor a RIPPS2 még olvas vagy ír, egy panel mögött vár, amely megmondja, mi van még hátra (a START NOW azonnal indul), így egy indítás sosem szakít félbe egy írást."
  },
+ "dabbb8b086c6": {
+  "en": "dabbb8b086c6",
+  "t": "- **BIBLE és BOOT LOCK.** A Settings > General & System > Boot Loader megmutatja, mit indít az egyes memóriakártyák bekapcsoláskor, és memóriakártyára telepíti a **BIBLE**-t, a RIPPS2-höz beállított PS2BBL-t. A **Boot Lock** úgy állítja be a konzolod által ténylegesen indított rendszerbetöltőt, hogy az a RIPPS2-t indítsa: a PS2BBL és a FreeMcBoot azonnal indítja, az OSDMenu a menüje elejére teszi, kikapcsolva pedig visszaáll, ami előtte volt."
+ },
  "de8f1cb0c1f9": {
   "en": "de8f1cb0c1f9",
   "t": "- A Planet N Compact az [Iconian Fonts](https://www.iconian.com) betűtípusa (`assets/master.ttf`), és a Planet N Condensed (`elf/theme/fonts/ripps2_condensed.ttf`, a 115-ös buildtől beépítve `builtin:ripps2condensed` néven, az Adapt listabetűje). A [RIPPS2 Sleek](https://github.com/akilluminati47/RIPPS2-fonts) (Regular, Bold, Bold Case) a RIPPS2-höz készült; saját tárolójában a betűtípusok TTF és WOFF2 formátumban, OFL licenccel érhetők el."
@@ -434,10 +434,6 @@
  "e1e11a9f5baf": {
   "en": "e1e11a9f5baf",
   "t": "- A **LAUNCH DISC** PS2-, PS1- és DVD-videólemezeket indít, már indítás előtt megmondja, melyik játék van a meghajtóban, és audio-CD-ket játszik le, közben a tornyok spektrumanalizátorrá válnak. A **RIPDISC** (105-ös build) rippeli a meghajtóban lévő lemezt: a játékot a tárhelyedre, a CD-t vagy DVD-videót a fájljaid közé."
- },
- "e35df5aa8b8e": {
-  "en": "e35df5aa8b8e",
-  "t": "> 1. **[Töltsd le a RIPPS2.elf fájlt](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (mindig a legújabb kiadás) (egyetlen fájl, 2747 KB; vagy **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2203 KB, ugyanez a BIBLE-hez tartozó PS2BBL és a Neutrino nélkül), és ha szeretnéd, a **[témacsomagot](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt, Adapt Rx, 128-as kiadás: egy-egy konfiguráció és kép; a RIPGRID és a RIPFLOW beépített), és a **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** csomagot, hogy a RIPPS2 a te nyelveden szóljon (33 nyelv; minden kiadás tartalmazza)."
  },
  "e5c8e488b993": {
   "en": "e5c8e488b993",
@@ -467,10 +463,6 @@
   "en": "f55efbafe641",
   "t": "## Rippelj egy lemezt"
  },
- "f82d2f1d0e71": {
-  "en": "f82d2f1d0e71",
-  "t": "- El Isra (israpps) [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) programja és saildot4k [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) programja: a BOOT LOCK a konfigurációjukat szerkeszti, hogy a konzol a RIPPS2-t indítsa (a 116-os buildtől a FreeMcBootét és az OSDMenuét is). A 69-es buildtől a RIPPS2.elf változatlanul, adatként hozza El Isra aláírt PS2BBL 1.2.0-ját, hogy a **Boot Loader > Manage** (BIBLE) memóriakártyára telepíthesse. A PS2BBL GPL-3.0 licencű: a licence és a pontos forráskód, amelyből készült ([commit a063bb3](https://github.com/israpps/PlayStation2-Basic-BootLoader/tree/a063bb3)), az [`elf/bible`](elf/bible/README.md) mappában található. A kártyához kötés a ps2sdk nyílt SECRMAN-jét használja (AFL); kulcsok nem játszanak szerepet."
- },
  "fbfc328db8db": {
   "en": "fbfc328db8db",
   "t": "- **USB-kontrollerek, amelyeket a RIPPS2 nem ismert** (129-es build). **Settings > Controllers > Set Up A USB Pad**: dugd be a kontrollert, nyomd meg minden gombot, amit a RIPPS2 kér, és megírja a kontroller `.pad` profilját (`PADS/VVVV_PPPP.pad` a RIPPS2 mellett, egyszerű szöveg: [a formátum](docs/plans/pad-spec.md)). Egy profillal rendelkező kontroller irányítja a menüt, és bekapcsolt Pad Emulatorral játszik a játékokban; a `PADS/GAMES/<game ID>.pad` egyetlen játékhoz rendezi át a gombokat. A **My Pads** minden profilt ellenőriz, és megmondja, mi a baj azokkal, amelyeket elutasít."
@@ -482,5 +474,13 @@
  "fe207194059a": {
   "en": "fe207194059a",
   "t": "| `bgm_02 Details.ogg` | **Details** | x-Radar Portable, [PSP rendszerzene](https://en.wikipedia.org/wiki/PlayStation_Portable_system_software) (Sony, 2010): **a RIPPS2 YouTube-videóinak háttérzenéje** a Slideshow-val együtt (a béta reelje ezzel nyit, akárcsak a 83-as build reelje és Shortja) | a saját példányod, a gépeden átalakítva a [RIPPS2 Media Studióval](tools/media-studio) |"
+ },
+ "ff8525427876": {
+  "en": "ff8525427876",
+  "t": "> [Újdonságok a 131–134-es buildekben](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.4-beta) | [Changelog](CHANGELOG.md) | **[Videók](#videos)** | [Minden kiadás](https://github.com/akilluminati47/RIPPS2/releases) | [Beszélgess róla a psx-place-en](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
+ },
+ "ff925ac5d69f": {
+  "en": "ff925ac5d69f",
+  "t": "> 1. **[Töltsd le a RIPPS2.elf fájlt](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (mindig a legújabb kiadás) (egyetlen fájl, 2815 KB; vagy **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2205 KB, ugyanez a BIBLE-hez tartozó PS2BBL és a Neutrino nélkül), és ha szeretnéd, a **[témacsomagot](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt, Adapt Rx, 128-as kiadás: egy-egy konfiguráció és kép; a RIPGRID és a RIPFLOW beépített), és a **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** csomagot, hogy a RIPPS2 a te nyelveden szóljon (33 nyelv; minden kiadás tartalmazza)."
  }
 }

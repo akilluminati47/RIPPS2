@@ -67,6 +67,10 @@
   "en": "24fdb4df1618",
   "t": "## بلغتك"
  },
+ "254b4b737bb1": {
+  "en": "254b4b737bb1",
+  "t": "> ### اسحبه: RIPPS2 الإصدار 134، v1.3.4 بيتا"
+ },
  "2642f599dfad": {
   "en": "2642f599dfad",
   "t": "> 2. انسخه إلى ذاكرة USB أو بطاقة ذاكرة، وشغّله من FreeMcBoot أو PS2BBL أو wLaunchELF أو أي شيء تستخدمه أصلًا لتشغيل homebrew. في PCSX2: **System > Start File** واختر `RIPPS2.elf`."
@@ -183,6 +187,10 @@
   "en": "60f96e9259c8",
   "t": "<sub>أصوات القائمة مرقّمة كما يسرد Media Studio نسخة من SCPH-39001. يضع Start معظمها في مكانها؛ ولهذه الخريطة، حوّل save وerror وrandom وصوتي المحرّك من أصوات القائمة المذكورة هنا.</sub>"
  },
+ "618c478fd292": {
+  "en": "618c478fd292",
+  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) من El Isra (israpps) و[PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) من saildot4k: يحرّر BOOT LOCK إعداداتهما ليشغّل الجهاز RIPPS2 (ومنذ الإصدار 116 إعدادات FreeMcBoot وOSDMenu أيضًا). ومنذ الإصدار 134 يحمل RIPPS2.elf [BIBLE](https://github.com/akilluminati47/BIBLE)، نسختنا من PS2BBL الموقّعة لـ RIPPS2، ليثبّتها **Boot Loader > Manage** (حملت الإصدارات 69 إلى 133 نسخة PS2BBL 1.2.0 من El Isra). رخصتها GPL-3.0 وشيفرتها المصدرية في [`elf/bible`](elf/bible/README.md)؛ ويستخدم ربط البطاقة SECRMAN المفتوح من ps2sdk (AFL)، دون أي مفاتيح."
+ },
  "67788a3fdaa3": {
   "en": "67788a3fdaa3",
   "t": "| [جولة أصوات v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4) (على GitHub) | 2:11 | كل صوت مسحوب من الجهاز، في لقطة واحدة، من صوت الإقلاع حتى تشغيل لعبة |"
@@ -215,17 +223,9 @@
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | الكرات |"
  },
- "85b93356c9f9": {
-  "en": "85b93356c9f9",
-  "t": "> ### اسحبه: RIPPS2 الإصدار 130، v1.3.0 بيتا"
- },
  "85be5f3270be": {
   "en": "85be5f3270be",
   "t": "| [عرض v1.1.0](https://youtu.be/Q8ZLd6ArV8s) | 3:57 | الإصدار v1.1.0 مونتاجًا على Over the Rainbow |"
- },
- "88130624f812": {
-  "en": "88130624f812",
-  "t": "- **BIBLE وBOOT LOCK.** Settings > General & System > Boot Loader يعرض ما تشغّله كل بطاقة ذاكرة عند التشغيل، ويثبّت **BIBLE**، أي PS2BBL 1.2.0 المُعدّ لـ RIPPS2، على بطاقة ذاكرة. يضبط **Boot Lock** محمّل الإقلاع الذي يشغّله جهازك فعلًا ليشغّل RIPPS2: يشغّله PS2BBL وFreeMcBoot فورًا، ويضعه OSDMenu أولًا في قائمته، وإطفاؤه يعيد ما كان من قبل."
  },
  "8b21d2e8e31d": {
   "en": "8b21d2e8e31d",
@@ -274,10 +274,6 @@
  "a4f2c110a598": {
   "en": "a4f2c110a598",
   "t": "| **Launch Disc** | الأعمدة، مع انفجار مزدوج يُطلق في منتصف الساحة |"
- },
- "a65cfe5da270": {
-  "en": "a65cfe5da270",
-  "t": "> [الجديد في الإصدار 130](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.0-beta) | [Changelog](CHANGELOG.md) | **[الفيديوهات](#videos)** | [كل الإصدارات](https://github.com/akilluminati47/RIPPS2/releases) | [تحدّث عنه في psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "a70e85fb5ee7": {
   "en": "a70e85fb5ee7",
@@ -427,6 +423,10 @@
   "en": "da42e53699c3",
   "t": "- **إقلاع سريع.** Settings > Game Sources > Cache > **Fast Boot** يقرأ عند الإقلاع محرّك RIPPS2 وحده: الإعدادات والأصوات بجوار `RIPPS2.ELF`، وكل قائمة من ذاكرتها المؤقتة. تنتظر المحرّكات الأخرى حتى تضغط SELECT في صفحتها أو تختار إحدى ألعابها. اللعبة التي تُختار بينما RIPPS2 ما زال يقرأ أو يكتب تنتظر خلف لوحة تخبرك بما تبقى (START NOW يبدأ فورًا)، فلا يقطع التشغيل أي عملية كتابة أبدًا."
  },
+ "dabbb8b086c6": {
+  "en": "dabbb8b086c6",
+  "t": "- **BIBLE وBOOT LOCK.** Settings > General & System > Boot Loader يعرض ما تشغّله كل بطاقة ذاكرة عند التشغيل، ويثبّت **BIBLE**، أي PS2BBL المُعدّ لـ RIPPS2، على بطاقة ذاكرة. يضبط **Boot Lock** محمّل الإقلاع الذي يشغّله جهازك فعلًا ليشغّل RIPPS2: يشغّله PS2BBL وFreeMcBoot فورًا، ويضعه OSDMenu أولًا في قائمته، وإطفاؤه يعيد ما كان من قبل."
+ },
  "de8f1cb0c1f9": {
   "en": "de8f1cb0c1f9",
   "t": "- Planet N Compact من [Iconian Fonts](https://www.iconian.com) (`assets/master.ttf`)، وPlanet N Condensed (`elf/theme/fonts/ripps2_condensed.ttf`، مدمج منذ الإصدار 115 باسم `builtin:ripps2condensed`، خط القوائم في Adapt). خط [RIPPS2 Sleek](https://github.com/akilluminati47/RIPPS2-fonts) (Regular وBold وBold Case) مرسوم لـ RIPPS2؛ ومستودعه الخاص يضم الخطوط بصيغتي TTF وWOFF2 بموجب OFL."
@@ -434,10 +434,6 @@
  "e1e11a9f5baf": {
   "en": "e1e11a9f5baf",
   "t": "- **LAUNCH DISC** يشغّل أقراص PS2 وPS1 وأقراص DVD الفيديو، ويخبرك أي لعبة في المحرّك قبل أن تبدأها، ويشغّل أقراص CD الصوتية بينما تتحول الأبراج إلى محلّل طيف. **RIPDISC** (الإصدار 105) يسحب القرص الموجود في المحرّك: اللعبة إلى وحدة التخزين، وقرص CD أو DVD الفيديو إلى ملفاتك."
- },
- "e35df5aa8b8e": {
-  "en": "e35df5aa8b8e",
-  "t": "> 1. **[نزّل RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (دائمًا أحدث إصدار) (ملف واحد، 2.747 KB؛ أو **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**، 2.203 KB، الشيء نفسه دون PS2BBL الخاص بـ BIBLE ودون Neutrino)، و**[حزمة السمات](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** إن شئت (Adapt وAdapt Rx، الإصدار 128: إعداد واحد وصورة واحدة لكل منهما؛ RIPGRID وRIPFLOW مدمجتان)، و**[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** ليظهر RIPPS2 بلغتك (33 لغة؛ يأتي مع كل إصدار)."
  },
  "e5c8e488b993": {
   "en": "e5c8e488b993",
@@ -467,10 +463,6 @@
   "en": "f55efbafe641",
   "t": "## اسحب قرصًا"
  },
- "f82d2f1d0e71": {
-  "en": "f82d2f1d0e71",
-  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) من El Isra (israpps) و[PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) من saildot4k: يحرّر BOOT LOCK إعداداتهما ليشغّل الجهاز RIPPS2 (ومنذ الإصدار 116 إعدادات FreeMcBoot وOSDMenu أيضًا). ومنذ الإصدار 69 يحمل RIPPS2.elf نسخة PS2BBL 1.2.0 الموقّعة من El Isra دون تغيير، كبيانات، ليثبّتها **Boot Loader > Manage** (BIBLE) على بطاقة ذاكرة. PS2BBL مرخّص بـ GPL-3.0: رخصته والشيفرة المصدرية الدقيقة التي بُني منها ([commit a063bb3](https://github.com/israpps/PlayStation2-Basic-BootLoader/tree/a063bb3)) موجودة في [`elf/bible`](elf/bible/README.md). وربط البطاقة يستخدم SECRMAN المفتوح من ps2sdk (AFL)؛ ولا تدخل في ذلك أي مفاتيح."
- },
  "fbfc328db8db": {
   "en": "fbfc328db8db",
   "t": "- **أذرع تحكم USB لم يكن RIPPS2 يعرفها** (الإصدار 129). **Settings > Controllers > Set Up A USB Pad**: صِل الذراع، واضغط كل زر يطلبه RIPPS2، فيكتب ملف تعريف `.pad` للذراع (`PADS/VVVV_PPPP.pad` بجوار RIPPS2، نص عادي: [الصيغة](docs/plans/pad-spec.md)). الذراع الذي له ملف تعريف يتحكم بالقائمة، ومع تفعيل Pad Emulator يلعب في الألعاب؛ و`PADS/GAMES/<game ID>.pad` ينقل الأزرار للعبة واحدة. ويفحص **My Pads** كل ملف تعريف ويخبرك بما فيه من خطأ إن رفضه."
@@ -482,5 +474,13 @@
  "fe207194059a": {
   "en": "fe207194059a",
   "t": "| `bgm_02 Details.ogg` | **Details** | x-Radar Portable، [موسيقى نظام PSP](https://en.wikipedia.org/wiki/PlayStation_Portable_system_software) (Sony، 2010): **موسيقى خلفية فيديوهات RIPPS2 على YouTube** إلى جانب Slideshow (يبدأ بها عرض البيتا، وعرض الإصدار 83 ومقطعه القصير) | نسختك الخاصة، محوّلة على حاسوبك بـ [RIPPS2 Media Studio](tools/media-studio) |"
+ },
+ "ff8525427876": {
+  "en": "ff8525427876",
+  "t": "> [الجديد في الإصدارات 131 إلى 134](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.4-beta) | [Changelog](CHANGELOG.md) | **[الفيديوهات](#videos)** | [كل الإصدارات](https://github.com/akilluminati47/RIPPS2/releases) | [تحدّث عنه في psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
+ },
+ "ff925ac5d69f": {
+  "en": "ff925ac5d69f",
+  "t": "> 1. **[نزّل RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (دائمًا أحدث إصدار) (ملف واحد، 2.815 KB؛ أو **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**، 2.205 KB، الشيء نفسه دون PS2BBL الخاص بـ BIBLE ودون Neutrino)، و**[حزمة السمات](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** إن شئت (Adapt وAdapt Rx، الإصدار 128: إعداد واحد وصورة واحدة لكل منهما؛ RIPGRID وRIPFLOW مدمجتان)، و**[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** ليظهر RIPPS2 بلغتك (33 لغة؛ يأتي مع كل إصدار)."
  }
 }

@@ -67,6 +67,10 @@
   "en": "24fdb4df1618",
   "t": "## Bằng ngôn ngữ của bạn"
  },
+ "254b4b737bb1": {
+  "en": "254b4b737bb1",
+  "t": "> ### Rip nào: RIPPS2 bản dựng 134, v1.3.4 beta"
+ },
  "2642f599dfad": {
   "en": "2642f599dfad",
   "t": "> 2. Chép nó vào USB hoặc thẻ nhớ và chạy từ FreeMcBoot, PS2BBL, wLaunchELF hay bất cứ thứ gì bạn dùng để chạy homebrew. Trong PCSX2: **System > Start File** rồi chọn `RIPPS2.elf`."
@@ -183,6 +187,10 @@
   "en": "60f96e9259c8",
   "t": "<sub>Âm thanh menu được đánh số theo cách Media Studio liệt kê một bản dump SCPH-39001. Start đã đặt sẵn phần lớn; với bản đồ này, hãy chuyển save, error, random và hai âm thanh ổ từ các âm thanh menu được nêu ở đây.</sub>"
  },
+ "618c478fd292": {
+  "en": "618c478fd292",
+  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) của El Isra (israpps) và [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) của saildot4k: BOOT LOCK sửa cấu hình của chúng để máy chạy RIPPS2 (từ bản dựng 116 cả cấu hình của FreeMcBoot và OSDMenu). Từ bản dựng 134, RIPPS2.elf mang theo [BIBLE](https://github.com/akilluminati47/BIBLE), bản phái sinh PS2BBL của chúng tôi được ký cho RIPPS2, để **Boot Loader > Manage** cài đặt (các bản dựng 69 đến 133 mang PS2BBL 1.2.0 của El Isra). Giấy phép GPL-3.0 và mã nguồn nằm trong [`elf/bible`](elf/bible/README.md); việc gắn vào thẻ dùng SECRMAN mở của ps2sdk (AFL), không cần khóa."
+ },
  "67788a3fdaa3": {
   "en": "67788a3fdaa3",
   "t": "| [Tham quan âm thanh v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4) (trên GitHub) | 2:11 | Mọi âm thanh rip từ máy, trong một cảnh quay, từ tiếng khởi động đến khi chạy game |"
@@ -215,17 +223,9 @@
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | Các quả cầu |"
  },
- "85b93356c9f9": {
-  "en": "85b93356c9f9",
-  "t": "> ### Rip nào: RIPPS2 bản dựng 130, v1.3.0 beta"
- },
  "85be5f3270be": {
   "en": "85be5f3270be",
   "t": "| [Video giới thiệu v1.1.0](https://youtu.be/Q8ZLd6ArV8s) | 3:57 | v1.1.0, dựng theo Over the Rainbow |"
- },
- "88130624f812": {
-  "en": "88130624f812",
-  "t": "- **BIBLE và BOOT LOCK.** Settings > General & System > Boot Loader cho thấy mỗi thẻ nhớ chạy gì khi bật máy và cài **BIBLE**, tức PS2BBL 1.2.0 được chuẩn bị cho RIPPS2, lên thẻ nhớ. **Boot Lock** thiết lập trình khởi động mà máy của bạn thực sự chạy để chạy RIPPS2: PS2BBL và FreeMcBoot chạy nó ngay, OSDMenu đặt nó lên đầu menu, và tắt đi sẽ trả lại như cũ."
  },
  "8b21d2e8e31d": {
   "en": "8b21d2e8e31d",
@@ -274,10 +274,6 @@
  "a4f2c110a598": {
   "en": "a4f2c110a598",
   "t": "| **Launch Disc** | Các cột trụ, với một vụ nổ kép giữa sân |"
- },
- "a65cfe5da270": {
-  "en": "a65cfe5da270",
-  "t": "> [Có gì mới trong bản dựng 130](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.0-beta) | [Changelog](CHANGELOG.md) | **[Video](#videos)** | [Mọi bản phát hành](https://github.com/akilluminati47/RIPPS2/releases) | [Thảo luận trên psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "a70e85fb5ee7": {
   "en": "a70e85fb5ee7",
@@ -427,6 +423,10 @@
   "en": "da42e53699c3",
   "t": "- **Khởi động nhanh.** Settings > Game Sources > Cache > **Fast Boot** chỉ đọc ổ của chính RIPPS2 khi bật máy: cài đặt và âm thanh cạnh `RIPPS2.ELF`, và mỗi danh sách từ bộ nhớ đệm. Các ổ khác chờ đến khi bạn bấm SELECT trên trang của chúng hoặc chọn một game của chúng. Một game được chọn khi RIPPS2 đang đọc hoặc ghi sẽ chờ sau một bảng cho biết việc còn lại (START NOW chạy ngay), nên việc chạy game không bao giờ cắt ngang một lần ghi."
  },
+ "dabbb8b086c6": {
+  "en": "dabbb8b086c6",
+  "t": "- **BIBLE và BOOT LOCK.** Settings > General & System > Boot Loader cho thấy mỗi thẻ nhớ chạy gì khi bật máy và cài **BIBLE**, tức PS2BBL được chuẩn bị cho RIPPS2, lên thẻ nhớ. **Boot Lock** thiết lập trình khởi động mà máy của bạn thực sự chạy để chạy RIPPS2: PS2BBL và FreeMcBoot chạy nó ngay, OSDMenu đặt nó lên đầu menu, và tắt đi sẽ trả lại như cũ."
+ },
  "de8f1cb0c1f9": {
   "en": "de8f1cb0c1f9",
   "t": "- Planet N Compact của [Iconian Fonts](https://www.iconian.com) (`assets/master.ttf`), và Planet N Condensed (`elf/theme/fonts/ripps2_condensed.ttf`, từ bản dựng 115 tích hợp với tên `builtin:ripps2condensed`, phông của danh sách Adapt). [RIPPS2 Sleek](https://github.com/akilluminati47/RIPPS2-fonts) (Regular, Bold, Bold Case) được vẽ cho RIPPS2; kho riêng của nó có các phông dạng TTF và WOFF2 theo OFL."
@@ -434,10 +434,6 @@
  "e1e11a9f5baf": {
   "en": "e1e11a9f5baf",
   "t": "- **LAUNCH DISC** chạy đĩa PS2, PS1 và DVD video, cho biết game nào đang ở trong ổ trước khi chạy, và phát CD nhạc trong khi các tòa tháp biến thành bộ phân tích phổ. **RIPDISC** (bản dựng 105) rip đĩa trong ổ: game vào bộ nhớ lưu trữ của bạn, CD hoặc DVD video vào tệp của bạn."
- },
- "e35df5aa8b8e": {
-  "en": "e35df5aa8b8e",
-  "t": "> 1. **[Tải RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (luôn là bản phát hành mới nhất) (một tệp, 2.747 KB; hoặc **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2.203 KB, giống vậy nhưng không có PS2BBL cho BIBLE và không có Neutrino), nếu muốn thì thêm **[gói giao diện](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt và Adapt Rx, phiên bản 128: mỗi cái một cấu hình và một ảnh; RIPGRID và RIPFLOW có sẵn bên trong), và **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** để dùng RIPPS2 bằng ngôn ngữ của bạn (33 ngôn ngữ; đi kèm mọi bản phát hành)."
  },
  "e5c8e488b993": {
   "en": "e5c8e488b993",
@@ -467,10 +463,6 @@
   "en": "f55efbafe641",
   "t": "## Rip một đĩa"
  },
- "f82d2f1d0e71": {
-  "en": "f82d2f1d0e71",
-  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) của El Isra (israpps) và [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) của saildot4k: BOOT LOCK sửa cấu hình của chúng để máy chạy RIPPS2 (từ bản dựng 116 cả cấu hình của FreeMcBoot và OSDMenu). Từ bản dựng 69, RIPPS2.elf kèm PS2BBL 1.2.0 đã ký của El Isra, không chỉnh sửa, dưới dạng dữ liệu, để **Boot Loader > Manage** (BIBLE) cài nó lên thẻ nhớ. PS2BBL theo giấy phép GPL-3.0: giấy phép và mã nguồn chính xác dùng để dựng nó ([commit a063bb3](https://github.com/israpps/PlayStation2-Basic-BootLoader/tree/a063bb3)) nằm trong [`elf/bible`](elf/bible/README.md). Việc gắn vào thẻ dùng SECRMAN mở trong ps2sdk (AFL); không có khóa nào liên quan."
- },
  "fbfc328db8db": {
   "en": "fbfc328db8db",
   "t": "- **Tay cầm USB mà RIPPS2 chưa biết** (bản dựng 129). **Settings > Controllers > Set Up A USB Pad**: cắm tay cầm, bấm từng nút RIPPS2 yêu cầu, và nó ghi hồ sơ `.pad` của tay cầm (`PADS/VVVV_PPPP.pad` cạnh RIPPS2, văn bản thuần: [định dạng](docs/plans/pad-spec.md)). Tay cầm có hồ sơ điều khiển được menu và chơi game khi bật Pad Emulator; `PADS/GAMES/<game ID>.pad` đổi nút cho từng game. **My Pads** kiểm tra từng hồ sơ và cho biết cái nó từ chối sai ở đâu."
@@ -482,5 +474,13 @@
  "fe207194059a": {
   "en": "fe207194059a",
   "t": "| `bgm_02 Details.ogg` | **Details** | x-Radar Portable, [nhạc hệ thống PSP](https://en.wikipedia.org/wiki/PlayStation_Portable_system_software) (Sony, 2010): **nhạc nền các video YouTube của RIPPS2** cùng Slideshow (video giới thiệu beta mở đầu bằng nó, và video giới thiệu cùng short bản dựng 83) | Bản của riêng bạn, chuyển trên máy tính bằng [RIPPS2 Media Studio](tools/media-studio) |"
+ },
+ "ff8525427876": {
+  "en": "ff8525427876",
+  "t": "> [Có gì mới trong các bản dựng 131 đến 134](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.4-beta) | [Changelog](CHANGELOG.md) | **[Video](#videos)** | [Mọi bản phát hành](https://github.com/akilluminati47/RIPPS2/releases) | [Thảo luận trên psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
+ },
+ "ff925ac5d69f": {
+  "en": "ff925ac5d69f",
+  "t": "> 1. **[Tải RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (luôn là bản phát hành mới nhất) (một tệp, 2.815 KB; hoặc **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2.205 KB, giống vậy nhưng không có PS2BBL cho BIBLE và không có Neutrino), nếu muốn thì thêm **[gói giao diện](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt và Adapt Rx, phiên bản 128: mỗi cái một cấu hình và một ảnh; RIPGRID và RIPFLOW có sẵn bên trong), và **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** để dùng RIPPS2 bằng ngôn ngữ của bạn (33 ngôn ngữ; đi kèm mọi bản phát hành)."
  }
 }

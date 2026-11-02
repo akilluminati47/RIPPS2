@@ -67,6 +67,10 @@
   "en": "24fdb4df1618",
   "t": "## 당신의 언어로"
  },
+ "254b4b737bb1": {
+  "en": "254b4b737bb1",
+  "t": "> ### 립하세요: RIPPS2 빌드 134, v1.3.4 베타"
+ },
  "2642f599dfad": {
   "en": "2642f599dfad",
   "t": "> 2. USB 메모리나 메모리 카드에 복사하고 FreeMcBoot, PS2BBL, wLaunchELF 등 homebrew를 실행할 때 쓰는 것으로 실행합니다. PCSX2에서는 **System > Start File**에서 `RIPPS2.elf`를 고릅니다."
@@ -183,6 +187,10 @@
   "en": "60f96e9259c8",
   "t": "<sub>메뉴 소리의 번호는 Media Studio가 SCPH-39001 덤프를 나열하는 순서입니다. Start로 대부분은 이미 제자리에 놓입니다. 이 배치로 하려면 save, error, random, 두 드라이브 소리를 여기 적힌 메뉴 소리에서 변환하세요.</sub>"
  },
+ "618c478fd292": {
+  "en": "618c478fd292",
+  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader), El Isra (israpps), 그리고 [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended), saildot4k: BOOT LOCK은 그 설정을 편집해 콘솔이 RIPPS2를 실행하게 합니다 (빌드 116부터 FreeMcBoot와 OSDMenu의 설정도). 빌드 134부터 RIPPS2.elf는 RIPPS2용으로 서명한 PS2BBL 파생판 [BIBLE](https://github.com/akilluminati47/BIBLE)을(를) 담고 있으며, **Boot Loader > Manage**이(가) 설치합니다 (빌드 69~133은 El Isra의 PS2BBL 1.2.0을 담았습니다). GPL-3.0 라이선스와 소스는 [`elf/bible`](elf/bible/README.md)에 있습니다. 카드 바인딩은 ps2sdk의 공개 SECRMAN(AFL)을 쓰며 키는 쓰지 않습니다."
+ },
  "67788a3fdaa3": {
   "en": "67788a3fdaa3",
   "t": "| [v1.1.2 사운드 투어](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4) (GitHub에서) | 2:11 | 콘솔에서 립한 모든 소리를 한 번에, 부팅 소리부터 게임 실행까지 |"
@@ -215,17 +223,9 @@
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | 구슬 |"
  },
- "85b93356c9f9": {
-  "en": "85b93356c9f9",
-  "t": "> ### 립하세요: RIPPS2 빌드 130, v1.3.0 베타"
- },
  "85be5f3270be": {
   "en": "85be5f3270be",
   "t": "| [v1.1.0 소개 릴](https://youtu.be/Q8ZLd6ArV8s) | 3:57 | Over the Rainbow에 맞춰 편집한 v1.1.0 |"
- },
- "88130624f812": {
-  "en": "88130624f812",
-  "t": "- **BIBLE과 BOOT LOCK.** Settings > General & System > Boot Loader는 각 메모리 카드가 전원을 켤 때 무엇을 실행하는지 보여 주고, RIPPS2용으로 준비한 PS2BBL 1.2.0인 **BIBLE**을 메모리 카드에 설치합니다. **Boot Lock**은 콘솔이 실제로 실행하는 부트로더가 RIPPS2를 실행하도록 설정합니다: PS2BBL과 FreeMcBoot는 바로 실행하고, OSDMenu는 메뉴 맨 위에 두며, 끄면 원래 상태로 돌아갑니다."
  },
  "8b21d2e8e31d": {
   "en": "8b21d2e8e31d",
@@ -274,10 +274,6 @@
  "a4f2c110a598": {
   "en": "a4f2c110a598",
   "t": "| **Launch Disc** | 기둥, 필드 가운데의 이중 폭발과 함께 |"
- },
- "a65cfe5da270": {
-  "en": "a65cfe5da270",
-  "t": "> [빌드 130의 새 기능](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.0-beta) | [Changelog](CHANGELOG.md) | **[영상](#videos)** | [모든 릴리스](https://github.com/akilluminati47/RIPPS2/releases) | [psx-place에서 이야기하기](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "a70e85fb5ee7": {
   "en": "a70e85fb5ee7",
@@ -427,6 +423,10 @@
   "en": "da42e53699c3",
   "t": "- **빠른 부팅.** Settings > Game Sources > Cache > **Fast Boot**는 전원을 켤 때 RIPPS2 자신의 드라이브만 읽습니다: `RIPPS2.ELF` 옆의 설정과 사운드, 그리고 각 목록은 캐시에서. 다른 드라이브는 그 페이지에서 SELECT를 누르거나 그 게임을 고를 때까지 기다립니다. RIPPS2가 읽거나 쓰는 중에 고른 게임은 남은 작업을 알려 주는 패널 뒤에서 기다리므로 (START NOW로 바로 시작) 실행이 쓰기를 중간에 끊는 일은 없습니다."
  },
+ "dabbb8b086c6": {
+  "en": "dabbb8b086c6",
+  "t": "- **BIBLE과 BOOT LOCK.** Settings > General & System > Boot Loader는 각 메모리 카드가 전원을 켤 때 무엇을 실행하는지 보여 주고, RIPPS2용으로 준비한 PS2BBL인 **BIBLE**을 메모리 카드에 설치합니다. **Boot Lock**은 콘솔이 실제로 실행하는 부트로더가 RIPPS2를 실행하도록 설정합니다: PS2BBL과 FreeMcBoot는 바로 실행하고, OSDMenu는 메뉴 맨 위에 두며, 끄면 원래 상태로 돌아갑니다."
+ },
  "de8f1cb0c1f9": {
   "en": "de8f1cb0c1f9",
   "t": "- Planet N Compact, [Iconian Fonts](https://www.iconian.com) (`assets/master.ttf`), 그리고 Planet N Condensed (`elf/theme/fonts/ripps2_condensed.ttf`, 빌드 115부터 `builtin:ripps2condensed`로 내장, Adapt 목록의 글꼴). [RIPPS2 Sleek](https://github.com/akilluminati47/RIPPS2-fonts) (Regular, Bold, Bold Case)은 RIPPS2를 위해 그렸습니다. 그 저장소가 TTF와 WOFF2 글꼴을 OFL로 제공합니다."
@@ -434,10 +434,6 @@
  "e1e11a9f5baf": {
   "en": "e1e11a9f5baf",
   "t": "- **LAUNCH DISC**는 PS2, PS1, DVD 비디오 디스크를 실행하고, 실행하기 전에 드라이브에 든 게임을 알려 주며, 음악 CD를 재생하는 동안 탑이 스펙트럼 분석기로 바뀝니다. **RIPDISC** (빌드 105)는 드라이브의 디스크를 립합니다: 게임은 저장소로, CD나 DVD 비디오는 파일로."
- },
- "e35df5aa8b8e": {
-  "en": "e35df5aa8b8e",
-  "t": "> 1. **[RIPPS2.elf 다운로드](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (항상 최신 릴리스) (파일 하나, 2,747 KB. 또는 **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2,203 KB, BIBLE용 PS2BBL과 Neutrino를 뺀 같은 것), 원하면 **[테마 팩](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt와 Adapt Rx, 에디션 128: 각각 설정 하나와 이미지 하나. RIPGRID와 RIPFLOW는 내장), 그리고 RIPPS2를 내 언어로 쓰기 위한 **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** (33개 언어. 모든 릴리스에 포함)."
  },
  "e5c8e488b993": {
   "en": "e5c8e488b993",
@@ -467,10 +463,6 @@
   "en": "f55efbafe641",
   "t": "## 디스크 립하기"
  },
- "f82d2f1d0e71": {
-  "en": "f82d2f1d0e71",
-  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader), El Isra (israpps), 그리고 [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended), saildot4k: BOOT LOCK은 그 설정을 편집해 콘솔이 RIPPS2를 실행하게 합니다 (빌드 116부터 FreeMcBoot와 OSDMenu의 설정도). 빌드 69부터 RIPPS2.elf는 El Isra의 서명된 PS2BBL 1.2.0을 수정 없이 데이터로 담고, **Boot Loader > Manage** (BIBLE)가 메모리 카드에 설치합니다. PS2BBL은 GPL-3.0 라이선스입니다: 그 라이선스와 빌드에 쓴 정확한 소스 ([commit a063bb3](https://github.com/israpps/PlayStation2-Basic-BootLoader/tree/a063bb3))는 [`elf/bible`](elf/bible/README.md)에 있습니다. 카드 바인딩은 ps2sdk의 공개 SECRMAN (AFL)을 씁니다. 키는 전혀 쓰지 않습니다."
- },
  "fbfc328db8db": {
   "en": "fbfc328db8db",
   "t": "- **RIPPS2가 몰랐던 USB 컨트롤러** (빌드 129). **Settings > Controllers > Set Up A USB Pad**: 컨트롤러를 꽂고 RIPPS2가 요청하는 각 버튼을 누르면 그 컨트롤러의 `.pad` 프로필이 쓰입니다 (RIPPS2 옆의 `PADS/VVVV_PPPP.pad`, 일반 텍스트: [형식](docs/plans/pad-spec.md)). 프로필이 있는 컨트롤러는 메뉴를 조작하고, Pad Emulator를 켜면 게임을 플레이합니다. `PADS/GAMES/<game ID>.pad`로 게임마다 버튼을 바꿀 수 있습니다. **My Pads**는 각 프로필을 확인하고 거부한 것의 문제를 알려 줍니다."
@@ -482,5 +474,13 @@
  "fe207194059a": {
   "en": "fe207194059a",
   "t": "| `bgm_02 Details.ogg` | **Details** | x-Radar Portable, [PSP 시스템 음악](https://en.wikipedia.org/wiki/PlayStation_Portable_system_software) (Sony, 2010): Slideshow와 함께 **RIPPS2 YouTube 영상의 배경 음악** (베타 소개 릴이 이것으로 시작하고, 빌드 83 소개 릴과 쇼츠도) | 내가 가진 음원을 PC에서 [RIPPS2 Media Studio](tools/media-studio)로 변환 |"
+ },
+ "ff8525427876": {
+  "en": "ff8525427876",
+  "t": "> [빌드 131부터 134까지의 새 기능](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.4-beta) | [Changelog](CHANGELOG.md) | **[영상](#videos)** | [모든 릴리스](https://github.com/akilluminati47/RIPPS2/releases) | [psx-place에서 이야기하기](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
+ },
+ "ff925ac5d69f": {
+  "en": "ff925ac5d69f",
+  "t": "> 1. **[RIPPS2.elf 다운로드](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (항상 최신 릴리스) (파일 하나, 2,815 KB. 또는 **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2,205 KB, BIBLE용 PS2BBL과 Neutrino를 뺀 같은 것), 원하면 **[테마 팩](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt와 Adapt Rx, 에디션 128: 각각 설정 하나와 이미지 하나. RIPGRID와 RIPFLOW는 내장), 그리고 RIPPS2를 내 언어로 쓰기 위한 **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** (33개 언어. 모든 릴리스에 포함)."
  }
 }

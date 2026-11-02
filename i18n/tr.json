@@ -67,6 +67,10 @@
   "en": "24fdb4df1618",
   "t": "## Kendi dilinde"
  },
+ "254b4b737bb1": {
+  "en": "254b4b737bb1",
+  "t": "> ### Rip'le: RIPPS2 build 134, v1.3.4 beta"
+ },
  "2642f599dfad": {
   "en": "2642f599dfad",
   "t": "> 2. Bir USB belleğe ya da hafıza kartına kopyala ve FreeMcBoot, PS2BBL, wLaunchELF ya da homebrew başlatmak için zaten ne kullanıyorsan oradan başlat. PCSX2'de: **System > Start File** ve `RIPPS2.elf` seç."
@@ -183,6 +187,10 @@
   "en": "60f96e9259c8",
   "t": "<sub>Menü sesleri, Media Studio'nun bir SCPH-39001 dökümünü listelediği gibi numaralandırılmıştır. Start çoğunu zaten yerine koyar; bu harita için save, error, random ve iki sürücü sesini burada adı geçen menü seslerinden dönüştür.</sub>"
  },
+ "618c478fd292": {
+  "en": "618c478fd292",
+  "t": "- El Isra'nın (israpps) [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader)'ı ve saildot4k'nin [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended)'ı: BOOT LOCK, konsolun RIPPS2'yi başlatması için onların yapılandırmasını düzenler (derleme 116'dan beri FreeMcBoot'unkini ve OSDMenu'nunkini de). 134. derlemeden beri RIPPS2.elf, RIPPS2 için imzalanmış PS2BBL çatalımız [BIBLE](https://github.com/akilluminati47/BIBLE)'yi taşır ve **Boot Loader > Manage** onu kurar (69-133 derlemeleri El Isra'nın PS2BBL 1.2.0'ını taşıyordu). GPL-3.0 lisansı ve kaynak kodu [`elf/bible`](elf/bible/README.md) içinde; karta bağlama ps2sdk'nin açık SECRMAN'ini (AFL) kullanır, anahtar gerekmez."
+ },
  "67788a3fdaa3": {
   "en": "67788a3fdaa3",
   "t": "| [v1.1.2 ses turu](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4) (GitHub'da) | 2:11 | Konsoldan rip'lenen her ses, tek çekimde, açılış sesinden bir oyunun başlamasına kadar |"
@@ -215,17 +223,9 @@
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | Küreler |"
  },
- "85b93356c9f9": {
-  "en": "85b93356c9f9",
-  "t": "> ### Rip'le: RIPPS2 build 130, v1.3.0 beta"
- },
  "85be5f3270be": {
   "en": "85be5f3270be",
   "t": "| [v1.1.0 reel'i](https://youtu.be/Q8ZLd6ArV8s) | 3:57 | Over the Rainbow eşliğinde kurgulanmış v1.1.0 |"
- },
- "88130624f812": {
-  "en": "88130624f812",
-  "t": "- **BIBLE ve BOOT LOCK.** Settings > General & System > Boot Loader her hafıza kartının açılışta neyi başlattığını gösterir ve RIPPS2 için ayarlanmış PS2BBL 1.2.0 olan **BIBLE**'ı bir hafıza kartına kurar. **Boot Lock** konsolunun gerçekten başlattığı önyükleyiciyi RIPPS2'yi başlatacak şekilde ayarlar: PS2BBL ve FreeMcBoot onu hemen başlatır, OSDMenu onu menüsünün başına koyar, kapatmak da önceden ne varsa onu geri getirir."
  },
  "8b21d2e8e31d": {
   "en": "8b21d2e8e31d",
@@ -274,10 +274,6 @@
  "a4f2c110a598": {
   "en": "a4f2c110a598",
   "t": "| **Launch Disc** | Sütunlar, alanın ortasına ateşlenen çift patlamayla |"
- },
- "a65cfe5da270": {
-  "en": "a65cfe5da270",
-  "t": "> [130 derlemesindeki yenilikler](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.0-beta) | [Changelog](CHANGELOG.md) | **[Videolar](#videos)** | [Tüm sürümler](https://github.com/akilluminati47/RIPPS2/releases) | [psx-place'te konuş](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "a70e85fb5ee7": {
   "en": "a70e85fb5ee7",
@@ -427,6 +423,10 @@
   "en": "da42e53699c3",
   "t": "- **Hızlı bir açılış.** Settings > Game Sources > Cache > **Fast Boot** açılışta yalnızca RIPPS2'nin kendi sürücüsünü okur: `RIPPS2.ELF` yanındaki ayarları ve sesleri, ve her listeyi önbelleğinden. Diğer sürücüler, onların sayfasında SELECT'e basana ya da oyunlarından birini seçene kadar bekler. RIPPS2 hâlâ okurken ya da yazarken seçilen bir oyun, kalan işi söyleyen bir panelin arkasında bekler (START NOW hemen başlar), böylece bir başlatma hiçbir yazmayı yarıda kesmez."
  },
+ "dabbb8b086c6": {
+  "en": "dabbb8b086c6",
+  "t": "- **BIBLE ve BOOT LOCK.** Settings > General & System > Boot Loader her hafıza kartının açılışta neyi başlattığını gösterir ve RIPPS2 için ayarlanmış PS2BBL olan **BIBLE**'ı bir hafıza kartına kurar. **Boot Lock** konsolunun gerçekten başlattığı önyükleyiciyi RIPPS2'yi başlatacak şekilde ayarlar: PS2BBL ve FreeMcBoot onu hemen başlatır, OSDMenu onu menüsünün başına koyar, kapatmak da önceden ne varsa onu geri getirir."
+ },
  "de8f1cb0c1f9": {
   "en": "de8f1cb0c1f9",
   "t": "- [Iconian Fonts](https://www.iconian.com)'un Planet N Compact'ı (`assets/master.ttf`) ve Planet N Condensed (`elf/theme/fonts/ripps2_condensed.ttf`, derleme 115'ten beri `builtin:ripps2condensed` olarak yerleşik, Adapt'in liste yazı tipi). [RIPPS2 Sleek](https://github.com/akilluminati47/RIPPS2-fonts) (Regular, Bold, Bold Case) RIPPS2 için çizilmiştir; kendi deposunda yazı tipleri OFL altında TTF ve WOFF2 olarak bulunur."
@@ -434,10 +434,6 @@
  "e1e11a9f5baf": {
   "en": "e1e11a9f5baf",
   "t": "- **LAUNCH DISC** PS2, PS1 ve DVD video disklerini başlatır, başlatmadan önce sürücüde hangi oyun olduğunu söyler ve kuleleri bir spektrum analizörüne çevirerek ses CD'leri çalar. **RIPDISC** (derleme 105) sürücüdeki diski rip'ler: bir oyunu depolamana, bir CD'yi ya da DVD videoyu dosyalarına."
- },
- "e35df5aa8b8e": {
-  "en": "e35df5aa8b8e",
-  "t": "> 1. **[RIPPS2.elf dosyasını indir](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (her zaman en yeni sürüm) (tek dosya, 2.747 KB; ya da **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2.203 KB, BIBLE için PS2BBL ve Neutrino olmadan aynısı), istersen **[tema paketini](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt, Adapt Rx, 128. baskı: her biri bir yapılandırma ve bir resim; RIPGRID ve RIPFLOW yerleşik), ve RIPPS2'yi kendi dilinde kullanmak için **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** (33 dil; her sürümde var)."
  },
  "e5c8e488b993": {
   "en": "e5c8e488b993",
@@ -467,10 +463,6 @@
   "en": "f55efbafe641",
   "t": "## Bir disk rip'le"
  },
- "f82d2f1d0e71": {
-  "en": "f82d2f1d0e71",
-  "t": "- El Isra'nın (israpps) [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader)'ı ve saildot4k'nin [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended)'ı: BOOT LOCK, konsolun RIPPS2'yi başlatması için onların yapılandırmasını düzenler (derleme 116'dan beri FreeMcBoot'unkini ve OSDMenu'nunkini de). Derleme 69'dan beri RIPPS2.elf, **Boot Loader > Manage** (BIBLE) bir hafıza kartına kurabilsin diye El Isra'nın imzalı PS2BBL 1.2.0'ını değiştirmeden, veri olarak taşır. PS2BBL GPL-3.0 lisanslıdır: lisansı ve derlendiği tam kaynak kodu ([commit a063bb3](https://github.com/israpps/PlayStation2-Basic-BootLoader/tree/a063bb3)) [`elf/bible`](elf/bible/README.md) içindedir. Kart bağlama, ps2sdk'nın açık SECRMAN'ını (AFL) kullanır; hiçbir anahtar söz konusu değildir."
- },
  "fbfc328db8db": {
   "en": "fbfc328db8db",
   "t": "- **RIPPS2'nin bilmediği USB kumandalar** (derleme 129). **Settings > Controllers > Set Up A USB Pad**: kumandayı tak, RIPPS2'nin istediği her düğmeye bas, o da kumandanın `.pad` profilini yazar (`PADS/VVVV_PPPP.pad` RIPPS2'nin yanında, düz metin: [biçim](docs/plans/pad-spec.md)). Profili olan bir kumanda menüyü yönetir ve Pad Emulator açıkken oyunlarda oynar; `PADS/GAMES/<game ID>.pad` tek bir oyun için düğmeleri taşır. **My Pads** her profili denetler ve reddettiklerinde neyin yanlış olduğunu söyler."
@@ -482,5 +474,13 @@
  "fe207194059a": {
   "en": "fe207194059a",
   "t": "| `bgm_02 Details.ogg` | **Details** | x-Radar Portable, [PSP sistem müziği](https://en.wikipedia.org/wiki/PlayStation_Portable_system_software) (Sony, 2010): Slideshow ile birlikte **RIPPS2'nin YouTube videolarının arka plan müziği** (beta reel'i onunla açılır, derleme 83 reel'i ve Short'u da) | kendi kopyan, bilgisayarında [RIPPS2 Media Studio](tools/media-studio) ile dönüştürülmüş |"
+ },
+ "ff8525427876": {
+  "en": "ff8525427876",
+  "t": "> [131-134 derlemelerindeki yenilikler](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.4-beta) | [Changelog](CHANGELOG.md) | **[Videolar](#videos)** | [Tüm sürümler](https://github.com/akilluminati47/RIPPS2/releases) | [psx-place'te konuş](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
+ },
+ "ff925ac5d69f": {
+  "en": "ff925ac5d69f",
+  "t": "> 1. **[RIPPS2.elf dosyasını indir](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (her zaman en yeni sürüm) (tek dosya, 2.815 KB; ya da **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2.205 KB, BIBLE için PS2BBL ve Neutrino olmadan aynısı), istersen **[tema paketini](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt, Adapt Rx, 128. baskı: her biri bir yapılandırma ve bir resim; RIPGRID ve RIPFLOW yerleşik), ve RIPPS2'yi kendi dilinde kullanmak için **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** (33 dil; her sürümde var)."
  }
 }

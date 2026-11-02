@@ -67,6 +67,10 @@
   "en": "24fdb4df1618",
   "t": "## 用你的语言"
  },
+ "254b4b737bb1": {
+  "en": "254b4b737bb1",
+  "t": "> ### 开始提取：RIPPS2 构建 134，v1.3.4 测试版"
+ },
  "2642f599dfad": {
   "en": "2642f599dfad",
   "t": "> 2. 把它复制到 U 盘或记忆卡，用 FreeMcBoot、PS2BBL、wLaunchELF 或你平时运行 homebrew 的工具启动。在 PCSX2 中：**System > Start File** 并选择 `RIPPS2.elf`。"
@@ -183,6 +187,10 @@
   "en": "60f96e9259c8",
   "t": "<sub>菜单音效的编号按 Media Studio 列出 SCPH-39001 转储的顺序。Start 已把大部分放好；要得到这张对应表，请从这里列出的菜单音效转换 save、error、random 和两个驱动器音效。</sub>"
  },
+ "618c478fd292": {
+  "en": "618c478fd292",
+  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader)，由 El Isra (israpps) 开发，以及 [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended)，由 saildot4k 开发：BOOT LOCK 编辑它们的配置，让主机运行 RIPPS2（从构建 116 起也编辑 FreeMcBoot 和 OSDMenu 的配置）。从构建 134 起，RIPPS2.elf 内带 [BIBLE](https://github.com/akilluminati47/BIBLE)，即我们为 RIPPS2 签名的 PS2BBL 分支，由 **Boot Loader > Manage** 安装（构建 69 到 133 内带的是 El Isra 的 PS2BBL 1.2.0）。其 GPL-3.0 许可证和源代码在 [`elf/bible`](elf/bible/README.md)；绑定记忆卡使用 ps2sdk 开源的 SECRMAN（AFL），不涉及任何密钥。"
+ },
  "67788a3fdaa3": {
   "en": "67788a3fdaa3",
   "t": "| [v1.1.2 声音巡览](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)（在 GitHub 上） | 2:11 | 从主机提取的每个声音，一镜到底，从开机声到启动游戏 |"
@@ -215,17 +223,9 @@
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | 光球 |"
  },
- "85b93356c9f9": {
-  "en": "85b93356c9f9",
-  "t": "> ### 开始提取：RIPPS2 构建 130，v1.3.0 测试版"
- },
  "85be5f3270be": {
   "en": "85be5f3270be",
   "t": "| [v1.1.0 介绍短片](https://youtu.be/Q8ZLd6ArV8s) | 3:57 | 配合 Over the Rainbow 剪辑的 v1.1.0 |"
- },
- "88130624f812": {
-  "en": "88130624f812",
-  "t": "- **BIBLE 和 BOOT LOCK。** Settings > General & System > Boot Loader 显示每张记忆卡开机时运行什么，并把 **BIBLE**，即为 RIPPS2 准备好的 PS2BBL 1.2.0，安装到记忆卡上。**Boot Lock** 设置你主机实际运行的引导程序去运行 RIPPS2：PS2BBL 和 FreeMcBoot 会立即运行它，OSDMenu 把它放在菜单首位，关闭则恢复原来的状态。"
  },
  "8b21d2e8e31d": {
   "en": "8b21d2e8e31d",
@@ -274,10 +274,6 @@
  "a4f2c110a598": {
   "en": "a4f2c110a598",
   "t": "| **Launch Disc** | 柱子，场地中央伴有双重爆发 |"
- },
- "a65cfe5da270": {
-  "en": "a65cfe5da270",
-  "t": "> [构建 130 的新内容](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.0-beta) | [Changelog](CHANGELOG.md) | **[视频](#videos)** | [所有版本](https://github.com/akilluminati47/RIPPS2/releases) | [在 psx-place 讨论](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "a70e85fb5ee7": {
   "en": "a70e85fb5ee7",
@@ -427,6 +423,10 @@
   "en": "da42e53699c3",
   "t": "- **快速启动。** Settings > Game Sources > Cache > **Fast Boot** 开机时只读取 RIPPS2 自己所在的驱动器：`RIPPS2.ELF` 旁边的设置和声音，每个列表则从缓存读取。其他驱动器会等到你在它们的页面上按 SELECT 或选择它们的某个游戏。在 RIPPS2 读写时选择的游戏，会在一个显示剩余工作的面板后面等待（START NOW 立即启动），因此启动永远不会把写入中途打断。"
  },
+ "dabbb8b086c6": {
+  "en": "dabbb8b086c6",
+  "t": "- **BIBLE 和 BOOT LOCK。** Settings > General & System > Boot Loader 显示每张记忆卡开机时运行什么，并把 **BIBLE**，即为 RIPPS2 准备好的 PS2BBL，安装到记忆卡上。**Boot Lock** 设置你主机实际运行的引导程序去运行 RIPPS2：PS2BBL 和 FreeMcBoot 会立即运行它，OSDMenu 把它放在菜单首位，关闭则恢复原来的状态。"
+ },
  "de8f1cb0c1f9": {
   "en": "de8f1cb0c1f9",
   "t": "- Planet N Compact，由 [Iconian Fonts](https://www.iconian.com) 制作（`assets/master.ttf`），以及 Planet N Condensed（`elf/theme/fonts/ripps2_condensed.ttf`，从构建 115 起以 `builtin:ripps2condensed` 内置，Adapt 列表的字体）。[RIPPS2 Sleek](https://github.com/akilluminati47/RIPPS2-fonts)（Regular、Bold、Bold Case）为 RIPPS2 绘制；它自己的仓库以 OFL 提供 TTF 和 WOFF2 格式的字体。"
@@ -434,10 +434,6 @@
  "e1e11a9f5baf": {
   "en": "e1e11a9f5baf",
   "t": "- **LAUNCH DISC** 启动 PS2、PS1 和 DVD 视频光盘，在启动前告诉你光驱里是什么游戏，播放音乐 CD 时高塔会变成频谱分析仪。**RIPDISC**（构建 105）提取光驱中的光盘：游戏存到你的存储设备，CD 或 DVD 视频存到你的文件。"
- },
- "e35df5aa8b8e": {
-  "en": "e35df5aa8b8e",
-  "t": "> 1. **[下载 RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)**（始终是最新版本）（一个文件，2,747 KB；或 **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**，2,203 KB，同样的内容但不含 BIBLE 用的 PS2BBL 和 Neutrino），需要的话再下载 **[主题包](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)**（Adapt 和 Adapt Rx，第 128 版：各一个配置和一张图片；RIPGRID 和 RIPFLOW 为内置），以及 **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)**，用你的语言使用 RIPPS2（33 种语言；每个版本都附带）。"
  },
  "e5c8e488b993": {
   "en": "e5c8e488b993",
@@ -467,10 +463,6 @@
   "en": "f55efbafe641",
   "t": "## 提取光盘"
  },
- "f82d2f1d0e71": {
-  "en": "f82d2f1d0e71",
-  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader)，由 El Isra (israpps) 开发，以及 [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended)，由 saildot4k 开发：BOOT LOCK 编辑它们的配置，让主机运行 RIPPS2（从构建 116 起也编辑 FreeMcBoot 和 OSDMenu 的配置）。从构建 69 起，RIPPS2.elf 以数据形式原样附带 El Isra 签名的 PS2BBL 1.2.0，供 **Boot Loader > Manage** (BIBLE) 安装到记忆卡。PS2BBL 采用 GPL-3.0 许可：其许可证和构建所用的确切源码（[commit a063bb3](https://github.com/israpps/PlayStation2-Basic-BootLoader/tree/a063bb3)）在 [`elf/bible`](elf/bible/README.md) 中。与卡的绑定使用 ps2sdk 中开放的 SECRMAN (AFL)；不涉及任何密钥。"
- },
  "fbfc328db8db": {
   "en": "fbfc328db8db",
   "t": "- **RIPPS2 不认识的 USB 手柄**（构建 129）。**Settings > Controllers > Set Up A USB Pad**：插上手柄，按下 RIPPS2 要求的每个按钮，它就会写出该手柄的 `.pad` 配置文件（RIPPS2 旁边的 `PADS/VVVV_PPPP.pad`，纯文本：[格式](docs/plans/pad-spec.md)）。有配置文件的手柄可以操作菜单，开启 Pad Emulator 后可以玩游戏；`PADS/GAMES/<game ID>.pad` 可为单个游戏调换按钮。**My Pads** 会检查每个配置文件，并说明被拒绝的哪里有问题。"
@@ -482,5 +474,13 @@
  "fe207194059a": {
   "en": "fe207194059a",
   "t": "| `bgm_02 Details.ogg` | **Details** | x-Radar Portable，[PSP 系统音乐](https://en.wikipedia.org/wiki/PlayStation_Portable_system_software)（Sony，2010）：与 Slideshow 一起作为 **RIPPS2 YouTube 视频的背景音乐**（测试版介绍短片以它开场，构建 83 介绍短片和短片也是） | 你自己的副本，在电脑上用 [RIPPS2 Media Studio](tools/media-studio) 转换 |"
+ },
+ "ff8525427876": {
+  "en": "ff8525427876",
+  "t": "> [构建 131 到 134 的新内容](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.4-beta) | [Changelog](CHANGELOG.md) | **[视频](#videos)** | [所有版本](https://github.com/akilluminati47/RIPPS2/releases) | [在 psx-place 讨论](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
+ },
+ "ff925ac5d69f": {
+  "en": "ff925ac5d69f",
+  "t": "> 1. **[下载 RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)**（始终是最新版本）（一个文件，2,815 KB；或 **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**，2,205 KB，同样的内容但不含 BIBLE 用的 PS2BBL 和 Neutrino），需要的话再下载 **[主题包](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)**（Adapt 和 Adapt Rx，第 128 版：各一个配置和一张图片；RIPGRID 和 RIPFLOW 为内置），以及 **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)**，用你的语言使用 RIPPS2（33 种语言；每个版本都附带）。"
  }
 }

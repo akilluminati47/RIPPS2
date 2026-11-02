@@ -67,6 +67,10 @@
   "en": "24fdb4df1618",
   "t": "## Na túa lingua"
  },
+ "254b4b737bb1": {
+  "en": "254b4b737bb1",
+  "t": "> ### Rípao: RIPPS2 build 134, v1.3.4 beta"
+ },
  "2642f599dfad": {
   "en": "2642f599dfad",
   "t": "> 2. Cópiao a un USB ou unha tarxeta de memoria e lánzao desde FreeMcBoot, PS2BBL, wLaunchELF ou o que xa uses para arrancar homebrew. En PCSX2: **System > Start File** e escolle `RIPPS2.elf`."
@@ -183,6 +187,10 @@
   "en": "60f96e9259c8",
   "t": "<sub>Os sons de menú están numerados como Media Studio lista un volcado de SCPH-39001. Start xa coloca a maioría no seu sitio; para este mapa, converte save, error, random e os dous sons de unidade a partir dos sons de menú indicados aquí.</sub>"
  },
+ "618c478fd292": {
+  "en": "618c478fd292",
+  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) de El Isra (israpps) e [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) de saildot4k: BOOT LOCK edita a súa configuración para que a consola arranque RIPPS2 (desde a build 116, tamén a de FreeMcBoot e OSDMenu). Desde a build 134, RIPPS2.elf leva [BIBLE](https://github.com/akilluminati47/BIBLE), a nosa variante de PS2BBL asinada para RIPPS2, para que **Boot Loader > Manage** a instale (as builds 69 a 133 levaban o PS2BBL 1.2.0 de El Isra). A licenza GPL-3.0 e o código están en [`elf/bible`](elf/bible/README.md); a vinculación á tarxeta usa o SECRMAN aberto de ps2sdk (AFL), sen chaves."
+ },
  "67788a3fdaa3": {
   "en": "67788a3fdaa3",
   "t": "| [O percorrido polos sons da v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4) (en GitHub) | 2:11 | Cada son extraído da consola, nunha soa toma, desde o son de arranque ata que se lanza un xogo |"
@@ -215,17 +223,9 @@
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | Os orbes |"
  },
- "85b93356c9f9": {
-  "en": "85b93356c9f9",
-  "t": "> ### Rípao: RIPPS2 build 130, v1.3.0 beta"
- },
  "85be5f3270be": {
   "en": "85be5f3270be",
   "t": "| [O reel da v1.1.0](https://youtu.be/Q8ZLd6ArV8s) | 3:57 | A v1.1.0, montada con Over the Rainbow |"
- },
- "88130624f812": {
-  "en": "88130624f812",
-  "t": "- **BIBLE e BOOT LOCK.** Settings > General & System > Boot Loader amosa que arranca cada tarxeta de memoria ao acender e instala **BIBLE**, PS2BBL 1.2.0 preparado para RIPPS2, nunha tarxeta de memoria. **Boot Lock** axusta o cargador de arranque que a túa consola arranca de verdade para que arranque RIPPS2: PS2BBL e FreeMcBoot arráncano ao momento, OSDMenu ponno primeiro no seu menú, e desactivalo devolve o que había antes."
  },
  "8b21d2e8e31d": {
   "en": "8b21d2e8e31d",
@@ -274,10 +274,6 @@
  "a4f2c110a598": {
   "en": "a4f2c110a598",
   "t": "| **Launch Disc** | Os piares, cunha dobre explosión disparada ao centro do campo |"
- },
- "a65cfe5da270": {
-  "en": "a65cfe5da270",
-  "t": "> [Novidades da build 130](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.0-beta) | [Changelog](CHANGELOG.md) | **[Vídeos](#videos)** | [Todas as versións](https://github.com/akilluminati47/RIPPS2/releases) | [Fala diso en psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "a70e85fb5ee7": {
   "en": "a70e85fb5ee7",
@@ -427,6 +423,10 @@
   "en": "da42e53699c3",
   "t": "- **Un arranque rápido.** Settings > Game Sources > Cache > **Fast Boot** le ao arrancar só a unidade de RIPPS2: os axustes e sons xunto a `RIPPS2.ELF`, e cada lista desde a súa caché. As demais unidades esperan ata que premas SELECT na súa páxina ou escollas un dos seus xogos. Un xogo escollido mentres RIPPS2 aínda le ou escribe agarda tras un panel que di o que falta (START NOW vai de inmediato), así que un lanzamento nunca corta unha escritura."
  },
+ "dabbb8b086c6": {
+  "en": "dabbb8b086c6",
+  "t": "- **BIBLE e BOOT LOCK.** Settings > General & System > Boot Loader amosa que arranca cada tarxeta de memoria ao acender e instala **BIBLE**, PS2BBL preparado para RIPPS2, nunha tarxeta de memoria. **Boot Lock** axusta o cargador de arranque que a túa consola arranca de verdade para que arranque RIPPS2: PS2BBL e FreeMcBoot arráncano ao momento, OSDMenu ponno primeiro no seu menú, e desactivalo devolve o que había antes."
+ },
  "de8f1cb0c1f9": {
   "en": "de8f1cb0c1f9",
   "t": "- Planet N Compact de [Iconian Fonts](https://www.iconian.com) (`assets/master.ttf`), e Planet N Condensed (`elf/theme/fonts/ripps2_condensed.ttf`, integrada desde a build 115 como `builtin:ripps2condensed`, a fonte de listas de Adapt). [RIPPS2 Sleek](https://github.com/akilluminati47/RIPPS2-fonts) (Regular, Bold, Bold Case) está debuxada para RIPPS2; o seu propio repo ten as fontes en TTF e WOFF2 baixo a OFL."
@@ -434,10 +434,6 @@
  "e1e11a9f5baf": {
   "en": "e1e11a9f5baf",
   "t": "- **LAUNCH DISC** arranca discos de PS2, PS1 e DVD vídeo, di que xogo hai na unidade antes de inicialo e reproduce CD de audio coas torres convertidas nun analizador de espectro. **RIPDISC** (build 105) extrae o disco da unidade: un xogo ao teu almacenamento, un CD ou DVD vídeo aos teus ficheiros."
- },
- "e35df5aa8b8e": {
-  "en": "e35df5aa8b8e",
-  "t": "> 1. **[Descarga RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (sempre a versión máis nova) (un só ficheiro, 2.747 KB; ou **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2.203 KB, o mesmo sen PS2BBL para BIBLE nin Neutrino), e o **[paquete de temas](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** se queres (Adapt, Adapt Rx, edición 128: unha configuración e unha imaxe cada un; RIPGRID e RIPFLOW veñen integrados), e **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** para ter RIPPS2 na túa lingua (33; cada versión o trae)."
  },
  "e5c8e488b993": {
   "en": "e5c8e488b993",
@@ -467,10 +463,6 @@
   "en": "f55efbafe641",
   "t": "## Extrae un disco"
  },
- "f82d2f1d0e71": {
-  "en": "f82d2f1d0e71",
-  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) de El Isra (israpps) e [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) de saildot4k: BOOT LOCK edita a súa configuración para que a consola arranque RIPPS2 (desde a build 116, tamén a de FreeMcBoot e OSDMenu). Desde a build 69, RIPPS2.elf leva o PS2BBL 1.2.0 asinado de El Isra sen cambios, como datos, para que **Boot Loader > Manage** (BIBLE) o instale nunha tarxeta de memoria. PS2BBL é GPL-3.0: a súa licenza e o código exacto co que se compilou ([commit a063bb3](https://github.com/israpps/PlayStation2-Basic-BootLoader/tree/a063bb3)) están en [`elf/bible`](elf/bible/README.md). A vinculación á tarxeta usa o SECRMAN aberto de ps2sdk (AFL); non interveñen claves."
- },
  "fbfc328db8db": {
   "en": "fbfc328db8db",
   "t": "- **Mandos USB que RIPPS2 non coñecía** (build 129). **Settings > Controllers > Set Up A USB Pad**: conecta o mando, preme cada botón que che pida RIPPS2 e escribe o perfil `.pad` do mando (`PADS/VVVV_PPPP.pad` xunto a RIPPS2, texto plano: [o formato](docs/plans/pad-spec.md)). Un mando con perfil manexa o menú e, co Pad Emulator activado, xoga nos xogos; `PADS/GAMES/<game ID>.pad` cambia botóns para un só xogo. **My Pads** comproba cada perfil e di que falla en calquera que rexeite."
@@ -482,5 +474,13 @@
  "fe207194059a": {
   "en": "fe207194059a",
   "t": "| `bgm_02 Details.ogg` | **Details** | x-Radar Portable, [música do sistema de PSP](https://en.wikipedia.org/wiki/PlayStation_Portable_system_software) (Sony, 2010): **a música de fondo dos vídeos de RIPPS2 en YouTube** xunto con Slideshow (o reel da beta empeza con ela, e o reel e o Short da build 83) | a túa propia copia, convertida no teu PC con [RIPPS2 Media Studio](tools/media-studio) |"
+ },
+ "ff8525427876": {
+  "en": "ff8525427876",
+  "t": "> [Novidades das builds 131 a 134](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.4-beta) | [Changelog](CHANGELOG.md) | **[Vídeos](#videos)** | [Todas as versións](https://github.com/akilluminati47/RIPPS2/releases) | [Fala diso en psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
+ },
+ "ff925ac5d69f": {
+  "en": "ff925ac5d69f",
+  "t": "> 1. **[Descarga RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (sempre a versión máis nova) (un só ficheiro, 2.815 KB; ou **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2.205 KB, o mesmo sen PS2BBL para BIBLE nin Neutrino), e o **[paquete de temas](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** se queres (Adapt, Adapt Rx, edición 128: unha configuración e unha imaxe cada un; RIPGRID e RIPFLOW veñen integrados), e **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** para ter RIPPS2 na túa lingua (33; cada versión o trae)."
  }
 }

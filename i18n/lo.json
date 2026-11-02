@@ -67,6 +67,10 @@
   "en": "24fdb4df1618",
   "t": "## ເປັນພາສາຂອງເຈົ້າ"
  },
+ "254b4b737bb1": {
+  "en": "254b4b737bb1",
+  "t": "> ### ມາຣິບກັນ: RIPPS2 ບິວ 134, v1.3.4 ເບຕ້າ"
+ },
  "2642f599dfad": {
   "en": "2642f599dfad",
   "t": "> 2. ສຳເນົາໃສ່ແຟລດ USB ຫຼື ບັດຄວາມຈຳ ແລ້ວເປີດຈາກ FreeMcBoot, PS2BBL, wLaunchELF ຫຼື ສິ່ງທີ່ເຈົ້າໃຊ້ເປີດ homebrew. ໃນ PCSX2: **System > Start File** ແລ້ວເລືອກ `RIPPS2.elf`."
@@ -183,6 +187,10 @@
   "en": "60f96e9259c8",
   "t": "<sub>ສຽງເມນູຖືກນັບເລກຕາມທີ່ Media Studio ລາຍຊື່ dump SCPH-39001. Start ວາງສ່ວນຫຼາຍໄວ້ບ່ອນແລ້ວ; ສຳລັບແຜນທີ່ນີ້, ໃຫ້ແປງ save, error, random ແລະ ສຽງໄດຣຟ໌ສອງອັນຈາກສຽງເມນູທີ່ລະບຸໄວ້ທີ່ນີ້.</sub>"
  },
+ "618c478fd292": {
+  "en": "618c478fd292",
+  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) ໂດຍ El Isra (israpps) ແລະ [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) ໂດຍ saildot4k: BOOT LOCK ແກ້ໄຂການຕັ້ງຄ່າຂອງພວກມັນເພື່ອໃຫ້ເຄື່ອງເປີດ RIPPS2 (ຕັ້ງແຕ່ບິວ 116 ກໍຂອງ FreeMcBoot ແລະ OSDMenu). ຕັ້ງແຕ່ບິວ 134, RIPPS2.elf ມີ [BIBLE](https://github.com/akilluminati47/BIBLE), ສະບັບ PS2BBL ຂອງພວກເຮົາທີ່ເຊັນສຳລັບ RIPPS2, ໃຫ້ **Boot Loader > Manage** ຕິດຕັ້ງ (ບິວ 69 ຫາ 133 ມີ PS2BBL 1.2.0 ຂອງ El Isra). ໃບອະນຸຍາດ GPL-3.0 ແລະ ໂຄດຢູ່ໃນ [`elf/bible`](elf/bible/README.md); ການຜູກກັບກາດໃຊ້ SECRMAN ແບບເປີດຂອງ ps2sdk (AFL), ບໍ່ມີກະແຈ."
+ },
  "67788a3fdaa3": {
   "en": "67788a3fdaa3",
   "t": "| [ທ່ອງຊົມສຽງ v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4) (ໃນ GitHub) | 2:11 | ທຸກສຽງທີ່ຣິບຈາກເຄື່ອງ, ໃນເທກດຽວ, ຕັ້ງແຕ່ສຽງເປີດເຄື່ອງຈົນຮອດການເປີດເກມ |"
@@ -215,17 +223,9 @@
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | ລູກແກ້ວ |"
  },
- "85b93356c9f9": {
-  "en": "85b93356c9f9",
-  "t": "> ### ມາຣິບກັນ: RIPPS2 ບິວ 130, v1.3.0 ເບຕ້າ"
- },
  "85be5f3270be": {
   "en": "85be5f3270be",
   "t": "| [ວິດີໂອແນະນຳ v1.1.0](https://youtu.be/Q8ZLd6ArV8s) | 3:57 | v1.1.0, ຕັດຕໍ່ຕາມ Over the Rainbow |"
- },
- "88130624f812": {
-  "en": "88130624f812",
-  "t": "- **BIBLE ແລະ BOOT LOCK.** Settings > General & System > Boot Loader ສະແດງວ່າແຕ່ລະບັດຄວາມຈຳເປີດຫຍັງຕອນເປີດເຄື່ອງ ແລະ ຕິດຕັ້ງ **BIBLE**, ຄື PS2BBL 1.2.0 ທີ່ກຽມໄວ້ສຳລັບ RIPPS2, ເທິງບັດຄວາມຈຳ. **Boot Lock** ຕັ້ງບູດໂຫຼດເດີທີ່ເຄື່ອງຂອງເຈົ້າເປີດແທ້ ໃຫ້ເປີດ RIPPS2: PS2BBL ແລະ FreeMcBoot ເປີດມັນທັນທີ, OSDMenu ວາງມັນໄວ້ອັນດັບທຳອິດໃນເມນູ, ແລະ ປິດມັນກໍຄືນສິ່ງທີ່ເຄີຍມີ."
  },
  "8b21d2e8e31d": {
   "en": "8b21d2e8e31d",
@@ -274,10 +274,6 @@
  "a4f2c110a598": {
   "en": "a4f2c110a598",
   "t": "| **Launch Disc** | ເສົາ, ພ້ອມການລະເບີດຄູ່ກາງເດີ່ນ |"
- },
- "a65cfe5da270": {
-  "en": "a65cfe5da270",
-  "t": "> [ມີຫຍັງໃໝ່ໃນບິວ 130](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.0-beta) | [Changelog](CHANGELOG.md) | **[ວິດີໂອ](#videos)** | [ທຸກລຸ້ນ](https://github.com/akilluminati47/RIPPS2/releases) | [ສົນທະນາໃນ psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "a70e85fb5ee7": {
   "en": "a70e85fb5ee7",
@@ -427,6 +423,10 @@
   "en": "da42e53699c3",
   "t": "- **ເປີດເຄື່ອງໄວ.** Settings > Game Sources > Cache > **Fast Boot** ອ່ານພຽງໄດຣຟ໌ຂອງ RIPPS2 ເອງຕອນເປີດເຄື່ອງ: ການຕັ້ງຄ່າ ແລະ ສຽງຂ້າງ `RIPPS2.ELF`, ແລະ ແຕ່ລະລາຍການຈາກແຄຊ. ໄດຣຟ໌ອື່ນລໍຖ້າຈົນເຈົ້າກົດ SELECT ໃນໜ້າຂອງມັນ ຫຼື ເລືອກເກມໃດໜຶ່ງຂອງມັນ. ເກມທີ່ເລືອກໃນຂະນະ RIPPS2 ກຳລັງອ່ານ ຫຼື ຂຽນ ຈະລໍຖ້າຢູ່ຫຼັງແຜງທີ່ບອກວ່າຍັງເຫຼືອຫຍັງ (START NOW ໄປທັນທີ), ດັ່ງນັ້ນການເປີດເກມບໍ່ເຄີຍຕັດການຂຽນເຄິ່ງທາງ."
  },
+ "dabbb8b086c6": {
+  "en": "dabbb8b086c6",
+  "t": "- **BIBLE ແລະ BOOT LOCK.** Settings > General & System > Boot Loader ສະແດງວ່າແຕ່ລະບັດຄວາມຈຳເປີດຫຍັງຕອນເປີດເຄື່ອງ ແລະ ຕິດຕັ້ງ **BIBLE**, ຄື PS2BBL ທີ່ກຽມໄວ້ສຳລັບ RIPPS2, ເທິງບັດຄວາມຈຳ. **Boot Lock** ຕັ້ງບູດໂຫຼດເດີທີ່ເຄື່ອງຂອງເຈົ້າເປີດແທ້ ໃຫ້ເປີດ RIPPS2: PS2BBL ແລະ FreeMcBoot ເປີດມັນທັນທີ, OSDMenu ວາງມັນໄວ້ອັນດັບທຳອິດໃນເມນູ, ແລະ ປິດມັນກໍຄືນສິ່ງທີ່ເຄີຍມີ."
+ },
  "de8f1cb0c1f9": {
   "en": "de8f1cb0c1f9",
   "t": "- Planet N Compact ໂດຍ [Iconian Fonts](https://www.iconian.com) (`assets/master.ttf`), ແລະ Planet N Condensed (`elf/theme/fonts/ripps2_condensed.ttf`, ຕັ້ງແຕ່ບິວ 115 ຢູ່ໃນຕົວເປັນ `builtin:ripps2condensed`, ຟອນຂອງລາຍການ Adapt). [RIPPS2 Sleek](https://github.com/akilluminati47/RIPPS2-fonts) (Regular, Bold, Bold Case) ຖືກແຕ້ມສຳລັບ RIPPS2; repo ຂອງມັນເອງມີຟອນເປັນ TTF ແລະ WOFF2 ພາຍໃຕ້ OFL."
@@ -434,10 +434,6 @@
  "e1e11a9f5baf": {
   "en": "e1e11a9f5baf",
   "t": "- **LAUNCH DISC** ເປີດແຜ່ນ PS2, PS1 ແລະ DVD ວິດີໂອ, ບອກວ່າເກມໃດຢູ່ໃນເຄື່ອງອ່ານກ່ອນເປີດ, ແລະ ຫຼິ້ນ CD ເພງ ໃນຂະນະທີ່ຫໍຄອຍກາຍເປັນເຄື່ອງວິເຄາະສະເປັກຕຣຳ. **RIPDISC** (ບິວ 105) ຣິບແຜ່ນໃນເຄື່ອງອ່ານ: ເກມໄປບ່ອນເກັບຂໍ້ມູນຂອງເຈົ້າ, CD ຫຼື DVD ວິດີໂອໄປໄຟລ໌ຂອງເຈົ້າ."
- },
- "e35df5aa8b8e": {
-  "en": "e35df5aa8b8e",
-  "t": "> 1. **[ດາວໂຫຼດ RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (ລຸ້ນໃໝ່ລ່າສຸດສະເໝີ) (ໄຟລ໌ດຽວ, 2.747 KB; ຫຼື **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2.203 KB, ອັນດຽວກັນແຕ່ບໍ່ມີ PS2BBL ສຳລັບ BIBLE ແລະ ບໍ່ມີ Neutrino), ຖ້າຕ້ອງການກໍ **[ຊຸດທີມ](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt ແລະ Adapt Rx, ສະບັບ 128: ແຕ່ລະອັນມີການຕັ້ງຄ່າໜຶ່ງ ແລະ ຮູບໜຶ່ງ; RIPGRID ແລະ RIPFLOW ມີຢູ່ໃນຕົວ), ແລະ **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** ເພື່ອໃຊ້ RIPPS2 ເປັນພາສາຂອງເຈົ້າ (33 ພາສາ; ມາພ້ອມທຸກລຸ້ນ)."
  },
  "e5c8e488b993": {
   "en": "e5c8e488b993",
@@ -467,10 +463,6 @@
   "en": "f55efbafe641",
   "t": "## ຣິບແຜ່ນ"
  },
- "f82d2f1d0e71": {
-  "en": "f82d2f1d0e71",
-  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) ໂດຍ El Isra (israpps) ແລະ [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) ໂດຍ saildot4k: BOOT LOCK ແກ້ໄຂການຕັ້ງຄ່າຂອງພວກມັນເພື່ອໃຫ້ເຄື່ອງເປີດ RIPPS2 (ຕັ້ງແຕ່ບິວ 116 ກໍຂອງ FreeMcBoot ແລະ OSDMenu). ຕັ້ງແຕ່ບິວ 69, RIPPS2.elf ມາພ້ອມ PS2BBL 1.2.0 ທີ່ລົງນາມໂດຍ El Isra, ບໍ່ດັດແປງ, ເປັນຂໍ້ມູນ, ເພື່ອໃຫ້ **Boot Loader > Manage** (BIBLE) ຕິດຕັ້ງມັນເທິງບັດຄວາມຈຳ. PS2BBL ມີໃບອະນຸຍາດ GPL-3.0: ໃບອະນຸຍາດຂອງມັນ ແລະ ຊອດທີ່ແນ່ນອນທີ່ໃຊ້ບິວ ([commit a063bb3](https://github.com/israpps/PlayStation2-Basic-BootLoader/tree/a063bb3)) ຢູ່ໃນ [`elf/bible`](elf/bible/README.md). ການຜູກກັບບັດໃຊ້ SECRMAN ແບບເປີດໃນ ps2sdk (AFL); ບໍ່ມີກະແຈໃດໆກ່ຽວຂ້ອງ."
- },
  "fbfc328db8db": {
   "en": "fbfc328db8db",
   "t": "- **ຈອຍ USB ທີ່ RIPPS2 ບໍ່ເຄີຍຮູ້ຈັກ** (ບິວ 129). **Settings > Controllers > Set Up A USB Pad**: ສຽບຈອຍ, ກົດແຕ່ລະປຸ່ມທີ່ RIPPS2 ຂໍ, ແລ້ວມັນຂຽນໂປຣໄຟລ໌ `.pad` ຂອງຈອຍ (`PADS/VVVV_PPPP.pad` ຂ້າງ RIPPS2, ຂໍ້ຄວາມທຳມະດາ: [ຮູບແບບ](docs/plans/pad-spec.md)). ຈອຍທີ່ມີໂປຣໄຟລ໌ໃຊ້ເມນູໄດ້ ແລະ ຫຼິ້ນເກມເມື່ອເປີດ Pad Emulator; `PADS/GAMES/<game ID>.pad` ສະຫຼັບປຸ່ມສຳລັບເກມດຽວ. **My Pads** ກວດທຸກໂປຣໄຟລ໌ ແລະ ບອກວ່າອັນທີ່ມັນປະຕິເສດຜິດຫຍັງ."
@@ -482,5 +474,13 @@
  "fe207194059a": {
   "en": "fe207194059a",
   "t": "| `bgm_02 Details.ogg` | **Details** | x-Radar Portable, [ເພງລະບົບ PSP](https://en.wikipedia.org/wiki/PlayStation_Portable_system_software) (Sony, 2010): **ເພງປະກອບວິດີໂອ YouTube ຂອງ RIPPS2** ພ້ອມ Slideshow (ວິດີໂອແນະນຳເບຕ້າເປີດດ້ວຍມັນ, ແລະ ວິດີໂອແນະນຳ ແລະ Short ບິວ 83) | ສຳເນົາຂອງເຈົ້າເອງ, ແປງເທິງຄອມພິວເຕີດ້ວຍ [RIPPS2 Media Studio](tools/media-studio) |"
+ },
+ "ff8525427876": {
+  "en": "ff8525427876",
+  "t": "> [ມີຫຍັງໃໝ່ໃນບິວ 131 ຫາ 134](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.4-beta) | [Changelog](CHANGELOG.md) | **[ວິດີໂອ](#videos)** | [ທຸກລຸ້ນ](https://github.com/akilluminati47/RIPPS2/releases) | [ສົນທະນາໃນ psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
+ },
+ "ff925ac5d69f": {
+  "en": "ff925ac5d69f",
+  "t": "> 1. **[ດາວໂຫຼດ RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (ລຸ້ນໃໝ່ລ່າສຸດສະເໝີ) (ໄຟລ໌ດຽວ, 2.815 KB; ຫຼື **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2.205 KB, ອັນດຽວກັນແຕ່ບໍ່ມີ PS2BBL ສຳລັບ BIBLE ແລະ ບໍ່ມີ Neutrino), ຖ້າຕ້ອງການກໍ **[ຊຸດທີມ](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt ແລະ Adapt Rx, ສະບັບ 128: ແຕ່ລະອັນມີການຕັ້ງຄ່າໜຶ່ງ ແລະ ຮູບໜຶ່ງ; RIPGRID ແລະ RIPFLOW ມີຢູ່ໃນຕົວ), ແລະ **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** ເພື່ອໃຊ້ RIPPS2 ເປັນພາສາຂອງເຈົ້າ (33 ພາສາ; ມາພ້ອມທຸກລຸ້ນ)."
  }
 }

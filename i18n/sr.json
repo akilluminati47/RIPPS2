@@ -67,6 +67,10 @@
   "en": "24fdb4df1618",
   "t": "## Na tvom jeziku"
  },
+ "254b4b737bb1": {
+  "en": "254b4b737bb1",
+  "t": "> ### Ripuj ga: RIPPS2 build 134, v1.3.4 beta"
+ },
  "2642f599dfad": {
   "en": "2642f599dfad",
   "t": "> 2. Kopiraj ga na USB fleš ili memorijsku karticu i pokreni ga iz FreeMcBoot-a, PS2BBL-a, wLaunchELF-a ili čega god već koristiš za pokretanje homebrew-a. U PCSX2: **System > Start File** i izaberi `RIPPS2.elf`."
@@ -183,6 +187,10 @@
   "en": "60f96e9259c8",
   "t": "<sub>Zvuci menija numerisani su onako kako Media Studio navodi dump SCPH-39001. Start već stavlja većinu na mesto; za ovu mapu pretvori save, error, random i dva zvuka uređaja iz ovde navedenih zvukova menija.</sub>"
  },
+ "618c478fd292": {
+  "en": "618c478fd292",
+  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) od El Isre (israpps) i [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) od saildot4k-a: BOOT LOCK uređuje njihova podešavanja tako da konzola pokreće RIPPS2 (od builda 116 i podešavanja FreeMcBoot-a i OSDMenu-a). Od builda 134 RIPPS2.elf nosi [BIBLE](https://github.com/akilluminati47/BIBLE), našu verziju PS2BBL-a potpisanu za RIPPS2, koju instalira **Boot Loader > Manage** (buildovi 69 do 133 nosili su El Isrin PS2BBL 1.2.0). Licenca GPL-3.0 i izvorni kod su u [`elf/bible`](elf/bible/README.md); vezivanje za karticu koristi otvoreni SECRMAN iz ps2sdk-a (AFL), bez ključeva."
+ },
  "67788a3fdaa3": {
   "en": "67788a3fdaa3",
   "t": "| [Obilazak zvukova za v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4) (na GitHub-u) | 2:11 | Svaki zvuk ripovan sa konzole, u jednom kadru, od zvuka pokretanja do pokretanja igre |"
@@ -215,17 +223,9 @@
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | Kugle |"
  },
- "85b93356c9f9": {
-  "en": "85b93356c9f9",
-  "t": "> ### Ripuj ga: RIPPS2 build 130, v1.3.0 beta"
- },
  "85be5f3270be": {
   "en": "85be5f3270be",
   "t": "| [Reel za v1.1.0](https://youtu.be/Q8ZLd6ArV8s) | 3:57 | v1.1.0, montirana uz Over the Rainbow |"
- },
- "88130624f812": {
-  "en": "88130624f812",
-  "t": "- **BIBLE i BOOT LOCK.** Settings > General & System > Boot Loader prikazuje šta svaka memorijska kartica pokreće pri uključivanju i instalira **BIBLE**, PS2BBL 1.2.0 podešen za RIPPS2, na memorijsku karticu. **Boot Lock** podešava boot loader koji tvoja konzola zaista pokreće tako da pokreće RIPPS2: PS2BBL i FreeMcBoot ga pokreću odmah, OSDMenu ga stavlja prvog u svoj meni, a isključivanje vraća ono što je bilo pre."
  },
  "8b21d2e8e31d": {
   "en": "8b21d2e8e31d",
@@ -274,10 +274,6 @@
  "a4f2c110a598": {
   "en": "a4f2c110a598",
   "t": "| **Launch Disc** | Stubove, sa dvostrukom eksplozijom ispaljenom u sredinu polja |"
- },
- "a65cfe5da270": {
-  "en": "a65cfe5da270",
-  "t": "> [Novo u buildu 130](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.0-beta) | [Changelog](CHANGELOG.md) | **[Video snimci](#videos)** | [Sva izdanja](https://github.com/akilluminati47/RIPPS2/releases) | [Pričaj o tome na psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "a70e85fb5ee7": {
   "en": "a70e85fb5ee7",
@@ -427,6 +423,10 @@
   "en": "da42e53699c3",
   "t": "- **Brzo pokretanje.** Settings > Game Sources > Cache > **Fast Boot** pri pokretanju čita samo uređaj samog RIPPS2: podešavanja i zvuke pored `RIPPS2.ELF` i svaku listu iz njenog keša. Ostali uređaji čekaju dok ne pritisneš SELECT na njihovoj stranici ili izabereš neku od njihovih igara. Igra izabrana dok RIPPS2 još čita ili piše čeka iza ploče koja kaže šta je preostalo (START NOW kreće odmah), pa pokretanje nikad ne prekida pisanje."
  },
+ "dabbb8b086c6": {
+  "en": "dabbb8b086c6",
+  "t": "- **BIBLE i BOOT LOCK.** Settings > General & System > Boot Loader prikazuje šta svaka memorijska kartica pokreće pri uključivanju i instalira **BIBLE**, PS2BBL podešen za RIPPS2, na memorijsku karticu. **Boot Lock** podešava boot loader koji tvoja konzola zaista pokreće tako da pokreće RIPPS2: PS2BBL i FreeMcBoot ga pokreću odmah, OSDMenu ga stavlja prvog u svoj meni, a isključivanje vraća ono što je bilo pre."
+ },
  "de8f1cb0c1f9": {
   "en": "de8f1cb0c1f9",
   "t": "- Planet N Compact od [Iconian Fonts](https://www.iconian.com) (`assets/master.ttf`) i Planet N Condensed (`elf/theme/fonts/ripps2_condensed.ttf`, ugrađen od builda 115 kao `builtin:ripps2condensed`, font lista u Adapt-u). [RIPPS2 Sleek](https://github.com/akilluminati47/RIPPS2-fonts) (Regular, Bold, Bold Case) nacrtan je za RIPPS2; njegov sopstveni repozitorijum ima fontove kao TTF i WOFF2 pod OFL licencom."
@@ -434,10 +434,6 @@
  "e1e11a9f5baf": {
   "en": "e1e11a9f5baf",
   "t": "- **LAUNCH DISC** pokreće PS2, PS1 i DVD video diskove, kaže koja je igra u uređaju pre nego što je pokreneš, i pušta audio CD-ove, a kule pritom postaju analizator spektra. **RIPDISC** (build 105) ripuje disk iz uređaja: igru u tvoje skladište, CD ili DVD video u tvoje datoteke."
- },
- "e35df5aa8b8e": {
-  "en": "e35df5aa8b8e",
-  "t": "> 1. **[Preuzmi RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (uvek najnovije izdanje) (jedna datoteka, 2.747 KB; ili **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2.203 KB, isto bez PS2BBL-a za BIBLE i bez Neutrina), i **[paket tema](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** ako želiš (Adapt, Adapt Rx, izdanje 128: po jedno podešavanje i jedna slika; RIPGRID i RIPFLOW su ugrađeni), i **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** za RIPPS2 na tvom jeziku (33 jezika; svako izdanje ga sadrži)."
  },
  "e5c8e488b993": {
   "en": "e5c8e488b993",
@@ -467,10 +463,6 @@
   "en": "f55efbafe641",
   "t": "## Ripuj disk"
  },
- "f82d2f1d0e71": {
-  "en": "f82d2f1d0e71",
-  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) od El Isre (israpps) i [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) od saildot4k-a: BOOT LOCK uređuje njihova podešavanja tako da konzola pokreće RIPPS2 (od builda 116 i podešavanja FreeMcBoot-a i OSDMenu-a). Od builda 69 RIPPS2.elf nosi El Isrin potpisani PS2BBL 1.2.0 nepromenjen, kao podatke, da ga **Boot Loader > Manage** (BIBLE) instalira na memorijsku karticu. PS2BBL je pod GPL-3.0: njegova licenca i tačan izvorni kod iz kog je napravljen ([commit a063bb3](https://github.com/israpps/PlayStation2-Basic-BootLoader/tree/a063bb3)) nalaze se u [`elf/bible`](elf/bible/README.md). Vezivanje za karticu koristi otvoreni SECRMAN iz ps2sdk (AFL); ključevi nisu uključeni."
- },
  "fbfc328db8db": {
   "en": "fbfc328db8db",
   "t": "- **USB kontroleri koje RIPPS2 nije poznavao** (build 129). **Settings > Controllers > Set Up A USB Pad**: priključi kontroler, pritisni svaki taster koji RIPPS2 zatraži, i on zapisuje `.pad` profil kontrolera (`PADS/VVVV_PPPP.pad` pored RIPPS2, običan tekst: [format](docs/plans/pad-spec.md)). Kontroler sa profilom upravlja menijem i, sa uključenim Pad Emulator-om, igra u igrama; `PADS/GAMES/<game ID>.pad` premešta tastere za jednu igru. **My Pads** proverava svaki profil i kaže šta nije u redu sa onim koji odbije."
@@ -482,5 +474,13 @@
  "fe207194059a": {
   "en": "fe207194059a",
   "t": "| `bgm_02 Details.ogg` | **Details** | x-Radar Portable, [sistemska muzika PSP-a](https://en.wikipedia.org/wiki/PlayStation_Portable_system_software) (Sony, 2010): **pozadinska muzika video snimaka RIPPS2 na YouTube-u** uz Slideshow (reel bete počinje njome, kao i reel i Short builda 83) | tvoja sopstvena kopija, pretvorena na tvom računaru uz [RIPPS2 Media Studio](tools/media-studio) |"
+ },
+ "ff8525427876": {
+  "en": "ff8525427876",
+  "t": "> [Novo u buildovima 131 do 134](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.4-beta) | [Changelog](CHANGELOG.md) | **[Video snimci](#videos)** | [Sva izdanja](https://github.com/akilluminati47/RIPPS2/releases) | [Pričaj o tome na psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
+ },
+ "ff925ac5d69f": {
+  "en": "ff925ac5d69f",
+  "t": "> 1. **[Preuzmi RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (uvek najnovije izdanje) (jedna datoteka, 2.815 KB; ili **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2.205 KB, isto bez PS2BBL-a za BIBLE i bez Neutrina), i **[paket tema](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** ako želiš (Adapt, Adapt Rx, izdanje 128: po jedno podešavanje i jedna slika; RIPGRID i RIPFLOW su ugrađeni), i **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** za RIPPS2 na tvom jeziku (33 jezika; svako izdanje ga sadrži)."
  }
 }
