@@ -54,17 +54,27 @@ Hey everyone. RIPPS2 is in beta, and the download link above always gets the new
 
 [SIZE=5][B]On board, and found[/B][/SIZE]
 [LIST]
-[*][LEFT]BIBLE rides inside the .elf. Your own Neutrino, POPSTARTER, the POPS files, Ember and its BIOS are searched for on your drives and remembered (Settings > Game Sources > Cache > Look now). STATUS on the START menu opens on your drives, their format and free space, then the launchers it found.[/LEFT]
-[*][LEFT]BIBLE: PS2BBL 1.2.0 set up for RIPPS2 on an 8 MB memory card or the internal HDD, so the console boots straight into it, from where RIPPS2 already is (it never copies itself). On an SD2PSX it sets BOOT LOCK in the card's own PS2BBL Extended. Already have a boot loader? BOOT LOCK sets your own PS2BBL, FreeMcBoot or OSDMenu to start RIPPS2, and a game's EXIT comes back through it.[/LEFT]
+[*][LEFT]BIBLE rides inside the .elf (below). Your own Neutrino, POPSTARTER, the POPS files, Ember and its BIOS are searched for on your drives and remembered (Settings > Game Sources > Cache > Look now). STATUS on the START menu opens on your drives, their format and free space, then the launchers it found.[/LEFT]
+[*][LEFT]Already have a boot loader? [B]BOOT LOCK[/B] sets your own PS2BBL, FreeMcBoot or OSDMenu to start RIPPS2, and a game's EXIT comes back through it.[/LEFT]
 [*][LEFT][B]Any USB pad[/B]: Settings > Controllers > Set Up A USB Pad asks for each button and writes the pad's .pad profile ([URL='https://github.com/akilluminati47/RIPPS2/blob/main/docs/plans/pad-spec.md']an open text format[/URL]). It steers the menu and plays in games with the Pad Emulator on; a game's own .pad moves buttons for that game.[/LEFT]
 [*][LEFT]SpiritofRA: RetroAchievements through the xeRAbora client on your PC, with badges and YOUR ACCOUNT.[/LEFT]
 [*][LEFT]Settings in RIPPS2's own memory card save (mc0:/RIPPS2, with its own icon), apart from any other OPL, or on any drive you pick (Settings > General > Save Settings To). Every settings page fits one screen.[/LEFT]
 [*][LEFT]33 languages, Arabic and Persian right to left: every release carries [URL='https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip']RIPPS2-languages.zip[/URL], kept up to date with each build. Copy its LNG folder to your drive and pick one in Settings > Interface > Language.[/LEFT]
 [/LIST]
 
+[SIZE=5][B]BIBLE, the boot loader[/B][/SIZE]
+[CENTER][IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b138/bible-1080i-signed.gif[/IMG][/CENTER]
+[LIST]
+[*][LEFT][B]BIBLE[/B] is akilluminati47's boot loader, built on El Isra's PS2BBL and saildot4k's PS2BBL Extended: its own splash (the buttons, and the console's model and clock if you want them), a launch keys page (hold L2 + R2 at power on) and a video mode page up to 1080i (TRIANGLE + CROSS). [B]Signed by akilluminati47.[/B][/LEFT]
+[*][LEFT]It rides inside RIPPS2.elf, nothing else to download. Settings > General > Boot Loader > [B]Manage[/B] binds it to your memory card, an SD2PSX or MMCE BOOT card too (the way KELFBinder does it), or puts it in the internal HDD's boot area, and at power on it starts RIPPS2 at once from wherever RIPPS2 lives: a memory card, USB, MX4SIO or the SD card of an SD2PSX. It never copies RIPPS2.[/LEFT]
+[*][LEFT][B]Tested on a real PS2[/B] (SCPH-39001 with an SD2PSX): bound by RIPPS2 itself, BIBLE's splash, then RIPPS2. Manage tells BIBLE apart by its own bytes, so a card says "BIBLE (MMCE build)" whatever its icon says.[/LEFT]
+[*][LEFT]Its settings are one text file on the card, [B]SYS-CONF/PS2BBL.INI[/B]: what each button starts, the splash, the video mode, widescreen and the sky's colours (the sky follows your RIPPS2 Color Theme). Open it in Memory Files.[/LEFT]
+[*][LEFT]SD2PSX owners: a [URL='https://github.com/akilluminati47/BIBLE/releases/latest']ready BIBLE BOOT card[/URL] is on BIBLE's release page.[/LEFT]
+[/LIST]
+
 [SIZE=5][B]Sound from your own console[/B][/SIZE]
 [LIST]
-[*][LEFT]No one's sounds ship with RIPPS2. Audio Settings > BIOS Sounds rips your PS2's own browser sounds from its BIOS (under 1 MB), and BIOS Music renders its menu music (the clock's piece, 5:04, or the red screen's, or both) as a WAV, telling you the size first and letting you pick the folder.[/LEFT]
+[*][LEFT]No one's sounds ship with RIPPS2. Audio Settings > BIOS Sounds (or STATUS > RIP THIS CONSOLE'S AUDIO) rips your PS2's own browser sounds from its BIOS (under 1 MB), and BIOS Music renders its menu music (the clock's piece, 5:04, or the red screen's, or both) as a WAV, telling you the size first and letting you pick the folder.[/LEFT]
 [*][LEFT]Any WAV, Ogg or MP3 in your AUDIO folder plays as music, on every theme, and you choose where a rip goes (beside RIPPS2 is read first at boot). The boot sound is the first thing read at boot, so it plays as the towers appear.[/LEFT]
 [*][LEFT]On a PC, [URL='https://github.com/akilluminati47/RIPPS2/tree/main/tools/media-studio']RIPPS2 Media Studio[/URL] turns any sound, song or video into what RIPPS2 plays ([URL='https://github.com/akilluminati47/RIPPS2/releases/download/media-studio/RIPPS2-Media-Studio.zip']download it for Windows[/URL]: unzip, double-click).[/LEFT]
 [/LIST]
@@ -83,7 +93,7 @@ Hey everyone. RIPPS2 is in beta, and the download link above always gets the new
 [/SPOILER]
 
 [SIZE=5][B]Thanks[/B][/SIZE]
-To everyone testing RIPPS2 on Discord: ripto, nuno6573, zackcage6, eliminator1403, FifthFox, Mr.sus.60, lukeatmynose, ahavasi and whoever joins you next. To Berion for the APA check, and to everyone opening issues on GitHub, DarkNerdShawny first (v1.1.7's FreeMcBoot fix came from one): an issue is the best way to get RIPPS2 updated, so be like them and [URL='https://github.com/akilluminati47/RIPPS2/issues']open one[/URL]. Special thanks to all the YouTube love as well: glad to help however you reach me. RIPPS2 is built on RiptOPL by NathanNeurotic and Open PS2 Loader, with Neutrino by rickgaiser, POPSTARTER by krHACKen, Ember by Gageformer, PS2BBL by El_isra and xeRAbora by hacan359.
+To everyone testing RIPPS2 on Discord: ripto, nuno6573, zackcage6, eliminator1403, FifthFox, Mr.sus.60, lukeatmynose, ahavasi and whoever joins you next. To Berion for the APA check, and to everyone opening issues on GitHub, DarkNerdShawny first (v1.1.7's FreeMcBoot fix came from one): an issue is the best way to get RIPPS2 updated, so be like them and [URL='https://github.com/akilluminati47/RIPPS2/issues']open one[/URL]. Special thanks to all the YouTube love as well: glad to help however you reach me. RIPPS2 is built on RiptOPL by NathanNeurotic and Open PS2 Loader, with Neutrino by rickgaiser, POPSTARTER by krHACKen, Ember by Gageformer, PS2BBL and KELFBinder by El_isra, PS2BBL Extended by saildot4k and xeRAbora by hacan359.
 Made by akilluminati47, built with Claude.
 
 It is a beta: keep your usual loader close by, and tell us what breaks, here, on [URL='https://github.com/akilluminati47/RIPPS2/issues']GitHub issues[/URL], or in #RIPPS2 on the developers' Discord ([URL='https://discord.gg/Z7m9u5kby']discord.gg/Z7m9u5kby[/URL]). Feedback is what makes RIPPS2.
