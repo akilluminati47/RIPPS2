@@ -164,7 +164,7 @@ for gone, where, text in (('ember_elf.o', 'Makefile', mk), ('popstarter_elf.o', 
                           ('popstarter/POPSTARTER.ELF', 'elf/build.sh', (repo / 'elf/build.sh').read_text(encoding='utf-8'))):
     if gone in text:
         fail.append('%s: %s is still there (the trim)' % (where, gone))
-need(mk, (('neutrino_tgz.o', 'Neutrino stays carried'), ('bible_xlf.o', 'BIBLE stays carried')), 'Makefile')
+need(mk, (('bible_xlf.o', 'BIBLE stays carried'),), 'Makefile')  # build 135: Neutrino is found, not carried
 # build 114: the launch legs call RiptOPL's cueResolveEmber themselves (113's cueEnsureEmber was only its alias)
 need(rd('src/bdmsupport.c'), (('if (!cueResolveEmber(ps1Prefix, emberElf, sizeof(emberElf)))', 'a launch uses the drive\'s own Ember'),), 'bdmsupport.c')
 if 'cueEnsureEmber' in rd('src/cuesupport.c') + rd('include/cuesupport.h'):

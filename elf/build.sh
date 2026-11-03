@@ -69,9 +69,7 @@ cp -f "$HERE/bible/MX4SIO/SYSTEM.XLF" "$SRC/misc/bible_mx4sio_system.xlf"
 # BIBLE on the HDD (build 73): its HDD build, HSYSTEM.XLF (build 134: BIBLE's, signed with the card builds)
 cp -f "$HERE/bible/HSYSTEM.XLF" "$SRC/misc/bible_hdd_system.xlf"
 # Ember and POPSTARTER are the user's own from build 113, found and launched, not carried (elf/ember, elf/popstarter)
-# Neutrino (build 77; build 115: its development build v1.8.0-61-g7be8de2): the release folder as a gzip'd tar, AFL-3.0 (elf/neutrino/README.md);
-# RIPPS2 installs it where the user picks when a Neutrino launch finds none
-cp -f "$HERE/neutrino/neutrino-1.8.0-61-g7be8de2.tar.gz" "$SRC/misc/neutrino.tar.gz"
+# build 135: Neutrino is no longer carried (elf/neutrino/README.md); RIPPS2 finds the user's own
 # The build number shown in About: the number of the last patch (build N is patch N); beta from build 100
 LAST="$(ls "$HERE"/patches/0*.patch | tail -n1)"
 NUM="$(basename "$LAST" | cut -c1-4 | sed 's/^0*//')"
@@ -166,20 +164,6 @@ mkdir -p "$OUT"
 ELF="$(ls RIPTOPL-*.ELF | head -n1)"
 cp -f "$ELF" "$OUT/RIPPS2.elf"
 echo "Built $ELF -> out/RIPPS2.elf"
-
-# build 126 (the user, 10/31: "Drop neutrino injection and bbl injection gracefully for lite elf"): RIPPS2-lite.elf, the same
-# build without the programs it carries as data (PS2BBL for BIBLE, Neutrino); src/ripps2lite.c stands in for them. Only the
-# three files RIPPS2_LITE changes are built again, and the ELF linked again, so the lite pass takes a minute
-if [ "${RIPPS2_NO_LITE:-0}" != "1" ]; then
-  cp -f opl.elf opl.full.elf; cp -f opl.map opl.full.map # the symbols CI uploads are the full ELF's
-  rm -f obj/gui.o obj/ripps2ember.o obj/ripps2boot.o opl.elf opl_stripped.elf RIPTOPL.ELF RIPTOPL-*.ELF
-  make LOCALVERSION=RIPPS2 DIRTY= REVISION="$UP_REV" GIT_HASH="$UP_HASH" RETROACHIEVEMENTS=1 RIPPS2_LITE=1 ${RIPPS2_MAKE_FLAGS:-} RIPTOPL.ELF
-  cp -f RIPTOPL.ELF "$OUT/RIPPS2-lite.elf"
-  echo "Built the lite ELF -> out/RIPPS2-lite.elf ($(wc -c < "$OUT/RIPPS2-lite.elf") bytes, full $(wc -c < "$OUT/RIPPS2.elf"))"
-  # the full ELF's objects back for anything after this that links again
-  rm -f obj/gui.o obj/ripps2ember.o obj/ripps2boot.o
-  mv -f opl.map opl-lite.map; mv -f opl.full.elf opl.elf; mv -f opl.full.map opl.map
-fi
 
 # build 104: the language pack. `make release` made lng_src/ (Open PS2 Loader's translations with RiptOPL's lng_fork
 # filled in); RIPPS2's own words come from elf/lang. Keyed by the English, so a pack keeps working in later builds.

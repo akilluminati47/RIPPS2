@@ -30,7 +30,7 @@ if not re.search(r'"Audio"\),\n#ifdef RETROACHIEVEMENTS\n        _l\(_STR_RIPPS2
 if 'labels[SETTINGS_PAGE_COUNT + 2]' not in idx:
     fail.append('the Settings index labels must have room for Achievements and Save')
 # build 113: POPSTARTER and Ember are the user's own (found, not carried), so STATUS installs neither
-for act in ('ripps2NeutrinoInstallTo(', 'ripps2BibleManage()',
+for act in ('ripps2BibleManage()',  # build 135: no Neutrino to install
             'guiShowNeutrinoDefaults()', 'guiShowPsEmulationSettings()', 'guiShowPopsNetConfig()'):
     if act not in st:
         fail.append('STATUS must reach %s' % act)

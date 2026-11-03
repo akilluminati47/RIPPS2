@@ -59,15 +59,6 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-      # build 126: RIPPS2-lite.elf, without PS2BBL (BIBLE) and Neutrino
-      - name: Upload RIPPS2-lite.elf
-        uses: actions/upload-artifact@v6
-        with:
-          name: RIPPS2-lite-elf${{ inputs.debug && '-debug' || '' }}${{ inputs.flags && '-test' || '' }}
-          path: out/RIPPS2-lite.elf
-          if-no-files-found: error
-          retention-days: 30
-
       # build 104: the language pack (LNG/lang_<Language>.lng and the fonts a script needs)
       - name: Upload RIPPS2-languages.zip
         uses: actions/upload-artifact@v6

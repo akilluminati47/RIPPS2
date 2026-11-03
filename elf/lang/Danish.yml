@@ -3,12 +3,16 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Danish
 strings:
+  "This game starts through Neutrino, and RIPPS2 found none: not at Settings' path, on the game's drive, on the memory cards or on any started drive. Put Neutrino by rickgaiser (github.com/rickgaiser/neutrino) in a neutrino folder on the game's drive or a memory card, or point Game Launching > Neutrino at it.": "Dette spil starter gennem Neutrino, og RIPPS2 fandt ingen: hverken på stien i Indstillinger, på spillets drev, på hukommelseskortene eller på et startet drev. Læg rickgaisers Neutrino (github.com/rickgaiser/neutrino) i en neutrino-mappe på spillets drev eller et hukommelseskort, eller peg Spilstart > Neutrino på den."
+  "Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets. Get Neutrino at github.com/rickgaiser/neutrino and put it in a neutrino folder on a drive or a memory card.": "Hvor din Neutrino er, dens videotilstand og de argumenter, hver Neutrino-start får. Hent Neutrino på github.com/rickgaiser/neutrino, og læg den i en neutrino-mappe på et drev eller et hukommelseskort."
+  "This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer.": "Denne Neutrino er ældre end 1.3, som ikke kan starte spil fra APA-HDD'en. Peg Spilstart > Neutrino på Neutrino 1.3 eller nyere."
+  "with rickgaiser's Neutrino as its second game core,": "med rickgaisers Neutrino som sin anden spilkerne,"
+  "the second game core, used from your drive or memory card (AFL-3.0)": "den anden spilkerne, brugt fra dit drev eller hukommelseskort (AFL-3.0)"
   "FILE NAME": "FILNAVN"
   "GAME LIST": "SPILLISTE"
   "%s in %s": "%s i %s"
   "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "Skrivehandlinger er slået fra, så RIPPS2 kan ikke gemme et spils oplysninger eller omdøbe det. Slå dem til?"
   "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "BIBLE er bygget på El Isras PS2BBL, og dets udgaver til kort og HDD er signeret til RIPPS2 (GPL-3)"
-  "This is RIPPS2 lite, which carries no Neutrino. Put Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in a neutrino folder on a memory card or the game's drive, or use the full RIPPS2.elf, which installs it for you.": "Dette er RIPPS2 lite, som ikke har Neutrino med. Læg Neutrino (rickgaiser, github.com/rickgaiser/neutrino) i en neutrino-mappe på et hukommelseskort eller spillets drev, eller brug den fulde RIPPS2.elf, som installerer det for dig."
   "START %s": "START %s"
   "NETWORK": "NETVÆRK"
   "%s did not answer. Is it connected?": "%s svarede ikke. Er det tilsluttet?"
@@ -485,11 +489,6 @@ strings:
   This file is too big to edit here (64 KB at most).: Denne fil er for stor til at blive redigeret her (højst 64 KB).
   VIDEO: VIDEO
   YOURS: DIN
-  MEMORY CARD %d  (about 600 KB): MEMORYKORT %d  (cirka 600 KB)
-  'NEUTRINO: unpacking': 'NEUTRINO: pakker ud'
-  'NEUTRINO: writing %.60s': 'NEUTRINO: skriver %.60s'
-  Neutrino could not be written to %s. Check its free space and that it is not write protected, then try again.: Neutrino kunne ikke skrives til %s. Tjek den ledige plads, og at den ikke er skrivebeskyttet, og prøv igen.
-  THE GAME'S DRIVE  (%s/neutrino): SPILLETS DREV  (%s/neutrino)
   '%d / %d FILES': '%d / %d FILER'
   '%d FOLDERS AND CONTENTS': '%d MAPPER OG INDHOLD'
   '%d FOLDERS, %d FOUND': '%d MAPPER, %d FUNDET'
@@ -770,14 +769,10 @@ strings:
   TOO MANY FILES IN THE PSU: FOR MANGE FILER I PSU'EN
   UNKNOWN CARD LAYOUT: UKENDT KORTLAYOUT
   '%d sounds from %sAUDIO%s': '%d lyde fra %sAUDIO%s'
-  '%s could not be written to %s. Check its free space and that it is not write protected.': '%s kunne ikke skrives til %s. Tjek den ledige plads, og at den ikke er skrivebeskyttet.'
-  '%s is installed in %s.': '%s er installeret i %s.'
   ', some files could not be used': ', nogle filer kunne ikke bruges'
   AUDIO folder: AUDIO-mappen
   DRIVES: DREV
   MANAGE: ADMINISTRER
-  MEMORY CARD 0  (about 600 KB): MEMORYKORT 0  (cirka 600 KB)
-  MEMORY CARD 1  (about 600 KB): MEMORYKORT 1  (cirka 600 KB)
   'MX4SIO: its driver would not load (code %d).': 'MX4SIO: dens driver ville ikke indlæses (kode %d).'
   'MX4SIO: off in Game Sources.': 'MX4SIO: slået fra i Spilkilder.'
   'MX4SIO: on in Game Sources; its driver has not been started yet.': 'MX4SIO: slået til i Spilkilder; dens driver er ikke startet endnu.'
@@ -900,7 +895,6 @@ strings:
   'Special thanks to all the YouTube love as well:': 'En særlig tak også til al kærligheden på YouTube:'
   and its own look, launchers, file browser and save tools.: og med sit eget udseende, startere, filbrowser og gemmeværktøjer.
   glad to help however you reach me.: glad for at hjælpe, uanset hvordan I fanger mig.
-  with rickgaiser's Neutrino inside as its second game core,: med rickgaisers Neutrino indeni som sin anden spilkerne,
   STARTING THE DRIVES: STARTER DREVENE
   '%d games, on the started drives': '%d spil, på de startede drev'
   '%s: SOME FILES COULD NOT BE DELETED': '%s: NOGLE FILER KUNNE IKKE SLETTES'
@@ -964,7 +958,6 @@ strings:
   LOOKING FOR YOUR LAUNCHERS: LEDER EFTER DINE STARTERE
   The POPS files: POPS-filerne
   '%s  MMCE card': '%s  MMCE-kort'
-  INSTALL RIPPS2'S NEUTRINO: INSTALLER RIPPS2'S NEUTRINO
   'Internal HDD (APA): %s free of %s': 'Intern HDD (APA): %s ledigt af %s'
   LAUNCHERS: STARTERE
   LOOK FOR THEM: FIND DEM
@@ -978,7 +971,6 @@ strings:
   found where you keep them: fundet, hvor du har dem
   not found yet: ikke fundet endnu
   not on a started drive: ikke på et startet drev
-  only if you have none: kun hvis du ikke har nogen
   starts every drive first: starter alle drev først
   BDM Devices: BDM-enheder
   Color Sweep: Farveskift
@@ -1073,7 +1065,6 @@ strings:
   STARS SHOWN: STJERNER VIST
   Asking the SD2PSX for this game's memory card...: Beder SD2PSX om dette spils memorykort...
   The SD2PSX is getting this game's memory card ready (%d s). The game starts when it is done; START starts it now.: SD2PSX gør dette spils memorykort klar (%d s). Spillet starter, når det er færdigt; START starter det nu.
-  the second game core, its newest build carried unmodified (AFL-3.0): den anden spilkerne, dens nyeste build medbragt uændret (AFL-3.0)
   '%s could not be written to %s (%d of the sounds were). Is the drive full or write-protected?': '%s kunne ikke skrives til %s (%d af lydene blev). Er drevet fuldt eller skrivebeskyttet?'
   '%s could not be written to %s (%d of the sounds were, and the card has %d KB free now). Is the card write-protected?': '%s kunne ikke skrives til %s (%d af lydene blev, og kortet har nu %d KB fri). Er kortet skrivebeskyttet?'
   The folder %s could not be made. Is the drive full or write-protected? Nothing was written.: Mappen %s kunne ikke oprettes. Er drevet fuldt eller skrivebeskyttet? Intet blev skrevet.
@@ -1087,8 +1078,6 @@ strings:
   ? 'Memory Files opens now, on MEDIA, with the disc on its clipboard (RIPPED). Go to the drive and folder it should be in (any drive: USB, the HDD, the SD2PSX''s MEDIA), press TRIANGLE for ACTIONS and choose PASTE. RIPDISC then asks once more and reads the disc with your PS2''s laser, writing it there.'
   : 'Hukommelsesfiler åbner nu, på MEDIA, med disken på sin udklipsholder (RIPPET). Gå til det drev og den mappe, den skal ligge i (ethvert drev: USB, HDD''en, SD2PSX''ens MEDIA), tryk på TREKANT for HANDLINGER og vælg SÆT IND. RIPDISC spørger så én gang til og læser disken med din PS2''s laser og skriver den dér.'
   RENAME THE GAME: OMDØB SPILLET
-  ? 'This game starts through Neutrino, and RIPPS2 found none: not at Settings'' path, on the game''s drive, on the memory cards or on any started drive. RIPPS2 carries Neutrino by rickgaiser (AFL-3.0), its newest build: install it once, where you pick, and every Neutrino game uses it from there.'
-  : 'Dette spil starter gennem Neutrino, og RIPPS2 fandt ingen: ikke ved stien i Indstillinger, ikke på spillets drev, ikke på memorykortene og ikke på noget startet drev. RIPPS2 har Neutrino af rickgaiser med (AFL-3.0), dens nyeste build: installer den én gang, hvor du vil, og hvert Neutrino-spil bruger den derfra.'
   A PS1 disc's track list, for Ember: En PS1-disks sporliste, til Ember
   A PS1 game for POPSTARTER: Et PS1-spil til POPSTARTER
   A PS2 game: Et PS2-spil
@@ -1139,7 +1128,6 @@ strings:
   'All Games: %d games kept in %s, listed at boot before any drive answers': 'Alle spil: %d spil gemt i %s, vist ved opstart, før noget drev svarer'
   'All Games: no master list yet; %s is written once the games are listed (Fast Cache on)': 'Alle spil: ingen hovedliste endnu; %s skrives, når spillene er vist (Fast Cache til)'
   CACHE SETTINGS: CACHE-INDSTILLINGER
-  Copies the Neutrino RIPPS2 carries to a drive or a memory card. A Neutrino of your own is used as it is.: Kopierer den Neutrino, RIPPS2 har med, til et drev eller et memorykort. En Neutrino, du selv har, bruges, som den er.
   DIAG.TXT, for a bug report: DIAG.TXT, til en fejlrapport
   Drives, loading, launchers and homebrew: Drev, indlæsning, startere og homebrew
   ? Fast Cache shows each drive's last game list the moment the drive answers; Trust Cache keeps it until you press SELECT. Both on, with the settings on the memory card RIPPS2 starts from, is the quickest boot.
@@ -1161,13 +1149,10 @@ strings:
   The diagnostics could not be written to %s.: Diagnostikken kunne ikke skrives til %s.
   What each memory card starts at power on; install or repair BIBLE, PS2BBL set up to start RIPPS2.: Hvad hvert memorykort starter ved opstart; installer eller reparer BIBLE, PS2BBL indstillet til at starte RIPPS2.
   Where POPSTARTER and Ember are, and how PS1 games start.: Hvor POPSTARTER og Ember er, og hvordan PS1-spil starter.
-  Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets.: Hvor din Neutrino er, dens videotilstand og de argumenter, hver Neutrino-start får.
   ? Writes what RIPPS2 noted about the pads, the drives, MMCE cards and the last launches to DIAG.TXT beside RIPPS2. Send it with a bug report.
   : Skriver det, RIPPS2 noterede om controllerne, drevene, MMCE-kort og de seneste starter, til DIAG.TXT ved siden af RIPPS2. Send den med en fejlrapport.
   back to Cache: tilbage til Cache
   what boot reads first: hvad opstarten læser først
-  ? This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer, or clear the path to use the one RIPPS2 carries.
-  : Denne Neutrino er ældre end 1.3, som ikke kan starte spil fra APA-HDD'en. Peg Spilstart > Neutrino på Neutrino 1.3 eller nyere, eller ryd stien for at bruge den, RIPPS2 har med.
   ', the sounds': ', lydene'
   ? 'Fast Boot is on. RIPPS2 boots from its own drive (%s): the settings%s and every list from its cache. The other drives start when you press SELECT on their page, or launch one of their games.'
   : 'Fast Boot er slået til. RIPPS2 starter fra sit eget drev (%s): indstillingerne%s og hver liste fra sin cache. De andre drev starter, når du trykker SELECT på deres side eller starter et af deres spil.'
@@ -1376,7 +1361,6 @@ strings:
   : 'Ingen endnu. En profil er en tekstfil opkaldt efter controllerens ID, som 2563_0575.pad: formatet står i RIPPS2''s repo (docs/plans/pad-spec.md).'
   On (fast): Til (hurtig)
   'Pad profiles in %s:': 'Controllerprofiler i %s:'
-  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (build %d) på RiptOPL %s
   RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: RIPPS2 ved ikke, hvor dens mappe er, så den kan ikke lede efter PADS.
   could not be read: kunne ikke læses
   About %d seconds left: Omkring %d sekunder tilbage
@@ -1395,8 +1379,6 @@ strings:
   ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
   : Til (hurtig) holder opstartslyden ved siden af RIPPS2 på hukommelseskortet, det starter fra, og RIPPS2 startede ikke fra et. Opstartslyden spiller som ved Til.
   'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'Der er ingen opstartslyd at kopiere endnu: Lydindstillinger > BIOS-lyde ripper denne konsols.'
-  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
-  : Dette er RIPPS2 lite, som ikke har PS2BBL med, så den kan ikke sætte BIBLE op. Den fulde RIPPS2.elf installerer og reparerer den; en allerede opsat bootloader bliver ved med at starte RIPPS2 lite, som den er.
   '%d COPIED OUT': '%d KOPIERET UD'
   '%d ITEM   %d MARKED   %s': '%d ELEMENT   %d MARKERET   %s'
   '%d ITEM   %d MARKED   %s   %s FREE': '%d ELEMENT   %d MARKERET   %s   %s LEDIGT'

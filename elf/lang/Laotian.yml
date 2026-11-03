@@ -3,12 +3,16 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Laotian
 strings:
+  "This game starts through Neutrino, and RIPPS2 found none: not at Settings' path, on the game's drive, on the memory cards or on any started drive. Put Neutrino by rickgaiser (github.com/rickgaiser/neutrino) in a neutrino folder on the game's drive or a memory card, or point Game Launching > Neutrino at it.": "ເກມນີ້ເລີ່ມຜ່ານ Neutrino, ແລະ RIPPS2 ບໍ່ພົບເລີຍ: ບໍ່ມີທີ່ເສັ້ນທາງໃນການຕັ້ງຄ່າ, ໃນໄດຣຟ໌ຂອງເກມ, ໃນບັດຄວາມຈຳ ຫຼື ໃນໄດຣຟ໌ໃດທີ່ເລີ່ມແລ້ວ. ວາງ Neutrino ຂອງ rickgaiser (github.com/rickgaiser/neutrino) ໃນໂຟນເດີ neutrino ໃນໄດຣຟ໌ຂອງເກມ ຫຼື ບັດຄວາມຈຳ, ຫຼື ຊີ້ ການເປີດເກມ > Neutrino ໄປຫາມັນ."
+  "Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets. Get Neutrino at github.com/rickgaiser/neutrino and put it in a neutrino folder on a drive or a memory card.": "Neutrino ຂອງທ່ານຢູ່ໃສ, ໂໝດວິດີໂອຂອງມັນ ແລະ ອາກິວເມັນ ທີ່ທຸກການເປີດ Neutrino ໄດ້ຮັບ. ເອົາ Neutrino ທີ່ github.com/rickgaiser/neutrino ແລະ ວາງໃນໂຟນເດີ neutrino ໃນໄດຣຟ໌ ຫຼື ບັດຄວາມຈຳ."
+  "This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer.": "Neutrino ນີ້ເກົ່າກວ່າ 1.3, ເຊິ່ງເລີ່ມເກມຈາກ HDD APA ບໍ່ໄດ້. ຊີ້ ການເປີດເກມ > Neutrino ໄປຫາ Neutrino 1.3 ຫຼື ໃໝ່ກວ່າ."
+  "with rickgaiser's Neutrino as its second game core,": "ມີ Neutrino ຂອງ rickgaiser ເປັນແກນເກມທີສອງ,"
+  "the second game core, used from your drive or memory card (AFL-3.0)": "ແກນເກມທີສອງ, ໃຊ້ຈາກໄດຣຟ໌ ຫຼື ບັດຄວາມຈຳຂອງທ່ານ (AFL-3.0)"
   "FILE NAME": "ຊື່ໄຟລ໌"
   "GAME LIST": "ລາຍຊື່ເກມ"
   "%s in %s": "%s ໃນ %s"
   "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "ການຂຽນຖືກປິດຢູ່, ສະນັ້ນ RIPPS2 ບໍ່ສາມາດບັນທຶກລາຍລະອຽດຂອງເກມ ຫຼື ປ່ຽນຊື່ໄດ້. ເປີດບໍ?"
   "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "BIBLE ສ້າງຂຶ້ນຈາກ PS2BBL ຂອງ El Isra, ສະບັບສຳລັບກາດ ແລະ HDD ຖືກເຊັນສຳລັບ RIPPS2 (GPL-3)"
-  "This is RIPPS2 lite, which carries no Neutrino. Put Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in a neutrino folder on a memory card or the game's drive, or use the full RIPPS2.elf, which installs it for you.": "ນີ້ແມ່ນ RIPPS2 lite, ທີ່ບໍ່ມີ Neutrino. ໃສ່ Neutrino (rickgaiser, github.com/rickgaiser/neutrino) ໃນໂຟນເດີ neutrino ເທິງເມມໂມຣີກາດ ຫຼື ໄດຣຟ໌ຂອງເກມ, ຫຼື ໃຊ້ RIPPS2.elf ເຕັມ, ທີ່ຕິດຕັ້ງໃຫ້ທ່ານ."
   "START %s": "ເລີ່ມ %s"
   "NETWORK": "ເຄືອຂ່າຍ"
   "%s did not answer. Is it connected?": "%s ບໍ່ຕອບ. ເຊື່ອມຕໍ່ແລ້ວບໍ?"
@@ -485,11 +489,6 @@ strings:
   This file is too big to edit here (64 KB at most).: ໄຟລ໌ນີ້ ໃຫຍ່ເກີນ ທີ່ຈະແກ້ໄຂຢູ່ນີ້ (ສູງສຸດ 64 KB).
   VIDEO: ວິດີໂອ
   YOURS: ຂອງທ່ານ
-  MEMORY CARD %d  (about 600 KB): ເມມໂມຣີກາດ %d  (ປະມານ 600 KB)
-  'NEUTRINO: unpacking': 'NEUTRINO: ກຳລັງແຕກໄຟລ໌'
-  'NEUTRINO: writing %.60s': 'NEUTRINO: ກຳລັງຂຽນ %.60s'
-  Neutrino could not be written to %s. Check its free space and that it is not write protected, then try again.: ຂຽນ Neutrino ໃສ່ %s ບໍ່ໄດ້. ກວດບ່ອນວ່າງ ແລະ ວ່າມັນບໍ່ໄດ້ຖືກປ້ອງກັນການຂຽນ, ແລ້ວລອງໃໝ່.
-  THE GAME'S DRIVE  (%s/neutrino): ໄດຣຟ໌ຂອງເກມ  (%s/neutrino)
   '%d / %d FILES': '%d / %d ໄຟລ໌'
   '%d FOLDERS AND CONTENTS': '%d ໂຟນເດີ ແລະ ເນື້ອໃນ'
   '%d FOLDERS, %d FOUND': '%d ໂຟນເດີ, ພົບ %d'
@@ -770,14 +769,10 @@ strings:
   TOO MANY FILES IN THE PSU: ໄຟລ໌ຫຼາຍເກີນ ໃນ PSU
   UNKNOWN CARD LAYOUT: ໂຄງຮ່າງກາດ ທີ່ບໍ່ຮູ້ຈັກ
   '%d sounds from %sAUDIO%s': ສຽງ %d ສຽງ ຈາກ %sAUDIO%s
-  '%s could not be written to %s. Check its free space and that it is not write protected.': ຂຽນ %s ໃສ່ %s ບໍ່ໄດ້. ກວດບ່ອນວ່າງ ແລະ ວ່າມັນບໍ່ໄດ້ຖືກປ້ອງກັນການຂຽນ.
-  '%s is installed in %s.': '%s ຕິດຕັ້ງແລ້ວ ໃນ %s.'
   ', some files could not be used': ', ບາງໄຟລ໌ ໃຊ້ບໍ່ໄດ້'
   AUDIO folder: ໂຟນເດີ AUDIO
   DRIVES: ໄດຣຟ໌
   MANAGE: ຈັດການ
-  MEMORY CARD 0  (about 600 KB): ເມມໂມຣີກາດ 0  (ປະມານ 600 KB)
-  MEMORY CARD 1  (about 600 KB): ເມມໂມຣີກາດ 1  (ປະມານ 600 KB)
   'MX4SIO: its driver would not load (code %d).': 'MX4SIO: ໄດຣເວີຂອງມັນ ບໍ່ຍອມໂຫຼດ (ລະຫັດ %d).'
   'MX4SIO: off in Game Sources.': 'MX4SIO: ປິດ ໃນແຫຼ່ງເກມ.'
   'MX4SIO: on in Game Sources; its driver has not been started yet.': 'MX4SIO: ເປີດ ໃນແຫຼ່ງເກມ; ໄດຣເວີຂອງມັນ ຍັງບໍ່ໄດ້ເລີ່ມ.'
@@ -900,7 +895,6 @@ strings:
   'Special thanks to all the YouTube love as well:': 'ຂອບໃຈເປັນພິເສດຕໍ່ຄວາມຮັກທັງໝົດຈາກ YouTube ນຳ:'
   and its own look, launchers, file browser and save tools.: ແລະ ມີໜ້າຕາ, ຕົວເປີດ, ຕົວທ່ອງໄຟລ໌ ແລະ ເຄື່ອງມືບັນທຶກເປັນຂອງຕົນເອງ.
   glad to help however you reach me.: ຍິນດີຊ່ວຍ, ບໍ່ວ່າທ່ານຈະຕິດຕໍ່ຂ້ອຍທາງໃດ.
-  with rickgaiser's Neutrino inside as its second game core,: ມີ Neutrino ຂອງ rickgaiser ຢູ່ພາຍໃນເປັນແກນເກມທີສອງ,
   STARTING THE DRIVES: ກຳລັງເລີ່ມໄດຣຟ໌
   '%d games, on the started drives': '%d ເກມ, ໃນໄດຣຟ໌ທີ່ເລີ່ມແລ້ວ'
   '%s: SOME FILES COULD NOT BE DELETED': '%s: ບາງໄຟລ໌ລົບບໍ່ໄດ້'
@@ -964,7 +958,6 @@ strings:
   LOOKING FOR YOUR LAUNCHERS: ກຳລັງຊອກຫາຕົວເປີດຂອງທ່ານ
   The POPS files: ໄຟລ໌ POPS
   '%s  MMCE card': '%s  ກາດ MMCE'
-  INSTALL RIPPS2'S NEUTRINO: ຕິດຕັ້ງ NEUTRINO ຂອງ RIPPS2
   'Internal HDD (APA): %s free of %s': 'HDD ພາຍໃນ (APA): ຫວ່າງ %s ຈາກ %s'
   LAUNCHERS: ຕົວເປີດ
   LOOK FOR THEM: ຊອກຫາພວກມັນ
@@ -978,7 +971,6 @@ strings:
   found where you keep them: ພົບບ່ອນທີ່ທ່ານເກັບໄວ້
   not found yet: ຍັງບໍ່ພົບ
   not on a started drive: ບໍ່ຢູ່ໃນໄດຣຟ໌ທີ່ເລີ່ມແລ້ວ
-  only if you have none: ສະເພາະຖ້າທ່ານບໍ່ມີ
   starts every drive first: ເລີ່ມທຸກໄດຣຟ໌ກ່ອນ
   BDM Devices: ອຸປະກອນ BDM
   Color Sweep: ການປ່ຽນສີ
@@ -1074,7 +1066,6 @@ strings:
   STARS SHOWN: ສະແດງດາວ
   Asking the SD2PSX for this game's memory card...: ກຳລັງຂໍເມມໂມຣີກາດຂອງເກມນີ້ ຈາກ SD2PSX...
   The SD2PSX is getting this game's memory card ready (%d s). The game starts when it is done; START starts it now.: SD2PSX ກຳລັງກຽມເມມໂມຣີກາດຂອງເກມນີ້ (%d ວິ). ເກມຈະເລີ່ມເມື່ອແລ້ວ; START ເລີ່ມດຽວນີ້.
-  the second game core, its newest build carried unmodified (AFL-3.0): ແກນເກມທີສອງ, ລຸ້ນໃໝ່ສຸດຂອງມັນ ມາພ້ອມໂດຍບໍ່ດັດແປງ (AFL-3.0)
   '%s could not be written to %s (%d of the sounds were). Is the drive full or write-protected?': ຂຽນ %s ໃສ່ %s ບໍ່ໄດ້ (ຂຽນສຽງໄດ້ %d ອັນ). ໄດຣຟ໌ເຕັມ ຫຼື ຖືກປ້ອງກັນການຂຽນ ບໍ?
   '%s could not be written to %s (%d of the sounds were, and the card has %d KB free now). Is the card write-protected?': ຂຽນ %s ໃສ່ %s ບໍ່ໄດ້ (ຂຽນສຽງໄດ້ %d ອັນ, ແລະ ກາດມີບ່ອນວ່າງ %d KB ດຽວນີ້). ກາດຖືກປ້ອງກັນການຂຽນ ບໍ?
   The folder %s could not be made. Is the drive full or write-protected? Nothing was written.: ສ້າງໂຟນເດີ %s ບໍ່ໄດ້. ໄດຣຟ໌ເຕັມ ຫຼື ຖືກປ້ອງກັນການຂຽນ ບໍ? ບໍ່ໄດ້ຂຽນຫຍັງ.
@@ -1088,8 +1079,6 @@ strings:
   ? 'Memory Files opens now, on MEDIA, with the disc on its clipboard (RIPPED). Go to the drive and folder it should be in (any drive: USB, the HDD, the SD2PSX''s MEDIA), press TRIANGLE for ACTIONS and choose PASTE. RIPDISC then asks once more and reads the disc with your PS2''s laser, writing it there.'
   : 'ໄຟລ໌ໃນໜ່ວຍຄວາມຈຳ ເປີດດຽວນີ້, ຢູ່ MEDIA, ມີແຜ່ນຢູ່ໃນຄລິບບອດ (ຖອດແລ້ວ). ໄປທີ່ໄດຣຟ໌ ແລະ ໂຟນເດີ ທີ່ມັນຄວນຢູ່ (ໄດຣຟ໌ໃດກໍ່ໄດ້: USB, HDD, MEDIA ຂອງ SD2PSX), ກົດ ສາມຫຼ່ຽມ ເພື່ອ ການກະທຳ ແລະ ເລືອກ ວາງ. RIPDISC ຈະຖາມອີກເທື່ອໜຶ່ງ ແລະ ອ່ານແຜ່ນດ້ວຍເລເຊີຂອງ PS2 ຂອງທ່ານ, ແລ້ວຂຽນມັນໄວ້ບ່ອນນັ້ນ.'
   RENAME THE GAME: ປ່ຽນຊື່ເກມ
-  ? 'This game starts through Neutrino, and RIPPS2 found none: not at Settings'' path, on the game''s drive, on the memory cards or on any started drive. RIPPS2 carries Neutrino by rickgaiser (AFL-3.0), its newest build: install it once, where you pick, and every Neutrino game uses it from there.'
-  : 'ເກມນີ້ເລີ່ມຜ່ານ Neutrino, ແລະ RIPPS2 ບໍ່ພົບມັນ: ບໍ່ຢູ່ທີ່ເສັ້ນທາງໃນ ການຕັ້ງຄ່າ, ບໍ່ຢູ່ໃນໄດຣຟ໌ຂອງເກມ, ບໍ່ຢູ່ໃນເມມໂມຣີກາດ ແລະ ບໍ່ຢູ່ໃນໄດຣຟ໌ທີ່ເລີ່ມແລ້ວໃດເລີຍ. RIPPS2 ມີ Neutrino ຂອງ rickgaiser ມານຳ (AFL-3.0), ລຸ້ນໃໝ່ສຸດ: ຕິດຕັ້ງມັນຄັ້ງໜຶ່ງ, ບ່ອນທີ່ທ່ານເລືອກ, ແລະ ທຸກເກມ Neutrino ຈະໃຊ້ມັນຈາກບ່ອນນັ້ນ.'
   A PS1 disc's track list, for Ember: ລາຍການເພງຂອງແຜ່ນ PS1, ສຳລັບ Ember
   A PS1 game for POPSTARTER: ເກມ PS1 ສຳລັບ POPSTARTER
   A PS2 game: ເກມ PS2
@@ -1140,7 +1129,6 @@ strings:
   'All Games: %d games kept in %s, listed at boot before any drive answers': 'ທຸກເກມ: %d ເກມ ຢູ່ໃນ %s, ສະແດງຕອນບູດ ກ່ອນໄດຣຟ໌ຕອບ'
   'All Games: no master list yet; %s is written once the games are listed (Fast Cache on)': 'ທຸກເກມ: ຍັງບໍ່ມີລາຍການຫຼັກ; ຂຽນ %s ເມື່ອເກມຂຶ້ນ (Fast Cache ເປີດ)'
   CACHE SETTINGS: ການຕັ້ງຄ່າ CACHE
-  Copies the Neutrino RIPPS2 carries to a drive or a memory card. A Neutrino of your own is used as it is.: ສຳເນົາ Neutrino ທີ່ RIPPS2 ມີມານຳ ໄປໃສ່ໄດຣຟ໌ ຫຼື ເມມໂມຣີກາດ. Neutrino ຂອງທ່ານເອງ ໃຊ້ຕາມທີ່ມັນເປັນ.
   DIAG.TXT, for a bug report: DIAG.TXT, ສຳລັບລາຍງານບັນຫາ
   Drives, loading, launchers and homebrew: ໄດຣຟ໌, ການໂຫຼດ, ຕົວເປີດ ແລະ homebrew
   ? Fast Cache shows each drive's last game list the moment the drive answers; Trust Cache keeps it until you press SELECT. Both on, with the settings on the memory card RIPPS2 starts from, is the quickest boot.
@@ -1162,13 +1150,10 @@ strings:
   The diagnostics could not be written to %s.: ຂຽນຂໍ້ມູນວິນິດໄສໃສ່ %s ບໍ່ໄດ້.
   What each memory card starts at power on; install or repair BIBLE, PS2BBL set up to start RIPPS2.: ສິ່ງທີ່ແຕ່ລະເມມໂມຣີກາດເລີ່ມ ຕອນເປີດເຄື່ອງ; ຕິດຕັ້ງ ຫຼື ສ້ອມແປງ BIBLE, PS2BBL ທີ່ຕັ້ງໄວ້ເພື່ອເລີ່ມ RIPPS2.
   Where POPSTARTER and Ember are, and how PS1 games start.: POPSTARTER ແລະ Ember ຢູ່ໃສ, ແລະ ເກມ PS1 ເລີ່ມແນວໃດ.
-  Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets.: Neutrino ຂອງທ່ານຢູ່ໃສ, ໂໝດວິດີໂອຂອງມັນ ແລະ ອາກິວເມັນ ທີ່ທຸກການເປີດ Neutrino ໄດ້ຮັບ.
   ? Writes what RIPPS2 noted about the pads, the drives, MMCE cards and the last launches to DIAG.TXT beside RIPPS2. Send it with a bug report.
   : ຂຽນສິ່ງທີ່ RIPPS2 ບັນທຶກໄວ້ ກ່ຽວກັບ ຈອຍ, ໄດຣຟ໌, ກາດ MMCE ແລະ ການເປີດຫຼ້າສຸດ ໃສ່ DIAG.TXT ຂ້າງ RIPPS2. ສົ່ງມັນພ້ອມກັບລາຍງານບັນຫາ.
   back to Cache: ກັບໄປ Cache
   what boot reads first: ສິ່ງທີ່ບູດອ່ານກ່ອນ
-  ? This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer, or clear the path to use the one RIPPS2 carries.
-  : Neutrino ນີ້ເກົ່າກວ່າ 1.3, ເຊິ່ງເລີ່ມເກມຈາກ HDD APA ບໍ່ໄດ້. ຊີ້ ການເປີດເກມ > Neutrino ໄປຫາ Neutrino 1.3 ຫຼື ໃໝ່ກວ່າ, ຫຼື ລຶບເສັ້ນທາງ ເພື່ອໃຊ້ອັນທີ່ RIPPS2 ມີມານຳ.
   ', the sounds': ', ສຽງ'
   ? 'Fast Boot is on. RIPPS2 boots from its own drive (%s): the settings%s and every list from its cache. The other drives start when you press SELECT on their page, or launch one of their games.'
   : 'Fast Boot ເປີດຢູ່. RIPPS2 ເລີ່ມຈາກໄດຣຟ໌ຂອງມັນເອງ (%s): ການຕັ້ງຄ່າ%s ແລະ ທຸກລາຍການຈາກແຄຊຂອງມັນ. ໄດຣຟ໌ອື່ນຈະເລີ່ມເມື່ອທ່ານກົດ SELECT ໃນໜ້າຂອງມັນ ຫຼື ເປີດເກມໃດໜຶ່ງຂອງມັນ.'
@@ -1377,7 +1362,6 @@ strings:
   : 'ຍັງບໍ່ມີ. ໂປຣໄຟລ໌ແມ່ນໄຟລ໌ຂໍ້ຄວາມທີ່ຕັ້ງຊື່ຕາມ ID ຂອງຈອຍ ເຊັ່ນ 2563_0575.pad: ຮູບແບບຢູ່ໃນ repo ຂອງ RIPPS2 (docs/plans/pad-spec.md).'
   On (fast): ເປີດ (ໄວ)
   'Pad profiles in %s:': 'ໂປຣໄຟລ໌ຈອຍໃນ %s:'
-  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (build %d) ເທິງ RiptOPL %s
   RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: RIPPS2 ບໍ່ຮູ້ວ່າໂຟນເດີຂອງມັນຢູ່ໃສ ຈຶ່ງຊອກ PADS ບໍ່ໄດ້.
   could not be read: ອ່ານບໍ່ໄດ້
   About %d seconds left: ເຫຼືອປະມານ %d ວິນາທີ
@@ -1396,8 +1380,6 @@ strings:
   ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
   : ເປີດ (ໄວ) ເກັບສຽງເປີດເຄື່ອງໄວ້ຂ້າງ RIPPS2 ໃນເມມໂມຣີກາດທີ່ມັນເລີ່ມ, ແຕ່ RIPPS2 ບໍ່ໄດ້ເລີ່ມຈາກກາດ. ສຽງເປີດເຄື່ອງດັງຄືກັບ ເປີດ.
   'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'ຍັງບໍ່ມີສຽງເປີດເຄື່ອງໃຫ້ສຳເນົາ: ຕັ້ງຄ່າສຽງ > ສຽງ BIOS ດຶງສຽງຂອງເຄື່ອງນີ້.'
-  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
-  : ນີ້ແມ່ນ RIPPS2 lite ທີ່ບໍ່ມີ PS2BBL ຈຶ່ງຕັ້ງ BIBLE ບໍ່ໄດ້. RIPPS2.elf ເຕັມຕິດຕັ້ງ ແລະ ສ້ອມແປງມັນ; ໂຕໂຫຼດທີ່ຕັ້ງແລ້ວຍັງເລີ່ມ RIPPS2 lite ຄືເກົ່າ.
   '%d COPIED OUT': ສຳເນົາອອກ %d
   '%d ITEM   %d MARKED   %s': '%d ລາຍການ   ໝາຍ %d   %s'
   '%d ITEM   %d MARKED   %s   %s FREE': '%d ລາຍການ   ໝາຍ %d   %s   ວ່າງ %s'

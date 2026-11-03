@@ -3,12 +3,16 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Czech
 strings:
+  "This game starts through Neutrino, and RIPPS2 found none: not at Settings' path, on the game's drive, on the memory cards or on any started drive. Put Neutrino by rickgaiser (github.com/rickgaiser/neutrino) in a neutrino folder on the game's drive or a memory card, or point Game Launching > Neutrino at it.": "Tato hra se spouští přes Neutrino a RIPPS2 žádné nenašel: ani na cestě z Nastavení, ani na disku hry, ani na paměťových kartách, ani na žádném spuštěném disku. Dejte Neutrino od rickgaisera (github.com/rickgaiser/neutrino) do složky neutrino na disku hry nebo na paměťové kartě, nebo na něj nastavte Spouštění her > Neutrino."
+  "Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets. Get Neutrino at github.com/rickgaiser/neutrino and put it in a neutrino folder on a drive or a memory card.": "Kde je vaše Neutrino, jeho video režim a argumenty, které dostane každé spuštění Neutrina. Neutrino získáte na github.com/rickgaiser/neutrino; dejte ho do složky neutrino na disku nebo paměťové kartě."
+  "This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer.": "Toto Neutrino je starší než 1.3, které neumí spouštět hry z APA HDD. Nastavte Spouštění her > Neutrino na Neutrino 1.3 nebo novější."
+  "with rickgaiser's Neutrino as its second game core,": "s Neutrinem od rickgaisera jako druhým herním jádrem,"
+  "the second game core, used from your drive or memory card (AFL-3.0)": "druhé herní jádro, použité z vašeho disku nebo paměťové karty (AFL-3.0)"
   "FILE NAME": "NÁZEV SOUBORU"
   "GAME LIST": "SEZNAM HER"
   "%s in %s": "%s v %s"
   "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "Zápisové operace jsou vypnuté, takže RIPPS2 nemůže uložit údaje hry ani ji přejmenovat. Zapnout je?"
   "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "BIBLE je postaven na PS2BBL od El Isry, jeho verze pro kartu a HDD jsou podepsané pro RIPPS2 (GPL-3)"
-  "This is RIPPS2 lite, which carries no Neutrino. Put Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in a neutrino folder on a memory card or the game's drive, or use the full RIPPS2.elf, which installs it for you.": "Toto je RIPPS2 lite, který nenese Neutrino. Dejte Neutrino (rickgaiser, github.com/rickgaiser/neutrino) do složky neutrino na paměťové kartě nebo na disku hry, nebo použijte plný RIPPS2.elf, který ho nainstaluje za vás."
   "START %s": "SPUSTIT %s"
   "NETWORK": "SÍŤ"
   "%s did not answer. Is it connected?": "%s neodpověděl. Je připojen?"
@@ -485,11 +489,6 @@ strings:
   This file is too big to edit here (64 KB at most).: Tento soubor je příliš velký na úpravy tady (nejvýš 64 KB).
   VIDEO: VIDEO
   YOURS: VAŠE
-  MEMORY CARD %d  (about 600 KB): PAMĚŤOVÁ KARTA %d  (asi 600 KB)
-  'NEUTRINO: unpacking': 'NEUTRINO: rozbalování'
-  'NEUTRINO: writing %.60s': 'NEUTRINO: zápis %.60s'
-  Neutrino could not be written to %s. Check its free space and that it is not write protected, then try again.: Neutrino se nepodařilo zapsat do %s. Zkontrolujte volné místo a ochranu proti zápisu a zkuste to znovu.
-  THE GAME'S DRIVE  (%s/neutrino): DISK HRY  (%s/neutrino)
   '%d / %d FILES': '%d / %d SOUBORŮ'
   '%d FOLDERS AND CONTENTS': '%d SLOŽEK A OBSAH'
   '%d FOLDERS, %d FOUND': '%d SLOŽEK, NALEZENO %d'
@@ -770,14 +769,10 @@ strings:
   TOO MANY FILES IN THE PSU: PŘÍLIŠ MNOHO SOUBORŮ V PSU
   UNKNOWN CARD LAYOUT: NEZNÁMÉ ROZVRŽENÍ KARTY
   '%d sounds from %sAUDIO%s': '%d zvuků z %sAUDIO%s'
-  '%s could not be written to %s. Check its free space and that it is not write protected.': '%s nešlo zapsat do %s. Zkontrolujte volné místo a ochranu proti zápisu.'
-  '%s is installed in %s.': '%s je nainstalováno v %s.'
   ', some files could not be used': ', některé soubory nešlo použít'
   AUDIO folder: složka AUDIO
   DRIVES: DISKY
   MANAGE: SPRAVOVAT
-  MEMORY CARD 0  (about 600 KB): PAMĚŤOVÁ KARTA 0  (asi 600 KB)
-  MEMORY CARD 1  (about 600 KB): PAMĚŤOVÁ KARTA 1  (asi 600 KB)
   'MX4SIO: its driver would not load (code %d).': 'MX4SIO: ovladač se nenačetl (kód %d).'
   'MX4SIO: off in Game Sources.': 'MX4SIO: vypnuto ve Zdrojích her.'
   'MX4SIO: on in Game Sources; its driver has not been started yet.': 'MX4SIO: zapnuto ve Zdrojích her; ovladač zatím nebyl spuštěn.'
@@ -900,7 +895,6 @@ strings:
   'Special thanks to all the YouTube love as well:': 'Zvláštní díky také za všechnu lásku z YouTube:'
   and its own look, launchers, file browser and save tools.: a s vlastním vzhledem, spouštěči, prohlížečem souborů a nástroji pro uložené pozice.
   glad to help however you reach me.: rád pomůžu, ať se ke mně dostanete jakkoli.
-  with rickgaiser's Neutrino inside as its second game core,: s Neutrinem od rickgaisera uvnitř jako druhým herním jádrem,
   STARTING THE DRIVES: SPOUŠTÍM DISKY
   '%d games, on the started drives': '%d her, na spuštěných discích'
   '%s: SOME FILES COULD NOT BE DELETED': '%s: NĚKTERÉ SOUBORY NEŠLO SMAZAT'
@@ -964,7 +958,6 @@ strings:
   LOOKING FOR YOUR LAUNCHERS: HLEDÁM VAŠE SPOUŠTĚČE
   The POPS files: Soubory POPS
   '%s  MMCE card': '%s  karta MMCE'
-  INSTALL RIPPS2'S NEUTRINO: NAINSTALOVAT NEUTRINO Z RIPPS2
   'Internal HDD (APA): %s free of %s': 'Interní HDD (APA): volno %s z %s'
   LAUNCHERS: SPOUŠTĚČE
   LOOK FOR THEM: NAJÍT JE
@@ -978,7 +971,6 @@ strings:
   found where you keep them: nalezeny tam, kde je máte
   not found yet: zatím nenalezeno
   not on a started drive: není na spuštěném disku
-  only if you have none: jen pokud žádný nemáte
   starts every drive first: nejdřív spustí všechny disky
   BDM Devices: Zařízení BDM
   Color Sweep: Střídání barev
@@ -1074,7 +1066,6 @@ strings:
   STARS SHOWN: HVĚZDIČKY ZOBRAZENÉ
   Asking the SD2PSX for this game's memory card...: Žádám SD2PSX o paměťovou kartu této hry...
   The SD2PSX is getting this game's memory card ready (%d s). The game starts when it is done; START starts it now.: SD2PSX připravuje paměťovou kartu této hry (%d s). Hra se spustí, až bude hotovo; START ji spustí hned.
-  the second game core, its newest build carried unmodified (AFL-3.0): druhé herní jádro, jeho nejnovější sestavení přiložené beze změn (AFL-3.0)
   '%s could not be written to %s (%d of the sounds were). Is the drive full or write-protected?': '%s se nepodařilo zapsat do %s (%d zvuků ano). Je disk plný nebo chráněný proti zápisu?'
   '%s could not be written to %s (%d of the sounds were, and the card has %d KB free now). Is the card write-protected?': '%s se nepodařilo zapsat do %s (%d zvuků ano a karta má teď volných %d KB). Je karta chráněná proti zápisu?'
   The folder %s could not be made. Is the drive full or write-protected? Nothing was written.: Složku %s se nepodařilo vytvořit. Je disk plný nebo chráněný proti zápisu? Nic nebylo zapsáno.
@@ -1088,8 +1079,6 @@ strings:
   ? 'Memory Files opens now, on MEDIA, with the disc on its clipboard (RIPPED). Go to the drive and folder it should be in (any drive: USB, the HDD, the SD2PSX''s MEDIA), press TRIANGLE for ACTIONS and choose PASTE. RIPDISC then asks once more and reads the disc with your PS2''s laser, writing it there.'
   : 'Paměťové soubory se teď otevřou na MEDIA s diskem ve schránce (VYJMUTO). Přejděte na disk a do složky, kam má jít (jakýkoli disk: USB, HDD, MEDIA na SD2PSX), stiskněte TROJÚHELNÍK pro AKCE a zvolte VLOŽIT. RIPDISC se pak ještě jednou zeptá, přečte disk laserem vaší PS2 a zapíše ho tam.'
   RENAME THE GAME: PŘEJMENOVAT HRU
-  ? 'This game starts through Neutrino, and RIPPS2 found none: not at Settings'' path, on the game''s drive, on the memory cards or on any started drive. RIPPS2 carries Neutrino by rickgaiser (AFL-3.0), its newest build: install it once, where you pick, and every Neutrino game uses it from there.'
-  : 'Tato hra se spouští přes Neutrino a RIPPS2 ho nenašel: ani na cestě z Nastavení, ani na disku hry, ani na paměťových kartách, ani na žádném spuštěném disku. RIPPS2 obsahuje Neutrino od rickgaisera (AFL-3.0), jeho nejnovější sestavení: nainstalujte ho jednou, kam chcete, a každá hra s Neutrinem ho odtamtud použije.'
   A PS1 disc's track list, for Ember: Seznam stop disku PS1, pro Ember
   A PS1 game for POPSTARTER: Hra PS1 pro POPSTARTER
   A PS2 game: Hra PS2
@@ -1140,7 +1129,6 @@ strings:
   'All Games: %d games kept in %s, listed at boot before any drive answers': 'Všechny hry: %d her uložených v %s, zobrazených při startu dřív, než odpoví jakýkoli disk'
   'All Games: no master list yet; %s is written once the games are listed (Fast Cache on)': 'Všechny hry: zatím žádný hlavní seznam; %s se zapíše, až se hry zobrazí (Fast Cache zapnutý)'
   CACHE SETTINGS: NASTAVENÍ MEZIPAMĚTI
-  Copies the Neutrino RIPPS2 carries to a drive or a memory card. A Neutrino of your own is used as it is.: Zkopíruje Neutrino, které RIPPS2 obsahuje, na disk nebo paměťovou kartu. Vlastní Neutrino se použije tak, jak je.
   DIAG.TXT, for a bug report: DIAG.TXT pro hlášení chyby
   Drives, loading, launchers and homebrew: Disky, načítání, spouštěče a homebrew
   ? Fast Cache shows each drive's last game list the moment the drive answers; Trust Cache keeps it until you press SELECT. Both on, with the settings on the memory card RIPPS2 starts from, is the quickest boot.
@@ -1162,13 +1150,10 @@ strings:
   The diagnostics could not be written to %s.: Diagnostiku se nepodařilo zapsat do %s.
   What each memory card starts at power on; install or repair BIBLE, PS2BBL set up to start RIPPS2.: Co každá paměťová karta spouští po zapnutí; instalace nebo oprava BIBLE, PS2BBL nastaveného ke spuštění RIPPS2.
   Where POPSTARTER and Ember are, and how PS1 games start.: Kde jsou POPSTARTER a Ember a jak se spouštějí hry PS1.
-  Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets.: Kde je vaše Neutrino, jeho video režim a argumenty, které dostane každé spuštění Neutrina.
   ? Writes what RIPPS2 noted about the pads, the drives, MMCE cards and the last launches to DIAG.TXT beside RIPPS2. Send it with a bug report.
   : Zapíše, co si RIPPS2 poznamenal o ovladačích, discích, kartách MMCE a posledních spuštěních, do DIAG.TXT vedle RIPPS2. Pošlete ho s hlášením chyby.
   back to Cache: zpět do Mezipaměti
   what boot reads first: co start čte jako první
-  ? This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer, or clear the path to use the one RIPPS2 carries.
-  : Toto Neutrino je starší než 1.3, které neumí spouštět hry z APA HDD. Nastavte Spouštění her > Neutrino na Neutrino 1.3 nebo novější, nebo cestu vymažte a použijte to, které obsahuje RIPPS2.
   ', the sounds': ', zvuky'
   ? 'Fast Boot is on. RIPPS2 boots from its own drive (%s): the settings%s and every list from its cache. The other drives start when you press SELECT on their page, or launch one of their games.'
   : 'Fast Boot je zapnutý. RIPPS2 startuje ze své vlastní jednotky (%s): nastavení%s a každý seznam z jeho mezipaměti. Ostatní jednotky se spustí, když na jejich stránce stiskneš SELECT nebo spustíš některou z jejich her.'
@@ -1377,7 +1362,6 @@ strings:
   : 'Zatím žádné. Profil je textový soubor pojmenovaný podle ID ovladače, např. 2563_0575.pad: formát je v repozitáři RIPPS2 (docs/plans/pad-spec.md).'
   On (fast): Zap. (rychle)
   'Pad profiles in %s:': 'Profily ovladačů v %s:'
-  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (build %d) na RiptOPL %s
   RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: RIPPS2 neví, kde je jeho složka, a nemůže tedy hledat PADS.
   could not be read: nelze přečíst
   About %d seconds left: Zbývá asi %d s
@@ -1396,8 +1380,6 @@ strings:
   ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
   : Zap. (rychle) drží zvuk spuštění vedle RIPPS2 na paměťové kartě, ze které startuje, a RIPPS2 nebyl spuštěn z karty. Zvuk spuštění hraje jako u Zap.
   'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'Zatím není co kopírovat: Nastavení zvuku > Zvuky BIOSu vyjme zvuky této konzole.'
-  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
-  : Toto je RIPPS2 lite, které nenese PS2BBL, a nemůže tedy nastavit BIBLE. Plný RIPPS2.elf ho instaluje a opravuje; už nastavený zavaděč dál spouští RIPPS2 lite, jak je.
   '%d COPIED OUT': '%d ZKOPÍROVÁNO VEN'
   '%d ITEM   %d MARKED   %s': '%d POLOŽKA   %d OZNAČENO   %s'
   '%d ITEM   %d MARKED   %s   %s FREE': '%d POLOŽKA   %d OZNAČENO   %s   %s VOLNO'

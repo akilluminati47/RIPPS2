@@ -3,12 +3,16 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Vietnamese
 strings:
+  "This game starts through Neutrino, and RIPPS2 found none: not at Settings' path, on the game's drive, on the memory cards or on any started drive. Put Neutrino by rickgaiser (github.com/rickgaiser/neutrino) in a neutrino folder on the game's drive or a memory card, or point Game Launching > Neutrino at it.": "Trò chơi này chạy qua Neutrino, nhưng RIPPS2 không tìm thấy bản nào: không ở đường dẫn trong Cài đặt, trên ổ đĩa của trò chơi, trên thẻ nhớ hay trên ổ đĩa nào đã khởi động. Hãy đặt Neutrino của rickgaiser (github.com/rickgaiser/neutrino) vào thư mục neutrino trên ổ đĩa của trò chơi hoặc thẻ nhớ, hoặc trỏ Chạy trò chơi > Neutrino tới nó."
+  "Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets. Get Neutrino at github.com/rickgaiser/neutrino and put it in a neutrino folder on a drive or a memory card.": "Neutrino của bạn ở đâu, chế độ video của nó và các tham số mà mỗi lần chạy Neutrino nhận được. Tải Neutrino tại github.com/rickgaiser/neutrino và đặt nó vào thư mục neutrino trên ổ đĩa hoặc thẻ nhớ."
+  "This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer.": "Neutrino này cũ hơn 1.3, bản không thể chạy trò chơi từ HDD APA. Hãy trỏ Chạy trò chơi > Neutrino tới Neutrino 1.3 hoặc mới hơn."
+  "with rickgaiser's Neutrino as its second game core,": "với Neutrino của rickgaiser làm lõi trò chơi thứ hai,"
+  "the second game core, used from your drive or memory card (AFL-3.0)": "lõi trò chơi thứ hai, dùng từ ổ đĩa hoặc thẻ nhớ của bạn (AFL-3.0)"
   "FILE NAME": "TÊN TỆP"
   "GAME LIST": "DANH SÁCH TRÒ CHƠI"
   "%s in %s": "%s trong %s"
   "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "Thao tác ghi đang tắt, nên RIPPS2 không thể lưu thông tin trò chơi hay đổi tên nó. Bật lên?"
   "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "BIBLE được xây trên PS2BBL của El Isra, các bản cho thẻ và HDD đã được ký cho RIPPS2 (GPL-3)"
-  "This is RIPPS2 lite, which carries no Neutrino. Put Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in a neutrino folder on a memory card or the game's drive, or use the full RIPPS2.elf, which installs it for you.": "Đây là RIPPS2 lite, không kèm Neutrino. Đặt Neutrino (rickgaiser, github.com/rickgaiser/neutrino) vào thư mục neutrino trên thẻ nhớ hoặc ổ đĩa của trò chơi, hoặc dùng RIPPS2.elf đầy đủ, bản này cài nó cho bạn."
   "START %s": "KHỞI ĐỘNG %s"
   "NETWORK": "MẠNG"
   "%s did not answer. Is it connected?": "%s không phản hồi. Đã kết nối chưa?"
@@ -485,11 +489,6 @@ strings:
   This file is too big to edit here (64 KB at most).: Tệp này quá lớn để sửa ở đây (tối đa 64 KB).
   VIDEO: VIDEO
   YOURS: CỦA BẠN
-  MEMORY CARD %d  (about 600 KB): THẺ NHỚ %d  (khoảng 600 KB)
-  'NEUTRINO: unpacking': 'NEUTRINO: đang giải nén'
-  'NEUTRINO: writing %.60s': 'NEUTRINO: đang ghi %.60s'
-  Neutrino could not be written to %s. Check its free space and that it is not write protected, then try again.: Không ghi được Neutrino vào %s. Hãy kiểm tra dung lượng trống và việc chống ghi, rồi thử lại.
-  THE GAME'S DRIVE  (%s/neutrino): Ổ CỦA TRÒ CHƠI  (%s/neutrino)
   '%d / %d FILES': '%d / %d TỆP'
   '%d FOLDERS AND CONTENTS': '%d THƯ MỤC VÀ NỘI DUNG'
   '%d FOLDERS, %d FOUND': '%d THƯ MỤC, TÌM THẤY %d'
@@ -770,14 +769,10 @@ strings:
   TOO MANY FILES IN THE PSU: QUÁ NHIỀU TỆP TRONG PSU
   UNKNOWN CARD LAYOUT: BỐ CỤC THẺ KHÔNG RÕ
   '%d sounds from %sAUDIO%s': '%d âm thanh từ %sAUDIO%s'
-  '%s could not be written to %s. Check its free space and that it is not write protected.': Không ghi được %s vào %s. Hãy kiểm tra dung lượng trống và việc chống ghi.
-  '%s is installed in %s.': '%s đã được cài vào %s.'
   ', some files could not be used': ', một số tệp không dùng được'
   AUDIO folder: thư mục AUDIO
   DRIVES: Ổ
   MANAGE: QUẢN LÝ
-  MEMORY CARD 0  (about 600 KB): THẺ NHỚ 0  (khoảng 600 KB)
-  MEMORY CARD 1  (about 600 KB): THẺ NHỚ 1  (khoảng 600 KB)
   'MX4SIO: its driver would not load (code %d).': 'MX4SIO: trình điều khiển không nạp được (mã %d).'
   'MX4SIO: off in Game Sources.': 'MX4SIO: đang tắt trong Nguồn trò chơi.'
   'MX4SIO: on in Game Sources; its driver has not been started yet.': 'MX4SIO: đang bật trong Nguồn trò chơi; trình điều khiển chưa được khởi động.'
@@ -900,7 +895,6 @@ strings:
   'Special thanks to all the YouTube love as well:': 'Đặc biệt cảm ơn tất cả tình cảm từ YouTube:'
   and its own look, launchers, file browser and save tools.: cùng giao diện, trình khởi chạy, trình duyệt tệp và công cụ lưu game của riêng nó.
   glad to help however you reach me.: rất vui được giúp, dù bạn liên hệ với tôi bằng cách nào.
-  with rickgaiser's Neutrino inside as its second game core,: với Neutrino của rickgaiser bên trong làm lõi trò chơi thứ hai,
   STARTING THE DRIVES: ĐANG KHỞI ĐỘNG CÁC Ổ
   '%d games, on the started drives': '%d trò chơi, trên các ổ đã khởi động'
   '%s: SOME FILES COULD NOT BE DELETED': '%s: MỘT SỐ TỆP KHÔNG XÓA ĐƯỢC'
@@ -964,7 +958,6 @@ strings:
   LOOKING FOR YOUR LAUNCHERS: ĐANG TÌM TRÌNH KHỞI CHẠY CỦA BẠN
   The POPS files: Các tệp POPS
   '%s  MMCE card': '%s  thẻ MMCE'
-  INSTALL RIPPS2'S NEUTRINO: CÀI NEUTRINO CỦA RIPPS2
   'Internal HDD (APA): %s free of %s': 'HDD trong (APA): trống %s trên %s'
   LAUNCHERS: TRÌNH KHỞI CHẠY
   LOOK FOR THEM: TÌM CHÚNG
@@ -978,7 +971,6 @@ strings:
   found where you keep them: tìm thấy ở nơi bạn để chúng
   not found yet: chưa tìm thấy
   not on a started drive: không ở trên ổ đã khởi động
-  only if you have none: chỉ khi bạn chưa có
   starts every drive first: khởi động mọi ổ trước
   BDM Devices: Thiết bị BDM
   Color Sweep: Chuyển màu
@@ -1074,7 +1066,6 @@ strings:
   STARS SHOWN: ĐÃ HIỆN SAO
   Asking the SD2PSX for this game's memory card...: Đang hỏi SD2PSX thẻ nhớ của trò chơi này...
   The SD2PSX is getting this game's memory card ready (%d s). The game starts when it is done; START starts it now.: SD2PSX đang chuẩn bị thẻ nhớ của trò chơi này (%d giây). Trò chơi chạy khi xong; START chạy ngay.
-  the second game core, its newest build carried unmodified (AFL-3.0): lõi trò chơi thứ hai, bản dựng mới nhất kèm theo nguyên vẹn (AFL-3.0)
   '%s could not be written to %s (%d of the sounds were). Is the drive full or write-protected?': Không ghi được %s vào %s (đã ghi %d âm thanh). Ổ đầy hay bị chống ghi?
   '%s could not be written to %s (%d of the sounds were, and the card has %d KB free now). Is the card write-protected?': Không ghi được %s vào %s (đã ghi %d âm thanh, và thẻ giờ còn trống %d KB). Thẻ có bị chống ghi không?
   The folder %s could not be made. Is the drive full or write-protected? Nothing was written.: Không tạo được thư mục %s. Ổ đầy hay bị chống ghi? Chưa ghi gì cả.
@@ -1088,8 +1079,6 @@ strings:
   ? 'Memory Files opens now, on MEDIA, with the disc on its clipboard (RIPPED). Go to the drive and folder it should be in (any drive: USB, the HDD, the SD2PSX''s MEDIA), press TRIANGLE for ACTIONS and choose PASTE. RIPDISC then asks once more and reads the disc with your PS2''s laser, writing it there.'
   : 'Tệp bộ nhớ sẽ mở ngay, ở MEDIA, với đĩa trong bộ nhớ tạm (ĐÃ TRÍCH XUẤT). Hãy tới ổ và thư mục nơi nó cần đặt (ổ nào cũng được: USB, HDD, MEDIA của SD2PSX), nhấn TAM GIÁC để mở THAO TÁC và chọn DÁN. RIPDISC sẽ hỏi thêm một lần rồi đọc đĩa bằng laser của PS2 và ghi nó vào đó.'
   RENAME THE GAME: ĐỔI TÊN TRÒ CHƠI
-  ? 'This game starts through Neutrino, and RIPPS2 found none: not at Settings'' path, on the game''s drive, on the memory cards or on any started drive. RIPPS2 carries Neutrino by rickgaiser (AFL-3.0), its newest build: install it once, where you pick, and every Neutrino game uses it from there.'
-  : 'Trò chơi này khởi động qua Neutrino, và RIPPS2 không tìm thấy bản nào: không ở đường dẫn trong Cài đặt, không trên ổ của trò chơi, không trên thẻ nhớ, cũng không trên ổ đã khởi động nào. RIPPS2 mang theo Neutrino của rickgaiser (AFL-3.0), bản dựng mới nhất: hãy cài nó một lần, ở nơi bạn chọn, và mọi trò chơi Neutrino sẽ dùng nó từ đó.'
   A PS1 disc's track list, for Ember: Danh sách bài của một đĩa PS1, cho Ember
   A PS1 game for POPSTARTER: Một trò chơi PS1 cho POPSTARTER
   A PS2 game: Một trò chơi PS2
@@ -1140,7 +1129,6 @@ strings:
   'All Games: %d games kept in %s, listed at boot before any drive answers': 'Tất cả trò chơi: %d trò chơi lưu trong %s, hiện khi khởi động trước khi ổ nào trả lời'
   'All Games: no master list yet; %s is written once the games are listed (Fast Cache on)': 'Tất cả trò chơi: chưa có danh sách chính; %s được ghi khi trò chơi đã hiện (Fast Cache bật)'
   CACHE SETTINGS: CÀI ĐẶT BỘ NHỚ ĐỆM
-  Copies the Neutrino RIPPS2 carries to a drive or a memory card. A Neutrino of your own is used as it is.: Sao chép Neutrino mà RIPPS2 mang theo vào một ổ hoặc thẻ nhớ. Neutrino của riêng bạn được dùng nguyên như vậy.
   DIAG.TXT, for a bug report: DIAG.TXT, để báo lỗi
   Drives, loading, launchers and homebrew: Ổ, tải, trình khởi chạy và homebrew
   ? Fast Cache shows each drive's last game list the moment the drive answers; Trust Cache keeps it until you press SELECT. Both on, with the settings on the memory card RIPPS2 starts from, is the quickest boot.
@@ -1162,13 +1150,10 @@ strings:
   The diagnostics could not be written to %s.: Không ghi được chẩn đoán vào %s.
   What each memory card starts at power on; install or repair BIBLE, PS2BBL set up to start RIPPS2.: Mỗi thẻ nhớ chạy gì khi bật máy; cài hoặc sửa BIBLE, PS2BBL được thiết lập để chạy RIPPS2.
   Where POPSTARTER and Ember are, and how PS1 games start.: POPSTARTER và Ember ở đâu, và trò chơi PS1 khởi động thế nào.
-  Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets.: Neutrino của bạn ở đâu, chế độ video của nó và các tham số mà mỗi lần chạy Neutrino nhận được.
   ? Writes what RIPPS2 noted about the pads, the drives, MMCE cards and the last launches to DIAG.TXT beside RIPPS2. Send it with a bug report.
   : Ghi những gì RIPPS2 ghi nhận về tay cầm, các ổ, thẻ MMCE và những lần chạy gần nhất vào DIAG.TXT cạnh RIPPS2. Gửi nó kèm báo lỗi.
   back to Cache: về Bộ nhớ đệm
   what boot reads first: khởi động đọc gì trước
-  ? This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer, or clear the path to use the one RIPPS2 carries.
-  : Neutrino này cũ hơn 1.3, bản không thể chạy trò chơi từ HDD APA. Hãy trỏ Chạy trò chơi > Neutrino tới Neutrino 1.3 hoặc mới hơn, hoặc xóa đường dẫn để dùng bản RIPPS2 mang theo.
   ', the sounds': ', âm thanh'
   ? 'Fast Boot is on. RIPPS2 boots from its own drive (%s): the settings%s and every list from its cache. The other drives start when you press SELECT on their page, or launch one of their games.'
   : 'Fast Boot đang bật. RIPPS2 khởi động từ ổ của chính nó (%s): cài đặt%s và mọi danh sách từ bộ nhớ đệm. Các ổ khác khởi động khi bạn nhấn SELECT trên trang của chúng hoặc chạy một trò chơi của chúng.'
@@ -1377,7 +1362,6 @@ strings:
   : 'Chưa có. Hồ sơ là một tệp văn bản đặt tên theo ID của tay cầm, như 2563_0575.pad: định dạng nằm trong kho của RIPPS2 (docs/plans/pad-spec.md).'
   On (fast): Bật (nhanh)
   'Pad profiles in %s:': 'Hồ sơ tay cầm trong %s:'
-  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (bản dựng %d) trên RiptOPL %s
   RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: RIPPS2 không biết thư mục của nó ở đâu nên không thể tìm PADS.
   could not be read: không đọc được
   About %d seconds left: Còn khoảng %d giây
@@ -1396,8 +1380,6 @@ strings:
   ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
   : Bật (nhanh) giữ âm thanh khởi động cạnh RIPPS2 trên thẻ nhớ mà nó khởi chạy, nhưng RIPPS2 không khởi chạy từ thẻ nhớ. Âm thanh khởi động phát như khi Bật.
   'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'Chưa có âm thanh khởi động để sao chép: Cài đặt âm thanh > Âm thanh BIOS sẽ trích âm thanh của máy này.'
-  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
-  : Đây là RIPPS2 lite, không mang theo PS2BBL nên không thể cài BIBLE. Bản RIPPS2.elf đầy đủ sẽ cài và sửa nó; trình khởi động đã cài vẫn khởi chạy RIPPS2 lite như cũ.
   '%d COPIED OUT': ĐÃ CHÉP RA %d
   '%d ITEM   %d MARKED   %s': '%d MỤC   %d ĐÃ ĐÁNH DẤU   %s'
   '%d ITEM   %d MARKED   %s   %s FREE': '%d MỤC   %d ĐÃ ĐÁNH DẤU   %s   %s TRỐNG'

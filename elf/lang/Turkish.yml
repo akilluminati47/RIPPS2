@@ -3,12 +3,16 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Turkish
 strings:
+  "This game starts through Neutrino, and RIPPS2 found none: not at Settings' path, on the game's drive, on the memory cards or on any started drive. Put Neutrino by rickgaiser (github.com/rickgaiser/neutrino) in a neutrino folder on the game's drive or a memory card, or point Game Launching > Neutrino at it.": "Bu oyun Neutrino ile başlar ve RIPPS2 hiçbirini bulamadı: ne Ayarlar'daki yolda, ne oyunun sürücüsünde, ne hafıza kartlarında, ne de başlatılmış herhangi bir sürücüde. rickgaiser'ın Neutrino'sunu (github.com/rickgaiser/neutrino) oyunun sürücüsünde veya bir hafıza kartında neutrino klasörüne koyun ya da Oyun Başlatma > Neutrino'yu ona yöneltin."
+  "Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets. Get Neutrino at github.com/rickgaiser/neutrino and put it in a neutrino folder on a drive or a memory card.": "Neutrino'nuzun nerede olduğu, video modu ve her Neutrino başlatmasının aldığı argümanlar. Neutrino'yu github.com/rickgaiser/neutrino adresinden alın ve bir sürücüde veya hafıza kartında neutrino klasörüne koyun."
+  "This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer.": "Bu Neutrino 1.3'ten eski, o da APA HDD'den oyun başlatamaz. Oyun Başlatma > Neutrino'yu Neutrino 1.3 veya daha yenisine yöneltin."
+  "with rickgaiser's Neutrino as its second game core,": "ikinci oyun çekirdeği olarak rickgaiser'ın Neutrino'suyla,"
+  "the second game core, used from your drive or memory card (AFL-3.0)": "ikinci oyun çekirdeği, sürücünüzden veya hafıza kartınızdan kullanılır (AFL-3.0)"
   "FILE NAME": "DOSYA ADI"
   "GAME LIST": "OYUN LİSTESİ"
   "%s in %s": "%s, %s içinde"
   "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "Yazma işlemleri kapalı, bu yüzden RIPPS2 bir oyunun bilgilerini kaydedemez veya adını değiştiremez. Açılsın mı?"
   "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "BIBLE, El Isra'nın PS2BBL'i üzerine kurulu; kart ve HDD sürümleri RIPPS2 için imzalı (GPL-3)"
-  "This is RIPPS2 lite, which carries no Neutrino. Put Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in a neutrino folder on a memory card or the game's drive, or use the full RIPPS2.elf, which installs it for you.": "Bu, Neutrino taşımayan RIPPS2 lite. Neutrino'yu (rickgaiser, github.com/rickgaiser/neutrino) bir hafıza kartında veya oyunun sürücüsünde neutrino klasörüne koyun ya da sizin için kuran tam RIPPS2.elf'i kullanın."
   "START %s": "%s BAŞLAT"
   "NETWORK": "AĞ"
   "%s did not answer. Is it connected?": "%s yanıt vermedi. Bağlı mı?"
@@ -485,11 +489,6 @@ strings:
   This file is too big to edit here (64 KB at most).: Bu dosya burada düzenlenemeyecek kadar büyük (en fazla 64 KB).
   VIDEO: VİDEO
   YOURS: SİZİN
-  MEMORY CARD %d  (about 600 KB): HAFIZA KARTI %d  (yaklaşık 600 KB)
-  'NEUTRINO: unpacking': 'NEUTRINO: açılıyor'
-  'NEUTRINO: writing %.60s': 'NEUTRINO: yazılıyor %.60s'
-  Neutrino could not be written to %s. Check its free space and that it is not write protected, then try again.: Neutrino %s konumuna yazılamadı. Boş alanını ve yazmaya karşı korumalı olmadığını kontrol edip yeniden deneyin.
-  THE GAME'S DRIVE  (%s/neutrino): OYUNUN SÜRÜCÜSÜ  (%s/neutrino)
   '%d / %d FILES': '%d / %d DOSYA'
   '%d FOLDERS AND CONTENTS': '%d KLASÖR VE İÇERİKLERİ'
   '%d FOLDERS, %d FOUND': '%d KLASÖR, %d BULUNDU'
@@ -770,14 +769,10 @@ strings:
   TOO MANY FILES IN THE PSU: PSU İÇİNDE ÇOK FAZLA DOSYA
   UNKNOWN CARD LAYOUT: BİLİNMEYEN KART DÜZENİ
   '%d sounds from %sAUDIO%s': '%d ses, kaynak: %sAUDIO%s'
-  '%s could not be written to %s. Check its free space and that it is not write protected.': '%s, %s konumuna yazılamadı. Boş alanını ve yazmaya karşı korumalı olmadığını kontrol edin.'
-  '%s is installed in %s.': '%s, %s içine kuruldu.'
   ', some files could not be used': ', bazı dosyalar kullanılamadı'
   AUDIO folder: AUDIO klasörü
   DRIVES: SÜRÜCÜLER
   MANAGE: YÖNET
-  MEMORY CARD 0  (about 600 KB): HAFIZA KARTI 0  (yaklaşık 600 KB)
-  MEMORY CARD 1  (about 600 KB): HAFIZA KARTI 1  (yaklaşık 600 KB)
   'MX4SIO: its driver would not load (code %d).': 'MX4SIO: sürücüsü yüklenmedi (kod %d).'
   'MX4SIO: off in Game Sources.': 'MX4SIO: Oyun Kaynakları''nda kapalı.'
   'MX4SIO: on in Game Sources; its driver has not been started yet.': 'MX4SIO: Oyun Kaynakları''nda açık; sürücüsü henüz başlatılmadı.'
@@ -900,7 +895,6 @@ strings:
   'Special thanks to all the YouTube love as well:': 'YouTube''daki tüm sevgiye de özel teşekkürler:'
   and its own look, launchers, file browser and save tools.: ve kendi görünümü, başlatıcıları, dosya tarayıcısı ve kayıt araçlarıyla.
   glad to help however you reach me.: bana nasıl ulaşırsanız ulaşın, yardım etmekten memnunum.
-  with rickgaiser's Neutrino inside as its second game core,: içinde ikinci oyun çekirdeği olarak rickgaiser'ın Neutrino'suyla,
   STARTING THE DRIVES: SÜRÜCÜLER BAŞLATILIYOR
   '%d games, on the started drives': '%d oyun, başlatılan sürücülerde'
   '%s: SOME FILES COULD NOT BE DELETED': '%s: BAZI DOSYALAR SİLİNEMEDİ'
@@ -964,7 +958,6 @@ strings:
   LOOKING FOR YOUR LAUNCHERS: BAŞLATICILARINIZ ARANIYOR
   The POPS files: POPS dosyaları
   '%s  MMCE card': '%s  MMCE kartı'
-  INSTALL RIPPS2'S NEUTRINO: RIPPS2'NİN NEUTRINO'SUNU KUR
   'Internal HDD (APA): %s free of %s': 'Dahili HDD (APA): %s boş, toplam %s'
   LAUNCHERS: BAŞLATICILAR
   LOOK FOR THEM: ONLARI ARA
@@ -978,7 +971,6 @@ strings:
   found where you keep them: onları tuttuğunuz yerde bulundu
   not found yet: henüz bulunamadı
   not on a started drive: başlatılmış bir sürücüde değil
-  only if you have none: yalnızca hiç yoksa
   starts every drive first: önce tüm sürücüleri başlatır
   BDM Devices: BDM Aygıtları
   Color Sweep: Renk Geçişi
@@ -1074,7 +1066,6 @@ strings:
   STARS SHOWN: YILDIZLAR GÖRÜNÜR
   Asking the SD2PSX for this game's memory card...: SD2PSX'ten bu oyunun hafıza kartı isteniyor...
   The SD2PSX is getting this game's memory card ready (%d s). The game starts when it is done; START starts it now.: SD2PSX bu oyunun hafıza kartını hazırlıyor (%d sn). Bitince oyun başlar; START şimdi başlatır.
-  the second game core, its newest build carried unmodified (AFL-3.0): ikinci oyun çekirdeği, en yeni sürümü değiştirilmeden taşınır (AFL-3.0)
   '%s could not be written to %s (%d of the sounds were). Is the drive full or write-protected?': '%s, %s konumuna yazılamadı (seslerden %d tanesi yazıldı). Sürücü dolu mu ya da yazmaya karşı korumalı mı?'
   '%s could not be written to %s (%d of the sounds were, and the card has %d KB free now). Is the card write-protected?': '%s, %s konumuna yazılamadı (seslerden %d tanesi yazıldı ve kartta şimdi %d KB boş alan var). Kart yazmaya karşı korumalı mı?'
   The folder %s could not be made. Is the drive full or write-protected? Nothing was written.: '%s klasörü oluşturulamadı. Sürücü dolu mu ya da yazmaya karşı korumalı mı? Hiçbir şey yazılmadı.'
@@ -1088,8 +1079,6 @@ strings:
   ? 'Memory Files opens now, on MEDIA, with the disc on its clipboard (RIPPED). Go to the drive and folder it should be in (any drive: USB, the HDD, the SD2PSX''s MEDIA), press TRIANGLE for ACTIONS and choose PASTE. RIPDISC then asks once more and reads the disc with your PS2''s laser, writing it there.'
   : 'Hafıza dosyaları şimdi MEDIA''da, disk panosundayken (ÇIKARILDI) açılır. Diskin gideceği sürücüye ve klasöre gidin (herhangi bir sürücü: USB, HDD, SD2PSX''in MEDIA''sı), İŞLEMLER için ÜÇGEN''e basın ve YAPIŞTIR''ı seçin. RIPDISC bir kez daha sorar ve diski PS2''nizin lazeriyle okuyup oraya yazar.'
   RENAME THE GAME: OYUNU YENİDEN ADLANDIR
-  ? 'This game starts through Neutrino, and RIPPS2 found none: not at Settings'' path, on the game''s drive, on the memory cards or on any started drive. RIPPS2 carries Neutrino by rickgaiser (AFL-3.0), its newest build: install it once, where you pick, and every Neutrino game uses it from there.'
-  : 'Bu oyun Neutrino üzerinden başlar ve RIPPS2 bir tane bulamadı: ne Ayarlar''daki yolda, ne oyunun sürücüsünde, ne hafıza kartlarında, ne de başlatılmış bir sürücüde. RIPPS2, rickgaiser''ın Neutrino''sunu taşır (AFL-3.0), en yeni sürümünü: onu bir kez, seçtiğiniz yere kurun; her Neutrino oyunu onu oradan kullanır.'
   A PS1 disc's track list, for Ember: Bir PS1 diskinin parça listesi, Ember için
   A PS1 game for POPSTARTER: POPSTARTER için bir PS1 oyunu
   A PS2 game: Bir PS2 oyunu
@@ -1140,7 +1129,6 @@ strings:
   'All Games: %d games kept in %s, listed at boot before any drive answers': 'Tüm Oyunlar: %d oyun %s içinde tutuluyor, açılışta herhangi bir sürücü yanıt vermeden listelenir'
   'All Games: no master list yet; %s is written once the games are listed (Fast Cache on)': 'Tüm Oyunlar: henüz ana liste yok; %s, oyunlar listelenince yazılır (Fast Cache açık)'
   CACHE SETTINGS: ÖNBELLEK AYARLARI
-  Copies the Neutrino RIPPS2 carries to a drive or a memory card. A Neutrino of your own is used as it is.: RIPPS2'nin taşıdığı Neutrino'yu bir sürücüye veya hafıza kartına kopyalar. Kendi Neutrino'nuz olduğu gibi kullanılır.
   DIAG.TXT, for a bug report: DIAG.TXT, hata bildirimi için
   Drives, loading, launchers and homebrew: Sürücüler, yükleme, başlatıcılar ve ev yapımı yazılımlar
   ? Fast Cache shows each drive's last game list the moment the drive answers; Trust Cache keeps it until you press SELECT. Both on, with the settings on the memory card RIPPS2 starts from, is the quickest boot.
@@ -1162,13 +1150,10 @@ strings:
   The diagnostics could not be written to %s.: Tanılama kaydı %s konumuna yazılamadı.
   What each memory card starts at power on; install or repair BIBLE, PS2BBL set up to start RIPPS2.: Her hafıza kartının açılışta başlattığı şey; BIBLE'ı, yani RIPPS2'yi başlatmak için ayarlanmış PS2BBL'yi kurun veya onarın.
   Where POPSTARTER and Ember are, and how PS1 games start.: POPSTARTER ve Ember'ın nerede olduğu ve PS1 oyunlarının nasıl başladığı.
-  Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets.: Neutrino'nuzun nerede olduğu, video modu ve her Neutrino başlatmasının aldığı argümanlar.
   ? Writes what RIPPS2 noted about the pads, the drives, MMCE cards and the last launches to DIAG.TXT beside RIPPS2. Send it with a bug report.
   : RIPPS2'nin kumandalar, sürücüler, MMCE kartları ve son başlatmalar hakkında not ettiklerini RIPPS2'nin yanındaki DIAG.TXT dosyasına yazar. Bir hata bildirimiyle birlikte gönderin.
   back to Cache: Önbellek'e geri dön
   what boot reads first: açılışın ilk okuduğu
-  ? This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer, or clear the path to use the one RIPPS2 carries.
-  : Bu Neutrino 1.3'ten eski, o da APA HDD'den oyun başlatamaz. Oyun Başlatma > Neutrino'yu Neutrino 1.3 veya daha yenisine yöneltin ya da RIPPS2'nin taşıdığını kullanmak için yolu temizleyin.
   ', the sounds': ', sesler'
   ? 'Fast Boot is on. RIPPS2 boots from its own drive (%s): the settings%s and every list from its cache. The other drives start when you press SELECT on their page, or launch one of their games.'
   : 'Fast Boot açık. RIPPS2 kendi sürücüsünden başlıyor (%s): ayarlar%s ve her liste kendi önbelleğinden. Diğer sürücüler, sayfalarında SELECT''e bastığında ya da oyunlarından birini başlattığında başlar.'
@@ -1377,7 +1362,6 @@ strings:
   : 'Henüz yok. Profil, kolun kimliğiyle adlandırılan bir metin dosyasıdır, örneğin 2563_0575.pad: biçim RIPPS2 deposunda (docs/plans/pad-spec.md).'
   On (fast): Açık (hızlı)
   'Pad profiles in %s:': '%s içindeki kol profilleri:'
-  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (sürüm %d), RiptOPL %s üzerinde
   RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: RIPPS2 klasörünün nerede olduğunu bilmiyor, bu yüzden PADS klasörüne bakamıyor.
   could not be read: okunamadı
   About %d seconds left: Yaklaşık %d saniye kaldı
@@ -1396,8 +1380,6 @@ strings:
   ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
   : Açık (hızlı), açılış sesini RIPPS2'nin başladığı hafıza kartında yanında tutar; RIPPS2 bir karttan başlamadı. Açılış sesi Açık gibi çalar.
   'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'Henüz kopyalanacak açılış sesi yok: Ses ayarları > BIOS sesleri bu konsolun seslerini çıkarır.'
-  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
-  : 'Bu RIPPS2 lite: PS2BBL taşımaz, bu yüzden BIBLE kuramaz. Tam RIPPS2.elf onu kurar ve onarır; zaten kurulu bir önyükleyici RIPPS2 lite''ı olduğu gibi başlatmaya devam eder.'
   '%d COPIED OUT': '%d DIŞARI KOPYALANDI'
   '%d ITEM   %d MARKED   %s': '%d ÖĞE   %d İŞARETLİ   %s'
   '%d ITEM   %d MARKED   %s   %s FREE': '%d ÖĞE   %d İŞARETLİ   %s   %s BOŞ'

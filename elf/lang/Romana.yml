@@ -3,12 +3,16 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Romana
 strings:
+  "This game starts through Neutrino, and RIPPS2 found none: not at Settings' path, on the game's drive, on the memory cards or on any started drive. Put Neutrino by rickgaiser (github.com/rickgaiser/neutrino) in a neutrino folder on the game's drive or a memory card, or point Game Launching > Neutrino at it.": "Acest joc pornește prin Neutrino, iar RIPPS2 nu a găsit niciunul: nici la calea din Setări, nici pe unitatea jocului, nici pe cardurile de memorie, nici pe vreo unitate pornită. Pune Neutrino de la rickgaiser (github.com/rickgaiser/neutrino) într-un dosar neutrino pe unitatea jocului sau pe un card de memorie, ori îndreaptă Lansarea jocurilor > Neutrino spre el."
+  "Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets. Get Neutrino at github.com/rickgaiser/neutrino and put it in a neutrino folder on a drive or a memory card.": "Unde este Neutrino-ul tău, modul său video și argumentele pe care le primește fiecare lansare Neutrino. Ia Neutrino de la github.com/rickgaiser/neutrino și pune-l într-un dosar neutrino pe o unitate sau un card de memorie."
+  "This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer.": "Acest Neutrino este mai vechi de 1.3, care nu poate porni jocuri de pe HDD-ul APA. Îndreaptă Lansarea jocurilor > Neutrino spre Neutrino 1.3 sau mai nou."
+  "with rickgaiser's Neutrino as its second game core,": "cu Neutrino de la rickgaiser ca al doilea nucleu de joc,"
+  "the second game core, used from your drive or memory card (AFL-3.0)": "al doilea nucleu de joc, folosit de pe unitatea sau cardul tău de memorie (AFL-3.0)"
   "FILE NAME": "NUME FIȘIER"
   "GAME LIST": "LISTA DE JOCURI"
   "%s in %s": "%s în %s"
   "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "Operațiile de scriere sunt oprite, așa că RIPPS2 nu poate salva detaliile unui joc sau să-l redenumească. Le pornești?"
   "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "BIBLE este construit pe PS2BBL-ul lui El Isra, cu versiunile pentru card și HDD semnate pentru RIPPS2 (GPL-3)"
-  "This is RIPPS2 lite, which carries no Neutrino. Put Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in a neutrino folder on a memory card or the game's drive, or use the full RIPPS2.elf, which installs it for you.": "Acesta este RIPPS2 lite, care nu conține Neutrino. Pune Neutrino (rickgaiser, github.com/rickgaiser/neutrino) într-un dosar neutrino pe un card de memorie sau pe unitatea jocului, ori folosește RIPPS2.elf complet, care îl instalează pentru tine."
   "START %s": "PORNEȘTE %s"
   "NETWORK": "REȚEA"
   "%s did not answer. Is it connected?": "%s nu a răspuns. Este conectat?"
@@ -485,11 +489,6 @@ strings:
   This file is too big to edit here (64 KB at most).: Acest fișier este prea mare pentru a fi editat aici (cel mult 64 KB).
   VIDEO: VIDEO
   YOURS: AL TĂU
-  MEMORY CARD %d  (about 600 KB): CARDUL DE MEMORIE %d  (aproximativ 600 KB)
-  'NEUTRINO: unpacking': 'NEUTRINO: dezarhivare'
-  'NEUTRINO: writing %.60s': 'NEUTRINO: se scrie %.60s'
-  Neutrino could not be written to %s. Check its free space and that it is not write protected, then try again.: Neutrino nu a putut fi scris în %s. Verifică spațiul liber și să nu fie protejat la scriere, apoi încearcă din nou.
-  THE GAME'S DRIVE  (%s/neutrino): UNITATEA JOCULUI  (%s/neutrino)
   '%d / %d FILES': '%d / %d FIȘIERE'
   '%d FOLDERS AND CONTENTS': '%d FOLDERE ȘI CONȚINUT'
   '%d FOLDERS, %d FOUND': '%d DOSARE, %d GĂSITE'
@@ -770,14 +769,10 @@ strings:
   TOO MANY FILES IN THE PSU: PREA MULTE FIȘIERE ÎN PSU
   UNKNOWN CARD LAYOUT: STRUCTURĂ DE CARD NECUNOSCUTĂ
   '%d sounds from %sAUDIO%s': '%d sunete din %sAUDIO%s'
-  '%s could not be written to %s. Check its free space and that it is not write protected.': '%s nu a putut fi scris în %s. Verifică spațiul liber și să nu fie protejat la scriere.'
-  '%s is installed in %s.': '%s este instalat în %s.'
   ', some files could not be used': ', unele fișiere nu au putut fi folosite'
   AUDIO folder: folderul AUDIO
   DRIVES: UNITĂȚI
   MANAGE: GESTIONEAZĂ
-  MEMORY CARD 0  (about 600 KB): CARDUL DE MEMORIE 0  (aproximativ 600 KB)
-  MEMORY CARD 1  (about 600 KB): CARDUL DE MEMORIE 1  (aproximativ 600 KB)
   'MX4SIO: its driver would not load (code %d).': 'MX4SIO: driverul nu s-a putut încărca (cod %d).'
   'MX4SIO: off in Game Sources.': 'MX4SIO: oprit în Surse de jocuri.'
   'MX4SIO: on in Game Sources; its driver has not been started yet.': 'MX4SIO: pornit în Surse de jocuri; driverul nu a fost încă pornit.'
@@ -900,7 +895,6 @@ strings:
   'Special thanks to all the YouTube love as well:': 'Mulțumiri speciale și pentru toată dragostea de pe YouTube:'
   and its own look, launchers, file browser and save tools.: și cu propriul aspect, lansatoare, explorator de fișiere și unelte pentru salvări.
   glad to help however you reach me.: bucuros să ajut, oricum m-ați găsi.
-  with rickgaiser's Neutrino inside as its second game core,: cu Neutrino de la rickgaiser înăuntru ca al doilea nucleu de joc,
   STARTING THE DRIVES: PORNESC UNITĂȚILE
   '%d games, on the started drives': '%d jocuri, pe unitățile pornite'
   '%s: SOME FILES COULD NOT BE DELETED': '%s: UNELE FIȘIERE NU AU PUTUT FI ȘTERSE'
@@ -964,7 +958,6 @@ strings:
   LOOKING FOR YOUR LAUNCHERS: CAUT LANSATOARELE TALE
   The POPS files: Fișierele POPS
   '%s  MMCE card': '%s  card MMCE'
-  INSTALL RIPPS2'S NEUTRINO: INSTALEAZĂ NEUTRINO DIN RIPPS2
   'Internal HDD (APA): %s free of %s': 'HDD intern (APA): %s liberi din %s'
   LAUNCHERS: LANSATOARE
   LOOK FOR THEM: CAUTĂ-LE
@@ -978,7 +971,6 @@ strings:
   found where you keep them: găsite unde le ții
   not found yet: încă negăsit
   not on a started drive: nu e pe o unitate pornită
-  only if you have none: doar dacă nu ai niciunul
   starts every drive first: pornește întâi toate unitățile
   BDM Devices: Dispozitive BDM
   Color Sweep: Trecere de culori
@@ -1072,7 +1064,6 @@ strings:
   STARS SHOWN: STELE AFIȘATE
   Asking the SD2PSX for this game's memory card...: Se cere SD2PSX-ului cardul de memorie al acestui joc...
   The SD2PSX is getting this game's memory card ready (%d s). The game starts when it is done; START starts it now.: SD2PSX pregătește cardul de memorie al acestui joc (%d s). Jocul pornește când e gata; START îl pornește acum.
-  the second game core, its newest build carried unmodified (AFL-3.0): al doilea nucleu de joc, cea mai nouă versiune a sa inclusă nemodificată (AFL-3.0)
   '%s could not be written to %s (%d of the sounds were). Is the drive full or write-protected?': '%s nu a putut fi scris în %s (%d dintre sunete au fost). Este unitatea plină sau protejată la scriere?'
   '%s could not be written to %s (%d of the sounds were, and the card has %d KB free now). Is the card write-protected?': '%s nu a putut fi scris în %s (%d dintre sunete au fost, iar cardul are acum %d KB liberi). Este cardul protejat la scriere?'
   The folder %s could not be made. Is the drive full or write-protected? Nothing was written.: Dosarul %s nu a putut fi creat. Este unitatea plină sau protejată la scriere? Nu s-a scris nimic.
@@ -1086,8 +1077,6 @@ strings:
   ? 'Memory Files opens now, on MEDIA, with the disc on its clipboard (RIPPED). Go to the drive and folder it should be in (any drive: USB, the HDD, the SD2PSX''s MEDIA), press TRIANGLE for ACTIONS and choose PASTE. RIPDISC then asks once more and reads the disc with your PS2''s laser, writing it there.'
   : 'Fișiere de memorie se deschide acum, pe MEDIA, cu discul în clipboard (EXTRAS). Mergi la unitatea și dosarul unde trebuie să ajungă (orice unitate: USB, HDD-ul, MEDIA de pe SD2PSX), apasă TRIUNGHI pentru ACȚIUNI și alege LIPEȘTE. RIPDISC mai întreabă o dată și citește discul cu laserul PS2-ului tău, scriindu-l acolo.'
   RENAME THE GAME: REDENUMEȘTE JOCUL
-  ? 'This game starts through Neutrino, and RIPPS2 found none: not at Settings'' path, on the game''s drive, on the memory cards or on any started drive. RIPPS2 carries Neutrino by rickgaiser (AFL-3.0), its newest build: install it once, where you pick, and every Neutrino game uses it from there.'
-  : 'Acest joc pornește prin Neutrino, iar RIPPS2 nu a găsit niciunul: nici la calea din Setări, nici pe unitatea jocului, nici pe cardurile de memorie, nici pe vreo unitate pornită. RIPPS2 include Neutrino de la rickgaiser (AFL-3.0), cea mai nouă versiune: instalează-l o dată, unde alegi, și fiecare joc Neutrino îl folosește de acolo.'
   A PS1 disc's track list, for Ember: Lista de piste a unui disc PS1, pentru Ember
   A PS1 game for POPSTARTER: Un joc PS1 pentru POPSTARTER
   A PS2 game: Un joc PS2
@@ -1138,7 +1127,6 @@ strings:
   'All Games: %d games kept in %s, listed at boot before any drive answers': 'Toate jocurile: %d jocuri păstrate în %s, listate la pornire înainte să răspundă vreo unitate'
   'All Games: no master list yet; %s is written once the games are listed (Fast Cache on)': 'Toate jocurile: încă nu există listă principală; %s se scrie după ce jocurile sunt listate (Fast Cache pornit)'
   CACHE SETTINGS: SETĂRI CACHE
-  Copies the Neutrino RIPPS2 carries to a drive or a memory card. A Neutrino of your own is used as it is.: Copiază Neutrino-ul inclus în RIPPS2 pe o unitate sau pe un card de memorie. Un Neutrino propriu este folosit așa cum este.
   DIAG.TXT, for a bug report: DIAG.TXT, pentru un raport de eroare
   Drives, loading, launchers and homebrew: Unități, încărcare, lansatoare și homebrew
   ? Fast Cache shows each drive's last game list the moment the drive answers; Trust Cache keeps it until you press SELECT. Both on, with the settings on the memory card RIPPS2 starts from, is the quickest boot.
@@ -1160,13 +1148,10 @@ strings:
   The diagnostics could not be written to %s.: Diagnosticele nu au putut fi scrise în %s.
   What each memory card starts at power on; install or repair BIBLE, PS2BBL set up to start RIPPS2.: Ce pornește fiecare card de memorie la aprindere; instalează sau repară BIBLE, PS2BBL setat să pornească RIPPS2.
   Where POPSTARTER and Ember are, and how PS1 games start.: Unde sunt POPSTARTER și Ember și cum pornesc jocurile PS1.
-  Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets.: Unde este Neutrino-ul tău, modul său video și argumentele pe care le primește fiecare lansare Neutrino.
   ? Writes what RIPPS2 noted about the pads, the drives, MMCE cards and the last launches to DIAG.TXT beside RIPPS2. Send it with a bug report.
   : Scrie ce a notat RIPPS2 despre controlere, unități, cardurile MMCE și ultimele lansări în DIAG.TXT, lângă RIPPS2. Trimite-l cu un raport de eroare.
   back to Cache: înapoi la Cache
   what boot reads first: ce citește întâi pornirea
-  ? This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer, or clear the path to use the one RIPPS2 carries.
-  : Acest Neutrino este mai vechi de 1.3, care nu poate porni jocuri de pe HDD-ul APA. Îndreaptă Lansarea jocurilor > Neutrino spre Neutrino 1.3 sau mai nou, sau golește calea ca să folosești cel inclus în RIPPS2.
   ', the sounds': ', sunetele'
   ? 'Fast Boot is on. RIPPS2 boots from its own drive (%s): the settings%s and every list from its cache. The other drives start when you press SELECT on their page, or launch one of their games.'
   : 'Fast Boot este activat. RIPPS2 pornește de pe propria unitate (%s): setările%s și fiecare listă din cache-ul ei. Celelalte unități pornesc când apeși SELECT pe pagina lor sau pornești unul dintre jocurile lor.'
@@ -1375,7 +1360,6 @@ strings:
   : 'Încă niciunul. Un profil este un fișier text numit după ID-ul controlerului, ca 2563_0575.pad: formatul e în depozitul RIPPS2 (docs/plans/pad-spec.md).'
   On (fast): Pornit (rapid)
   'Pad profiles in %s:': 'Profiluri de controler în %s:'
-  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (build %d) pe RiptOPL %s
   RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: RIPPS2 nu știe unde îi e dosarul, deci nu poate căuta PADS.
   could not be read: nu a putut fi citit
   About %d seconds left: Au mai rămas circa %d secunde
@@ -1394,8 +1378,6 @@ strings:
   ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
   : Pornit (rapid) ține sunetul de pornire lângă RIPPS2 pe cardul de memorie de pe care pornește, iar RIPPS2 nu a pornit de pe un card. Sunetul de pornire se aude ca la Pornit.
   'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'Încă nu există un sunet de pornire de copiat: Setări audio > Sunete BIOS le extrage pe cele ale acestei console.'
-  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
-  : Acesta este RIPPS2 lite, fără PS2BBL, deci nu poate instala BIBLE. RIPPS2.elf complet îl instalează și îl repară; un bootloader deja instalat continuă să pornească RIPPS2 lite așa cum e.
   '%d COPIED OUT': '%d COPIATE AFARĂ'
   '%d ITEM   %d MARKED   %s': '%d ELEMENT   %d MARCAT   %s'
   '%d ITEM   %d MARKED   %s   %s FREE': '%d ELEMENT   %d MARCAT   %s   %s LIBER'

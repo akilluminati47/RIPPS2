@@ -1,0 +1,539 @@
+diff --git a/Makefile b/Makefile
+index 55401ca..13126a9 100644
+--- a/Makefile
++++ b/Makefile
+@@ -204,14 +204,8 @@ AUDIO_OBJS =
+ # icon_sys.o + save_icn.o are the memory-card browser save icon for the settings folder.
+ # icon.sys names list.icn, copy.icn and del.icn; all three are the same artwork, so ONE blob is
+ # embedded and util.c writes it out under all three names (see saveIconName in src/util.c).
+-MISC_OBJS =	icon_sys.o save_icn.o ripps2_icn.o icon_sys_A.o icon_sys_J.o icon_sys_C.o bible_xlf.o bible_mx4sio_xlf.o bible_hdd_xlf.o conf_theme_OPL.o theme_coverflow.o theme_ripgrid.o ripps2_font.o ripps2_sleek.o ripps2_sleekbold.o ripps2_sleekcase.o ripps2_one.o ripps2roboto.o ripps2_condensed.o neutrino_tgz.o
+-# RIPPS2 build 126: make RIPPS2_LITE=1, the lite ELF: no PS2BBL (BIBLE) and no Neutrino carried (ripps2lite.c stands in;
+-# their installs say so). About 530 KB smaller
+-ifeq ($(RIPPS2_LITE),1)
+-  MISC_OBJS := $(filter-out bible_xlf.o bible_mx4sio_xlf.o bible_hdd_xlf.o neutrino_tgz.o,$(MISC_OBJS))
+-  FRONTEND_OBJS += ripps2lite.o
+-  EE_CFLAGS += -DRIPPS2_LITE
+-endif
++MISC_OBJS =	icon_sys.o save_icn.o ripps2_icn.o icon_sys_A.o icon_sys_J.o icon_sys_C.o bible_xlf.o bible_mx4sio_xlf.o bible_hdd_xlf.o conf_theme_OPL.o theme_coverflow.o theme_ripgrid.o ripps2_font.o ripps2_sleek.o ripps2_sleekbold.o ripps2_sleekcase.o ripps2_one.o ripps2roboto.o ripps2_condensed.o
++# RIPPS2 build 135: one ELF, BIBLE carried, Neutrino found (builds 126-134 also made a lite ELF)
+ 
+ TRANSLATIONS = Albanian Arabic Bulgarian Cebuano Croatian Czech Danish Dutch Filipino French \
+ 	Galician German Greek Hungarian Indonesian Italian Japanese Korean Laotian Persian Polish Portuguese \
+@@ -1307,10 +1301,6 @@ $(EE_ASM_DIR)ripps2_sleekbold.c: misc/ripps2_sleekbold.ttf | $(EE_ASM_DIR)
+ $(EE_ASM_DIR)ripps2_sleekcase.c: misc/ripps2_sleekcase.ttf | $(EE_ASM_DIR)
+ 	$(BIN2C) $< $@ $(*F)_raw
+ 
+-# RIPPS2 build 77: Neutrino 1.8.0 (rickgaiser, AFL-3.0) as a gzip'd tar, copied in by build.sh
+-$(EE_ASM_DIR)neutrino_tgz.c: misc/neutrino.tar.gz | $(EE_ASM_DIR)
+-	$(BIN2C) $< $@ neutrino_tgz
+-
+ # RIPPS2 build 114: one variable Roboto Condensed (weights 400 to 700) for RIPFLOW and Settings, copied in by RIPPS2's
+ # build.sh (it was build 70's Roboto Condensed and Bold Condensed, two files)
+ $(EE_ASM_DIR)ripps2roboto.c: misc/ripps2roboto.ttf | $(EE_ASM_DIR)
+diff --git a/include/ripps2.h b/include/ripps2.h
+index a6c09ef..13d3de5 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -291,10 +291,9 @@ int ripps2EditMetadata(config_set_t *config, const char *gameName, int canRename
+                                                                                    // build 115: 2 RENAME, 3 RENAME with values set
+ 
+ void ripps2HddManager(void); // ripps2hdd.c
+-int ripps2NeutrinoInstallTo(const char *dir); // build 80: the carried Neutrino into dir ("mc0:/neutrino"...); 1 when complete
+ void ripps2StatusFromCache(void); // build 115: STATUS from Cache, whose CACHE SETTINGS goes back (they never stack)
+ void ripps2Status(void);                    // ripps2status.c (build 80): the main menu's STATUS page, RIPPS2's homebrew
+-int ripps2NeutrinoOffer(const char *activePrefix, char *out, int outSize); // ripps2ember.c (build 77): install the Neutrino RIPPS2 carries, where the user picks
++void ripps2NeutrinoMissing(void); // ripps2ember.c (build 135): no Neutrino found, where to put one (build 77-134 installed the carried one)
+ void ripps2ArtDownload(void); // ripps2art.c (build 73): covers for the games without one, over HTTPS
+ void ripps2Achievements(void); // ripps2ra.c: SpiritofRA, the main menu's ACHIEVEMENTS page
+ void ripps2ShowAbout(const char *version, const char *build); // ripps2about.c: the scrolling credits
+diff --git a/src/gui.c b/src/gui.c
+index 779792f..03d4904 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -383,11 +383,7 @@ static const char *guiRipps2Version(void)
+     if ((tag = strstr(opl, "-RIPPS2")) != NULL)
+         *tag = '\0';
+     if (RIPPS2_BUILD > 0)
+-#ifdef RIPPS2_LITE // build 126: the lite ELF says so
+-        snprintf(line, sizeof(line), _t("RIPPS2 %s lite (build %d) on RiptOPL %s"), RIPPS2_VERSION, RIPPS2_BUILD, opl);
+-#else
+         snprintf(line, sizeof(line), _t("RIPPS2 %s (build %d) on RiptOPL %s"), RIPPS2_VERSION, RIPPS2_BUILD, opl);
+-#endif
+     else
+         snprintf(line, sizeof(line), "RiptOPL %s", opl);
+     return line;
+diff --git a/src/ripps2about.c b/src/ripps2about.c
+index 03d8ac0..9f4c20d 100644
+--- a/src/ripps2about.c
++++ b/src/ripps2about.c
+@@ -53,7 +53,7 @@ static const ab_row_t abRows[] = {
+     {'H', "RIPPS2"},
+     {'T', abRelease},
+     {'S', N_("A teardown and rebuild of RiptOPL, the Open PS2 Loader fork,")},
+-    {'S', N_("with rickgaiser's Neutrino inside as its second game core,")},
++    {'S', N_("with rickgaiser's Neutrino as its second game core,")},
+     {'S', N_("and its own look, launchers, file browser and save tools.")},
+     {'T', abVersion},
+     {'G', NULL},
+@@ -155,7 +155,7 @@ static const ab_row_t abRows[] = {
+     {'T', N_("RiptOPL by NathanNeurotic")},
+     {'S', N_("and the Open PS2 Loader team, whose credits follow")},
+     {'T', N_("Neutrino by rickgaiser")},
+-    {'S', N_("the second game core, its newest build carried unmodified (AFL-3.0)")},
++    {'S', N_("the second game core, used from your drive or memory card (AFL-3.0)")},
+     {'S', N_("github.com/rickgaiser/neutrino")},
+     {'G', NULL},
+     {'H', N_("OPEN PS2 LOADER DEVELOPERS")},
+diff --git a/src/ripps2boot.c b/src/ripps2boot.c
+index 8e8f662..012cd68 100644
+--- a/src/ripps2boot.c
++++ b/src/ripps2boot.c
+@@ -1921,13 +1921,6 @@ static void blRestoreCard(int port)
+ void ripps2BibleManage(void)
+ {
+     ripps2BootLockForget(); // build 134: an install or a restore can change what starts
+-#ifdef RIPPS2_LITE
+-    // build 126: the lite ELF carries no PS2BBL, so BIBLE is the full RIPPS2.elf's to install
+-    guiMsgBox(_t("This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and "
+-                 "repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is."),
+-              0, NULL);
+-    return;
+-#endif
+     char msg[900], what[2][64];
+     int boot, removed, port;
+ 
+diff --git a/src/ripps2ember.c b/src/ripps2ember.c
+index 02353ce..bb58955 100644
+--- a/src/ripps2ember.c
++++ b/src/ripps2ember.c
+@@ -5,204 +5,27 @@
+   the drive's EMBER folder, POPSTARTER at the path in Settings, in the drive's POPS, APPS and top folders, as a
+   game's own POPS/XX.<name>.ELF, or on the memory cards; with none, the launch names the path it looked at.
+   Both stay credited in About with where to get them.
++
++  build 135 (the user, 11/02: "remove the neutrino injection so its more like launcHer style handshake/detection only ...
++  keep their credit etc."): Neutrino is no longer carried either. RIPPS2 finds the user's own where it always looked (the
++  path in Settings, the game's drive, the memory cards, any started drive); with none, a launch says where to put it.
+ */
+ 
+ #include <stdio.h>
+ #include <string.h>
+-#include <fcntl.h>
+-#include <unistd.h>
+-#include <zlib.h>
+-#include <sys/stat.h>
+-#include <dirent.h>
+-#include <malloc.h>
+-#include <stdlib.h>
+ 
+ #include "include/opl.h"
+ #include "include/ioman.h"
+ #include "include/ripps2.h"
+-#include "include/gui.h"   // build 77: guiMsgBox, guiIsActive, guiRenderTextScreen (Neutrino)
+-#include "include/sound.h" // SFX_MESSAGE, SFX_ERROR
++#include "include/gui.h"   // build 77: guiMsgBox, guiIsActive
++#include "include/sound.h" // SFX_MESSAGE
+ #include "include/ripps2tr.h" // build 104: _t, RIPPS2's words in the chosen language
+ 
+-/*
+-  RIPPS2 build 77: Neutrino on board.
+-
+-  Neutrino (rickgaiser, AFL-3.0; build 115: its development build v1.8.0-61-g7be8de2) rides inside RIPPS2.ELF as a gzip'd tar of its release
+-  folder (neutrino.elf, config/, modules/, its README, version and licence; the PC-side udpfs_server
+-  stays out). A Neutrino launch that finds no install of the user's own (the path in Settings, the
+-  game's drive, the memory cards) asks where to put this one -- the game's drive or a memory card --
+-  writes it there and goes on. config/system.toml goes last: the launcher counts a folder with it as
+-  complete, so a write cut short is never taken for an install.
+-*/
+-
+-
+-extern void *neutrino_tgz; // misc/neutrino.tar.gz: elf/neutrino/neutrino-1.8.0-61-g7be8de2.tar.gz (build 115)
+-extern int size_neutrino_tgz;
+-
+-#define NEUTRINO_TAR_SIZE 573440 // the tar the build carries, as packed (elf/neutrino/README.md; build 115: v1.8.0-61-g7be8de2)
+-#define NEUTRINO_LAST     "config/system.toml"
+-
+-static void ntMkdirs(const char *dir)
+-{
+-    char path[160];
+-    int i, n = snprintf(path, sizeof(path), "%s", dir);
+-    for (i = 0; i < n; i++) {
+-        if (path[i] == '/' && i > 0 && path[i - 1] != ':') {
+-            path[i] = '\0';
+-            mkdir(path, 0777);
+-            path[i] = '/';
+-        }
+-    }
+-    mkdir(path, 0777);
+-}
+-
+-static unsigned int ntOctal(const unsigned char *p, int len)
+-{
+-    unsigned int v = 0;
+-    while (len-- > 0 && *p == ' ')
+-        p++;
+-    for (; len > 0 && *p >= '0' && *p <= '7'; p++, len--)
+-        v = v * 8 + (*p - '0');
+-    return v;
+-}
+-
+-// One pass over the tar: every file but NEUTRINO_LAST (last == 0), or only it (last == 1)
+-static int ntWrite(const unsigned char *tar, const char *dir, int last, int *written)
+-{
+-    unsigned int at = 0;
+-    char name[256], path[320], status[96];
+-    while (at + 512 <= NEUTRINO_TAR_SIZE && tar[at] != 0) {
+-        const unsigned char *h = tar + at;
+-        unsigned int size = ntOctal(h + 124, 12);
+-        char type = (char)h[156];
+-        if (h[345])
+-            snprintf(name, sizeof(name), "%.155s/%.100s", (const char *)h + 345, (const char *)h);
+-        else
+-            snprintf(name, sizeof(name), "%.100s", (const char *)h);
+-        at += 512;
+-        if (at + size > NEUTRINO_TAR_SIZE)
+-            return 0;
+-        if ((type == '0' || type == '\0') && (!strcmp(name, NEUTRINO_LAST)) == last) {
+-            char *slash;
+-            snprintf(path, sizeof(path), "%s/%s", dir, name);
+-            if ((slash = strrchr(path, '/')) != NULL) {
+-                *slash = '\0';
+-                ntMkdirs(path);
+-                *slash = '/';
+-            }
+-            snprintf(status, sizeof(status), _t("NEUTRINO: writing %.60s"), name);
+-            guiRenderTextScreen(status);
+-            int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+-            if (fd < 0 || write(fd, tar + at, size) != (int)size) {
+-                if (fd >= 0)
+-                    close(fd);
+-                LOG("NEUTRINO: cannot write %s\n", path);
+-                return 0;
+-            }
+-            close(fd);
+-            (*written)++;
+-        }
+-        at += (size + 511) & ~511u;
+-    }
+-    return 1;
+-}
+-
+-// dir: "mc0:/neutrino", "mass0:/neutrino"... 1 when every file is there
+-static int ripps2NeutrinoUnpack(const char *dir)
++// build 135: no Neutrino anywhere RIPPS2 looks: where to put one (nothing is installed; the launch stops)
++void ripps2NeutrinoMissing(void)
+ {
+-    unsigned char *tar = memalign(64, NEUTRINO_TAR_SIZE);
+-    z_stream zs;
+-    int ok = 0, written = 0;
+-
+-    if (tar == NULL)
+-        return 0;
+-    memset(&zs, 0, sizeof(zs));
+-    zs.next_in = (unsigned char *)&neutrino_tgz;
+-    zs.avail_in = size_neutrino_tgz;
+-    zs.next_out = tar;
+-    zs.avail_out = NEUTRINO_TAR_SIZE;
+-    guiRenderTextScreen(_t("NEUTRINO: unpacking"));
+-    if (inflateInit2(&zs, 15 + 16) == Z_OK) {
+-        ok = inflate(&zs, Z_FINISH) == Z_STREAM_END && zs.total_out == NEUTRINO_TAR_SIZE;
+-        inflateEnd(&zs);
+-    }
+-    if (ok) {
+-        ntMkdirs(dir);
+-        ok = ntWrite(tar, dir, 0, &written) && ntWrite(tar, dir, 1, &written);
+-        if (ok) // build 126: on a memory card, an icon, or the browser calls the folder corrupted data
+-            ripps2CardFolderIconNamed(dir, "NEUTRINO");
+-    }
+-    free(tar);
+-    LOG("NEUTRINO: %s %s (%d files)\n", ok ? "installed in" : "install failed in", dir, written);
+-    return ok;
+-}
+-
+-// build 80: Status installs it where the user picks, outside a launch
+-int ripps2NeutrinoInstallTo(const char *dir)
+-{
+-#ifdef RIPPS2_LITE
+-    (void)dir;
+-    guiMsgBox(_t("This is RIPPS2 lite, which carries no Neutrino. Put Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in a neutrino folder on a memory card or the game's drive, or use the full RIPPS2.elf, which installs it for you."), 0, NULL); // build 126: the lite ELF carries none
+-    return 0;
+-#else
+-    return ripps2NeutrinoUnpack(dir);
+-#endif
+-}
+-
+-// No Neutrino anywhere RIPPS2 looks: offer the one it carries, where the user picks. out gets the
+-// installed neutrino.elf. 0 when declined, impossible (no menu, autolaunch) or the write failed.
+-int ripps2NeutrinoOffer(const char *activePrefix, char *out, int outSize)
+-{
+-    char root[32] = "", labels[3][72], dirs[3][48], msg[400];
+-    const char *list[3];
+-    int n = 0, pick, i;
+-    DIR *d;
+-
+     if (!guiIsActive())
+-        return 0;
+-#ifdef RIPPS2_LITE
+-    snprintf(msg, sizeof(msg), "%s", _t("This is RIPPS2 lite, which carries no Neutrino. Put Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in a neutrino folder on a memory card or the game's drive, or use the full RIPPS2.elf, which installs it for you.")); // build 126: the lite ELF offers none
+-    guiMsgBoxSound(SFX_MESSAGE);
+-    guiMsgBox(msg, 0, NULL);
+-    return 0;
+-#endif
+-    // the game's drive, when it is one RIPPS2 can write (not a network share)
+-    if (activePrefix != NULL) {
+-        const char *colon = strchr(activePrefix, ':');
+-        if (colon != NULL && colon - activePrefix < (int)sizeof(root) - 1)
+-            snprintf(root, sizeof(root), "%.*s", (int)(colon - activePrefix + 1), activePrefix);
+-    }
+-    if (root[0] && strncmp(root, "mc", 2) && strncmp(root, "smb", 3) && strncmp(root, "udp", 3) && strncmp(root, "http", 4)) {
+-        snprintf(dirs[n], sizeof(dirs[n]), "%s/neutrino", root);
+-        snprintf(labels[n], sizeof(labels[n]), _t("THE GAME'S DRIVE  (%s/neutrino)"), root);
+-        n++;
+-    }
+-    for (i = 0; i < 2; i++) {
+-        snprintf(dirs[n], sizeof(dirs[n]), "mc%d:/neutrino", i);
+-        if ((d = opendir(i ? "mc1:/" : "mc0:/")) == NULL)
+-            continue;
+-        closedir(d);
+-        snprintf(labels[n], sizeof(labels[n]), _t("MEMORY CARD %d  (about 600 KB)"), i);
+-        n++;
+-    }
+-    if (n == 0)
+-        return 0;
+-    snprintf(msg, sizeof(msg),
+-             _t("This game starts through Neutrino, and RIPPS2 found none: not at Settings' path, on the game's drive, on the memory cards "
+-             "or on any started drive. RIPPS2 carries Neutrino by rickgaiser (AFL-3.0), its newest build: install it once, where you pick, and every "
+-             "Neutrino game uses it from there."));
++        return;
+     guiMsgBoxSound(SFX_MESSAGE);
+-    if (guiMsgBox(msg, 1, NULL) != 1)
+-        return 0;
+-    for (i = 0; i < n; i++)
+-        list[i] = labels[i];
+-    if ((pick = ripps2PickList(list, n)) < 0)
+-        return 0;
+-    if (!ripps2NeutrinoUnpack(dirs[pick])) {
+-        guiMsgBoxSound(SFX_ERROR);
+-        snprintf(msg, sizeof(msg), _t("Neutrino could not be written to %s. Check its free space and that it is not write protected, then try again."), dirs[pick]);
+-        guiMsgBox(msg, 0, NULL);
+-        return 0;
+-    }
+-    return snprintf(out, outSize, "%s/neutrino.elf", dirs[pick]) < outSize;
++    guiMsgBox(_t("This game starts through Neutrino, and RIPPS2 found none: not at Settings' path, on the game's drive, on the memory cards or on any started drive. Put Neutrino by rickgaiser (github.com/rickgaiser/neutrino) in a neutrino folder on the game's drive or a memory card, or point Game Launching > Neutrino at it."), 0, NULL);
+ }
+diff --git a/src/ripps2lite.c b/src/ripps2lite.c
+deleted file mode 100644
+index 885a5ef..0000000
+--- a/src/ripps2lite.c
++++ /dev/null
+@@ -1,21 +0,0 @@
+-/*
+-  ripps2lite.c the lite ELF's stand-ins (RIPPS2 build 126)
+-
+-  Copyright 2026, RIPPS2 contributors
+-  Licenced under Academic Free License version 3.0
+-  Review OpenUsbLd README & LICENSE files for further details.
+-
+-  The user (10/31): "Drop neutrino injection and bbl injection gracefully for lite elf". make RIPPS2_LITE=1 builds RIPPS2
+-  without the programs it carries as data: PS2BBL 1.2.0 for BIBLE (its memory card, MX4SIO and HDD builds) and Neutrino.
+-  Their symbols are here, empty, so the code that installs them builds unchanged; each install says the lite ELF does not
+-  carry it (RIPPS2_LITE in ripps2boot.c, ripps2ember.c and ripps2status.c) and never writes anything.
+-*/
+-
+-unsigned char bible_xlf[1];
+-unsigned int size_bible_xlf = 0;
+-unsigned char bible_mx4sio_xlf[1];
+-unsigned int size_bible_mx4sio_xlf = 0;
+-unsigned char bible_hdd_xlf[1];
+-unsigned int size_bible_hdd_xlf = 0;
+-unsigned char neutrino_tgz[1];
+-int size_neutrino_tgz = 0;
+diff --git a/src/ripps2status.c b/src/ripps2status.c
+index 66bee74..fbeafb8 100644
+--- a/src/ripps2status.c
++++ b/src/ripps2status.c
+@@ -6,7 +6,7 @@
+   RIPPS2 build 114 (the user: "status page awareness ... a spot to display more about the drives too and space etc
+   before the homebrew list"): DRIVES comes first, every drive RIPPS2 sees with the space it says it has, and START EVERY
+   DRIVE when they are not all up; LAUNCHERS shows where SEANCE (ripps2seance.c) found each one RIPPS2 does not carry,
+-  with LOOK FOR THEM. Neutrino's own copy is offered as the one to install only when there is none.
++  with LOOK FOR THEM. Build 135: RIPPS2 carries no Neutrino, so INSTALL RIPPS2'S NEUTRINO went.
+ 
+   RIPPS2 build 80: STATUS (main menu, where ACHIEVEMENTS was; that page moved to Settings). The homebrew
+   RIPPS2 launches, each under its own name: where it is installed now, a way to install the copy RIPPS2
+@@ -14,10 +14,10 @@
+   looks), and the settings for it that live elsewhere in the menus, gathered here so nobody has to know
+   which page holds what.
+ 
+-    NEUTRINO            rickgaiser, AFL-3.0 (elf/neutrino), carried (build 115: v1.8.0-61-g7be8de2)
++    NEUTRINO            rickgaiser, AFL-3.0, found (carried builds 77-134)
+     POPSTARTER          krHACKen (elf/popstarter), found
+     EMBER               Gageformer (elf/ember), found
+-    BIBLE               PS2BBL 1.2.0 set up for RIPPS2 (elf/bible), carried
++    BIBLE               PS2BBL set up for RIPPS2 (elf/bible), carried
+ 
+   The look is the ACHIEVEMENTS page's: gold names, soft status lines, a lit bar on the chosen row.
+ */
+@@ -71,7 +71,6 @@
+ enum { ROW_HEAD = 0, ROW_STATUS, ROW_ACTION };
+ enum {
+     ACT_NONE = 0,
+-    ACT_NT_INSTALL,
+     ACT_NT_SETTINGS,
+     ACT_POPS_SETTINGS,
+     ACT_POPS_NET,
+@@ -121,15 +120,6 @@ static int stExists(const char *path)
+     return 1;
+ }
+ 
+-static int stDriveThere(const char *root) // "mass0:/", "mc0:/"
+-{
+-    DIR *d = opendir(root);
+-    if (d == NULL)
+-        return 0;
+-    closedir(d);
+-    return 1;
+-}
+-
+ // "12.3 GB" from 512-byte sectors
+ static void stSize(u32 sectors, char *out, int size)
+ {
+@@ -294,7 +284,7 @@ static void stScan(void)
+         _t("Writes what RIPPS2 noted about the pads, the drives, MMCE cards and the last launches to DIAG.TXT beside RIPPS2. "
+            "Send it with a bug report.");
+ 
+-    // LAUNCHERS (build 114): where SEANCE found each, the one RIPPS2 carries (Neutrino) offered only when there is none
++    // LAUNCHERS (build 114): where SEANCE found each
+     stAdd(ROW_HEAD, ACT_NONE, _t("LAUNCHERS"), _t("found where you keep them"));
+     {
+         const char *p[4] = {NULL, "mass0:/neutrino/neutrino.elf", "mc0:/neutrino/neutrino.elf", "mc1:/neutrino/neutrino.elf"};
+@@ -302,7 +292,7 @@ static void stScan(void)
+             snprintf(custom, sizeof(custom), "%s", gNeutrinoPath);
+             p[0] = custom;
+         }
+-        stLauncher(SEANCE_NEUTRINO, "Neutrino", p, 4); // build 115: the carried one is a development build of 1.8
++        stLauncher(SEANCE_NEUTRINO, "Neutrino", p, 4);
+     }
+     {
+         const char *p[4] = {gPopstarterPath, "mass0:/POPS/POPSTARTER.ELF", "mc0:/POPS/POPSTARTER.ELF", "mc1:/POPS/POPSTARTER.ELF"};
+@@ -322,10 +312,9 @@ static void stScan(void)
+     }
+     stAdd(ROW_ACTION, ACT_SEANCE_SEARCH, _t("LOOK FOR THEM"), ripps2DrivesStarted() ? _t("every started drive") : _t("starts every drive first"))->hint =
+         _t("Searches the drives for POPSTARTER, the POPS files, Ember, Ember's BIOS and Neutrino, and remembers where each one is.");
+-    stAdd(ROW_ACTION, ACT_NT_INSTALL, _t("INSTALL RIPPS2'S NEUTRINO"), _t("only if you have none"))->hint =
+-        _t("Copies the Neutrino RIPPS2 carries to a drive or a memory card. A Neutrino of your own is used as it is.");
+     stAdd(ROW_ACTION, ACT_NT_SETTINGS, _t("NEUTRINO SETTINGS"), _t("path, video, arguments"))->hint =
+-        _t("Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets.");
++        _t("Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets. Get Neutrino at "
++           "github.com/rickgaiser/neutrino and put it in a neutrino folder on a drive or a memory card.");
+     stAdd(ROW_ACTION, ACT_POPS_SETTINGS, _t("PS1 SETTINGS"), _t("POPSTARTER and Ember"))->hint =
+         _t("Where POPSTARTER and Ember are, and how PS1 games start.");
+     stAdd(ROW_ACTION, ACT_POPS_NET, _t("POPSTARTER NETWORK"), _t("its own IP and SMB files"))->hint =
+@@ -423,46 +412,6 @@ static void stHint(int icon, const char *text, int *x, int y)
+     *x = ripps2HintText(*x, y, text, ST_SOFT) + 18;
+ }
+ 
+-static void stTell(int ok, const char *what, const char *where)
+-{
+-    char msg[200];
+-    guiMsgBoxSound(ok ? SFX_MESSAGE : SFX_ERROR);
+-    if (ok)
+-        snprintf(msg, sizeof(msg), _t("%s is installed in %s."), what, where);
+-    else
+-        snprintf(msg, sizeof(msg), _t("%s could not be written to %s. Check its free space and that it is not write protected."), what, where);
+-    guiMsgBox(msg, 0, NULL);
+-}
+-
+-static void stInstallNeutrino(void)
+-{
+-    const char *labels[3], *dirs[3];
+-    int n = 0, pick;
+-    if (stDriveThere("mass0:/")) {
+-        static char massLabel[48]; // build 99: the drive by its driver, not "USB" whatever it is
+-        const char *name = bdmSlotDriveName(0);
+-        snprintf(massLabel, sizeof(massLabel), "%s  (mass0:/neutrino)", name != NULL ? name : _t("DRIVE"));
+-        labels[n] = massLabel;
+-        dirs[n++] = "mass0:/neutrino";
+-    }
+-    if (stDriveThere("mc0:/")) {
+-        labels[n] = _t("MEMORY CARD 0  (about 600 KB)");
+-        dirs[n++] = "mc0:/neutrino";
+-    }
+-    if (stDriveThere("mc1:/")) {
+-        labels[n] = _t("MEMORY CARD 1  (about 600 KB)");
+-        dirs[n++] = "mc1:/neutrino";
+-    }
+-    if (n == 0) {
+-        guiMsgBoxSound(SFX_ERROR);
+-        guiMsgBox("There is no drive (mass0:) or memory card to install Neutrino on.", 0, NULL);
+-        return;
+-    }
+-    if ((pick = ripps2PickList(labels, n)) < 0)
+-        return;
+-    stTell(ripps2NeutrinoInstallTo(dirs[pick]), "Neutrino", dirs[pick]);
+-}
+-
+ void ripps2Status(void)
+ {
+     int openKey = gSelectButton == KEY_CIRCLE ? KEY_CIRCLE : KEY_CROSS, backKey = gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE;
+@@ -609,10 +558,6 @@ void ripps2Status(void)
+                         rescan = 1;
+                     }
+                     break;
+-                case ACT_NT_INSTALL:
+-                    stInstallNeutrino();
+-                    rescan = 1;
+-                    break;
+                 case ACT_NT_SETTINGS:
+                     guiShowNeutrinoDefaults();
+                     changed = rescan = 1;
+diff --git a/src/supportbase.c b/src/supportbase.c
+index ebf37a4..3a5edd7 100644
+--- a/src/supportbase.c
++++ b/src/supportbase.c
+@@ -34,7 +34,7 @@
+ #include <fcntl.h>
+ #include "include/metadb.h" // RIPPS2: the metadata database
+ #include <delaythread.h>    // RIPPS2 build 109: sbPadBreath
+-#include "include/ripps2.h" // RIPPS2 build 77: ripps2NeutrinoOffer
++#include "include/ripps2.h" // RIPPS2 build 135: ripps2NeutrinoMissing
+ 
+ #define NEWLIB_PORT_AWARE
+ #include <fileXio_rpc.h> // fileXioMount("iso:", ***), fileXioUmount("iso:")
+@@ -2537,7 +2537,6 @@ const char *sbResolveNeutrinoPath(const char *activePrefix)
+ 
+     {
+         // RIPPS2 build 114: SEANCE, where a search or an earlier launch found a whole install; none known: the search
+-        // first, so RIPPS2's own copy is offered only when there is no Neutrino on any started drive
+         static char found[320];
+         if (seanceHook != NULL && seanceHook(SEANCE_NEUTRINO, SEANCE_MODE_LOOKUP, activePrefix, found, sizeof(found)) &&
+             sbNeutrinoInstallComplete(found))
+@@ -2547,14 +2546,8 @@ const char *sbResolveNeutrinoPath(const char *activePrefix)
+             return sbNeutrinoResolved(found);
+     }
+ 
+-    {
+-        // RIPPS2 build 77: none anywhere -- offer the Neutrino RIPPS2 carries, where the user picks
+-        static char installed[96];
+-        if (ripps2NeutrinoOffer(activePrefix, installed, sizeof(installed)) && sbNeutrinoInstallComplete(installed))
+-            return sbNeutrinoResolved(installed);
+-    }
+-
+     LOG("[NEUTRINO] no complete install found (custom -> game device -> mc0/mc1)\n");
++    ripps2NeutrinoMissing(); // RIPPS2 build 135: where to put one (builds 77-134 installed the copy RIPPS2 carried)
+     return NULL;
+ }
+ 
+diff --git a/src/system.c b/src/system.c
+index a82a29d..f62b482 100644
+--- a/src/system.c
++++ b/src/system.c
+@@ -2264,7 +2264,7 @@ int sysNeutrinoPreflight(const char *driver, const char *neutrinoPath, int neutr
+     sysNeutrinoReadFlags(neutrinoPath);
+     if (!strcmp(deviceName, "apa") && !sysNeutrinoTakes(neutrinoPath, NF_BSDFS)) {
+         guiMsgBoxSound(SFX_ERROR);
+-        guiMsgBox(_t("This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer, or clear the path to use the one RIPPS2 carries."), 0, NULL);
++        guiMsgBox(_t("This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer."), 0, NULL);
+         return -1;
+     }
+     if (!strcmp(deviceName, "unsupported")) {

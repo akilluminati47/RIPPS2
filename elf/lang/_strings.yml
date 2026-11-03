@@ -443,9 +443,6 @@ strings:
 - en: RIPPS2 %s (build %d) on RiptOPL %s
   in:
   - gui.c
-- en: RIPPS2 %s lite (build %d) on RiptOPL %s
-  in:
-  - gui.c
 - en: RIPPS2 cannot tell where its folder is, so it cannot look for PADS.
   in:
   - gui.c
@@ -942,7 +939,7 @@ strings:
 - en: 'the save tool reference: PSU export and import, card images'
   in:
   - ripps2about.c
-- en: the second game core, its newest build carried unmodified (AFL-3.0)
+- en: the second game core, used from your drive or memory card (AFL-3.0)
   in:
   - ripps2about.c
 - en: wLaunchELF R3Z by NathanNeurotic
@@ -954,7 +951,7 @@ strings:
 - en: what RIPPS2's card image writes are checked against
   in:
   - ripps2about.c
-- en: with rickgaiser's Neutrino inside as its second game core,
+- en: with rickgaiser's Neutrino as its second game core,
   in:
   - ripps2about.c
 - en: xeRAbora by hacan359, rcheevos by RetroAchievements
@@ -1661,9 +1658,6 @@ strings:
 - en: This HDD has no __sysconf partition, so BIBLE's config has to go on a memory card (PS2BBL reads a card's first), and there is none in either slot. Insert one, then try again.
   in:
   - ripps2boot.c
-- en: This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
-  in:
-  - ripps2boot.c
 - en: a boot loader RIPPS2 does not know
   in:
   - ripps2boot.c
@@ -1997,7 +1991,6 @@ strings:
   in:
   - ripps2disc.c
   - ripps2files.c
-  - ripps2status.c
 - en: DVD VIDEO
   in:
   - ripps2disc.c
@@ -2201,25 +2194,7 @@ strings:
 - en: YOURS
   in:
   - ripps2edit.c
-- en: MEMORY CARD %d  (about 600 KB)
-  in:
-  - ripps2ember.c
-- en: 'NEUTRINO: unpacking'
-  in:
-  - ripps2ember.c
-- en: 'NEUTRINO: writing %.60s'
-  in:
-  - ripps2ember.c
-- en: Neutrino could not be written to %s. Check its free space and that it is not write protected, then try again.
-  in:
-  - ripps2ember.c
-- en: THE GAME'S DRIVE  (%s/neutrino)
-  in:
-  - ripps2ember.c
-- en: 'This game starts through Neutrino, and RIPPS2 found none: not at Settings'' path, on the game''s drive, on the memory cards or on any started drive. RIPPS2 carries Neutrino by rickgaiser (AFL-3.0), its newest build: install it once, where you pick, and every Neutrino game uses it from there.'
-  in:
-  - ripps2ember.c
-- en: This is RIPPS2 lite, which carries no Neutrino. Put Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in a neutrino folder on a memory card or the game's drive, or use the full RIPPS2.elf, which installs it for you.
+- en: 'This game starts through Neutrino, and RIPPS2 found none: not at Settings'' path, on the game''s drive, on the memory cards or on any started drive. Put Neutrino by rickgaiser (github.com/rickgaiser/neutrino) in a neutrino folder on the game''s drive or a memory card, or point Game Launching > Neutrino at it.'
   in:
   - ripps2ember.c
 - en: '%d / %d FILES'
@@ -3640,12 +3615,6 @@ strings:
 - en: '%s  MMCE card'
   in:
   - ripps2status.c
-- en: '%s could not be written to %s. Check its free space and that it is not write protected.'
-  in:
-  - ripps2status.c
-- en: '%s is installed in %s.'
-  in:
-  - ripps2status.c
 - en: '%s, %s clusters, %s free of %s'
   in:
   - ripps2status.c
@@ -3697,9 +3666,6 @@ strings:
 - en: Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.
   in:
   - ripps2status.c
-- en: Copies the Neutrino RIPPS2 carries to a drive or a memory card. A Neutrino of your own is used as it is.
-  in:
-  - ripps2status.c
 - en: DIAG.TXT, for a bug report
   in:
   - ripps2status.c
@@ -3724,9 +3690,6 @@ strings:
 - en: 'Game lists: each shows at once from its cache, then is read again'
   in:
   - ripps2status.c
-- en: INSTALL RIPPS2'S NEUTRINO
-  in:
-  - ripps2status.c
 - en: 'Internal HDD (APA): %s free of %s'
   in:
   - ripps2status.c
@@ -3740,12 +3703,6 @@ strings:
   in:
   - ripps2status.c
 - en: MANAGE
-  in:
-  - ripps2status.c
-- en: MEMORY CARD 0  (about 600 KB)
-  in:
-  - ripps2status.c
-- en: MEMORY CARD 1  (about 600 KB)
   in:
   - ripps2status.c
 - en: 'MX4SIO: its driver would not load (code %d).'
@@ -3847,7 +3804,7 @@ strings:
 - en: Where POPSTARTER and Ember are, and how PS1 games start.
   in:
   - ripps2status.c
-- en: Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets.
+- en: Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets. Get Neutrino at github.com/rickgaiser/neutrino and put it in a neutrino folder on a drive or a memory card.
   in:
   - ripps2status.c
 - en: Writes what RIPPS2 noted about the pads, the drives, MMCE cards and the last launches to DIAG.TXT beside RIPPS2. Send it with a bug report.
@@ -3881,9 +3838,6 @@ strings:
   in:
   - ripps2status.c
 - en: not on a started drive
-  in:
-  - ripps2status.c
-- en: only if you have none
   in:
   - ripps2status.c
 - en: path, video, arguments
@@ -4024,7 +3978,7 @@ strings:
 - en: USB Drive
   in:
   - ripps2ui.c
-- en: This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer, or clear the path to use the one RIPPS2 carries.
+- en: This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer.
   in:
   - system.c
 - en: '%s could not be copied to %s%s. Is the drive full or write-protected?'

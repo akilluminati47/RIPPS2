@@ -3,12 +3,16 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Portuguese_BR
 strings:
+  "This game starts through Neutrino, and RIPPS2 found none: not at Settings' path, on the game's drive, on the memory cards or on any started drive. Put Neutrino by rickgaiser (github.com/rickgaiser/neutrino) in a neutrino folder on the game's drive or a memory card, or point Game Launching > Neutrino at it.": "Este jogo inicia pelo Neutrino, e o RIPPS2 não encontrou nenhum: nem no caminho das Configurações, nem no drive do jogo, nem nos memory cards, nem em qualquer drive iniciado. Coloque o Neutrino de rickgaiser (github.com/rickgaiser/neutrino) em uma pasta neutrino no drive do jogo ou em um memory card, ou aponte Inicialização de jogos > Neutrino para ele."
+  "Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets. Get Neutrino at github.com/rickgaiser/neutrino and put it in a neutrino folder on a drive or a memory card.": "Onde está o seu Neutrino, o modo de vídeo e os argumentos que toda inicialização do Neutrino recebe. Baixe o Neutrino em github.com/rickgaiser/neutrino e coloque-o em uma pasta neutrino em um drive ou memory card."
+  "This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer.": "Este Neutrino é anterior ao 1.3, que não consegue iniciar jogos do HD APA. Aponte Inicialização de jogos > Neutrino para o Neutrino 1.3 ou mais novo."
+  "with rickgaiser's Neutrino as its second game core,": "com o Neutrino de rickgaiser como seu segundo núcleo de jogo,"
+  "the second game core, used from your drive or memory card (AFL-3.0)": "o segundo núcleo de jogo, usado a partir do seu drive ou memory card (AFL-3.0)"
   "FILE NAME": "NOME DO ARQUIVO"
   "GAME LIST": "LISTA DE JOGOS"
   "%s in %s": "%s em %s"
   "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "As operações de gravação estão desligadas, então o RIPPS2 não pode salvar os detalhes de um jogo nem renomeá-lo. Ligar?"
   "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "O BIBLE é feito sobre o PS2BBL de El Isra, com as versões para cartão e HDD assinadas para o RIPPS2 (GPL-3)"
-  "This is RIPPS2 lite, which carries no Neutrino. Put Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in a neutrino folder on a memory card or the game's drive, or use the full RIPPS2.elf, which installs it for you.": "Este é o RIPPS2 lite, que não traz o Neutrino. Coloque o Neutrino (rickgaiser, github.com/rickgaiser/neutrino) numa pasta neutrino num cartão de memória ou na unidade do jogo, ou use o RIPPS2.elf completo, que instala para você."
   "START %s": "INICIAR %s"
   "NETWORK": "REDE"
   "%s did not answer. Is it connected?": "%s não respondeu. Está conectado?"
@@ -485,11 +489,6 @@ strings:
   This file is too big to edit here (64 KB at most).: Este arquivo é grande demais para editar aqui (no máximo 64 KB).
   VIDEO: VÍDEO
   YOURS: OS SEUS
-  MEMORY CARD %d  (about 600 KB): CARTÃO DE MEMÓRIA %d  (uns 600 KB)
-  'NEUTRINO: unpacking': 'NEUTRINO: descompactando'
-  'NEUTRINO: writing %.60s': 'NEUTRINO: gravando %.60s'
-  Neutrino could not be written to %s. Check its free space and that it is not write protected, then try again.: O Neutrino não pôde ser gravado em %s. Confira o espaço livre e se não está protegido contra gravação, e tente de novo.
-  THE GAME'S DRIVE  (%s/neutrino): A UNIDADE DO JOGO  (%s/neutrino)
   '%d / %d FILES': '%d / %d ARQUIVOS'
   '%d FOLDERS AND CONTENTS': '%d PASTAS E CONTEÚDO'
   '%d FOLDERS, %d FOUND': '%d PASTAS, %d ENCONTRADOS'
@@ -770,14 +769,10 @@ strings:
   TOO MANY FILES IN THE PSU: ARQUIVOS DEMAIS NO PSU
   UNKNOWN CARD LAYOUT: ESTRUTURA DE CARTÃO DESCONHECIDA
   '%d sounds from %sAUDIO%s': '%d sons de %sAUDIO%s'
-  '%s could not be written to %s. Check its free space and that it is not write protected.': '%s não pôde ser gravado em %s. Confira o espaço livre e se não está protegido contra gravação.'
-  '%s is installed in %s.': '%s está instalado em %s.'
   ', some files could not be used': ', alguns arquivos não puderam ser usados'
   AUDIO folder: pasta AUDIO
   DRIVES: UNIDADES
   MANAGE: GERENCIAR
-  MEMORY CARD 0  (about 600 KB): CARTÃO DE MEMÓRIA 0  (uns 600 KB)
-  MEMORY CARD 1  (about 600 KB): CARTÃO DE MEMÓRIA 1  (uns 600 KB)
   'MX4SIO: its driver would not load (code %d).': 'MX4SIO: o driver não carregou (código %d).'
   'MX4SIO: off in Game Sources.': 'MX4SIO: desligado em Fontes de jogos.'
   'MX4SIO: on in Game Sources; its driver has not been started yet.': 'MX4SIO: ligado em Fontes de jogos; o driver ainda não foi iniciado.'
@@ -900,7 +895,6 @@ strings:
   'Special thanks to all the YouTube love as well:': 'Agradecimento especial também a todo o carinho do YouTube:'
   and its own look, launchers, file browser and save tools.: e com visual, inicializadores, navegador de arquivos e ferramentas de save próprios.
   glad to help however you reach me.: feliz em ajudar, não importa como você me encontre.
-  with rickgaiser's Neutrino inside as its second game core,: com o Neutrino de rickgaiser dentro como seu segundo núcleo de jogo,
   STARTING THE DRIVES: INICIANDO AS UNIDADES
   '%d games, on the started drives': '%d jogos, nas unidades iniciadas'
   '%s: SOME FILES COULD NOT BE DELETED': '%s: ALGUNS ARQUIVOS NÃO PUDERAM SER APAGADOS'
@@ -964,7 +958,6 @@ strings:
   LOOKING FOR YOUR LAUNCHERS: PROCURANDO SEUS INICIALIZADORES
   The POPS files: Os arquivos POPS
   '%s  MMCE card': '%s  cartão MMCE'
-  INSTALL RIPPS2'S NEUTRINO: INSTALAR O NEUTRINO DO RIPPS2
   'Internal HDD (APA): %s free of %s': 'HD interno (APA): %s livres de %s'
   LAUNCHERS: INICIALIZADORES
   LOOK FOR THEM: PROCURAR
@@ -978,7 +971,6 @@ strings:
   found where you keep them: encontrados onde você os guarda
   not found yet: ainda não encontrado
   not on a started drive: não está numa unidade iniciada
-  only if you have none: só se você não tiver nenhum
   starts every drive first: inicia todas as unidades primeiro
   BDM Devices: Dispositivos BDM
   Color Sweep: Transição de cores
@@ -1072,7 +1064,6 @@ strings:
   STARS SHOWN: ESTRELAS VISÍVEIS
   Asking the SD2PSX for this game's memory card...: Pedindo ao SD2PSX o cartão de memória deste jogo...
   The SD2PSX is getting this game's memory card ready (%d s). The game starts when it is done; START starts it now.: O SD2PSX está preparando o cartão de memória deste jogo (%d s). O jogo inicia quando terminar; START inicia agora.
-  the second game core, its newest build carried unmodified (AFL-3.0): o segundo núcleo de jogo, sua versão mais recente incluída sem modificações (AFL-3.0)
   '%s could not be written to %s (%d of the sounds were). Is the drive full or write-protected?': '%s não pôde ser gravado em %s (%d dos sons foram). A unidade está cheia ou protegida contra gravação?'
   '%s could not be written to %s (%d of the sounds were, and the card has %d KB free now). Is the card write-protected?': '%s não pôde ser gravado em %s (%d dos sons foram, e o cartão tem agora %d KB livres). O cartão está protegido contra gravação?'
   The folder %s could not be made. Is the drive full or write-protected? Nothing was written.: A pasta %s não pôde ser criada. A unidade está cheia ou protegida contra gravação? Nada foi gravado.
@@ -1086,8 +1077,6 @@ strings:
   ? 'Memory Files opens now, on MEDIA, with the disc on its clipboard (RIPPED). Go to the drive and folder it should be in (any drive: USB, the HDD, the SD2PSX''s MEDIA), press TRIANGLE for ACTIONS and choose PASTE. RIPDISC then asks once more and reads the disc with your PS2''s laser, writing it there.'
   : 'Arquivos de memória abre agora, em MEDIA, com o disco na área de transferência (EXTRAÍDO). Vá até a unidade e a pasta onde ele deve ficar (qualquer unidade: USB, o HD, o MEDIA do SD2PSX), aperte TRIÂNGULO para AÇÕES e escolha COLAR. O RIPDISC pergunta mais uma vez e lê o disco com o laser do seu PS2, gravando-o lá.'
   RENAME THE GAME: RENOMEAR O JOGO
-  ? 'This game starts through Neutrino, and RIPPS2 found none: not at Settings'' path, on the game''s drive, on the memory cards or on any started drive. RIPPS2 carries Neutrino by rickgaiser (AFL-3.0), its newest build: install it once, where you pick, and every Neutrino game uses it from there.'
-  : 'Este jogo inicia pelo Neutrino, e o RIPPS2 não encontrou nenhum: nem no caminho das Configurações, nem na unidade do jogo, nem nos cartões de memória, nem em nenhuma unidade iniciada. O RIPPS2 traz o Neutrino de rickgaiser (AFL-3.0), sua versão mais recente: instale-o uma vez, onde quiser, e todo jogo do Neutrino o usa de lá.'
   A PS1 disc's track list, for Ember: A lista de faixas de um disco de PS1, para o Ember
   A PS1 game for POPSTARTER: Um jogo de PS1 para o POPSTARTER
   A PS2 game: Um jogo de PS2
@@ -1138,7 +1127,6 @@ strings:
   'All Games: %d games kept in %s, listed at boot before any drive answers': 'Todos os jogos: %d jogos guardados em %s, listados no boot antes de qualquer unidade responder'
   'All Games: no master list yet; %s is written once the games are listed (Fast Cache on)': 'Todos os jogos: ainda sem lista principal; %s é gravado quando os jogos forem listados (Fast Cache ativado)'
   CACHE SETTINGS: CONFIGURAÇÕES DO CACHE
-  Copies the Neutrino RIPPS2 carries to a drive or a memory card. A Neutrino of your own is used as it is.: Copia o Neutrino que o RIPPS2 traz para uma unidade ou um cartão de memória. Um Neutrino seu é usado como está.
   DIAG.TXT, for a bug report: DIAG.TXT, para um relatório de bug
   Drives, loading, launchers and homebrew: Unidades, carregamento, inicializadores e homebrew
   ? Fast Cache shows each drive's last game list the moment the drive answers; Trust Cache keeps it until you press SELECT. Both on, with the settings on the memory card RIPPS2 starts from, is the quickest boot.
@@ -1160,13 +1148,10 @@ strings:
   The diagnostics could not be written to %s.: Os diagnósticos não puderam ser gravados em %s.
   What each memory card starts at power on; install or repair BIBLE, PS2BBL set up to start RIPPS2.: O que cada cartão de memória inicia ao ligar; instalar ou reparar o BIBLE, o PS2BBL preparado para iniciar o RIPPS2.
   Where POPSTARTER and Ember are, and how PS1 games start.: Onde estão o POPSTARTER e o Ember, e como os jogos de PS1 iniciam.
-  Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets.: Onde está o seu Neutrino, o modo de vídeo e os argumentos que toda inicialização do Neutrino recebe.
   ? Writes what RIPPS2 noted about the pads, the drives, MMCE cards and the last launches to DIAG.TXT beside RIPPS2. Send it with a bug report.
   : Grava o que o RIPPS2 anotou sobre os controles, as unidades, os cartões MMCE e as últimas inicializações no DIAG.TXT, ao lado do RIPPS2. Envie junto com um relatório de bug.
   back to Cache: voltar ao Cache
   what boot reads first: o que o boot lê primeiro
-  ? This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer, or clear the path to use the one RIPPS2 carries.
-  : Este Neutrino é anterior ao 1.3, que não consegue iniciar jogos do HD APA. Aponte Inicialização de jogos > Neutrino para o Neutrino 1.3 ou mais novo, ou limpe o caminho para usar o que o RIPPS2 traz.
   ', the sounds': ', os sons'
   ? 'Fast Boot is on. RIPPS2 boots from its own drive (%s): the settings%s and every list from its cache. The other drives start when you press SELECT on their page, or launch one of their games.'
   : 'O Fast Boot está ativado. O RIPPS2 inicia da própria unidade (%s): as configurações%s e cada lista do seu cache. As outras unidades iniciam quando você aperta SELECT na página delas ou inicia um dos jogos delas.'
@@ -1375,7 +1360,6 @@ strings:
   : 'Nenhum ainda. Um perfil é um arquivo de texto com o nome do ID do controle, como 2563_0575.pad: o formato está no repositório do RIPPS2 (docs/plans/pad-spec.md).'
   On (fast): Ligado (rápido)
   'Pad profiles in %s:': 'Perfis de controle em %s:'
-  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (build %d) sobre RiptOPL %s
   RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: O RIPPS2 não sabe onde está sua pasta, então não pode procurar PADS.
   could not be read: não pôde ser lido
   About %d seconds left: Faltam cerca de %d segundos
@@ -1394,8 +1378,6 @@ strings:
   ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
   : Ligado (rápido) guarda o som de inicialização ao lado do RIPPS2 no memory card de onde ele inicia, e o RIPPS2 não iniciou de um. O som de inicialização toca como Ligado.
   'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'Ainda não há som de inicialização para copiar: Configurações de áudio > Sons da BIOS extrai os deste console.'
-  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
-  : Este é o RIPPS2 lite, que não traz o PS2BBL, então não pode instalar o BIBLE. O RIPPS2.elf completo instala e repara; um carregador já instalado continua iniciando o RIPPS2 lite como está.
   '%d COPIED OUT': '%d COPIADOS PARA FORA'
   '%d ITEM   %d MARKED   %s': '%d ITEM   %d MARCADO   %s'
   '%d ITEM   %d MARKED   %s   %s FREE': '%d ITEM   %d MARCADO   %s   %s LIVRES'

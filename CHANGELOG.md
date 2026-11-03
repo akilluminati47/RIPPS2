@@ -1,5 +1,24 @@
 # RIPPS2 changelog
 
+## Build 135 (beta, v1.3.5-beta), changes since build 134
+
+One RIPPS2.elf, with BIBLE inside and Neutrino found, never carried (the user, 11/02).
+
+**Neutrino**
+- **RIPPS2 no longer carries Neutrino.** It uses yours, from where it always looked: the path in Game Launching >
+  Neutrino, a neutrino folder on the game's drive or a memory card, or wherever STATUS > LOOK FOR THEM or an earlier
+  launch found one. A Neutrino game with none anywhere says where to get it (github.com/rickgaiser/neutrino) and where
+  to put it, instead of offering to install a copy.
+- STATUS's INSTALL RIPPS2'S NEUTRINO row is gone; LAUNCHERS still shows where Neutrino was found, and NEUTRINO SETTINGS
+  says where to get it. rickgaiser's Neutrino and ORBIT's fork stay in About's credits.
+
+**One ELF**
+- **RIPPS2-lite.elf is gone**: with Neutrino no longer inside, the one RIPPS2.elf carries only BIBLE (for Settings >
+  General > Boot Loader > Manage).
+
+**Languages**
+- The changed lines are in all 32 languages; the lines for the carried Neutrino and the lite ELF are gone from them.
+
 ## Build 134 (beta, v1.3.4-beta), changes since build 133
 
 The user's notes on settings and Memory Files (11/02), and BIBLE signed for RIPPS2.

@@ -3,12 +3,16 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Indonesian
 strings:
+  "This game starts through Neutrino, and RIPPS2 found none: not at Settings' path, on the game's drive, on the memory cards or on any started drive. Put Neutrino by rickgaiser (github.com/rickgaiser/neutrino) in a neutrino folder on the game's drive or a memory card, or point Game Launching > Neutrino at it.": "Game ini dimulai lewat Neutrino, dan RIPPS2 tidak menemukannya: tidak di jalur Pengaturan, di drive game, di kartu memori, atau di drive mana pun yang sudah dimulai. Taruh Neutrino buatan rickgaiser (github.com/rickgaiser/neutrino) di folder neutrino pada drive game atau kartu memori, atau arahkan Peluncuran game > Neutrino ke sana."
+  "Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets. Get Neutrino at github.com/rickgaiser/neutrino and put it in a neutrino folder on a drive or a memory card.": "Letak Neutrino-mu, mode videonya, dan argumen yang diterima setiap peluncuran Neutrino. Dapatkan Neutrino di github.com/rickgaiser/neutrino dan taruh di folder neutrino pada drive atau kartu memori."
+  "This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer.": "Neutrino ini lebih lama dari 1.3, yang tidak bisa memulai game dari HDD APA. Arahkan Peluncuran game > Neutrino ke Neutrino 1.3 atau lebih baru."
+  "with rickgaiser's Neutrino as its second game core,": "dengan Neutrino buatan rickgaiser sebagai inti game kedua,"
+  "the second game core, used from your drive or memory card (AFL-3.0)": "inti game kedua, dipakai dari drive atau kartu memorimu (AFL-3.0)"
   "FILE NAME": "NAMA FILE"
   "GAME LIST": "DAFTAR GAME"
   "%s in %s": "%s di %s"
   "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "Operasi tulis mati, jadi RIPPS2 tidak bisa menyimpan detail game atau mengganti namanya. Nyalakan?"
   "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "BIBLE dibangun di atas PS2BBL milik El Isra, dengan versi kartu dan HDD-nya ditandatangani untuk RIPPS2 (GPL-3)"
-  "This is RIPPS2 lite, which carries no Neutrino. Put Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in a neutrino folder on a memory card or the game's drive, or use the full RIPPS2.elf, which installs it for you.": "Ini RIPPS2 lite, yang tidak membawa Neutrino. Taruh Neutrino (rickgaiser, github.com/rickgaiser/neutrino) di folder neutrino pada memory card atau drive game, atau pakai RIPPS2.elf lengkap, yang memasangnya untukmu."
   "START %s": "MULAI %s"
   "NETWORK": "JARINGAN"
   "%s did not answer. Is it connected?": "%s tidak menjawab. Apakah tersambung?"
@@ -485,11 +489,6 @@ strings:
   This file is too big to edit here (64 KB at most).: File ini terlalu besar untuk diedit di sini (paling besar 64 KB).
   VIDEO: VIDEO
   YOURS: MILIKMU
-  MEMORY CARD %d  (about 600 KB): KARTU MEMORI %d  (sekitar 600 KB)
-  'NEUTRINO: unpacking': 'NEUTRINO: membongkar'
-  'NEUTRINO: writing %.60s': 'NEUTRINO: menulis %.60s'
-  Neutrino could not be written to %s. Check its free space and that it is not write protected, then try again.: Neutrino tidak bisa ditulis ke %s. Periksa ruang kosongnya dan pastikan tidak dilindungi dari penulisan, lalu coba lagi.
-  THE GAME'S DRIVE  (%s/neutrino): DRIVE GAME  (%s/neutrino)
   '%d / %d FILES': '%d / %d FILE'
   '%d FOLDERS AND CONTENTS': '%d FOLDER DAN ISINYA'
   '%d FOLDERS, %d FOUND': '%d FOLDER, %d DITEMUKAN'
@@ -770,14 +769,10 @@ strings:
   TOO MANY FILES IN THE PSU: TERLALU BANYAK FILE DI PSU
   UNKNOWN CARD LAYOUT: TATA LETAK KARTU TIDAK DIKENAL
   '%d sounds from %sAUDIO%s': '%d suara dari %sAUDIO%s'
-  '%s could not be written to %s. Check its free space and that it is not write protected.': '%s tidak bisa ditulis ke %s. Periksa ruang kosongnya dan pastikan tidak dilindungi dari penulisan.'
-  '%s is installed in %s.': '%s sudah terinstal di %s.'
   ', some files could not be used': ', beberapa file tidak bisa dipakai'
   AUDIO folder: folder AUDIO
   DRIVES: DRIVE
   MANAGE: KELOLA
-  MEMORY CARD 0  (about 600 KB): KARTU MEMORI 0  (sekitar 600 KB)
-  MEMORY CARD 1  (about 600 KB): KARTU MEMORI 1  (sekitar 600 KB)
   'MX4SIO: its driver would not load (code %d).': 'MX4SIO: driver-nya tidak mau dimuat (kode %d).'
   'MX4SIO: off in Game Sources.': 'MX4SIO: mati di Sumber Game.'
   'MX4SIO: on in Game Sources; its driver has not been started yet.': 'MX4SIO: nyala di Sumber Game; driver-nya belum dimulai.'
@@ -900,7 +895,6 @@ strings:
   'Special thanks to all the YouTube love as well:': 'Terima kasih khusus juga untuk semua cinta dari YouTube:'
   and its own look, launchers, file browser and save tools.: dan dengan tampilan, peluncur, penjelajah file, dan alat save miliknya sendiri.
   glad to help however you reach me.: senang membantu, lewat mana pun kamu menghubungiku.
-  with rickgaiser's Neutrino inside as its second game core,: dengan Neutrino buatan rickgaiser di dalamnya sebagai inti game kedua,
   STARTING THE DRIVES: MEMULAI DRIVE
   '%d games, on the started drives': '%d game, di drive yang sudah dimulai'
   '%s: SOME FILES COULD NOT BE DELETED': '%s: BEBERAPA FILE TIDAK BISA DIHAPUS'
@@ -964,7 +958,6 @@ strings:
   LOOKING FOR YOUR LAUNCHERS: MENCARI PELUNCURMU
   The POPS files: File POPS
   '%s  MMCE card': '%s  kartu MMCE'
-  INSTALL RIPPS2'S NEUTRINO: PASANG NEUTRINO DARI RIPPS2
   'Internal HDD (APA): %s free of %s': 'HDD internal (APA): %s kosong dari %s'
   LAUNCHERS: PELUNCUR
   LOOK FOR THEM: CARI
@@ -978,7 +971,6 @@ strings:
   found where you keep them: ditemukan di tempat kamu menyimpannya
   not found yet: belum ditemukan
   not on a started drive: tidak di drive yang sudah dimulai
-  only if you have none: hanya jika kamu tidak punya
   starts every drive first: memulai semua drive dulu
   BDM Devices: Perangkat BDM
   Color Sweep: Peralihan Warna
@@ -1073,7 +1065,6 @@ strings:
   STARS SHOWN: BINTANG DITAMPILKAN
   Asking the SD2PSX for this game's memory card...: Meminta kartu memori game ini ke SD2PSX...
   The SD2PSX is getting this game's memory card ready (%d s). The game starts when it is done; START starts it now.: SD2PSX sedang menyiapkan kartu memori game ini (%d dtk). Game dimulai setelah selesai; START memulainya sekarang.
-  the second game core, its newest build carried unmodified (AFL-3.0): inti game kedua, build terbarunya dibawa tanpa diubah (AFL-3.0)
   '%s could not be written to %s (%d of the sounds were). Is the drive full or write-protected?': '%s tidak bisa ditulis ke %s (%d suara berhasil). Apakah drive penuh atau dilindungi dari penulisan?'
   '%s could not be written to %s (%d of the sounds were, and the card has %d KB free now). Is the card write-protected?': '%s tidak bisa ditulis ke %s (%d suara berhasil, dan kartu kini punya %d KB kosong). Apakah kartu dilindungi dari penulisan?'
   The folder %s could not be made. Is the drive full or write-protected? Nothing was written.: Folder %s tidak bisa dibuat. Apakah drive penuh atau dilindungi dari penulisan? Tidak ada yang ditulis.
@@ -1087,8 +1078,6 @@ strings:
   ? 'Memory Files opens now, on MEDIA, with the disc on its clipboard (RIPPED). Go to the drive and folder it should be in (any drive: USB, the HDD, the SD2PSX''s MEDIA), press TRIANGLE for ACTIONS and choose PASTE. RIPDISC then asks once more and reads the disc with your PS2''s laser, writing it there.'
   : 'File Memori terbuka sekarang, di MEDIA, dengan disk di papan klipnya (DI-RIP). Buka drive dan folder tujuannya (drive apa saja: USB, HDD, MEDIA milik SD2PSX), tekan SEGITIGA untuk TINDAKAN, lalu pilih TEMPEL. RIPDISC lalu bertanya sekali lagi dan membaca disk dengan laser PS2-mu, lalu menulisnya di sana.'
   RENAME THE GAME: GANTI NAMA GAME
-  ? 'This game starts through Neutrino, and RIPPS2 found none: not at Settings'' path, on the game''s drive, on the memory cards or on any started drive. RIPPS2 carries Neutrino by rickgaiser (AFL-3.0), its newest build: install it once, where you pick, and every Neutrino game uses it from there.'
-  : 'Game ini dimulai lewat Neutrino, dan RIPPS2 tidak menemukannya: tidak di jalur Pengaturan, di drive game ini, di kartu memori, atau di drive mana pun yang sudah dimulai. RIPPS2 membawa Neutrino buatan rickgaiser (AFL-3.0), build terbarunya: pasang sekali, di mana pun kamu mau, dan setiap game Neutrino memakainya dari sana.'
   A PS1 disc's track list, for Ember: Daftar trek disk PS1, untuk Ember
   A PS1 game for POPSTARTER: Game PS1 untuk POPSTARTER
   A PS2 game: Game PS2
@@ -1139,7 +1128,6 @@ strings:
   'All Games: %d games kept in %s, listed at boot before any drive answers': 'Semua Game: %d game disimpan di %s, ditampilkan saat boot sebelum drive mana pun menjawab'
   'All Games: no master list yet; %s is written once the games are listed (Fast Cache on)': 'Semua Game: belum ada daftar utama; %s ditulis setelah game ditampilkan (Fast Cache menyala)'
   CACHE SETTINGS: PENGATURAN CACHE
-  Copies the Neutrino RIPPS2 carries to a drive or a memory card. A Neutrino of your own is used as it is.: Menyalin Neutrino bawaan RIPPS2 ke drive atau kartu memori. Neutrino milikmu sendiri dipakai apa adanya.
   DIAG.TXT, for a bug report: DIAG.TXT, untuk laporan bug
   Drives, loading, launchers and homebrew: Drive, pemuatan, peluncur, dan homebrew
   ? Fast Cache shows each drive's last game list the moment the drive answers; Trust Cache keeps it until you press SELECT. Both on, with the settings on the memory card RIPPS2 starts from, is the quickest boot.
@@ -1161,13 +1149,10 @@ strings:
   The diagnostics could not be written to %s.: Diagnostik tidak bisa ditulis ke %s.
   What each memory card starts at power on; install or repair BIBLE, PS2BBL set up to start RIPPS2.: Apa yang dijalankan tiap kartu memori saat menyala; instal atau perbaiki BIBLE, PS2BBL yang diatur untuk menjalankan RIPPS2.
   Where POPSTARTER and Ember are, and how PS1 games start.: Letak POPSTARTER dan Ember, dan cara game PS1 dimulai.
-  Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets.: Letak Neutrino-mu, mode videonya, dan argumen yang diterima setiap peluncuran Neutrino.
   ? Writes what RIPPS2 noted about the pads, the drives, MMCE cards and the last launches to DIAG.TXT beside RIPPS2. Send it with a bug report.
   : Menulis catatan RIPPS2 tentang kontroler, drive, kartu MMCE, dan peluncuran terakhir ke DIAG.TXT di samping RIPPS2. Kirimkan bersama laporan bug.
   back to Cache: kembali ke Cache
   what boot reads first: yang dibaca boot lebih dulu
-  ? This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer, or clear the path to use the one RIPPS2 carries.
-  : Neutrino ini lebih lama dari 1.3, yang tidak bisa memulai game dari HDD APA. Arahkan Peluncuran game > Neutrino ke Neutrino 1.3 atau lebih baru, atau kosongkan jalurnya untuk memakai bawaan RIPPS2.
   ', the sounds': ', suara'
   ? 'Fast Boot is on. RIPPS2 boots from its own drive (%s): the settings%s and every list from its cache. The other drives start when you press SELECT on their page, or launch one of their games.'
   : 'Fast Boot aktif. RIPPS2 berjalan dari drive-nya sendiri (%s): pengaturan%s dan setiap daftar dari cache-nya. Drive lain dimulai saat kamu menekan SELECT di halamannya atau menjalankan salah satu gimnya.'
@@ -1376,7 +1361,6 @@ strings:
   : 'Belum ada. Profil adalah file teks yang dinamai dengan ID kontroler, seperti 2563_0575.pad: formatnya ada di repo RIPPS2 (docs/plans/pad-spec.md).'
   On (fast): Aktif (cepat)
   'Pad profiles in %s:': 'Profil kontroler di %s:'
-  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (build %d) di RiptOPL %s
   RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: RIPPS2 tidak tahu di mana foldernya, jadi tidak bisa mencari PADS.
   could not be read: tidak dapat dibaca
   About %d seconds left: Sekitar %d detik lagi
@@ -1395,8 +1379,6 @@ strings:
   ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
   : Aktif (cepat) menyimpan suara boot di samping RIPPS2 pada kartu memori tempat ia mulai, dan RIPPS2 tidak dimulai dari kartu. Suara boot diputar seperti Aktif.
   'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'Belum ada suara boot untuk disalin: Pengaturan audio > Suara BIOS mengambil suara konsol ini.'
-  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
-  : Ini RIPPS2 lite, yang tidak membawa PS2BBL, jadi tidak bisa memasang BIBLE. RIPPS2.elf lengkap memasang dan memperbaikinya; boot loader yang sudah terpasang tetap memulai RIPPS2 lite apa adanya.
   '%d COPIED OUT': '%d DISALIN KELUAR'
   '%d ITEM   %d MARKED   %s': '%d ITEM   %d DITANDAI   %s'
   '%d ITEM   %d MARKED   %s   %s FREE': '%d ITEM   %d DITANDAI   %s   %s KOSONG'

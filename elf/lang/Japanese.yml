@@ -3,12 +3,16 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Japanese
 strings:
+  "This game starts through Neutrino, and RIPPS2 found none: not at Settings' path, on the game's drive, on the memory cards or on any started drive. Put Neutrino by rickgaiser (github.com/rickgaiser/neutrino) in a neutrino folder on the game's drive or a memory card, or point Game Launching > Neutrino at it.": "このゲームは Neutrino で起動しますが、RIPPS2 は見つけられませんでした（設定のパス、ゲームのドライブ、メモリーカード、起動済みのドライブのどこにもありません）。rickgaiser の Neutrino（github.com/rickgaiser/neutrino）をゲームのドライブかメモリーカードの neutrino フォルダーに置くか、ゲームの起動 > Neutrino でその場所を指定してください。"
+  "Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets. Get Neutrino at github.com/rickgaiser/neutrino and put it in a neutrino folder on a drive or a memory card.": "Neutrino の場所、映像モード、Neutrino で起動するたびに渡す引数。 Neutrino は github.com/rickgaiser/neutrino で入手し、ドライブかメモリーカードの neutrino フォルダーに置いてください。"
+  "This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer.": "この Neutrino は 1.3 より古く、APA HDD からゲームを起動できません。ゲームの起動 > Neutrino を Neutrino 1.3 以降に向けてください。"
+  "with rickgaiser's Neutrino as its second game core,": "rickgaiser の Neutrino を 2 つ目のゲームコアとして使い、"
+  "the second game core, used from your drive or memory card (AFL-3.0)": "2 つ目のゲームコア、あなたのドライブかメモリーカードから使用（AFL-3.0）"
   "FILE NAME": "ファイル名"
   "GAME LIST": "ゲーム一覧"
   "%s in %s": "%s（%s）"
   "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "書き込み操作がオフのため、RIPPS2 はゲームの情報を保存したり名前を変えたりできません。オンにしますか？"
   "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "BIBLE は El Isra の PS2BBL をもとに作られ、カード用と HDD 用は RIPPS2 向けに署名されています（GPL-3）"
-  "This is RIPPS2 lite, which carries no Neutrino. Put Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in a neutrino folder on a memory card or the game's drive, or use the full RIPPS2.elf, which installs it for you.": "これは Neutrino を含まない RIPPS2 lite です。Neutrino（rickgaiser、github.com/rickgaiser/neutrino）をメモリーカードかゲームのドライブの neutrino フォルダーに置くか、インストールまでしてくれる完全版の RIPPS2.elf を使ってください。"
   "START %s": "%s を開始"
   "NETWORK": "ネットワーク"
   "%s did not answer. Is it connected?": "%s が応答しません。接続されていますか？"
@@ -485,11 +489,6 @@ strings:
   This file is too big to edit here (64 KB at most).: このファイルは大きすぎてここでは編集できません（最大 64 KB）。
   VIDEO: ビデオ
   YOURS: あなたの
-  MEMORY CARD %d  (about 600 KB): メモリーカード %d  （約 600 KB）
-  'NEUTRINO: unpacking': NEUTRINO：展開中
-  'NEUTRINO: writing %.60s': NEUTRINO：%.60s を書き込み中
-  Neutrino could not be written to %s. Check its free space and that it is not write protected, then try again.: Neutrino を %s に書き込めませんでした。空き容量と書き込み禁止になっていないかを確認して、もう一度お試しください。
-  THE GAME'S DRIVE  (%s/neutrino): ゲームのドライブ  （%s/neutrino）
   '%d / %d FILES': '%d / %d ファイル'
   '%d FOLDERS AND CONTENTS': '%d フォルダと中身'
   '%d FOLDERS, %d FOUND': '%d フォルダー、%d 件見つかりました'
@@ -770,14 +769,10 @@ strings:
   TOO MANY FILES IN THE PSU: PSU のファイルが多すぎます
   UNKNOWN CARD LAYOUT: 不明なカード構成
   '%d sounds from %sAUDIO%s': サウンド %d 個（%sAUDIO%s から）
-  '%s could not be written to %s. Check its free space and that it is not write protected.': '%s を %s に書き込めませんでした。空き容量と書き込み禁止になっていないかを確認してください。'
-  '%s is installed in %s.': '%s を %s にインストールしました。'
   ', some files could not be used': 、一部のファイルは使えませんでした
   AUDIO folder: AUDIO フォルダ
   DRIVES: ドライブ
   MANAGE: 管理
-  MEMORY CARD 0  (about 600 KB): メモリーカード 0  （約 600 KB）
-  MEMORY CARD 1  (about 600 KB): メモリーカード 1  （約 600 KB）
   'MX4SIO: its driver would not load (code %d).': MX4SIO：ドライバーを読み込めませんでした（コード %d）。
   'MX4SIO: off in Game Sources.': MX4SIO：ゲームソースでオフになっています。
   'MX4SIO: on in Game Sources; its driver has not been started yet.': MX4SIO：ゲームソースでオンですが、ドライバーはまだ開始されていません。
@@ -900,7 +895,6 @@ strings:
   'Special thanks to all the YouTube love as well:': YouTube でのたくさんの応援にも特別な感謝を：
   and its own look, launchers, file browser and save tools.: そして独自の見た目、ランチャー、ファイルブラウザー、セーブツールを備えています。
   glad to help however you reach me.: どこから連絡をくれても、喜んで手伝います。
-  with rickgaiser's Neutrino inside as its second game core,: rickgaiser の Neutrino を 2 つ目のゲームコアとして内蔵し、
   STARTING THE DRIVES: ドライブを開始中
   '%d games, on the started drives': '%d 本のゲーム（開始済みのドライブ）'
   '%s: SOME FILES COULD NOT BE DELETED': '%s：一部のファイルを削除できませんでした'
@@ -964,7 +958,6 @@ strings:
   LOOKING FOR YOUR LAUNCHERS: ランチャーを探しています
   The POPS files: POPS ファイル
   '%s  MMCE card': '%s  MMCE カード'
-  INSTALL RIPPS2'S NEUTRINO: RIPPS2 の NEUTRINO をインストール
   'Internal HDD (APA): %s free of %s': 内蔵 HDD（APA）：空き %s / %s
   LAUNCHERS: ランチャー
   LOOK FOR THEM: 探す
@@ -978,7 +971,6 @@ strings:
   found where you keep them: 置いてある場所で見つかりました
   not found yet: まだ見つかっていません
   not on a started drive: 開始済みのドライブにありません
-  only if you have none: 持っていない場合のみ
   starts every drive first: 先にすべてのドライブを開始します
   BDM Devices: BDM デバイス
   Color Sweep: カラースイープ
@@ -1074,7 +1066,6 @@ strings:
   STARS SHOWN: 星を表示
   Asking the SD2PSX for this game's memory card...: SD2PSX にこのゲームのメモリーカードを問い合わせています...
   The SD2PSX is getting this game's memory card ready (%d s). The game starts when it is done; START starts it now.: SD2PSX がこのゲームのメモリーカードを準備しています（%d 秒）。終わるとゲームが始まります。START ですぐに始めます。
-  the second game core, its newest build carried unmodified (AFL-3.0): 2 つ目のゲームコア、最新ビルドを改変せずに同梱（AFL-3.0）
   '%s could not be written to %s (%d of the sounds were). Is the drive full or write-protected?': '%s を %s に書き込めませんでした（サウンド %d 個は書き込み済み）。ドライブがいっぱいか、書き込み禁止ではありませんか？'
   '%s could not be written to %s (%d of the sounds were, and the card has %d KB free now). Is the card write-protected?': '%s を %s に書き込めませんでした（サウンド %d 個は書き込み済みで、カードの空きは現在 %d KB）。カードが書き込み禁止ではありませんか？'
   The folder %s could not be made. Is the drive full or write-protected? Nothing was written.: フォルダー %s を作成できませんでした。ドライブがいっぱいか、書き込み禁止ではありませんか？何も書き込んでいません。
@@ -1088,8 +1079,6 @@ strings:
   ? 'Memory Files opens now, on MEDIA, with the disc on its clipboard (RIPPED). Go to the drive and folder it should be in (any drive: USB, the HDD, the SD2PSX''s MEDIA), press TRIANGLE for ACTIONS and choose PASTE. RIPDISC then asks once more and reads the disc with your PS2''s laser, writing it there.'
   : メモリーファイルが MEDIA で開き、ディスクがクリップボードに入っています（抽出済み）。置きたいドライブとフォルダーへ移動し（どのドライブでも可：USB、HDD、SD2PSX の MEDIA）、三角でアクションを開いて貼り付けを選んでください。RIPDISC がもう一度確認し、PS2 のレーザーでディスクを読んでそこに書き込みます。
   RENAME THE GAME: ゲーム名を変更
-  ? 'This game starts through Neutrino, and RIPPS2 found none: not at Settings'' path, on the game''s drive, on the memory cards or on any started drive. RIPPS2 carries Neutrino by rickgaiser (AFL-3.0), its newest build: install it once, where you pick, and every Neutrino game uses it from there.'
-  : このゲームは Neutrino で起動しますが、RIPPS2 は見つけられませんでした。設定のパスにも、ゲームのドライブにも、メモリーカードにも、開始済みのドライブにもありません。RIPPS2 には rickgaiser の Neutrino（AFL-3.0）の最新ビルドが入っています。好きな場所に一度インストールすれば、Neutrino のゲームはすべてそこから使います。
   A PS1 disc's track list, for Ember: PS1 ディスクのトラックリスト（Ember 用）
   A PS1 game for POPSTARTER: POPSTARTER 用の PS1 ゲーム
   A PS2 game: PS2 ゲーム
@@ -1140,7 +1129,6 @@ strings:
   'All Games: %d games kept in %s, listed at boot before any drive answers': すべてのゲーム：%d 本を %s に保存、どのドライブより先に起動時に表示
   'All Games: no master list yet; %s is written once the games are listed (Fast Cache on)': すべてのゲーム：マスターリスト未作成。ゲームの一覧ができると %s を書き込みます（Fast Cache オン）
   CACHE SETTINGS: キャッシュ設定
-  Copies the Neutrino RIPPS2 carries to a drive or a memory card. A Neutrino of your own is used as it is.: RIPPS2 が持っている Neutrino をドライブかメモリーカードにコピーします。自分の Neutrino はそのまま使います。
   DIAG.TXT, for a bug report: DIAG.TXT（バグ報告用）
   Drives, loading, launchers and homebrew: ドライブ、読み込み、ランチャー、自作ソフト
   ? Fast Cache shows each drive's last game list the moment the drive answers; Trust Cache keeps it until you press SELECT. Both on, with the settings on the memory card RIPPS2 starts from, is the quickest boot.
@@ -1162,13 +1150,10 @@ strings:
   The diagnostics could not be written to %s.: 診断情報を %s に書き込めませんでした。
   What each memory card starts at power on; install or repair BIBLE, PS2BBL set up to start RIPPS2.: 各メモリーカードが電源投入時に起動するもの。BIBLE（RIPPS2 を起動するよう設定した PS2BBL）のインストールと修復。
   Where POPSTARTER and Ember are, and how PS1 games start.: POPSTARTER と Ember の場所と、PS1 ゲームの起動方法。
-  Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets.: Neutrino の場所、映像モード、Neutrino で起動するたびに渡す引数。
   ? Writes what RIPPS2 noted about the pads, the drives, MMCE cards and the last launches to DIAG.TXT beside RIPPS2. Send it with a bug report.
   : コントローラー、ドライブ、MMCE カード、最近の起動について RIPPS2 が記録した内容を、RIPPS2 の隣の DIAG.TXT に書き込みます。バグ報告に添えて送ってください。
   back to Cache: キャッシュに戻る
   what boot reads first: 起動時に最初に読むもの
-  ? This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer, or clear the path to use the one RIPPS2 carries.
-  : この Neutrino は 1.3 より古く、APA HDD からゲームを起動できません。ゲームの起動 > Neutrino を Neutrino 1.3 以降に向けるか、パスを空にして RIPPS2 の Neutrino を使ってください。
   ', the sounds': 、サウンド
   ? 'Fast Boot is on. RIPPS2 boots from its own drive (%s): the settings%s and every list from its cache. The other drives start when you press SELECT on their page, or launch one of their games.'
   : 'Fast Boot がオンです。RIPPS2 は自分のドライブ (%s) から起動します: 設定%s と各リストはキャッシュから読みます。他のドライブは、そのページで SELECT を押すか、そのゲームを起動したときに始まります。'
@@ -1377,7 +1362,6 @@ strings:
   : 'まだありません。プロファイルはパッドのIDを名前にしたテキストファイルです(例: 2563_0575.pad)。形式はRIPPS2のリポジトリにあります(docs/plans/pad-spec.md)。'
   On (fast): オン(高速)
   'Pad profiles in %s:': '%s のパッドプロファイル:'
-  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (ビルド %d) RiptOPL %s 上
   RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: RIPPS2は自分のフォルダの場所がわからないため、PADSを探せません。
   could not be read: 読み取れません
   About %d seconds left: 残り約%d秒
@@ -1396,8 +1380,6 @@ strings:
   ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
   : オン(高速)は起動音を起動元のメモリーカードのRIPPS2の隣に置きますが、RIPPS2はメモリーカードから起動していません。起動音はオンと同じように鳴ります。
   'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'コピーする起動音がまだありません: オーディオ設定 > BIOSサウンドでこの本体の音を取り出せます。'
-  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
-  : これはRIPPS2 liteで、PS2BBLを含まないためBIBLEを設定できません。完全版のRIPPS2.elfがインストールと修復を行います。設定済みのブートローダーはRIPPS2 liteをそのまま起動し続けます。
   '%d COPIED OUT': '%d件を外へコピー'
   '%d ITEM   %d MARKED   %s': '%d項目   %d件マーク   %s'
   '%d ITEM   %d MARKED   %s   %s FREE': '%d項目   %d件マーク   %s   空き%s'

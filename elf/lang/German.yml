@@ -3,12 +3,16 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: German
 strings:
+  "This game starts through Neutrino, and RIPPS2 found none: not at Settings' path, on the game's drive, on the memory cards or on any started drive. Put Neutrino by rickgaiser (github.com/rickgaiser/neutrino) in a neutrino folder on the game's drive or a memory card, or point Game Launching > Neutrino at it.": "Dieses Spiel startet über Neutrino, und RIPPS2 hat keins gefunden: weder am Pfad in den Einstellungen noch auf dem Laufwerk des Spiels, den Memory Cards oder einem gestarteten Laufwerk. Leg rickgaisers Neutrino (github.com/rickgaiser/neutrino) in einen Ordner neutrino auf dem Laufwerk des Spiels oder einer Memory Card, oder stell Spielstart > Neutrino darauf."
+  "Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets. Get Neutrino at github.com/rickgaiser/neutrino and put it in a neutrino folder on a drive or a memory card.": "Wo dein Neutrino ist, sein Videomodus und die Argumente, die jeder Neutrino-Start bekommt. Neutrino gibt es unter github.com/rickgaiser/neutrino; leg es in einen Ordner neutrino auf einem Laufwerk oder einer Memory Card."
+  "This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer.": "Dieses Neutrino ist älter als 1.3 und kann keine Spiele von der APA-Festplatte starten. Stell Spielstart > Neutrino auf Neutrino 1.3 oder neuer."
+  "with rickgaiser's Neutrino as its second game core,": "mit rickgaisers Neutrino als zweitem Spielkern,"
+  "the second game core, used from your drive or memory card (AFL-3.0)": "der zweite Spielkern, genutzt von deinem Laufwerk oder deiner Memory Card (AFL-3.0)"
   "FILE NAME": "DATEINAME"
   "GAME LIST": "SPIELELISTE"
   "%s in %s": "%s in %s"
   "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "Schreibvorgänge sind aus, darum kann RIPPS2 die Angaben eines Spiels nicht speichern und es nicht umbenennen. Einschalten?"
   "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "BIBLE baut auf El Isras PS2BBL auf, seine Fassungen für Karte und HDD sind für RIPPS2 signiert (GPL-3)"
-  "This is RIPPS2 lite, which carries no Neutrino. Put Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in a neutrino folder on a memory card or the game's drive, or use the full RIPPS2.elf, which installs it for you.": "Das ist RIPPS2 lite, das kein Neutrino mitbringt. Lege Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in einen Ordner neutrino auf einer Speicherkarte oder dem Laufwerk des Spiels, oder nimm das volle RIPPS2.elf, das es für dich installiert."
   "START %s": "%s STARTEN"
   "NETWORK": "NETZWERK"
   "%s did not answer. Is it connected?": "%s hat nicht geantwortet. Ist es angeschlossen?"
@@ -485,11 +489,6 @@ strings:
   This file is too big to edit here (64 KB at most).: Diese Datei ist zu groß, um sie hier zu bearbeiten (höchstens 64 KB).
   VIDEO: VIDEO
   YOURS: DEINE
-  MEMORY CARD %d  (about 600 KB): SPEICHERKARTE %d  (etwa 600 KB)
-  'NEUTRINO: unpacking': 'NEUTRINO: entpacke'
-  'NEUTRINO: writing %.60s': 'NEUTRINO: schreibe %.60s'
-  Neutrino could not be written to %s. Check its free space and that it is not write protected, then try again.: Neutrino konnte nicht nach %s geschrieben werden. Prüfe den freien Platz und dass es nicht schreibgeschützt ist, und versuche es erneut.
-  THE GAME'S DRIVE  (%s/neutrino): DAS LAUFWERK DES SPIELS  (%s/neutrino)
   '%d / %d FILES': '%d / %d DATEIEN'
   '%d FOLDERS AND CONTENTS': '%d ORDNER MIT INHALT'
   '%d FOLDERS, %d FOUND': '%d ORDNER, %d GEFUNDEN'
@@ -770,14 +769,10 @@ strings:
   TOO MANY FILES IN THE PSU: ZU VIELE DATEIEN IN DER PSU
   UNKNOWN CARD LAYOUT: UNBEKANNTER KARTENAUFBAU
   '%d sounds from %sAUDIO%s': '%d Sounds aus %sAUDIO%s'
-  '%s could not be written to %s. Check its free space and that it is not write protected.': '%s konnte nicht nach %s geschrieben werden. Prüfe den freien Platz und dass es nicht schreibgeschützt ist.'
-  '%s is installed in %s.': '%s ist in %s installiert.'
   ', some files could not be used': ', einige Dateien waren nicht nutzbar'
   AUDIO folder: AUDIO-Ordner
   DRIVES: LAUFWERKE
   MANAGE: VERWALTEN
-  MEMORY CARD 0  (about 600 KB): SPEICHERKARTE 0  (etwa 600 KB)
-  MEMORY CARD 1  (about 600 KB): SPEICHERKARTE 1  (etwa 600 KB)
   'MX4SIO: its driver would not load (code %d).': 'MX4SIO: Sein Treiber ließ sich nicht laden (Code %d).'
   'MX4SIO: off in Game Sources.': 'MX4SIO: aus in Spielquellen.'
   'MX4SIO: on in Game Sources; its driver has not been started yet.': 'MX4SIO: an in Spielquellen; sein Treiber wurde noch nicht gestartet.'
@@ -900,7 +895,6 @@ strings:
   'Special thanks to all the YouTube love as well:': 'Besonderer Dank auch an all die Liebe auf YouTube:'
   and its own look, launchers, file browser and save tools.: und mit eigenem Look, eigenen Startern, Dateibrowser und Speicherwerkzeugen.
   glad to help however you reach me.: ich helfe gern, egal wie ihr mich erreicht.
-  with rickgaiser's Neutrino inside as its second game core,: mit rickgaisers Neutrino als zweitem Spielkern darin,
   STARTING THE DRIVES: STARTE DIE LAUFWERKE
   '%d games, on the started drives': '%d Spiele, auf den gestarteten Laufwerken'
   '%s: SOME FILES COULD NOT BE DELETED': '%s: EINIGE DATEIEN KONNTEN NICHT GELÖSCHT WERDEN'
@@ -964,7 +958,6 @@ strings:
   LOOKING FOR YOUR LAUNCHERS: SUCHE DEINE STARTER
   The POPS files: Die POPS-Dateien
   '%s  MMCE card': '%s  MMCE-Karte'
-  INSTALL RIPPS2'S NEUTRINO: RIPPS2S NEUTRINO INSTALLIEREN
   'Internal HDD (APA): %s free of %s': 'Interne Festplatte (APA): %s frei von %s'
   LAUNCHERS: STARTER
   LOOK FOR THEM: DANACH SUCHEN
@@ -978,7 +971,6 @@ strings:
   found where you keep them: gefunden, wo du sie aufbewahrst
   not found yet: noch nicht gefunden
   not on a started drive: nicht auf einem gestarteten Laufwerk
-  only if you have none: nur wenn du keins hast
   starts every drive first: startet zuerst alle Laufwerke
   BDM Devices: BDM-Geräte
   Color Sweep: Farbwechsel
@@ -1071,7 +1063,6 @@ strings:
   STARS SHOWN: STERNE SICHTBAR
   Asking the SD2PSX for this game's memory card...: Frage den SD2PSX nach der Speicherkarte dieses Spiels...
   The SD2PSX is getting this game's memory card ready (%d s). The game starts when it is done; START starts it now.: Der SD2PSX bereitet die Speicherkarte dieses Spiels vor (%d s). Das Spiel startet, sobald er fertig ist; START startet es sofort.
-  the second game core, its newest build carried unmodified (AFL-3.0): der zweite Spielkern, sein neuester Build unverändert mitgeliefert (AFL-3.0)
   '%s could not be written to %s (%d of the sounds were). Is the drive full or write-protected?': '%s konnte nicht nach %s geschrieben werden (%d der Sounds schon). Ist das Laufwerk voll oder schreibgeschützt?'
   '%s could not be written to %s (%d of the sounds were, and the card has %d KB free now). Is the card write-protected?': '%s konnte nicht nach %s geschrieben werden (%d der Sounds schon, und die Karte hat jetzt %d KB frei). Ist die Karte schreibgeschützt?'
   The folder %s could not be made. Is the drive full or write-protected? Nothing was written.: Der Ordner %s konnte nicht angelegt werden. Ist das Laufwerk voll oder schreibgeschützt? Es wurde nichts geschrieben.
@@ -1085,8 +1076,6 @@ strings:
   ? 'Memory Files opens now, on MEDIA, with the disc on its clipboard (RIPPED). Go to the drive and folder it should be in (any drive: USB, the HDD, the SD2PSX''s MEDIA), press TRIANGLE for ACTIONS and choose PASTE. RIPDISC then asks once more and reads the disc with your PS2''s laser, writing it there.'
   : 'Speicherdateien öffnet sich jetzt auf MEDIA, mit der Disc in der Zwischenablage (GERIPPT). Geh zu dem Laufwerk und Ordner, wo sie hin soll (jedes Laufwerk: USB, die Festplatte, MEDIA des SD2PSX), drück DREIECK für AKTIONEN und wähle EINFÜGEN. RIPDISC fragt dann noch einmal, liest die Disc mit dem Laser deiner PS2 und schreibt sie dorthin.'
   RENAME THE GAME: SPIEL UMBENENNEN
-  ? 'This game starts through Neutrino, and RIPPS2 found none: not at Settings'' path, on the game''s drive, on the memory cards or on any started drive. RIPPS2 carries Neutrino by rickgaiser (AFL-3.0), its newest build: install it once, where you pick, and every Neutrino game uses it from there.'
-  : 'Dieses Spiel startet über Neutrino, und RIPPS2 hat keins gefunden: nicht am Pfad aus den Einstellungen, nicht auf dem Laufwerk des Spiels, nicht auf den Speicherkarten und auf keinem gestarteten Laufwerk. RIPPS2 bringt Neutrino von rickgaiser mit (AFL-3.0), seinen neuesten Build: Installiere es einmal, wo du willst, und jedes Neutrino-Spiel nutzt es von dort.'
   A PS1 disc's track list, for Ember: Die Titelliste einer PS1-Disc, für Ember
   A PS1 game for POPSTARTER: Ein PS1-Spiel für POPSTARTER
   A PS2 game: Ein PS2-Spiel
@@ -1137,7 +1126,6 @@ strings:
   'All Games: %d games kept in %s, listed at boot before any drive answers': 'Alle Spiele: %d Spiele in %s gespeichert, beim Booten gelistet, bevor ein Laufwerk antwortet'
   'All Games: no master list yet; %s is written once the games are listed (Fast Cache on)': 'Alle Spiele: noch keine Hauptliste; %s wird geschrieben, sobald die Spiele gelistet sind (Fast Cache an)'
   CACHE SETTINGS: CACHE-EINSTELLUNGEN
-  Copies the Neutrino RIPPS2 carries to a drive or a memory card. A Neutrino of your own is used as it is.: Kopiert das Neutrino, das RIPPS2 mitbringt, auf ein Laufwerk oder eine Speicherkarte. Ein eigenes Neutrino wird so genutzt, wie es ist.
   DIAG.TXT, for a bug report: DIAG.TXT, für einen Fehlerbericht
   Drives, loading, launchers and homebrew: Laufwerke, Laden, Starter und Homebrew
   ? Fast Cache shows each drive's last game list the moment the drive answers; Trust Cache keeps it until you press SELECT. Both on, with the settings on the memory card RIPPS2 starts from, is the quickest boot.
@@ -1159,13 +1147,10 @@ strings:
   The diagnostics could not be written to %s.: Die Diagnose konnte nicht nach %s geschrieben werden.
   What each memory card starts at power on; install or repair BIBLE, PS2BBL set up to start RIPPS2.: Was jede Speicherkarte beim Einschalten startet; BIBLE installieren oder reparieren, PS2BBL eingerichtet, um RIPPS2 zu starten.
   Where POPSTARTER and Ember are, and how PS1 games start.: Wo POPSTARTER und Ember sind und wie PS1-Spiele starten.
-  Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets.: Wo dein Neutrino ist, sein Videomodus und die Argumente, die jeder Neutrino-Start bekommt.
   ? Writes what RIPPS2 noted about the pads, the drives, MMCE cards and the last launches to DIAG.TXT beside RIPPS2. Send it with a bug report.
   : Schreibt, was RIPPS2 über die Pads, die Laufwerke, MMCE-Karten und die letzten Starts notiert hat, in DIAG.TXT neben RIPPS2. Schick die Datei mit einem Fehlerbericht.
   back to Cache: zurück zu Cache
   what boot reads first: was der Start zuerst liest
-  ? This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer, or clear the path to use the one RIPPS2 carries.
-  : Dieses Neutrino ist älter als 1.3 und kann keine Spiele von der APA-Festplatte starten. Stell Spielstart > Neutrino auf Neutrino 1.3 oder neuer, oder leere den Pfad, um das von RIPPS2 mitgebrachte zu nutzen.
   ', the sounds': ', die Sounds'
   ? 'Fast Boot is on. RIPPS2 boots from its own drive (%s): the settings%s and every list from its cache. The other drives start when you press SELECT on their page, or launch one of their games.'
   : 'Fast Boot ist an. RIPPS2 startet von seinem eigenen Laufwerk (%s): die Einstellungen%s und jede Liste aus ihrem Cache. Die anderen Laufwerke starten, wenn du auf ihrer Seite SELECT drückst oder eines ihrer Spiele startest.'
@@ -1374,7 +1359,6 @@ strings:
   : 'Noch keine. Ein Profil ist eine Textdatei, benannt nach der ID des Pads, etwa 2563_0575.pad: das Format steht im Repo von RIPPS2 (docs/plans/pad-spec.md).'
   On (fast): An (schnell)
   'Pad profiles in %s:': 'Pad-Profile in %s:'
-  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (Build %d) auf RiptOPL %s
   RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: RIPPS2 weiß nicht, wo sein Ordner ist, und kann daher nicht nach PADS suchen.
   could not be read: konnte nicht gelesen werden
   About %d seconds left: Noch etwa %d Sekunden
@@ -1393,8 +1377,6 @@ strings:
   ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
   : An (schnell) legt den Startton neben RIPPS2 auf die Memory Card, von der es startet, und RIPPS2 wurde nicht von einer gestartet. Der Startton spielt wie bei An.
   'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'Es gibt noch keinen Startton zum Kopieren: Audio-Einstellungen > BIOS-Sounds rippt die dieser Konsole.'
-  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
-  : Dies ist RIPPS2 lite, es enthält kein PS2BBL und kann BIBLE daher nicht einrichten. Die volle RIPPS2.elf installiert und repariert es; ein schon eingerichteter Bootloader startet RIPPS2 lite weiter wie bisher.
   '%d COPIED OUT': '%d HINAUSKOPIERT'
   '%d ITEM   %d MARKED   %s': '%d ELEMENT   %d MARKIERT   %s'
   '%d ITEM   %d MARKED   %s   %s FREE': '%d ELEMENT   %d MARKIERT   %s   %s FREI'

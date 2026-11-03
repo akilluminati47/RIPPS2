@@ -3,12 +3,16 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: SChinese
 strings:
+  "This game starts through Neutrino, and RIPPS2 found none: not at Settings' path, on the game's drive, on the memory cards or on any started drive. Put Neutrino by rickgaiser (github.com/rickgaiser/neutrino) in a neutrino folder on the game's drive or a memory card, or point Game Launching > Neutrino at it.": "这个游戏通过 Neutrino 启动，但 RIPPS2 没有找到：设置中的路径、游戏所在的驱动器、记忆卡和任何已启动的驱动器上都没有。请把 rickgaiser 的 Neutrino（github.com/rickgaiser/neutrino）放进游戏所在驱动器或记忆卡上的 neutrino 文件夹，或在游戏启动 > Neutrino 中指向它。"
+  "Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets. Get Neutrino at github.com/rickgaiser/neutrino and put it in a neutrino folder on a drive or a memory card.": "你的 Neutrino 的位置、视频模式，以及每次用 Neutrino 启动时传入的参数。 从 github.com/rickgaiser/neutrino 获取 Neutrino，放进驱动器或记忆卡上的 neutrino 文件夹。"
+  "This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer.": "这个 Neutrino 早于 1.3，无法从 APA 硬盘启动游戏。请把游戏启动 > Neutrino 指向 Neutrino 1.3 或更新版本。"
+  "with rickgaiser's Neutrino as its second game core,": "以 rickgaiser 的 Neutrino 作为第二个游戏核心，"
+  "the second game core, used from your drive or memory card (AFL-3.0)": "第二个游戏核心，从你的驱动器或记忆卡使用（AFL-3.0）"
   "FILE NAME": "文件名"
   "GAME LIST": "游戏列表"
   "%s in %s": "%s 于 %s"
   "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "写入操作已关闭，因此 RIPPS2 无法保存游戏的信息或重命名游戏。要打开吗？"
   "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "BIBLE 基于 El Isra 的 PS2BBL，其记忆卡版和 HDD 版已为 RIPPS2 签名（GPL-3）"
-  "This is RIPPS2 lite, which carries no Neutrino. Put Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in a neutrino folder on a memory card or the game's drive, or use the full RIPPS2.elf, which installs it for you.": "这是不带 Neutrino 的 RIPPS2 lite。请把 Neutrino（rickgaiser，github.com/rickgaiser/neutrino）放到记忆卡或游戏所在驱动器上的 neutrino 文件夹，或者使用会替你安装它的完整版 RIPPS2.elf。"
   "START %s": "启动 %s"
   "NETWORK": "网络"
   "%s did not answer. Is it connected?": "%s 没有响应。是否已连接？"
@@ -485,11 +489,6 @@ strings:
   This file is too big to edit here (64 KB at most).: 此文件太大，无法在此编辑（最大 64 KB）。
   VIDEO: 视频
   YOURS: 你的
-  MEMORY CARD %d  (about 600 KB): 记忆卡 %d  （约 600 KB）
-  'NEUTRINO: unpacking': NEUTRINO：正在解包
-  'NEUTRINO: writing %.60s': NEUTRINO：正在写入 %.60s
-  Neutrino could not be written to %s. Check its free space and that it is not write protected, then try again.: 无法把 Neutrino 写入 %s。请检查剩余空间以及是否写保护，然后重试。
-  THE GAME'S DRIVE  (%s/neutrino): 游戏所在驱动器  （%s/neutrino）
   '%d / %d FILES': '%d / %d 个文件'
   '%d FOLDERS AND CONTENTS': '%d 个文件夹及内容'
   '%d FOLDERS, %d FOUND': '%d 个文件夹，找到 %d 个'
@@ -770,14 +769,10 @@ strings:
   TOO MANY FILES IN THE PSU: PSU 中的文件太多
   UNKNOWN CARD LAYOUT: 未知的记忆卡布局
   '%d sounds from %sAUDIO%s': '%d 个音效来自 %sAUDIO%s'
-  '%s could not be written to %s. Check its free space and that it is not write protected.': 无法把 %s 写入 %s。请检查剩余空间以及是否写保护。
-  '%s is installed in %s.': '%s 已安装到 %s。'
   ', some files could not be used': ，部分文件无法使用
   AUDIO folder: AUDIO 文件夹
   DRIVES: 驱动器
   MANAGE: 管理
-  MEMORY CARD 0  (about 600 KB): 记忆卡 0  （约 600 KB）
-  MEMORY CARD 1  (about 600 KB): 记忆卡 1  （约 600 KB）
   'MX4SIO: its driver would not load (code %d).': MX4SIO：驱动无法加载（代码 %d）。
   'MX4SIO: off in Game Sources.': MX4SIO：在“游戏来源”中已关闭。
   'MX4SIO: on in Game Sources; its driver has not been started yet.': MX4SIO：在“游戏来源”中已开启；驱动尚未启动。
@@ -900,7 +895,6 @@ strings:
   'Special thanks to all the YouTube love as well:': 也特别感谢来自 YouTube 的所有喜爱：
   and its own look, launchers, file browser and save tools.: 并有自己的外观、启动器、文件浏览器和存档工具。
   glad to help however you reach me.: 无论你怎样联系我，都乐意帮忙。
-  with rickgaiser's Neutrino inside as its second game core,: 内含 rickgaiser 的 Neutrino 作为第二个游戏核心，
   STARTING THE DRIVES: 正在启动驱动器
   '%d games, on the started drives': '%d 个游戏，在已启动的驱动器上'
   '%s: SOME FILES COULD NOT BE DELETED': '%s：有些文件无法删除'
@@ -964,7 +958,6 @@ strings:
   LOOKING FOR YOUR LAUNCHERS: 正在查找你的启动器
   The POPS files: POPS 文件
   '%s  MMCE card': '%s  MMCE 卡'
-  INSTALL RIPPS2'S NEUTRINO: 安装 RIPPS2 的 NEUTRINO
   'Internal HDD (APA): %s free of %s': 内置硬盘（APA）：可用 %s / 共 %s
   LAUNCHERS: 启动器
   LOOK FOR THEM: 查找它们
@@ -978,7 +971,6 @@ strings:
   found where you keep them: 在你存放的位置找到
   not found yet: 尚未找到
   not on a started drive: 不在已启动的驱动器上
-  only if you have none: 仅在你没有时
   starts every drive first: 先启动所有驱动器
   BDM Devices: BDM 设备
   Color Sweep: 颜色渐变
@@ -1074,7 +1066,6 @@ strings:
   STARS SHOWN: 已显示星标
   Asking the SD2PSX for this game's memory card...: 正在向 SD2PSX 请求这个游戏的记忆卡...
   The SD2PSX is getting this game's memory card ready (%d s). The game starts when it is done; START starts it now.: SD2PSX 正在准备这个游戏的记忆卡（%d 秒）。完成后游戏开始；按 START 立即开始。
-  the second game core, its newest build carried unmodified (AFL-3.0): 第二个游戏核心，其最新版本原样附带（AFL-3.0）
   '%s could not be written to %s (%d of the sounds were). Is the drive full or write-protected?': 无法把 %s 写入 %s（已写入 %d 个音效）。驱动器是否已满或写保护？
   '%s could not be written to %s (%d of the sounds were, and the card has %d KB free now). Is the card write-protected?': 无法把 %s 写入 %s（已写入 %d 个音效，记忆卡现在剩余 %d KB）。记忆卡是否写保护？
   The folder %s could not be made. Is the drive full or write-protected? Nothing was written.: 无法创建文件夹 %s。驱动器是否已满或写保护？没有写入任何内容。
@@ -1088,8 +1079,6 @@ strings:
   ? 'Memory Files opens now, on MEDIA, with the disc on its clipboard (RIPPED). Go to the drive and folder it should be in (any drive: USB, the HDD, the SD2PSX''s MEDIA), press TRIANGLE for ACTIONS and choose PASTE. RIPDISC then asks once more and reads the disc with your PS2''s laser, writing it there.'
   : 记忆文件现在在 MEDIA 打开，光盘已在剪贴板中（已提取）。前往要放置的驱动器和文件夹（任何驱动器：USB、硬盘、SD2PSX 的 MEDIA），按三角打开操作并选择粘贴。RIPDISC 会再确认一次，然后用你的 PS2 的激光读取光盘并写入那里。
   RENAME THE GAME: 重命名游戏
-  ? 'This game starts through Neutrino, and RIPPS2 found none: not at Settings'' path, on the game''s drive, on the memory cards or on any started drive. RIPPS2 carries Neutrino by rickgaiser (AFL-3.0), its newest build: install it once, where you pick, and every Neutrino game uses it from there.'
-  : 这个游戏通过 Neutrino 启动，而 RIPPS2 没有找到：设置里的路径、游戏所在的驱动器、记忆卡和任何已启动的驱动器上都没有。RIPPS2 带有 rickgaiser 的 Neutrino（AFL-3.0）最新版本：在你选的地方安装一次，之后每个 Neutrino 游戏都从那里使用它。
   A PS1 disc's track list, for Ember: PS1 光盘的音轨列表，供 Ember 使用
   A PS1 game for POPSTARTER: 供 POPSTARTER 使用的 PS1 游戏
   A PS2 game: PS2 游戏
@@ -1140,7 +1129,6 @@ strings:
   'All Games: %d games kept in %s, listed at boot before any drive answers': 全部游戏：%d 个游戏保存在 %s，开机时在任何驱动器响应前就列出
   'All Games: no master list yet; %s is written once the games are listed (Fast Cache on)': 全部游戏：尚无主列表；游戏列出后会写入 %s（Fast Cache 开启）
   CACHE SETTINGS: 缓存设置
-  Copies the Neutrino RIPPS2 carries to a drive or a memory card. A Neutrino of your own is used as it is.: 把 RIPPS2 附带的 Neutrino 复制到驱动器或记忆卡。你自己的 Neutrino 会原样使用。
   DIAG.TXT, for a bug report: DIAG.TXT，用于错误报告
   Drives, loading, launchers and homebrew: 驱动器、加载、启动器和自制程序
   ? Fast Cache shows each drive's last game list the moment the drive answers; Trust Cache keeps it until you press SELECT. Both on, with the settings on the memory card RIPPS2 starts from, is the quickest boot.
@@ -1162,13 +1150,10 @@ strings:
   The diagnostics could not be written to %s.: 无法把诊断信息写入 %s。
   What each memory card starts at power on; install or repair BIBLE, PS2BBL set up to start RIPPS2.: 每张记忆卡开机时启动的内容；安装或修复 BIBLE，即设置为启动 RIPPS2 的 PS2BBL。
   Where POPSTARTER and Ember are, and how PS1 games start.: POPSTARTER 和 Ember 的位置，以及 PS1 游戏的启动方式。
-  Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets.: 你的 Neutrino 的位置、视频模式，以及每次用 Neutrino 启动时传入的参数。
   ? Writes what RIPPS2 noted about the pads, the drives, MMCE cards and the last launches to DIAG.TXT beside RIPPS2. Send it with a bug report.
   : 把 RIPPS2 记下的关于手柄、驱动器、MMCE 卡和最近几次启动的信息写入 RIPPS2 旁的 DIAG.TXT。请随错误报告一起发送。
   back to Cache: 返回缓存
   what boot reads first: 开机最先读取的内容
-  ? This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer, or clear the path to use the one RIPPS2 carries.
-  : 这个 Neutrino 早于 1.3，无法从 APA 硬盘启动游戏。请把游戏启动 > Neutrino 指向 Neutrino 1.3 或更新版本，或清空路径以使用 RIPPS2 附带的版本。
   ', the sounds': 、音效
   ? 'Fast Boot is on. RIPPS2 boots from its own drive (%s): the settings%s and every list from its cache. The other drives start when you press SELECT on their page, or launch one of their games.'
   : Fast Boot 已开启。RIPPS2 从自己的驱动器 (%s) 启动：设置%s 和每个列表都从缓存读取。其他驱动器在你于其页面按 SELECT 或启动其中的游戏时才启动。
@@ -1377,7 +1362,6 @@ strings:
   : 还没有。配置文件是以手柄 ID 命名的文本文件,如 2563_0575.pad:格式见 RIPPS2 仓库(docs/plans/pad-spec.md)。
   On (fast): 开(快速)
   'Pad profiles in %s:': '%s 中的手柄配置:'
-  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite(版本 %d),基于 RiptOPL %s
   RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: RIPPS2 不知道自己的文件夹在哪,无法查找 PADS。
   could not be read: 无法读取
   About %d seconds left: 约剩 %d 秒
@@ -1396,8 +1380,6 @@ strings:
   ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
   : 开(快速)把开机音放在启动所用记忆卡上的 RIPPS2 旁,但 RIPPS2 并非从记忆卡启动。开机音按「开」播放。
   'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 还没有可复制的开机音:音频设置 > BIOS 声音可提取本机的声音。
-  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
-  : 这是 RIPPS2 lite,不含 PS2BBL,无法设置 BIBLE。完整的 RIPPS2.elf 可安装和修复;已设置的引导程序会照常启动 RIPPS2 lite。
   '%d COPIED OUT': 已复制出 %d
   '%d ITEM   %d MARKED   %s': '%d 项   已标记 %d   %s'
   '%d ITEM   %d MARKED   %s   %s FREE': '%d 项   已标记 %d   %s   可用 %s'

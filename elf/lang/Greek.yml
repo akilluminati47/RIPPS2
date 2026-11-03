@@ -3,12 +3,16 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Greek
 strings:
+  "This game starts through Neutrino, and RIPPS2 found none: not at Settings' path, on the game's drive, on the memory cards or on any started drive. Put Neutrino by rickgaiser (github.com/rickgaiser/neutrino) in a neutrino folder on the game's drive or a memory card, or point Game Launching > Neutrino at it.": "Αυτό το παιχνίδι ξεκινά μέσω Neutrino, και το RIPPS2 δεν βρήκε κανένα: ούτε στη διαδρομή των Ρυθμίσεων, ούτε στον δίσκο του παιχνιδιού, ούτε στις κάρτες μνήμης, ούτε σε κάποιον δίσκο που ξεκίνησε. Βάλτε το Neutrino του rickgaiser (github.com/rickgaiser/neutrino) σε φάκελο neutrino στον δίσκο του παιχνιδιού ή σε κάρτα μνήμης, ή στρέψτε την Εκκίνηση παιχνιδιών > Neutrino σε αυτό."
+  "Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets. Get Neutrino at github.com/rickgaiser/neutrino and put it in a neutrino folder on a drive or a memory card.": "Πού είναι το Neutrino σας, η λειτουργία βίντεο και τα ορίσματα που παίρνει κάθε εκκίνηση με Neutrino. Κατεβάστε το Neutrino από το github.com/rickgaiser/neutrino και βάλτε το σε φάκελο neutrino σε δίσκο ή κάρτα μνήμης."
+  "This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer.": "Αυτό το Neutrino είναι παλαιότερο από το 1.3, που δεν μπορεί να ξεκινήσει παιχνίδια από τον APA HDD. Στρέψτε την Εκκίνηση παιχνιδιών > Neutrino σε Neutrino 1.3 ή νεότερο."
+  "with rickgaiser's Neutrino as its second game core,": "με το Neutrino του rickgaiser ως δεύτερο πυρήνα παιχνιδιών,"
+  "the second game core, used from your drive or memory card (AFL-3.0)": "ο δεύτερος πυρήνας παιχνιδιών, από τον δίσκο ή την κάρτα μνήμης σας (AFL-3.0)"
   "FILE NAME": "ΟΝΟΜΑ ΑΡΧΕΙΟΥ"
   "GAME LIST": "ΛΙΣΤΑ ΠΑΙΧΝΙΔΙΩΝ"
   "%s in %s": "%s στο %s"
   "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "Οι εγγραφές είναι απενεργοποιημένες, οπότε το RIPPS2 δεν μπορεί να αποθηκεύσει τα στοιχεία ενός παιχνιδιού ή να το μετονομάσει. Να ενεργοποιηθούν;"
   "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "Το BIBLE βασίζεται στο PS2BBL του El Isra, με τις εκδόσεις για κάρτα και HDD υπογεγραμμένες για το RIPPS2 (GPL-3)"
-  "This is RIPPS2 lite, which carries no Neutrino. Put Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in a neutrino folder on a memory card or the game's drive, or use the full RIPPS2.elf, which installs it for you.": "Αυτό είναι το RIPPS2 lite, που δεν περιέχει Neutrino. Βάλτε το Neutrino (rickgaiser, github.com/rickgaiser/neutrino) σε φάκελο neutrino σε κάρτα μνήμης ή στον δίσκο του παιχνιδιού, ή χρησιμοποιήστε το πλήρες RIPPS2.elf, που το εγκαθιστά για εσάς."
   "START %s": "ΕΝΑΡΞΗ %s"
   "NETWORK": "ΔΙΚΤΥΟ"
   "%s did not answer. Is it connected?": "Το %s δεν απάντησε. Είναι συνδεδεμένο;"
@@ -485,11 +489,6 @@ strings:
   This file is too big to edit here (64 KB at most).: Αυτό το αρχείο είναι πολύ μεγάλο για επεξεργασία εδώ (το πολύ 64 KB).
   VIDEO: ΒΙΝΤΕΟ
   YOURS: ΔΙΚΑ ΣΑΣ
-  MEMORY CARD %d  (about 600 KB): ΚΑΡΤΑ ΜΝΗΜΗΣ %d  (περίπου 600 KB)
-  'NEUTRINO: unpacking': 'NEUTRINO: αποσυμπίεση'
-  'NEUTRINO: writing %.60s': 'NEUTRINO: εγγραφή %.60s'
-  Neutrino could not be written to %s. Check its free space and that it is not write protected, then try again.: Το Neutrino δεν γράφτηκε στο %s. Ελέγξτε τον ελεύθερο χώρο και ότι δεν είναι προστατευμένο από εγγραφή, και δοκιμάστε ξανά.
-  THE GAME'S DRIVE  (%s/neutrino): Ο ΔΙΣΚΟΣ ΤΟΥ ΠΑΙΧΝΙΔΙΟΥ  (%s/neutrino)
   '%d / %d FILES': '%d / %d ΑΡΧΕΙΑ'
   '%d FOLDERS AND CONTENTS': '%d ΦΑΚΕΛΟΙ ΚΑΙ ΠΕΡΙΕΧΟΜΕΝΑ'
   '%d FOLDERS, %d FOUND': '%d ΦΑΚΕΛΟΙ, %d ΒΡΕΘΗΚΑΝ'
@@ -770,14 +769,10 @@ strings:
   TOO MANY FILES IN THE PSU: ΠΑΡΑ ΠΟΛΛΑ ΑΡΧΕΙΑ ΣΤΟ PSU
   UNKNOWN CARD LAYOUT: ΑΓΝΩΣΤΗ ΔΙΑΤΑΞΗ ΚΑΡΤΑΣ
   '%d sounds from %sAUDIO%s': '%d ήχοι από %sAUDIO%s'
-  '%s could not be written to %s. Check its free space and that it is not write protected.': Το %s δεν γράφτηκε στο %s. Ελέγξτε τον ελεύθερο χώρο και ότι δεν είναι προστατευμένο από εγγραφή.
-  '%s is installed in %s.': Το %s εγκαταστάθηκε στο %s.
   ', some files could not be used': ', κάποια αρχεία δεν χρησιμοποιήθηκαν'
   AUDIO folder: φάκελος AUDIO
   DRIVES: ΔΙΣΚΟΙ
   MANAGE: ΔΙΑΧΕΙΡΙΣΗ
-  MEMORY CARD 0  (about 600 KB): ΚΑΡΤΑ ΜΝΗΜΗΣ 0  (περίπου 600 KB)
-  MEMORY CARD 1  (about 600 KB): ΚΑΡΤΑ ΜΝΗΜΗΣ 1  (περίπου 600 KB)
   'MX4SIO: its driver would not load (code %d).': 'MX4SIO: ο οδηγός του δεν φορτώθηκε (κωδικός %d).'
   'MX4SIO: off in Game Sources.': 'MX4SIO: ανενεργό στις Πηγές παιχνιδιών.'
   'MX4SIO: on in Game Sources; its driver has not been started yet.': 'MX4SIO: ενεργό στις Πηγές παιχνιδιών· ο οδηγός του δεν έχει ξεκινήσει ακόμα.'
@@ -900,7 +895,6 @@ strings:
   'Special thanks to all the YouTube love as well:': 'Ιδιαίτερες ευχαριστίες και σε όλη την αγάπη από το YouTube:'
   and its own look, launchers, file browser and save tools.: και με δική του εμφάνιση, εκκινητές, περιηγητή αρχείων και εργαλεία αποθηκεύσεων.
   glad to help however you reach me.: χαρά μου να βοηθήσω, όπως κι αν με βρείτε.
-  with rickgaiser's Neutrino inside as its second game core,: με το Neutrino του rickgaiser μέσα ως δεύτερο πυρήνα παιχνιδιών,
   STARTING THE DRIVES: ΕΚΚΙΝΗΣΗ ΤΩΝ ΔΙΣΚΩΝ
   '%d games, on the started drives': '%d παιχνίδια, στους ξεκινημένους δίσκους'
   '%s: SOME FILES COULD NOT BE DELETED': '%s: ΚΑΠΟΙΑ ΑΡΧΕΙΑ ΔΕΝ ΔΙΑΓΡΑΦΗΚΑΝ'
@@ -964,7 +958,6 @@ strings:
   LOOKING FOR YOUR LAUNCHERS: ΑΝΑΖΗΤΗΣΗ ΤΩΝ ΕΚΚΙΝΗΤΩΝ ΣΑΣ
   The POPS files: Τα αρχεία POPS
   '%s  MMCE card': '%s  κάρτα MMCE'
-  INSTALL RIPPS2'S NEUTRINO: ΕΓΚΑΤΑΣΤΑΣΗ ΤΟΥ NEUTRINO ΤΟΥ RIPPS2
   'Internal HDD (APA): %s free of %s': 'Εσωτερικός HDD (APA): %s ελεύθερα από %s'
   LAUNCHERS: ΕΚΚΙΝΗΤΕΣ
   LOOK FOR THEM: ΨΑΞΕ ΤΟΥΣ
@@ -978,7 +971,6 @@ strings:
   found where you keep them: βρέθηκαν εκεί που τα κρατάτε
   not found yet: δεν βρέθηκε ακόμα
   not on a started drive: όχι σε ξεκινημένο δίσκο
-  only if you have none: μόνο αν δεν έχετε κανένα
   starts every drive first: ξεκινά πρώτα όλους τους δίσκους
   BDM Devices: Συσκευές BDM
   Color Sweep: Εναλλαγή χρωμάτων
@@ -1074,7 +1066,6 @@ strings:
   STARS SHOWN: ΑΣΤΕΡΙΑ ΟΡΑΤΑ
   Asking the SD2PSX for this game's memory card...: Ζητείται από το SD2PSX η κάρτα μνήμης αυτού του παιχνιδιού...
   The SD2PSX is getting this game's memory card ready (%d s). The game starts when it is done; START starts it now.: Το SD2PSX ετοιμάζει την κάρτα μνήμης αυτού του παιχνιδιού (%d δ). Το παιχνίδι ξεκινά όταν τελειώσει· το START το ξεκινά τώρα.
-  the second game core, its newest build carried unmodified (AFL-3.0): ο δεύτερος πυρήνας παιχνιδιών, η νεότερη έκδοσή του αυτούσια (AFL-3.0)
   '%s could not be written to %s (%d of the sounds were). Is the drive full or write-protected?': Το %s δεν γράφτηκε στο %s (γράφτηκαν %d από τους ήχους). Είναι ο δίσκος γεμάτος ή προστατευμένος από εγγραφή;
   '%s could not be written to %s (%d of the sounds were, and the card has %d KB free now). Is the card write-protected?': Το %s δεν γράφτηκε στο %s (γράφτηκαν %d από τους ήχους, και η κάρτα έχει τώρα %d KB ελεύθερα). Είναι η κάρτα προστατευμένη από εγγραφή;
   The folder %s could not be made. Is the drive full or write-protected? Nothing was written.: Ο φάκελος %s δεν δημιουργήθηκε. Είναι ο δίσκος γεμάτος ή προστατευμένος από εγγραφή; Δεν γράφτηκε τίποτα.
@@ -1088,8 +1079,6 @@ strings:
   ? 'Memory Files opens now, on MEDIA, with the disc on its clipboard (RIPPED). Go to the drive and folder it should be in (any drive: USB, the HDD, the SD2PSX''s MEDIA), press TRIANGLE for ACTIONS and choose PASTE. RIPDISC then asks once more and reads the disc with your PS2''s laser, writing it there.'
   : 'Τα Αρχεία μνήμης ανοίγουν τώρα, στο MEDIA, με τον δίσκο στο πρόχειρο (ΕΞΗΧΘΗ). Πηγαίνετε στον δίσκο και στον φάκελο όπου πρέπει να μπει (οποιονδήποτε δίσκο: USB, τον HDD, το MEDIA του SD2PSX), πατήστε ΤΡΙΓΩΝΟ για ΕΝΕΡΓΕΙΕΣ και διαλέξτε ΕΠΙΚΟΛΛΗΣΗ. Το RIPDISC ρωτά άλλη μία φορά και διαβάζει τον δίσκο με το λέιζερ του PS2 σας, γράφοντάς τον εκεί.'
   RENAME THE GAME: ΜΕΤΟΝΟΜΑΣΙΑ ΠΑΙΧΝΙΔΙΟΥ
-  ? 'This game starts through Neutrino, and RIPPS2 found none: not at Settings'' path, on the game''s drive, on the memory cards or on any started drive. RIPPS2 carries Neutrino by rickgaiser (AFL-3.0), its newest build: install it once, where you pick, and every Neutrino game uses it from there.'
-  : 'Αυτό το παιχνίδι ξεκινά μέσω Neutrino, και το RIPPS2 δεν βρήκε κανένα: ούτε στη διαδρομή των Ρυθμίσεων, ούτε στον δίσκο του παιχνιδιού, ούτε στις κάρτες μνήμης, ούτε σε ξεκινημένο δίσκο. Το RIPPS2 έχει το Neutrino του rickgaiser (AFL-3.0), τη νεότερη έκδοσή του: εγκαταστήστε το μία φορά, όπου διαλέξετε, και κάθε παιχνίδι Neutrino το χρησιμοποιεί από εκεί.'
   A PS1 disc's track list, for Ember: Η λίστα κομματιών ενός δίσκου PS1, για το Ember
   A PS1 game for POPSTARTER: Ένα παιχνίδι PS1 για το POPSTARTER
   A PS2 game: Ένα παιχνίδι PS2
@@ -1140,7 +1129,6 @@ strings:
   'All Games: %d games kept in %s, listed at boot before any drive answers': 'Όλα τα παιχνίδια: %d στο %s, φαίνονται στην εκκίνηση πριν απαντήσει δίσκος'
   'All Games: no master list yet; %s is written once the games are listed (Fast Cache on)': 'Όλα τα παιχνίδια: χωρίς κύρια λίστα· το %s γράφεται μόλις φανούν (Fast Cache ενεργό)'
   CACHE SETTINGS: ΡΥΘΜΙΣΕΙΣ ΚΡΥΦΗΣ ΜΝΗΜΗΣ
-  Copies the Neutrino RIPPS2 carries to a drive or a memory card. A Neutrino of your own is used as it is.: Αντιγράφει το Neutrino που έχει το RIPPS2 σε δίσκο ή κάρτα μνήμης. Ένα δικό σας Neutrino χρησιμοποιείται όπως είναι.
   DIAG.TXT, for a bug report: DIAG.TXT, για αναφορά σφάλματος
   Drives, loading, launchers and homebrew: Δίσκοι, φόρτωση, εκκινητές και homebrew
   ? Fast Cache shows each drive's last game list the moment the drive answers; Trust Cache keeps it until you press SELECT. Both on, with the settings on the memory card RIPPS2 starts from, is the quickest boot.
@@ -1162,13 +1150,10 @@ strings:
   The diagnostics could not be written to %s.: Τα διαγνωστικά δεν γράφτηκαν στο %s.
   What each memory card starts at power on; install or repair BIBLE, PS2BBL set up to start RIPPS2.: Τι ξεκινά κάθε κάρτα μνήμης στο άναμμα· εγκατάσταση ή επισκευή του BIBLE, του PS2BBL ρυθμισμένου να ξεκινά το RIPPS2.
   Where POPSTARTER and Ember are, and how PS1 games start.: Πού είναι το POPSTARTER και το Ember, και πώς ξεκινούν τα παιχνίδια PS1.
-  Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets.: Πού είναι το Neutrino σας, η λειτουργία βίντεο και τα ορίσματα που παίρνει κάθε εκκίνηση με Neutrino.
   ? Writes what RIPPS2 noted about the pads, the drives, MMCE cards and the last launches to DIAG.TXT beside RIPPS2. Send it with a bug report.
   : Γράφει όσα σημείωσε το RIPPS2 για τα χειριστήρια, τους δίσκους, τις κάρτες MMCE και τις τελευταίες εκκινήσεις στο DIAG.TXT δίπλα στο RIPPS2. Στείλτε το με μια αναφορά σφάλματος.
   back to Cache: πίσω στην Κρυφή μνήμη
   what boot reads first: τι διαβάζει πρώτα η εκκίνηση
-  ? This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer, or clear the path to use the one RIPPS2 carries.
-  : Αυτό το Neutrino είναι παλαιότερο από το 1.3, που δεν μπορεί να ξεκινήσει παιχνίδια από τον APA HDD. Στρέψτε την Εκκίνηση παιχνιδιών > Neutrino σε Neutrino 1.3 ή νεότερο, ή καθαρίστε τη διαδρομή για να χρησιμοποιηθεί αυτό που έχει το RIPPS2.
   ', the sounds': ', οι ήχοι'
   ? 'Fast Boot is on. RIPPS2 boots from its own drive (%s): the settings%s and every list from its cache. The other drives start when you press SELECT on their page, or launch one of their games.'
   : 'Το Fast Boot είναι ενεργό. Το RIPPS2 ξεκινά από τη δική του μονάδα (%s): οι ρυθμίσεις%s και κάθε λίστα από την προσωρινή μνήμη της. Οι άλλες μονάδες ξεκινούν όταν πατάς SELECT στη σελίδα τους ή ξεκινάς κάποιο από τα παιχνίδια τους.'
@@ -1377,7 +1362,6 @@ strings:
   : 'Κανένα ακόμα. Ένα προφίλ είναι αρχείο κειμένου με όνομα το ID του χειριστηρίου, π.χ. 2563_0575.pad: η μορφή είναι στο αποθετήριο του RIPPS2 (docs/plans/pad-spec.md).'
   On (fast): Ναι (γρήγορα)
   'Pad profiles in %s:': 'Προφίλ χειριστηρίων στο %s:'
-  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (build %d) σε RiptOPL %s
   RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: Το RIPPS2 δεν ξέρει πού είναι ο φάκελός του, άρα δεν μπορεί να ψάξει το PADS.
   could not be read: δεν διαβάστηκε
   About %d seconds left: Απομένουν περίπου %d δ.
@@ -1396,8 +1380,6 @@ strings:
   ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
   : Το Ναι (γρήγορα) κρατά τον ήχο εκκίνησης δίπλα στο RIPPS2 στην κάρτα μνήμης από την οποία ξεκινά, και το RIPPS2 δεν ξεκίνησε από κάρτα. Ο ήχος εκκίνησης παίζει όπως στο Ναι.
   'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'Δεν υπάρχει ακόμα ήχος εκκίνησης για αντιγραφή: Ρυθμίσεις ήχου > Ήχοι BIOS εξάγει αυτούς της κονσόλας.'
-  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
-  : Αυτό είναι το RIPPS2 lite, χωρίς PS2BBL, οπότε δεν μπορεί να εγκαταστήσει το BIBLE. Το πλήρες RIPPS2.elf το εγκαθιστά και το επισκευάζει· ένας φορτωτής ήδη στημένος συνεχίζει να ξεκινά το RIPPS2 lite όπως είναι.
   '%d COPIED OUT': '%d ΑΝΤΙΓΡΑΦΗΚΑΝ ΕΞΩ'
   '%d ITEM   %d MARKED   %s': '%d ΣΤΟΙΧΕΙΟ   %d ΣΗΜΕΙΩΜΕΝΟ   %s'
   '%d ITEM   %d MARKED   %s   %s FREE': '%d ΣΤΟΙΧΕΙΟ   %d ΣΗΜΕΙΩΜΕΝΟ   %s   %s ΕΛΕΥΘΕΡΑ'

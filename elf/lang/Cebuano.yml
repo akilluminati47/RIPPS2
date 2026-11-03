@@ -3,12 +3,16 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Cebuano
 strings:
+  "This game starts through Neutrino, and RIPPS2 found none: not at Settings' path, on the game's drive, on the memory cards or on any started drive. Put Neutrino by rickgaiser (github.com/rickgaiser/neutrino) in a neutrino folder on the game's drive or a memory card, or point Game Launching > Neutrino at it.": "Kini nga dula magsugod pinaagi sa Neutrino, ug walay nakit-an ang RIPPS2: wala sa path sa Settings, sa drive sa dula, sa mga memory card o sa bisan unsang nasugdan nga drive. Ibutang ang Neutrino ni rickgaiser (github.com/rickgaiser/neutrino) sa usa ka neutrino folder sa drive sa dula o sa memory card, o itudlo ang Game Launching > Neutrino niini."
+  "Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets. Get Neutrino at github.com/rickgaiser/neutrino and put it in a neutrino folder on a drive or a memory card.": "Asa ang imong Neutrino, ang video mode niini, ug ang mga argument nga madawat sa matag Neutrino launch. Kuhaa ang Neutrino sa github.com/rickgaiser/neutrino ug ibutang kini sa usa ka neutrino folder sa drive o memory card."
+  "This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer.": "Mas karaan kini nga Neutrino kaysa 1.3, nga dili makasugod og dula gikan sa APA HDD. Itudlo ang Game Launching > Neutrino sa Neutrino 1.3 o mas bag-o."
+  "with rickgaiser's Neutrino as its second game core,": "nga adunay Neutrino ni rickgaiser isip ikaduhang game core,"
+  "the second game core, used from your drive or memory card (AFL-3.0)": "ang ikaduhang game core, gigamit gikan sa imong drive o memory card (AFL-3.0)"
   "FILE NAME": "NGALAN SA FILE"
   "GAME LIST": "LISTAHAN SA DULA"
   "%s in %s": "%s sa %s"
   "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "Gipalong ang Write Operations, mao nga dili ma-save sa RIPPS2 ang detalye sa dula o ma-rename kini. I-on ba?"
   "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "Ang BIBLE gitukod sa PS2BBL ni El Isra, ang mga build niini para sa card ug HDD gipirmahan para sa RIPPS2 (GPL-3)"
-  "This is RIPPS2 lite, which carries no Neutrino. Put Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in a neutrino folder on a memory card or the game's drive, or use the full RIPPS2.elf, which installs it for you.": "Kini ang RIPPS2 lite, nga walay Neutrino. Ibutang ang Neutrino (rickgaiser, github.com/rickgaiser/neutrino) sa usa ka neutrino nga folder sa memory card o sa drive sa dula, o gamita ang tibuok RIPPS2.elf, nga mo-install niini para nimo."
   "START %s": "SUGDI ANG %s"
   "NETWORK": "NETWORK"
   "%s did not answer. Is it connected?": "Wala motubag ang %s. Nakonektar ba kini?"
@@ -485,11 +489,6 @@ strings:
   This file is too big to edit here (64 KB at most).: Dako kaayo kining file aron i-edit dinhi (64 KB ang labing daghan).
   VIDEO: VIDEO
   YOURS: IMO
-  MEMORY CARD %d  (about 600 KB): MEMORY CARD %d  (mga 600 KB)
-  'NEUTRINO: unpacking': 'NEUTRINO: gi-unpack'
-  'NEUTRINO: writing %.60s': 'NEUTRINO: gisulat ang %.60s'
-  Neutrino could not be written to %s. Check its free space and that it is not write protected, then try again.: Dili masulat ang Neutrino sa %s. Susiha ang libreng lugar niini ug nga dili kini naka-write-protect, unya sulayi pag-usab.
-  THE GAME'S DRIVE  (%s/neutrino): ANG DRIVE SA DULA  (%s/neutrino)
   '%d / %d FILES': '%d / %d KA FILE'
   '%d FOLDERS AND CONTENTS': '%d KA FOLDER UG SULOD'
   '%d FOLDERS, %d FOUND': '%d KA FOLDER, %d NAKIT-AN'
@@ -770,14 +769,10 @@ strings:
   TOO MANY FILES IN THE PSU: DAGHAN KAAYO NGA FILE SA PSU
   UNKNOWN CARD LAYOUT: WALA MAILHI NGA LAYOUT SA CARD
   '%d sounds from %sAUDIO%s': '%d ka tunog gikan sa %sAUDIO%s'
-  '%s could not be written to %s. Check its free space and that it is not write protected.': Dili masulat ang %s sa %s. Susiha ang libreng lugar niini ug nga dili kini naka-write-protect.
-  '%s is installed in %s.': Naka-install ang %s sa %s.
   ', some files could not be used': ', may mga file nga dili magamit'
   AUDIO folder: AUDIO folder
   DRIVES: MGA DRIVE
   MANAGE: DUMALAHA
-  MEMORY CARD 0  (about 600 KB): MEMORY CARD 0  (mga 600 KB)
-  MEMORY CARD 1  (about 600 KB): MEMORY CARD 1  (mga 600 KB)
   'MX4SIO: its driver would not load (code %d).': 'MX4SIO: dili mo-load ang driver niini (code %d).'
   'MX4SIO: off in Game Sources.': 'MX4SIO: gipalong sa Game Sources.'
   'MX4SIO: on in Game Sources; its driver has not been started yet.': 'MX4SIO: gibuksan sa Game Sources; wala pa nasugdan ang driver niini.'
@@ -900,7 +895,6 @@ strings:
   'Special thanks to all the YouTube love as well:': 'Espesyal nga pasalamat usab sa tanang gugma gikan sa YouTube:'
   and its own look, launchers, file browser and save tools.: ug adunay kaugalingong dagway, launcher, file browser ug save tools.
   glad to help however you reach me.: malipayon nga motabang, bisan unsaon nimo ako pagkontak.
-  with rickgaiser's Neutrino inside as its second game core,: nga adunay Neutrino ni rickgaiser sa sulod isip ikaduhang game core,
   STARTING THE DRIVES: GISUGDAN ANG MGA DRIVE
   '%d games, on the started drives': '%d ka dula, sa mga nasugdang drive'
   '%s: SOME FILES COULD NOT BE DELETED': '%s: ADUNAY MGA FILE NGA WALA MAPAPAS'
@@ -964,7 +958,6 @@ strings:
   LOOKING FOR YOUR LAUNCHERS: GIPANGITA ANG IMONG MGA LAUNCHER
   The POPS files: Ang mga POPS file
   '%s  MMCE card': '%s  MMCE card'
-  INSTALL RIPPS2'S NEUTRINO: I-INSTALL ANG NEUTRINO SA RIPPS2
   'Internal HDD (APA): %s free of %s': 'Internal HDD (APA): %s ang libre sa %s'
   LAUNCHERS: MGA LAUNCHER
   LOOK FOR THEM: PANGITAA SILA
@@ -978,7 +971,6 @@ strings:
   found where you keep them: nakit-an diin nimo sila gitipigan
   not found yet: wala pa makit-i
   not on a started drive: wala sa nasugdang drive
-  only if you have none: kung wala ka lang
   starts every drive first: sugdan una ang matag drive
   BDM Devices: Mga device sa BDM
   Color Sweep: Pagbalhin sa kolor
@@ -1070,7 +1062,6 @@ strings:
   STARS SHOWN: MAKITA ANG MGA STAR
   Asking the SD2PSX for this game's memory card...: Gipangayo sa SD2PSX ang memory card niining dulaa...
   The SD2PSX is getting this game's memory card ready (%d s). The game starts when it is done; START starts it now.: Giandam sa SD2PSX ang memory card niining dulaa (%d s). Mosugod ang dula kon mahuman na; ang START mosugod niini karon.
-  the second game core, its newest build carried unmodified (AFL-3.0): ang ikaduhang game core, ang pinakabag-ong build niini nga gidala nga walay giusab (AFL-3.0)
   '%s could not be written to %s (%d of the sounds were). Is the drive full or write-protected?': Dili masulat ang %s sa %s (%d sa mga tunog ang nasulat). Puno ba o naka-write-protect ang drive?
   '%s could not be written to %s (%d of the sounds were, and the card has %d KB free now). Is the card write-protected?': Dili masulat ang %s sa %s (%d sa mga tunog ang nasulat, ug ang card adunay %d KB nga libre karon). Naka-write-protect ba ang card?
   The folder %s could not be made. Is the drive full or write-protected? Nothing was written.: Dili mahimo ang folder nga %s. Puno ba o naka-write-protect ang drive? Walay nasulat.
@@ -1084,8 +1075,6 @@ strings:
   ? 'Memory Files opens now, on MEDIA, with the disc on its clipboard (RIPPED). Go to the drive and folder it should be in (any drive: USB, the HDD, the SD2PSX''s MEDIA), press TRIANGLE for ACTIONS and choose PASTE. RIPDISC then asks once more and reads the disc with your PS2''s laser, writing it there.'
   : 'Moabli na karon ang Memory files, sa MEDIA, uban ang disc sa clipboard niini (NA-RIP). Adto sa drive ug folder diin kini ibutang (bisan unsang drive: USB, ang HDD, ang MEDIA sa SD2PSX), pindota ang TRIANGLE para sa MGA AKSYON ug pilia ang I-PASTE. Mangutana pa og usa ka higayon ang RIPDISC ug basahon ang disc gamit ang laser sa imong PS2, ug isulat kini didto.'
   RENAME THE GAME: ILISI ANG NGALAN SA DULA
-  ? 'This game starts through Neutrino, and RIPPS2 found none: not at Settings'' path, on the game''s drive, on the memory cards or on any started drive. RIPPS2 carries Neutrino by rickgaiser (AFL-3.0), its newest build: install it once, where you pick, and every Neutrino game uses it from there.'
-  : 'Kini nga dula mosugod pinaagi sa Neutrino, ug walay nakit-an ang RIPPS2: wala sa path sa Settings, sa drive sa dula, sa mga memory card o sa bisan unsang nasugdang drive. Gidala sa RIPPS2 ang Neutrino ni rickgaiser (AFL-3.0), ang pinakabag-ong build niini: i-install kini kausa, bisan asa nimo gusto, ug didto kini gamiton sa matag dula sa Neutrino.'
   A PS1 disc's track list, for Ember: Ang track list sa usa ka PS1 disc, para sa Ember
   A PS1 game for POPSTARTER: Usa ka PS1 nga dula para sa POPSTARTER
   A PS2 game: Usa ka PS2 nga dula
@@ -1136,7 +1125,6 @@ strings:
   'All Games: %d games kept in %s, listed at boot before any drive answers': 'Tanang dula: %d ka dula nga gitipigan sa %s, gilista sa boot sa dili pa motubag ang bisan unsang drive'
   'All Games: no master list yet; %s is written once the games are listed (Fast Cache on)': 'Tanang dula: wala pay master list; isulat ang %s kon nalista na ang mga dula (Fast Cache naka-on)'
   CACHE SETTINGS: CACHE SETTINGS
-  Copies the Neutrino RIPPS2 carries to a drive or a memory card. A Neutrino of your own is used as it is.: Gikopya ang Neutrino nga gidala sa RIPPS2 ngadto sa drive o memory card. Ang imong kaugalingong Neutrino gamiton kon unsa kini.
   DIAG.TXT, for a bug report: DIAG.TXT, para sa bug report
   Drives, loading, launchers and homebrew: Mga drive, pag-load, launcher ug homebrew
   ? Fast Cache shows each drive's last game list the moment the drive answers; Trust Cache keeps it until you press SELECT. Both on, with the settings on the memory card RIPPS2 starts from, is the quickest boot.
@@ -1158,13 +1146,10 @@ strings:
   The diagnostics could not be written to %s.: Dili masulat ang diagnostics sa %s.
   What each memory card starts at power on; install or repair BIBLE, PS2BBL set up to start RIPPS2.: Ang sugdan sa matag memory card sa pag-on; i-install o ayoha ang BIBLE, ang PS2BBL nga gi-set up aron sugdan ang RIPPS2.
   Where POPSTARTER and Ember are, and how PS1 games start.: Asa ang POPSTARTER ug Ember, ug unsaon pagsugod sa mga PS1 nga dula.
-  Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets.: Asa ang imong Neutrino, ang video mode niini, ug ang mga argument nga madawat sa matag Neutrino launch.
   ? Writes what RIPPS2 noted about the pads, the drives, MMCE cards and the last launches to DIAG.TXT beside RIPPS2. Send it with a bug report.
   : Isulat ang gitala sa RIPPS2 bahin sa mga controller, mga drive, mga MMCE card ug mga kataposang launch sa DIAG.TXT tupad sa RIPPS2. Ipadala kini uban sa bug report.
   back to Cache: balik sa Cache
   what boot reads first: ang unang basahon sa boot
-  ? This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer, or clear the path to use the one RIPPS2 carries.
-  : Mas karaan kini nga Neutrino kaysa 1.3, nga dili makasugod og dula gikan sa APA HDD. Itudlo ang Game Launching > Neutrino sa Neutrino 1.3 o mas bag-o, o hawani ang path aron gamiton ang gidala sa RIPPS2.
   ', the sounds': ', ang mga tingog'
   ? 'Fast Boot is on. RIPPS2 boots from its own drive (%s): the settings%s and every list from its cache. The other drives start when you press SELECT on their page, or launch one of their games.'
   : 'Naka-on ang Fast Boot. Mo-boot ang RIPPS2 gikan sa iyang kaugalingong drive (%s): ang settings%s ug matag lista gikan sa iyang cache. Ang ubang drive magsugod kon imong pugson ang SELECT sa ilang page o imong ilansad ang usa sa ilang dula.'
@@ -1373,7 +1358,6 @@ strings:
   : 'Wala pa. Ang profile usa ka text file nga ginganlan sa ID sa controller, sama sa 2563_0575.pad: ang format anaa sa repo sa RIPPS2 (docs/plans/pad-spec.md).'
   On (fast): On (paspas)
   'Pad profiles in %s:': 'Mga profile sa controller sa %s:'
-  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (build %d) sa RiptOPL %s
   RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: Wala mahibaw-an sa RIPPS2 asa ang folder niini, busa dili kini makapangita sa PADS.
   could not be read: dili mabasa
   About %d seconds left: Mga %d segundos pa
@@ -1392,8 +1376,6 @@ strings:
   ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
   : Ang On (paspas) magtipig sa boot sound tupad sa RIPPS2 sa memory card nga gisugdan niini, ug ang RIPPS2 wala magsugod sa usa. Ang boot sound motingog sama sa On.
   'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'Wala pay boot sound nga makopya: ang Audio settings > BIOS Sounds mokuha sa mga tingog niining console.'
-  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
-  : Kini ang RIPPS2 lite, nga walay dalang PS2BBL, busa dili kini maka-set up sa BIBLE. Ang tibuok RIPPS2.elf mag-install ug mag-ayo niini; ang boot loader nga naka-set up na magpadayon sa pagsugod sa RIPPS2 lite.
   '%d COPIED OUT': '%d NAKOPYA PAGAWAS'
   '%d ITEM   %d MARKED   %s': '%d ITEM   %d GIMARKAHAN   %s'
   '%d ITEM   %d MARKED   %s   %s FREE': '%d ITEM   %d GIMARKAHAN   %s   %s LIBRE'

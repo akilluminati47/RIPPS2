@@ -3,12 +3,16 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Serbian
 strings:
+  "This game starts through Neutrino, and RIPPS2 found none: not at Settings' path, on the game's drive, on the memory cards or on any started drive. Put Neutrino by rickgaiser (github.com/rickgaiser/neutrino) in a neutrino folder on the game's drive or a memory card, or point Game Launching > Neutrino at it.": "Ova igra se pokreće preko Neutrina, a RIPPS2 nije našao nijedan: ni na putanji iz Podešavanja, ni na disku igre, ni na memorijskim karticama, ni na bilo kom pokrenutom disku. Stavite rickgaiserov Neutrino (github.com/rickgaiser/neutrino) u fasciklu neutrino na disku igre ili memorijskoj kartici ili usmerite Pokretanje igara > Neutrino na njega."
+  "Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets. Get Neutrino at github.com/rickgaiser/neutrino and put it in a neutrino folder on a drive or a memory card.": "Gde je vaš Neutrino, njegov video režim i argumenti koje dobija svako pokretanje Neutrina. Neutrino preuzmite sa github.com/rickgaiser/neutrino i stavite ga u fasciklu neutrino na disku ili memorijskoj kartici."
+  "This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer.": "Ovaj Neutrino je stariji od 1.3, koji ne može da pokreće igre sa APA HDD-a. Usmerite Pokretanje igara > Neutrino na Neutrino 1.3 ili noviji."
+  "with rickgaiser's Neutrino as its second game core,": "sa rickgaiserovim Neutrinom kao drugim jezgrom za igre,"
+  "the second game core, used from your drive or memory card (AFL-3.0)": "drugo jezgro za igre, koristi se sa vašeg diska ili memorijske kartice (AFL-3.0)"
   "FILE NAME": "NAZIV DATOTEKE"
   "GAME LIST": "SPISAK IGARA"
   "%s in %s": "%s u %s"
   "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "Operacije upisa su isključene, pa RIPPS2 ne može da sačuva podatke igre niti da je preimenuje. Da ih uključim?"
   "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "BIBLE je napravljen na El Isrinom PS2BBL-u, a njegove verzije za karticu i HDD su potpisane za RIPPS2 (GPL-3)"
-  "This is RIPPS2 lite, which carries no Neutrino. Put Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in a neutrino folder on a memory card or the game's drive, or use the full RIPPS2.elf, which installs it for you.": "Ovo je RIPPS2 lite, koji ne nosi Neutrino. Stavite Neutrino (rickgaiser, github.com/rickgaiser/neutrino) u fasciklu neutrino na memorijskoj kartici ili na disku igre, ili koristite puni RIPPS2.elf, koji ga sam instalira."
   "START %s": "POKRENI %s"
   "NETWORK": "MREŽA"
   "%s did not answer. Is it connected?": "%s se nije javio. Da li je povezan?"
@@ -485,11 +489,6 @@ strings:
   This file is too big to edit here (64 KB at most).: Ova datoteka je prevelika da bi se ovde uređivala (najviše 64 KB).
   VIDEO: VIDEO
   YOURS: VAŠE
-  MEMORY CARD %d  (about 600 KB): MEMORIJSKA KARTICA %d  (oko 600 KB)
-  'NEUTRINO: unpacking': 'NEUTRINO: raspakivanje'
-  'NEUTRINO: writing %.60s': 'NEUTRINO: upisivanje %.60s'
-  Neutrino could not be written to %s. Check its free space and that it is not write protected, then try again.: Neutrino nije mogao da se upiše u %s. Proverite slobodan prostor i da nije zaštićen od upisa, pa pokušajte ponovo.
-  THE GAME'S DRIVE  (%s/neutrino): UREĐAJ IGRE  (%s/neutrino)
   '%d / %d FILES': '%d / %d DATOTEKA'
   '%d FOLDERS AND CONTENTS': '%d FASCIKLI I SADRŽAJ'
   '%d FOLDERS, %d FOUND': '%d FASCIKLI, PRONAĐENO %d'
@@ -770,14 +769,10 @@ strings:
   TOO MANY FILES IN THE PSU: PREVIŠE DATOTEKA U PSU
   UNKNOWN CARD LAYOUT: NEPOZNAT RASPORED KARTICE
   '%d sounds from %sAUDIO%s': '%d zvukova iz %sAUDIO%s'
-  '%s could not be written to %s. Check its free space and that it is not write protected.': '%s nije moglo da se upiše u %s. Proverite slobodan prostor i da nije zaštićeno od upisa.'
-  '%s is installed in %s.': '%s je instaliran u %s.'
   ', some files could not be used': ', neke datoteke nisu mogle da se koriste'
   AUDIO folder: fascikla AUDIO
   DRIVES: UREĐAJI
   MANAGE: UPRAVLJAJ
-  MEMORY CARD 0  (about 600 KB): MEMORIJSKA KARTICA 0  (oko 600 KB)
-  MEMORY CARD 1  (about 600 KB): MEMORIJSKA KARTICA 1  (oko 600 KB)
   'MX4SIO: its driver would not load (code %d).': 'MX4SIO: njegov drajver nije hteo da se učita (kod %d).'
   'MX4SIO: off in Game Sources.': 'MX4SIO: isključen u Izvorima igara.'
   'MX4SIO: on in Game Sources; its driver has not been started yet.': 'MX4SIO: uključen u Izvorima igara; drajver još nije pokrenut.'
@@ -900,7 +895,6 @@ strings:
   'Special thanks to all the YouTube love as well:': 'Posebna zahvalnost i za svu ljubav sa YouTube-a:'
   and its own look, launchers, file browser and save tools.: i sa sopstvenim izgledom, pokretačima, pregledačem datoteka i alatima za sačuvane pozicije.
   glad to help however you reach me.: rado pomažem, kako god da me nađete.
-  with rickgaiser's Neutrino inside as its second game core,: sa rickgaiserovim Neutrinom unutra kao drugim jezgrom za igre,
   STARTING THE DRIVES: POKREĆEM UREĐAJE
   '%d games, on the started drives': '%d igara, na pokrenutim uređajima'
   '%s: SOME FILES COULD NOT BE DELETED': '%s: NEKE DATOTEKE NISU MOGLE DA SE OBRIŠU'
@@ -964,7 +958,6 @@ strings:
   LOOKING FOR YOUR LAUNCHERS: TRAŽIM VAŠE POKRETAČE
   The POPS files: POPS datoteke
   '%s  MMCE card': '%s  MMCE kartica'
-  INSTALL RIPPS2'S NEUTRINO: INSTALIRAJ RIPPS2-OV NEUTRINO
   'Internal HDD (APA): %s free of %s': 'Unutrašnji HDD (APA): slobodno %s od %s'
   LAUNCHERS: POKRETAČI
   LOOK FOR THEM: POTRAŽI IH
@@ -978,7 +971,6 @@ strings:
   found where you keep them: pronađeni gde ih držite
   not found yet: još nije pronađeno
   not on a started drive: nije na pokrenutom uređaju
-  only if you have none: samo ako nemate nijedan
   starts every drive first: prvo pokreće sve uređaje
   BDM Devices: BDM uređaji
   Color Sweep: Smena boja
@@ -1074,7 +1066,6 @@ strings:
   STARS SHOWN: ZVEZDICE PRIKAZANE
   Asking the SD2PSX for this game's memory card...: Tražim od SD2PSX-a memorijsku karticu ove igre...
   The SD2PSX is getting this game's memory card ready (%d s). The game starts when it is done; START starts it now.: SD2PSX priprema memorijsku karticu ove igre (%d s). Igra se pokreće kada bude gotovo; START je pokreće odmah.
-  the second game core, its newest build carried unmodified (AFL-3.0): drugo jezgro za igre, njegova najnovija verzija priložena bez izmena (AFL-3.0)
   '%s could not be written to %s (%d of the sounds were). Is the drive full or write-protected?': '%s nije mogao da se upiše u %s (%d zvukova jeste). Da li je uređaj pun ili zaštićen od upisa?'
   '%s could not be written to %s (%d of the sounds were, and the card has %d KB free now). Is the card write-protected?': '%s nije mogao da se upiše u %s (%d zvukova jeste, a kartica sada ima %d KB slobodno). Da li je kartica zaštićena od upisa?'
   The folder %s could not be made. Is the drive full or write-protected? Nothing was written.: Fascikla %s nije mogla da se napravi. Da li je uređaj pun ili zaštićen od upisa? Ništa nije upisano.
@@ -1088,8 +1079,6 @@ strings:
   ? 'Memory Files opens now, on MEDIA, with the disc on its clipboard (RIPPED). Go to the drive and folder it should be in (any drive: USB, the HDD, the SD2PSX''s MEDIA), press TRIANGLE for ACTIONS and choose PASTE. RIPDISC then asks once more and reads the disc with your PS2''s laser, writing it there.'
   : 'Memorijske datoteke se sada otvaraju, na MEDIA, sa diskom u ostavi (IZDVOJENO). Idite na uređaj i fasciklu gde treba da ide (bilo koji uređaj: USB, HDD, MEDIA na SD2PSX-u), pritisnite TROUGAO za RADNJE i izaberite NALEPI. RIPDISC tada još jednom pita i čita disk laserom vašeg PS2, upisujući ga tamo.'
   RENAME THE GAME: PREIMENUJ IGRU
-  ? 'This game starts through Neutrino, and RIPPS2 found none: not at Settings'' path, on the game''s drive, on the memory cards or on any started drive. RIPPS2 carries Neutrino by rickgaiser (AFL-3.0), its newest build: install it once, where you pick, and every Neutrino game uses it from there.'
-  : 'Ova igra se pokreće kroz Neutrino, a RIPPS2 ga nije pronašao: ni na putanji iz Podešavanja, ni na uređaju igre, ni na memorijskim karticama, ni na jednom pokrenutom uređaju. RIPPS2 nosi Neutrino od rickgaisera (AFL-3.0), njegovu najnoviju verziju: instalirajte ga jednom, gde izaberete, i svaka Neutrino igra ga koristi odatle.'
   A PS1 disc's track list, for Ember: Spisak numera PS1 diska, za Ember
   A PS1 game for POPSTARTER: PS1 igra za POPSTARTER
   A PS2 game: PS2 igra
@@ -1140,7 +1129,6 @@ strings:
   'All Games: %d games kept in %s, listed at boot before any drive answers': 'Sve igre: %d igara sačuvanih u %s, prikazanih pri pokretanju pre nego što bilo koji uređaj odgovori'
   'All Games: no master list yet; %s is written once the games are listed (Fast Cache on)': 'Sve igre: još nema glavnog spiska; %s se upisuje kada se igre prikažu (Fast Cache uključen)'
   CACHE SETTINGS: PODEŠAVANJA KEŠA
-  Copies the Neutrino RIPPS2 carries to a drive or a memory card. A Neutrino of your own is used as it is.: Kopira Neutrino koji RIPPS2 nosi na uređaj ili memorijsku karticu. Sopstveni Neutrino se koristi takav kakav je.
   DIAG.TXT, for a bug report: DIAG.TXT, za prijavu greške
   Drives, loading, launchers and homebrew: Uređaji, učitavanje, pokretači i homebrew
   ? Fast Cache shows each drive's last game list the moment the drive answers; Trust Cache keeps it until you press SELECT. Both on, with the settings on the memory card RIPPS2 starts from, is the quickest boot.
@@ -1162,13 +1150,10 @@ strings:
   The diagnostics could not be written to %s.: Dijagnostika nije mogla da se upiše u %s.
   What each memory card starts at power on; install or repair BIBLE, PS2BBL set up to start RIPPS2.: Šta svaka memorijska kartica pokreće pri uključivanju; instalirajte ili popravite BIBLE, PS2BBL podešen da pokreće RIPPS2.
   Where POPSTARTER and Ember are, and how PS1 games start.: Gde su POPSTARTER i Ember i kako se pokreću PS1 igre.
-  Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets.: Gde je vaš Neutrino, njegov video režim i argumenti koje dobija svako pokretanje Neutrina.
   ? Writes what RIPPS2 noted about the pads, the drives, MMCE cards and the last launches to DIAG.TXT beside RIPPS2. Send it with a bug report.
   : Upisuje ono što je RIPPS2 zabeležio o kontrolerima, uređajima, MMCE karticama i poslednjim pokretanjima u DIAG.TXT pored RIPPS2. Pošaljite ga uz prijavu greške.
   back to Cache: nazad na Keš
   what boot reads first: šta pokretanje prvo čita
-  ? This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer, or clear the path to use the one RIPPS2 carries.
-  : Ovaj Neutrino je stariji od 1.3, koji ne može da pokreće igre sa APA HDD-a. Usmerite Pokretanje igara > Neutrino na Neutrino 1.3 ili noviji ili ispraznite putanju da koristite onaj koji nosi RIPPS2.
   ', the sounds': ', zvuci'
   ? 'Fast Boot is on. RIPPS2 boots from its own drive (%s): the settings%s and every list from its cache. The other drives start when you press SELECT on their page, or launch one of their games.'
   : 'Fast Boot je uključen. RIPPS2 se pokreće sa svog diska (%s): podešavanja%s i svaka lista iz njenog keša. Ostali diskovi se pokreću kad pritisneš SELECT na njihovoj stranici ili pokreneš neku od njihovih igara.'
@@ -1377,7 +1362,6 @@ strings:
   : 'Još nijedan. Profil je tekstualna datoteka nazvana po ID-u kontrolera, npr. 2563_0575.pad: format je u repozitorijumu RIPPS2 (docs/plans/pad-spec.md).'
   On (fast): Uklj. (brzo)
   'Pad profiles in %s:': 'Profili kontrolera u %s:'
-  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (build %d) na RiptOPL %s
   RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: RIPPS2 ne zna gde mu je fascikla, pa ne može da traži PADS.
   could not be read: ne može da se pročita
   About %d seconds left: Ostalo je oko %d sekundi
@@ -1396,8 +1380,6 @@ strings:
   ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
   : Uklj. (brzo) drži zvuk pokretanja pored RIPPS2 na memorijskoj kartici sa koje se pokreće, a RIPPS2 nije pokrenut sa kartice. Zvuk pokretanja svira kao kod Uklj.
   'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'Još nema zvuka pokretanja za kopiranje: Podešavanja zvuka > BIOS zvuci izdvajaju zvuke ove konzole.'
-  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
-  : Ovo je RIPPS2 lite, bez PS2BBL, pa ne može da podesi BIBLE. Puni RIPPS2.elf ga instalira i popravlja; već podešen bootloader nastavlja da pokreće RIPPS2 lite kakav jeste.
   '%d COPIED OUT': '%d KOPIRANO NAPOLJE'
   '%d ITEM   %d MARKED   %s': '%d STAVKA   %d OZNAČENA   %s'
   '%d ITEM   %d MARKED   %s   %s FREE': '%d STAVKA   %d OZNAČENA   %s   %s SLOBODNO'

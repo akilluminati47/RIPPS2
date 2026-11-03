@@ -73,12 +73,12 @@ need(vcd, (('seanceHook != NULL && seanceHook(SEANCE_POPS, SEANCE_MODE_LOOKUP', 
            ('snprintf(src, sizeof(src), "%s%s", from, vcdPopsFiles[i]); // build 114: from is the folder', 'the copy reads the folder found')), 'vcdsupport.c')
 sb = rd('src/supportbase.c')
 nr = body(sb, 'const char *sbResolveNeutrinoPath(const char *activePrefix)')
-if not (nr.index('sbProbeNeutrinoMc()') < nr.index('SEANCE_MODE_LOOKUP') < nr.index('SEANCE_MODE_LAST') < nr.index('ripps2NeutrinoOffer(')):
-    fail.append('Neutrino: the cards, then where SEANCE found one, then the search, and only then RIPPS2\'s copy')
+if not (nr.index('sbProbeNeutrinoMc()') < nr.index('SEANCE_MODE_LOOKUP') < nr.index('SEANCE_MODE_LAST') < nr.index('ripps2NeutrinoMissing(')):  # build 135
+    fail.append('Neutrino: the cards, then where SEANCE found one, then the search, and only then where to put one')
 opl = rd('src/opl.c')
 need(opl, (('gSeanceLaunching = 1; // build 114', 'a launch is marked for SEANCE'), ('seancePreLaunch(support, launchId);', 'the Ember pre-flight')), 'opl.c')
 emb = rd('src/ripps2ember.c')
-need(emb, (('install it once, where you pick, and every', 'RIPPS2\'s Neutrino is offered to install once, not more'),), 'ripps2ember.c')
+need(emb, (('in a neutrino folder on the game', 'with no Neutrino, a launch says where to put one (build 135)'),), 'ripps2ember.c')
 if raw('src/cuesupport.c').count('seanceHook') or 'seanceHook' in body(raw('src/gui.c'), 'void guiMsgBoxMissing('):
     fail.append('cuesupport.c and guiMsgBoxMissing stay RiptOPL\'s (their harnesses copy them word for word)')
 
@@ -87,7 +87,7 @@ st = rd('src/ripps2status.c')
 if st.index('"DRIVES"') > st.index('"LAUNCHERS"') or st.index('"LAUNCHERS"') > st.index('"BIBLE"'):
     fail.append('STATUS: DRIVES first, then LAUNCHERS, then BIBLE')
 need(st, (('"Internal HDD (APA): %s free of %s"', 'the APA drive\'s space'), ('"Memory card %d: %d KB free"', 'the cards\' space'),
-          ('ACT_START_DRIVES', 'START EVERY DRIVE'), ('ACT_SEANCE_SEARCH', 'LOOK FOR THEM'), ('"only if you have none"', 'the install row says when')), 'ripps2status.c')
+          ('ACT_START_DRIVES', 'START EVERY DRIVE'), ('ACT_SEANCE_SEARCH', 'LOOK FOR THEM')), 'ripps2status.c')
 if 'aside[96]' not in st:
     fail.append('STATUS: a translated note runs to 73 bytes (Lao, Persian): aside[96]')
 dlg = rd('src/dialogs.c')
@@ -128,7 +128,7 @@ if 'ripps2ApaCheck(apaWhy, sizeof(apaWhy))' not in hm or hm.index('ripps2ApaChec
 
 # ---- credits
 ab = rd('src/ripps2about.c')
-need(ab, (('"with rickgaiser\'s Neutrino inside as its second game core,"', 'the opening names Neutrino'),
+need(ab, (('"with rickgaiser\'s Neutrino as its second game core,"', 'the opening names Neutrino'),
           ('"BUILT ON RIPTOPL, WITH NEUTRINO"', 'Neutrino beside RiptOPL'), ('"Special thanks to all the YouTube love as well:"', 'the YouTube thanks')), 'ripps2about.c')
 if ab.count('{\'H\', "NEUTRINO"}'):
     fail.append('ripps2about.c: Neutrino\'s old mid-page section went to the closing credits')
@@ -413,11 +413,10 @@ if not (repo / 'elf/theme/fonts/ripps2_roboto.ttf').exists() or (repo / 'elf/the
 
 # ---- the full ELF (the user 10/23: no lite ELF; 10/31: a lite one beside it), FreeType, fonts
 mk = rd('Makefile')
-need(mk, (('bible_xlf.o bible_mx4sio_xlf.o bible_hdd_xlf.o', 'BIBLE is carried'), ('neutrino_tgz.o', 'Neutrino is carried')), 'Makefile')
-# build 126 (the user, 10/31, asked: "a second, smaller ELF"): the lite ELF is a second build beside the full one, never
-# instead of it; the full RIPPS2.elf still carries both
-if 'ifeq ($(RIPPS2_LITE),1)' not in raw('Makefile') or not (root / 'src/ripps2lite.c').exists():
-    fail.append('Makefile: the lite ELF only with RIPPS2_LITE=1 (ripps2lite.c stands in)')
+need(mk, (('bible_xlf.o bible_mx4sio_xlf.o bible_hdd_xlf.o', 'BIBLE is carried'),), 'Makefile')  # build 135: Neutrino found
+# build 135 (the user, 11/02: "no more lite tag just the one ripps2 with bible"): one ELF again (builds 126-134 had a lite one)
+if 'RIPPS2_LITE' in raw('Makefile') or (root / 'src/ripps2lite.c').exists():
+    fail.append('Makefile: one ELF, no lite build')
 if '{INCEBTION_PICTURE, "incebtion", &incebtion_png}' not in rd('src/textures.c'):
     fail.append('textures.c: OPL\'s background is carried for its built-in look')
 fnt = rd('src/fntsys.c')
@@ -432,8 +431,8 @@ for gone in ('t1_driver_class', 'bdf_driver_class', 'pcf_driver_class', 'pfr_dri
 bsh = (repo / 'elf/build.sh').read_text(encoding='utf-8')
 need(bsh, (('strip_fonts.py', 'the compiled-in fonts are stripped'),), 'build.sh')
 wf = (repo / '.github/workflows/build-elf.yml').read_text(encoding='utf-8')
-if 'cp -f "$ELF" "$OUT/RIPPS2.elf"' not in bsh or 'RIPPS2-lite.elf' not in bsh or 'out/RIPPS2-lite.elf' not in wf:
-    fail.append('build.sh / build-elf.yml: RIPPS2.elf, and RIPPS2-lite.elf beside it')
+if 'cp -f "$ELF" "$OUT/RIPPS2.elf"' not in bsh or 'RIPPS2-lite.elf' in bsh or 'RIPPS2-lite.elf' in wf:
+    fail.append('build.sh / build-elf.yml: RIPPS2.elf only (build 135)')
 
 # ---- compiled: the APA check against synthetic disks
 cc = shutil.which('gcc') or shutil.which('cc')

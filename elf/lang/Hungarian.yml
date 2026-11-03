@@ -3,12 +3,16 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Hungarian
 strings:
+  "This game starts through Neutrino, and RIPPS2 found none: not at Settings' path, on the game's drive, on the memory cards or on any started drive. Put Neutrino by rickgaiser (github.com/rickgaiser/neutrino) in a neutrino folder on the game's drive or a memory card, or point Game Launching > Neutrino at it.": "Ez a játék Neutrinóval indul, és a RIPPS2 nem talált egyet sem: sem a Beállítások útvonalán, sem a játék meghajtóján, sem a memóriakártyákon, sem egyetlen elindított meghajtón. Tedd rickgaiser Neutrinóját (github.com/rickgaiser/neutrino) egy neutrino mappába a játék meghajtóján vagy egy memóriakártyán, vagy állítsd rá a Játékindítás > Neutrino útvonalat."
+  "Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets. Get Neutrino at github.com/rickgaiser/neutrino and put it in a neutrino folder on a drive or a memory card.": "Hol van a Neutrinód, a videómódja és az argumentumok, amiket minden Neutrino-indítás kap. A Neutrino itt érhető el: github.com/rickgaiser/neutrino; tedd egy neutrino mappába egy meghajtón vagy memóriakártyán."
+  "This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer.": "Ez a Neutrino régebbi az 1.3-nál, ami nem tud játékot indítani az APA HDD-ről. Állítsd a Játékindítás > Neutrino útvonalat Neutrino 1.3-ra vagy újabbra."
+  "with rickgaiser's Neutrino as its second game core,": "rickgaiser Neutrinójával mint második játékmaggal,"
+  "the second game core, used from your drive or memory card (AFL-3.0)": "a második játékmag, a meghajtódról vagy memóriakártyádról használva (AFL-3.0)"
   "FILE NAME": "FÁJLNÉV"
   "GAME LIST": "JÁTÉKLISTA"
   "%s in %s": "%s itt: %s"
   "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "Az írási műveletek ki vannak kapcsolva, így a RIPPS2 nem tudja menteni egy játék adatait vagy átnevezni. Bekapcsolja?"
   "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "A BIBLE El Isra PS2BBL-jére épül, kártyás és HDD-s változata a RIPPS2-höz van aláírva (GPL-3)"
-  "This is RIPPS2 lite, which carries no Neutrino. Put Neutrino (rickgaiser, github.com/rickgaiser/neutrino) in a neutrino folder on a memory card or the game's drive, or use the full RIPPS2.elf, which installs it for you.": "Ez a RIPPS2 lite, amely nem tartalmazza a Neutrinót. Tegye a Neutrinót (rickgaiser, github.com/rickgaiser/neutrino) egy neutrino mappába egy memóriakártyán vagy a játék meghajtóján, vagy használja a teljes RIPPS2.elf-et, amely telepíti."
   "START %s": "INDÍTÁS: %s"
   "NETWORK": "HÁLÓZAT"
   "%s did not answer. Is it connected?": "A(z) %s nem válaszolt. Csatlakoztatva van?"
@@ -485,11 +489,6 @@ strings:
   This file is too big to edit here (64 KB at most).: Ez a fájl túl nagy az itteni szerkesztéshez (legfeljebb 64 KB).
   VIDEO: VIDEÓ
   YOURS: SAJÁT
-  MEMORY CARD %d  (about 600 KB): '%d. MEMÓRIAKÁRTYA  (kb. 600 KB)'
-  'NEUTRINO: unpacking': 'NEUTRINO: kicsomagolás'
-  'NEUTRINO: writing %.60s': 'NEUTRINO: írás: %.60s'
-  Neutrino could not be written to %s. Check its free space and that it is not write protected, then try again.: 'A Neutrinót nem sikerült ide írni: %s. Ellenőrizd a szabad helyet és az írásvédelmet, aztán próbáld újra.'
-  THE GAME'S DRIVE  (%s/neutrino): A JÁTÉK MEGHAJTÓJA  (%s/neutrino)
   '%d / %d FILES': '%d / %d FÁJL'
   '%d FOLDERS AND CONTENTS': '%d MAPPA ÉS TARTALMA'
   '%d FOLDERS, %d FOUND': '%d MAPPA, %d TALÁLAT'
@@ -770,14 +769,10 @@ strings:
   TOO MANY FILES IN THE PSU: TÚL SOK FÁJL A PSU-BAN
   UNKNOWN CARD LAYOUT: ISMERETLEN KÁRTYAELRENDEZÉS
   '%d sounds from %sAUDIO%s': '%d hang innen: %sAUDIO%s'
-  '%s could not be written to %s. Check its free space and that it is not write protected.': 'Nem sikerült kiírni ezt: %s ide: %s. Ellenőrizd a szabad helyet és az írásvédelmet.'
-  '%s is installed in %s.': '%s telepítve ide: %s.'
   ', some files could not be used': ', néhány fájl nem használható'
   AUDIO folder: AUDIO mappa
   DRIVES: MEGHAJTÓK
   MANAGE: KEZELÉS
-  MEMORY CARD 0  (about 600 KB): 0. MEMÓRIAKÁRTYA  (kb. 600 KB)
-  MEMORY CARD 1  (about 600 KB): 1. MEMÓRIAKÁRTYA  (kb. 600 KB)
   'MX4SIO: its driver would not load (code %d).': 'MX4SIO: az illesztőprogramja nem töltődött be (kód: %d).'
   'MX4SIO: off in Game Sources.': 'MX4SIO: kikapcsolva a Játékforrásokban.'
   'MX4SIO: on in Game Sources; its driver has not been started yet.': 'MX4SIO: bekapcsolva a Játékforrásokban; az illesztőprogramja még nem indult el.'
@@ -900,7 +895,6 @@ strings:
   'Special thanks to all the YouTube love as well:': 'Külön köszönet a YouTube-on kapott szeretetért is:'
   and its own look, launchers, file browser and save tools.: és saját kinézettel, indítókkal, fájlböngészővel és mentéskezelő eszközökkel.
   glad to help however you reach me.: szívesen segítek, bárhogy is értek el.
-  with rickgaiser's Neutrino inside as its second game core,: benne rickgaiser Neutrinójával mint második játékmaggal,
   STARTING THE DRIVES: A MEGHAJTÓK INDÍTÁSA
   '%d games, on the started drives': '%d játék, az elindított meghajtókon'
   '%s: SOME FILES COULD NOT BE DELETED': '%s: NÉHÁNY FÁJLT NEM SIKERÜLT TÖRÖLNI'
@@ -964,7 +958,6 @@ strings:
   LOOKING FOR YOUR LAUNCHERS: AZ INDÍTÓID KERESÉSE
   The POPS files: A POPS-fájlok
   '%s  MMCE card': '%s  MMCE-kártya'
-  INSTALL RIPPS2'S NEUTRINO: A RIPPS2 NEUTRINÓJÁNAK TELEPÍTÉSE
   'Internal HDD (APA): %s free of %s': 'Belső HDD (APA): %s szabad ennyiből: %s'
   LAUNCHERS: INDÍTÓK
   LOOK FOR THEM: KERESD MEG ŐKET
@@ -978,7 +971,6 @@ strings:
   found where you keep them: megtalálva ott, ahol tartod őket
   not found yet: még nincs meg
   not on a started drive: nincs elindított meghajtón
-  only if you have none: csak ha nincs egy sem
   starts every drive first: előbb minden meghajtót elindít
   BDM Devices: BDM-eszközök
   Color Sweep: Színváltás
@@ -1074,7 +1066,6 @@ strings:
   STARS SHOWN: CSILLAGOK LÁTHATÓK
   Asking the SD2PSX for this game's memory card...: A játék memóriakártyájának kérése az SD2PSX-től...
   The SD2PSX is getting this game's memory card ready (%d s). The game starts when it is done; START starts it now.: Az SD2PSX előkészíti a játék memóriakártyáját (%d mp). A játék akkor indul, amikor kész; a START most indítja.
-  the second game core, its newest build carried unmodified (AFL-3.0): a második játékmag, a legújabb változata változatlanul mellékelve (AFL-3.0)
   '%s could not be written to %s (%d of the sounds were). Is the drive full or write-protected?': '%s nem írható ide: %s (%d hang sikerült). Megtelt vagy írásvédett a meghajtó?'
   '%s could not be written to %s (%d of the sounds were, and the card has %d KB free now). Is the card write-protected?': '%s nem írható ide: %s (%d hang sikerült, és a kártyán most %d KB szabad). Írásvédett a kártya?'
   The folder %s could not be made. Is the drive full or write-protected? Nothing was written.: A(z) %s mappát nem sikerült létrehozni. Megtelt vagy írásvédett a meghajtó? Semmi sem lett kiírva.
@@ -1088,8 +1079,6 @@ strings:
   ? 'Memory Files opens now, on MEDIA, with the disc on its clipboard (RIPPED). Go to the drive and folder it should be in (any drive: USB, the HDD, the SD2PSX''s MEDIA), press TRIANGLE for ACTIONS and choose PASTE. RIPDISC then asks once more and reads the disc with your PS2''s laser, writing it there.'
   : 'A Memóriafájlok most megnyílik a MEDIA-n, a lemezzel a vágólapon (KINYERVE). Menj arra a meghajtóra és mappába, ahová kerülnie kell (bármelyik meghajtó: USB, a HDD, az SD2PSX MEDIA-ja), nyomd meg a HÁROMSZÖG gombot a MŰVELETEK-hez, és válaszd a BEILLESZTÉS-t. A RIPDISC ekkor még egyszer rákérdez, és a PS2-d lézerével beolvassa a lemezt, majd odaírja.'
   RENAME THE GAME: JÁTÉK ÁTNEVEZÉSE
-  ? 'This game starts through Neutrino, and RIPPS2 found none: not at Settings'' path, on the game''s drive, on the memory cards or on any started drive. RIPPS2 carries Neutrino by rickgaiser (AFL-3.0), its newest build: install it once, where you pick, and every Neutrino game uses it from there.'
-  : 'Ez a játék a Neutrinón keresztül indul, és a RIPPS2 egyet sem talált: sem a Beállítások útvonalán, sem a játék meghajtóján, sem a memóriakártyákon, sem elindított meghajtón. A RIPPS2 tartalmazza rickgaiser Neutrinóját (AFL-3.0), a legújabb változatot: telepítsd egyszer, ahová szeretnéd, és minden Neutrino-játék onnan használja.'
   A PS1 disc's track list, for Ember: Egy PS1 lemez számlistája, az Emberhez
   A PS1 game for POPSTARTER: Egy PS1 játék a POPSTARTER-hez
   A PS2 game: Egy PS2 játék
@@ -1140,7 +1129,6 @@ strings:
   'All Games: %d games kept in %s, listed at boot before any drive answers': 'Minden játék: %d játék tárolva itt: %s, indításkor listázva, mielőtt bármelyik meghajtó válaszolna'
   'All Games: no master list yet; %s is written once the games are listed (Fast Cache on)': 'Minden játék: még nincs fő lista; %s akkor íródik ki, amikor a játékok listázva vannak (Fast Cache be)'
   CACHE SETTINGS: GYORSÍTÓTÁR BEÁLLÍTÁSAI
-  Copies the Neutrino RIPPS2 carries to a drive or a memory card. A Neutrino of your own is used as it is.: A RIPPS2-ben lévő Neutrinót egy meghajtóra vagy memóriakártyára másolja. A saját Neutrinód úgy használja, ahogy van.
   DIAG.TXT, for a bug report: DIAG.TXT, hibajelentéshez
   Drives, loading, launchers and homebrew: Meghajtók, betöltés, indítók és homebrew programok
   ? Fast Cache shows each drive's last game list the moment the drive answers; Trust Cache keeps it until you press SELECT. Both on, with the settings on the memory card RIPPS2 starts from, is the quickest boot.
@@ -1162,13 +1150,10 @@ strings:
   The diagnostics could not be written to %s.: 'A diagnosztikát nem sikerült ide írni: %s.'
   What each memory card starts at power on; install or repair BIBLE, PS2BBL set up to start RIPPS2.: Mit indít az egyes memóriakártyák bekapcsoláskor; a BIBLE telepítése vagy javítása, a RIPPS2 indítására beállított PS2BBL.
   Where POPSTARTER and Ember are, and how PS1 games start.: Hol van a POPSTARTER és az Ember, és hogyan indulnak a PS1 játékok.
-  Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets.: Hol van a Neutrinód, a videómódja és az argumentumok, amiket minden Neutrino-indítás kap.
   ? Writes what RIPPS2 noted about the pads, the drives, MMCE cards and the last launches to DIAG.TXT beside RIPPS2. Send it with a bug report.
   : A DIAG.TXT-be írja a RIPPS2 mellé, amit a RIPPS2 a kontrollerekről, a meghajtókról, az MMCE kártyákról és a legutóbbi indításokról feljegyzett. Küldd el egy hibajelentéssel.
   back to Cache: vissza a Gyorsítótárhoz
   what boot reads first: amit az indítás elsőként olvas
-  ? This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer, or clear the path to use the one RIPPS2 carries.
-  : Ez a Neutrino régebbi az 1.3-nál, ami nem tud játékot indítani az APA HDD-ről. Állítsd a Játékindítás > Neutrino útvonalat Neutrino 1.3-ra vagy újabbra, vagy töröld az útvonalat, és a RIPPS2-ben lévőt használja.
   ', the sounds': ', a hangok'
   ? 'Fast Boot is on. RIPPS2 boots from its own drive (%s): the settings%s and every list from its cache. The other drives start when you press SELECT on their page, or launch one of their games.'
   : 'A Fast Boot be van kapcsolva. A RIPPS2 a saját meghajtójáról indul (%s): a beállítások%s és minden lista a gyorsítótárából. A többi meghajtó akkor indul, amikor az oldalukon megnyomod a SELECT gombot, vagy elindítod valamelyik játékukat.'
@@ -1377,7 +1362,6 @@ strings:
   : 'Még nincs. A profil egy szövegfájl, amely a kontroller azonosítójáról kapja a nevét, pl. 2563_0575.pad: a formátum a RIPPS2 tárolójában van (docs/plans/pad-spec.md).'
   On (fast): Be (gyors)
   'Pad profiles in %s:': 'Kontrollerprofilok itt: %s'
-  RIPPS2 %s lite (build %d) on RiptOPL %s: RIPPS2 %s lite (%d. build) RiptOPL %s alapon
   RIPPS2 cannot tell where its folder is, so it cannot look for PADS.: A RIPPS2 nem tudja, hol a mappája, így nem keresheti a PADS mappát.
   could not be read: nem olvasható
   About %d seconds left: Kb. %d mp van hátra
@@ -1396,8 +1380,6 @@ strings:
   ? On (fast) keeps the boot sound beside RIPPS2 on the memory card it starts from, and RIPPS2 did not start from one. The boot sound plays as On.
   : A Be (gyors) a RIPPS2 mellett tartja az indítási hangot azon a memóriakártyán, amelyről indul, de a RIPPS2 nem kártyáról indult. Az indítási hang úgy szól, mint Be állásban.
   'There is no boot sound to copy yet: Audio settings > BIOS Sounds rips this console''s.': 'Még nincs másolható indítási hang: Hangbeállítások > BIOS-hangok kimenti ennek a konzolnak a hangjait.'
-  ? This is RIPPS2 lite, which carries no PS2BBL, so it cannot set up BIBLE. The full RIPPS2.elf installs and repairs it; a boot loader already set up keeps starting RIPPS2 lite as it is.
-  : Ez a RIPPS2 lite, amely nem tartalmazza a PS2BBL-t, így nem tudja beállítani a BIBLE-t. A teljes RIPPS2.elf telepíti és javítja; a már beállított rendszerbetöltő továbbra is a RIPPS2 lite-ot indítja.
   '%d COPIED OUT': '%d KIMÁSOLVA'
   '%d ITEM   %d MARKED   %s': '%d ELEM   %d JELÖLVE   %s'
   '%d ITEM   %d MARKED   %s   %s FREE': '%d ELEM   %d JELÖLVE   %s   %s SZABAD'
