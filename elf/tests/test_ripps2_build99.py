@@ -39,8 +39,8 @@ if 'const char *bdmSlotDriveName(int slot)' not in bdm or 'case BDM_TYPE_ATA:\n 
 if 'if ((drive = bdmSlotDriveName(d)) != NULL)' not in ra or '"MMCE 0", "MMCE 1"' not in ra:
     fail.append('YOUR ACCOUNT must say where a game is by the drive\'s driver, and MMCE 0 / 1')
 # build 113: the POPS and EMBER install rows went with the copies RIPPS2 carried; build 114: STATUS's DRIVES names every
-# drive by its driver, and LAUNCHERS says where SEANCE found Ember
-for needle in ('t == BDM_TYPE_ATA ? "internal HDD (exFAT)"', 'stLauncher(SEANCE_EMBER, "Ember", p, 1);','"%s  (mass0:/neutrino)"', 'LR_ADD("drive      mass%c: is %s\\r\\n"'):
+# drive by its driver, and LAUNCHERS says where SEANCE found Ember; build 135: the Neutrino install row (mass0:/neutrino) went too
+for needle in ('t == BDM_TYPE_ATA ? "internal HDD (exFAT)"', 'stLauncher(SEANCE_EMBER, "Ember", p, 1);','LR_ADD("drive      mass%c: is %s\\r\\n"'):
     if needle not in st:
         fail.append('STATUS / the launch report must name mass0: by its driver (%s missing)' % needle)
 for gone in ('"USB POPS folder"', '"USB EMBER folder"', '"USB  (mass0:/neutrino)"', 'Not found on USB.'):
