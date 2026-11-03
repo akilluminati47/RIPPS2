@@ -23,6 +23,10 @@
   "en": "0e6d84eabbaa",
   "t": "RIPPS2 salondan hiç çıkmamış bir PS2 gibi ses verir: **Sony'nin kendi konsol sesleri**, Sony sistem müziği ve gezinmek için **bir Nintendo parçası** (RIPPS2 tasarımcısının kendi seçimleri). Bunların hiçbiri RIPPS2 ile gelmez; **[RIPPS2 Media Studio](tools/media-studio)** seni oraya [kendi PS2'nin BIOS dökümünden](https://pcsx2.net/docs/setup/bios/) (PCSX2'nin kullandığı dosya) ve müziğin kendi kopyalarından götürür. **Start**'ı konsolun seslerini tam bir `AUDIO` klasörüne rip'ler; bu da onların yerleştiği haritadır. Ya da bilgisayarı atla: **Settings > Audio > BIOS Sounds > Rip** konsolun kendi seslerini doğrudan `AUDIO` içine yazar: menü seslerini ve (derleme 89'dan beri) BIOS'un kendi notalarından çalınan açılış ve oyun başlatma müziğini. Yanındaki BIOS Music menü müziğini, saatin parçasını (ya da kırmızı ekranınkini, ya da ikisini: derleme 112) rip'ler. **[v1.1.2 ses turu](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)** hepsini tek çekimde, açılış sesinden bir oyunun başlamasına kadar çalar."
  },
+ "118478459c9c": {
+  "en": "118478459c9c",
+  "t": "> ### Rip'le: RIPPS2 build 135, v1.3.5 beta"
+ },
  "1238c5cafd27": {
   "en": "1238c5cafd27",
   "t": "- [hacan359](https://github.com/hacan359)'ın [xeRAbora](https://github.com/hacan359/xerabora)'sı: RIPPS2'nin RiptOPL aracılığıyla devraldığı RetroAchievements bilgisayar istemcisi ve konsol tarafındaki RetroAchievements kodu (MIT / AFL-3.0). **LEFT TO HUNT**, arayüz sayfasının 18280 numaralı bağlantı noktasındaki `GET /state` uç noktasını okur; bu, belgelenmiş konsol protokolünün parçası değildir ve alfalar arasında değişebilir, bu yüzden RIPPS2 yazarının önerdiği sürüm olan **[v0.1.0-alpha.18](https://github.com/hacan359/xerabora/releases/tag/v0.1.0-alpha.18)**'e sabitlenmiştir (alpha.10 kararsızdır, LEFT TO HUNT'ın okuduğu `checked_only` anahtarı da `/state` içinde ancak alpha.11'den itibaren vardır); o sürümün `/state` koduna karşı denetlenmiştir, diğer sürümler test edilmemiştir."
@@ -55,9 +59,9 @@
   "en": "1d0696b1b396",
   "t": "- **MMCE kartları**: bir SD2PSX üzerinde [sd2psXtd](https://sd2psxtd.github.io/) yazılımı, örneğin [SD2PSXTD](https://github.com/LinkRetro/SD2PSXTD-Hardware) kartı, [mmceman](https://github.com/ps2-mmce/mmceman) (ps2-mmce) üzerinden okunur: oyunlar, VMC'ler ve ayarlar kartın SD'sinde. **Yazılımı güncel tut** ([sd2psxtd.github.io/download](https://sd2psxtd.github.io/download)). Kart üzerinde bir oyunu sıkıştırmak sd2psXtd 1.4.0 ya da daha yenisini gerektirir (biten kalıbı yerine yeniden adlandırır); RIPPS2 önce karta sorar, böylece eski yazılımda bunu bir şey başlamadan önce öğrenirsin ve orada sıkıştırma yapılamaz. Kart boş alanını bildiremez, bu yüzden 1.4.0'da bile sıkıştırmadan önce yer denetimi yoktur: oyun ve ZSO'su için yan yana yer bırak (kart dolarsa iş durur ve yazdıklarını kaldırır)."
  },
- "1eb610e76023": {
-  "en": "1eb610e76023",
-  "t": "- **Neutrino.** RIPPS2 Neutrino'nun en yeni derlemesini taşır ve bir oyun ona ilk kez ihtiyaç duyduğunda kurar. Kendi Neutrino'n, sürümü ne olursa olsun önce gelir: `neutrino` klasörünü oyunun sürücüsüne ya da bir hafıza kartına koy veya yolunu Settings > Game Launching > Neutrino Defaults altında ver; RIPPS2 ona yalnızca o sürümün bildiği seçenekleri gönderir. 1.1.5'ten beri, RIPPS2 bir USB sürücüden başladığında ve oyun dahili exFAT HDD'deyken doğru sürücü numarası bildirilir (bu karışım Neutrino'nun kapanmasına ve konsolun yeniden başlamasına yol açıyordu)."
+ "2027d346c0f8": {
+  "en": "2027d346c0f8",
+  "t": "RIPPS2 tek bir `.elf` içinde bir PS2 ön yüzüdür: [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader)'in (Open PS2 Loader fork'u) sökülüp yeniden kurulmuş hâli; ikinci oyun çekirdeği olarak rickgaiser'ın [Neutrino](https://github.com/rickgaiser/neutrino)'su var, kendi görünümü, başlatıcıları, dosya tarayıcısı ve kayıt araçlarıyla. Oyunlarının arkasında cam kuleler, dosyalarının arkasında yörünge oluşumları durur ve hepsini PS2 canlı olarak çizer."
  },
  "21fb04fdf89a": {
   "en": "21fb04fdf89a",
@@ -66,10 +70,6 @@
  "24fdb4df1618": {
   "en": "24fdb4df1618",
   "t": "## Kendi dilinde"
- },
- "254b4b737bb1": {
-  "en": "254b4b737bb1",
-  "t": "> ### Rip'le: RIPPS2 build 134, v1.3.4 beta"
  },
  "2642f599dfad": {
   "en": "2642f599dfad",
@@ -94,6 +94,10 @@
  "2f0ee80297df": {
   "en": "2f0ee80297df",
   "t": "- **MEMORY FILES** yerleşik bir dosya tarayıcısıdır: hafıza kartları, USB, MMCE ve HDD arasında kopyala, taşı ve sil (her kopya geri okunup denetlenir); OPL'in VMC kart kalıplarını klasör gibi aç; PSU kayıtlarını dışa ve içe aktar; metin dosyalarını düzenle; resimleri aç, AVI videoyu **tam ekran** ve **oynatıcı kontrolleriyle** oynat (Cross oynatır/duraklatır, Circle durdurur, L1/R1 10 sn atlar, L2/R2 ses düzeyi, START tekrarlar; ipuçları oynarken kaybolur, duraklatınca kalır) ([RIPPS2 Media Studio](tools/media-studio) bir telefonun MP4'ü dahil her videoyu buna dönüştürür), `.mp3`, `.ogg` ve `.wav` dosyalarını çal ya da birkaçını işaretleyip birlikte aç ve Launch Disc'in CD çalarında tek disk gibi dinle; bir **`.tar` mavi bir klasördür**, açabilir, içine resim yapıştırabilir ve içinden üye kopyalayabilirsin (derleme 125); bir `.tar` üzerinde Üçgen ona başka bir ART `.tar` dosyasını birleştirir ([aşağıda](#covers-from-one-file-art-pack)). **Açık klasör ilk satırdır**, giriş sayısını, işaretlilerin sayısını, toplam boyutu ve sürücünün boş alanını gösterir; üzerinde Cross ya da Square hepsini işaretler (ya da bir şey işaretliyse hiçbirini). START ayarlarını açar, orada **SEARCH FILES** başlatılmış her sürücüde herhangi bir dosya ya da klasörü adıyla bulur ve ağacı bulunduğu yerde açar. Bir hafıza kartında Square **CARD MANAGER** aracını açar (bir kartı VMC'ye yedekle, bir VMC'nin kayıtlarını karta geri yaz, oyun kayıtlarını sil, biçimlendir), APA HDD'de Square ise **HDD MANAGER** aracını açar (bölümleri, boyutları ve bölüm tablosunun tam denetiminden sonra birinin kaldırılması)."
+ },
+ "2f962ab31def": {
+  "en": "2f962ab31def",
+  "t": "- [rickgaiser](https://github.com/rickgaiser)'ın [Neutrino](https://github.com/rickgaiser/neutrino)'su (AFL-3.0), RIPPS2'nin ikinci oyun çekirdeği olan küçük, hızlı ve modüler aygıt öykünücüsü: RIPPS2 herhangi bir sürümdeki kendi Neutrino'nu bulur ve kullanır; RIPPS2.elf onun derlemesini 134. derlemeye kadar taşıdı ([`elf/neutrino`](elf/neutrino/README.md)). Onu Settings > Game Launching altında Default Loader Core olarak seç."
  },
  "30db0e04b1f1": {
   "en": "30db0e04b1f1",
@@ -211,6 +215,10 @@
   "en": "75ae3c119793",
   "t": "- ps2homebrew ekibinin [wLaunchELF](https://github.com/ps2homebrew/wLaunchELF)'i ve NathanNeurotic'in wLaunchELF R3Z'si: Memory Files tarayıcısının ve ayar ızgarasının davranış örnekleri."
  },
+ "7783fc2cbabf": {
+  "en": "7783fc2cbabf",
+  "t": "> 1. **[RIPPS2.elf dosyasını indir](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (her zaman en yeni sürüm) (tek dosya, 2.580 KB), istersen **[tema paketini](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt, Adapt Rx, 128. baskı: her biri bir yapılandırma ve bir resim; RIPGRID ve RIPFLOW yerleşik), ve RIPPS2'yi kendi dilinde kullanmak için **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** (33 dil; her sürümde var)."
+ },
  "7c613ae2e427": {
   "en": "7c613ae2e427",
   "t": "## Kendi seslerin ve müziğin"
@@ -218,6 +226,10 @@
  "7c9cff4a1885": {
   "en": "7c9cff4a1885",
   "t": "| [Beta reel'i](https://youtu.be/LPjdK_E1jjM) | 9:45 | İlk beta, v1.0.0: RIPPS2'nin başladığı web sayfası, ardından oyunların, dosyaların ve içinde gelenler |"
+ },
+ "7ead6381b980": {
+  "en": "7ead6381b980",
+  "t": "- **Gerekeni içinde; sende olanı bulunmuş.** BIBLE tek `.elf` içinde gelir ve seçtiğin yere kurulur; kendi [Neutrino](https://github.com/rickgaiser/neutrino)'n, POPSTARTER'ın, POPS dosyaların ve Ember'ın sürücülerinde bir kez aranır, hatırlanır ve bulundukları yerden başlatılır. START menüsündeki **STATUS** her sürücüyü, her başlatıcının nerede bulunduğunu (LOOK FOR THEM yeniden arar), homebrew'u, BIBLE'ı ve seslerini gösterir, **SAVE DIAGNOSTICS** de bir hata raporu için `DIAG.TXT` yazar."
  },
  "801b0c43a8b7": {
   "en": "801b0c43a8b7",
@@ -267,6 +279,10 @@
   "en": "a0a4ce3e31fb",
   "t": "## Web sürümü"
  },
+ "a23ff2c86948": {
+  "en": "a23ff2c86948",
+  "t": "- **Neutrino.** RIPPS2 sürümü ne olursa olsun kendi Neutrino'nu kullanır (135. derlemeden beri hiç taşımaz; Neutrino bulamayan bir oyun onu nereye koyacağını söyler): `neutrino` klasörünü oyunun sürücüsüne ya da bir hafıza kartına koy veya yolunu Settings > Game Launching > Neutrino Defaults altında ver; RIPPS2 ona yalnızca o sürümün bildiği seçenekleri gönderir. 1.1.5'ten beri, RIPPS2 bir USB sürücüden başladığında ve oyun dahili exFAT HDD'deyken doğru sürücü numarası bildirilir (bu karışım Neutrino'nun kapanmasına ve konsolun yeniden başlamasına yol açıyordu)."
+ },
  "a2cda8a417d1": {
   "en": "a2cda8a417d1",
   "t": "| ◇ | Listeye geri dönüş | `page_out.adp` | **Menu sound 2** |"
@@ -290,10 +306,6 @@
  "aa7c330a03a6": {
   "en": "aa7c330a03a6",
   "t": "- **Korkuluklar**: her derleme RiptOPL'in host denetimlerinden ve RIPPS2'nin kendi denetimlerinden geçer, bir RIPPS2 dosyasındaki yeni bir uyarı onu başarısız kılar."
- },
- "ab5d87e8fe5b": {
-  "en": "ab5d87e8fe5b",
-  "t": "RIPPS2 tek bir `.elf` içinde bir PS2 ön yüzüdür: [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader)'in (Open PS2 Loader fork'u) sökülüp yeniden kurulmuş hâli; içinde ikinci oyun çekirdeği olarak rickgaiser'ın [Neutrino](https://github.com/rickgaiser/neutrino)'su var, kendi görünümü, başlatıcıları, dosya tarayıcısı ve kayıt araçlarıyla. Oyunlarının arkasında cam kuleler, dosyalarının arkasında yörünge oluşumları durur ve hepsini PS2 canlı olarak çizer."
  },
  "ad4809e8e40c": {
   "en": "ad4809e8e40c",
@@ -347,9 +359,9 @@
   "en": "bea8ee5528d7",
   "t": "| [Derleme 55 reel'i](media/ripps2-b55-reel.mp4) ve [derleme 22 demosu](media/ripps2-b22-demo.mp4) (GitHub'da) | | İlk alfalar |"
  },
- "c08b5433dbb0": {
-  "en": "c08b5433dbb0",
-  "t": "- **Gerekeni içinde; sende olanı bulunmuş.** [Neutrino](https://github.com/rickgaiser/neutrino) (en yeni derlemesi) ve BIBLE tek `.elf` içinde gelir ve seçtiğin yere kurulur; kendi POPSTARTER'ın, POPS dosyaların ve Ember'ın sürücülerinde bir kez aranır, hatırlanır ve bulundukları yerden başlatılır. START menüsündeki **STATUS** her sürücüyü, her başlatıcının nerede bulunduğunu (LOOK FOR THEM yeniden arar), homebrew'u, BIBLE'ı ve seslerini gösterir, **SAVE DIAGNOSTICS** de bir hata raporu için `DIAG.TXT` yazar."
+ "bfd122c10125": {
+  "en": "bfd122c10125",
+  "t": "> [135. derlemedeki yenilikler](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.5-beta) | [Changelog](CHANGELOG.md) | **[Videolar](#videos)** | [Tüm sürümler](https://github.com/akilluminati47/RIPPS2/releases) | [psx-place'te konuş](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "c1bc4a56fd54": {
   "en": "c1bc4a56fd54",
@@ -374,10 +386,6 @@
  "cc3d4e294dca": {
   "en": "cc3d4e294dca",
   "t": "- krHACKen'in [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/)'ı PS1 oyunlarını, RIPPS2'nin sürücülerinde ve hafıza kartlarında bulduğu kendi kopyandan başlatır ([`elf/popstarter`](elf/popstarter/README.md))."
- },
- "cc72d2f38283": {
-  "en": "cc72d2f38283",
-  "t": "- [rickgaiser](https://github.com/rickgaiser)'ın [Neutrino](https://github.com/rickgaiser/neutrino)'su (AFL-3.0), RIPPS2'nin ikinci oyun çekirdeği olan küçük, hızlı ve modüler aygıt öykünücüsü: RIPPS2.elf onun en yeni derlemesini (v1.8.0-61-g7be8de2, 31 Ağustos 2026) değiştirmeden taşır ve seçtiğin yere kurar; herhangi bir sürümdeki kendi Neutrino'n önce gelir ([`elf/neutrino`](elf/neutrino/README.md)). Onu Settings > Game Launching altında Default Loader Core olarak seç."
  },
  "cd91a464e4a7": {
   "en": "cd91a464e4a7",
@@ -474,13 +482,5 @@
  "fe207194059a": {
   "en": "fe207194059a",
   "t": "| `bgm_02 Details.ogg` | **Details** | x-Radar Portable, [PSP sistem müziği](https://en.wikipedia.org/wiki/PlayStation_Portable_system_software) (Sony, 2010): Slideshow ile birlikte **RIPPS2'nin YouTube videolarının arka plan müziği** (beta reel'i onunla açılır, derleme 83 reel'i ve Short'u da) | kendi kopyan, bilgisayarında [RIPPS2 Media Studio](tools/media-studio) ile dönüştürülmüş |"
- },
- "ff8525427876": {
-  "en": "ff8525427876",
-  "t": "> [131-134 derlemelerindeki yenilikler](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.4-beta) | [Changelog](CHANGELOG.md) | **[Videolar](#videos)** | [Tüm sürümler](https://github.com/akilluminati47/RIPPS2/releases) | [psx-place'te konuş](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
- },
- "ff925ac5d69f": {
-  "en": "ff925ac5d69f",
-  "t": "> 1. **[RIPPS2.elf dosyasını indir](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (her zaman en yeni sürüm) (tek dosya, 2.815 KB; ya da **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2.205 KB, BIBLE için PS2BBL ve Neutrino olmadan aynısı), istersen **[tema paketini](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt, Adapt Rx, 128. baskı: her biri bir yapılandırma ve bir resim; RIPGRID ve RIPFLOW yerleşik), ve RIPPS2'yi kendi dilinde kullanmak için **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** (33 dil; her sürümde var)."
  }
 }

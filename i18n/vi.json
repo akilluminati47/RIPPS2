@@ -23,6 +23,10 @@
   "en": "0e6d84eabbaa",
   "t": "RIPPS2 mang âm thanh của một chiếc PS2 chưa bao giờ rời phòng khách: **âm thanh của chính máy Sony**, nhạc hệ thống của Sony, và **một bản nhạc Nintendo** khi duyệt (lựa chọn của chính nhà thiết kế RIPPS2). Không cái nào đi kèm RIPPS2; **[RIPPS2 Media Studio](tools/media-studio)** đưa bạn tới đó từ [bản dump BIOS từ chính PS2 của bạn](https://pcsx2.net/docs/setup/bios/) (tệp mà PCSX2 dùng) và các bản nhạc bạn sở hữu. **Start** rip những âm thanh máy đó thành một thư mục `AUDIO` hoàn chỉnh; đây là bản đồ vị trí của chúng. Hoặc bỏ qua máy tính: **Settings > Audio > BIOS Sounds > Rip** ghi âm thanh của chính máy thẳng vào `AUDIO`: âm thanh menu và (từ bản dựng 89) nhạc khởi động và chạy game được chơi từ chính bản nhạc của BIOS. BIOS Music bên cạnh rip nhạc menu, giai điệu của đồng hồ (hoặc của màn hình đỏ, hoặc cả hai: bản dựng 112). **[Tham quan âm thanh v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)** phát tất cả trong một cảnh quay, từ tiếng khởi động đến khi chạy game."
  },
+ "118478459c9c": {
+  "en": "118478459c9c",
+  "t": "> ### Rip nào: RIPPS2 bản dựng 135, v1.3.5 beta"
+ },
  "1238c5cafd27": {
   "en": "1238c5cafd27",
   "t": "- [xeRAbora](https://github.com/hacan359/xerabora) của [hacan359](https://github.com/hacan359): ứng dụng RetroAchievements cho máy tính và mã RetroAchievements phía máy mà RIPPS2 thừa hưởng qua RiptOPL (MIT / AFL-3.0). **LEFT TO HUNT** đọc điểm cuối `GET /state` của bảng điều khiển trên cổng 18280, vốn không thuộc giao thức máy đã được ghi tài liệu và có thể thay đổi giữa các bản alpha, nên RIPPS2 cố định ở **[v0.1.0-alpha.18](https://github.com/hacan359/xerabora/releases/tag/v0.1.0-alpha.18)**, phiên bản tác giả khuyên dùng (alpha.10 không ổn định, và khóa `checked_only` mà LEFT TO HUNT đọc chỉ có trong `/state` từ alpha.11 trở đi); đã đối chiếu với mã `/state` của phiên bản đó, các phiên bản khác chưa được thử."
@@ -55,9 +59,9 @@
   "en": "1d0696b1b396",
   "t": "- **Thẻ MMCE**: firmware [sd2psXtd](https://sd2psxtd.github.io/) trên SD2PSX, như thẻ [SD2PSXTD](https://github.com/LinkRetro/SD2PSXTD-Hardware), đọc qua [mmceman](https://github.com/ps2-mmce/mmceman) (ps2-mmce): game, VMC và cài đặt trên thẻ SD của thẻ. **Hãy giữ firmware luôn mới** ([sd2psxtd.github.io/download](https://sd2psxtd.github.io/download)). Nén một game trên thẻ cần sd2psXtd 1.4.0 trở lên (nó đặt ảnh đã xong vào chỗ bằng cách đổi tên); RIPPS2 hỏi thẻ trước, nên với firmware cũ hơn bạn biết trước khi bắt đầu bất cứ gì, và không nén được ở đó. Thẻ không báo được dung lượng trống, nên ngay cả trên 1.4.0 cũng không có kiểm tra dung lượng trước khi nén: hãy chừa chỗ cho game và ZSO của nó nằm cạnh nhau (nếu thẻ đầy, việc dừng lại và xóa những gì đã ghi)."
  },
- "1eb610e76023": {
-  "en": "1eb610e76023",
-  "t": "- **Neutrino.** RIPPS2 kèm bản dựng mới nhất của Neutrino và cài nó lần đầu một game cần đến. Neutrino của bạn, bất kể phiên bản nào, được ưu tiên: đặt thư mục `neutrino` của nó trên ổ của game hoặc thẻ nhớ, hoặc chỉ đường dẫn trong Settings > Game Launching > Neutrino Defaults, và RIPPS2 chỉ gửi cho nó những tùy chọn mà phiên bản đó biết. Từ 1.1.5, khi RIPPS2 khởi động từ ổ USB và game nằm trên HDD trong exFAT, nó nhận đúng số ổ (tổ hợp này từng khiến Neutrino đóng và máy khởi động lại)."
+ "2027d346c0f8": {
+  "en": "2027d346c0f8",
+  "t": "RIPPS2 là một giao diện PS2 trong một tệp `.elf` duy nhất: [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader) (một bản fork của Open PS2 Loader) được mở ra và dựng lại, với [Neutrino](https://github.com/rickgaiser/neutrino) của rickgaiser làm lõi game thứ hai, cùng giao diện, trình khởi chạy, trình duyệt tệp và công cụ lưu trữ riêng. Những tòa tháp kính đứng sau các game của bạn, những đội hình quỹ đạo xếp sau các tệp của bạn, và tất cả do PS2 vẽ trực tiếp."
  },
  "21fb04fdf89a": {
   "en": "21fb04fdf89a",
@@ -66,10 +70,6 @@
  "24fdb4df1618": {
   "en": "24fdb4df1618",
   "t": "## Bằng ngôn ngữ của bạn"
- },
- "254b4b737bb1": {
-  "en": "254b4b737bb1",
-  "t": "> ### Rip nào: RIPPS2 bản dựng 134, v1.3.4 beta"
  },
  "2642f599dfad": {
   "en": "2642f599dfad",
@@ -94,6 +94,10 @@
  "2f0ee80297df": {
   "en": "2f0ee80297df",
   "t": "- **MEMORY FILES** là trình duyệt tệp tích hợp: sao chép, di chuyển và xóa giữa thẻ nhớ, USB, MMCE và HDD (mọi bản sao đều được đọc lại để kiểm tra); mở ảnh thẻ VMC của OPL như thư mục; xuất và nhập dữ liệu lưu PSU; sửa tệp văn bản; mở ảnh, phát video AVI **toàn màn hình** với **điều khiển trình phát** (Cross phát/tạm dừng, Circle dừng, L1/R1 tua 10 giây, L2/R2 âm lượng, START lặp lại; hướng dẫn mờ đi khi phát và ở lại khi tạm dừng) ([RIPPS2 Media Studio](tools/media-studio) chuyển bất kỳ video nào, kể cả MP4 của điện thoại, thành tệp như vậy), và phát tệp `.mp3`, `.ogg` và `.wav`, hoặc đánh dấu vài tệp rồi mở cùng lúc để chúng phát như một đĩa trong trình phát CD của Launch Disc; **một `.tar` là thư mục màu xanh** mà bạn có thể mở, dán ảnh vào và chép thành phần ra ngoài (bản dựng 125); tam giác trên một `.tar` gộp một `.tar` ART khác vào nó ([bên dưới](#covers-from-one-file-art-pack)). **Thư mục đang mở là hàng đầu tiên**, với số mục, số đã đánh dấu, tổng dung lượng và dung lượng trống của ổ; Cross hoặc Square trên nó đánh dấu tất cả (hoặc bỏ hết nếu đã có mục được đánh dấu). START mở cài đặt của nó, nơi **SEARCH FILES** tìm bất kỳ tệp hay thư mục nào theo tên trên mọi ổ đã khởi động và mở cây ngay tại đó. Square trên thẻ nhớ mở **CARD MANAGER** (sao lưu thẻ vào VMC, ghi dữ liệu lưu của VMC vào thẻ, xóa dữ liệu lưu game, định dạng), và Square trên APA HDD mở **HDD MANAGER** (các phân vùng, kích thước của chúng, và xóa một phân vùng sau khi kiểm tra toàn bộ bảng phân vùng)."
+ },
+ "2f962ab31def": {
+  "en": "2f962ab31def",
+  "t": "- [Neutrino](https://github.com/rickgaiser/neutrino) của [rickgaiser](https://github.com/rickgaiser) (AFL-3.0), trình giả lập thiết bị nhỏ, nhanh và mô-đun, lõi game thứ hai của RIPPS2: RIPPS2 tìm và dùng Neutrino của bạn, bất kỳ phiên bản nào; RIPPS2.elf đã kèm bản dựng của nó đến bản dựng 134 ([`elf/neutrino`](elf/neutrino/README.md)). Chọn nó làm Default Loader Core trong Settings > Game Launching."
  },
  "30db0e04b1f1": {
   "en": "30db0e04b1f1",
@@ -211,6 +215,10 @@
   "en": "75ae3c119793",
   "t": "- [wLaunchELF](https://github.com/ps2homebrew/wLaunchELF) của đội ps2homebrew, và wLaunchELF R3Z của NathanNeurotic: mô hình hành vi cho trình duyệt Memory Files và lưới cài đặt của nó."
  },
+ "7783fc2cbabf": {
+  "en": "7783fc2cbabf",
+  "t": "> 1. **[Tải RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (luôn là bản phát hành mới nhất) (một tệp, 2.580 KB), nếu muốn thì thêm **[gói giao diện](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt và Adapt Rx, phiên bản 128: mỗi cái một cấu hình và một ảnh; RIPGRID và RIPFLOW có sẵn bên trong), và **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** để dùng RIPPS2 bằng ngôn ngữ của bạn (33 ngôn ngữ; đi kèm mọi bản phát hành)."
+ },
  "7c613ae2e427": {
   "en": "7c613ae2e427",
   "t": "## Âm thanh và nhạc của riêng bạn"
@@ -218,6 +226,10 @@
  "7c9cff4a1885": {
   "en": "7c9cff4a1885",
   "t": "| [Video giới thiệu beta](https://youtu.be/LPjdK_E1jjM) | 9:45 | Bản beta đầu tiên, v1.0.0: trang web nơi RIPPS2 bắt đầu, rồi game của bạn, tệp của bạn và những gì đi kèm |"
+ },
+ "7ead6381b980": {
+  "en": "7ead6381b980",
+  "t": "- **Thứ nó cần, đi kèm; thứ bạn có, được tìm thấy.** BIBLE nằm trong cùng một tệp `.elf` và được cài vào nơi bạn muốn; [Neutrino](https://github.com/rickgaiser/neutrino) của bạn, POPSTARTER, tệp POPS và Ember của bạn được tìm một lần trên các ổ, ghi nhớ và chạy từ chỗ chúng đang nằm. **STATUS** trong menu START hiện mọi ổ, nơi tìm thấy từng trình khởi chạy (LOOK FOR THEM tìm lại), homebrew, BIBLE và âm thanh của bạn, và **SAVE DIAGNOSTICS** ghi `DIAG.TXT` để báo lỗi."
  },
  "801b0c43a8b7": {
   "en": "801b0c43a8b7",
@@ -267,6 +279,10 @@
   "en": "a0a4ce3e31fb",
   "t": "## Phiên bản web"
  },
+ "a23ff2c86948": {
+  "en": "a23ff2c86948",
+  "t": "- **Neutrino.** RIPPS2 dùng Neutrino của bạn, bất kể phiên bản nào (từ bản dựng 135 không còn kèm theo, và game không tìm thấy sẽ chỉ chỗ để đặt nó): đặt thư mục `neutrino` của nó trên ổ của game hoặc thẻ nhớ, hoặc chỉ đường dẫn trong Settings > Game Launching > Neutrino Defaults, và RIPPS2 chỉ gửi cho nó những tùy chọn mà phiên bản đó biết. Từ 1.1.5, khi RIPPS2 khởi động từ ổ USB và game nằm trên HDD trong exFAT, nó nhận đúng số ổ (tổ hợp này từng khiến Neutrino đóng và máy khởi động lại)."
+ },
  "a2cda8a417d1": {
   "en": "a2cda8a417d1",
   "t": "| ◇ | Quay lại danh sách | `page_out.adp` | **Menu sound 2** |"
@@ -290,10 +306,6 @@
  "aa7c330a03a6": {
   "en": "aa7c330a03a6",
   "t": "- **Rào chắn an toàn**: mọi bản dựng đều qua các kiểm tra máy chủ của RiptOPL và các kiểm tra riêng của RIPPS2, và chỉ một cảnh báo mới trong một tệp RIPPS2 cũng làm nó thất bại."
- },
- "ab5d87e8fe5b": {
-  "en": "ab5d87e8fe5b",
-  "t": "RIPPS2 là một giao diện PS2 trong một tệp `.elf` duy nhất: [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader) (một bản fork của Open PS2 Loader) được mở ra và dựng lại, với [Neutrino](https://github.com/rickgaiser/neutrino) của rickgaiser tích hợp làm lõi game thứ hai, cùng giao diện, trình khởi chạy, trình duyệt tệp và công cụ lưu trữ riêng. Những tòa tháp kính đứng sau các game của bạn, những đội hình quỹ đạo xếp sau các tệp của bạn, và tất cả do PS2 vẽ trực tiếp."
  },
  "ad4809e8e40c": {
   "en": "ad4809e8e40c",
@@ -347,9 +359,9 @@
   "en": "bea8ee5528d7",
   "t": "| [Video giới thiệu bản dựng 55](media/ripps2-b55-reel.mp4) và [bản demo bản dựng 22](media/ripps2-b22-demo.mp4) (trên GitHub) | | Những bản alpha đầu tiên |"
  },
- "c08b5433dbb0": {
-  "en": "c08b5433dbb0",
-  "t": "- **Thứ nó cần, đi kèm; thứ bạn có, được tìm thấy.** [Neutrino](https://github.com/rickgaiser/neutrino) (bản dựng mới nhất) và BIBLE nằm trong cùng một tệp `.elf` và được cài vào nơi bạn muốn; POPSTARTER, tệp POPS và Ember của bạn được tìm một lần trên các ổ, ghi nhớ và chạy từ chỗ chúng đang nằm. **STATUS** trong menu START hiện mọi ổ, nơi tìm thấy từng trình khởi chạy (LOOK FOR THEM tìm lại), homebrew, BIBLE và âm thanh của bạn, và **SAVE DIAGNOSTICS** ghi `DIAG.TXT` để báo lỗi."
+ "bfd122c10125": {
+  "en": "bfd122c10125",
+  "t": "> [Có gì mới trong bản dựng 135](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.5-beta) | [Changelog](CHANGELOG.md) | **[Video](#videos)** | [Mọi bản phát hành](https://github.com/akilluminati47/RIPPS2/releases) | [Thảo luận trên psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "c1bc4a56fd54": {
   "en": "c1bc4a56fd54",
@@ -374,10 +386,6 @@
  "cc3d4e294dca": {
   "en": "cc3d4e294dca",
   "t": "- [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/) của krHACKen chạy game PS1 từ bản của bạn, mà RIPPS2 tìm thấy trên các ổ và thẻ nhớ của bạn ([`elf/popstarter`](elf/popstarter/README.md))."
- },
- "cc72d2f38283": {
-  "en": "cc72d2f38283",
-  "t": "- [Neutrino](https://github.com/rickgaiser/neutrino) của [rickgaiser](https://github.com/rickgaiser) (AFL-3.0), trình giả lập thiết bị nhỏ, nhanh và mô-đun, lõi game thứ hai của RIPPS2: RIPPS2.elf kèm bản dựng mới nhất của nó (v1.8.0-61-g7be8de2, ngày 31 tháng 8 năm 2026) không chỉnh sửa và cài nó vào nơi bạn muốn, và Neutrino của bạn ở bất kỳ phiên bản nào được ưu tiên ([`elf/neutrino`](elf/neutrino/README.md)). Chọn nó làm Default Loader Core trong Settings > Game Launching."
  },
  "cd91a464e4a7": {
   "en": "cd91a464e4a7",
@@ -474,13 +482,5 @@
  "fe207194059a": {
   "en": "fe207194059a",
   "t": "| `bgm_02 Details.ogg` | **Details** | x-Radar Portable, [nhạc hệ thống PSP](https://en.wikipedia.org/wiki/PlayStation_Portable_system_software) (Sony, 2010): **nhạc nền các video YouTube của RIPPS2** cùng Slideshow (video giới thiệu beta mở đầu bằng nó, và video giới thiệu cùng short bản dựng 83) | Bản của riêng bạn, chuyển trên máy tính bằng [RIPPS2 Media Studio](tools/media-studio) |"
- },
- "ff8525427876": {
-  "en": "ff8525427876",
-  "t": "> [Có gì mới trong các bản dựng 131 đến 134](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.4-beta) | [Changelog](CHANGELOG.md) | **[Video](#videos)** | [Mọi bản phát hành](https://github.com/akilluminati47/RIPPS2/releases) | [Thảo luận trên psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
- },
- "ff925ac5d69f": {
-  "en": "ff925ac5d69f",
-  "t": "> 1. **[Tải RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (luôn là bản phát hành mới nhất) (một tệp, 2.815 KB; hoặc **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2.205 KB, giống vậy nhưng không có PS2BBL cho BIBLE và không có Neutrino), nếu muốn thì thêm **[gói giao diện](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt và Adapt Rx, phiên bản 128: mỗi cái một cấu hình và một ảnh; RIPGRID và RIPFLOW có sẵn bên trong), và **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** để dùng RIPPS2 bằng ngôn ngữ của bạn (33 ngôn ngữ; đi kèm mọi bản phát hành)."
  }
 }

@@ -23,6 +23,10 @@
   "en": "0e6d84eabbaa",
   "t": "RIPPS2 klinkt als een PS2 die de woonkamer nooit verlaten heeft: **Sony's eigen consolegeluiden**, Sony-systeemmuziek en **één Nintendo-nummer** om bij te bladeren (de eigen keuzes van de ontwerper van RIPPS2). Niets daarvan wordt met RIPPS2 meegeleverd; **[RIPPS2 Media Studio](tools/media-studio)** brengt je daar vanuit de [BIOS-dump van je eigen PS2](https://pcsx2.net/docs/setup/bios/) (het bestand dat PCSX2 gebruikt) en je eigen kopieën van de muziek. Zijn **Start** ript de consolegeluiden in een volledige `AUDIO`-map; dit is de kaart waarin ze terechtkomen. Of sla de pc over: **Settings > Audio > BIOS Sounds > Rip** schrijft de eigen geluiden van de console rechtstreeks in `AUDIO`: de menugeluiden en (sinds build 89) de opstart- en gamestartmuziek, gespeeld uit de eigen noten van de BIOS. BIOS Music ernaast ript de menumuziek, het stuk van de klok (of dat van het rode scherm, of allebei: build 112). **[De geluidsrondgang van v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)** speelt ze allemaal in één take, van het opstartgeluid tot een game die start."
  },
+ "118478459c9c": {
+  "en": "118478459c9c",
+  "t": "> ### Rip it: RIPPS2 build 135, v1.3.5 bèta"
+ },
  "1238c5cafd27": {
   "en": "1238c5cafd27",
   "t": "- [xeRAbora](https://github.com/hacan359/xerabora) van [hacan359](https://github.com/hacan359): de RetroAchievements-pc-client en de RetroAchievements-code aan consolekant die RIPPS2 via RiptOPL erft (MIT / AFL-3.0). **LEFT TO HUNT** leest de `GET /state` van de interfacepagina op poort 18280, die geen deel is van het gedocumenteerde consoleprotocol en tussen alfa's kan veranderen, dus RIPPS2 is vastgezet op **[v0.1.0-alpha.18](https://github.com/hacan359/xerabora/releases/tag/v0.1.0-alpha.18)**, de release die de auteur aanraadt (alpha.10 is instabiel, en de `checked_only`-sleutel die LEFT TO HUNT leest, staat pas vanaf alpha.11 in `/state`); gecontroleerd tegen de `/state`-code van die release, andere versies zijn niet getest."
@@ -55,9 +59,9 @@
   "en": "1d0696b1b396",
   "t": "- **MMCE-kaarten**: [sd2psXtd](https://sd2psxtd.github.io/)-firmware op een SD2PSX, zoals de [SD2PSXTD](https://github.com/LinkRetro/SD2PSXTD-Hardware)-kaart, gelezen via [mmceman](https://github.com/ps2-mmce/mmceman) (ps2-mmce): games, VMC's en instellingen op de SD van de kaart. **Houd de firmware bij** ([sd2psxtd.github.io/download](https://sd2psxtd.github.io/download)). Een game op de kaart comprimeren vereist sd2psXtd 1.4.0 of nieuwer (het hernoemt de klare image naar zijn plek); RIPPS2 vraagt het eerst aan de kaart, dus bij oudere firmware krijg je dat te horen voordat er iets begint en kan er niet gecomprimeerd worden. De kaart kan zijn vrije ruimte niet melden, dus ook op 1.4.0 is er geen ruimtecontrole vóór het comprimeren: laat ruimte voor de game en zijn ZSO naast elkaar (raakt de kaart vol, dan stopt het werk en verwijdert het wat het schreef)."
  },
- "1eb610e76023": {
-  "en": "1eb610e76023",
-  "t": "- **Neutrino.** RIPPS2 heeft de nieuwste build van Neutrino aan boord en installeert die de eerste keer dat een game hem nodig heeft. Je eigen Neutrino gaat voor, welke versie ook: zet de `neutrino`-map op de schijf van de game of op een memory card, of geef het pad op in Settings > Game Launching > Neutrino Defaults, en RIPPS2 stuurt hem alleen de opties die die versie kent. Sinds 1.1.5 krijgt hij het juiste schijfnummer als RIPPS2 vanaf een USB-schijf is gestart en de game op de interne exFAT-HDD staat (die combinatie liet Neutrino stoppen en de console herstarten)."
+ "2027d346c0f8": {
+  "en": "2027d346c0f8",
+  "t": "RIPPS2 is een PS2-frontend in één `.elf`: een afbraak en herbouw van [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader) (de Open PS2 Loader-fork), met rickgaisers [Neutrino](https://github.com/rickgaiser/neutrino) als tweede gamekern, en met een eigen look, starters, bestandsbrowser en savetools. Glazen torens staan achter je games en baanformaties achter je bestanden, allemaal live getekend door de PS2."
  },
  "21fb04fdf89a": {
   "en": "21fb04fdf89a",
@@ -66,10 +70,6 @@
  "24fdb4df1618": {
   "en": "24fdb4df1618",
   "t": "## In jouw taal"
- },
- "254b4b737bb1": {
-  "en": "254b4b737bb1",
-  "t": "> ### Rip it: RIPPS2 build 134, v1.3.4 bèta"
  },
  "2642f599dfad": {
   "en": "2642f599dfad",
@@ -94,6 +94,10 @@
  "2f0ee80297df": {
   "en": "2f0ee80297df",
   "t": "- **MEMORY FILES** is een ingebouwde bestandsbrowser: kopiëren, verplaatsen en verwijderen tussen memory cards, USB, MMCE en de HDD (elke kopie teruggelezen en gecontroleerd); de VMC-kaartimages van OPL openen als mappen; PSU-saves exporteren en importeren; tekstbestanden bewerken; afbeeldingen openen, AVI-video **op volledig scherm** afspelen met **spelerbediening** (Cross speelt/pauzeert, Circle stopt, L1/R1 springen 10 s, L2/R2 volume, START herhaalt; de hints vervagen tijdens het afspelen en blijven staan bij pauze) ([RIPPS2 Media Studio](tools/media-studio) maakt van elke video, ook de MP4 van een telefoon, er een), en `.mp3`-, `.ogg`- en `.wav`-bestanden afspelen, of er meerdere markeren en samen openen om ze als één disc in de cd-speler van Launch Disc te horen; een **`.tar` is een blauwe map** die je kunt openen, waarin je afbeeldingen kunt plakken en waaruit je onderdelen kunt kopiëren (build 125); Driehoek op een `.tar` voegt er een andere ART-`.tar` in samen ([hieronder](#covers-from-one-file-art-pack)). De **geopende map is de eerste rij**, met het aantal items, het aantal gemarkeerde, de totale grootte en de vrije ruimte van de schijf; Cross of Square erop markeert alles (of, als er iets gemarkeerd is, niets). START opent de instellingen, waar **SEARCH FILES** elk bestand of elke map op naam vindt op elke gestarte schijf en de boom opent waar het staat. Square op een memory card opent de **CARD MANAGER** (een kaart back-uppen naar een VMC, de saves van een VMC terugzetten op een kaart, de gamesaves wissen, formatteren), en Square op de APA-HDD de **HDD MANAGER** (de partities, hun grootte en het verwijderen van een partitie na een volledige controle van de partitietabel)."
+ },
+ "2f962ab31def": {
+  "en": "2f962ab31def",
+  "t": "- [Neutrino](https://github.com/rickgaiser/neutrino) van [rickgaiser](https://github.com/rickgaiser) (AFL-3.0), de kleine, snelle en modulaire apparaatemulator die de tweede gamekern van RIPPS2 is: RIPPS2 vindt en gebruikt de jouwe, welke versie ook; RIPPS2.elf had zijn build aan boord tot en met build 134 ([`elf/neutrino`](elf/neutrino/README.md)). Kies hem als Default Loader Core in Settings > Game Launching."
  },
  "30db0e04b1f1": {
   "en": "30db0e04b1f1",
@@ -211,6 +215,10 @@
   "en": "75ae3c119793",
   "t": "- [wLaunchELF](https://github.com/ps2homebrew/wLaunchELF) van het ps2homebrew-team, en wLaunchELF R3Z van NathanNeurotic: de gedragsvoorbeelden voor de Memory Files-browser en zijn instellingenraster."
  },
+ "7783fc2cbabf": {
+  "en": "7783fc2cbabf",
+  "t": "> 1. **[Download RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (altijd de nieuwste release) (één bestand, 2.580 KB), en het **[themapakket](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** als je wilt (Adapt, Adapt Rx, editie 128: elk een configuratie en één afbeelding; RIPGRID en RIPFLOW zijn ingebouwd), en **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** voor RIPPS2 in jouw taal (33 talen; elke release heeft het)."
+ },
  "7c613ae2e427": {
   "en": "7c613ae2e427",
   "t": "## Je eigen geluiden en muziek"
@@ -218,6 +226,10 @@
  "7c9cff4a1885": {
   "en": "7c9cff4a1885",
   "t": "| [De bèta-reel](https://youtu.be/LPjdK_E1jjM) | 9:45 | De eerste bèta, v1.0.0: de webpagina waarmee RIPPS2 begon, dan je games, je bestanden en wat er aan boord is |"
+ },
+ "7ead6381b980": {
+  "en": "7ead6381b980",
+  "t": "- **Wat het nodig heeft, aan boord; wat jij hebt, gevonden.** BIBLE reist mee in de ene `.elf` en installeert zich waar je wilt; je eigen [Neutrino](https://github.com/rickgaiser/neutrino), POPSTARTER, POPS-bestanden en Ember worden één keer op je schijven gezocht, onthouden en gestart vanaf waar ze staan. **STATUS** in het START-menu toont elke schijf, waar elke starter is gevonden (LOOK FOR THEM zoekt opnieuw), de homebrew, BIBLE en je geluiden, en **SAVE DIAGNOSTICS** schrijft `DIAG.TXT` voor een bugrapport."
  },
  "801b0c43a8b7": {
   "en": "801b0c43a8b7",
@@ -267,6 +279,10 @@
   "en": "a0a4ce3e31fb",
   "t": "## De webversie"
  },
+ "a23ff2c86948": {
+  "en": "a23ff2c86948",
+  "t": "- **Neutrino.** RIPPS2 gebruikt je eigen Neutrino, welke versie ook (sinds build 135 heeft het er zelf geen aan boord, en een game die er geen vindt zegt waar je hem neerzet): zet de `neutrino`-map op de schijf van de game of op een memory card, of geef het pad op in Settings > Game Launching > Neutrino Defaults, en RIPPS2 stuurt hem alleen de opties die die versie kent. Sinds 1.1.5 krijgt hij het juiste schijfnummer als RIPPS2 vanaf een USB-schijf is gestart en de game op de interne exFAT-HDD staat (die combinatie liet Neutrino stoppen en de console herstarten)."
+ },
  "a2cda8a417d1": {
   "en": "a2cda8a417d1",
   "t": "| ◇ | Terug naar de lijst | `page_out.adp` | **Menu sound 2** |"
@@ -290,10 +306,6 @@
  "aa7c330a03a6": {
   "en": "aa7c330a03a6",
   "t": "- **Vangrails**: elke build doorloopt de hostcontroles van RiptOPL en die van RIPPS2 zelf, en een nieuwe waarschuwing in een RIPPS2-bestand laat hem falen."
- },
- "ab5d87e8fe5b": {
-  "en": "ab5d87e8fe5b",
-  "t": "RIPPS2 is een PS2-frontend in één `.elf`: een afbraak en herbouw van [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader) (de Open PS2 Loader-fork), met rickgaisers [Neutrino](https://github.com/rickgaiser/neutrino) erin als tweede gamekern, en met een eigen look, starters, bestandsbrowser en savetools. Glazen torens staan achter je games en baanformaties achter je bestanden, allemaal live getekend door de PS2."
  },
  "ad4809e8e40c": {
   "en": "ad4809e8e40c",
@@ -347,9 +359,9 @@
   "en": "bea8ee5528d7",
   "t": "| [De build 55-reel](media/ripps2-b55-reel.mp4) en [de demo van build 22](media/ripps2-b22-demo.mp4) (op GitHub) | | De vroege alfa's |"
  },
- "c08b5433dbb0": {
-  "en": "c08b5433dbb0",
-  "t": "- **Wat het nodig heeft, aan boord; wat jij hebt, gevonden.** [Neutrino](https://github.com/rickgaiser/neutrino) (de nieuwste build) en BIBLE reizen mee in de ene `.elf` en installeren zich waar je wilt; je eigen POPSTARTER, POPS-bestanden en Ember worden één keer op je schijven gezocht, onthouden en gestart vanaf waar ze staan. **STATUS** in het START-menu toont elke schijf, waar elke starter is gevonden (LOOK FOR THEM zoekt opnieuw), de homebrew, BIBLE en je geluiden, en **SAVE DIAGNOSTICS** schrijft `DIAG.TXT` voor een bugrapport."
+ "bfd122c10125": {
+  "en": "bfd122c10125",
+  "t": "> [Nieuw in build 135](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.5-beta) | [Changelog](CHANGELOG.md) | **[Video's](#videos)** | [Alle releases](https://github.com/akilluminati47/RIPPS2/releases) | [Praat erover op psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "c1bc4a56fd54": {
   "en": "c1bc4a56fd54",
@@ -374,10 +386,6 @@
  "cc3d4e294dca": {
   "en": "cc3d4e294dca",
   "t": "- [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/) van krHACKen start PS1-games vanaf je eigen kopie, die RIPPS2 op je schijven en memory cards vindt ([`elf/popstarter`](elf/popstarter/README.md))."
- },
- "cc72d2f38283": {
-  "en": "cc72d2f38283",
-  "t": "- [Neutrino](https://github.com/rickgaiser/neutrino) van [rickgaiser](https://github.com/rickgaiser) (AFL-3.0), de kleine, snelle en modulaire apparaatemulator die de tweede gamekern van RIPPS2 is: RIPPS2.elf heeft zijn nieuwste build (v1.8.0-61-g7be8de2, 31 augustus 2026) ongewijzigd aan boord en installeert die waar je wilt, en je eigen Neutrino van welke versie ook gaat voor ([`elf/neutrino`](elf/neutrino/README.md)). Kies hem als Default Loader Core in Settings > Game Launching."
  },
  "cd91a464e4a7": {
   "en": "cd91a464e4a7",
@@ -474,13 +482,5 @@
  "fe207194059a": {
   "en": "fe207194059a",
   "t": "| `bgm_02 Details.ogg` | **Details** | x-Radar Portable, [PSP-systeemmuziek](https://en.wikipedia.org/wiki/PlayStation_Portable_system_software) (Sony, 2010): **de achtergrondmuziek van de video's van RIPPS2 op YouTube** samen met Slideshow (de bèta-reel opent ermee, net als de build 83-reel en Short) | je eigen kopie, omgezet op je pc met [RIPPS2 Media Studio](tools/media-studio) |"
- },
- "ff8525427876": {
-  "en": "ff8525427876",
-  "t": "> [Nieuw in builds 131 tot 134](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.4-beta) | [Changelog](CHANGELOG.md) | **[Video's](#videos)** | [Alle releases](https://github.com/akilluminati47/RIPPS2/releases) | [Praat erover op psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
- },
- "ff925ac5d69f": {
-  "en": "ff925ac5d69f",
-  "t": "> 1. **[Download RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (altijd de nieuwste release) (één bestand, 2.815 KB; of **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2.205 KB, hetzelfde zonder PS2BBL voor BIBLE en zonder Neutrino), en het **[themapakket](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** als je wilt (Adapt, Adapt Rx, editie 128: elk een configuratie en één afbeelding; RIPGRID en RIPFLOW zijn ingebouwd), en **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** voor RIPPS2 in jouw taal (33 talen; elke release heeft het)."
  }
 }

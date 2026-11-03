@@ -23,6 +23,10 @@
   "en": "0e6d84eabbaa",
   "t": "RIPPS2 聽起來像一臺從未離開客廳的 PS2：**Sony 主機自己的聲音**、Sony 的系統音樂，以及瀏覽時的 **一首 Nintendo 曲目**（RIPPS2 設計者本人的選擇）。這些都不隨 RIPPS2 附帶；**[RIPPS2 Media Studio](tools/media-studio)** 會用 [你自己 PS2 的 BIOS 轉儲](https://pcsx2.net/docs/setup/bios/)（PCSX2 使用的檔案）和你自己的音樂帶你實現它。**Start** 把那些主機聲音提取成一個完整的 `AUDIO` 資料夾；這就是它們的對應表。或者跳過電腦：**Settings > Audio > BIOS Sounds > Rip** 直接把主機自己的聲音寫入 `AUDIO`：選單音效以及（從組建 89 起）由 BIOS 自己的樂譜演奏的開機和遊戲啟動音樂。旁邊的 BIOS Music 提取選單音樂，即時鐘的曲子（或紅屏的曲子，或兩者：組建 112）。**[v1.1.2 聲音巡覽](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)** 一鏡到底播放全部，從開機聲到啟動遊戲。"
  },
+ "118478459c9c": {
+  "en": "118478459c9c",
+  "t": "> ### 開始提取：RIPPS2 組建 135，v1.3.5 測試版"
+ },
  "1238c5cafd27": {
   "en": "1238c5cafd27",
   "t": "- [xeRAbora](https://github.com/hacan359/xerabora)，由 [hacan359](https://github.com/hacan359) 開發：電腦上的 RetroAchievements 客戶端，以及 RIPPS2 透過 RiptOPL 繼承的主機端 RetroAchievements 程式碼（MIT / AFL-3.0）。**LEFT TO HUNT** 讀取儀表板在埠 18280 上的 `GET /state` 端點，它不屬於有文件的主機協議，可能在 alpha 之間變化，因此 RIPPS2 固定在 **[v0.1.0-alpha.18](https://github.com/hacan359/xerabora/releases/tag/v0.1.0-alpha.18)**，即其作者推薦的版本（alpha.10 不穩定，而 LEFT TO HUNT 讀取的 `checked_only` 鍵只在 alpha.11 及以後的 `/state` 中存在）；已對照該版本的 `/state` 程式碼核對，其他版本未經測試。"
@@ -55,9 +59,9 @@
   "en": "1d0696b1b396",
   "t": "- **MMCE 卡**：SD2PSX 上的 [sd2psXtd](https://sd2psxtd.github.io/) 韌體，例如 [SD2PSXTD](https://github.com/LinkRetro/SD2PSXTD-Hardware) 卡，透過 [mmceman](https://github.com/ps2-mmce/mmceman)（ps2-mmce）讀取：遊戲、VMC 和設定都在卡的 SD 上。**請保持韌體為最新** ([sd2psxtd.github.io/download](https://sd2psxtd.github.io/download))。在卡上壓縮遊戲需要 sd2psXtd 1.4.0 或更新版本（它透過重新命名把完成的映象放到位）；RIPPS2 會先詢問卡，所以使用舊韌體時你會在開始任何操作前得知，並且無法在那裡壓縮。卡無法報告剩餘空間，所以即使是 1.4.0 也不會在壓縮前檢查空間：請為遊戲和它的 ZSO 並存留出空間（如果卡寫滿，任務會停止並刪除已寫入的內容）。"
  },
- "1eb610e76023": {
-  "en": "1eb610e76023",
-  "t": "- **Neutrino。** RIPPS2 附帶 Neutrino 的最新組建，並在遊戲首次需要時安裝它。你自己的 Neutrino，無論什麼版本，都優先：把它的 `neutrino` 資料夾放在遊戲所在磁碟機或記憶卡上，或在 Settings > Game Launching > Neutrino Defaults 中給出路徑，RIPPS2 只會向它傳送該版本認識的選項。從 1.1.5 起，當 RIPPS2 從 USB 磁碟機啟動而遊戲在 exFAT 內建 HDD 上時，會傳給它正確的磁碟機編號（這種組合曾導致 Neutrino 關閉、主機重啟）。"
+ "2027d346c0f8": {
+  "en": "2027d346c0f8",
+  "t": "RIPPS2 是裝在單個 `.elf` 中的 PS2 前端：把 [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader)（Open PS2 Loader 的分支）拆開重組，以 rickgaiser 的 [Neutrino](https://github.com/rickgaiser/neutrino) 作為第二個遊戲核心，並擁有自己的外觀、啟動器、檔案瀏覽器和儲存工具。玻璃塔矗立在你的遊戲後面，軌道陣列排列在你的檔案後面，全部由 PS2 實時繪製。"
  },
  "21fb04fdf89a": {
   "en": "21fb04fdf89a",
@@ -66,10 +70,6 @@
  "24fdb4df1618": {
   "en": "24fdb4df1618",
   "t": "## 用你的語言"
- },
- "254b4b737bb1": {
-  "en": "254b4b737bb1",
-  "t": "> ### 開始提取：RIPPS2 組建 134，v1.3.4 測試版"
  },
  "2642f599dfad": {
   "en": "2642f599dfad",
@@ -94,6 +94,10 @@
  "2f0ee80297df": {
   "en": "2f0ee80297df",
   "t": "- **MEMORY FILES** 是內建檔案瀏覽器：在記憶卡、USB、MMCE 和 HDD 之間複製、移動和刪除（每次複製都會重新讀取校驗）；把 OPL 的 VMC 卡映象當作資料夾開啟；匯出和匯入 PSU 存檔；編輯文字檔案；開啟圖片，**全屏**播放 AVI 影片並帶有**播放控制**（Cross 播放/暫停，Circle 停止，L1/R1 跳 10 秒，L2/R2 音量，START 迴圈；提示在播放時淡出，暫停時保留）（[RIPPS2 Media Studio](tools/media-studio) 能把任何影片，包括手機拍的 MP4，轉換成這種檔案），播放 `.mp3`、`.ogg` 和 `.wav` 檔案，或標記多個一起開啟，在 Launch Disc 的 CD 播放器中像一張光碟一樣播放；**`.tar` 是一個藍色資料夾**，你可以開啟它、往裡貼上圖片、把成員複製出來（組建 125）；在 `.tar` 上按三角可把另一個 ART 的 `.tar` 合並進來（[見下文](#covers-from-one-file-art-pack)）。**開啟的資料夾是第一行**，顯示專案數、已標記數、總大小和磁碟機剩餘空間；在它上面按 Cross 或 Square 標記全部（若已有標記則全部取消）。START 開啟它的設定，其中的 **SEARCH FILES** 可在任何已啟動的磁碟機上按名稱查詢檔案或資料夾並就地展開目錄樹。在記憶卡上按 Square 開啟 **CARD MANAGER**（把卡備份為 VMC、把 VMC 的存檔寫入卡、清除遊戲存檔、格式化），在 APA HDD 上按 Square 開啟 **HDD MANAGER**（它的分割槽、大小，以及在完整檢查分割槽表後刪除一個分割槽）。"
+ },
+ "2f962ab31def": {
+  "en": "2f962ab31def",
+  "t": "- [Neutrino](https://github.com/rickgaiser/neutrino)，由 [rickgaiser](https://github.com/rickgaiser) 開發（AFL-3.0），小巧、快速、模組化的裝置模擬器，是 RIPPS2 的第二個遊戲核心：RIPPS2 會找到並使用你自己的任何版本的 Neutrino；RIPPS2.elf 在組建 134 之前附帶過它的組建（[`elf/neutrino`](elf/neutrino/README.md)）。在 Settings > Game Launching 中將其選為 Default Loader Core。"
  },
  "30db0e04b1f1": {
   "en": "30db0e04b1f1",
@@ -211,6 +215,10 @@
   "en": "75ae3c119793",
   "t": "- [wLaunchELF](https://github.com/ps2homebrew/wLaunchELF)，由 ps2homebrew 團隊開發，以及 wLaunchELF R3Z，由 NathanNeurotic 開發：Memory Files 瀏覽器及其設定網格的行為參考。"
  },
+ "7783fc2cbabf": {
+  "en": "7783fc2cbabf",
+  "t": "> 1. **[下載 RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)**（始終是最新版本）（一個檔案，2,580 KB），需要的話再下載 **[主題包](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)**（Adapt 和 Adapt Rx，第 128 版：各一個配置和一張圖片；RIPGRID 和 RIPFLOW 為內建），以及 **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)**，用你的語言使用 RIPPS2（33 種語言；每個版本都附帶）。"
+ },
  "7c613ae2e427": {
   "en": "7c613ae2e427",
   "t": "## 你自己的聲音和音樂"
@@ -218,6 +226,10 @@
  "7c9cff4a1885": {
   "en": "7c9cff4a1885",
   "t": "| [測試版介紹短片](https://youtu.be/LPjdK_E1jjM) | 9:45 | 第一個測試版 v1.0.0：RIPPS2 起源的網頁，然後是你的遊戲、你的檔案和它附帶的東西 |"
+ },
+ "7ead6381b980": {
+  "en": "7ead6381b980",
+  "t": "- **需要的已附帶；你有的會被找到。** BIBLE 在同一個 `.elf` 裡，可安裝到你想要的位置；你自己的 [Neutrino](https://github.com/rickgaiser/neutrino)、POPSTARTER、POPS 檔案和你自己的 Ember 會在磁碟機上搜尋一次、記住，並從原位置執行。START 選單中的 **STATUS** 顯示所有磁碟機、每個啟動器在哪裡找到（LOOK FOR THEM 重新搜尋）、homebrew、BIBLE 和你的聲音，**SAVE DIAGNOSTICS** 會寫出 `DIAG.TXT` 用於錯誤報告。"
  },
  "801b0c43a8b7": {
   "en": "801b0c43a8b7",
@@ -267,6 +279,10 @@
   "en": "a0a4ce3e31fb",
   "t": "## 網頁版"
  },
+ "a23ff2c86948": {
+  "en": "a23ff2c86948",
+  "t": "- **Neutrino。** RIPPS2 使用你自己的 Neutrino，無論什麼版本（從組建 135 起不再附帶，找不到時遊戲會告訴你放在哪裡）：把它的 `neutrino` 資料夾放在遊戲所在磁碟機或記憶卡上，或在 Settings > Game Launching > Neutrino Defaults 中給出路徑，RIPPS2 只會向它傳送該版本認識的選項。從 1.1.5 起，當 RIPPS2 從 USB 磁碟機啟動而遊戲在 exFAT 內建 HDD 上時，會傳給它正確的磁碟機編號（這種組合曾導致 Neutrino 關閉、主機重啟）。"
+ },
  "a2cda8a417d1": {
   "en": "a2cda8a417d1",
   "t": "| ◇ | 返回清單 | `page_out.adp` | **Menu sound 2** |"
@@ -290,10 +306,6 @@
  "aa7c330a03a6": {
   "en": "aa7c330a03a6",
   "t": "- **安全護欄**：每個組建都要透過 RiptOPL 的主機檢查和 RIPPS2 自己的檢查，RIPPS2 檔案中出現任何新警告都會使其失敗。"
- },
- "ab5d87e8fe5b": {
-  "en": "ab5d87e8fe5b",
-  "t": "RIPPS2 是裝在單個 `.elf` 中的 PS2 前端：把 [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader)（Open PS2 Loader 的分支）拆開重組，內建 rickgaiser 的 [Neutrino](https://github.com/rickgaiser/neutrino) 作為第二個遊戲核心，並擁有自己的外觀、啟動器、檔案瀏覽器和儲存工具。玻璃塔矗立在你的遊戲後面，軌道陣列排列在你的檔案後面，全部由 PS2 實時繪製。"
  },
  "ad4809e8e40c": {
   "en": "ad4809e8e40c",
@@ -347,9 +359,9 @@
   "en": "bea8ee5528d7",
   "t": "| [組建 55 介紹短片](media/ripps2-b55-reel.mp4) 和 [組建 22 演示](media/ripps2-b22-demo.mp4)（在 GitHub 上） | | 早期 alpha |"
  },
- "c08b5433dbb0": {
-  "en": "c08b5433dbb0",
-  "t": "- **需要的已附帶；你有的會被找到。** [Neutrino](https://github.com/rickgaiser/neutrino)（其最新組建）和 BIBLE 都在同一個 `.elf` 裡，可安裝到你想要的位置；POPSTARTER、POPS 檔案和你自己的 Ember 會在磁碟機上搜尋一次、記住，並從原位置執行。START 選單中的 **STATUS** 顯示所有磁碟機、每個啟動器在哪裡找到（LOOK FOR THEM 重新搜尋）、homebrew、BIBLE 和你的聲音，**SAVE DIAGNOSTICS** 會寫出 `DIAG.TXT` 用於錯誤報告。"
+ "bfd122c10125": {
+  "en": "bfd122c10125",
+  "t": "> [組建 135 的新內容](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.5-beta) | [Changelog](CHANGELOG.md) | **[影片](#videos)** | [所有版本](https://github.com/akilluminati47/RIPPS2/releases) | [在 psx-place 討論](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "c1bc4a56fd54": {
   "en": "c1bc4a56fd54",
@@ -374,10 +386,6 @@
  "cc3d4e294dca": {
   "en": "cc3d4e294dca",
   "t": "- [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/)，由 krHACKen 開發，用你自己的副本執行 PS1 遊戲，RIPPS2 會在你的磁碟機和記憶卡上找到它（[`elf/popstarter`](elf/popstarter/README.md)）。"
- },
- "cc72d2f38283": {
-  "en": "cc72d2f38283",
-  "t": "- [Neutrino](https://github.com/rickgaiser/neutrino)，由 [rickgaiser](https://github.com/rickgaiser) 開發（AFL-3.0），小巧、快速、模組化的裝置模擬器，是 RIPPS2 的第二個遊戲核心：RIPPS2.elf 原樣附帶其最新組建（v1.8.0-61-g7be8de2，2026 年 8 月 31 日）並安裝到你想要的位置，你自己的任何版本的 Neutrino 都優先（[`elf/neutrino`](elf/neutrino/README.md)）。在 Settings > Game Launching 中將其選為 Default Loader Core。"
  },
  "cd91a464e4a7": {
   "en": "cd91a464e4a7",
@@ -474,13 +482,5 @@
  "fe207194059a": {
   "en": "fe207194059a",
   "t": "| `bgm_02 Details.ogg` | **Details** | x-Radar Portable，[PSP 系統音樂](https://en.wikipedia.org/wiki/PlayStation_Portable_system_software)（Sony，2010）：與 Slideshow 一起作為 **RIPPS2 YouTube 影片的背景音樂**（測試版介紹短片以它開場，組建 83 介紹短片和短片也是） | 你自己的副本，在電腦上用 [RIPPS2 Media Studio](tools/media-studio) 轉換 |"
- },
- "ff8525427876": {
-  "en": "ff8525427876",
-  "t": "> [組建 131 到 134 的新內容](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.4-beta) | [Changelog](CHANGELOG.md) | **[影片](#videos)** | [所有版本](https://github.com/akilluminati47/RIPPS2/releases) | [在 psx-place 討論](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
- },
- "ff925ac5d69f": {
-  "en": "ff925ac5d69f",
-  "t": "> 1. **[下載 RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)**（始終是最新版本）（一個檔案，2,815 KB；或 **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**，2,205 KB，同樣的內容但不含 BIBLE 用的 PS2BBL 和 Neutrino），需要的話再下載 **[主題包](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)**（Adapt 和 Adapt Rx，第 128 版：各一個配置和一張圖片；RIPGRID 和 RIPFLOW 為內建），以及 **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)**，用你的語言使用 RIPPS2（33 種語言；每個版本都附帶）。"
  }
 }

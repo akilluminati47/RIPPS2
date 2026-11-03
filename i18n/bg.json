@@ -23,6 +23,10 @@
   "en": "0e6d84eabbaa",
   "t": "RIPPS2 звучи като PS2, която никога не е напускала хола: **собствените звуци на конзолата на Sony**, системна музика на Sony и **една песен на Nintendo** за разглеждане (изборът на самия дизайнер на RIPPS2). Нищо от това не идва с RIPPS2; **[RIPPS2 Media Studio](tools/media-studio)** те води дотам от [BIOS дъмпа на собствения ти PS2](https://pcsx2.net/docs/setup/bios/) (файла, който ползва PCSX2) и от собствените ти копия на музиката. Неговият **Start** рипва звуците на конзолата в пълна папка `AUDIO`; това е картата, по която влизат. Или пропусни компютъра: **Settings > Audio > BIOS Sounds > Rip** записва собствените звуци на конзолата направо в `AUDIO`: звуците на менюто и (от компилация 89) музиката при стартиране и пускане на игра, изсвирена от собствените ноти на BIOS. BIOS Music до него рипва музиката на менюто, мелодията на часовника (или на червения екран, или и двете: компилация 112). **[Обиколка на звуците за v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)** свири всеки от тях в един дубъл, от звука при стартиране до пускането на игра."
  },
+ "118478459c9c": {
+  "en": "118478459c9c",
+  "t": "> ### Рипни го: RIPPS2 build 135, v1.3.5 бета"
+ },
  "1238c5cafd27": {
   "en": "1238c5cafd27",
   "t": "- [xeRAbora](https://github.com/hacan359/xerabora) от [hacan359](https://github.com/hacan359): клиентът за RetroAchievements на компютъра и кодът за RetroAchievements от страната на конзолата, който RIPPS2 наследява чрез RiptOPL (MIT / AFL-3.0). **LEFT TO HUNT** чете `GET /state` на страницата на интерфейса на порт 18280, който не е част от документирания протокол на конзолата и може да се променя между алфите, затова RIPPS2 е фиксиран на **[v0.1.0-alpha.18](https://github.com/hacan359/xerabora/releases/tag/v0.1.0-alpha.18)**, изданието, което препоръчва авторът му (alpha.10 е нестабилна, а ключът `checked_only`, който LEFT TO HUNT чете, е в `/state` едва от alpha.11); проверено спрямо кода на `/state` в това издание, другите версии не са тествани."
@@ -55,9 +59,9 @@
   "en": "1d0696b1b396",
   "t": "- **MMCE карти**: фърмуер [sd2psXtd](https://sd2psxtd.github.io/) на SD2PSX, като картата [SD2PSXTD](https://github.com/LinkRetro/SD2PSXTD-Hardware), четени чрез [mmceman](https://github.com/ps2-mmce/mmceman) (ps2-mmce): игри, VMC и настройки на SD картата. **Поддържай фърмуера обновен** ([sd2psxtd.github.io/download](https://sd2psxtd.github.io/download)). Компресирането на игра върху картата изисква sd2psXtd 1.4.0 или по-нов (той преименува готовия образ на мястото му); RIPPS2 първо пита картата, така при по-стар фърмуер разбираш, преди нещо да е започнало, и там не може да се компресира. Картата не може да съобщи свободното си място, затова дори на 1.4.0 няма проверка на мястото преди компресиране: остави място за играта и нейния ZSO един до друг (ако картата се напълни, работата спира и премахва каквото е записала)."
  },
- "1eb610e76023": {
-  "en": "1eb610e76023",
-  "t": "- **Neutrino.** RIPPS2 носи най-новата компилация на Neutrino и я инсталира първия път, когато игра има нужда от нея. Собственият ти Neutrino е с предимство, каквато и да е версията му: сложи папката му `neutrino` на устройството на играта или на карта с памет, или въведи пътя му в Settings > Game Launching > Neutrino Defaults, и RIPPS2 му праща само опциите, които тази версия познава. От 1.1.5 той получава правилния номер на устройство, когато RIPPS2 е стартирал от USB устройство, а играта е на вътрешния exFAT HDD (тази комбинация караше Neutrino да спира, а конзолата да се рестартира)."
+ "2027d346c0f8": {
+  "en": "2027d346c0f8",
+  "t": "RIPPS2 е PS2 интерфейс в един `.elf`: разглобяване и сглобяване наново на [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader) (форка на Open PS2 Loader), с [Neutrino](https://github.com/rickgaiser/neutrino) на rickgaiser като второ ядро за игри, със собствен облик, стартери, файлов браузър и инструменти за записи. Стъклени кули стоят зад игрите ти, а орбитални формации зад файловете ти, всичко рисувано на живо от PS2."
  },
  "21fb04fdf89a": {
   "en": "21fb04fdf89a",
@@ -66,10 +70,6 @@
  "24fdb4df1618": {
   "en": "24fdb4df1618",
   "t": "## На твоя език"
- },
- "254b4b737bb1": {
-  "en": "254b4b737bb1",
-  "t": "> ### Рипни го: RIPPS2 build 134, v1.3.4 бета"
  },
  "2642f599dfad": {
   "en": "2642f599dfad",
@@ -94,6 +94,10 @@
  "2f0ee80297df": {
   "en": "2f0ee80297df",
   "t": "- **MEMORY FILES** е вграден файлов браузър: копирай, мести и трий между карти с памет, USB, MMCE и HDD (всяко копие се прочита обратно и се проверява); отваряй VMC образите на карти от OPL като папки; експортирай и импортирай PSU записи; редактирай текстови файлове; отваряй картинки, пускай AVI видео **на цял екран** с **бутони на плейър** (Cross пуска/паузира, Circle спира, L1/R1 скачат с 10 s, L2/R2 сила на звука, START повтаря; подсказките изчезват по време на пускане и остават при пауза) ([RIPPS2 Media Studio](tools/media-studio) превръща всяко видео, дори MP4 от телефон, в такова), и пускай файлове `.mp3`, `.ogg` и `.wav`, или маркирай няколко и ги отвори заедно, за да ги слушаш като един диск в CD плейъра на Launch Disc; **`.tar` е синя папка**, която можеш да отвориш, да поставиш картинки в нея и да копираш елементи от нея (компилация 125); Триъгълник върху `.tar` слива в него друг ART `.tar` ([по-долу](#covers-from-one-file-art-pack)). **Отворената папка е първият ред**, с броя записи, броя маркирани, общия размер и свободното място на устройството; Cross или Square върху нея маркира всичко (или, ако нещо е маркирано, нищо). START отваря настройките ѝ, където **SEARCH FILES** намира всеки файл или папка по име на всяко стартирано устройство и отваря дървото там, където е. Square върху карта с памет отваря **CARD MANAGER** (резервно копие на карта във VMC, връщане на записите от VMC върху карта, изтриване на записите на игрите, форматиране), а Square върху APA HDD отваря **HDD MANAGER** (дяловете му, размерите им и премахване на дял след пълна проверка на таблицата на дяловете)."
+ },
+ "2f962ab31def": {
+  "en": "2f962ab31def",
+  "t": "- [Neutrino](https://github.com/rickgaiser/neutrino) от [rickgaiser](https://github.com/rickgaiser) (AFL-3.0), малкият, бърз и модулен емулатор на устройства, който е второто ядро за игри на RIPPS2: RIPPS2 намира и ползва твоя, от всяка версия; RIPPS2.elf носеше негова компилация до компилация 134 ([`elf/neutrino`](elf/neutrino/README.md)). Избери го като Default Loader Core в Settings > Game Launching."
  },
  "30db0e04b1f1": {
   "en": "30db0e04b1f1",
@@ -211,6 +215,10 @@
   "en": "75ae3c119793",
   "t": "- [wLaunchELF](https://github.com/ps2homebrew/wLaunchELF) от екипа ps2homebrew и wLaunchELF R3Z от NathanNeurotic: образците за поведението на браузъра Memory Files и неговата мрежа от настройки."
  },
+ "7783fc2cbabf": {
+  "en": "7783fc2cbabf",
+  "t": "> 1. **[Изтегли RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (винаги най-новото издание) (един файл, 2580 KB), и **[пакета с теми](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)**, ако искаш (Adapt, Adapt Rx, издание 128: по една конфигурация и една картинка; RIPGRID и RIPFLOW са вградени), и **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** за RIPPS2 на твоя език (33 езика; всяко издание го съдържа)."
+ },
  "7c613ae2e427": {
   "en": "7c613ae2e427",
   "t": "## Собствените ти звуци и музика"
@@ -218,6 +226,10 @@
  "7c9cff4a1885": {
   "en": "7c9cff4a1885",
   "t": "| [Reel на бетата](https://youtu.be/LPjdK_E1jjM) | 9:45 | Първата бета, v1.0.0: уеб страницата, от която започна RIPPS2, после игрите ти, файловете ти и какво има на борда |"
+ },
+ "7ead6381b980": {
+  "en": "7ead6381b980",
+  "t": "- **Каквото му трябва, на борда; каквото имаш, намерено.** BIBLE пътува в единствения `.elf` и се инсталира там, където избереш; собственият ти [Neutrino](https://github.com/rickgaiser/neutrino), POPSTARTER, файловете POPS и Ember се търсят веднъж на устройствата ти, запомнят се и се стартират оттам, където са. **STATUS** в менюто START показва всяко устройство, къде е намерен всеки стартер (LOOK FOR THEM търси отново), homebrew, BIBLE и звуците ти, а **SAVE DIAGNOSTICS** записва `DIAG.TXT` за доклад за грешка."
  },
  "801b0c43a8b7": {
   "en": "801b0c43a8b7",
@@ -267,6 +279,10 @@
   "en": "a0a4ce3e31fb",
   "t": "## Уеб версията"
  },
+ "a23ff2c86948": {
+  "en": "a23ff2c86948",
+  "t": "- **Neutrino.** RIPPS2 ползва собствения ти Neutrino, каквато и да е версията му (от компилация 135 не носи свой, а игра, която не намери такъв, казва къде да го сложиш): сложи папката му `neutrino` на устройството на играта или на карта с памет, или въведи пътя му в Settings > Game Launching > Neutrino Defaults, и RIPPS2 му праща само опциите, които тази версия познава. От 1.1.5 той получава правилния номер на устройство, когато RIPPS2 е стартирал от USB устройство, а играта е на вътрешния exFAT HDD (тази комбинация караше Neutrino да спира, а конзолата да се рестартира)."
+ },
  "a2cda8a417d1": {
   "en": "a2cda8a417d1",
   "t": "| ◇ | Обратно към списъка | `page_out.adp` | **Menu sound 2** |"
@@ -290,10 +306,6 @@
  "aa7c330a03a6": {
   "en": "aa7c330a03a6",
   "t": "- **Предпазни огради**: всяка компилация минава проверките на хоста от RiptOPL и собствените проверки на RIPPS2, а ново предупреждение във файл на RIPPS2 я проваля."
- },
- "ab5d87e8fe5b": {
-  "en": "ab5d87e8fe5b",
-  "t": "RIPPS2 е PS2 интерфейс в един `.elf`: разглобяване и сглобяване наново на [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader) (форка на Open PS2 Loader), с [Neutrino](https://github.com/rickgaiser/neutrino) на rickgaiser вътре като второ ядро за игри, със собствен облик, стартери, файлов браузър и инструменти за записи. Стъклени кули стоят зад игрите ти, а орбитални формации зад файловете ти, всичко рисувано на живо от PS2."
  },
  "ad4809e8e40c": {
   "en": "ad4809e8e40c",
@@ -347,9 +359,9 @@
   "en": "bea8ee5528d7",
   "t": "| [Reel на компилация 55](media/ripps2-b55-reel.mp4) и [демото на компилация 22](media/ripps2-b22-demo.mp4) (в GitHub) | | Ранните алфи |"
  },
- "c08b5433dbb0": {
-  "en": "c08b5433dbb0",
-  "t": "- **Каквото му трябва, на борда; каквото имаш, намерено.** [Neutrino](https://github.com/rickgaiser/neutrino) (най-новата му компилация) и BIBLE пътуват в единствения `.elf` и се инсталират там, където избереш; собственият ти POPSTARTER, файловете POPS и Ember се търсят веднъж на устройствата ти, запомнят се и се стартират оттам, където са. **STATUS** в менюто START показва всяко устройство, къде е намерен всеки стартер (LOOK FOR THEM търси отново), homebrew, BIBLE и звуците ти, а **SAVE DIAGNOSTICS** записва `DIAG.TXT` за доклад за грешка."
+ "bfd122c10125": {
+  "en": "bfd122c10125",
+  "t": "> [Новото в компилация 135](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.5-beta) | [Changelog](CHANGELOG.md) | **[Видеа](#videos)** | [Всички издания](https://github.com/akilluminati47/RIPPS2/releases) | [Обсъди го в psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "c1bc4a56fd54": {
   "en": "c1bc4a56fd54",
@@ -374,10 +386,6 @@
  "cc3d4e294dca": {
   "en": "cc3d4e294dca",
   "t": "- [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/) от krHACKen стартира игри за PS1 от собственото ти копие, което RIPPS2 намира на устройствата и картите ти с памет ([`elf/popstarter`](elf/popstarter/README.md))."
- },
- "cc72d2f38283": {
-  "en": "cc72d2f38283",
-  "t": "- [Neutrino](https://github.com/rickgaiser/neutrino) от [rickgaiser](https://github.com/rickgaiser) (AFL-3.0), малкият, бърз и модулен емулатор на устройства, който е второто ядро за игри на RIPPS2: RIPPS2.elf носи най-новата му компилация (v1.8.0-61-g7be8de2, 31 август 2026 г.) непроменена и я инсталира там, където избереш, а собственият ти Neutrino от всяка версия е с предимство ([`elf/neutrino`](elf/neutrino/README.md)). Избери го като Default Loader Core в Settings > Game Launching."
  },
  "cd91a464e4a7": {
   "en": "cd91a464e4a7",
@@ -474,13 +482,5 @@
  "fe207194059a": {
   "en": "fe207194059a",
   "t": "| `bgm_02 Details.ogg` | **Details** | x-Radar Portable, [системна музика на PSP](https://en.wikipedia.org/wiki/PlayStation_Portable_system_software) (Sony, 2010): **фоновата музика на видеата на RIPPS2 в YouTube** заедно със Slideshow (reel на бетата започва с нея, както и reel и Short на компилация 83) | собственото ти копие, преобразувано на компютъра ти с [RIPPS2 Media Studio](tools/media-studio) |"
- },
- "ff8525427876": {
-  "en": "ff8525427876",
-  "t": "> [Новото в компилации от 131 до 134](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.4-beta) | [Changelog](CHANGELOG.md) | **[Видеа](#videos)** | [Всички издания](https://github.com/akilluminati47/RIPPS2/releases) | [Обсъди го в psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
- },
- "ff925ac5d69f": {
-  "en": "ff925ac5d69f",
-  "t": "> 1. **[Изтегли RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (винаги най-новото издание) (един файл, 2815 KB; или **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2205 KB, същото без PS2BBL за BIBLE и без Neutrino), и **[пакета с теми](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)**, ако искаш (Adapt, Adapt Rx, издание 128: по една конфигурация и една картинка; RIPGRID и RIPFLOW са вградени), и **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** за RIPPS2 на твоя език (33 езика; всяко издание го съдържа)."
  }
 }

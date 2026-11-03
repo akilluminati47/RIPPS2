@@ -23,6 +23,10 @@
   "en": "0e6d84eabbaa",
   "t": "RIPPS2 zní jako PS2, která nikdy neopustila obývák: **vlastní zvuky konzole od Sony**, systémová hudba Sony a **jedna skladba od Nintenda** k procházení (výběr samotného návrháře RIPPS2). Nic z toho se s RIPPS2 nedodává; **[RIPPS2 Media Studio](tools/media-studio)** tě k tomu dovede z [dumpu BIOSu tvé vlastní PS2](https://pcsx2.net/docs/setup/bios/) (soubor, který používá PCSX2) a tvých vlastních kopií hudby. Jeho **Start** ripne zvuky konzole do úplné složky `AUDIO`; tohle je mapa, do které se zařadí. Nebo vynech PC: **Settings > Audio > BIOS Sounds > Rip** zapíše vlastní zvuky konzole přímo do `AUDIO`: zvuky menu a (od buildu 89) hudbu při startu a spuštění hry zahranou z vlastních not BIOSu. BIOS Music vedle ripne hudbu menu, skladbu hodin (nebo červené obrazovky, nebo obě: build 112). **[Prohlídka zvuků k v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)** přehraje každý z nich v jednom záběru, od zvuku spuštění po spuštění hry."
  },
+ "118478459c9c": {
+  "en": "118478459c9c",
+  "t": "> ### Ripni to: RIPPS2 build 135, v1.3.5 beta"
+ },
  "1238c5cafd27": {
   "en": "1238c5cafd27",
   "t": "- [xeRAbora](https://github.com/hacan359/xerabora) od [hacan359](https://github.com/hacan359): klient RetroAchievements pro PC a kód RetroAchievements na straně konzole, který RIPPS2 dědí přes RiptOPL (MIT / AFL-3.0). **LEFT TO HUNT** čte `GET /state` stránky rozhraní na portu 18280, který není součástí zdokumentovaného protokolu konzole a může se mezi alfami měnit, proto je RIPPS2 připnutý na **[v0.1.0-alpha.18](https://github.com/hacan359/xerabora/releases/tag/v0.1.0-alpha.18)**, vydání, které doporučuje jeho autor (alpha.10 je nestabilní a klíč `checked_only`, který LEFT TO HUNT čte, je v `/state` až od alpha.11); ověřeno proti kódu `/state` toho vydání, jiné verze nejsou otestované."
@@ -55,9 +59,9 @@
   "en": "1d0696b1b396",
   "t": "- **Karty MMCE**: firmware [sd2psXtd](https://sd2psxtd.github.io/) v SD2PSX, jako je karta [SD2PSXTD](https://github.com/LinkRetro/SD2PSXTD-Hardware), čtené přes [mmceman](https://github.com/ps2-mmce/mmceman) (ps2-mmce): hry, VMC a nastavení na SD kartě. **Udržuj firmware aktuální** ([sd2psxtd.github.io/download](https://sd2psxtd.github.io/download)). Komprimace hry na kartě vyžaduje sd2psXtd 1.4.0 nebo novější (přejmenuje hotový obraz na jeho místo); RIPPS2 se nejdřív zeptá karty, takže se starším firmwarem se to dozvíš dřív, než cokoli začne, a komprimovat tam nejde. Karta neumí ohlásit své volné místo, takže ani na 1.4.0 se před komprimací místo nekontroluje: nech místo pro hru a její ZSO vedle sebe (pokud se karta zaplní, práce se zastaví a odstraní, co zapsala)."
  },
- "1eb610e76023": {
-  "en": "1eb610e76023",
-  "t": "- **Neutrino.** RIPPS2 nese nejnovější build Neutrina a nainstaluje ho, když ho hra poprvé potřebuje. Tvoje vlastní Neutrino má přednost, ať je jakékoli verze: dej jeho složku `neutrino` na disk hry nebo paměťovou kartu, nebo zadej jeho cestu v Settings > Game Launching > Neutrino Defaults, a RIPPS2 mu pošle jen volby, které ta verze zná. Od 1.1.5 dostane správné číslo disku, když RIPPS2 startoval z USB disku a hra je na interním exFAT HDD (tahle kombinace způsobovala, že Neutrino skončilo a konzole se restartovala)."
+ "2027d346c0f8": {
+  "en": "2027d346c0f8",
+  "t": "RIPPS2 je front end pro PS2 v jediném `.elf`: rozebrání a přestavba [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader) (forku Open PS2 Loaderu), s [Neutrinem](https://github.com/rickgaiser/neutrino) od rickgaisera jako druhým herním jádrem a s vlastním vzhledem, spouštěči, prohlížečem souborů a nástroji na uložené hry. Skleněné věže stojí za tvými hrami a orbitální formace za tvými soubory, vše kreslené naživo samotnou PS2."
  },
  "21fb04fdf89a": {
   "en": "21fb04fdf89a",
@@ -66,10 +70,6 @@
  "24fdb4df1618": {
   "en": "24fdb4df1618",
   "t": "## Ve tvém jazyce"
- },
- "254b4b737bb1": {
-  "en": "254b4b737bb1",
-  "t": "> ### Ripni to: RIPPS2 build 134, v1.3.4 beta"
  },
  "2642f599dfad": {
   "en": "2642f599dfad",
@@ -94,6 +94,10 @@
  "2f0ee80297df": {
   "en": "2f0ee80297df",
   "t": "- **MEMORY FILES** je vestavěný prohlížeč souborů: kopíruj, přesouvej a mazej mezi paměťovými kartami, USB, MMCE a HDD (každá kopie se přečte zpět a zkontroluje); otevírej obrazy karet VMC z OPL jako složky; exportuj a importuj uložené hry PSU; upravuj textové soubory; otevírej obrázky, přehrávej AVI video **na celé obrazovce** s **ovládáním přehrávače** (Cross přehraje/pozastaví, Circle zastaví, L1/R1 skáčou o 10 s, L2/R2 hlasitost, START opakuje; nápovědy při přehrávání mizí a při pauze zůstávají) ([RIPPS2 Media Studio](tools/media-studio) z jakéhokoli videa, i z MP4 z telefonu, takové udělá), a přehrávej soubory `.mp3`, `.ogg` a `.wav`, nebo jich několik označ a otevři společně, ať hrají jako jeden disk v CD přehrávači Launch Disc; **`.tar` je modrá složka**, kterou můžeš otevřít, vkládat do ní obrázky a kopírovat z ní položky (build 125); Trojúhelník na `.tar` do něj sloučí jiný `.tar` s ART ([níže](#covers-from-one-file-art-pack)). **Otevřená složka je první řádek** a ukazuje počet položek, počet označených, celkovou velikost a volné místo na disku; Cross nebo Square na ní označí vše (nebo, pokud je něco označeno, nic). START otevře její nastavení, kde **SEARCH FILES** najde jakýkoli soubor nebo složku podle jména na každém spuštěném disku a otevře strom tam, kde je. Square na paměťové kartě otevře **CARD MANAGER** (zálohovat kartu do VMC, zapsat uložené hry z VMC zpět na kartu, smazat uložené hry, formátovat) a Square na APA HDD **HDD MANAGER** (jeho oddíly, jejich velikosti a odebrání jednoho po úplné kontrole tabulky oddílů)."
+ },
+ "2f962ab31def": {
+  "en": "2f962ab31def",
+  "t": "- [Neutrino](https://github.com/rickgaiser/neutrino) od [rickgaiser](https://github.com/rickgaiser) (AFL-3.0), malý, rychlý a modulární emulátor zařízení, který je druhým herním jádrem RIPPS2: RIPPS2 najde a použije tvoje, jakékoli verze; RIPPS2.elf neslo jeho build do buildu 134 ([`elf/neutrino`](elf/neutrino/README.md)). Vyber ho jako Default Loader Core v Settings > Game Launching."
  },
  "30db0e04b1f1": {
   "en": "30db0e04b1f1",
@@ -211,6 +215,10 @@
   "en": "75ae3c119793",
   "t": "- [wLaunchELF](https://github.com/ps2homebrew/wLaunchELF) od týmu ps2homebrew a wLaunchELF R3Z od NathanNeurotic: vzory chování pro prohlížeč Memory Files a jeho mřížku nastavení."
  },
+ "7783fc2cbabf": {
+  "en": "7783fc2cbabf",
+  "t": "> 1. **[Stáhni RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (vždy nejnovější vydání) (jeden soubor, 2 580 KB), a pokud chceš, i **[balíček motivů](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt, Adapt Rx, edice 128: každý jedna konfigurace a jeden obrázek; RIPGRID a RIPFLOW jsou vestavěné), a **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** pro RIPPS2 ve tvém jazyce (33 jazyků; každé vydání ho obsahuje)."
+ },
  "7c613ae2e427": {
   "en": "7c613ae2e427",
   "t": "## Tvoje vlastní zvuky a hudba"
@@ -218,6 +226,10 @@
  "7c9cff4a1885": {
   "en": "7c9cff4a1885",
   "t": "| [Reel bety](https://youtu.be/LPjdK_E1jjM) | 9:45 | První beta, v1.0.0: webová stránka, kterou RIPPS2 začal, pak tvé hry, tvé soubory a co je na palubě |"
+ },
+ "7ead6381b980": {
+  "en": "7ead6381b980",
+  "t": "- **Co potřebuje, na palubě; co máš, nalezeno.** BIBLE jede v jediném `.elf` a nainstaluje se, kam zvolíš; tvoje [Neutrino](https://github.com/rickgaiser/neutrino), tvůj vlastní POPSTARTER, soubory POPS a Ember se na tvých discích jednou vyhledají, zapamatují a spouštějí odtamtud, kde jsou. **STATUS** v menu START ukazuje každý disk, kde se našel který spouštěč (LOOK FOR THEM hledá znovu), homebrew, BIBLE a tvé zvuky, a **SAVE DIAGNOSTICS** zapíše `DIAG.TXT` pro hlášení chyby."
  },
  "801b0c43a8b7": {
   "en": "801b0c43a8b7",
@@ -267,6 +279,10 @@
   "en": "a0a4ce3e31fb",
   "t": "## Webová verze"
  },
+ "a23ff2c86948": {
+  "en": "a23ff2c86948",
+  "t": "- **Neutrino.** RIPPS2 používá tvoje vlastní Neutrino, ať je jakékoli verze (od buildu 135 žádné nenese a hra, která žádné nenajde, řekne, kam ho dát): dej jeho složku `neutrino` na disk hry nebo paměťovou kartu, nebo zadej jeho cestu v Settings > Game Launching > Neutrino Defaults, a RIPPS2 mu pošle jen volby, které ta verze zná. Od 1.1.5 dostane správné číslo disku, když RIPPS2 startoval z USB disku a hra je na interním exFAT HDD (tahle kombinace způsobovala, že Neutrino skončilo a konzole se restartovala)."
+ },
  "a2cda8a417d1": {
   "en": "a2cda8a417d1",
   "t": "| ◇ | Zpět na seznam | `page_out.adp` | **Menu sound 2** |"
@@ -290,10 +306,6 @@
  "aa7c330a03a6": {
   "en": "aa7c330a03a6",
   "t": "- **Zábradlí**: každý build projde kontrolami hostitele z RiptOPL i vlastními kontrolami RIPPS2 a nové varování v souboru RIPPS2 ho shodí."
- },
- "ab5d87e8fe5b": {
-  "en": "ab5d87e8fe5b",
-  "t": "RIPPS2 je front end pro PS2 v jediném `.elf`: rozebrání a přestavba [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader) (forku Open PS2 Loaderu), s [Neutrinem](https://github.com/rickgaiser/neutrino) od rickgaisera uvnitř jako druhým herním jádrem a s vlastním vzhledem, spouštěči, prohlížečem souborů a nástroji na uložené hry. Skleněné věže stojí za tvými hrami a orbitální formace za tvými soubory, vše kreslené naživo samotnou PS2."
  },
  "ad4809e8e40c": {
   "en": "ad4809e8e40c",
@@ -347,9 +359,9 @@
   "en": "bea8ee5528d7",
   "t": "| [Reel buildu 55](media/ripps2-b55-reel.mp4) a [demo buildu 22](media/ripps2-b22-demo.mp4) (na GitHubu) | | Rané alfy |"
  },
- "c08b5433dbb0": {
-  "en": "c08b5433dbb0",
-  "t": "- **Co potřebuje, na palubě; co máš, nalezeno.** [Neutrino](https://github.com/rickgaiser/neutrino) (jeho nejnovější build) a BIBLE jedou v jediném `.elf` a nainstalují se, kam zvolíš; tvůj vlastní POPSTARTER, soubory POPS a Ember se na tvých discích jednou vyhledají, zapamatují a spouštějí odtamtud, kde jsou. **STATUS** v menu START ukazuje každý disk, kde se našel který spouštěč (LOOK FOR THEM hledá znovu), homebrew, BIBLE a tvé zvuky, a **SAVE DIAGNOSTICS** zapíše `DIAG.TXT` pro hlášení chyby."
+ "bfd122c10125": {
+  "en": "bfd122c10125",
+  "t": "> [Novinky v buildu 135](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.5-beta) | [Changelog](CHANGELOG.md) | **[Videa](#videos)** | [Všechna vydání](https://github.com/akilluminati47/RIPPS2/releases) | [Pobav se o něm na psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "c1bc4a56fd54": {
   "en": "c1bc4a56fd54",
@@ -374,10 +386,6 @@
  "cc3d4e294dca": {
   "en": "cc3d4e294dca",
   "t": "- [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/) od krHACKen spouští hry PS1 z tvé vlastní kopie, kterou RIPPS2 najde na tvých discích a paměťových kartách ([`elf/popstarter`](elf/popstarter/README.md))."
- },
- "cc72d2f38283": {
-  "en": "cc72d2f38283",
-  "t": "- [Neutrino](https://github.com/rickgaiser/neutrino) od [rickgaiser](https://github.com/rickgaiser) (AFL-3.0), malý, rychlý a modulární emulátor zařízení, který je druhým herním jádrem RIPPS2: RIPPS2.elf nese jeho nejnovější build (v1.8.0-61-g7be8de2, 31. srpna 2026) beze změn a nainstaluje ho, kam zvolíš, a tvoje vlastní Neutrino jakékoli verze má přednost ([`elf/neutrino`](elf/neutrino/README.md)). Vyber ho jako Default Loader Core v Settings > Game Launching."
  },
  "cd91a464e4a7": {
   "en": "cd91a464e4a7",
@@ -474,13 +482,5 @@
  "fe207194059a": {
   "en": "fe207194059a",
   "t": "| `bgm_02 Details.ogg` | **Details** | x-Radar Portable, [systémová hudba PSP](https://en.wikipedia.org/wiki/PlayStation_Portable_system_software) (Sony, 2010): **hudba na pozadí videí RIPPS2 na YouTube** spolu se Slideshow (reel bety jí začíná, stejně jako reel a Short buildu 83) | tvoje vlastní kopie, převedená na tvém PC pomocí [RIPPS2 Media Studio](tools/media-studio) |"
- },
- "ff8525427876": {
-  "en": "ff8525427876",
-  "t": "> [Novinky v buildech 131 až 134](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.4-beta) | [Changelog](CHANGELOG.md) | **[Videa](#videos)** | [Všechna vydání](https://github.com/akilluminati47/RIPPS2/releases) | [Pobav se o něm na psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
- },
- "ff925ac5d69f": {
-  "en": "ff925ac5d69f",
-  "t": "> 1. **[Stáhni RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (vždy nejnovější vydání) (jeden soubor, 2 815 KB; nebo **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2 205 KB, totéž bez PS2BBL pro BIBLE a bez Neutrina), a pokud chceš, i **[balíček motivů](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt, Adapt Rx, edice 128: každý jedna konfigurace a jeden obrázek; RIPGRID a RIPFLOW jsou vestavěné), a **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** pro RIPPS2 ve tvém jazyce (33 jazyků; každé vydání ho obsahuje)."
  }
 }

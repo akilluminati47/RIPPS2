@@ -23,6 +23,10 @@
   "en": "0e6d84eabbaa",
   "t": "Tingog sa PS2 nga wala gayud mobiya sa sala ang RIPPS2: **ang kaugalingong mga tingog sa console sa Sony**, ang system music sa Sony, ug **usa ka track sa Nintendo** para sa pag-browse (pinili mismo sa designer sa RIPPS2). Walay usa niini ang kauban sa RIPPS2; dad-on ka didto sa **[RIPPS2 Media Studio](tools/media-studio)** gikan sa [BIOS dump gikan sa imong kaugalingong PS2](https://pcsx2.net/docs/setup/bios/) (ang file nga gigamit sa PCSX2) ug imong kaugalingong kopya sa musika. Gi-rip sa **Start** kadtong mga tingog sa console ngadto sa usa ka kompleto nga `AUDIO` folder; kini ang mapa kon asa sila moadto. O laktawi ang PC: gisulat sa **Settings > Audio > BIOS Sounds > Rip** ang kaugalingong mga tingog sa console direkta ngadto sa `AUDIO`: ang mga tingog sa menu ug (sukad sa build 89) ang musika sa boot ug pagpadagan sa dula nga gitugtog gikan sa kaugalingong nota sa BIOS. Gi-rip sa BIOS Music tupad niini ang musika sa menu, ang tono sa orasan (o sa pula nga screen, o pareho: build 112). Gipatugtog sa **[v1.1.2 sounds tour](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)** ang tanan sa usa ka take, gikan sa boot hangtod sa pagpadagan sa dula."
  },
+ "118478459c9c": {
+  "en": "118478459c9c",
+  "t": "> ### I-rip na: RIPPS2 build 135, v1.3.5 beta"
+ },
  "1238c5cafd27": {
   "en": "1238c5cafd27",
   "t": "- [xeRAbora](https://github.com/hacan359/xerabora) ni [hacan359](https://github.com/hacan359): ang RetroAchievements client para sa PC ug ang RetroAchievements code sa bahin sa console nga napanunod sa RIPPS2 pinaagi sa RiptOPL (MIT / AFL-3.0). Gibasa sa **LEFT TO HUNT** ang `GET /state` endpoint sa dashboard sa port 18280, nga dili bahin sa dokumentado nga protocol sa console ug mahimong mausab tali sa mga alpha, busa naka-pin ang RIPPS2 sa **[v0.1.0-alpha.18](https://github.com/hacan359/xerabora/releases/tag/v0.1.0-alpha.18)**, ang bersyon nga girekomenda sa naghimo niini (dili lig-on ang alpha.10, ug anaa lang sa `/state` gikan sa alpha.11 pataas ang `checked_only` key nga gibasa sa LEFT TO HUNT); nasusi batok sa `/state` code sa maong bersyon, wala pa masulayi ang ubang bersyon."
@@ -55,9 +59,9 @@
   "en": "1d0696b1b396",
   "t": "- **Mga MMCE card**: ang [sd2psXtd](https://sd2psxtd.github.io/) firmware sa SD2PSX, sama sa [SD2PSXTD](https://github.com/LinkRetro/SD2PSXTD-Hardware) card, gibasa pinaagi sa [mmceman](https://github.com/ps2-mmce/mmceman) (ps2-mmce): mga dula, VMC, ug setting sa SD sa card. **Ipabilin nga bag-o ang firmware** ([sd2psxtd.github.io/download](https://sd2psxtd.github.io/download)). Kinahanglan og sd2psXtd 1.4.0 o mas bag-o aron mag-compress og dula sa card (ibutang niini ang nahuman nga image sa puwesto pinaagi sa pag-ilis sa ngalan); mangutana una ang RIPPS2 sa card, busa sa mas daan nga firmware mahibaloan nimo sa dili pa magsugod ang bisan unsa, ug dili ka makapag-compress didto. Dili makareport ang card sa libre niini nga espasyo, busa bisan sa 1.4.0 walay pagsusi sa espasyo sa dili pa mag-compress: magbilin og luna aron magtupad ang dula ug ang ZSO niini (kon mapuno ang card, mohunong ang trabaho ug papason ang nasulat niini)."
  },
- "1eb610e76023": {
-  "en": "1eb610e76023",
-  "t": "- **Neutrino.** Dala sa RIPPS2 ang pinakabag-ong build sa Neutrino ug i-install kini sa unang higayon nga kinahanglanon kini sa dula. Mauna ang imong kaugalingong Neutrino, bisan unsang bersyon: ibutang ang `neutrino` folder niini sa drive sa dula o sa memory card, o ihatag ang path niini sa Settings > Game Launching > Neutrino Defaults, ug ipadala lang sa RIPPS2 ang mga opsyon nga nahibaloan sa maong bersyon. Sukad sa 1.1.5, kon magsugod ang RIPPS2 gikan sa USB drive ug anaa ang dula sa exFAT internal HDD, husto na ang drive number nga ihatag niini (kining kombinasyon kaniadto nagsira sa Neutrino ug nag-reboot sa console)."
+ "2027d346c0f8": {
+  "en": "2027d346c0f8",
+  "t": "Ang RIPPS2 usa ka PS2 front end sa usa ka `.elf`: ang [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader) (usa ka fork sa Open PS2 Loader) nga giablihan ug gitukod pag-usab, uban ang [Neutrino](https://github.com/rickgaiser/neutrino) ni rickgaiser isip ikaduhang game core, ug adunay kaugalingong panagway, mga launcher, file browser, ug mga storage tool. Nagtindog ang mga torre nga bildo sa likod sa imong mga dula, naglinya ang mga orbital formation sa likod sa imong mga file, ug tanan gidrowing nga live sa PS2."
  },
  "21fb04fdf89a": {
   "en": "21fb04fdf89a",
@@ -66,10 +70,6 @@
  "24fdb4df1618": {
   "en": "24fdb4df1618",
   "t": "## Sa imong pinulongan"
- },
- "254b4b737bb1": {
-  "en": "254b4b737bb1",
-  "t": "> ### I-rip na: RIPPS2 build 134, v1.3.4 beta"
  },
  "2642f599dfad": {
   "en": "2642f599dfad",
@@ -94,6 +94,10 @@
  "2f0ee80297df": {
   "en": "2f0ee80297df",
   "t": "- Ang **MEMORY FILES** usa ka built-in nga file browser: kopya, balhin, ug papas tali sa memory card, USB, MMCE, ug HDD (basahon pag-usab ang matag kopya aron masusi); ablihi ang mga VMC card image sa OPL isip folder; i-export ug i-import ang mga PSU save; usba ang mga text file; ablihi ang mga hulagway, patugtoga ang AVI video **sa full screen** nga adunay **kontrol sa player** (Cross play/pause, Circle stop, L1/R1 laktaw og 10 segundos, L2/R2 volume, START usba; mawala ang mga giya samtang nagtugtog ug magpabilin kon naka-pause) (gi-convert sa [RIPPS2 Media Studio](tools/media-studio) ang bisan unsang video, apil ang MP4 sa telepono, ngadto sa ingon nga file), ug patugtoga ang mga file nga `.mp3`, `.ogg`, ug `.wav`, o markahi ang pipila ug ablihi dungan aron motugtog sama sa usa ka disc sa CD player sa Launch Disc; **ang `.tar` usa ka asul nga folder** nga imong maablihan, mabutangan og hulagway, ug makopyahan og sulod pagawas (build 125); gisagol sa Triangle sa usa ka `.tar` ang laing ART `.tar` niini ([sa ubos](#covers-from-one-file-art-pack)). **Ang abli nga folder mao ang unang laray**, uban ang ihap sa entry, ihap sa namarkahan, kinatibuk-ang gidak-on, ug libre nga espasyo sa drive; markahan sa Cross o Square niini ang tanan (o wala, kon aduna nay namarkahan). Giablihan sa START ang mga setting niini, diin gipangita sa **SEARCH FILES** ang bisan unsang file o folder pinaagi sa ngalan sa matag nasugdang drive ug giablihan ang tree didto mismo. Giablihan sa Square sa memory card ang **CARD MANAGER** (i-back up ang card ngadto sa VMC, isulat ang mga save sa VMC ngadto sa card, papasa ang mga save sa dula, i-format), ug giablihan sa Square sa APA HDD ang **HDD MANAGER** (ang mga partition niini, ang gidak-on niini, ug ang pagpapas sa usa human sa bug-os nga pagsusi sa partition table)."
+ },
+ "2f962ab31def": {
+  "en": "2f962ab31def",
+  "t": "- [Neutrino](https://github.com/rickgaiser/neutrino) ni [rickgaiser](https://github.com/rickgaiser) (AFL-3.0), ang gamay, paspas, ug modular nga device emulator nga ikaduhang game core sa RIPPS2: pangitaon ug gamiton sa RIPPS2 ang imong kaugalingong Neutrino, bisan unsang bersyon; gidala sa RIPPS2.elf ang build niini hangtod sa build 134 ([`elf/neutrino`](elf/neutrino/README.md)). Pilia kini isip Default Loader Core sa Settings > Game Launching."
  },
  "30db0e04b1f1": {
   "en": "30db0e04b1f1",
@@ -211,6 +215,10 @@
   "en": "75ae3c119793",
   "t": "- [wLaunchELF](https://github.com/ps2homebrew/wLaunchELF) sa team sa ps2homebrew, ug wLaunchELF R3Z ni NathanNeurotic: mga modelo sa batasan para sa Memory Files browser ug sa settings grid niini."
  },
+ "7783fc2cbabf": {
+  "en": "7783fc2cbabf",
+  "t": "> 1. **[I-download ang RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (kanunay ang pinakabag-ong release) (usa ka file, 2,580 KB), ug kon gusto nimo ang **[theme pack](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt ug Adapt Rx, edisyon 128: tag-usa ka config ug usa ka hulagway; built in na ang RIPGRID ug RIPFLOW), ug ang **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** para sa RIPPS2 sa imong kaugalingong pinulongan (33 ka pinulongan; kauban sa matag release)."
+ },
  "7c613ae2e427": {
   "en": "7c613ae2e427",
   "t": "## Imong kaugalingong mga tingog ug musika"
@@ -218,6 +226,10 @@
  "7c9cff4a1885": {
   "en": "7c9cff4a1885",
   "t": "| [Beta reel](https://youtu.be/LPjdK_E1jjM) | 9:45 | Ang unang beta, v1.0.0: ang web page nga gisugdan sa RIPPS2, unya ang imong mga dula, ang imong mga file, ug ang kauban niini |"
+ },
+ "7ead6381b980": {
+  "en": "7ead6381b980",
+  "t": "- **Ang gikinahanglan niini, kauban na; ang anaa kanimo, makit-an.** Anaa sulod sa samang `.elf` ang BIBLE ug ma-install kini diin nimo gusto; pangitaon kausa sa imong mga drive ang imong kaugalingong [Neutrino](https://github.com/rickgaiser/neutrino), POPSTARTER, mga POPS file, ug ang imong kaugalingong Ember, hinumdoman, ug padaganon gikan kon asa sila. Gipakita sa **STATUS** sa START menu ang matag drive, diin nakit-an ang matag launcher (mangita pag-usab ang LOOK FOR THEM), homebrew, BIBLE, ug ang imong mga tingog, ug gisulat sa **SAVE DIAGNOSTICS** ang `DIAG.TXT` para sa bug report."
  },
  "801b0c43a8b7": {
   "en": "801b0c43a8b7",
@@ -267,6 +279,10 @@
   "en": "a0a4ce3e31fb",
   "t": "## Ang bersyon sa web"
  },
+ "a23ff2c86948": {
+  "en": "a23ff2c86948",
+  "t": "- **Neutrino.** Gigamit sa RIPPS2 ang imong kaugalingong Neutrino, bisan unsang bersyon (sukad build 135 wala na kini nagdala, ug ang dula nga walay makit-an mosulti kon asa kini ibutang): ibutang ang `neutrino` folder niini sa drive sa dula o sa memory card, o ihatag ang path niini sa Settings > Game Launching > Neutrino Defaults, ug ipadala lang sa RIPPS2 ang mga opsyon nga nahibaloan sa maong bersyon. Sukad sa 1.1.5, kon magsugod ang RIPPS2 gikan sa USB drive ug anaa ang dula sa exFAT internal HDD, husto na ang drive number nga ihatag niini (kining kombinasyon kaniadto nagsira sa Neutrino ug nag-reboot sa console)."
+ },
  "a2cda8a417d1": {
   "en": "a2cda8a417d1",
   "t": "| ◇ | Pagbalik sa lista | `page_out.adp` | **Menu sound 2** |"
@@ -290,10 +306,6 @@
  "aa7c330a03a6": {
   "en": "aa7c330a03a6",
   "t": "- **Mga koral sa kaluwasan**: moagi ang matag build sa mga host check sa RiptOPL ug sa kaugalingong mga check sa RIPPS2, ug ang usa ka bag-ong pasidaan sa usa ka RIPPS2 file igo na aron mapakyas kini."
- },
- "ab5d87e8fe5b": {
-  "en": "ab5d87e8fe5b",
-  "t": "Ang RIPPS2 usa ka PS2 front end sa usa ka `.elf`: ang [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader) (usa ka fork sa Open PS2 Loader) nga giablihan ug gitukod pag-usab, uban ang [Neutrino](https://github.com/rickgaiser/neutrino) ni rickgaiser nga sulod niini isip ikaduhang game core, ug adunay kaugalingong panagway, mga launcher, file browser, ug mga storage tool. Nagtindog ang mga torre nga bildo sa likod sa imong mga dula, naglinya ang mga orbital formation sa likod sa imong mga file, ug tanan gidrowing nga live sa PS2."
  },
  "ad4809e8e40c": {
   "en": "ad4809e8e40c",
@@ -347,9 +359,9 @@
   "en": "bea8ee5528d7",
   "t": "| [Build 55 reel](media/ripps2-b55-reel.mp4) ug [build 22 demo](media/ripps2-b22-demo.mp4) (sa GitHub) | | Mga unang alpha |"
  },
- "c08b5433dbb0": {
-  "en": "c08b5433dbb0",
-  "t": "- **Ang gikinahanglan niini, kauban na; ang anaa kanimo, makit-an.** Anaa sulod sa samang `.elf` ang [Neutrino](https://github.com/rickgaiser/neutrino) (ang pinakabag-ong build niini) ug BIBLE ug ma-install diin nimo gusto; pangitaon kausa sa imong mga drive ang POPSTARTER, mga POPS file, ug ang imong kaugalingong Ember, hinumdoman, ug padaganon gikan kon asa sila. Gipakita sa **STATUS** sa START menu ang matag drive, diin nakit-an ang matag launcher (mangita pag-usab ang LOOK FOR THEM), homebrew, BIBLE, ug ang imong mga tingog, ug gisulat sa **SAVE DIAGNOSTICS** ang `DIAG.TXT` para sa bug report."
+ "bfd122c10125": {
+  "en": "bfd122c10125",
+  "t": "> [Unsay bag-o sa build 135](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.5-beta) | [Changelog](CHANGELOG.md) | **[Mga video](#videos)** | [Tanang release](https://github.com/akilluminati47/RIPPS2/releases) | [Hisgoti sa psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "c1bc4a56fd54": {
   "en": "c1bc4a56fd54",
@@ -374,10 +386,6 @@
  "cc3d4e294dca": {
   "en": "cc3d4e294dca",
   "t": "- Gipadagan sa [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/) ni krHACKen ang mga PS1 nga dula gikan sa imong kaugalingong kopya, nga makit-an sa RIPPS2 sa imong mga drive ug memory card ([`elf/popstarter`](elf/popstarter/README.md))."
- },
- "cc72d2f38283": {
-  "en": "cc72d2f38283",
-  "t": "- [Neutrino](https://github.com/rickgaiser/neutrino) ni [rickgaiser](https://github.com/rickgaiser) (AFL-3.0), ang gamay, paspas, ug modular nga device emulator nga ikaduhang game core sa RIPPS2: dala sa RIPPS2.elf ang pinakabag-ong build niini (v1.8.0-61-g7be8de2, Agosto 31, 2026) nga walay giusab ug i-install kini diin nimo gusto, ug mauna ang imong kaugalingong Neutrino sa bisan unsang bersyon ([`elf/neutrino`](elf/neutrino/README.md)). Pilia kini isip Default Loader Core sa Settings > Game Launching."
  },
  "cd91a464e4a7": {
   "en": "cd91a464e4a7",
@@ -474,13 +482,5 @@
  "fe207194059a": {
   "en": "fe207194059a",
   "t": "| `bgm_02 Details.ogg` | **Details** | x-Radar Portable, [system music sa PSP](https://en.wikipedia.org/wiki/PlayStation_Portable_system_software) (Sony, 2010): **ang background music sa mga video sa RIPPS2 sa YouTube** uban sa Slideshow (niini nagsugod ang beta reel, ug ang build 83 reel ug Short) | Imong kaugalingong kopya, gi-convert sa imong PC gamit ang [RIPPS2 Media Studio](tools/media-studio) |"
- },
- "ff8525427876": {
-  "en": "ff8525427876",
-  "t": "> [Unsay bag-o sa build 131 hangtod 134](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.4-beta) | [Changelog](CHANGELOG.md) | **[Mga video](#videos)** | [Tanang release](https://github.com/akilluminati47/RIPPS2/releases) | [Hisgoti sa psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
- },
- "ff925ac5d69f": {
-  "en": "ff925ac5d69f",
-  "t": "> 1. **[I-download ang RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (kanunay ang pinakabag-ong release) (usa ka file, 2,815 KB; o **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2,205 KB, parehas apan walay PS2BBL para sa BIBLE ug walay Neutrino), ug kon gusto nimo ang **[theme pack](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt ug Adapt Rx, edisyon 128: tag-usa ka config ug usa ka hulagway; built in na ang RIPGRID ug RIPFLOW), ug ang **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** para sa RIPPS2 sa imong kaugalingong pinulongan (33 ka pinulongan; kauban sa matag release)."
  }
 }

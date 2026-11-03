@@ -23,6 +23,10 @@
   "en": "0e6d84eabbaa",
   "t": "RIPPS2에서는 거실을 떠난 적 없는 PS2의 소리가 납니다: **Sony 콘솔 자신의 소리**, Sony의 시스템 음악, 그리고 둘러볼 때의 **Nintendo 곡 하나** (RIPPS2 디자이너 자신의 선택). 그중 어느 것도 RIPPS2에 담겨 있지 않습니다. **[RIPPS2 Media Studio](tools/media-studio)**가 [내 PS2의 BIOS 덤프](https://pcsx2.net/docs/setup/bios/) (PCSX2가 쓰는 파일)와 내가 가진 음악에서 그곳으로 데려갑니다. **Start**는 그 콘솔 소리를 완전한 `AUDIO` 폴더로 립합니다. 이것이 그 배치도입니다. 또는 PC를 건너뛰고: **Settings > Audio > BIOS Sounds > Rip**이 콘솔 자신의 소리를 바로 `AUDIO`에 씁니다: 메뉴 소리와 (빌드 89부터) BIOS 자신의 악보로 연주되는 부팅과 게임 시작 음악. 그 옆의 BIOS Music은 메뉴 음악, 시계의 곡 (또는 빨간 화면의 곡, 또는 둘 다: 빌드 112)을 립합니다. **[v1.1.2 사운드 투어](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)**는 부팅 소리부터 게임 실행까지 모두 한 번에 들려줍니다."
  },
+ "118478459c9c": {
+  "en": "118478459c9c",
+  "t": "> ### 립하세요: RIPPS2 빌드 135, v1.3.5 베타"
+ },
  "1238c5cafd27": {
   "en": "1238c5cafd27",
   "t": "- [xeRAbora](https://github.com/hacan359/xerabora), [hacan359](https://github.com/hacan359): PC의 RetroAchievements 클라이언트와, RIPPS2가 RiptOPL을 통해 물려받은 콘솔 쪽 RetroAchievements 코드 (MIT / AFL-3.0). **LEFT TO HUNT**는 포트 18280의 대시보드에 있는 `GET /state` 엔드포인트를 읽습니다. 이것은 문서화된 콘솔 프로토콜의 일부가 아니어서 알파 사이에 바뀔 수 있으므로, RIPPS2는 제작자가 권하는 **[v0.1.0-alpha.18](https://github.com/hacan359/xerabora/releases/tag/v0.1.0-alpha.18)**에 고정되어 있습니다 (alpha.10은 불안정하고, LEFT TO HUNT가 읽는 `checked_only` 키는 alpha.11 이후의 `/state`에만 있습니다). 그 버전의 `/state` 코드로 확인했으며 다른 버전은 테스트하지 않았습니다."
@@ -55,9 +59,9 @@
   "en": "1d0696b1b396",
   "t": "- **MMCE 카드**: SD2PSX의 [sd2psXtd](https://sd2psxtd.github.io/) 펌웨어, 예를 들어 [SD2PSXTD](https://github.com/LinkRetro/SD2PSXTD-Hardware) 카드를 [mmceman](https://github.com/ps2-mmce/mmceman) (ps2-mmce)으로 읽습니다: 게임, VMC, 설정이 카드의 SD에. **펌웨어를 최신으로 유지하세요** ([sd2psxtd.github.io/download](https://sd2psxtd.github.io/download)). 카드에서 게임을 압축하려면 sd2psXtd 1.4.0 이상이 필요합니다 (완성된 이미지를 이름 바꾸기로 배치). RIPPS2는 먼저 카드에 물어보므로, 오래된 펌웨어라면 무엇이든 시작하기 전에 알 수 있고 그곳에서는 압축할 수 없습니다. 카드는 여유 공간을 알려 줄 수 없으므로 1.4.0에서도 압축 전 공간 확인은 없습니다: 게임과 그 ZSO가 나란히 들어갈 공간을 남겨 두세요 (카드가 가득 차면 작업이 멈추고 쓴 것을 지웁니다)."
  },
- "1eb610e76023": {
-  "en": "1eb610e76023",
-  "t": "- **Neutrino.** RIPPS2는 Neutrino의 최신 빌드를 함께 담고, 게임이 처음 필요로 할 때 설치합니다. 내 Neutrino는 어떤 버전이든 우선합니다: 그 `neutrino` 폴더를 게임의 드라이브나 메모리 카드에 두거나, Settings > Game Launching > Neutrino Defaults에서 경로를 주면, RIPPS2는 그 버전이 아는 옵션만 보냅니다. 1.1.5부터 RIPPS2가 USB 드라이브에서 시작하고 게임이 exFAT 내장 HDD에 있으면 올바른 드라이브 번호가 전달됩니다 (이 조합에서 Neutrino가 닫히고 콘솔이 재부팅되었습니다)."
+ "2027d346c0f8": {
+  "en": "2027d346c0f8",
+  "t": "RIPPS2는 하나의 `.elf`에 담긴 PS2 프런트엔드입니다: [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader) (Open PS2 Loader 포크)을 열어 다시 짜고, rickgaiser의 [Neutrino](https://github.com/rickgaiser/neutrino)를 두 번째 게임 코어로 쓰며, 고유의 외관, 런처, 파일 브라우저, 저장소 도구를 갖추었습니다. 유리 탑이 게임 뒤에 서고 궤도 대형이 파일 뒤에 늘어서며, 모두 PS2가 실시간으로 그립니다."
  },
  "21fb04fdf89a": {
   "en": "21fb04fdf89a",
@@ -66,10 +70,6 @@
  "24fdb4df1618": {
   "en": "24fdb4df1618",
   "t": "## 당신의 언어로"
- },
- "254b4b737bb1": {
-  "en": "254b4b737bb1",
-  "t": "> ### 립하세요: RIPPS2 빌드 134, v1.3.4 베타"
  },
  "2642f599dfad": {
   "en": "2642f599dfad",
@@ -94,6 +94,10 @@
  "2f0ee80297df": {
   "en": "2f0ee80297df",
   "t": "- **MEMORY FILES**는 내장 파일 브라우저입니다: 메모리 카드, USB, MMCE, HDD 사이에서 복사, 이동, 삭제 (모든 복사는 다시 읽어 확인). OPL의 VMC 카드 이미지를 폴더처럼 열기. PSU 세이브 내보내기와 가져오기. 텍스트 파일 편집. 이미지를 열고, AVI 영상을 **전체 화면**으로 **플레이어 조작**과 함께 재생 (Cross 재생/일시 정지, Circle 정지, L1/R1 10초 건너뛰기, L2/R2 볼륨, START 반복. 안내는 재생 중에 사라지고 일시 정지 중에는 남습니다) ([RIPPS2 Media Studio](tools/media-studio)는 휴대폰의 MP4를 포함한 어떤 영상이든 이 형식으로 바꿉니다), `.mp3`, `.ogg`, `.wav`를 재생하거나, 여러 개에 표시하고 함께 열면 Launch Disc의 CD 플레이어에서 디스크처럼 재생됩니다. **`.tar`는 파란 폴더**로, 열어서 이미지를 붙여 넣거나 안의 항목을 복사해 꺼낼 수 있습니다 (빌드 125). `.tar`에서 세모는 다른 ART `.tar`를 그 안에 합칩니다 ([아래](#covers-from-one-file-art-pack)). **열린 폴더가 첫 행**이며, 항목 수, 표시한 수, 전체 크기, 드라이브 여유 공간을 보여 줍니다. 거기서 Cross나 Square를 누르면 모두 표시합니다 (무언가 표시되어 있으면 모두 해제). START는 설정을 열고, 그곳의 **SEARCH FILES**는 시작된 어느 드라이브에서든 파일이나 폴더를 이름으로 찾아 그 자리에서 트리를 엽니다. 메모리 카드에서 Square는 **CARD MANAGER** (카드를 VMC로 백업, VMC의 세이브를 카드에 쓰기, 게임 세이브 지우기, 포맷)를, APA HDD에서 Square는 **HDD MANAGER** (파티션, 그 크기, 파티션 테이블을 모두 확인한 뒤의 삭제)를 엽니다."
+ },
+ "2f962ab31def": {
+  "en": "2f962ab31def",
+  "t": "- [Neutrino](https://github.com/rickgaiser/neutrino), [rickgaiser](https://github.com/rickgaiser) (AFL-3.0). 작고 빠른 모듈식 장치 에뮬레이터로 RIPPS2의 두 번째 게임 코어입니다: RIPPS2는 어떤 버전이든 내 Neutrino를 찾아 씁니다. RIPPS2.elf는 빌드 134까지 그 빌드를 담았습니다 ([`elf/neutrino`](elf/neutrino/README.md)). Settings > Game Launching의 Default Loader Core에서 고르세요."
  },
  "30db0e04b1f1": {
   "en": "30db0e04b1f1",
@@ -211,6 +215,10 @@
   "en": "75ae3c119793",
   "t": "- [wLaunchELF](https://github.com/ps2homebrew/wLaunchELF), ps2homebrew 팀, 그리고 wLaunchELF R3Z, NathanNeurotic: Memory Files 브라우저와 그 설정 그리드의 동작 모델."
  },
+ "7783fc2cbabf": {
+  "en": "7783fc2cbabf",
+  "t": "> 1. **[RIPPS2.elf 다운로드](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (항상 최신 릴리스) (파일 하나, 2,580 KB), 원하면 **[테마 팩](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt와 Adapt Rx, 에디션 128: 각각 설정 하나와 이미지 하나. RIPGRID와 RIPFLOW는 내장), 그리고 RIPPS2를 내 언어로 쓰기 위한 **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** (33개 언어. 모든 릴리스에 포함)."
+ },
  "7c613ae2e427": {
   "en": "7c613ae2e427",
   "t": "## 내 사운드와 음악"
@@ -218,6 +226,10 @@
  "7c9cff4a1885": {
   "en": "7c9cff4a1885",
   "t": "| [베타 소개 릴](https://youtu.be/LPjdK_E1jjM) | 9:45 | 첫 베타 v1.0.0: RIPPS2의 시작점이 된 웹 페이지, 그리고 게임, 파일, 함께 담긴 것 |"
+ },
+ "7ead6381b980": {
+  "en": "7ead6381b980",
+  "t": "- **필요한 것은 함께, 가진 것은 찾아서.** BIBLE은 같은 하나의 `.elf`에 들어 있고 원하는 곳에 설치됩니다. 내 [Neutrino](https://github.com/rickgaiser/neutrino), POPSTARTER, POPS 파일, 내 Ember는 드라이브에서 한 번 찾아 기억하고 있는 그 자리에서 실행합니다. START 메뉴의 **STATUS**는 모든 드라이브, 각 런처를 찾은 곳 (LOOK FOR THEM으로 다시 찾기), homebrew, BIBLE, 사운드를 보여 주고, **SAVE DIAGNOSTICS**는 버그 보고용 `DIAG.TXT`를 씁니다."
  },
  "801b0c43a8b7": {
   "en": "801b0c43a8b7",
@@ -267,6 +279,10 @@
   "en": "a0a4ce3e31fb",
   "t": "## 웹 버전"
  },
+ "a23ff2c86948": {
+  "en": "a23ff2c86948",
+  "t": "- **Neutrino.** RIPPS2는 어떤 버전이든 내 Neutrino를 씁니다 (빌드 135부터는 담고 있지 않으며, 찾지 못한 게임은 둘 곳을 알려 줍니다): 그 `neutrino` 폴더를 게임의 드라이브나 메모리 카드에 두거나, Settings > Game Launching > Neutrino Defaults에서 경로를 주면, RIPPS2는 그 버전이 아는 옵션만 보냅니다. 1.1.5부터 RIPPS2가 USB 드라이브에서 시작하고 게임이 exFAT 내장 HDD에 있으면 올바른 드라이브 번호가 전달됩니다 (이 조합에서 Neutrino가 닫히고 콘솔이 재부팅되었습니다)."
+ },
  "a2cda8a417d1": {
   "en": "a2cda8a417d1",
   "t": "| ◇ | 목록으로 돌아갈 때 | `page_out.adp` | **Menu sound 2** |"
@@ -290,10 +306,6 @@
  "aa7c330a03a6": {
   "en": "aa7c330a03a6",
   "t": "- **안전 난간**: 모든 빌드는 RiptOPL의 호스트 검사와 RIPPS2 자신의 검사를 통과하며, RIPPS2 파일에 새 경고가 하나라도 있으면 실패합니다."
- },
- "ab5d87e8fe5b": {
-  "en": "ab5d87e8fe5b",
-  "t": "RIPPS2는 하나의 `.elf`에 담긴 PS2 프런트엔드입니다: [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader) (Open PS2 Loader 포크)을 열어 다시 짜고, rickgaiser의 [Neutrino](https://github.com/rickgaiser/neutrino)를 두 번째 게임 코어로 내장했으며, 고유의 외관, 런처, 파일 브라우저, 저장소 도구를 갖추었습니다. 유리 탑이 게임 뒤에 서고 궤도 대형이 파일 뒤에 늘어서며, 모두 PS2가 실시간으로 그립니다."
  },
  "ad4809e8e40c": {
   "en": "ad4809e8e40c",
@@ -347,9 +359,9 @@
   "en": "bea8ee5528d7",
   "t": "| [빌드 55 소개 릴](media/ripps2-b55-reel.mp4)과 [빌드 22 데모](media/ripps2-b22-demo.mp4) (GitHub에서) | | 초기 알파 |"
  },
- "c08b5433dbb0": {
-  "en": "c08b5433dbb0",
-  "t": "- **필요한 것은 함께, 가진 것은 찾아서.** [Neutrino](https://github.com/rickgaiser/neutrino) (최신 빌드)와 BIBLE은 같은 하나의 `.elf`에 들어 있고 원하는 곳에 설치됩니다. POPSTARTER, POPS 파일, 내 Ember는 드라이브에서 한 번 찾아 기억하고 있는 그 자리에서 실행합니다. START 메뉴의 **STATUS**는 모든 드라이브, 각 런처를 찾은 곳 (LOOK FOR THEM으로 다시 찾기), homebrew, BIBLE, 사운드를 보여 주고, **SAVE DIAGNOSTICS**는 버그 보고용 `DIAG.TXT`를 씁니다."
+ "bfd122c10125": {
+  "en": "bfd122c10125",
+  "t": "> [빌드 135의 새 기능](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.5-beta) | [Changelog](CHANGELOG.md) | **[영상](#videos)** | [모든 릴리스](https://github.com/akilluminati47/RIPPS2/releases) | [psx-place에서 이야기하기](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "c1bc4a56fd54": {
   "en": "c1bc4a56fd54",
@@ -374,10 +386,6 @@
  "cc3d4e294dca": {
   "en": "cc3d4e294dca",
   "t": "- [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/), krHACKen: 내 것으로 PS1 게임을 실행하며, RIPPS2가 드라이브와 메모리 카드에서 찾습니다 ([`elf/popstarter`](elf/popstarter/README.md))."
- },
- "cc72d2f38283": {
-  "en": "cc72d2f38283",
-  "t": "- [Neutrino](https://github.com/rickgaiser/neutrino), [rickgaiser](https://github.com/rickgaiser) (AFL-3.0). 작고 빠른 모듈식 장치 에뮬레이터로 RIPPS2의 두 번째 게임 코어입니다: RIPPS2.elf는 그 최신 빌드 (v1.8.0-61-g7be8de2, 2026년 8월 31일)를 수정 없이 담고 원하는 곳에 설치하며, 어떤 버전이든 내 Neutrino가 우선합니다 ([`elf/neutrino`](elf/neutrino/README.md)). Settings > Game Launching의 Default Loader Core에서 고르세요."
  },
  "cd91a464e4a7": {
   "en": "cd91a464e4a7",
@@ -474,13 +482,5 @@
  "fe207194059a": {
   "en": "fe207194059a",
   "t": "| `bgm_02 Details.ogg` | **Details** | x-Radar Portable, [PSP 시스템 음악](https://en.wikipedia.org/wiki/PlayStation_Portable_system_software) (Sony, 2010): Slideshow와 함께 **RIPPS2 YouTube 영상의 배경 음악** (베타 소개 릴이 이것으로 시작하고, 빌드 83 소개 릴과 쇼츠도) | 내가 가진 음원을 PC에서 [RIPPS2 Media Studio](tools/media-studio)로 변환 |"
- },
- "ff8525427876": {
-  "en": "ff8525427876",
-  "t": "> [빌드 131부터 134까지의 새 기능](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.4-beta) | [Changelog](CHANGELOG.md) | **[영상](#videos)** | [모든 릴리스](https://github.com/akilluminati47/RIPPS2/releases) | [psx-place에서 이야기하기](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
- },
- "ff925ac5d69f": {
-  "en": "ff925ac5d69f",
-  "t": "> 1. **[RIPPS2.elf 다운로드](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (항상 최신 릴리스) (파일 하나, 2,815 KB. 또는 **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2,205 KB, BIBLE용 PS2BBL과 Neutrino를 뺀 같은 것), 원하면 **[테마 팩](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt와 Adapt Rx, 에디션 128: 각각 설정 하나와 이미지 하나. RIPGRID와 RIPFLOW는 내장), 그리고 RIPPS2를 내 언어로 쓰기 위한 **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** (33개 언어. 모든 릴리스에 포함)."
  }
 }

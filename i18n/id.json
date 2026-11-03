@@ -23,6 +23,10 @@
   "en": "0e6d84eabbaa",
   "t": "RIPPS2 terdengar seperti PS2 yang tidak pernah meninggalkan ruang keluarga: **suara konsol Sony sendiri**, musik sistem Sony, dan **satu lagu Nintendo** untuk menjelajah (pilihan perancang RIPPS2 sendiri). Tidak satu pun ikut bersama RIPPS2; **[RIPPS2 Media Studio](tools/media-studio)** membawa Anda ke sana dari [dump BIOS dari PS2 Anda sendiri](https://pcsx2.net/docs/setup/bios/) (berkas yang dipakai PCSX2) dan salinan musik Anda sendiri. **Start** me-rip suara konsol itu menjadi folder `AUDIO` yang lengkap; inilah peta tempatnya. Atau lewati PC: **Settings > Audio > BIOS Sounds > Rip** menulis suara konsol sendiri langsung ke `AUDIO`: suara menu dan (sejak build 89) musik boot dan peluncuran game yang dimainkan dari not BIOS sendiri. BIOS Music di sebelahnya me-rip musik menu, lagu jam (atau lagu layar merah, atau keduanya: build 112). **[Tur suara v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)** memutar semuanya dalam satu pengambilan, dari suara boot sampai peluncuran game."
  },
+ "118478459c9c": {
+  "en": "118478459c9c",
+  "t": "> ### Rip sekarang: RIPPS2 build 135, v1.3.5 beta"
+ },
  "1238c5cafd27": {
   "en": "1238c5cafd27",
   "t": "- [xeRAbora](https://github.com/hacan359/xerabora) oleh [hacan359](https://github.com/hacan359): klien RetroAchievements untuk PC dan kode RetroAchievements sisi konsol yang diwarisi RIPPS2 melalui RiptOPL (MIT / AFL-3.0). **LEFT TO HUNT** membaca endpoint `GET /state` dasbor di port 18280, yang bukan bagian dari protokol konsol yang terdokumentasi dan bisa berubah antar alpha, jadi RIPPS2 dikunci pada **[v0.1.0-alpha.18](https://github.com/hacan359/xerabora/releases/tag/v0.1.0-alpha.18)**, versi yang disarankan pembuatnya (alpha.10 tidak stabil, dan kunci `checked_only` yang dibaca LEFT TO HUNT hanya ada di `/state` sejak alpha.11); sudah dicocokkan dengan kode `/state` versi itu, versi lain belum diuji."
@@ -55,9 +59,9 @@
   "en": "1d0696b1b396",
   "t": "- **Kartu MMCE**: firmware [sd2psXtd](https://sd2psxtd.github.io/) di SD2PSX, seperti kartu [SD2PSXTD](https://github.com/LinkRetro/SD2PSXTD-Hardware), dibaca melalui [mmceman](https://github.com/ps2-mmce/mmceman) (ps2-mmce): game, VMC, dan pengaturan di SD kartu. **Selalu perbarui firmware** ([sd2psxtd.github.io/download](https://sd2psxtd.github.io/download)). Mengompres game di kartu memerlukan sd2psXtd 1.4.0 atau lebih baru (ia menaruh image yang selesai di tempatnya dengan mengganti nama); RIPPS2 bertanya ke kartu dulu, jadi dengan firmware lama Anda tahu sebelum apa pun dimulai, dan tidak bisa mengompres di sana. Kartu tidak bisa melaporkan ruang kosongnya, jadi bahkan di 1.4.0 tidak ada pemeriksaan ruang sebelum kompresi: sisakan ruang agar game dan ZSO-nya muat berdampingan (bila kartu penuh, pekerjaan berhenti dan menghapus apa yang sudah ditulis)."
  },
- "1eb610e76023": {
-  "en": "1eb610e76023",
-  "t": "- **Neutrino.** RIPPS2 membawa build terbaru Neutrino dan memasangnya saat pertama kali sebuah game membutuhkannya. Neutrino Anda sendiri, versi apa pun, didahulukan: taruh folder `neutrino`-nya di drive game atau memory card, atau berikan jalurnya di Settings > Game Launching > Neutrino Defaults, dan RIPPS2 hanya mengirim opsi yang dikenal versi itu. Sejak 1.1.5, saat RIPPS2 dimulai dari drive USB dan game ada di HDD internal exFAT, ia mendapat nomor drive yang benar (kombinasi ini dulu membuat Neutrino tertutup dan konsol memulai ulang)."
+ "2027d346c0f8": {
+  "en": "2027d346c0f8",
+  "t": "RIPPS2 adalah front end PS2 dalam satu `.elf`: [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader) (fork Open PS2 Loader) yang dibongkar dan disusun ulang, dengan [Neutrino](https://github.com/rickgaiser/neutrino) karya rickgaiser sebagai inti game kedua, serta tampilan, peluncur, penjelajah berkas, dan alat penyimpanan miliknya sendiri. Menara kaca berdiri di belakang game Anda, formasi orbit berbaris di belakang berkas Anda, dan semuanya digambar langsung oleh PS2."
  },
  "21fb04fdf89a": {
   "en": "21fb04fdf89a",
@@ -66,10 +70,6 @@
  "24fdb4df1618": {
   "en": "24fdb4df1618",
   "t": "## Dalam bahasa Anda"
- },
- "254b4b737bb1": {
-  "en": "254b4b737bb1",
-  "t": "> ### Rip sekarang: RIPPS2 build 134, v1.3.4 beta"
  },
  "2642f599dfad": {
   "en": "2642f599dfad",
@@ -94,6 +94,10 @@
  "2f0ee80297df": {
   "en": "2f0ee80297df",
   "t": "- **MEMORY FILES** adalah penjelajah berkas bawaan: salin, pindahkan, dan hapus antara memory card, USB, MMCE, dan HDD (setiap salinan dibaca ulang untuk diperiksa); buka image kartu VMC OPL sebagai folder; ekspor dan impor save PSU; sunting berkas teks; buka gambar, putar video AVI **layar penuh** dengan **kontrol pemutar** (Cross putar/jeda, Circle berhenti, L1/R1 lompat 10 detik, L2/R2 volume, START ulang; panduan memudar saat diputar dan tetap tampil saat dijeda) ([RIPPS2 Media Studio](tools/media-studio) mengubah video apa pun, termasuk MP4 ponsel, menjadi berkas seperti itu), dan putar berkas `.mp3`, `.ogg`, dan `.wav`, atau tandai beberapa lalu buka bersama agar diputar seperti satu disk di pemutar CD Launch Disc; **sebuah `.tar` adalah folder biru** yang bisa Anda buka, tempeli gambar, dan salin anggotanya keluar (build 125); segitiga pada `.tar` menggabungkan `.tar` ART lain ke dalamnya ([di bawah](#covers-from-one-file-art-pack)). **Folder yang terbuka adalah baris pertama**, dengan jumlah entri, jumlah yang ditandai, ukuran total, dan ruang kosong drive; Cross atau Square di sana menandai semuanya (atau tidak ada, bila sudah ada yang ditandai). START membuka pengaturannya, tempat **SEARCH FILES** mencari berkas atau folder apa pun berdasarkan nama di setiap drive yang sudah dimulai dan membuka pohonnya di tempat. Square pada memory card membuka **CARD MANAGER** (cadangkan kartu ke VMC, tulis save dari VMC ke kartu, hapus save game, format), dan Square pada APA HDD membuka **HDD MANAGER** (partisinya, ukurannya, dan menghapus satu partisi setelah pemeriksaan penuh tabel partisi)."
+ },
+ "2f962ab31def": {
+  "en": "2f962ab31def",
+  "t": "- [Neutrino](https://github.com/rickgaiser/neutrino) oleh [rickgaiser](https://github.com/rickgaiser) (AFL-3.0), emulator perangkat yang kecil, cepat, dan modular, inti game kedua RIPPS2: RIPPS2 menemukan dan memakai milik Anda sendiri, versi apa pun; RIPPS2.elf membawa build-nya sampai build 134 ([`elf/neutrino`](elf/neutrino/README.md)). Pilih sebagai Default Loader Core di Settings > Game Launching."
  },
  "30db0e04b1f1": {
   "en": "30db0e04b1f1",
@@ -211,6 +215,10 @@
   "en": "75ae3c119793",
   "t": "- [wLaunchELF](https://github.com/ps2homebrew/wLaunchELF) oleh tim ps2homebrew, dan wLaunchELF R3Z oleh NathanNeurotic: model perilaku untuk penjelajah Memory Files dan grid pengaturannya."
  },
+ "7783fc2cbabf": {
+  "en": "7783fc2cbabf",
+  "t": "> 1. **[Unduh RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (selalu rilis terbaru) (satu berkas, 2.580 KB), dan bila mau **[paket tema](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt dan Adapt Rx, edisi 128: masing-masing satu konfigurasi dan satu gambar; RIPGRID dan RIPFLOW sudah bawaan), serta **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** untuk RIPPS2 dalam bahasa Anda (33 bahasa; disertakan di setiap rilis)."
+ },
  "7c613ae2e427": {
   "en": "7c613ae2e427",
   "t": "## Suara dan musik Anda sendiri"
@@ -218,6 +226,10 @@
  "7c9cff4a1885": {
   "en": "7c9cff4a1885",
   "t": "| [Video perkenalan beta](https://youtu.be/LPjdK_E1jjM) | 9:45 | Beta pertama, v1.0.0: halaman web tempat RIPPS2 bermula, lalu game Anda, berkas Anda, dan apa yang dibawanya |"
+ },
+ "7ead6381b980": {
+  "en": "7ead6381b980",
+  "t": "- **Yang dibutuhkannya, dibawa; yang Anda punya, ditemukan.** BIBLE ikut di dalam `.elf` yang sama dan dipasang di mana pun Anda mau; [Neutrino](https://github.com/rickgaiser/neutrino) Anda sendiri, POPSTARTER, berkas POPS, dan Ember Anda dicari sekali di drive Anda, diingat, dan dijalankan dari tempatnya. **STATUS** di menu START menampilkan semua drive, di mana setiap peluncur ditemukan (LOOK FOR THEM mencari lagi), homebrew, BIBLE, dan suara Anda, dan **SAVE DIAGNOSTICS** menulis `DIAG.TXT` untuk laporan bug."
  },
  "801b0c43a8b7": {
   "en": "801b0c43a8b7",
@@ -267,6 +279,10 @@
   "en": "a0a4ce3e31fb",
   "t": "## Versi web"
  },
+ "a23ff2c86948": {
+  "en": "a23ff2c86948",
+  "t": "- **Neutrino.** RIPPS2 memakai Neutrino Anda sendiri, versi apa pun (sejak build 135 tidak membawanya lagi, dan game yang tidak menemukannya memberi tahu di mana menaruhnya): taruh folder `neutrino`-nya di drive game atau memory card, atau berikan jalurnya di Settings > Game Launching > Neutrino Defaults, dan RIPPS2 hanya mengirim opsi yang dikenal versi itu. Sejak 1.1.5, saat RIPPS2 dimulai dari drive USB dan game ada di HDD internal exFAT, ia mendapat nomor drive yang benar (kombinasi ini dulu membuat Neutrino tertutup dan konsol memulai ulang)."
+ },
  "a2cda8a417d1": {
   "en": "a2cda8a417d1",
   "t": "| ◇ | Kembali ke daftar | `page_out.adp` | **Menu sound 2** |"
@@ -290,10 +306,6 @@
  "aa7c330a03a6": {
   "en": "aa7c330a03a6",
   "t": "- **Pagar pengaman**: setiap build lolos pemeriksaan host RiptOPL dan pemeriksaan RIPPS2 sendiri, dan satu peringatan baru di berkas RIPPS2 saja membuatnya gagal."
- },
- "ab5d87e8fe5b": {
-  "en": "ab5d87e8fe5b",
-  "t": "RIPPS2 adalah front end PS2 dalam satu `.elf`: [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader) (fork Open PS2 Loader) yang dibongkar dan disusun ulang, dengan [Neutrino](https://github.com/rickgaiser/neutrino) karya rickgaiser tertanam sebagai inti game kedua, serta tampilan, peluncur, penjelajah berkas, dan alat penyimpanan miliknya sendiri. Menara kaca berdiri di belakang game Anda, formasi orbit berbaris di belakang berkas Anda, dan semuanya digambar langsung oleh PS2."
  },
  "ad4809e8e40c": {
   "en": "ad4809e8e40c",
@@ -347,9 +359,9 @@
   "en": "bea8ee5528d7",
   "t": "| [Video perkenalan build 55](media/ripps2-b55-reel.mp4) dan [demo build 22](media/ripps2-b22-demo.mp4) (di GitHub) | | Alpha awal |"
  },
- "c08b5433dbb0": {
-  "en": "c08b5433dbb0",
-  "t": "- **Yang dibutuhkannya, dibawa; yang Anda punya, ditemukan.** [Neutrino](https://github.com/rickgaiser/neutrino) (build terbarunya) dan BIBLE ikut di dalam `.elf` yang sama dan dipasang di mana pun Anda mau; POPSTARTER, berkas POPS, dan Ember Anda dicari sekali di drive Anda, diingat, dan dijalankan dari tempatnya. **STATUS** di menu START menampilkan semua drive, di mana setiap peluncur ditemukan (LOOK FOR THEM mencari lagi), homebrew, BIBLE, dan suara Anda, dan **SAVE DIAGNOSTICS** menulis `DIAG.TXT` untuk laporan bug."
+ "bfd122c10125": {
+  "en": "bfd122c10125",
+  "t": "> [Yang baru di build 135](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.5-beta) | [Changelog](CHANGELOG.md) | **[Video](#videos)** | [Semua rilis](https://github.com/akilluminati47/RIPPS2/releases) | [Diskusikan di psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "c1bc4a56fd54": {
   "en": "c1bc4a56fd54",
@@ -374,10 +386,6 @@
  "cc3d4e294dca": {
   "en": "cc3d4e294dca",
   "t": "- [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/) oleh krHACKen menjalankan game PS1 dari salinan Anda, yang ditemukan RIPPS2 di drive dan memory card Anda ([`elf/popstarter`](elf/popstarter/README.md))."
- },
- "cc72d2f38283": {
-  "en": "cc72d2f38283",
-  "t": "- [Neutrino](https://github.com/rickgaiser/neutrino) oleh [rickgaiser](https://github.com/rickgaiser) (AFL-3.0), emulator perangkat yang kecil, cepat, dan modular, inti game kedua RIPPS2: RIPPS2.elf membawa build terbarunya (v1.8.0-61-g7be8de2, 31 Agustus 2026) tanpa diubah dan memasangnya di mana pun Anda mau, dan Neutrino Anda sendiri versi apa pun didahulukan ([`elf/neutrino`](elf/neutrino/README.md)). Pilih sebagai Default Loader Core di Settings > Game Launching."
  },
  "cd91a464e4a7": {
   "en": "cd91a464e4a7",
@@ -474,13 +482,5 @@
  "fe207194059a": {
   "en": "fe207194059a",
   "t": "| `bgm_02 Details.ogg` | **Details** | x-Radar Portable, [musik sistem PSP](https://en.wikipedia.org/wiki/PlayStation_Portable_system_software) (Sony, 2010): **musik latar video YouTube RIPPS2** bersama Slideshow (video perkenalan beta dibuka dengannya, begitu juga video perkenalan dan short build 83) | Salinan Anda sendiri, dikonversi di PC dengan [RIPPS2 Media Studio](tools/media-studio) |"
- },
- "ff8525427876": {
-  "en": "ff8525427876",
-  "t": "> [Yang baru di build 131 sampai 134](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.4-beta) | [Changelog](CHANGELOG.md) | **[Video](#videos)** | [Semua rilis](https://github.com/akilluminati47/RIPPS2/releases) | [Diskusikan di psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
- },
- "ff925ac5d69f": {
-  "en": "ff925ac5d69f",
-  "t": "> 1. **[Unduh RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (selalu rilis terbaru) (satu berkas, 2.815 KB; atau **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2.205 KB, sama tetapi tanpa PS2BBL untuk BIBLE dan tanpa Neutrino), dan bila mau **[paket tema](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt dan Adapt Rx, edisi 128: masing-masing satu konfigurasi dan satu gambar; RIPGRID dan RIPFLOW sudah bawaan), serta **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** untuk RIPPS2 dalam bahasa Anda (33 bahasa; disertakan di setiap rilis)."
  }
 }

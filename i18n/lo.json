@@ -23,6 +23,10 @@
   "en": "0e6d84eabbaa",
   "t": "RIPPS2 ມີສຽງຂອງ PS2 ທີ່ບໍ່ເຄີຍອອກຈາກຫ້ອງຮັບແຂກ: **ສຽງຂອງເຄື່ອງ Sony ເອງ**, ເພງລະບົບຂອງ Sony, ແລະ **ເພງໜຶ່ງຂອງ Nintendo** ຕອນທ່ອງເບິ່ງ (ທາງເລືອກຂອງຜູ້ອອກແບບ RIPPS2 ເອງ). ບໍ່ມີອັນໃດມາພ້ອມ RIPPS2; **[RIPPS2 Media Studio](tools/media-studio)** ພາເຈົ້າໄປຮອດນັ້ນຈາກ [BIOS dump ຈາກ PS2 ຂອງເຈົ້າເອງ](https://pcsx2.net/docs/setup/bios/) (ໄຟລ໌ທີ່ PCSX2 ໃຊ້) ແລະ ເພງທີ່ເຈົ້າມີເອງ. **Start** ຣິບສຽງເຄື່ອງເຫຼົ່ານັ້ນເປັນໂຟນເດີ `AUDIO` ທີ່ສົມບູນ; ນີ້ແມ່ນແຜນທີ່ຂອງບ່ອນທີ່ພວກມັນຢູ່. ຫຼື ຂ້າມຄອມພິວເຕີ: **Settings > Audio > BIOS Sounds > Rip** ຂຽນສຽງຂອງເຄື່ອງເອງໂດຍກົງໃສ່ `AUDIO`: ສຽງເມນູ ແລະ (ຕັ້ງແຕ່ບິວ 89) ເພງເປີດເຄື່ອງ ແລະ ເປີດເກມທີ່ຫຼິ້ນຈາກໂນ້ດຂອງ BIOS ເອງ. BIOS Music ຂ້າງໆຣິບເພງເມນູ, ທຳນອງຂອງໂມງ (ຫຼື ຂອງຈໍແດງ, ຫຼື ທັງສອງ: ບິວ 112). **[ທ່ອງຊົມສຽງ v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)** ຫຼິ້ນທັງໝົດໃນເທກດຽວ, ຕັ້ງແຕ່ສຽງເປີດເຄື່ອງຈົນຮອດການເປີດເກມ."
  },
+ "118478459c9c": {
+  "en": "118478459c9c",
+  "t": "> ### ມາຣິບກັນ: RIPPS2 ບິວ 135, v1.3.5 ເບຕ້າ"
+ },
  "1238c5cafd27": {
   "en": "1238c5cafd27",
   "t": "- [xeRAbora](https://github.com/hacan359/xerabora) ໂດຍ [hacan359](https://github.com/hacan359): ໄຄລເອັນ RetroAchievements ສຳລັບຄອມພິວເຕີ ແລະ ລະຫັດ RetroAchievements ຝັ່ງເຄື່ອງທີ່ RIPPS2 ໄດ້ຮັບສືບທອດຜ່ານ RiptOPL (MIT / AFL-3.0). **LEFT TO HUNT** ອ່ານ endpoint `GET /state` ຂອງແດຊບອດໃນພອດ 18280, ເຊິ່ງບໍ່ແມ່ນສ່ວນໜຶ່ງຂອງໂປຣໂຕຄອນເຄື່ອງທີ່ມີເອກະສານ ແລະ ອາດປ່ຽນລະຫວ່າງອັລຟ້າ, ດັ່ງນັ້ນ RIPPS2 ລັອກໄວ້ທີ່ **[v0.1.0-alpha.18](https://github.com/hacan359/xerabora/releases/tag/v0.1.0-alpha.18)**, ລຸ້ນທີ່ຜູ້ສ້າງແນະນຳ (alpha.10 ບໍ່ສະຖຽນ, ແລະ ຄີ `checked_only` ທີ່ LEFT TO HUNT ອ່ານມີໃນ `/state` ຕັ້ງແຕ່ alpha.11 ເປັນຕົ້ນໄປເທົ່ານັ້ນ); ກວດທຽບກັບລະຫັດ `/state` ຂອງລຸ້ນນັ້ນແລ້ວ, ລຸ້ນອື່ນບໍ່ໄດ້ທົດສອບ."
@@ -55,9 +59,9 @@
   "en": "1d0696b1b396",
   "t": "- **ບັດ MMCE**: ເຟີມແວ [sd2psXtd](https://sd2psxtd.github.io/) ເທິງ SD2PSX, ເຊັ່ນບັດ [SD2PSXTD](https://github.com/LinkRetro/SD2PSXTD-Hardware), ອ່ານຜ່ານ [mmceman](https://github.com/ps2-mmce/mmceman) (ps2-mmce): ເກມ, VMC ແລະ ການຕັ້ງຄ່າເທິງ SD ຂອງບັດ. **ຮັກສາເຟີມແວໃຫ້ໃໝ່ສະເໝີ** ([sd2psxtd.github.io/download](https://sd2psxtd.github.io/download)). ການບີບອັດເກມເທິງບັດຕ້ອງການ sd2psXtd 1.4.0 ຫຼື ໃໝ່ກວ່າ (ມັນວາງອິມເມຈທີ່ສຳເລັດແລ້ວເຂົ້າທີ່ດ້ວຍການປ່ຽນຊື່); RIPPS2 ຖາມບັດກ່ອນ, ດັ່ງນັ້ນກັບເຟີມແວເກົ່າເຈົ້າຈະຮູ້ກ່ອນເລີ່ມຫຍັງ, ແລະ ບີບອັດຢູ່ນັ້ນບໍ່ໄດ້. ບັດລາຍງານພື້ນທີ່ວ່າງຂອງມັນບໍ່ໄດ້, ດັ່ງນັ້ນແມ່ນແຕ່ໃນ 1.4.0 ກໍບໍ່ມີການກວດພື້ນທີ່ກ່ອນບີບອັດ: ເຫຼືອພື້ນທີ່ໃຫ້ເກມ ແລະ ZSO ຂອງມັນຢູ່ຂ້າງກັນ (ຖ້າບັດເຕັມ, ວຽກຈະຢຸດ ແລະ ລຶບສິ່ງທີ່ມັນຂຽນ)."
  },
- "1eb610e76023": {
-  "en": "1eb610e76023",
-  "t": "- **Neutrino.** RIPPS2 ມາພ້ອມບິວລ່າສຸດຂອງ Neutrino ແລະ ຕິດຕັ້ງມັນເທື່ອທຳອິດທີ່ເກມຕ້ອງການ. Neutrino ຂອງເຈົ້າເອງ, ບໍ່ວ່າລຸ້ນໃດ, ມາກ່ອນ: ວາງໂຟນເດີ `neutrino` ຂອງມັນເທິງໄດຣຟ໌ຂອງເກມ ຫຼື ບັດຄວາມຈຳ, ຫຼື ໃຫ້ເສັ້ນທາງຂອງມັນໃນ Settings > Game Launching > Neutrino Defaults, ແລະ RIPPS2 ສົ່ງພຽງຕົວເລືອກທີ່ລຸ້ນນັ້ນຮູ້ຈັກ. ຕັ້ງແຕ່ 1.1.5, ເມື່ອ RIPPS2 ເລີ່ມຈາກໄດຣຟ໌ USB ແລະ ເກມຢູ່ເທິງ HDD ພາຍໃນ exFAT, ມັນໄດ້ຮັບເລກໄດຣຟ໌ທີ່ຖືກຕ້ອງ (ການປະສົມນີ້ເຄີຍເຮັດໃຫ້ Neutrino ປິດ ແລະ ເຄື່ອງເປີດໃໝ່)."
+ "2027d346c0f8": {
+  "en": "2027d346c0f8",
+  "t": "RIPPS2 ແມ່ນໜ້າຈໍຫຼັກ PS2 ໃນ `.elf` ດຽວ: [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader) (ສາຂາຂອງ Open PS2 Loader) ທີ່ຖືກເປີດອອກ ແລະ ປະກອບຂຶ້ນໃໝ່, ມີ [Neutrino](https://github.com/rickgaiser/neutrino) ຂອງ rickgaiser ເປັນແກນເກມທີສອງ, ພ້ອມຮູບລັກ, ຕົວເປີດ, ຕົວທ່ອງໄຟລ໌ ແລະ ເຄື່ອງມືບ່ອນເກັບຂໍ້ມູນຂອງມັນເອງ. ຫໍຄອຍແກ້ວຢືນຢູ່ຫຼັງເກມຂອງເຈົ້າ, ຮູບແບບວົງໂຄຈອນຢູ່ຫຼັງໄຟລ໌ຂອງເຈົ້າ, ແລະ ທັງໝົດຖືກແຕ້ມສົດໂດຍ PS2."
  },
  "21fb04fdf89a": {
   "en": "21fb04fdf89a",
@@ -66,10 +70,6 @@
  "24fdb4df1618": {
   "en": "24fdb4df1618",
   "t": "## ເປັນພາສາຂອງເຈົ້າ"
- },
- "254b4b737bb1": {
-  "en": "254b4b737bb1",
-  "t": "> ### ມາຣິບກັນ: RIPPS2 ບິວ 134, v1.3.4 ເບຕ້າ"
  },
  "2642f599dfad": {
   "en": "2642f599dfad",
@@ -94,6 +94,10 @@
  "2f0ee80297df": {
   "en": "2f0ee80297df",
   "t": "- **MEMORY FILES** ແມ່ນຕົວທ່ອງໄຟລ໌ໃນຕົວ: ສຳເນົາ, ຍ້າຍ ແລະ ລຶບລະຫວ່າງບັດຄວາມຈຳ, USB, MMCE ແລະ HDD (ທຸກການສຳເນົາຖືກອ່ານຄືນເພື່ອກວດສອບ); ເປີດອິມເມຈບັດ VMC ຂອງ OPL ເປັນໂຟນເດີ; ສົ່ງອອກ ແລະ ນຳເຂົ້າເຊບ PSU; ແກ້ໄຂໄຟລ໌ຂໍ້ຄວາມ; ເປີດຮູບ, ຫຼິ້ນວິດີໂອ AVI **ເຕັມຈໍ** ພ້ອມ**ການຄວບຄຸມເຄື່ອງຫຼິ້ນ** (Cross ຫຼິ້ນ/ຢຸດຊົ່ວຄາວ, Circle ຢຸດ, L1/R1 ຂ້າມ 10 ວິນາທີ, L2/R2 ລະດັບສຽງ, START ຫຼິ້ນຊ້ຳ; ຄຳແນະນຳຈາງໄປໃນຂະນະຫຼິ້ນ ແລະ ຍັງຢູ່ເມື່ອຢຸດຊົ່ວຄາວ) ([RIPPS2 Media Studio](tools/media-studio) ປ່ຽນວິດີໂອໃດກໍໄດ້, ລວມທັງ MP4 ຈາກໂທລະສັບ, ເປັນໄຟລ໌ແບບນີ້), ແລະ ຫຼິ້ນໄຟລ໌ `.mp3`, `.ogg` ແລະ `.wav`, ຫຼື ໝາຍຫຼາຍອັນແລ້ວເປີດພ້ອມກັນ ເພື່ອໃຫ້ຫຼິ້ນຄືແຜ່ນໜຶ່ງໃນເຄື່ອງຫຼິ້ນ CD ຂອງ Launch Disc; **`.tar` ແມ່ນໂຟນເດີສີຟ້າ** ທີ່ເຈົ້າເປີດໄດ້, ວາງຮູບເຂົ້າໄປ ແລະ ສຳເນົາສະມາຊິກອອກມາ (ບິວ 125); ສາມຫຼ່ຽມເທິງ `.tar` ລວມ `.tar` ART ອີກອັນເຂົ້າໄປ ([ຂ້າງລຸ່ມ](#covers-from-one-file-art-pack)). **ໂຟນເດີທີ່ເປີດຢູ່ແມ່ນແຖວທຳອິດ**, ພ້ອມຈຳນວນລາຍການ, ຈຳນວນທີ່ໝາຍ, ຂະໜາດລວມ ແລະ ພື້ນທີ່ວ່າງຂອງໄດຣຟ໌; Cross ຫຼື Square ເທິງມັນໝາຍທັງໝົດ (ຫຼື ຍົກເລີກທັງໝົດຖ້າມີອັນໃດໝາຍຢູ່ແລ້ວ). START ເປີດການຕັ້ງຄ່າຂອງມັນ, ບ່ອນທີ່ **SEARCH FILES** ຊອກຫາໄຟລ໌ ຫຼື ໂຟນເດີໃດກໍໄດ້ຕາມຊື່ໃນທຸກໄດຣຟ໌ທີ່ເລີ່ມແລ້ວ ແລະ ເປີດຕົ້ນໄມ້ຢູ່ບ່ອນນັ້ນ. Square ເທິງບັດຄວາມຈຳເປີດ **CARD MANAGER** (ສຳຮອງບັດເປັນ VMC, ຂຽນເຊບຂອງ VMC ໃສ່ບັດ, ລຶບເຊບເກມ, ຟໍແມັດ), ແລະ Square ເທິງ APA HDD ເປີດ **HDD MANAGER** (ພາທິຊັນຂອງມັນ, ຂະໜາດ, ແລະ ລຶບອັນໜຶ່ງຫຼັງຈາກກວດຕາຕະລາງພາທິຊັນທັງໝົດ)."
+ },
+ "2f962ab31def": {
+  "en": "2f962ab31def",
+  "t": "- [Neutrino](https://github.com/rickgaiser/neutrino) ໂດຍ [rickgaiser](https://github.com/rickgaiser) (AFL-3.0), ອີມູເລເຕີອຸປະກອນທີ່ນ້ອຍ, ໄວ ແລະ ເປັນໂມດູນ, ແກນເກມທີສອງຂອງ RIPPS2: RIPPS2 ຊອກຫາ ແລະ ໃຊ້ Neutrino ຂອງເຈົ້າເອງລຸ້ນໃດກໍໄດ້; RIPPS2.elf ມາພ້ອມບິວຂອງມັນຈົນຮອດບິວ 134 ([`elf/neutrino`](elf/neutrino/README.md)). ເລືອກມັນເປັນ Default Loader Core ໃນ Settings > Game Launching."
  },
  "30db0e04b1f1": {
   "en": "30db0e04b1f1",
@@ -211,6 +215,10 @@
   "en": "75ae3c119793",
   "t": "- [wLaunchELF](https://github.com/ps2homebrew/wLaunchELF) ໂດຍທີມ ps2homebrew, ແລະ wLaunchELF R3Z ໂດຍ NathanNeurotic: ແບບຢ່າງພຶດຕິກຳສຳລັບຕົວທ່ອງ Memory Files ແລະ ຕາຂ່າຍການຕັ້ງຄ່າຂອງມັນ."
  },
+ "7783fc2cbabf": {
+  "en": "7783fc2cbabf",
+  "t": "> 1. **[ດາວໂຫຼດ RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (ລຸ້ນໃໝ່ລ່າສຸດສະເໝີ) (ໄຟລ໌ດຽວ, 2.580 KB), ຖ້າຕ້ອງການກໍ **[ຊຸດທີມ](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt ແລະ Adapt Rx, ສະບັບ 128: ແຕ່ລະອັນມີການຕັ້ງຄ່າໜຶ່ງ ແລະ ຮູບໜຶ່ງ; RIPGRID ແລະ RIPFLOW ມີຢູ່ໃນຕົວ), ແລະ **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** ເພື່ອໃຊ້ RIPPS2 ເປັນພາສາຂອງເຈົ້າ (33 ພາສາ; ມາພ້ອມທຸກລຸ້ນ)."
+ },
  "7c613ae2e427": {
   "en": "7c613ae2e427",
   "t": "## ສຽງ ແລະ ເພງຂອງເຈົ້າເອງ"
@@ -218,6 +226,10 @@
  "7c9cff4a1885": {
   "en": "7c9cff4a1885",
   "t": "| [ວິດີໂອແນະນຳເບຕ້າ](https://youtu.be/LPjdK_E1jjM) | 9:45 | ເບຕ້າທຳອິດ, v1.0.0: ໜ້າເວັບທີ່ RIPPS2 ເລີ່ມຕົ້ນ, ແລ້ວເກມຂອງເຈົ້າ, ໄຟລ໌ຂອງເຈົ້າ ແລະ ສິ່ງທີ່ມາພ້ອມ |"
+ },
+ "7ead6381b980": {
+  "en": "7ead6381b980",
+  "t": "- **ສິ່ງທີ່ມັນຕ້ອງການ, ມາພ້ອມ; ສິ່ງທີ່ເຈົ້າມີ, ຖືກພົບ.** BIBLE ຢູ່ໃນ `.elf` ດຽວກັນ ແລະ ຕິດຕັ້ງບ່ອນທີ່ເຈົ້າຕ້ອງການ; [Neutrino](https://github.com/rickgaiser/neutrino) ຂອງເຈົ້າ, POPSTARTER, ໄຟລ໌ POPS ແລະ Ember ຂອງເຈົ້າຖືກຊອກໃນໄດຣຟ໌ເທື່ອດຽວ, ຈື່ໄວ້ ແລະ ເປີດຈາກບ່ອນທີ່ມັນຢູ່. **STATUS** ໃນເມນູ START ສະແດງທຸກໄດຣຟ໌, ບ່ອນທີ່ພົບແຕ່ລະຕົວເປີດ (LOOK FOR THEM ຊອກໃໝ່), homebrew, BIBLE ແລະ ສຽງຂອງເຈົ້າ, ແລະ **SAVE DIAGNOSTICS** ຂຽນ `DIAG.TXT` ສຳລັບລາຍງານຂໍ້ຜິດພາດ."
  },
  "801b0c43a8b7": {
   "en": "801b0c43a8b7",
@@ -267,6 +279,10 @@
   "en": "a0a4ce3e31fb",
   "t": "## ລຸ້ນເວັບ"
  },
+ "a23ff2c86948": {
+  "en": "a23ff2c86948",
+  "t": "- **Neutrino.** RIPPS2 ໃຊ້ Neutrino ຂອງເຈົ້າເອງ, ບໍ່ວ່າລຸ້ນໃດ (ຕັ້ງແຕ່ບິວ 135 ບໍ່ມີມາພ້ອມ, ແລະ ເກມທີ່ບໍ່ພົບຈະບອກວ່າຕ້ອງວາງໄວ້ໃສ): ວາງໂຟນເດີ `neutrino` ຂອງມັນເທິງໄດຣຟ໌ຂອງເກມ ຫຼື ບັດຄວາມຈຳ, ຫຼື ໃຫ້ເສັ້ນທາງຂອງມັນໃນ Settings > Game Launching > Neutrino Defaults, ແລະ RIPPS2 ສົ່ງພຽງຕົວເລືອກທີ່ລຸ້ນນັ້ນຮູ້ຈັກ. ຕັ້ງແຕ່ 1.1.5, ເມື່ອ RIPPS2 ເລີ່ມຈາກໄດຣຟ໌ USB ແລະ ເກມຢູ່ເທິງ HDD ພາຍໃນ exFAT, ມັນໄດ້ຮັບເລກໄດຣຟ໌ທີ່ຖືກຕ້ອງ (ການປະສົມນີ້ເຄີຍເຮັດໃຫ້ Neutrino ປິດ ແລະ ເຄື່ອງເປີດໃໝ່)."
+ },
  "a2cda8a417d1": {
   "en": "a2cda8a417d1",
   "t": "| ◇ | ກັບໄປລາຍການ | `page_out.adp` | **Menu sound 2** |"
@@ -290,10 +306,6 @@
  "aa7c330a03a6": {
   "en": "aa7c330a03a6",
   "t": "- **ຮົ້ວປ້ອງກັນ**: ທຸກບິວຜ່ານການກວດຂອງ RiptOPL ແລະ ການກວດຂອງ RIPPS2 ເອງ, ແລະ ຄຳເຕືອນໃໝ່ໃນໄຟລ໌ RIPPS2 ພຽງອັນດຽວກໍເຮັດໃຫ້ມັນບໍ່ຜ່ານ."
- },
- "ab5d87e8fe5b": {
-  "en": "ab5d87e8fe5b",
-  "t": "RIPPS2 ແມ່ນໜ້າຈໍຫຼັກ PS2 ໃນ `.elf` ດຽວ: [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader) (ສາຂາຂອງ Open PS2 Loader) ທີ່ຖືກເປີດອອກ ແລະ ປະກອບຂຶ້ນໃໝ່, ມີ [Neutrino](https://github.com/rickgaiser/neutrino) ຂອງ rickgaiser ຢູ່ໃນຕົວເປັນແກນເກມທີສອງ, ພ້ອມຮູບລັກ, ຕົວເປີດ, ຕົວທ່ອງໄຟລ໌ ແລະ ເຄື່ອງມືບ່ອນເກັບຂໍ້ມູນຂອງມັນເອງ. ຫໍຄອຍແກ້ວຢືນຢູ່ຫຼັງເກມຂອງເຈົ້າ, ຮູບແບບວົງໂຄຈອນຢູ່ຫຼັງໄຟລ໌ຂອງເຈົ້າ, ແລະ ທັງໝົດຖືກແຕ້ມສົດໂດຍ PS2."
  },
  "ad4809e8e40c": {
   "en": "ad4809e8e40c",
@@ -347,9 +359,9 @@
   "en": "bea8ee5528d7",
   "t": "| [ວິດີໂອແນະນຳບິວ 55](media/ripps2-b55-reel.mp4) ແລະ [ເດໂມບິວ 22](media/ripps2-b22-demo.mp4) (ໃນ GitHub) | | ອັລຟ້າໄລຍະຕົ້ນ |"
  },
- "c08b5433dbb0": {
-  "en": "c08b5433dbb0",
-  "t": "- **ສິ່ງທີ່ມັນຕ້ອງການ, ມາພ້ອມ; ສິ່ງທີ່ເຈົ້າມີ, ຖືກພົບ.** [Neutrino](https://github.com/rickgaiser/neutrino) (ບິວລ່າສຸດ) ແລະ BIBLE ຢູ່ໃນ `.elf` ດຽວກັນ ແລະ ຕິດຕັ້ງບ່ອນທີ່ເຈົ້າຕ້ອງການ; POPSTARTER, ໄຟລ໌ POPS ແລະ Ember ຂອງເຈົ້າຖືກຊອກໃນໄດຣຟ໌ເທື່ອດຽວ, ຈື່ໄວ້ ແລະ ເປີດຈາກບ່ອນທີ່ມັນຢູ່. **STATUS** ໃນເມນູ START ສະແດງທຸກໄດຣຟ໌, ບ່ອນທີ່ພົບແຕ່ລະຕົວເປີດ (LOOK FOR THEM ຊອກໃໝ່), homebrew, BIBLE ແລະ ສຽງຂອງເຈົ້າ, ແລະ **SAVE DIAGNOSTICS** ຂຽນ `DIAG.TXT` ສຳລັບລາຍງານຂໍ້ຜິດພາດ."
+ "bfd122c10125": {
+  "en": "bfd122c10125",
+  "t": "> [ມີຫຍັງໃໝ່ໃນບິວ 135](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.5-beta) | [Changelog](CHANGELOG.md) | **[ວິດີໂອ](#videos)** | [ທຸກລຸ້ນ](https://github.com/akilluminati47/RIPPS2/releases) | [ສົນທະນາໃນ psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "c1bc4a56fd54": {
   "en": "c1bc4a56fd54",
@@ -374,10 +386,6 @@
  "cc3d4e294dca": {
   "en": "cc3d4e294dca",
   "t": "- [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/) ໂດຍ krHACKen ເປີດເກມ PS1 ຈາກສຳເນົາຂອງເຈົ້າ, ເຊິ່ງ RIPPS2 ພົບເທິງໄດຣຟ໌ ແລະ ບັດຄວາມຈຳຂອງເຈົ້າ ([`elf/popstarter`](elf/popstarter/README.md))."
- },
- "cc72d2f38283": {
-  "en": "cc72d2f38283",
-  "t": "- [Neutrino](https://github.com/rickgaiser/neutrino) ໂດຍ [rickgaiser](https://github.com/rickgaiser) (AFL-3.0), ອີມູເລເຕີອຸປະກອນທີ່ນ້ອຍ, ໄວ ແລະ ເປັນໂມດູນ, ແກນເກມທີສອງຂອງ RIPPS2: RIPPS2.elf ມາພ້ອມບິວລ່າສຸດຂອງມັນ (v1.8.0-61-g7be8de2, 31 ສິງຫາ 2026) ບໍ່ດັດແປງ ແລະ ຕິດຕັ້ງມັນບ່ອນທີ່ເຈົ້າຕ້ອງການ, ແລະ Neutrino ຂອງເຈົ້າເອງລຸ້ນໃດກໍມາກ່ອນ ([`elf/neutrino`](elf/neutrino/README.md)). ເລືອກມັນເປັນ Default Loader Core ໃນ Settings > Game Launching."
  },
  "cd91a464e4a7": {
   "en": "cd91a464e4a7",
@@ -474,13 +482,5 @@
  "fe207194059a": {
   "en": "fe207194059a",
   "t": "| `bgm_02 Details.ogg` | **Details** | x-Radar Portable, [ເພງລະບົບ PSP](https://en.wikipedia.org/wiki/PlayStation_Portable_system_software) (Sony, 2010): **ເພງປະກອບວິດີໂອ YouTube ຂອງ RIPPS2** ພ້ອມ Slideshow (ວິດີໂອແນະນຳເບຕ້າເປີດດ້ວຍມັນ, ແລະ ວິດີໂອແນະນຳ ແລະ Short ບິວ 83) | ສຳເນົາຂອງເຈົ້າເອງ, ແປງເທິງຄອມພິວເຕີດ້ວຍ [RIPPS2 Media Studio](tools/media-studio) |"
- },
- "ff8525427876": {
-  "en": "ff8525427876",
-  "t": "> [ມີຫຍັງໃໝ່ໃນບິວ 131 ຫາ 134](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.4-beta) | [Changelog](CHANGELOG.md) | **[ວິດີໂອ](#videos)** | [ທຸກລຸ້ນ](https://github.com/akilluminati47/RIPPS2/releases) | [ສົນທະນາໃນ psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
- },
- "ff925ac5d69f": {
-  "en": "ff925ac5d69f",
-  "t": "> 1. **[ດາວໂຫຼດ RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (ລຸ້ນໃໝ່ລ່າສຸດສະເໝີ) (ໄຟລ໌ດຽວ, 2.815 KB; ຫຼື **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2.205 KB, ອັນດຽວກັນແຕ່ບໍ່ມີ PS2BBL ສຳລັບ BIBLE ແລະ ບໍ່ມີ Neutrino), ຖ້າຕ້ອງການກໍ **[ຊຸດທີມ](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt ແລະ Adapt Rx, ສະບັບ 128: ແຕ່ລະອັນມີການຕັ້ງຄ່າໜຶ່ງ ແລະ ຮູບໜຶ່ງ; RIPGRID ແລະ RIPFLOW ມີຢູ່ໃນຕົວ), ແລະ **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** ເພື່ອໃຊ້ RIPPS2 ເປັນພາສາຂອງເຈົ້າ (33 ພາສາ; ມາພ້ອມທຸກລຸ້ນ)."
  }
 }

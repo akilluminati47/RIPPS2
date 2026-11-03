@@ -23,6 +23,10 @@
   "en": "0e6d84eabbaa",
   "t": "RIPPS2 a la voix d'une PS2 qui n'a jamais quitté le salon : **les propres sons de la console de Sony**, de la musique système Sony, et **un morceau Nintendo** pour naviguer (les choix du designer de RIPPS2 lui-même). Rien de cela n'est livré avec RIPPS2 ; **[RIPPS2 Media Studio](tools/media-studio)** vous y mène à partir du [dump du BIOS de votre propre PS2](https://pcsx2.net/docs/setup/bios/) (le fichier qu'utilise PCSX2) et de vos propres copies de la musique. Son **Start** extrait les sons de la console dans un dossier `AUDIO` complet ; voici la carte où ils vont. Ou passez-vous du PC : **Settings > Audio > BIOS Sounds > Rip** écrit les propres sons de la console directement dans `AUDIO` : les sons de menu et (depuis la build 89) la musique de démarrage et de lancement de jeu jouées à partir des notes du BIOS lui-même. BIOS Music, juste à côté, extrait la musique du menu, le morceau de l'horloge (ou celui de l'écran rouge, ou les deux : build 112). **[Le tour des sons de la v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)** les joue tous en une seule prise, du son de démarrage au lancement d'un jeu."
  },
+ "118478459c9c": {
+  "en": "118478459c9c",
+  "t": "> ### Rippez-le : RIPPS2 build 135, v1.3.5 bêta"
+ },
  "1238c5cafd27": {
   "en": "1238c5cafd27",
   "t": "- [xeRAbora](https://github.com/hacan359/xerabora) de [hacan359](https://github.com/hacan359) : le client RetroAchievements pour PC et le code RetroAchievements côté console que RIPPS2 hérite via RiptOPL (MIT / AFL-3.0). **LEFT TO HUNT** lit le `GET /state` de la page d'interface sur le port 18280, qui ne fait pas partie du protocole console documenté et peut changer d'une alpha à l'autre, donc RIPPS2 est figé sur la **[v0.1.0-alpha.18](https://github.com/hacan359/xerabora/releases/tag/v0.1.0-alpha.18)**, la version que recommande son auteur (l'alpha.10 est instable, et la clé `checked_only` que lit LEFT TO HUNT n'est dans `/state` qu'à partir de l'alpha.11) ; vérifié avec le code `/state` de cette version, les autres versions ne sont pas testées."
@@ -55,9 +59,9 @@
   "en": "1d0696b1b396",
   "t": "- **Cartes MMCE** : le firmware [sd2psXtd](https://sd2psxtd.github.io/) sur un SD2PSX, comme la carte [SD2PSXTD](https://github.com/LinkRetro/SD2PSXTD-Hardware), lue via [mmceman](https://github.com/ps2-mmce/mmceman) (ps2-mmce) : jeux, VMC et réglages sur la carte SD. **Gardez le firmware à jour** ([sd2psxtd.github.io/download](https://sd2psxtd.github.io/download)). Compresser un jeu sur la carte demande sd2psXtd 1.4.0 ou plus récent (il renomme l'image terminée à sa place) ; RIPPS2 interroge d'abord la carte, donc avec un ancien firmware vous êtes prévenu avant que quoi que ce soit commence et la compression y est impossible. La carte ne peut pas indiquer son espace libre, donc même en 1.4.0 il n'y a pas de vérification de place avant de compresser : laissez de la place pour le jeu et sa ZSO côte à côte (si la carte se remplit, le travail s'arrête et supprime ce qu'il a écrit)."
  },
- "1eb610e76023": {
-  "en": "1eb610e76023",
-  "t": "- **Neutrino.** RIPPS2 embarque la dernière build de Neutrino et l'installe la première fois qu'un jeu en a besoin. Votre propre Neutrino passe en premier, quelle que soit sa version : mettez son dossier `neutrino` sur le lecteur du jeu ou sur une carte mémoire, ou donnez son chemin dans Settings > Game Launching > Neutrino Defaults, et RIPPS2 ne lui envoie que les options que cette version connaît. Depuis la 1.1.5, il reçoit le bon numéro de lecteur quand RIPPS2 a démarré depuis une clé USB et que le jeu est sur le HDD exFAT interne (ce mélange faisait quitter Neutrino et redémarrer la console)."
+ "2027d346c0f8": {
+  "en": "2027d346c0f8",
+  "t": "RIPPS2 est un front end PS2 en un seul `.elf` : un démontage et une reconstruction de [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader) (le fork d'Open PS2 Loader), avec le [Neutrino](https://github.com/rickgaiser/neutrino) de rickgaiser comme second moteur de jeux, et son propre look, ses lanceurs, son explorateur de fichiers et ses outils de sauvegarde. Des tours de verre se dressent derrière vos jeux et des formations en orbite derrière vos fichiers, le tout dessiné en direct par la PS2."
  },
  "21fb04fdf89a": {
   "en": "21fb04fdf89a",
@@ -66,10 +70,6 @@
  "24fdb4df1618": {
   "en": "24fdb4df1618",
   "t": "## Dans votre langue"
- },
- "254b4b737bb1": {
-  "en": "254b4b737bb1",
-  "t": "> ### Rippez-le : RIPPS2 build 134, v1.3.4 bêta"
  },
  "2642f599dfad": {
   "en": "2642f599dfad",
@@ -94,6 +94,10 @@
  "2f0ee80297df": {
   "en": "2f0ee80297df",
   "t": "- **MEMORY FILES** est un explorateur de fichiers intégré : copiez, déplacez et supprimez entre cartes mémoire, USB, MMCE et le HDD (chaque copie est relue et vérifiée) ; ouvrez les images de carte VMC d'OPL comme des dossiers ; exportez et importez des sauvegardes PSU ; éditez des fichiers texte ; ouvrez des images, lisez des vidéos AVI **en plein écran** avec des **commandes de lecteur** (Cross lecture/pause, Circle arrêt, L1/R1 sautent de 10 s, L2/R2 volume, START en boucle ; les indications s'estompent pendant la lecture et restent en pause) ([RIPPS2 Media Studio](tools/media-studio) transforme n'importe quelle vidéo, même le MP4 d'un téléphone, en un tel fichier), et lisez des fichiers `.mp3`, `.ogg` et `.wav`, ou cochez-en plusieurs et ouvrez-les ensemble pour les écouter comme un seul disque dans le lecteur CD de Launch Disc ; un **`.tar` est un dossier bleu** que vous pouvez ouvrir, dans lequel coller des images et dont copier les membres (build 125) ; Triangle sur un `.tar` y fusionne un autre `.tar` ART ([plus bas](#covers-from-one-file-art-pack)). Le **dossier ouvert est la première ligne**, avec son nombre d'entrées, le nombre coché, la taille totale et l'espace libre du lecteur ; Cross ou Square dessus coche tout (ou, si quelque chose est coché, rien). START ouvre ses réglages, où **SEARCH FILES** trouve n'importe quel fichier ou dossier par son nom sur tous les lecteurs démarrés et ouvre l'arborescence là où il est. Square sur une carte mémoire ouvre le **CARD MANAGER** (sauvegarder une carte dans un VMC, réécrire les sauvegardes d'un VMC sur une carte, effacer les sauvegardes de jeux, formater), et Square sur le HDD APA le **HDD MANAGER** (ses partitions, leurs tailles, et la suppression de l'une d'elles après une vérification complète de la table des partitions)."
+ },
+ "2f962ab31def": {
+  "en": "2f962ab31def",
+  "t": "- [Neutrino](https://github.com/rickgaiser/neutrino) de [rickgaiser](https://github.com/rickgaiser) (AFL-3.0), l'émulateur de périphériques petit, rapide et modulaire qui est le second moteur de jeux de RIPPS2 : RIPPS2 trouve et utilise le vôtre, de n'importe quelle version ; RIPPS2.elf a embarqué sa build jusqu'à la build 134 ([`elf/neutrino`](elf/neutrino/README.md)). Choisissez-le comme Default Loader Core dans Settings > Game Launching."
  },
  "30db0e04b1f1": {
   "en": "30db0e04b1f1",
@@ -211,6 +215,10 @@
   "en": "75ae3c119793",
   "t": "- [wLaunchELF](https://github.com/ps2homebrew/wLaunchELF) de l'équipe ps2homebrew, et wLaunchELF R3Z de NathanNeurotic : les références de comportement de l'explorateur Memory Files et de sa grille de réglages."
  },
+ "7783fc2cbabf": {
+  "en": "7783fc2cbabf",
+  "t": "> 1. **[Téléchargez RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (toujours la dernière version) (un seul fichier, 2 580 Ko), et le **[pack de thèmes](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** si vous voulez (Adapt, Adapt Rx, édition 128 : une configuration et une image chacun ; RIPGRID et RIPFLOW sont intégrés), et **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** pour avoir RIPPS2 dans votre langue (33 au total ; chaque version le fournit)."
+ },
  "7c613ae2e427": {
   "en": "7c613ae2e427",
   "t": "## Vos propres sons et musiques"
@@ -218,6 +226,10 @@
  "7c9cff4a1885": {
   "en": "7c9cff4a1885",
   "t": "| [Le reel de la bêta](https://youtu.be/LPjdK_E1jjM) | 9:45 | La première bêta, v1.0.0 : la page web des débuts de RIPPS2, puis vos jeux, vos fichiers et ce qui est embarqué |"
+ },
+ "7ead6381b980": {
+  "en": "7ead6381b980",
+  "t": "- **Ce qu'il lui faut, embarqué ; ce que vous avez, trouvé.** BIBLE voyage dans l'unique `.elf` et s'installe où vous voulez ; vos propres [Neutrino](https://github.com/rickgaiser/neutrino), POPSTARTER, fichiers POPS et Ember sont cherchés une fois sur vos lecteurs, mémorisés, et lancés depuis là où ils sont. **STATUS** dans le menu START affiche tous les lecteurs, où chaque lanceur a été trouvé (LOOK FOR THEM cherche à nouveau), le homebrew, BIBLE et vos sons, et **SAVE DIAGNOSTICS** écrit `DIAG.TXT` pour un rapport de bug."
  },
  "801b0c43a8b7": {
   "en": "801b0c43a8b7",
@@ -267,6 +279,10 @@
   "en": "a0a4ce3e31fb",
   "t": "## La version web"
  },
+ "a23ff2c86948": {
+  "en": "a23ff2c86948",
+  "t": "- **Neutrino.** RIPPS2 utilise votre propre Neutrino, quelle que soit sa version (depuis la build 135 il n'en embarque aucun, et un jeu qui n'en trouve pas vous dit où le mettre) : mettez son dossier `neutrino` sur le lecteur du jeu ou sur une carte mémoire, ou donnez son chemin dans Settings > Game Launching > Neutrino Defaults, et RIPPS2 ne lui envoie que les options que cette version connaît. Depuis la 1.1.5, il reçoit le bon numéro de lecteur quand RIPPS2 a démarré depuis une clé USB et que le jeu est sur le HDD exFAT interne (ce mélange faisait quitter Neutrino et redémarrer la console)."
+ },
  "a2cda8a417d1": {
   "en": "a2cda8a417d1",
   "t": "| ◇ | Revenir à la liste | `page_out.adp` | **Menu sound 2** |"
@@ -290,10 +306,6 @@
  "aa7c330a03a6": {
   "en": "aa7c330a03a6",
   "t": "- **Garde-fous** : chaque build passe les vérifications d'hôte de RiptOPL et celles de RIPPS2, et un nouvel avertissement dans un fichier de RIPPS2 la fait échouer."
- },
- "ab5d87e8fe5b": {
-  "en": "ab5d87e8fe5b",
-  "t": "RIPPS2 est un front end PS2 en un seul `.elf` : un démontage et une reconstruction de [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader) (le fork d'Open PS2 Loader), avec le [Neutrino](https://github.com/rickgaiser/neutrino) de rickgaiser à l'intérieur comme second moteur de jeux, et son propre look, ses lanceurs, son explorateur de fichiers et ses outils de sauvegarde. Des tours de verre se dressent derrière vos jeux et des formations en orbite derrière vos fichiers, le tout dessiné en direct par la PS2."
  },
  "ad4809e8e40c": {
   "en": "ad4809e8e40c",
@@ -347,9 +359,9 @@
   "en": "bea8ee5528d7",
   "t": "| [Le reel de la build 55](media/ripps2-b55-reel.mp4) et [la démo de la build 22](media/ripps2-b22-demo.mp4) (sur GitHub) | | Les premières alphas |"
  },
- "c08b5433dbb0": {
-  "en": "c08b5433dbb0",
-  "t": "- **Ce qu'il lui faut, embarqué ; ce que vous avez, trouvé.** [Neutrino](https://github.com/rickgaiser/neutrino) (sa dernière build) et BIBLE voyagent dans l'unique `.elf` et s'installent où vous voulez ; vos propres POPSTARTER, fichiers POPS et Ember sont cherchés une fois sur vos lecteurs, mémorisés, et lancés depuis là où ils sont. **STATUS** dans le menu START affiche tous les lecteurs, où chaque lanceur a été trouvé (LOOK FOR THEM cherche à nouveau), le homebrew, BIBLE et vos sons, et **SAVE DIAGNOSTICS** écrit `DIAG.TXT` pour un rapport de bug."
+ "bfd122c10125": {
+  "en": "bfd122c10125",
+  "t": "> [Nouveautés de la build 135](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.5-beta) | [Changelog](CHANGELOG.md) | **[Vidéos](#videos)** | [Toutes les versions](https://github.com/akilluminati47/RIPPS2/releases) | [En discuter sur psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "c1bc4a56fd54": {
   "en": "c1bc4a56fd54",
@@ -374,10 +386,6 @@
  "cc3d4e294dca": {
   "en": "cc3d4e294dca",
   "t": "- [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/) de krHACKen démarre les jeux PS1 depuis votre propre copie, que RIPPS2 trouve sur vos lecteurs et cartes mémoire ([`elf/popstarter`](elf/popstarter/README.md))."
- },
- "cc72d2f38283": {
-  "en": "cc72d2f38283",
-  "t": "- [Neutrino](https://github.com/rickgaiser/neutrino) de [rickgaiser](https://github.com/rickgaiser) (AFL-3.0), l'émulateur de périphériques petit, rapide et modulaire qui est le second moteur de jeux de RIPPS2 : RIPPS2.elf embarque sa dernière build (v1.8.0-61-g7be8de2, 31 août 2026) sans modification et l'installe où vous voulez, et votre propre Neutrino de n'importe quelle version passe en premier ([`elf/neutrino`](elf/neutrino/README.md)). Choisissez-le comme Default Loader Core dans Settings > Game Launching."
  },
  "cd91a464e4a7": {
   "en": "cd91a464e4a7",
@@ -474,13 +482,5 @@
  "fe207194059a": {
   "en": "fe207194059a",
   "t": "| `bgm_02 Details.ogg` | **Details** | x-Radar Portable, [musique système de la PSP](https://en.wikipedia.org/wiki/PlayStation_Portable_system_software) (Sony, 2010) : **la musique de fond des vidéos de RIPPS2 sur YouTube** avec Slideshow (le reel de la bêta s'ouvre dessus, ainsi que le reel et le Short de la build 83) | votre propre copie, convertie sur votre PC avec [RIPPS2 Media Studio](tools/media-studio) |"
- },
- "ff8525427876": {
-  "en": "ff8525427876",
-  "t": "> [Nouveautés des builds 131 à 134](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.4-beta) | [Changelog](CHANGELOG.md) | **[Vidéos](#videos)** | [Toutes les versions](https://github.com/akilluminati47/RIPPS2/releases) | [En discuter sur psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
- },
- "ff925ac5d69f": {
-  "en": "ff925ac5d69f",
-  "t": "> 1. **[Téléchargez RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (toujours la dernière version) (un seul fichier, 2 815 Ko ; ou **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**, 2 205 Ko, le même sans le PS2BBL de BIBLE ni Neutrino), et le **[pack de thèmes](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** si vous voulez (Adapt, Adapt Rx, édition 128 : une configuration et une image chacun ; RIPGRID et RIPFLOW sont intégrés), et **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** pour avoir RIPPS2 dans votre langue (33 au total ; chaque version le fournit)."
  }
 }

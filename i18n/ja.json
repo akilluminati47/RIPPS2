@@ -23,6 +23,10 @@
   "en": "0e6d84eabbaa",
   "t": "RIPPS2 はリビングから出なかった PS2 の音がします: **Sony のコンソール自身の音**、Sony のシステム音楽、そしてブラウズ用の **Nintendo の 1 曲** (RIPPS2 のデザイナー自身の選曲)。どれも RIPPS2 には同梱されていません。**[RIPPS2 Media Studio](tools/media-studio)** が [自分の PS2 の BIOS ダンプ](https://pcsx2.net/docs/setup/bios/) (PCSX2 が使うファイル) と自分で持っている音楽からそこへ連れて行きます。**Start** でそのコンソール音を完全な `AUDIO` フォルダーにリップします。これはその配置図です。または PC を飛ばして: **Settings > Audio > BIOS Sounds > Rip** がコンソール自身の音を直接 `AUDIO` に書きます: メニュー音と (ビルド 89 から) BIOS 自身の楽譜から演奏される起動音とゲーム起動の音楽。その隣の BIOS Music はメニュー音楽、時計の曲 (または赤い画面の曲、または両方: ビルド 112) をリップします。**[v1.1.2 サウンドツアー](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)** は起動音からゲームの起動まで、すべてを 1 テイクで再生します。"
  },
+ "118478459c9c": {
+  "en": "118478459c9c",
+  "t": "> ### リップしよう: RIPPS2 ビルド 135、v1.3.5 ベータ"
+ },
  "1238c5cafd27": {
   "en": "1238c5cafd27",
   "t": "- [xeRAbora](https://github.com/hacan359/xerabora) by [hacan359](https://github.com/hacan359): PC の RetroAchievements クライアントと、RIPPS2 が RiptOPL 経由で受け継いだコンソール側の RetroAchievements コード (MIT / AFL-3.0)。**LEFT TO HUNT** はポート 18280 のダッシュボードの `GET /state` エンドポイントを読みます。これは文書化されたコンソールプロトコルの一部ではなく、アルファ間で変わる可能性があるため、RIPPS2 は作者が勧める **[v0.1.0-alpha.18](https://github.com/hacan359/xerabora/releases/tag/v0.1.0-alpha.18)** に固定しています (alpha.10 は不安定で、LEFT TO HUNT が読む `checked_only` キーは alpha.11 以降の `/state` にしかありません)。その版の `/state` コードで確認済みで、ほかの版はテストしていません。"
@@ -55,9 +59,9 @@
   "en": "1d0696b1b396",
   "t": "- **MMCE カード**: SD2PSX 上の [sd2psXtd](https://sd2psxtd.github.io/) ファームウェア、たとえば [SD2PSXTD](https://github.com/LinkRetro/SD2PSXTD-Hardware) カードを、[mmceman](https://github.com/ps2-mmce/mmceman) (ps2-mmce) 経由で読みます: ゲーム、VMC、設定がカードの SD に。**ファームウェアは最新に保ってください** ([sd2psxtd.github.io/download](https://sd2psxtd.github.io/download))。カード上のゲームの圧縮には sd2psXtd 1.4.0 以降が必要です (完成したイメージを改名で配置します)。RIPPS2 はまずカードに問い合わせるので、古いファームウェアでは何かを始める前にわかり、そこでは圧縮できません。カードは空き容量を報告できないので、1.4.0 でも圧縮前の容量確認はありません: ゲームとその ZSO が並んで入る余裕を残してください (カードがいっぱいになれば作業は止まり、書いたものを消します)。"
  },
- "1eb610e76023": {
-  "en": "1eb610e76023",
-  "t": "- **Neutrino。** RIPPS2 は Neutrino の最新ビルドを同梱し、ゲームが最初に必要としたときにインストールします。自分の Neutrino は、どのバージョンでも優先されます: その `neutrino` フォルダーをゲームのドライブかメモリーカードに置くか、Settings > Game Launching > Neutrino Defaults でパスを指定すれば、RIPPS2 はそのバージョンが知っているオプションだけを送ります。1.1.5 から、RIPPS2 が USB ドライブから起動し、ゲームが exFAT の内蔵 HDD にあるときは正しいドライブ番号が渡されます (この組み合わせで Neutrino が閉じてコンソールが再起動していました)。"
+ "2027d346c0f8": {
+  "en": "2027d346c0f8",
+  "t": "RIPPS2 は単一の `.elf` に収まった PS2 フロントエンドです: [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader) (Open PS2 Loader のフォーク) を開いて組み直し、rickgaiser の [Neutrino](https://github.com/rickgaiser/neutrino) を 2 つ目のゲームコアとして使い、独自の見た目、ランチャー、ファイルブラウザー、ストレージツールを備えています。ガラスの塔がゲームの後ろに立ち、軌道の隊形がファイルの後ろに並び、すべて PS2 がリアルタイムで描きます。"
  },
  "21fb04fdf89a": {
   "en": "21fb04fdf89a",
@@ -66,10 +70,6 @@
  "24fdb4df1618": {
   "en": "24fdb4df1618",
   "t": "## あなたの言語で"
- },
- "254b4b737bb1": {
-  "en": "254b4b737bb1",
-  "t": "> ### リップしよう: RIPPS2 ビルド 134、v1.3.4 ベータ"
  },
  "2642f599dfad": {
   "en": "2642f599dfad",
@@ -94,6 +94,10 @@
  "2f0ee80297df": {
   "en": "2f0ee80297df",
   "t": "- **MEMORY FILES** は内蔵ファイルブラウザーです: メモリーカード、USB、MMCE、HDD の間でコピー、移動、削除 (コピーはすべて読み直して確認)。OPL の VMC カードイメージをフォルダーとして開く。PSU セーブのエクスポートとインポート。テキストファイルの編集。画像を開き、AVI 動画を**全画面**で**プレイヤー操作**付きで再生 (Cross 再生/一時停止、Circle 停止、L1/R1 10 秒スキップ、L2/R2 音量、START リピート。ガイドは再生中にフェードし、一時停止中は残ります) ([RIPPS2 Media Studio](tools/media-studio) はスマホの MP4 を含むどんな動画もこの形式に変換します)、`.mp3`、`.ogg`、`.wav` を再生、または複数に印を付けてまとめて開けば Launch Disc の CD プレイヤーでディスクのように再生できます。**`.tar` は青いフォルダー**で、開いて画像を貼り付けたり中身をコピーして取り出したりできます (ビルド 125)。`.tar` 上の三角で別の ART の `.tar` をマージします ([下記](#covers-from-one-file-art-pack))。**開いているフォルダーが最初の行**で、項目数、印を付けた数、合計サイズ、ドライブの空きを表示します。そこで Cross か Square を押すとすべてに印を付けます (何かに印があれば外します)。START で設定を開き、そこの **SEARCH FILES** は開始済みのどのドライブでもファイルやフォルダーを名前で探し、その場でツリーを開きます。メモリーカード上の Square で **CARD MANAGER** (カードを VMC にバックアップ、VMC のセーブをカードに書き込み、ゲームのセーブを消去、フォーマット)、APA HDD 上の Square で **HDD MANAGER** (パーティション、そのサイズ、パーティションテーブルを全部確認してからの削除) を開きます。"
+ },
+ "2f962ab31def": {
+  "en": "2f962ab31def",
+  "t": "- [Neutrino](https://github.com/rickgaiser/neutrino) by [rickgaiser](https://github.com/rickgaiser) (AFL-3.0)。小さく速いモジュール式のデバイスエミュレーターで、RIPPS2 の 2 つ目のゲームコアです: RIPPS2 はどのバージョンでも自分の Neutrino を見つけて使います。RIPPS2.elf はビルド 134 まで同梱していました ([`elf/neutrino`](elf/neutrino/README.md))。Settings > Game Launching の Default Loader Core で選びます。"
  },
  "30db0e04b1f1": {
   "en": "30db0e04b1f1",
@@ -211,6 +215,10 @@
   "en": "75ae3c119793",
   "t": "- [wLaunchELF](https://github.com/ps2homebrew/wLaunchELF) by ps2homebrew チーム、wLaunchELF R3Z by NathanNeurotic: Memory Files のブラウザーとその設定グリッドの動作の手本。"
  },
+ "7783fc2cbabf": {
+  "en": "7783fc2cbabf",
+  "t": "> 1. **[RIPPS2.elf をダウンロード](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (常に最新リリース) (ファイル 1 つ、2,580 KB)、必要なら **[テーマパック](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt と Adapt Rx、エディション 128: それぞれ設定 1 つと画像 1 枚。RIPGRID と RIPFLOW は内蔵)、そして RIPPS2 を自分の言語で使うための **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** (33 言語。毎リリースに同梱)。"
+ },
  "7c613ae2e427": {
   "en": "7c613ae2e427",
   "t": "## 自分のサウンドと音楽"
@@ -218,6 +226,10 @@
  "7c9cff4a1885": {
   "en": "7c9cff4a1885",
   "t": "| [ベータ紹介リール](https://youtu.be/LPjdK_E1jjM) | 9:45 | 最初のベータ v1.0.0: RIPPS2 の出発点となったウェブページ、そしてゲーム、ファイル、同梱物 |"
+ },
+ "7ead6381b980": {
+  "en": "7ead6381b980",
+  "t": "- **必要なものは同梱、持っているものは見つける。** BIBLE は同じ 1 つの `.elf` に入っていて、好きな場所にインストールされます。自分の [Neutrino](https://github.com/rickgaiser/neutrino)、POPSTARTER、POPS ファイル、自分の Ember はドライブ上で一度探して覚え、その場所から起動します。START メニューの **STATUS** はすべてのドライブ、各ランチャーが見つかった場所 (LOOK FOR THEM で探し直し)、homebrew、BIBLE、サウンドを表示し、**SAVE DIAGNOSTICS** はバグ報告用に `DIAG.TXT` を書きます。"
  },
  "801b0c43a8b7": {
   "en": "801b0c43a8b7",
@@ -267,6 +279,10 @@
   "en": "a0a4ce3e31fb",
   "t": "## ウェブ版"
  },
+ "a23ff2c86948": {
+  "en": "a23ff2c86948",
+  "t": "- **Neutrino。** RIPPS2 は、どのバージョンでも自分の Neutrino を使います (ビルド 135 から同梱はなく、見つからないゲームは置き場所を案内します): その `neutrino` フォルダーをゲームのドライブかメモリーカードに置くか、Settings > Game Launching > Neutrino Defaults でパスを指定すれば、RIPPS2 はそのバージョンが知っているオプションだけを送ります。1.1.5 から、RIPPS2 が USB ドライブから起動し、ゲームが exFAT の内蔵 HDD にあるときは正しいドライブ番号が渡されます (この組み合わせで Neutrino が閉じてコンソールが再起動していました)。"
+ },
  "a2cda8a417d1": {
   "en": "a2cda8a417d1",
   "t": "| ◇ | 一覧に戻る | `page_out.adp` | **Menu sound 2** |"
@@ -290,10 +306,6 @@
  "aa7c330a03a6": {
   "en": "aa7c330a03a6",
   "t": "- **安全柵**: どのビルドも RiptOPL のホストチェックと RIPPS2 自身のチェックを通り、RIPPS2 のファイルに新しい警告が 1 つでもあれば不合格になります。"
- },
- "ab5d87e8fe5b": {
-  "en": "ab5d87e8fe5b",
-  "t": "RIPPS2 は単一の `.elf` に収まった PS2 フロントエンドです: [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader) (Open PS2 Loader のフォーク) を開いて組み直し、rickgaiser の [Neutrino](https://github.com/rickgaiser/neutrino) を 2 つ目のゲームコアとして内蔵し、独自の見た目、ランチャー、ファイルブラウザー、ストレージツールを備えています。ガラスの塔がゲームの後ろに立ち、軌道の隊形がファイルの後ろに並び、すべて PS2 がリアルタイムで描きます。"
  },
  "ad4809e8e40c": {
   "en": "ad4809e8e40c",
@@ -347,9 +359,9 @@
   "en": "bea8ee5528d7",
   "t": "| [ビルド 55 紹介リール](media/ripps2-b55-reel.mp4) と [ビルド 22 デモ](media/ripps2-b22-demo.mp4) (GitHub 上) | | 初期のアルファ |"
  },
- "c08b5433dbb0": {
-  "en": "c08b5433dbb0",
-  "t": "- **必要なものは同梱、持っているものは見つける。** [Neutrino](https://github.com/rickgaiser/neutrino) (最新ビルド) と BIBLE は同じ 1 つの `.elf` に入っていて、好きな場所にインストールされます。POPSTARTER、POPS ファイル、自分の Ember はドライブ上で一度探して覚え、その場所から起動します。START メニューの **STATUS** はすべてのドライブ、各ランチャーが見つかった場所 (LOOK FOR THEM で探し直し)、homebrew、BIBLE、サウンドを表示し、**SAVE DIAGNOSTICS** はバグ報告用に `DIAG.TXT` を書きます。"
+ "bfd122c10125": {
+  "en": "bfd122c10125",
+  "t": "> [ビルド 135 の新機能](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.5-beta) | [Changelog](CHANGELOG.md) | **[動画](#videos)** | [すべてのリリース](https://github.com/akilluminati47/RIPPS2/releases) | [psx-place で話そう](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "c1bc4a56fd54": {
   "en": "c1bc4a56fd54",
@@ -374,10 +386,6 @@
  "cc3d4e294dca": {
   "en": "cc3d4e294dca",
   "t": "- [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/) by krHACKen は自分で用意したもので PS1 ゲームを起動し、RIPPS2 はそれをドライブやメモリーカード上で見つけます ([`elf/popstarter`](elf/popstarter/README.md))。"
- },
- "cc72d2f38283": {
-  "en": "cc72d2f38283",
-  "t": "- [Neutrino](https://github.com/rickgaiser/neutrino) by [rickgaiser](https://github.com/rickgaiser) (AFL-3.0)。小さく速いモジュール式のデバイスエミュレーターで、RIPPS2 の 2 つ目のゲームコアです: RIPPS2.elf はその最新ビルド (v1.8.0-61-g7be8de2、2026 年 8 月 31 日) を無改変で同梱し、好きな場所にインストールします。どのバージョンでも自分の Neutrino が優先されます ([`elf/neutrino`](elf/neutrino/README.md))。Settings > Game Launching の Default Loader Core で選びます。"
  },
  "cd91a464e4a7": {
   "en": "cd91a464e4a7",
@@ -474,13 +482,5 @@
  "fe207194059a": {
   "en": "fe207194059a",
   "t": "| `bgm_02 Details.ogg` | **Details** | x-Radar Portable、[PSP のシステム音楽](https://en.wikipedia.org/wiki/PlayStation_Portable_system_software) (Sony、2010): Slideshow とともに **RIPPS2 の YouTube 動画の BGM** (ベータ紹介リールはこれで始まり、ビルド 83 の紹介リールとショートも) | 自分で持っている音源を、PC 上で [RIPPS2 Media Studio](tools/media-studio) で変換 |"
- },
- "ff8525427876": {
-  "en": "ff8525427876",
-  "t": "> [ビルド 131 から 134 の新機能](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.4-beta) | [Changelog](CHANGELOG.md) | **[動画](#videos)** | [すべてのリリース](https://github.com/akilluminati47/RIPPS2/releases) | [psx-place で話そう](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
- },
- "ff925ac5d69f": {
-  "en": "ff925ac5d69f",
-  "t": "> 1. **[RIPPS2.elf をダウンロード](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (常に最新リリース) (ファイル 1 つ、2,815 KB。または **[RIPPS2-lite.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-lite.elf)**、2,205 KB、BIBLE 用の PS2BBL と Neutrino を除いた同じもの)、必要なら **[テーマパック](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt と Adapt Rx、エディション 128: それぞれ設定 1 つと画像 1 枚。RIPGRID と RIPFLOW は内蔵)、そして RIPPS2 を自分の言語で使うための **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** (33 言語。毎リリースに同梱)。"
  }
 }
