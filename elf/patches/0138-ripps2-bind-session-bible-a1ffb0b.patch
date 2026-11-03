@@ -1,3 +1,36 @@
+diff --git a/Makefile b/Makefile
+index 1061514..83e85b1 100644
+--- a/Makefile
++++ b/Makefile
+@@ -152,7 +152,7 @@ IOP_OBJS =	iomanx.o filexio.o ps2fs.o usbd.o usbhdfsd.o bdmevent.o dvrdrv.o dvrf
+ 		httpclient-iop.o netman.o ps2ips.o \
+ 		bdm_mcemu.o mmce_mcemu.o hdd_mcemu.o smb_mcemu.o \
+ 		iremsndpatch.o apemodpatch.o f2techioppatch.o cleareffects.o resetspu.o \
+-		libsd.o audsrv.o ps2kbd.o secrman.o secrsif.o
++		libsd.o audsrv.o ps2kbd.o secrsif.o
+ 
+ EECORE_OBJS = ee_core.o ioprp.o util.o \
+ 		udnl.o imgdrv.o eesync.o \
+@@ -204,7 +204,7 @@ AUDIO_OBJS =
+ # icon_sys.o + save_icn.o are the memory-card browser save icon for the settings folder.
+ # icon.sys names list.icn, copy.icn and del.icn; all three are the same artwork, so ONE blob is
+ # embedded and util.c writes it out under all three names (see saveIconName in src/util.c).
+-MISC_OBJS =	icon_sys.o save_icn.o ripps2_icn.o icon_sys_A.o icon_sys_J.o icon_sys_C.o bible_xlf.o bible_mx4sio_xlf.o bible_mmce_xlf.o bible_hdd_xlf.o conf_theme_OPL.o theme_coverflow.o theme_ripgrid.o ripps2_font.o ripps2_sleek.o ripps2_sleekbold.o ripps2_sleekcase.o ripps2_one.o ripps2roboto.o ripps2_condensed.o
++MISC_OBJS =	icon_sys.o save_icn.o ripps2_icn.o icon_sys_A.o icon_sys_J.o icon_sys_C.o bible_xlf.o bible_mx4sio_xlf.o bible_mmce_xlf.o bible_hdd_xlf.o bind_ioprp.o conf_theme_OPL.o theme_coverflow.o theme_ripgrid.o ripps2_font.o ripps2_sleek.o ripps2_sleekbold.o ripps2_sleekcase.o ripps2_one.o ripps2roboto.o ripps2_condensed.o
+ # RIPPS2 build 135: one ELF, BIBLE carried, Neutrino found (builds 126-134 also made a lite ELF)
+ 
+ TRANSLATIONS = Albanian Arabic Bulgarian Cebuano Croatian Czech Danish Dutch Filipino French \
+@@ -1275,6 +1275,10 @@ $(EE_ASM_DIR)bible_hdd_xlf.c: misc/bible_hdd_system.xlf | $(EE_ASM_DIR)
+ $(EE_ASM_DIR)bible_mx4sio_xlf.c: misc/bible_mx4sio_system.xlf | $(EE_ASM_DIR)
+ 	$(BIN2C) $< $@ bible_mx4sio_xlf
+ 
++# RIPPS2 build 138: KELFBinder's IOPRP image (GPL-3, carried as data: RIPPS2's elf/kelfbinder), what BIBLE's bind boots
++$(EE_ASM_DIR)bind_ioprp.c: misc/bind_ioprp.img | $(EE_ASM_DIR)
++	$(BIN2C) $< $@ bind_ioprp
++
+ # RIPPS2 build 136: BIBLE's MMCE build (reads mmce0:/mmce1:), copied in by RIPPS2's build.sh
+ $(EE_ASM_DIR)bible_mmce_xlf.c: misc/bible_mmce_system.xlf | $(EE_ASM_DIR)
+ 	$(BIN2C) $< $@ bible_mmce_xlf
 diff --git a/include/ripps2.h b/include/ripps2.h
 index 0937301..935401f 100644
 --- a/include/ripps2.h
@@ -86,9 +119,20 @@ index 29cb7d7..de12d9d 100644
  // --------------------- Init/Deinit ------------------------
  // ----------------------------------------------------------
 diff --git a/src/ripps2boot.c b/src/ripps2boot.c
-index 576b781..8cd2826 100644
+index 576b781..4a312e0 100644
 --- a/src/ripps2boot.c
 +++ b/src/ripps2boot.c
+@@ -74,8 +74,8 @@
+ 
+ // ps2sdk's SECRMAN (it can bind a KELF to a card; the console's own cannot) and its RPC server, and
+ // PS2BBL 1.2.0 signed: the standard build, and the one that also starts from MX4SIO (massX:)
+-extern unsigned char secrman_irx[];
+-extern unsigned int size_secrman_irx;
++extern unsigned char bind_ioprp[]; // build 138: KELFBinder's IOPRP image (secrman_special 0x0104), RIPPS2's elf/kelfbinder
++extern unsigned int size_bind_ioprp;
+ extern unsigned char secrsif_irx[];
+ extern unsigned int size_secrsif_irx;
+ extern unsigned char bible_xlf[];
 @@ -94,7 +94,8 @@ extern unsigned int size_save_icn;
  extern unsigned char ripps2_icn[]; // build 98: the dead elf's hat, RIPPS2's own card folder icon
  extern unsigned int size_ripps2_icn;
@@ -99,7 +143,137 @@ index 576b781..8cd2826 100644
  
  // Where PS2BBL and PS2BBL Extended look for their config: beside the loader (its CWD, the
  // system-update folder), PS2BBL/CONFIG.INI on either card or a drive, Extended's SYS-CONF/PS2BBL.INI
-@@ -1168,48 +1169,30 @@ static int blBibleConfig(const char *alt, const char *backupKelf)
+@@ -150,6 +151,7 @@ typedef struct
+     int freeKb;      // its free space
+     int kind;        // BL_*: what its system update is
+     int bible;       // ...and it is BIBLE
++    const char *bibleBuild; // build 138: which of the BIBLE builds RIPPS2 carries it is ("MMCE"...), by its bytes; NULL: not known
+     int boots;       // this console starts it at power on (its own folder and file name are there)
+     char folder[16]; // the B?EXEC-SYSTEM folder holding it ("" when none)
+     char title[48];  // its icon.sys title, in ASCII
+@@ -317,6 +319,34 @@ static int blFindUpdateIn(int port, const char *folder, char *file, int size)
+     return found;
+ }
+ 
++// build 138 (the user, 11/03: "we arent detecting its BIBLE fork, it said it was BBL by Isra"): the system update itself
++// says whether it is BIBLE, and which build. A console's bind changes only its 32 key bytes (Kbit and Kc, at 40 to 71), so
++// the rest is byte for byte one of the builds RIPPS2 carries, whatever its folder's icon says. Its name, or NULL
++static const char *blBibleBuildOf(const char *path)
++{
++    static const char *const names[3] = {"MMCE", "MX4SIO", "memory card"};
++    const unsigned char *const builds[3] = {bible_mmce_xlf, bible_mx4sio_xlf, bible_xlf};
++    const unsigned int sizes[3] = {size_bible_mmce_xlf, size_bible_mx4sio_xlf, size_bible_xlf};
++    const char *found = NULL;
++    unsigned char *buf;
++    int fd, i, size, n;
++
++    if ((fd = open(path, O_RDONLY)) < 0)
++        return NULL;
++    size = lseek(fd, 0, SEEK_END);
++    for (i = 0; i < 3 && size != (int)sizes[i]; i++)
++        ;
++    if (i < 3 && size > 72 && (buf = malloc(size)) != NULL) {
++        lseek(fd, 0, SEEK_SET);
++        n = read(fd, buf, size);
++        if (n == size && !memcmp(buf, builds[i], 40) && !memcmp(buf + 72, builds[i] + 72, size - 72))
++            found = names[i];
++        free(buf);
++    }
++    close(fd);
++    return found;
++}
++
+ static void blScanCard(int port)
+ {
+     blCard_t *c = &blCards[port];
+@@ -341,6 +371,8 @@ static void blScanCard(int port)
+             }
+     if (!c->folder[0])
+         return; // nothing installed: BL_NONE
++    snprintf(path, sizeof(path), "mc%d:/%s/%s", port, c->folder, file);
++    c->bibleBuild = blBibleBuildOf(path);
+ 
+     snprintf(path, sizeof(path), "mc%d:/%s/icon.sys", port, c->folder);
+     if ((fd = open(path, O_RDONLY)) >= 0) {
+@@ -350,7 +382,7 @@ static void blScanCard(int port)
+             blTitleAscii(head + 0xC0, 68, c->title, sizeof(c->title));
+     }
+ 
+-    c->bible = blHas(c->title, "BIBLE");
++    c->bible = c->bibleBuild != NULL || blHas(c->title, "BIBLE");
+     if (c->bible || blHas(c->title, "PS2BBL"))
+         c->kind = BL_PS2BBL;
+     else if (blHas(c->title, "OSDMENU"))
+@@ -407,7 +439,12 @@ static void blCardWhat(int port, int boot, char *out, int size)
+         snprintf(out, size, _t("no memory card"));
+         return;
+     }
+-    snprintf(out, size, "%s%s", c->bible ? "BIBLE (PS2BBL)" : _t(blKindName[c->kind]),
++    char bible[40];
++    if (c->bibleBuild != NULL)
++        snprintf(bible, sizeof(bible), "BIBLE (%s build)", c->bibleBuild);
++    else
++        snprintf(bible, sizeof(bible), "BIBLE");
++    snprintf(out, size, "%s%s", c->bible ? bible : _t(blKindName[c->kind]),
+              port == boot ? _t(", starts at power on") : c->kind != BL_NONE && !c->boots ? _t(", for another console model") : "");
+ }
+ 
+@@ -882,45 +919,6 @@ void ripps2BootLockApply(int on)
+ 
+ // ---- BIBLE ----
+ 
+-// An IOPRP image holding one module, which the IOP's boot then uses in place of the ROM's module of
+-// that name. Its directory: RESET (empty), ROMDIR (the directory itself), EXTINFO, the module (4 bytes
+-// of extended info), a blank end entry; then EXTINFO's record (0xFFFF, 0, type 2: what the ROM's
+-// loader needs to take the module), then the module, each part padded to 16 bytes.
+-static void *blMakeIoprp(const char *name, const void *module, int moduleSize, int *outSize)
+-{
+-    unsigned char *img;
+-    int size = 5 * 16 + 16 + ((moduleSize + 15) & ~15), o = 0;
+-
+-    if ((img = memalign(64, size)) == NULL)
+-        return NULL;
+-    memset(img, 0, size);
+-#define BL_ENTRY(n, ext, sz)                               \
+-    do {                                                   \
+-        strncpy((char *)img + o, (n), 10);                 \
+-        img[o + 10] = (ext) & 0xFF;                        \
+-        img[o + 11] = ((ext) >> 8) & 0xFF;                 \
+-        img[o + 12] = (sz) & 0xFF;                         \
+-        img[o + 13] = ((sz) >> 8) & 0xFF;                  \
+-        img[o + 14] = ((sz) >> 16) & 0xFF;                 \
+-        img[o + 15] = ((unsigned int)(sz) >> 24) & 0xFF;   \
+-        o += 16;                                           \
+-    } while (0)
+-    BL_ENTRY("RESET", 0, 0);
+-    BL_ENTRY("ROMDIR", 0, 5 * 16);
+-    BL_ENTRY("EXTINFO", 0, 4);
+-    BL_ENTRY(name, 4, moduleSize);
+-    o += 16; // the blank end entry
+-#undef BL_ENTRY
+-    img[o] = 0xFF;
+-    img[o + 1] = 0xFF;
+-    img[o + 2] = 0;
+-    img[o + 3] = 2;
+-    o += 16;
+-    memcpy(img + o, module, moduleSize);
+-    *outSize = size;
+-    return img;
+-}
+-
+ // build 119: a title in the full-width Shift-JIS an icon.sys holds. A v1.60 browser (SCPH-30004R) shows plain ASCII
+ // there as nothing (lab, 10/27); letters, digits and the space map across, anything else stays as it is. The bytes
+ // written, at most size
+@@ -1154,7 +1152,7 @@ typedef struct
+ static int blBibleConfig(const char *alt, const char *backupKelf)
+ {
+     int n = snprintf(blText, sizeof(blText),
+-                     "# BIBLE: PS2BBL by El Isra (GPL-3, github.com/israpps/PlayStation2-Basic-BootLoader), set up by RIPPS2\r\n"
++                     "# BIBLE: akilluminati47's boot loader (github.com/akilluminati47/BIBLE), built on PS2BBL by El Isra (GPL-3), set up by RIPPS2\r\n"
+                      "# Hold at power on: TRIANGLE the browser, START or CROSS a disc, R1 wLaunchELF, CIRCLE what started here before\r\n"
+                      "KEY_READ_WAIT_TIME = 0\r\nSKIP_PS2LOGO = 0\r\nOSDHISTORY_READ = 1\r\nLOGO_DISPLAY = 0\r\nEJECT_TRAY = 0\r\n\r\n"
+                      "LK_AUTO_E1 = $OSDSYS\r\n%s%s%s"
+@@ -1168,48 +1166,30 @@ static int blBibleConfig(const char *alt, const char *backupKelf)
      return n > 0 && n < (int)sizeof(blText) ? n : -1;
  }
  
@@ -157,7 +331,7 @@ index 576b781..8cd2826 100644
  
      if ((buf = memalign(64, kelfSize + 4096)) == NULL) {
          guiMsgBoxSound(SFX_ERROR);
-@@ -1373,6 +1356,36 @@ static void blInstallOn(int port, const blWhere_t *w, const char *alt)
+@@ -1373,6 +1353,42 @@ static void blInstallOn(int port, const blWhere_t *w, const char *alt)
      guiMsgBox(msg, 0, NULL);
  }
  
@@ -171,7 +345,13 @@ index 576b781..8cd2826 100644
 +    int imgSize, ok, waited = 0;
 +
 +    guiRenderTextScreen(_t("RIPPS2: Setting up BIBLE (restarting the I/O processor)"));
-+    if ((img = blMakeIoprp("SECRMAN", secrman_irx, size_secrman_irx, &imgSize)) == NULL) {
++    // build 138 (the user, 11/03: "repair the bind feature so its as reliable as kelf binder"): the IOP boots the image
++    // KELFBinder boots, byte for byte (RIPPS2's elf/kelfbinder): its secrman_special, which bound BIBLE to the user's
++    // SD2PSX, where the card would not log in through ps2sdk's rewrite of it in the image RIPPS2 built before
++    imgSize = (int)size_bind_ioprp;
++    if ((img = memalign(64, (imgSize + 63) & ~63)) != NULL)
++        memcpy(img, bind_ioprp, imgSize);
++    if (img == NULL) {
 +        guiMsgBoxSound(SFX_ERROR);
 +        guiMsgBox(_t("BIBLE ran out of memory before it started. Nothing was changed."), 0, NULL);
 +        return;
@@ -194,3 +374,12 @@ index 576b781..8cd2826 100644
  // ---- BIBLE on the HDD (build 73) ----
  //
  // PS2BBL 1.2.0's HDD build (El Isra's HSYSTEM.XLF, signed for the HDD's boot area as FHDB's is) goes
+@@ -1991,7 +2007,7 @@ void ripps2BibleManage(void)
+         blCardWhat(port, boot, what[port], sizeof(what[port]));
+     snprintf(msg, sizeof(msg),
+              _t("SLOT 0: %s\nSLOT 1: %s\n%s\n"
+-             "RIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?"),
++             "RIPPS2: Setting up BIBLE. BIBLE, akilluminati47's boot loader built on PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?"),
+              what[0], what[1],
+              removed ? _t("(Removed a SYS-CONF/PS2BBL.INI build 68 wrote for a loader that never reads it.)\n") : "");
+     guiMsgBoxSound(SFX_MESSAGE);

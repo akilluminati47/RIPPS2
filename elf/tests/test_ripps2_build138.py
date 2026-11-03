@@ -53,5 +53,25 @@ for name, want in sums.items():
     if want not in readme:
         fail.append('elf/bible/README.md lists %s\'s SHA-256' % name)
 
-print('\n'.join(fail) or 'build138: the bind in a session of its own, the IOP back after it, BIBLE a1ffb0b carried OK')
+# the bind boots KELFBinder's IOPRP image as it is (the card logged in through it on the user's SD2PSX)
+mk = rd('Makefile')
+bsh = (elf / 'build.sh').read_text(encoding='utf-8')
+kb = elf / 'kelfbinder'
+if hashlib.sha256((kb / 'IOPRP.img').read_bytes()).hexdigest() != '7d814c36d9ef83cb1a28a5fa38f046474cfcc7b8429b20cf438c0a082ecbeb54':
+    fail.append('elf/kelfbinder/IOPRP.img is KELFBinder\'s, unchanged')
+if not (kb / 'LICENSE.TXT').exists() or 'github.com/israpps/KELFBinder' not in (kb / 'README.md').read_text(encoding='utf-8'):
+    fail.append('elf/kelfbinder carries its licence and source link')
+if '"$HERE/kelfbinder/IOPRP.img" "$SRC/misc/bind_ioprp.img"' not in bsh or 'bind_ioprp.o' not in mk:
+    fail.append('build.sh and the Makefile carry the image')
+if 'memcpy(img, bind_ioprp, imgSize);' not in on or 'blMakeIoprp' in boot or 'secrman_irx' in boot:
+    fail.append('the bind boots KELFBinder\'s image, not one RIPPS2 builds')
+
+# BIBLE told by its bytes, whatever its icon says, and named as BIBLE
+if 'static const char *blBibleBuildOf(const char *path)' not in boot or '!memcmp(buf + 72, builds[i] + 72, size - 72)' not in boot \
+        or 'c->bible = c->bibleBuild != NULL || blHas(c->title, "BIBLE");' not in boot or '"BIBLE (%s build)"' not in boot:
+    fail.append('a card\'s BIBLE is told by its bytes past the 32 key bytes, and named with its build')
+if "BIBLE, akilluminati47's boot loader built on PS2BBL by El Isra, set up by RIPPS2" not in boot or 'PS2BBL by El Isra, set up by RIPPS2 on' in boot.replace("built on PS2BBL by El Isra, set up by RIPPS2 on", ""):
+    fail.append('Manage names BIBLE as akilluminati47\'s boot loader built on PS2BBL')
+
+print('\n'.join(fail) or 'build138: the bind in a session of its own with KELFBinder\'s image, BIBLE told by its bytes, BIBLE a1ffb0b carried OK')
 sys.exit(1 if fail else 0)

@@ -10,10 +10,16 @@ RIPPS2 at power on.
   screen at power on: their memory card driver did not link on the console, so they waited for it forever. RIPPS2 now
   carries BIBLE `a1ffb0b`, which loads RIPPS2's own memory card and pad drivers, signed again by the user on 11/03. The
   plain memory card and HDD builds were never affected and are unchanged.
-- **Manage binds in a session of its own**, as KELFBinder does: after the I/O processor restarts for the bind, only the
-  memory card and pad drivers come back (no MMCE, no drives, no sound), the card logs in, BIBLE is bound and written,
-  then the I/O processor restarts as usual and everything returns. On the user's SD2PSX the old restart brought MMCE
-  back while the card logged in, and the card answered "not ready". DIAG.TXT is written once the drive is back.
+- **Manage binds the way KELFBinder does.** The I/O processor restarts from **KELFBinder's own IOPRP image**, byte for
+  byte (its `secrman_special`, carried as data with its GPL-3 licence: `elf/kelfbinder`), with only the memory card and
+  pad drivers back (no MMCE, no drives, no sound); the card logs in, BIBLE is bound and written, then the I/O processor
+  restarts as usual and everything returns. On the user's SD2PSX the card would not log in through the image RIPPS2
+  built before (ps2sdk's rewrite of that module), with or without MMCE, while KELFBinder bound the same card. DIAG.TXT
+  says how the card logged in and each try, and is written once the drive is back.
+- **BIBLE is recognized by its own bytes**, whatever its folder's icon says: a console's bind changes only 32 bytes of
+  it, so the rest matches one of the builds RIPPS2 carries, and Manage, BOOT LOCK and STATUS say "BIBLE (MMCE build)"
+  and so on. A BIBLE the user put on with KELFBinder showed as PS2BBL. Manage names BIBLE as akilluminati47's boot
+  loader built on PS2BBL by El Isra (all 32 languages), and so does the config it writes.
 
 ## Build 137 (beta, v1.3.7-beta), changes since build 136
 
