@@ -62,10 +62,100 @@ index 9f4c20d..2f9cd67 100644
      {'H', N_("MEMORY FILES")},
      {'T', N_("MCKILLA, RIPPS2's card manager fork")},
 diff --git a/src/ripps2boot.c b/src/ripps2boot.c
-index 4a312e0..1b8f7a0 100644
+index 4a312e0..4c04b4d 100644
 --- a/src/ripps2boot.c
 +++ b/src/ripps2boot.c
-@@ -1993,16 +1993,223 @@ static void blRestoreCard(int port)
+@@ -66,6 +66,7 @@
+ #include "include/ripps2tr.h" // build 104: _t, RIPPS2's words in the chosen language
+ #include "include/ripps2diag.h" // build 115: each BIBLE step into DIAG.TXT
+ #include <errno.h>
++#include <zlib.h> // build 139: crc32, the older BIBLE builds told apart
+ 
+ #define BL_MAX    32768 // a PS2BBL config is a few KB
+ #define BL_MARKER "#RIPPS2 BOOT LOCK"
+@@ -152,6 +153,7 @@ typedef struct
+     int kind;        // BL_*: what its system update is
+     int bible;       // ...and it is BIBLE
+     const char *bibleBuild; // build 138: which of the BIBLE builds RIPPS2 carries it is ("MMCE"...), by its bytes; NULL: not known
++    int bibleOld;           // build 139: ...one RIPPS2 carried before (an update is offered)
+     int boots;       // this console starts it at power on (its own folder and file name are there)
+     char folder[16]; // the B?EXEC-SYSTEM folder holding it ("" when none)
+     char title[48];  // its icon.sys title, in ASCII
+@@ -322,25 +324,49 @@ static int blFindUpdateIn(int port, const char *folder, char *file, int size)
+ // build 138 (the user, 11/03: "we arent detecting its BIBLE fork, it said it was BBL by Isra"): the system update itself
+ // says whether it is BIBLE, and which build. A console's bind changes only its 32 key bytes (Kbit and Kc, at 40 to 71), so
+ // the rest is byte for byte one of the builds RIPPS2 carries, whatever its folder's icon says. Its name, or NULL
+-static const char *blBibleBuildOf(const char *path)
++// Build 139: the BIBLE builds RIPPS2 carried before, told by their size and the CRC-32 of everything but the key bytes
++// (a bind changes only those), so an older BIBLE is still BIBLE, whatever its folder's icon says, and Manage offers the update
++static const struct
++{
++    int size;
++    unsigned int crc;
++    const char *name;
++} blBibleOlder[] = {
++    {169016, 0x0EEFE882u, "MMCE"}, {166264, 0xE42D0CA8u, "MX4SIO"},                                       // a1ffb0b (RIPPS2 1.3.8)
++    {166456, 0xA27798DDu, "MMCE"}, {163704, 0xB2845BEDu, "MX4SIO"}, {116136, 0x8E1FC367u, "memory card"}, // f31c8d5 (1.3.4 to 1.3.6)
++};
++
++static const char *blBibleBuildOf(const char *path, int *older)
+ {
+     static const char *const names[3] = {"MMCE", "MX4SIO", "memory card"};
+     const unsigned char *const builds[3] = {bible_mmce_xlf, bible_mx4sio_xlf, bible_xlf};
+     const unsigned int sizes[3] = {size_bible_mmce_xlf, size_bible_mx4sio_xlf, size_bible_xlf};
+     const char *found = NULL;
+     unsigned char *buf;
+-    int fd, i, size, n;
++    int fd, i, k, size, n, known = 0;
+ 
++    *older = 0;
+     if ((fd = open(path, O_RDONLY)) < 0)
+         return NULL;
+     size = lseek(fd, 0, SEEK_END);
+     for (i = 0; i < 3 && size != (int)sizes[i]; i++)
+         ;
+-    if (i < 3 && size > 72 && (buf = malloc(size)) != NULL) {
++    for (k = 0; k < (int)(sizeof(blBibleOlder) / sizeof(blBibleOlder[0])); k++)
++        if (size == blBibleOlder[k].size)
++            known = 1;
++    if ((i < 3 || known) && size > 72 && (buf = malloc(size)) != NULL) {
+         lseek(fd, 0, SEEK_SET);
+         n = read(fd, buf, size);
+-        if (n == size && !memcmp(buf, builds[i], 40) && !memcmp(buf + 72, builds[i] + 72, size - 72))
++        if (n == size && i < 3 && !memcmp(buf, builds[i], 40) && !memcmp(buf + 72, builds[i] + 72, size - 72))
+             found = names[i];
++        else if (n == size && known) {
++            unsigned int crc = (unsigned int)crc32(crc32(0L, buf, 40), buf + 72, size - 72);
++            for (k = 0; k < (int)(sizeof(blBibleOlder) / sizeof(blBibleOlder[0])) && found == NULL; k++)
++                if (size == blBibleOlder[k].size && crc == blBibleOlder[k].crc) {
++                    found = blBibleOlder[k].name;
++                    *older = 1;
++                }
++        }
+         free(buf);
+     }
+     close(fd);
+@@ -372,7 +398,7 @@ static void blScanCard(int port)
+     if (!c->folder[0])
+         return; // nothing installed: BL_NONE
+     snprintf(path, sizeof(path), "mc%d:/%s/%s", port, c->folder, file);
+-    c->bibleBuild = blBibleBuildOf(path);
++    c->bibleBuild = blBibleBuildOf(path, &c->bibleOld);
+ 
+     snprintf(path, sizeof(path), "mc%d:/%s/icon.sys", port, c->folder);
+     if ((fd = open(path, O_RDONLY)) >= 0) {
+@@ -440,7 +466,9 @@ static void blCardWhat(int port, int boot, char *out, int size)
+         return;
+     }
+     char bible[40];
+-    if (c->bibleBuild != NULL)
++    if (c->bibleBuild != NULL && c->bibleOld) // build 139
++        snprintf(bible, sizeof(bible), "BIBLE (%s build, older)", c->bibleBuild);
++    else if (c->bibleBuild != NULL)
+         snprintf(bible, sizeof(bible), "BIBLE (%s build)", c->bibleBuild);
+     else
+         snprintf(bible, sizeof(bible), "BIBLE");
+@@ -1993,16 +2021,223 @@ static void blRestoreCard(int port)
      guiMsgBox(msg, 0, NULL);
  }
  
@@ -203,7 +293,7 @@ index 4a312e0..1b8f7a0 100644
 +    int n, i, j, pick, have, older = -1, port;
 +
 +    for (port = 0; port < 2; port++)
-+        if (blCards[port].present && blCards[port].bible && blCards[port].bibleBuild == NULL) {
++        if (blCards[port].present && blCards[port].bible && (blCards[port].bibleBuild == NULL || blCards[port].bibleOld)) {
 +            older = port; // a BIBLE that is not the one RIPPS2 carries (an earlier build)
 +            break;
 +        }

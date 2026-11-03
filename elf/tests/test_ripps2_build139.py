@@ -70,6 +70,13 @@ iniset = boot[s:boot.find('\n}\n', s)]
 if 'memcpy(blOut + o, p, len);' not in iniset or 'blWrite(path, blOut, o) == 0' not in iniset:
     fail.append('a setting changes only its own line; the rest of the file is kept')
 
+# the BIBLE builds RIPPS2 carried before are still BIBLE (older), and the menu offers the update
+for want in ('{169016, 0x0EEFE882u, "MMCE"}', '{166264, 0xE42D0CA8u, "MX4SIO"}', '{166456, 0xA27798DDu, "MMCE"}', '{163704, 0xB2845BEDu, "MX4SIO"}',
+             '{116136, 0x8E1FC367u, "memory card"}', 'crc32(crc32(0L, buf, 40), buf + 72, size - 72)', '"BIBLE (%s build, older)"',
+             'blCards[port].bibleBuild == NULL || blCards[port].bibleOld'):
+    if want not in boot:
+        fail.append('older BIBLE builds are told apart: %s' % want)
+
 # About
 if "N_(\"KELFBinder by El Isra\")" not in about or "every build signed by akilluminati47" not in about or "ps2sdk's SECRMAN, from the FMCB installer" in about:
     fail.append('About credits KELFBinder\'s image and akilluminati47\'s signing')

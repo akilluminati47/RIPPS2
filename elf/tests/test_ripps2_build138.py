@@ -67,7 +67,7 @@ if 'memcpy(img, bind_ioprp, imgSize);' not in on or 'blMakeIoprp' in boot or 'se
     fail.append('the bind boots KELFBinder\'s image, not one RIPPS2 builds')
 
 # BIBLE told by its bytes, whatever its icon says, and named as BIBLE
-if 'static const char *blBibleBuildOf(const char *path)' not in boot or '!memcmp(buf + 72, builds[i] + 72, size - 72)' not in boot \
+if 'static const char *blBibleBuildOf(const char *path' not in boot or '!memcmp(buf + 72, builds[i] + 72, size - 72)' not in boot \
         or 'c->bible = c->bibleBuild != NULL || blHas(c->title, "BIBLE");' not in boot or '"BIBLE (%s build)"' not in boot:
     fail.append('a card\'s BIBLE is told by its bytes past the 32 key bytes, and named with its build')
 if "BIBLE, akilluminati47's boot loader built on PS2BBL by El Isra, set up by RIPPS2" not in boot or 'PS2BBL by El Isra, set up by RIPPS2 on' in boot.replace("built on PS2BBL by El Isra, set up by RIPPS2 on", ""):
