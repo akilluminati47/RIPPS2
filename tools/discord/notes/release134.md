@@ -44,7 +44,7 @@
 
 <p align="center">
 <img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/v1.3.4-beta/media/b133/adapt-vignette-132-vs-133.jpg" width="48%" alt="Adapt: the sky vignette, before and after">
-<img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/v1.3.4-beta/media/b133/ripgrid-sky-palettes.jpg" width="48%" alt="RIPGRID's sky in two Color Themes">
+<img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/d1d03835b826ec63426777590626c98164f4c44d/media/b136/ripgrid-sky-palettes.jpg" width="48%" alt="RIPGRID's sky in two Color Themes">
 </p>
 
 ### Settings and Memory Files (build 134)
