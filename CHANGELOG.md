@@ -1,5 +1,27 @@
 # RIPPS2 changelog
 
+## Build 136 (beta, v1.3.6-beta), changes since build 135
+
+The user's first BIBLE try on an SD2PSX (11/03), and STATUS's sound rows.
+
+**BIBLE**
+- **BIBLE's MMCE build is carried too**, signed by the user on 11/03 with the other three: it reads `mmce0:/` and
+  `mmce1:/`, so with RIPPS2 on an SD2PSX or MemCard PRO 2, Manage installs it on a genuine memory card in the other
+  slot and it starts RIPPS2 from the SD card at power on.
+- **An SD2PSX or MMCE card is never bound**: the console refuses it, and an SD2PSX then stops answering until a power
+  cycle. Manage now says so before the I/O processor restarts and offers BOOT LOCK instead (its BOOT card's own PS2BBL
+  starts RIPPS2). A refused bind on any other card now says to turn the console off and on if the card has gone.
+- **Slots are counted 0 and 1**, as mc0: and mc1: and Memory Files name them, in every Manage and BOOT LOCK message,
+  STATUS's card space lines and the game VMC slots.
+
+**STATUS**
+- **RIP THIS CONSOLE'S AUDIO** opens Audio settings on BIOS Sounds and BIOS Music, to choose sounds or music.
+- The boot sound line names its file, and says when it is on a memory card (read as the pillars rise), including an
+  AUDIO folder kept on a card.
+
+**Languages**
+- The new and changed lines are in all 32 languages.
+
 ## Build 135 (beta, v1.3.5-beta), changes since build 134
 
 One RIPPS2.elf, with BIBLE inside and Neutrino found, never carried (the user, 11/02).

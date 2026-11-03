@@ -3,6 +3,17 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Portuguese
 strings:
+  "The console would not bind BIBLE to the memory card in slot %d (its MagicGate step failed). Nothing on the card was changed. A card that is not a genuine or MagicGate-compatible one cannot hold a system update.": "A consola não quis vincular o BIBLE ao cartão de memória da ranhura %d (a etapa MagicGate falhou). Nada no cartão foi alterado. Um cartão que não seja original ou compatível com MagicGate não pode guardar uma atualização do sistema."
+  "An SD2PSX or MMCE card can stop answering after a refused bind: if the memory card or the MMCE drive is missing now, turn the console off and on.": "Um cartão SD2PSX ou MMCE pode deixar de responder após um vínculo recusado: se agora faltar o cartão de memória ou a unidade MMCE, desliga e volta a ligar a consola."
+  "RIPPS2: Setting up BIBLE\nThe card in slot %d is an SD2PSX or MMCE card. The console cannot bind BIBLE to one (an SD2PSX refuses it, then stops answering until the console is turned off and on), so nothing was tried. Its BOOT card has its own PS2BBL: START turns BOOT LOCK on, so it starts RIPPS2 at power on. BIBLE goes on a genuine PS2 memory card.": "RIPPS2: a instalar o BIBLE\nO cartão da ranhura %d é um cartão SD2PSX ou MMCE. A consola não consegue vincular-lhe o BIBLE (um SD2PSX recusa e depois deixa de responder até a consola ser desligada e ligada), por isso nada foi tentado. O seu cartão BOOT tem o seu próprio PS2BBL: START ativa o BOOT LOCK, para que arranque o RIPPS2 ao ligar. O BIBLE vai num cartão de memória PS2 original."
+  "For a standard 8 MB PS2 memory card (a genuine MagicGate card: an SD2PSX or MMCE card cannot be bound): the one in slot %d. At power on PS2BBL reads slot 1's config before slot 0's.\n": "Para um cartão de memória PS2 normal de 8 MB (um MagicGate original: um cartão SD2PSX ou MMCE não pode ser vinculado): o da ranhura %d. Ao ligar, o PS2BBL lê a configuração da ranhura 1 antes da ranhura 0.\n"
+  "RIP THIS CONSOLE'S AUDIO": "EXTRAIR O ÁUDIO DESTA CONSOLA"
+  "sounds or music, from its BIOS": "sons ou música, da sua BIOS"
+  "Opens Audio settings on BIOS Sounds and BIOS Music: rip this console's own sounds or its menu music into AUDIO.": "Abre as Definições de áudio em Sons da BIOS e Música da BIOS: extrai os sons desta consola ou a música do seu menu para AUDIO."
+  "Boot sound On (fast): %s on the memory card, as the pillars rise": "Som de arranque Ligado (rápido): %s no cartão de memória, ao subirem os pilares"
+  "Boot sound On: %s on the memory card, as the pillars rise": "Som de arranque Ligado: %s no cartão de memória, ao subirem os pilares"
+  "Boot sound On: %s, once its drive is up": "Som de arranque Ligado: %s, quando a sua unidade estiver pronta"
+  "SLOT 0: %s\nSLOT 1: %s\n%s\nRIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?": "RANHURA 0: %s\nRANHURA 1: %s\n%s\nRIPPS2: a instalar o BIBLE. PS2BBL de El Isra, instalado pelo RIPPS2 num cartão de memória PS2 normal de 8 MB ou no disco rígido interno: um arranque de 0 ms ao ligar (o PS2BBL Extended não permite 0), o RIPPS2 primeiro a partir de onde está (nunca é copiado), e um botão premido ao ligar ainda leva ao navegador (TRIANGLE), a um disco (START) e ao que lá estava antes (CIRCLE). Instalar, reparar ou repor o que substituiu?"
   "This game starts through Neutrino, and RIPPS2 found none: not at Settings' path, on the game's drive, on the memory cards or on any started drive. Put Neutrino by rickgaiser (github.com/rickgaiser/neutrino) in a neutrino folder on the game's drive or a memory card, or point Game Launching > Neutrino at it.": "Este jogo arranca através do Neutrino e o RIPPS2 não encontrou nenhum: nem no caminho das Definições, nem no disco do jogo, nem nos cartões de memória, nem em qualquer disco iniciado. Coloque o Neutrino de rickgaiser (github.com/rickgaiser/neutrino) numa pasta neutrino no disco do jogo ou num cartão de memória, ou aponte Arranque de jogos > Neutrino para ele."
   "Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets. Get Neutrino at github.com/rickgaiser/neutrino and put it in a neutrino folder on a drive or a memory card.": "Onde está o seu Neutrino, o modo de vídeo e os argumentos que cada arranque do Neutrino recebe. Obtenha o Neutrino em github.com/rickgaiser/neutrino e coloque-o numa pasta neutrino num disco ou cartão de memória."
   "This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer.": "Este Neutrino é anterior à 1.3, que não consegue arrancar jogos do disco rígido APA. Aponte Arranque de jogos > Neutrino para o Neutrino 1.3 ou mais recente."
@@ -311,8 +322,6 @@ strings:
   Reading the memory cards: A ler os cartões de memória
   The HDD partition BIBLE uses went away. Nothing was changed.: A partição do disco rígido que o BIBLE usa desapareceu. Nada foi alterado.
   The HDD's old boot program is back. BIBLE no longer starts from the HDD.: O antigo programa de arranque do disco rígido voltou. O BIBLE não inicia mais pelo disco rígido.
-  ? The console would not bind BIBLE to memory card %d (its MagicGate step failed). Nothing on the card was changed. A card that is not a genuine or MagicGate-compatible one cannot hold a system update.
-  : A consola não quis vincular o BIBLE ao cartão de memória %d (a etapa MagicGate falhou). Nada no cartão foi alterado. Um cartão que não seja original ou compatível com MagicGate não pode guardar uma atualização do sistema.
   'The one that was there is kept in RIPPS2/MBR-BACKUP.KELF on the HDD: BOOT LOADER > MANAGE > RESTORE puts it back.': 'O que estava lá fica guardado em RIPPS2/MBR-BACKUP.KELF no disco rígido: CARREGADOR DE ARRANQUE > GERIR > RESTAURAR o devolve.'
   The security module would not start on this console. Nothing on the memory card was changed.: O módulo de segurança não quis iniciar nesta consola. Nada no cartão de memória foi alterado.
   ? 'There is no formatted PS2 memory card in either slot, and no internal HDD. BIBLE lives on a memory card or the HDD: insert a card, then try again.'
@@ -784,11 +793,9 @@ strings:
   POPSTARTER and Ember: POPSTARTER e Ember
   PS1 SETTINGS: DEFINIÇÕES DE PS1
   PS2BBL for RIPPS2: PS2BBL para o RIPPS2
-  RIP THIS CONSOLE'S SOUNDS: EXTRAIR OS SONS DESTA CONSOLA
   STATUS: STATUS
   a drive of unknown kind: uma unidade de tipo desconhecido
   boot loader, card by card: carregador de arranque, cartão por cartão
-  from its BIOS, into AUDIO: da BIOS dele, para AUDIO
   internal HDD (exFAT): disco rígido interno (exFAT)
   its own IP and SMB files: IP próprio e ficheiros SMB
   path, video, arguments: caminho, vídeo, argumentos
@@ -1137,7 +1144,6 @@ strings:
   'Game lists: each shows at once from its cache and stands until SELECT': 'Listas de jogos: cada uma aparece logo a partir da sua cache e fica até SELECT'
   'Game lists: each shows at once from its cache, then is read again': 'Listas de jogos: cada uma aparece logo a partir da sua cache e depois é lida de novo'
   LOADING: CARREGAMENTO
-  Makes RIPPS2's sounds from this console's own BIOS and writes them to the AUDIO folder.: Cria os sons do RIPPS2 a partir da BIOS desta consola e grava-os na pasta AUDIO.
   'No music yet: Audio settings > BIOS Music rips this console''s menu music.': 'Ainda sem música: Definições de áudio > Música da BIOS extrai a música do menu desta consola.'
   SAVE DIAGNOSTICS: GUARDAR DIAGNÓSTICOS
   Searches the drives for POPSTARTER, the POPS files, Ember, Ember's BIOS and Neutrino, and remembers where each one is.: Procura nas unidades o POPSTARTER, os ficheiros POPS, o Ember, a BIOS do Ember e o Neutrino, e lembra-se de onde está cada um.
@@ -1174,12 +1180,6 @@ strings:
   : 'Um cartão SD2PSX ou MMCE pode proteger-se após uma escrita recusada: se agora faltar o cartão de memória ou a unidade MMCE, desliga e volta a ligar a consola.'
   BOOT LOCK ON: BOOT LOCK ATIVO
   'Done: the memory card in slot %d starts what it started before BIBLE. BIBLE is kept in mc%d:/%s.': 'Feito: o cartão de memória da ranhura %d inicia o que iniciava antes do BIBLE. O BIBLE fica guardado em mc%d:/%s.'
-  ? 'For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 2''s config before slot 1''s.
-  
-    '
-  : 'Para um cartão de memória PS2 normal de 8 MB (um MagicGate, ou um cartão BOOT SD2PSX ou MMCE): o da ranhura %d. Ao ligar, o PS2BBL lê a configuração da ranhura 2 antes da ranhura 1.
-  
-    '
   MEMORY CARD IN SLOT %d  (%s): CARTÃO DE MEMÓRIA NA RANHURA %d  (%s)
   ? PS2BBL cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
   : O PS2BBL não consegue iniciar o RIPPS2 de onde está agora (chega a cartões de memória, unidades USB e MX4SIO), e o RIPPS2 não se copia a si próprio. Põe o RIPPS2.ELF num cartão de memória ou numa unidade USB e inicia-o a partir daí, ou usa o PS2BBL Extended, que lê MMCE e o disco rígido.
@@ -1215,20 +1215,6 @@ strings:
   'RIPPS2: Setting up BIBLE (restarting the I/O processor)': 'RIPPS2: a instalar o BIBLE (a reiniciar o processador de E/S)'
   'RIPPS2: Setting up BIBLE (writing it to the memory card)': 'RIPPS2: a instalar o BIBLE (a escrevê-lo no cartão de memória)'
   SET UP BIBLE: INSTALAR BIBLE
-  ? 'SLOT 1: %s
-  
-    SLOT 2: %s
-  
-    %s
-  
-    RIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
-  : 'RANHURA 1: %s
-  
-    RANHURA 2: %s
-  
-    %s
-  
-    RIPPS2: a instalar o BIBLE. PS2BBL de El Isra, instalado pelo RIPPS2 num cartão de memória PS2 normal de 8 MB ou no disco rígido interno: um arranque de 0 ms ao ligar (o PS2BBL Extended não permite 0), o RIPPS2 primeiro a partir de onde está (nunca é copiado), e um botão premido ao ligar ainda leva ao navegador (TRIANGLE), a um disco (START) e ao que lá estava antes (CIRCLE). Instalar, reparar ou repor o que substituiu?'
   The memory card in slot %d has %d KB free, and BIBLE needs %d KB there. Free some space, then try again.: O cartão de memória da ranhura %d tem %d KB livres e o BIBLE precisa de %d KB nele. Liberta espaço e tenta de novo.
   ? The memory card in slot %d refused PS2BBL, so RIPPS2 put the card back as it was. Check its free space, then try again. (DIAG.TXT beside RIPPS2 has what the card said.)
   : O cartão de memória da ranhura %d recusou o PS2BBL, por isso o RIPPS2 deixou o cartão como estava. Verifica o espaço livre e tenta de novo. (O DIAG.TXT junto ao RIPPS2 tem o que o cartão respondeu.)
@@ -1397,7 +1383,6 @@ strings:
   'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 'Sem CHEATS no menu do jogo: os cheats marcados antes do arranque correm todo o jogo, como antes.'
   BOOT SOUND WITH THE PILLARS: SOM DE ARRANQUE COM OS PILARES
   'Boot Sound: On (fast)': 'Som de arranque: Ligado (rápido)'
-  'Boot sound On (fast): %s, as the pillars rise': 'Som de arranque Ligado (rápido): %s, ao subirem os pilares'
   'Boot sound On: from the AUDIO folder, once its drive is up': 'Som de arranque Ligado: da pasta AUDIO, quando a sua unidade estiver pronta'
   Boot sound off (Audio settings > Boot Sound): Som de arranque desligado (Definições de áudio > Som de arranque)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Copia boot.adp para junto do RIPPS2 no cartão de memória de onde arranca, onde o arranque o lê antes de qualquer unidade estar pronta.
@@ -1434,8 +1419,8 @@ strings:
 labels:
   MANUAL: Manual
   ENTER: Entrar
-  VMC_SLOT1: VMC do slot 1
-  VMC_SLOT2: VMC do slot 2
+  VMC_SLOT1: "VMC do slot 0"
+  VMC_SLOT2: "VMC do slot 1"
   HINT_NEUTRINO_AUTO_ELF: Passa o ELF de arranque do jogo ao Neutrino para buscar a configuração por título. Ligado por padrão; uma opção Boot ELF ajustada à mão tem prioridade.
   HINT_POPSTARTER_PATH: Onde está o POPSTARTER.ELF. Deixado vazio, o RIPPS2 preenche com um que encontrar numa unidade; escreva por cima para usar outro, como usb:/POPS/POPSTARTER.ELF
   NEUTRINO_ARGS_TOO_LONG: Os argumentos do Neutrino passam do tamanho que pode ser guardado. Encurte um campo antes de guardar.
@@ -1648,7 +1633,7 @@ labels:
   GAME_TYPE_LABELS: Mostrar rótulos [PS1]/[PS2]
   NEUTRINO_CHEATS_WRITE_FAILED: A lista de cheats não pôde ser guarda na pasta do Neutrino, então o Neutrino não pode usá-la. Iniciar sem cheats?
   AUTO_CREATE_VMC: Criar VMC no primeiro início
-  HINT_AUTO_CREATE_VMC: Iniciar um jogo PS2 sem VMC na ranhura 1 cria um cartão de 8 MB no dispositivo do jogo, com o nome que o ecrã VMC sugere (partilhado por todos os discos do jogo), e atribui-o. Com o Neutrino, não no disco rígido APA (um disco rígido exFAT funciona).
+  HINT_AUTO_CREATE_VMC: "Iniciar um jogo PS2 sem VMC na ranhura 0 cria um cartão de 8 MB no dispositivo do jogo, com o nome que o ecrã VMC sugere (partilhado por todos os discos do jogo), e atribui-o. Com o Neutrino, não no disco rígido APA (um disco rígido exFAT funciona)."
   AUTO_VMC_CREATING: A criar a VMC deste jogo...
   AUTO_VMC_FAILED: Não foi possível criar a VMC deste jogo. O jogo inicia sem ela.
   RIPPS2_BIOS_MUSIC: Música da BIOS

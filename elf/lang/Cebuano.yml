@@ -3,6 +3,17 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Cebuano
 strings:
+  "The console would not bind BIBLE to the memory card in slot %d (its MagicGate step failed). Nothing on the card was changed. A card that is not a genuine or MagicGate-compatible one cannot hold a system update.": "Dili ihigot sa console ang BIBLE sa memory card sa slot %d (napakyas ang MagicGate step niini). Walay giusab sa card. Ang card nga dili tinuod o dili tugma sa MagicGate dili makabaton og system update."
+  "An SD2PSX or MMCE card can stop answering after a refused bind: if the memory card or the MMCE drive is missing now, turn the console off and on.": "Ang SD2PSX o MMCE card mahimong dili na motubag human sa gisalikway nga paghigot: kon nawala karon ang memory card o ang MMCE drive, palonga ug ablihi pag-usab ang console."
+  "RIPPS2: Setting up BIBLE\nThe card in slot %d is an SD2PSX or MMCE card. The console cannot bind BIBLE to one (an SD2PSX refuses it, then stops answering until the console is turned off and on), so nothing was tried. Its BOOT card has its own PS2BBL: START turns BOOT LOCK on, so it starts RIPPS2 at power on. BIBLE goes on a genuine PS2 memory card.": "RIPPS2: Gi-set up ang BIBLE\nAng card sa slot %d usa ka SD2PSX o MMCE card. Dili mahigot sa console ang BIBLE niini (gisalikway kini sa SD2PSX, unya dili na motubag hangtod palongon ug ablihan ang console), busa walay gisulayan. Ang BOOT card niini adunay kaugalingong PS2BBL: ang START mo-on sa BOOT LOCK, aron sugdan niini ang RIPPS2 sa pag-on. Ang BIBLE ibutang sa tinuod nga PS2 memory card."
+  "For a standard 8 MB PS2 memory card (a genuine MagicGate card: an SD2PSX or MMCE card cannot be bound): the one in slot %d. At power on PS2BBL reads slot 1's config before slot 0's.\n": "Alang sa naandang 8 MB nga PS2 memory card (tinuod nga MagicGate card: dili mahigot ang SD2PSX o MMCE card): ang naa sa slot %d. Sa pag-on, basahon sa PS2BBL ang config sa slot 1 una sa slot 0.\n"
+  "RIP THIS CONSOLE'S AUDIO": "I-RIP ANG AUDIO NIINING CONSOLE"
+  "sounds or music, from its BIOS": "mga tingog o musika, gikan sa BIOS niini"
+  "Opens Audio settings on BIOS Sounds and BIOS Music: rip this console's own sounds or its menu music into AUDIO.": "Ablihan ang Audio settings sa BIOS Sounds ug BIOS Music: i-rip ang kaugalingong mga tingog niining console o ang menu music niini ngadto sa AUDIO."
+  "Boot sound On (fast): %s on the memory card, as the pillars rise": "Boot sound On (paspas): %s sa memory card, samtang mobangon ang mga haligi"
+  "Boot sound On: %s on the memory card, as the pillars rise": "Boot sound On: %s sa memory card, samtang mobangon ang mga haligi"
+  "Boot sound On: %s, once its drive is up": "Boot sound On: %s, kung andam na ang drive niini"
+  "SLOT 0: %s\nSLOT 1: %s\n%s\nRIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?": "SLOT 0: %s\nSLOT 1: %s\n%s\nRIPPS2: Gi-set up ang BIBLE. PS2BBL ni El Isra, gi-set up sa RIPPS2 sa naandang 8 MB nga PS2 memory card o sa internal HDD: 0 ms nga pagsugod sa pag-on (dili tugotan sa PS2BBL Extended ang 0), una ang RIPPS2 gikan sa kung asa kini (dili gyud kini kopyahon), ug ang button nga gikuptan sa pag-on modala gihapon sa browser (TRIANGLE), sa disc (START) ug sa naa kaniadto (CIRCLE). I-set up, ayohon, o ibalik ang iyang gipulihan?"
   "This game starts through Neutrino, and RIPPS2 found none: not at Settings' path, on the game's drive, on the memory cards or on any started drive. Put Neutrino by rickgaiser (github.com/rickgaiser/neutrino) in a neutrino folder on the game's drive or a memory card, or point Game Launching > Neutrino at it.": "Kini nga dula magsugod pinaagi sa Neutrino, ug walay nakit-an ang RIPPS2: wala sa path sa Settings, sa drive sa dula, sa mga memory card o sa bisan unsang nasugdan nga drive. Ibutang ang Neutrino ni rickgaiser (github.com/rickgaiser/neutrino) sa usa ka neutrino folder sa drive sa dula o sa memory card, o itudlo ang Game Launching > Neutrino niini."
   "Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets. Get Neutrino at github.com/rickgaiser/neutrino and put it in a neutrino folder on a drive or a memory card.": "Asa ang imong Neutrino, ang video mode niini, ug ang mga argument nga madawat sa matag Neutrino launch. Kuhaa ang Neutrino sa github.com/rickgaiser/neutrino ug ibutang kini sa usa ka neutrino folder sa drive o memory card."
   "This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer.": "Mas karaan kini nga Neutrino kaysa 1.3, nga dili makasugod og dula gikan sa APA HDD. Itudlo ang Game Launching > Neutrino sa Neutrino 1.3 o mas bag-o."
@@ -311,8 +322,6 @@ strings:
   Reading the memory cards: Gibasa ang mga memory card
   The HDD partition BIBLE uses went away. Nothing was changed.: Nawala ang HDD partition nga gigamit sa BIBLE. Walay giusab.
   The HDD's old boot program is back. BIBLE no longer starts from the HDD.: Nibalik na ang daan nga boot program sa HDD. Dili na mosugod ang BIBLE gikan sa HDD.
-  ? The console would not bind BIBLE to memory card %d (its MagicGate step failed). Nothing on the card was changed. A card that is not a genuine or MagicGate-compatible one cannot hold a system update.
-  : Dili ihigot sa console ang BIBLE sa memory card %d (napakyas ang MagicGate step niini). Walay giusab sa card. Ang card nga dili tinuod o dili tugma sa MagicGate dili makabaton og system update.
   'The one that was there is kept in RIPPS2/MBR-BACKUP.KELF on the HDD: BOOT LOADER > MANAGE > RESTORE puts it back.': 'Ang naa didto gitipigan sa RIPPS2/MBR-BACKUP.KELF sa HDD: ibalik kini sa BOOT LOADER > DUMALAHA > IBALIK.'
   The security module would not start on this console. Nothing on the memory card was changed.: Dili mosugod ang security module niining console. Walay giusab sa memory card.
   ? 'There is no formatted PS2 memory card in either slot, and no internal HDD. BIBLE lives on a memory card or the HDD: insert a card, then try again.'
@@ -784,11 +793,9 @@ strings:
   POPSTARTER and Ember: POPSTARTER ug Ember
   PS1 SETTINGS: MGA SETTING SA PS1
   PS2BBL for RIPPS2: PS2BBL alang sa RIPPS2
-  RIP THIS CONSOLE'S SOUNDS: I-RIP ANG MGA TUNOG NIINING CONSOLE
   STATUS: STATUS
   a drive of unknown kind: drive nga wala mailhi ang klase
   boot loader, card by card: boot loader, matag card
-  from its BIOS, into AUDIO: gikan sa BIOS niini, ngadto sa AUDIO
   internal HDD (exFAT): internal HDD (exFAT)
   its own IP and SMB files: kaugalingong IP ug SMB file niini
   path, video, arguments: path, video, mga argument
@@ -1134,7 +1141,6 @@ strings:
   'Game lists: each shows at once from its cache and stands until SELECT': 'Mga lista sa dula: makita dayon gikan sa cache ug magpabilin hangtod SELECT'
   'Game lists: each shows at once from its cache, then is read again': 'Mga lista sa dula: makita dayon gikan sa cache, unya basahon pag-usab'
   LOADING: NAG-LOAD
-  Makes RIPPS2's sounds from this console's own BIOS and writes them to the AUDIO folder.: Himoon ang mga tunog sa RIPPS2 gikan sa kaugalingong BIOS niining console ug isulat sa folder nga AUDIO.
   'No music yet: Audio settings > BIOS Music rips this console''s menu music.': 'Wala pay musika: Audio settings > BIOS Music ang mo-rip sa menu music niining console.'
   SAVE DIAGNOSTICS: I-SAVE ANG DIAGNOSTICS
   Searches the drives for POPSTARTER, the POPS files, Ember, Ember's BIOS and Neutrino, and remembers where each one is.: Pangitaon sa mga drive ang POPSTARTER, ang mga POPS file, Ember, ang BIOS sa Ember ug Neutrino, ug hinumdoman kon asa ang matag usa.
@@ -1171,12 +1177,6 @@ strings:
   : 'Ang SD2PSX o MMCE card mahimong manalipod sa kaugalingon human sa gisalikway nga pagsulat: kon nawala karon ang memory card o ang MMCE drive, palonga ug ablihi pag-usab ang console.'
   BOOT LOCK ON: NAKA-ON ANG BOOT LOCK
   'Done: the memory card in slot %d starts what it started before BIBLE. BIBLE is kept in mc%d:/%s.': 'Nahuman: ang memory card sa slot %d magsugod sa gisugdan niini sa wala pa ang BIBLE. Gitipigan ang BIBLE sa mc%d:/%s.'
-  ? 'For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 2''s config before slot 1''s.
-  
-    '
-  : 'Alang sa naandang 8 MB nga PS2 memory card (MagicGate card, o SD2PSX o MMCE BOOT card): ang naa sa slot %d. Sa pag-on, basahon sa PS2BBL ang config sa slot 2 una sa slot 1.
-  
-    '
   MEMORY CARD IN SLOT %d  (%s): MEMORY CARD SA SLOT %d  (%s)
   ? PS2BBL cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
   : Dili masugdan sa PS2BBL ang RIPPS2 gikan sa kung asa kini karon (makaabot kini sa mga memory card, USB drive ug MX4SIO), ug dili kopyahon sa RIPPS2 ang iyang kaugalingon. Ibutang ang RIPPS2.ELF sa memory card o USB drive ug sugdi kini gikan didto, o gamita ang PS2BBL Extended, nga makabasa sa MMCE ug sa HDD.
@@ -1212,20 +1212,6 @@ strings:
   'RIPPS2: Setting up BIBLE (restarting the I/O processor)': 'RIPPS2: Gi-set up ang BIBLE (gi-restart ang I/O processor)'
   'RIPPS2: Setting up BIBLE (writing it to the memory card)': 'RIPPS2: Gi-set up ang BIBLE (gisulat sa memory card)'
   SET UP BIBLE: I-SET UP ANG BIBLE
-  ? 'SLOT 1: %s
-  
-    SLOT 2: %s
-  
-    %s
-  
-    RIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
-  : 'SLOT 1: %s
-  
-    SLOT 2: %s
-  
-    %s
-  
-    RIPPS2: Gi-set up ang BIBLE. PS2BBL ni El Isra, gi-set up sa RIPPS2 sa naandang 8 MB nga PS2 memory card o sa internal HDD: 0 ms nga pagsugod sa pag-on (dili tugotan sa PS2BBL Extended ang 0), una ang RIPPS2 gikan sa kung asa kini (dili gyud kini kopyahon), ug ang button nga gikuptan sa pag-on modala gihapon sa browser (TRIANGLE), sa disc (START) ug sa naa kaniadto (CIRCLE). I-set up, ayohon, o ibalik ang iyang gipulihan?'
   The memory card in slot %d has %d KB free, and BIBLE needs %d KB there. Free some space, then try again.: Ang memory card sa slot %d adunay %d KB nga bakante, ug kinahanglan sa BIBLE ang %d KB didto. Pagbakante og gamay nga luna, unya sulayi pag-usab.
   ? The memory card in slot %d refused PS2BBL, so RIPPS2 put the card back as it was. Check its free space, then try again. (DIAG.TXT beside RIPPS2 has what the card said.)
   : Gisalikway sa memory card sa slot %d ang PS2BBL, mao nga gibilin sa RIPPS2 ang card sama kaniadto. Susiha ang bakante niini, unya sulayi pag-usab. (Ang DIAG.TXT tupad sa RIPPS2 adunay tubag sa card.)
@@ -1394,7 +1380,6 @@ strings:
   'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 'Walay CHEATS sa in-game menu: ang mga cheat nga gi-tsek sa wala pa ang sugod modagan sa tibuok dula, sama kaniadto.'
   BOOT SOUND WITH THE PILLARS: BOOT SOUND UBAN SA MGA HALIGI
   'Boot Sound: On (fast)': 'Boot sound: On (paspas)'
-  'Boot sound On (fast): %s, as the pillars rise': 'Boot sound On (paspas): %s, samtang mobangon ang mga haligi'
   'Boot sound On: from the AUDIO folder, once its drive is up': 'Boot sound On: gikan sa folder nga AUDIO, kung andam na ang drive niini'
   Boot sound off (Audio settings > Boot Sound): Boot sound off (Audio settings > Boot Sound)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Mokopya sa boot.adp tupad sa RIPPS2 sa memory card nga gisugdan niini, diin kini basahon sa boot sa dili pa andam ang bisan unsang drive.
@@ -1442,8 +1427,8 @@ labels:
   RESETCOLOR: I-reset ang mga kolor
   ALTSTARTUP: Custom nga ELF
   BACKSPACE: Backspace
-  VMC_SLOT1: VMC Slot 1
-  VMC_SLOT2: VMC Slot 2
+  VMC_SLOT1: "VMC Slot 0"
+  VMC_SLOT2: "VMC Slot 1"
   DMA_MODE: DMA Mode
   VSYNC: V-Sync
   XOFFSET: H-POS
@@ -1671,7 +1656,7 @@ labels:
   GAME_TYPE_LABELS: Ipakita ang mga label nga [PS1]/[PS2]
   NEUTRINO_CHEATS_WRITE_FAILED: Dili ma-save ang cheat list sa Neutrino folder, mao nga dili kini magamit sa Neutrino. Ilansad nga walay cheat?
   AUTO_CREATE_VMC: Paghimo og VMC sa unang paglansad
-  HINT_AUTO_CREATE_VMC: Ang pag-launch og PS2 nga dula nga walay VMC sa slot 1 mohimo og 8 MB nga card sa device sa dula, nga nganlan sumala sa sugyot sa VMC screen (gi-ambit sa matag disc sa dula), ug itudlo kini. Sa Neutrino, dili sa APA HDD (molihok ang exFAT HDD).
+  HINT_AUTO_CREATE_VMC: "Ang pag-launch og PS2 nga dula nga walay VMC sa slot 0 mohimo og 8 MB nga card sa device sa dula, nga nganlan sumala sa sugyot sa VMC screen (gi-ambit sa matag disc sa dula), ug itudlo kini. Sa Neutrino, dili sa APA HDD (molihok ang exFAT HDD)."
   AUTO_VMC_CREATING: Gihimo ang VMC niining dula...
   AUTO_VMC_FAILED: Dili mahimo ang VMC niining dula. Magsugod ang dula nga wala niini.
   RIPPS2_BIOS_MUSIC: BIOS Music

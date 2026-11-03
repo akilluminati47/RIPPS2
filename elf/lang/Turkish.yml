@@ -3,6 +3,17 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Turkish
 strings:
+  "The console would not bind BIBLE to the memory card in slot %d (its MagicGate step failed). Nothing on the card was changed. A card that is not a genuine or MagicGate-compatible one cannot hold a system update.": "Konsol BIBLE'ı %d. yuvadaki hafıza kartına bağlamadı (MagicGate adımı başarısız). Kartta hiçbir şey değiştirilmedi. Orijinal veya MagicGate uyumlu olmayan bir kart sistem güncellemesi tutamaz."
+  "An SD2PSX or MMCE card can stop answering after a refused bind: if the memory card or the MMCE drive is missing now, turn the console off and on.": "Bir SD2PSX ya da MMCE kartı reddedilen bir bağlamadan sonra yanıt vermeyi bırakabilir: şimdi hafıza kartı ya da MMCE sürücüsü görünmüyorsa konsolu kapatıp aç."
+  "RIPPS2: Setting up BIBLE\nThe card in slot %d is an SD2PSX or MMCE card. The console cannot bind BIBLE to one (an SD2PSX refuses it, then stops answering until the console is turned off and on), so nothing was tried. Its BOOT card has its own PS2BBL: START turns BOOT LOCK on, so it starts RIPPS2 at power on. BIBLE goes on a genuine PS2 memory card.": "RIPPS2: BIBLE kuruluyor\n%d. yuvadaki kart bir SD2PSX ya da MMCE kartıdır. Konsol BIBLE'ı böyle bir karta bağlayamaz (SD2PSX reddeder, sonra konsol kapatılıp açılana kadar yanıt vermez), bu yüzden hiçbir şey denenmedi. BOOT kartının kendi PS2BBL'i var: START, BOOT LOCK'u açar, böylece açılışta RIPPS2'yi başlatır. BIBLE orijinal bir PS2 hafıza kartına konur."
+  "For a standard 8 MB PS2 memory card (a genuine MagicGate card: an SD2PSX or MMCE card cannot be bound): the one in slot %d. At power on PS2BBL reads slot 1's config before slot 0's.\n": "Standart 8 MB'lık bir PS2 hafıza kartı için (orijinal bir MagicGate kartı: SD2PSX ya da MMCE kartı bağlanamaz): %d. yuvadaki. Açılışta PS2BBL, 1. yuvanın ayarlarını 0. yuvanınkinden önce okur.\n"
+  "RIP THIS CONSOLE'S AUDIO": "BU KONSOLUN SESİNİ ÇIKAR"
+  "sounds or music, from its BIOS": "sesler ya da müzik, BIOS'undan"
+  "Opens Audio settings on BIOS Sounds and BIOS Music: rip this console's own sounds or its menu music into AUDIO.": "Ses ayarlarını BIOS sesleri ve BIOS Müziği'nde açar: bu konsolun kendi seslerini ya da menü müziğini AUDIO'ya çıkar."
+  "Boot sound On (fast): %s on the memory card, as the pillars rise": "Açılış sesi Açık (hızlı): hafıza kartındaki %s, sütunlar yükselirken"
+  "Boot sound On: %s on the memory card, as the pillars rise": "Açılış sesi Açık: hafıza kartındaki %s, sütunlar yükselirken"
+  "Boot sound On: %s, once its drive is up": "Açılış sesi Açık: %s, sürücüsü hazır olunca"
+  "SLOT 0: %s\nSLOT 1: %s\n%s\nRIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?": "YUVA 0: %s\nYUVA 1: %s\n%s\nRIPPS2: BIBLE kuruluyor. El Isra'nın PS2BBL'ı, RIPPS2 tarafından standart 8 MB'lık bir PS2 hafıza kartına ya da dahili sabit diske kurulur: açılışta 0 ms'lik başlangıç (PS2BBL Extended 0'a izin vermez), önce bulunduğu yerden RIPPS2 (asla kopyalanmaz) ve açılışta basılı tutulan bir tuş yine tarayıcıya (TRIANGLE), bir diske (START) ve öncekine (CIRCLE) götürür. Kurulsun mu, onarılsın mı, yoksa yerini aldığı şey geri mi getirilsin?"
   "This game starts through Neutrino, and RIPPS2 found none: not at Settings' path, on the game's drive, on the memory cards or on any started drive. Put Neutrino by rickgaiser (github.com/rickgaiser/neutrino) in a neutrino folder on the game's drive or a memory card, or point Game Launching > Neutrino at it.": "Bu oyun Neutrino ile başlar ve RIPPS2 hiçbirini bulamadı: ne Ayarlar'daki yolda, ne oyunun sürücüsünde, ne hafıza kartlarında, ne de başlatılmış herhangi bir sürücüde. rickgaiser'ın Neutrino'sunu (github.com/rickgaiser/neutrino) oyunun sürücüsünde veya bir hafıza kartında neutrino klasörüne koyun ya da Oyun Başlatma > Neutrino'yu ona yöneltin."
   "Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets. Get Neutrino at github.com/rickgaiser/neutrino and put it in a neutrino folder on a drive or a memory card.": "Neutrino'nuzun nerede olduğu, video modu ve her Neutrino başlatmasının aldığı argümanlar. Neutrino'yu github.com/rickgaiser/neutrino adresinden alın ve bir sürücüde veya hafıza kartında neutrino klasörüne koyun."
   "This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer.": "Bu Neutrino 1.3'ten eski, o da APA HDD'den oyun başlatamaz. Oyun Başlatma > Neutrino'yu Neutrino 1.3 veya daha yenisine yöneltin."
@@ -311,8 +322,6 @@ strings:
   Reading the memory cards: Hafıza kartları okunuyor
   The HDD partition BIBLE uses went away. Nothing was changed.: BIBLE'ın kullandığı HDD bölümü kayboldu. Hiçbir şey değiştirilmedi.
   The HDD's old boot program is back. BIBLE no longer starts from the HDD.: HDD'nin eski önyükleme programı geri geldi. BIBLE artık HDD'den başlamıyor.
-  ? The console would not bind BIBLE to memory card %d (its MagicGate step failed). Nothing on the card was changed. A card that is not a genuine or MagicGate-compatible one cannot hold a system update.
-  : Konsol BIBLE'ı hafıza kartı %d üzerine bağlamadı (MagicGate adımı başarısız). Kartta hiçbir şey değiştirilmedi. Orijinal veya MagicGate uyumlu olmayan bir kart sistem güncellemesi tutamaz.
   'The one that was there is kept in RIPPS2/MBR-BACKUP.KELF on the HDD: BOOT LOADER > MANAGE > RESTORE puts it back.': 'Orada olan program HDD''de RIPPS2/MBR-BACKUP.KELF içinde saklanıyor: ÖNYÜKLEYİCİ > YÖNET > GERİ YÜKLE onu geri koyar.'
   The security module would not start on this console. Nothing on the memory card was changed.: Güvenlik modülü bu konsolda başlamadı. Hafıza kartında hiçbir şey değiştirilmedi.
   ? 'There is no formatted PS2 memory card in either slot, and no internal HDD. BIBLE lives on a memory card or the HDD: insert a card, then try again.'
@@ -784,11 +793,9 @@ strings:
   POPSTARTER and Ember: POPSTARTER ve Ember
   PS1 SETTINGS: PS1 AYARLARI
   PS2BBL for RIPPS2: RIPPS2 için PS2BBL
-  RIP THIS CONSOLE'S SOUNDS: BU KONSOLUN SESLERİNİ ÇIKAR
   STATUS: DURUM
   a drive of unknown kind: türü bilinmeyen bir sürücü
   boot loader, card by card: önyükleyici, kart kart
-  from its BIOS, into AUDIO: BIOS'undan, AUDIO içine
   internal HDD (exFAT): dahili HDD (exFAT)
   its own IP and SMB files: kendi IP ve SMB dosyaları
   path, video, arguments: yol, video, argümanlar
@@ -1138,7 +1145,6 @@ strings:
   'Game lists: each shows at once from its cache and stands until SELECT': 'Oyun listeleri: her biri hemen önbelleğinden gelir ve SELECT''e kadar kalır'
   'Game lists: each shows at once from its cache, then is read again': 'Oyun listeleri: her biri hemen önbelleğinden gelir, sonra yeniden okunur'
   LOADING: YÜKLEME
-  Makes RIPPS2's sounds from this console's own BIOS and writes them to the AUDIO folder.: RIPPS2'nin seslerini bu konsolun kendi BIOS'undan oluşturur ve AUDIO klasörüne yazar.
   'No music yet: Audio settings > BIOS Music rips this console''s menu music.': 'Henüz müzik yok: Ses ayarları > BIOS Müziği bu konsolun menü müziğini çıkarır.'
   SAVE DIAGNOSTICS: TANILAMAYI KAYDET
   Searches the drives for POPSTARTER, the POPS files, Ember, Ember's BIOS and Neutrino, and remembers where each one is.: Sürücülerde POPSTARTER'ı, POPS dosyalarını, Ember'ı, Ember'ın BIOS'unu ve Neutrino'yu arar ve her birinin nerede olduğunu hatırlar.
@@ -1175,12 +1181,6 @@ strings:
   : 'Bir SD2PSX ya da MMCE kartı reddedilen bir yazmadan sonra kendini koruyabilir: şimdi hafıza kartı ya da MMCE sürücüsü görünmüyorsa konsolu kapatıp aç.'
   BOOT LOCK ON: BOOT LOCK AÇIK
   'Done: the memory card in slot %d starts what it started before BIBLE. BIBLE is kept in mc%d:/%s.': 'Tamam: %d. yuvadaki hafıza kartı, BIBLE''den önce başlattığını başlatıyor. BIBLE, mc%d:/%s içinde saklanıyor.'
-  ? 'For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 2''s config before slot 1''s.
-  
-    '
-  : 'Standart 8 MB''lık bir PS2 hafıza kartı için (MagicGate kartı ya da SD2PSX veya MMCE BOOT kartı): %d. yuvadaki. Açılışta PS2BBL, 2. yuvanın ayarlarını 1. yuvanınkinden önce okur.
-  
-    '
   MEMORY CARD IN SLOT %d  (%s): '%d. YUVADAKİ HAFIZA KARTI  (%s)'
   ? PS2BBL cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
   : PS2BBL, RIPPS2'yi şu an bulunduğu yerden başlatamaz (hafıza kartlarına, USB sürücülerine ve MX4SIO'ya ulaşır) ve RIPPS2 kendini kopyalamaz. RIPPS2.ELF'i bir hafıza kartına ya da USB sürücüsüne koyup oradan başlat, ya da MMCE'yi ve sabit diski okuyan PS2BBL Extended'ı kullan.
@@ -1216,20 +1216,6 @@ strings:
   'RIPPS2: Setting up BIBLE (restarting the I/O processor)': 'RIPPS2: BIBLE kuruluyor (G/Ç işlemcisi yeniden başlıyor)'
   'RIPPS2: Setting up BIBLE (writing it to the memory card)': 'RIPPS2: BIBLE kuruluyor (hafıza kartına yazılıyor)'
   SET UP BIBLE: BIBLE'Yİ KUR
-  ? 'SLOT 1: %s
-  
-    SLOT 2: %s
-  
-    %s
-  
-    RIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
-  : 'YUVA 1: %s
-  
-    YUVA 2: %s
-  
-    %s
-  
-    RIPPS2: BIBLE kuruluyor. El Isra''nın PS2BBL''ı, RIPPS2 tarafından standart 8 MB''lık bir PS2 hafıza kartına ya da dahili sabit diske kurulur: açılışta 0 ms''lik başlangıç (PS2BBL Extended 0''a izin vermez), önce bulunduğu yerden RIPPS2 (asla kopyalanmaz) ve açılışta basılı tutulan bir tuş yine tarayıcıya (TRIANGLE), bir diske (START) ve öncekine (CIRCLE) götürür. Kurulsun mu, onarılsın mı, yoksa yerini aldığı şey geri mi getirilsin?'
   The memory card in slot %d has %d KB free, and BIBLE needs %d KB there. Free some space, then try again.: '%d. yuvadaki hafıza kartında %d KB boş ve BIBLE''nin orada %d KB''ye ihtiyacı var. Biraz yer aç, sonra yeniden dene.'
   ? The memory card in slot %d refused PS2BBL, so RIPPS2 put the card back as it was. Check its free space, then try again. (DIAG.TXT beside RIPPS2 has what the card said.)
   : '%d. yuvadaki hafıza kartı PS2BBL''yi reddetti, bu yüzden RIPPS2 kartı olduğu gibi bıraktı. Boş alanını kontrol et, sonra yeniden dene. (RIPPS2''nin yanındaki DIAG.TXT kartın yanıtını içerir.)'
@@ -1398,7 +1384,6 @@ strings:
   'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 'Oyun içi menüde CHEATS yok: başlatmadan önce işaretlenen hileler, eskisi gibi tüm oyun boyunca çalışır.'
   BOOT SOUND WITH THE PILLARS: SÜTUNLARLA AÇILIŞ SESİ
   'Boot Sound: On (fast)': 'Açılış sesi: Açık (hızlı)'
-  'Boot sound On (fast): %s, as the pillars rise': 'Açılış sesi Açık (hızlı): %s, sütunlar yükselirken'
   'Boot sound On: from the AUDIO folder, once its drive is up': 'Açılış sesi Açık: AUDIO klasöründen, sürücüsü hazır olunca'
   Boot sound off (Audio settings > Boot Sound): Açılış sesi kapalı (Ses ayarları > Açılış sesi)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: boot.adp'yi RIPPS2'nin başladığı hafıza kartında yanına kopyalar; açılış onu hiçbir sürücü hazır olmadan okur.
@@ -1651,7 +1636,7 @@ labels:
   GAME_TYPE_LABELS: '[PS1]/[PS2] Etiketlerini Göster'
   NEUTRINO_CHEATS_WRITE_FAILED: Hile listesi Neutrino klasörüne kaydedilemedi, bu yüzden Neutrino onu kullanamaz. Hilesiz başlatılsın mı?
   AUTO_CREATE_VMC: İlk Başlatmada VMC Oluştur
-  HINT_AUTO_CREATE_VMC: Yuva 1'de VMC olmadan bir PS2 oyunu başlatmak, oyunun aygıtında VMC ekranının önerdiği adla (oyunun tüm diskleri paylaşır) 8 MB'lık bir kart oluşturur ve atar. Neutrino altında APA HDD'de değil (exFAT HDD çalışır).
+  HINT_AUTO_CREATE_VMC: "Yuva 0'de VMC olmadan bir PS2 oyunu başlatmak, oyunun aygıtında VMC ekranının önerdiği adla (oyunun tüm diskleri paylaşır) 8 MB'lık bir kart oluşturur ve atar. Neutrino altında APA HDD'de değil (exFAT HDD çalışır)."
   AUTO_VMC_CREATING: Bu oyunun VMC'si oluşturuluyor...
   AUTO_VMC_FAILED: Bu oyunun VMC'si oluşturulamadı. Oyun VMC olmadan başlar.
   RIPPS2_BIOS_MUSIC: BIOS Müziği

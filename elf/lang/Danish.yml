@@ -3,6 +3,17 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Danish
 strings:
+  "The console would not bind BIBLE to the memory card in slot %d (its MagicGate step failed). Nothing on the card was changed. A card that is not a genuine or MagicGate-compatible one cannot hold a system update.": "Konsollen ville ikke binde BIBLE til hukommelseskortet i plads %d (MagicGate-trinnet mislykkedes). Intet på kortet blev ændret. Et kort, der ikke er ægte eller MagicGate-kompatibelt, kan ikke rumme en systemopdatering."
+  "An SD2PSX or MMCE card can stop answering after a refused bind: if the memory card or the MMCE drive is missing now, turn the console off and on.": "Et SD2PSX- eller MMCE-kort kan holde op med at svare efter en afvist binding: mangler hukommelseskortet eller MMCE-drevet nu, så sluk og tænd konsollen."
+  "RIPPS2: Setting up BIBLE\nThe card in slot %d is an SD2PSX or MMCE card. The console cannot bind BIBLE to one (an SD2PSX refuses it, then stops answering until the console is turned off and on), so nothing was tried. Its BOOT card has its own PS2BBL: START turns BOOT LOCK on, so it starts RIPPS2 at power on. BIBLE goes on a genuine PS2 memory card.": "RIPPS2: sætter BIBLE op\nKortet i plads %d er et SD2PSX- eller MMCE-kort. Konsollen kan ikke binde BIBLE til et sådant (et SD2PSX afviser det og svarer så ikke, før konsollen slukkes og tændes), så intet blev forsøgt. Dets BOOT-kort har sin egen PS2BBL: START slår BOOT LOCK til, så den starter RIPPS2 ved opstart. BIBLE hører til på et ægte PS2-hukommelseskort."
+  "For a standard 8 MB PS2 memory card (a genuine MagicGate card: an SD2PSX or MMCE card cannot be bound): the one in slot %d. At power on PS2BBL reads slot 1's config before slot 0's.\n": "Til et almindeligt PS2-hukommelseskort på 8 MB (et ægte MagicGate-kort: et SD2PSX- eller MMCE-kort kan ikke bindes): det i plads %d. Ved start læser PS2BBL konfigurationen i plads 1 før den i plads 0.\n"
+  "RIP THIS CONSOLE'S AUDIO": "RIP DENNE KONSOLS LYD"
+  "sounds or music, from its BIOS": "lyde eller musik, fra dens BIOS"
+  "Opens Audio settings on BIOS Sounds and BIOS Music: rip this console's own sounds or its menu music into AUDIO.": "Åbner Lydindstillinger ved BIOS-lyde og BIOS-musik: rip denne konsols egne lyde eller dens menumusik til AUDIO."
+  "Boot sound On (fast): %s on the memory card, as the pillars rise": "Opstartslyd Til (hurtig): %s på hukommelseskortet, når søjlerne rejser sig"
+  "Boot sound On: %s on the memory card, as the pillars rise": "Opstartslyd Til: %s på hukommelseskortet, når søjlerne rejser sig"
+  "Boot sound On: %s, once its drive is up": "Opstartslyd Til: %s, når dens drev er klar"
+  "SLOT 0: %s\nSLOT 1: %s\n%s\nRIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?": "PLADS 0: %s\nPLADS 1: %s\n%s\nRIPPS2: sætter BIBLE op. PS2BBL af El Isra, sat op af RIPPS2 på et almindeligt PS2-hukommelseskort på 8 MB eller den interne harddisk: en start på 0 ms ved tænding (PS2BBL Extended tillader ikke 0), RIPPS2 først, hvor det ligger (det kopieres aldrig), og en knap holdt ved tænding når stadig browseren (TRIANGLE), en disk (START) og det, der var før (CIRCLE). Sæt det op, reparer det eller gendan det, det erstattede?"
   "This game starts through Neutrino, and RIPPS2 found none: not at Settings' path, on the game's drive, on the memory cards or on any started drive. Put Neutrino by rickgaiser (github.com/rickgaiser/neutrino) in a neutrino folder on the game's drive or a memory card, or point Game Launching > Neutrino at it.": "Dette spil starter gennem Neutrino, og RIPPS2 fandt ingen: hverken på stien i Indstillinger, på spillets drev, på hukommelseskortene eller på et startet drev. Læg rickgaisers Neutrino (github.com/rickgaiser/neutrino) i en neutrino-mappe på spillets drev eller et hukommelseskort, eller peg Spilstart > Neutrino på den."
   "Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets. Get Neutrino at github.com/rickgaiser/neutrino and put it in a neutrino folder on a drive or a memory card.": "Hvor din Neutrino er, dens videotilstand og de argumenter, hver Neutrino-start får. Hent Neutrino på github.com/rickgaiser/neutrino, og læg den i en neutrino-mappe på et drev eller et hukommelseskort."
   "This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer.": "Denne Neutrino er ældre end 1.3, som ikke kan starte spil fra APA-HDD'en. Peg Spilstart > Neutrino på Neutrino 1.3 eller nyere."
@@ -311,8 +322,6 @@ strings:
   Reading the memory cards: Læser memorykortene
   The HDD partition BIBLE uses went away. Nothing was changed.: Den HDD-partition, BIBLE bruger, forsvandt. Intet blev ændret.
   The HDD's old boot program is back. BIBLE no longer starts from the HDD.: HDD'ens gamle startprogram er tilbage. BIBLE starter ikke længere fra HDD'en.
-  ? The console would not bind BIBLE to memory card %d (its MagicGate step failed). Nothing on the card was changed. A card that is not a genuine or MagicGate-compatible one cannot hold a system update.
-  : Konsollen ville ikke binde BIBLE til memorykort %d (MagicGate-trinnet mislykkedes). Intet på kortet blev ændret. Et kort, der ikke er ægte eller MagicGate-kompatibelt, kan ikke rumme en systemopdatering.
   'The one that was there is kept in RIPPS2/MBR-BACKUP.KELF on the HDD: BOOT LOADER > MANAGE > RESTORE puts it back.': 'Det, der lå der, er gemt i RIPPS2/MBR-BACKUP.KELF på HDD''en: OPSTARTSINDLÆSER > ADMINISTRER > GENDAN sætter det tilbage.'
   The security module would not start on this console. Nothing on the memory card was changed.: Sikkerhedsmodulet ville ikke starte på denne konsol. Intet på memorykortet blev ændret.
   ? 'There is no formatted PS2 memory card in either slot, and no internal HDD. BIBLE lives on a memory card or the HDD: insert a card, then try again.'
@@ -784,11 +793,9 @@ strings:
   POPSTARTER and Ember: POPSTARTER og Ember
   PS1 SETTINGS: PS1-INDSTILLINGER
   PS2BBL for RIPPS2: PS2BBL til RIPPS2
-  RIP THIS CONSOLE'S SOUNDS: RIP DENNE KONSOLS LYDE
   STATUS: STATUS
   a drive of unknown kind: et drev af ukendt slags
   boot loader, card by card: opstartsindlæser, kort for kort
-  from its BIOS, into AUDIO: fra dens BIOS, til AUDIO
   internal HDD (exFAT): intern HDD (exFAT)
   its own IP and SMB files: egne IP- og SMB-filer
   path, video, arguments: sti, video, argumenter
@@ -1137,7 +1144,6 @@ strings:
   'Game lists: each shows at once from its cache and stands until SELECT': 'Spillister: hver vises straks fra sin cache og bliver stående til SELECT'
   'Game lists: each shows at once from its cache, then is read again': 'Spillister: hver vises straks fra sin cache og læses så igen'
   LOADING: INDLÆSNING
-  Makes RIPPS2's sounds from this console's own BIOS and writes them to the AUDIO folder.: Laver RIPPS2's lyde ud fra denne konsols egen BIOS og skriver dem til mappen AUDIO.
   'No music yet: Audio settings > BIOS Music rips this console''s menu music.': 'Ingen musik endnu: Lydindstillinger > BIOS-musik ripper denne konsols menumusik.'
   SAVE DIAGNOSTICS: GEM DIAGNOSTIK
   Searches the drives for POPSTARTER, the POPS files, Ember, Ember's BIOS and Neutrino, and remembers where each one is.: Søger drevene igennem efter POPSTARTER, POPS-filerne, Ember, Embers BIOS og Neutrino og husker, hvor hver enkelt er.
@@ -1174,12 +1180,6 @@ strings:
   : 'Et SD2PSX- eller MMCE-kort kan beskytte sig selv efter en afvist skrivning: mangler hukommelseskortet eller MMCE-drevet nu, så sluk og tænd konsollen.'
   BOOT LOCK ON: BOOT LOCK TIL
   'Done: the memory card in slot %d starts what it started before BIBLE. BIBLE is kept in mc%d:/%s.': 'Færdig: hukommelseskortet i plads %d starter det, det startede før BIBLE. BIBLE gemmes i mc%d:/%s.'
-  ? 'For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 2''s config before slot 1''s.
-  
-    '
-  : 'Til et almindeligt PS2-hukommelseskort på 8 MB (et MagicGate-kort, eller et SD2PSX- eller MMCE-BOOT-kort): det i plads %d. Ved start læser PS2BBL konfigurationen i plads 2 før den i plads 1.
-  
-    '
   MEMORY CARD IN SLOT %d  (%s): HUKOMMELSESKORT I PLADS %d  (%s)
   ? PS2BBL cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
   : PS2BBL kan ikke starte RIPPS2, hvor det ligger nu (det når hukommelseskort, USB-drev og MX4SIO), og RIPPS2 kopierer ikke sig selv. Læg RIPPS2.ELF på et hukommelseskort eller et USB-drev, og start det derfra, eller brug PS2BBL Extended, som læser MMCE og harddisken.
@@ -1215,20 +1215,6 @@ strings:
   'RIPPS2: Setting up BIBLE (restarting the I/O processor)': 'RIPPS2: sætter BIBLE op (I/O-processoren genstarter)'
   'RIPPS2: Setting up BIBLE (writing it to the memory card)': 'RIPPS2: sætter BIBLE op (skriver det til hukommelseskortet)'
   SET UP BIBLE: SÆT BIBLE OP
-  ? 'SLOT 1: %s
-  
-    SLOT 2: %s
-  
-    %s
-  
-    RIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
-  : 'PLADS 1: %s
-  
-    PLADS 2: %s
-  
-    %s
-  
-    RIPPS2: sætter BIBLE op. PS2BBL af El Isra, sat op af RIPPS2 på et almindeligt PS2-hukommelseskort på 8 MB eller den interne harddisk: en start på 0 ms ved tænding (PS2BBL Extended tillader ikke 0), RIPPS2 først, hvor det ligger (det kopieres aldrig), og en knap holdt ved tænding når stadig browseren (TRIANGLE), en disk (START) og det, der var før (CIRCLE). Sæt det op, reparer det eller gendan det, det erstattede?'
   The memory card in slot %d has %d KB free, and BIBLE needs %d KB there. Free some space, then try again.: Hukommelseskortet i plads %d har %d KB ledigt, og BIBLE skal bruge %d KB der. Frigør lidt plads, og prøv igen.
   ? The memory card in slot %d refused PS2BBL, so RIPPS2 put the card back as it was. Check its free space, then try again. (DIAG.TXT beside RIPPS2 has what the card said.)
   : Hukommelseskortet i plads %d afviste PS2BBL, så RIPPS2 lod kortet være, som det var. Tjek dets ledige plads, og prøv igen. (DIAG.TXT ved siden af RIPPS2 har kortets svar.)
@@ -1397,7 +1383,6 @@ strings:
   'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 'Ingen CHEATS i spilmenuen: de snyd, der var sat flueben ved før start, kører hele spillet, som før.'
   BOOT SOUND WITH THE PILLARS: OPSTARTSLYD MED SØJLERNE
   'Boot Sound: On (fast)': 'Opstartslyd: Til (hurtig)'
-  'Boot sound On (fast): %s, as the pillars rise': 'Opstartslyd Til (hurtig): %s, når søjlerne rejser sig'
   'Boot sound On: from the AUDIO folder, once its drive is up': 'Opstartslyd Til: fra mappen AUDIO, når dens drev er klar'
   Boot sound off (Audio settings > Boot Sound): Opstartslyd fra (Lydindstillinger > Opstartslyd)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Kopierer boot.adp ved siden af RIPPS2 på hukommelseskortet, det starter fra, hvor opstarten læser den, før noget drev er klar.
@@ -1661,7 +1646,7 @@ labels:
   GAME_TYPE_LABELS: Vis etiketterne [PS1]/[PS2]
   NEUTRINO_CHEATS_WRITE_FAILED: Snydelisten kunne ikke gemmes i Neutrino-mappen, så Neutrino kan ikke bruge den. Start uden snyd?
   AUTO_CREATE_VMC: Opret VMC ved første start
-  HINT_AUTO_CREATE_VMC: At starte et PS2-spil uden VMC i plads 1 opretter et kort på 8 MB på spillets enhed, navngivet som VMC-skærmen foreslår (delt af alle spillets diske), og tildeler det. Under Neutrino ikke på APA-HDD'en (en exFAT-HDD virker).
+  HINT_AUTO_CREATE_VMC: "At starte et PS2-spil uden VMC i plads 0 opretter et kort på 8 MB på spillets enhed, navngivet som VMC-skærmen foreslår (delt af alle spillets diske), og tildeler det. Under Neutrino ikke på APA-HDD'en (en exFAT-HDD virker)."
   AUTO_VMC_CREATING: Opretter dette spils VMC...
   AUTO_VMC_FAILED: Kunne ikke oprette dette spils VMC. Spillet starter uden.
   RIPPS2_BIOS_MUSIC: BIOS-musik

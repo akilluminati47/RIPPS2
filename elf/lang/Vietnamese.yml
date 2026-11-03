@@ -3,6 +3,17 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Vietnamese
 strings:
+  "The console would not bind BIBLE to the memory card in slot %d (its MagicGate step failed). Nothing on the card was changed. A card that is not a genuine or MagicGate-compatible one cannot hold a system update.": "Máy không chịu gắn BIBLE vào thẻ nhớ ở khe %d (bước MagicGate thất bại). Không thay đổi gì trên thẻ. Thẻ không chính hãng hoặc không tương thích MagicGate không chứa được bản cập nhật hệ thống."
+  "An SD2PSX or MMCE card can stop answering after a refused bind: if the memory card or the MMCE drive is missing now, turn the console off and on.": "Thẻ SD2PSX hoặc MMCE có thể ngừng phản hồi sau một lần gắn bị từ chối: nếu giờ thẻ nhớ hoặc ổ MMCE biến mất, hãy tắt rồi bật lại máy."
+  "RIPPS2: Setting up BIBLE\nThe card in slot %d is an SD2PSX or MMCE card. The console cannot bind BIBLE to one (an SD2PSX refuses it, then stops answering until the console is turned off and on), so nothing was tried. Its BOOT card has its own PS2BBL: START turns BOOT LOCK on, so it starts RIPPS2 at power on. BIBLE goes on a genuine PS2 memory card.": "RIPPS2: đang cài BIBLE\nThẻ ở khe %d là thẻ SD2PSX hoặc MMCE. Máy không thể gắn BIBLE vào loại thẻ này (SD2PSX từ chối, rồi không phản hồi cho đến khi tắt và bật lại máy), nên không thử gì cả. Thẻ BOOT của nó có PS2BBL riêng: START bật BOOT LOCK để nó khởi động RIPPS2 khi bật máy. BIBLE được đặt trên thẻ nhớ PS2 chính hãng."
+  "For a standard 8 MB PS2 memory card (a genuine MagicGate card: an SD2PSX or MMCE card cannot be bound): the one in slot %d. At power on PS2BBL reads slot 1's config before slot 0's.\n": "Dành cho thẻ nhớ PS2 tiêu chuẩn 8 MB (thẻ MagicGate chính hãng: không thể gắn vào thẻ SD2PSX hay MMCE): thẻ ở khe %d. Khi bật máy, PS2BBL đọc cấu hình khe 1 trước khe 0.\n"
+  "RIP THIS CONSOLE'S AUDIO": "TRÍCH ÂM THANH VÀ NHẠC CỦA MÁY NÀY"
+  "sounds or music, from its BIOS": "âm thanh hoặc nhạc, từ BIOS của máy"
+  "Opens Audio settings on BIOS Sounds and BIOS Music: rip this console's own sounds or its menu music into AUDIO.": "Mở Cài đặt âm thanh ở Âm thanh BIOS và Nhạc BIOS: trích âm thanh của máy này hoặc nhạc menu của nó vào AUDIO."
+  "Boot sound On (fast): %s on the memory card, as the pillars rise": "Âm khởi động Bật (nhanh): %s trên thẻ nhớ, khi các cột dâng lên"
+  "Boot sound On: %s on the memory card, as the pillars rise": "Âm khởi động Bật: %s trên thẻ nhớ, khi các cột dâng lên"
+  "Boot sound On: %s, once its drive is up": "Âm khởi động Bật: %s, khi ổ của nó sẵn sàng"
+  "SLOT 0: %s\nSLOT 1: %s\n%s\nRIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?": "KHE 0: %s\nKHE 1: %s\n%s\nRIPPS2: đang cài BIBLE. PS2BBL của El Isra, được RIPPS2 cài trên thẻ nhớ PS2 tiêu chuẩn 8 MB hoặc ổ cứng trong: khởi động 0 ms khi bật máy (PS2BBL Extended không cho phép 0), RIPPS2 trước tiên từ chỗ của nó (không bao giờ bị sao chép), và giữ một nút khi bật máy vẫn đưa tới trình duyệt (TRIANGLE), một đĩa (START) và thứ có trước đó (CIRCLE). Cài, sửa, hay khôi phục thứ nó đã thay?"
   "This game starts through Neutrino, and RIPPS2 found none: not at Settings' path, on the game's drive, on the memory cards or on any started drive. Put Neutrino by rickgaiser (github.com/rickgaiser/neutrino) in a neutrino folder on the game's drive or a memory card, or point Game Launching > Neutrino at it.": "Trò chơi này chạy qua Neutrino, nhưng RIPPS2 không tìm thấy bản nào: không ở đường dẫn trong Cài đặt, trên ổ đĩa của trò chơi, trên thẻ nhớ hay trên ổ đĩa nào đã khởi động. Hãy đặt Neutrino của rickgaiser (github.com/rickgaiser/neutrino) vào thư mục neutrino trên ổ đĩa của trò chơi hoặc thẻ nhớ, hoặc trỏ Chạy trò chơi > Neutrino tới nó."
   "Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets. Get Neutrino at github.com/rickgaiser/neutrino and put it in a neutrino folder on a drive or a memory card.": "Neutrino của bạn ở đâu, chế độ video của nó và các tham số mà mỗi lần chạy Neutrino nhận được. Tải Neutrino tại github.com/rickgaiser/neutrino và đặt nó vào thư mục neutrino trên ổ đĩa hoặc thẻ nhớ."
   "This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer.": "Neutrino này cũ hơn 1.3, bản không thể chạy trò chơi từ HDD APA. Hãy trỏ Chạy trò chơi > Neutrino tới Neutrino 1.3 hoặc mới hơn."
@@ -311,8 +322,6 @@ strings:
   Reading the memory cards: Đang đọc thẻ nhớ
   The HDD partition BIBLE uses went away. Nothing was changed.: Phân vùng HDD mà BIBLE dùng đã biến mất. Không thay đổi gì.
   The HDD's old boot program is back. BIBLE no longer starts from the HDD.: Chương trình khởi động cũ của HDD đã trở lại. BIBLE không còn chạy từ HDD nữa.
-  ? The console would not bind BIBLE to memory card %d (its MagicGate step failed). Nothing on the card was changed. A card that is not a genuine or MagicGate-compatible one cannot hold a system update.
-  : Máy không chịu gắn BIBLE vào thẻ nhớ %d (bước MagicGate thất bại). Không thay đổi gì trên thẻ. Thẻ không chính hãng hoặc không tương thích MagicGate không chứa được bản cập nhật hệ thống.
   'The one that was there is kept in RIPPS2/MBR-BACKUP.KELF on the HDD: BOOT LOADER > MANAGE > RESTORE puts it back.': 'Bản có trước đó được giữ trong RIPPS2/MBR-BACKUP.KELF trên HDD: TRÌNH KHỞI ĐỘNG > QUẢN LÝ > KHÔI PHỤC sẽ đặt nó lại.'
   The security module would not start on this console. Nothing on the memory card was changed.: Mô-đun bảo mật không khởi động được trên máy này. Không thay đổi gì trên thẻ nhớ.
   ? 'There is no formatted PS2 memory card in either slot, and no internal HDD. BIBLE lives on a memory card or the HDD: insert a card, then try again.'
@@ -784,11 +793,9 @@ strings:
   POPSTARTER and Ember: POPSTARTER và Ember
   PS1 SETTINGS: CÀI ĐẶT PS1
   PS2BBL for RIPPS2: PS2BBL cho RIPPS2
-  RIP THIS CONSOLE'S SOUNDS: TRÍCH ÂM THANH CỦA MÁY NÀY
   STATUS: TRẠNG THÁI
   a drive of unknown kind: một ổ không rõ loại
   boot loader, card by card: trình khởi động, từng thẻ một
-  from its BIOS, into AUDIO: từ BIOS của máy, vào AUDIO
   internal HDD (exFAT): HDD trong (exFAT)
   its own IP and SMB files: tệp IP và SMB riêng của nó
   path, video, arguments: đường dẫn, video, tham số
@@ -1138,7 +1145,6 @@ strings:
   'Game lists: each shows at once from its cache and stands until SELECT': 'Danh sách trò chơi: mỗi cái hiện ngay từ bộ nhớ đệm và giữ tới khi SELECT'
   'Game lists: each shows at once from its cache, then is read again': 'Danh sách trò chơi: mỗi cái hiện ngay từ bộ nhớ đệm, rồi được đọc lại'
   LOADING: ĐANG TẢI
-  Makes RIPPS2's sounds from this console's own BIOS and writes them to the AUDIO folder.: Tạo âm thanh của RIPPS2 từ chính BIOS của máy này và ghi vào thư mục AUDIO.
   'No music yet: Audio settings > BIOS Music rips this console''s menu music.': 'Chưa có nhạc: Cài đặt âm thanh > Nhạc BIOS trích nhạc menu của máy này.'
   SAVE DIAGNOSTICS: LƯU CHẨN ĐOÁN
   Searches the drives for POPSTARTER, the POPS files, Ember, Ember's BIOS and Neutrino, and remembers where each one is.: Tìm trên các ổ POPSTARTER, tệp POPS, Ember, BIOS của Ember và Neutrino, rồi ghi nhớ chỗ của từng thứ.
@@ -1175,12 +1181,6 @@ strings:
   : 'Thẻ SD2PSX hoặc MMCE có thể tự bảo vệ sau một lần ghi bị từ chối: nếu giờ thẻ nhớ hoặc ổ MMCE biến mất, hãy tắt rồi bật lại máy.'
   BOOT LOCK ON: BOOT LOCK BẬT
   'Done: the memory card in slot %d starts what it started before BIBLE. BIBLE is kept in mc%d:/%s.': 'Xong: thẻ nhớ ở khe %d chạy thứ nó chạy trước BIBLE. BIBLE được giữ trong mc%d:/%s.'
-  ? 'For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 2''s config before slot 1''s.
-  
-    '
-  : 'Dành cho thẻ nhớ PS2 tiêu chuẩn 8 MB (thẻ MagicGate, hoặc thẻ BOOT SD2PSX hay MMCE): thẻ ở khe %d. Khi bật máy, PS2BBL đọc cấu hình khe 2 trước khe 1.
-  
-    '
   MEMORY CARD IN SLOT %d  (%s): THẺ NHỚ Ở KHE %d  (%s)
   ? PS2BBL cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
   : PS2BBL không thể chạy RIPPS2 từ chỗ hiện tại (nó chỉ tới được thẻ nhớ, ổ USB và MX4SIO), và RIPPS2 không tự sao chép. Hãy đặt RIPPS2.ELF lên thẻ nhớ hoặc ổ USB rồi chạy từ đó, hoặc dùng PS2BBL Extended, vốn đọc được MMCE và ổ cứng.
@@ -1216,20 +1216,6 @@ strings:
   'RIPPS2: Setting up BIBLE (restarting the I/O processor)': 'RIPPS2: đang cài BIBLE (khởi động lại bộ xử lý I/O)'
   'RIPPS2: Setting up BIBLE (writing it to the memory card)': 'RIPPS2: đang cài BIBLE (ghi vào thẻ nhớ)'
   SET UP BIBLE: CÀI BIBLE
-  ? 'SLOT 1: %s
-  
-    SLOT 2: %s
-  
-    %s
-  
-    RIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
-  : 'KHE 1: %s
-  
-    KHE 2: %s
-  
-    %s
-  
-    RIPPS2: đang cài BIBLE. PS2BBL của El Isra, được RIPPS2 cài trên thẻ nhớ PS2 tiêu chuẩn 8 MB hoặc ổ cứng trong: khởi động 0 ms khi bật máy (PS2BBL Extended không cho phép 0), RIPPS2 trước tiên từ chỗ của nó (không bao giờ bị sao chép), và giữ một nút khi bật máy vẫn đưa tới trình duyệt (TRIANGLE), một đĩa (START) và thứ có trước đó (CIRCLE). Cài, sửa, hay khôi phục thứ nó đã thay?'
   The memory card in slot %d has %d KB free, and BIBLE needs %d KB there. Free some space, then try again.: Thẻ nhớ ở khe %d còn trống %d KB, và BIBLE cần %d KB ở đó. Hãy giải phóng chút chỗ rồi thử lại.
   ? The memory card in slot %d refused PS2BBL, so RIPPS2 put the card back as it was. Check its free space, then try again. (DIAG.TXT beside RIPPS2 has what the card said.)
   : Thẻ nhớ ở khe %d đã từ chối PS2BBL, nên RIPPS2 để thẻ như cũ. Kiểm tra chỗ trống rồi thử lại. (DIAG.TXT cạnh RIPPS2 có phản hồi của thẻ.)
@@ -1398,7 +1384,6 @@ strings:
   'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 'Không có CHEATS trong menu trong game: các mã được chọn trước khi chạy sẽ chạy suốt trò chơi, như trước.'
   BOOT SOUND WITH THE PILLARS: ÂM KHỞI ĐỘNG CÙNG CÁC CỘT
   'Boot Sound: On (fast)': 'Âm khởi động: Bật (nhanh)'
-  'Boot sound On (fast): %s, as the pillars rise': 'Âm khởi động Bật (nhanh): %s, khi các cột dâng lên'
   'Boot sound On: from the AUDIO folder, once its drive is up': 'Âm khởi động Bật: từ thư mục AUDIO, khi ổ của nó sẵn sàng'
   Boot sound off (Audio settings > Boot Sound): Âm khởi động tắt (Cài đặt âm thanh > Âm khởi động)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Chép boot.adp cạnh RIPPS2 trên thẻ nhớ mà nó khởi chạy, nơi lúc khởi động đọc nó trước khi bất kỳ ổ nào sẵn sàng.
@@ -1693,7 +1678,7 @@ labels:
   GAME_TYPE_LABELS: Hiện nhãn [PS1]/[PS2]
   NEUTRINO_CHEATS_WRITE_FAILED: Không lưu được danh sách mã gian lận vào thư mục Neutrino, nên Neutrino không dùng được. Chạy không có mã gian lận?
   AUTO_CREATE_VMC: Tạo VMC ở lần chạy đầu
-  HINT_AUTO_CREATE_VMC: Chạy một trò chơi PS2 không có VMC ở khe 1 sẽ tạo thẻ 8 MB trên thiết bị của trò chơi, đặt tên như màn hình VMC gợi ý (dùng chung cho mọi đĩa của trò chơi), và gán nó. Với Neutrino thì không trên HDD APA (HDD exFAT thì được).
+  HINT_AUTO_CREATE_VMC: "Chạy một trò chơi PS2 không có VMC ở khe 0 sẽ tạo thẻ 8 MB trên thiết bị của trò chơi, đặt tên như màn hình VMC gợi ý (dùng chung cho mọi đĩa của trò chơi), và gán nó. Với Neutrino thì không trên HDD APA (HDD exFAT thì được)."
   AUTO_VMC_CREATING: Đang tạo VMC của trò chơi này...
   AUTO_VMC_FAILED: Không tạo được VMC của trò chơi này. Trò chơi chạy mà không có VMC.
   RIPPS2_BIOS_MUSIC: Nhạc BIOS

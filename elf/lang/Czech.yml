@@ -3,6 +3,17 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Czech
 strings:
+  "The console would not bind BIBLE to the memory card in slot %d (its MagicGate step failed). Nothing on the card was changed. A card that is not a genuine or MagicGate-compatible one cannot hold a system update.": "Konzole nesvázala BIBLE s paměťovou kartou ve slotu %d (krok MagicGate selhal). Na kartě se nic nezměnilo. Karta, která není originální nebo kompatibilní s MagicGate, nemůže nést aktualizaci systému."
+  "An SD2PSX or MMCE card can stop answering after a refused bind: if the memory card or the MMCE drive is missing now, turn the console off and on.": "Karta SD2PSX nebo MMCE může po odmítnutém svázání přestat odpovídat: pokud teď chybí paměťová karta nebo jednotka MMCE, vypni a zapni konzoli."
+  "RIPPS2: Setting up BIBLE\nThe card in slot %d is an SD2PSX or MMCE card. The console cannot bind BIBLE to one (an SD2PSX refuses it, then stops answering until the console is turned off and on), so nothing was tried. Its BOOT card has its own PS2BBL: START turns BOOT LOCK on, so it starts RIPPS2 at power on. BIBLE goes on a genuine PS2 memory card.": "RIPPS2: nastavuje se BIBLE\nKarta ve slotu %d je karta SD2PSX nebo MMCE. Konzole s ní BIBLE svázat nemůže (SD2PSX to odmítne a pak neodpovídá, dokud se konzole nevypne a nezapne), takže se nic nezkoušelo. Její karta BOOT má vlastní PS2BBL: START zapne BOOT LOCK, takže při zapnutí spustí RIPPS2. BIBLE patří na originální paměťovou kartu PS2."
+  "For a standard 8 MB PS2 memory card (a genuine MagicGate card: an SD2PSX or MMCE card cannot be bound): the one in slot %d. At power on PS2BBL reads slot 1's config before slot 0's.\n": "Pro běžnou 8MB paměťovou kartu PS2 (originální kartu MagicGate: kartu SD2PSX či MMCE nelze svázat): tu ve slotu %d. Při zapnutí čte PS2BBL konfiguraci slotu 1 před konfigurací slotu 0.\n"
+  "RIP THIS CONSOLE'S AUDIO": "VYJMOUT ZVUK TÉTO KONZOLE"
+  "sounds or music, from its BIOS": "zvuky nebo hudba, z jejího BIOSu"
+  "Opens Audio settings on BIOS Sounds and BIOS Music: rip this console's own sounds or its menu music into AUDIO.": "Otevře Nastavení zvuku na Zvucích BIOSu a Hudbě BIOS: vyjmi vlastní zvuky této konzole nebo hudbu jejího menu do AUDIO."
+  "Boot sound On (fast): %s on the memory card, as the pillars rise": "Zvuk spuštění Zap. (rychle): %s na paměťové kartě, když sloupy rostou"
+  "Boot sound On: %s on the memory card, as the pillars rise": "Zvuk spuštění Zap.: %s na paměťové kartě, když sloupy rostou"
+  "Boot sound On: %s, once its drive is up": "Zvuk spuštění Zap.: %s, jakmile je jeho disk připraven"
+  "SLOT 0: %s\nSLOT 1: %s\n%s\nRIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?": "SLOT 0: %s\nSLOT 1: %s\n%s\nRIPPS2: nastavuje se BIBLE. PS2BBL od El Isry, nastavený z RIPPS2 na běžné 8MB paměťové kartě PS2 nebo interním pevném disku: start za 0 ms při zapnutí (PS2BBL Extended 0 nedovoluje), nejdřív RIPPS2 z místa, kde je (nikdy se nekopíruje), a tlačítko držené při zapnutí pořád vede do prohlížeče (TRIANGLE), na disk (START) a k tomu, co tu bylo předtím (CIRCLE). Nastavit, opravit, nebo obnovit to, co nahradil?"
   "This game starts through Neutrino, and RIPPS2 found none: not at Settings' path, on the game's drive, on the memory cards or on any started drive. Put Neutrino by rickgaiser (github.com/rickgaiser/neutrino) in a neutrino folder on the game's drive or a memory card, or point Game Launching > Neutrino at it.": "Tato hra se spouští přes Neutrino a RIPPS2 žádné nenašel: ani na cestě z Nastavení, ani na disku hry, ani na paměťových kartách, ani na žádném spuštěném disku. Dejte Neutrino od rickgaisera (github.com/rickgaiser/neutrino) do složky neutrino na disku hry nebo na paměťové kartě, nebo na něj nastavte Spouštění her > Neutrino."
   "Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets. Get Neutrino at github.com/rickgaiser/neutrino and put it in a neutrino folder on a drive or a memory card.": "Kde je vaše Neutrino, jeho video režim a argumenty, které dostane každé spuštění Neutrina. Neutrino získáte na github.com/rickgaiser/neutrino; dejte ho do složky neutrino na disku nebo paměťové kartě."
   "This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer.": "Toto Neutrino je starší než 1.3, které neumí spouštět hry z APA HDD. Nastavte Spouštění her > Neutrino na Neutrino 1.3 nebo novější."
@@ -311,8 +322,6 @@ strings:
   Reading the memory cards: Čtení paměťových karet
   The HDD partition BIBLE uses went away. Nothing was changed.: Oddíl HDD, který BIBLE používá, zmizel. Nic se nezměnilo.
   The HDD's old boot program is back. BIBLE no longer starts from the HDD.: Starý zaváděcí program HDD je zpět. BIBLE se už ze HDD nespouští.
-  ? The console would not bind BIBLE to memory card %d (its MagicGate step failed). Nothing on the card was changed. A card that is not a genuine or MagicGate-compatible one cannot hold a system update.
-  : Konzole nesvázala BIBLE s paměťovou kartou %d (krok MagicGate selhal). Na kartě se nic nezměnilo. Karta, která není originální nebo kompatibilní s MagicGate, nemůže nést aktualizaci systému.
   'The one that was there is kept in RIPPS2/MBR-BACKUP.KELF on the HDD: BOOT LOADER > MANAGE > RESTORE puts it back.': 'Ten, který tam byl, je uchován v RIPPS2/MBR-BACKUP.KELF na HDD: ZAVADĚČ > SPRAVOVAT > OBNOVIT ho vrátí.'
   The security module would not start on this console. Nothing on the memory card was changed.: Bezpečnostní modul se na této konzoli nespustil. Na paměťové kartě se nic nezměnilo.
   ? 'There is no formatted PS2 memory card in either slot, and no internal HDD. BIBLE lives on a memory card or the HDD: insert a card, then try again.'
@@ -784,11 +793,9 @@ strings:
   POPSTARTER and Ember: POPSTARTER a Ember
   PS1 SETTINGS: NASTAVENÍ PS1
   PS2BBL for RIPPS2: PS2BBL pro RIPPS2
-  RIP THIS CONSOLE'S SOUNDS: VYJMOUT ZVUKY TÉTO KONZOLE
   STATUS: STAV
   a drive of unknown kind: disk neznámého druhu
   boot loader, card by card: zavaděč, karta po kartě
-  from its BIOS, into AUDIO: z jejího BIOSu, do AUDIO
   internal HDD (exFAT): interní HDD (exFAT)
   its own IP and SMB files: vlastní soubory IP a SMB
   path, video, arguments: cesta, video, argumenty
@@ -1138,7 +1145,6 @@ strings:
   'Game lists: each shows at once from its cache and stands until SELECT': 'Seznamy her: každý se hned ukáže z mezipaměti a zůstane až do SELECT'
   'Game lists: each shows at once from its cache, then is read again': 'Seznamy her: každý se hned ukáže z mezipaměti a pak se načte znovu'
   LOADING: NAČÍTÁNÍ
-  Makes RIPPS2's sounds from this console's own BIOS and writes them to the AUDIO folder.: Vytvoří zvuky RIPPS2 z BIOSu této konzole a zapíše je do složky AUDIO.
   'No music yet: Audio settings > BIOS Music rips this console''s menu music.': 'Zatím žádná hudba: Nastavení zvuku > Hudba BIOS extrahuje hudbu z menu této konzole.'
   SAVE DIAGNOSTICS: ULOŽIT DIAGNOSTIKU
   Searches the drives for POPSTARTER, the POPS files, Ember, Ember's BIOS and Neutrino, and remembers where each one is.: Prohledá disky kvůli POPSTARTER, souborům POPS, Ember, BIOSu Ember a Neutrinu a zapamatuje si, kde co je.
@@ -1175,12 +1181,6 @@ strings:
   : 'Karta SD2PSX nebo MMCE se může po odmítnutém zápisu chránit: pokud teď chybí paměťová karta nebo jednotka MMCE, vypni a zapni konzoli.'
   BOOT LOCK ON: BOOT LOCK ZAPNUTÝ
   'Done: the memory card in slot %d starts what it started before BIBLE. BIBLE is kept in mc%d:/%s.': 'Hotovo: paměťová karta ve slotu %d spouští to, co spouštěla před BIBLE. BIBLE zůstává v mc%d:/%s.'
-  ? 'For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 2''s config before slot 1''s.
-  
-    '
-  : 'Pro běžnou 8MB paměťovou kartu PS2 (kartu MagicGate nebo kartu BOOT SD2PSX či MMCE): tu ve slotu %d. Při zapnutí čte PS2BBL konfiguraci slotu 2 před konfigurací slotu 1.
-  
-    '
   MEMORY CARD IN SLOT %d  (%s): PAMĚŤOVÁ KARTA VE SLOTU %d  (%s)
   ? PS2BBL cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
   : PS2BBL nemůže spustit RIPPS2 z místa, kde teď je (dosáhne na paměťové karty, USB jednotky a MX4SIO), a RIPPS2 se samo nekopíruje. Dej RIPPS2.ELF na paměťovou kartu nebo USB jednotku a spusť ho odtud, nebo použij PS2BBL Extended, který čte MMCE a pevný disk.
@@ -1216,20 +1216,6 @@ strings:
   'RIPPS2: Setting up BIBLE (restarting the I/O processor)': 'RIPPS2: nastavuje se BIBLE (restartuje se vstupně-výstupní procesor)'
   'RIPPS2: Setting up BIBLE (writing it to the memory card)': 'RIPPS2: nastavuje se BIBLE (zápis na paměťovou kartu)'
   SET UP BIBLE: NASTAVIT BIBLE
-  ? 'SLOT 1: %s
-  
-    SLOT 2: %s
-  
-    %s
-  
-    RIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
-  : 'SLOT 1: %s
-  
-    SLOT 2: %s
-  
-    %s
-  
-    RIPPS2: nastavuje se BIBLE. PS2BBL od El Isry, nastavený z RIPPS2 na běžné 8MB paměťové kartě PS2 nebo interním pevném disku: start za 0 ms při zapnutí (PS2BBL Extended 0 nedovoluje), nejdřív RIPPS2 z místa, kde je (nikdy se nekopíruje), a tlačítko držené při zapnutí pořád vede do prohlížeče (TRIANGLE), na disk (START) a k tomu, co tu bylo předtím (CIRCLE). Nastavit, opravit, nebo obnovit to, co nahradil?'
   The memory card in slot %d has %d KB free, and BIBLE needs %d KB there. Free some space, then try again.: Paměťová karta ve slotu %d má volných %d KB a BIBLE na ní potřebuje %d KB. Uvolni trochu místa a zkus to znovu.
   ? The memory card in slot %d refused PS2BBL, so RIPPS2 put the card back as it was. Check its free space, then try again. (DIAG.TXT beside RIPPS2 has what the card said.)
   : Paměťová karta ve slotu %d odmítla PS2BBL, takže RIPPS2 nechalo kartu, jak byla. Zkontroluj volné místo a zkus to znovu. (DIAG.TXT vedle RIPPS2 obsahuje odpověď karty.)
@@ -1398,7 +1384,6 @@ strings:
   'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 'Bez CHEATS v herním menu: cheaty zaškrtnuté před spuštěním běží celou hru, jako dřív.'
   BOOT SOUND WITH THE PILLARS: ZVUK SPUŠTĚNÍ SE SLOUPY
   'Boot Sound: On (fast)': 'Zvuk spuštění: Zap. (rychle)'
-  'Boot sound On (fast): %s, as the pillars rise': 'Zvuk spuštění Zap. (rychle): %s, když sloupy rostou'
   'Boot sound On: from the AUDIO folder, once its drive is up': 'Zvuk spuštění Zap.: ze složky AUDIO, jakmile je její disk připraven'
   Boot sound off (Audio settings > Boot Sound): Zvuk spuštění vyp. (Nastavení zvuku > Zvuk spuštění)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Zkopíruje boot.adp vedle RIPPS2 na paměťovou kartu, ze které startuje, kde ho start čte dřív, než je připraven jakýkoli disk.
@@ -1645,7 +1630,7 @@ labels:
   GAME_TYPE_LABELS: Zobrazit štítky [PS1]/[PS2]
   NEUTRINO_CHEATS_WRITE_FAILED: Seznam cheatů nešlo uložit do složky Neutrina, takže ho Neutrino nemůže použít. Spustit bez cheatů?
   AUTO_CREATE_VMC: Vytvořit VMC při prvním spuštění
-  HINT_AUTO_CREATE_VMC: Spuštění hry PS2 bez VMC ve slotu 1 vytvoří 8MB kartu na zařízení hry, pojmenovanou podle návrhu obrazovky VMC (sdílenou všemi disky hry), a přiřadí ji. Pod Neutrinem ne na APA HDD (exFAT HDD funguje).
+  HINT_AUTO_CREATE_VMC: "Spuštění hry PS2 bez VMC ve slotu 0 vytvoří 8MB kartu na zařízení hry, pojmenovanou podle návrhu obrazovky VMC (sdílenou všemi disky hry), a přiřadí ji. Pod Neutrinem ne na APA HDD (exFAT HDD funguje)."
   AUTO_VMC_CREATING: Vytváření VMC této hry...
   AUTO_VMC_FAILED: VMC této hry nešlo vytvořit. Hra se spustí bez ní.
   RIPPS2_BIOS_MUSIC: Hudba BIOS

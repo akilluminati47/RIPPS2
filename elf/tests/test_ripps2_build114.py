@@ -413,7 +413,7 @@ if not (repo / 'elf/theme/fonts/ripps2_roboto.ttf').exists() or (repo / 'elf/the
 
 # ---- the full ELF (the user 10/23: no lite ELF; 10/31: a lite one beside it), FreeType, fonts
 mk = rd('Makefile')
-need(mk, (('bible_xlf.o bible_mx4sio_xlf.o bible_hdd_xlf.o', 'BIBLE is carried'),), 'Makefile')  # build 135: Neutrino found
+need(mk, (('bible_xlf.o bible_mx4sio_xlf.o bible_mmce_xlf.o bible_hdd_xlf.o', 'BIBLE is carried'),), 'Makefile')  # build 135: Neutrino found
 # build 135 (the user, 11/02: "no more lite tag just the one ripps2 with bible"): one ELF again (builds 126-134 had a lite one)
 if 'RIPPS2_LITE' in raw('Makefile') or (root / 'src/ripps2lite.c').exists():
     fail.append('Makefile: one ELF, no lite build')

@@ -3,6 +3,17 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Albanian
 strings:
+  "The console would not bind BIBLE to the memory card in slot %d (its MagicGate step failed). Nothing on the card was changed. A card that is not a genuine or MagicGate-compatible one cannot hold a system update.": "Konsola nuk pranoi ta lidhte BIBLE me kartën e memories në folenë %d (hapi MagicGate dështoi). Asgjë në kartë nuk ndryshoi. Një kartë që nuk është origjinale ose e përputhshme me MagicGate nuk mund të mbajë një përditësim sistemi."
+  "An SD2PSX or MMCE card can stop answering after a refused bind: if the memory card or the MMCE drive is missing now, turn the console off and on.": "Një kartë SD2PSX ose MMCE mund të mos përgjigjet më pas një lidhjeje të refuzuar: nëse tani mungon karta e memories ose disku MMCE, fike dhe ndize konsolën."
+  "RIPPS2: Setting up BIBLE\nThe card in slot %d is an SD2PSX or MMCE card. The console cannot bind BIBLE to one (an SD2PSX refuses it, then stops answering until the console is turned off and on), so nothing was tried. Its BOOT card has its own PS2BBL: START turns BOOT LOCK on, so it starts RIPPS2 at power on. BIBLE goes on a genuine PS2 memory card.": "RIPPS2: po vendoset BIBLE\nKarta në folenë %d është kartë SD2PSX ose MMCE. Konsola nuk mund ta lidhë BIBLE me të (një SD2PSX e refuzon, pastaj nuk përgjigjet derisa konsola të fiket e të ndizet), ndaj nuk u provua asgjë. Karta e saj BOOT ka PS2BBL-në e vet: START ndez BOOT LOCK, që ta nisë RIPPS2 në ndezje. BIBLE vendoset në një kartë memorieje PS2 origjinale."
+  "For a standard 8 MB PS2 memory card (a genuine MagicGate card: an SD2PSX or MMCE card cannot be bound): the one in slot %d. At power on PS2BBL reads slot 1's config before slot 0's.\n": "Për një kartë memorieje PS2 standarde 8 MB (një kartë MagicGate origjinale: një kartë SD2PSX ose MMCE nuk mund të lidhet): atë në folenë %d. Në ndezje PS2BBL lexon konfigurimin e folesë 1 para atij të folesë 0.\n"
+  "RIP THIS CONSOLE'S AUDIO": "NXIRR AUDION E KËSAJ KONSOLE"
+  "sounds or music, from its BIOS": "tinguj ose muzikë, nga BIOS-i i saj"
+  "Opens Audio settings on BIOS Sounds and BIOS Music: rip this console's own sounds or its menu music into AUDIO.": "Hap Cilësimet e audios te Tingujt e BIOS dhe Muzika e BIOS: nxirr tingujt e kësaj konsole ose muzikën e menysë së saj në AUDIO."
+  "Boot sound On (fast): %s on the memory card, as the pillars rise": "Tingulli i nisjes Aktiv (shpejt): %s në kartën e memories, ndërsa ngrihen shtyllat"
+  "Boot sound On: %s on the memory card, as the pillars rise": "Tingulli i nisjes Aktiv: %s në kartën e memories, ndërsa ngrihen shtyllat"
+  "Boot sound On: %s, once its drive is up": "Tingulli i nisjes Aktiv: %s, kur disku i tij është gati"
+  "SLOT 0: %s\nSLOT 1: %s\n%s\nRIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?": "FOLEJA 0: %s\nFOLEJA 1: %s\n%s\nRIPPS2: po vendoset BIBLE. PS2BBL nga El Isra, i vendosur nga RIPPS2 në një kartë memorieje PS2 standarde 8 MB ose në diskun e brendshëm: një nisje 0 ms në ndezje (PS2BBL Extended nuk lejon 0), RIPPS2 i pari nga vendi ku është (nuk kopjohet kurrë), dhe një buton i mbajtur në ndezje të çon ende te shfletuesi (TRIANGLE), te një disk (START) dhe te ajo që ishte më parë (CIRCLE). Ta vendosësh, ta riparosh apo ta rikthesh atë që zëvendësoi?"
   "This game starts through Neutrino, and RIPPS2 found none: not at Settings' path, on the game's drive, on the memory cards or on any started drive. Put Neutrino by rickgaiser (github.com/rickgaiser/neutrino) in a neutrino folder on the game's drive or a memory card, or point Game Launching > Neutrino at it.": "Kjo lojë niset me Neutrino dhe RIPPS2 nuk gjeti asnjë: as te shtegu i Cilësimeve, as në diskun e lojës, as në kartat e memories, as në ndonjë disk të nisur. Vendos Neutrino të rickgaiser (github.com/rickgaiser/neutrino) në një dosje neutrino në diskun e lojës ose në një kartë memorie, ose drejto Nisja e lojërave > Neutrino tek ai."
   "Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets. Get Neutrino at github.com/rickgaiser/neutrino and put it in a neutrino folder on a drive or a memory card.": "Ku është Neutrino yt, modaliteti i tij i videos dhe argumentet që merr çdo nisje me Neutrino. Merr Neutrino te github.com/rickgaiser/neutrino dhe vendose në një dosje neutrino në një disk ose në një kartë memorie."
   "This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer.": "Ky Neutrino është më i vjetër se 1.3, i cili nuk mund të nisë lojëra nga HDD-ja APA. Drejto Nisja e lojërave > Neutrino te Neutrino 1.3 ose më i ri."
@@ -311,8 +322,6 @@ strings:
   Reading the memory cards: Duke lexuar kartat e memories
   The HDD partition BIBLE uses went away. Nothing was changed.: Particioni i HDD që përdor BIBLE u zhduk. Asgjë nuk ndryshoi.
   The HDD's old boot program is back. BIBLE no longer starts from the HDD.: Programi i vjetër i nisjes së HDD u kthye. BIBLE nuk niset më nga HDD.
-  ? The console would not bind BIBLE to memory card %d (its MagicGate step failed). Nothing on the card was changed. A card that is not a genuine or MagicGate-compatible one cannot hold a system update.
-  : Konsola nuk pranoi ta lidhte BIBLE me kartën e memories %d (hapi MagicGate dështoi). Asgjë në kartë nuk ndryshoi. Një kartë që nuk është origjinale ose e përputhshme me MagicGate nuk mund të mbajë një përditësim sistemi.
   'The one that was there is kept in RIPPS2/MBR-BACKUP.KELF on the HDD: BOOT LOADER > MANAGE > RESTORE puts it back.': 'Ai që ishte atje ruhet në RIPPS2/MBR-BACKUP.KELF në HDD: NGARKUESI I NISJES > MENAXHO > RIKTHE e kthen.'
   The security module would not start on this console. Nothing on the memory card was changed.: Moduli i sigurisë nuk u nis në këtë konsolë. Asgjë në kartën e memories nuk ndryshoi.
   ? 'There is no formatted PS2 memory card in either slot, and no internal HDD. BIBLE lives on a memory card or the HDD: insert a card, then try again.'
@@ -784,11 +793,9 @@ strings:
   POPSTARTER and Ember: POPSTARTER dhe Ember
   PS1 SETTINGS: CILËSIMET E PS1
   PS2BBL for RIPPS2: PS2BBL për RIPPS2
-  RIP THIS CONSOLE'S SOUNDS: NXIRR TINGUJT E KËSAJ KONSOLE
   STATUS: GJENDJA
   a drive of unknown kind: një njësi e llojit të panjohur
   boot loader, card by card: ngarkuesi i nisjes, kartë pas karte
-  from its BIOS, into AUDIO: nga BIOS-i i saj, në AUDIO
   internal HDD (exFAT): HDD i brendshëm (exFAT)
   its own IP and SMB files: skedarët e tij IP dhe SMB
   path, video, arguments: shtegu, video, argumentet
@@ -1137,7 +1144,6 @@ strings:
   'Game lists: each shows at once from its cache and stands until SELECT': 'Listat e lojërave: secila shfaqet menjëherë nga cache dhe qëndron deri te SELECT'
   'Game lists: each shows at once from its cache, then is read again': 'Listat e lojërave: secila shfaqet menjëherë nga cache, pastaj lexohet përsëri'
   LOADING: NGARKIMI
-  Makes RIPPS2's sounds from this console's own BIOS and writes them to the AUDIO folder.: Krijon tingujt e RIPPS2 nga BIOS-i i kësaj konsole dhe i shkruan në dosjen AUDIO.
   'No music yet: Audio settings > BIOS Music rips this console''s menu music.': 'Ende pa muzikë: Cilësimet e audios > Muzika e BIOS nxjerr muzikën e menysë së kësaj konsole.'
   SAVE DIAGNOSTICS: RUAJ DIAGNOSTIKIMIN
   Searches the drives for POPSTARTER, the POPS files, Ember, Ember's BIOS and Neutrino, and remembers where each one is.: Kërkon në njësi për POPSTARTER, skedarët POPS, Ember, BIOS-in e Ember dhe Neutrino, dhe mban mend ku është secili.
@@ -1174,12 +1180,6 @@ strings:
   : 'Një kartë SD2PSX ose MMCE mund të mbrohet pas një shkrimi të refuzuar: nëse tani mungon karta e memories ose disku MMCE, fike dhe ndize konsolën.'
   BOOT LOCK ON: BOOT LOCK NDEZUR
   'Done: the memory card in slot %d starts what it started before BIBLE. BIBLE is kept in mc%d:/%s.': 'U krye: karta e memories në folenë %d nis atë që niste para BIBLE. BIBLE ruhet në mc%d:/%s.'
-  ? 'For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 2''s config before slot 1''s.
-  
-    '
-  : 'Për një kartë memorieje PS2 standarde 8 MB (një kartë MagicGate, ose një kartë BOOT SD2PSX ose MMCE): atë në folenë %d. Në ndezje PS2BBL lexon konfigurimin e folesë 2 para atij të folesë 1.
-  
-    '
   MEMORY CARD IN SLOT %d  (%s): KARTA E MEMORIES NË FOLENË %d  (%s)
   ? PS2BBL cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
   : PS2BBL nuk mund ta nisë RIPPS2 nga vendi ku është tani (arrin te kartat e memories, disqet USB dhe MX4SIO), dhe RIPPS2 nuk e kopjon veten. Vendose RIPPS2.ELF në një kartë memorieje ose disk USB dhe nise prej andej, ose përdor PS2BBL Extended, që lexon MMCE dhe diskun e ngurtë.
@@ -1215,20 +1215,6 @@ strings:
   'RIPPS2: Setting up BIBLE (restarting the I/O processor)': 'RIPPS2: po vendoset BIBLE (procesori I/O po riniset)'
   'RIPPS2: Setting up BIBLE (writing it to the memory card)': 'RIPPS2: po vendoset BIBLE (po shkruhet në kartën e memories)'
   SET UP BIBLE: VENDOS BIBLE
-  ? 'SLOT 1: %s
-  
-    SLOT 2: %s
-  
-    %s
-  
-    RIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
-  : 'FOLEJA 1: %s
-  
-    FOLEJA 2: %s
-  
-    %s
-  
-    RIPPS2: po vendoset BIBLE. PS2BBL nga El Isra, i vendosur nga RIPPS2 në një kartë memorieje PS2 standarde 8 MB ose në diskun e brendshëm: një nisje 0 ms në ndezje (PS2BBL Extended nuk lejon 0), RIPPS2 i pari nga vendi ku është (nuk kopjohet kurrë), dhe një buton i mbajtur në ndezje të çon ende te shfletuesi (TRIANGLE), te një disk (START) dhe te ajo që ishte më parë (CIRCLE). Ta vendosësh, ta riparosh apo ta rikthesh atë që zëvendësoi?'
   The memory card in slot %d has %d KB free, and BIBLE needs %d KB there. Free some space, then try again.: Karta e memories në folenë %d ka %d KB të lira dhe BIBLE ka nevojë për %d KB atje. Liro pak hapësirë, pastaj provo sërish.
   ? The memory card in slot %d refused PS2BBL, so RIPPS2 put the card back as it was. Check its free space, then try again. (DIAG.TXT beside RIPPS2 has what the card said.)
   : Karta e memories në folenë %d refuzoi PS2BBL, kështu që RIPPS2 e la kartën siç ishte. Kontrollo hapësirën e lirë, pastaj provo sërish. (DIAG.TXT pranë RIPPS2 ka përgjigjen e kartës.)
@@ -1397,7 +1383,6 @@ strings:
   'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 'Pa CHEATS në menunë brenda lojës: cheat-et e shënuara para nisjes punojnë gjithë lojën, si më parë.'
   BOOT SOUND WITH THE PILLARS: TINGULL NISJEJE ME SHTYLLAT
   'Boot Sound: On (fast)': 'Tingulli i nisjes: Aktiv (shpejt)'
-  'Boot sound On (fast): %s, as the pillars rise': 'Tingulli i nisjes Aktiv (shpejt): %s, ndërsa ngrihen shtyllat'
   'Boot sound On: from the AUDIO folder, once its drive is up': 'Tingulli i nisjes Aktiv: nga dosja AUDIO, kur disku i saj është gati'
   Boot sound off (Audio settings > Boot Sound): Tingulli i nisjes joaktiv (Cilësimet e audios > Tingulli i nisjes)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Kopjon boot.adp pranë RIPPS2 në kartën e memories nga nis, ku nisja e lexon para se ndonjë disk të jetë gati.
@@ -1443,8 +1428,8 @@ labels:
   INFO: Informacion
   ETH_PREFIX: Shtegu i prefiksit ETH
   BACKSPACE: Fshi pas
-  VMC_SLOT1: Foleja VMC 1
-  VMC_SLOT2: Foleja VMC 2
+  VMC_SLOT1: "Foleja VMC 0"
+  VMC_SLOT2: "Foleja VMC 1"
   VSYNC: V-Sync
   ETH_100MFDX: 100Mbit full-duplex
   ETH_100MHDX: 100Mbit half-duplex
@@ -1668,7 +1653,7 @@ labels:
   GAME_TYPE_LABELS: Shfaq etiketat [PS1]/[PS2]
   NEUTRINO_CHEATS_WRITE_FAILED: Lista e mashtrimeve nuk u ruajt dot në dosjen Neutrino, ndaj Neutrino nuk mund ta përdorë. Të niset pa mashtrime?
   AUTO_CREATE_VMC: Krijo VMC në nisjen e parë
-  HINT_AUTO_CREATE_VMC: Nisja e një loje PS2 pa VMC në folenë 1 krijon një kartë 8 MB në pajisjen e lojës, me emrin që sugjeron ekrani VMC (e ndarë nga të gjithë disqet e lojës), dhe e cakton. Nën Neutrino jo në HDD-në APA (një HDD exFAT funksionon).
+  HINT_AUTO_CREATE_VMC: "Nisja e një loje PS2 pa VMC në folenë 0 krijon një kartë 8 MB në pajisjen e lojës, me emrin që sugjeron ekrani VMC (e ndarë nga të gjithë disqet e lojës), dhe e cakton. Nën Neutrino jo në HDD-në APA (një HDD exFAT funksionon)."
   AUTO_VMC_CREATING: Duke krijuar VMC-në e kësaj loje...
   AUTO_VMC_FAILED: VMC e kësaj loje nuk u krijua dot. Loja fillon pa të.
   RIPPS2_BIOS_MUSIC: Muzika e BIOS

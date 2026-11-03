@@ -3,6 +3,17 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Laotian
 strings:
+  "The console would not bind BIBLE to the memory card in slot %d (its MagicGate step failed). Nothing on the card was changed. A card that is not a genuine or MagicGate-compatible one cannot hold a system update.": "ເຄື່ອງ ບໍ່ຍອມຜູກ BIBLE ກັບເມມໂມຣີກາດໃນຊ່ອງ %d (ຂັ້ນ MagicGate ລົ້ມເຫຼວ). ບໍ່ມີຫຍັງ ເທິງກາດ ຖືກປ່ຽນ. ກາດທີ່ບໍ່ແມ່ນຂອງແທ້ ຫຼື ບໍ່ເຂົ້າກັບ MagicGate ເກັບອັບເດດລະບົບ ບໍ່ໄດ້."
+  "An SD2PSX or MMCE card can stop answering after a refused bind: if the memory card or the MMCE drive is missing now, turn the console off and on.": "ກາດ SD2PSX ຫຼື MMCE ອາດບໍ່ຕອບອີກຫຼັງຈາກການຜູກຖືກປະຕິເສດ: ຖ້າຕອນນີ້ເມມໂມຣີກາດ ຫຼື ໄດຣຟ໌ MMCE ຫາຍໄປ, ໃຫ້ປິດເຄື່ອງແລ້ວເປີດໃໝ່."
+  "RIPPS2: Setting up BIBLE\nThe card in slot %d is an SD2PSX or MMCE card. The console cannot bind BIBLE to one (an SD2PSX refuses it, then stops answering until the console is turned off and on), so nothing was tried. Its BOOT card has its own PS2BBL: START turns BOOT LOCK on, so it starts RIPPS2 at power on. BIBLE goes on a genuine PS2 memory card.": "RIPPS2: ກຳລັງຕັ້ງ BIBLE\nກາດໃນຊ່ອງ %d ແມ່ນກາດ SD2PSX ຫຼື MMCE. ເຄື່ອງຜູກ BIBLE ກັບມັນບໍ່ໄດ້ (SD2PSX ປະຕິເສດ, ແລ້ວບໍ່ຕອບຈົນກວ່າຈະປິດແລະເປີດເຄື່ອງໃໝ່), ຈຶ່ງບໍ່ໄດ້ລອງຫຍັງ. ກາດ BOOT ຂອງມັນມີ PS2BBL ຂອງຕົນເອງ: START ເປີດ BOOT LOCK, ເພື່ອໃຫ້ມັນເລີ່ມ RIPPS2 ຕອນເປີດເຄື່ອງ. BIBLE ໃສ່ໃນເມມໂມຣີກາດ PS2 ຂອງແທ້."
+  "For a standard 8 MB PS2 memory card (a genuine MagicGate card: an SD2PSX or MMCE card cannot be bound): the one in slot %d. At power on PS2BBL reads slot 1's config before slot 0's.\n": "ສຳລັບເມມໂມຣີກາດ PS2 ມາດຕະຖານ 8 MB (ກາດ MagicGate ຂອງແທ້: ກາດ SD2PSX ຫຼື MMCE ຜູກບໍ່ໄດ້): ອັນທີ່ຢູ່ໃນຊ່ອງ %d. ຕອນເປີດເຄື່ອງ, PS2BBL ອ່ານການຕັ້ງຄ່າຂອງຊ່ອງ 1 ກ່ອນຊ່ອງ 0.\n"
+  "RIP THIS CONSOLE'S AUDIO": "ຖອດສຽງທັງໝົດ ຂອງເຄື່ອງນີ້"
+  "sounds or music, from its BIOS": "ສຽງ ຫຼື ເພງ, ຈາກ BIOS ຂອງມັນ"
+  "Opens Audio settings on BIOS Sounds and BIOS Music: rip this console's own sounds or its menu music into AUDIO.": "ເປີດ ການຕັ້ງຄ່າສຽງ ທີ່ ສຽງ BIOS ແລະ ເພງ BIOS: ຖອດສຽງຂອງເຄື່ອງນີ້ ຫຼື ເພງເມນູຂອງມັນ ໄປໃສ່ AUDIO."
+  "Boot sound On (fast): %s on the memory card, as the pillars rise": "ສຽງເປີດ ເປີດ (ໄວ): %s ໃນເມມໂມຣີກາດ, ເມື່ອເສົາຂຶ້ນ"
+  "Boot sound On: %s on the memory card, as the pillars rise": "ສຽງເປີດ ເປີດ: %s ໃນເມມໂມຣີກາດ, ເມື່ອເສົາຂຶ້ນ"
+  "Boot sound On: %s, once its drive is up": "ສຽງເປີດ ເປີດ: %s, ເມື່ອໄດຣຟ໌ພ້ອມ"
+  "SLOT 0: %s\nSLOT 1: %s\n%s\nRIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?": "ຊ່ອງ 0: %s\nຊ່ອງ 1: %s\n%s\nRIPPS2: ກຳລັງຕັ້ງ BIBLE. PS2BBL ຂອງ El Isra, ທີ່ RIPPS2 ຕັ້ງໄວ້ໃນເມມໂມຣີກາດ PS2 ມາດຕະຖານ 8 MB ຫຼື ຮາດດິດພາຍໃນ: ເລີ່ມໃນ 0 ms ຕອນເປີດເຄື່ອງ (PS2BBL Extended ບໍ່ອະນຸຍາດ 0), RIPPS2 ກ່ອນຈາກບ່ອນທີ່ມັນຢູ່ (ບໍ່ເຄີຍສຳເນົາ), ແລະ ປຸ່ມທີ່ກົດຄ້າງຕອນເປີດເຄື່ອງຍັງພາໄປຫາບຣາວເຊີ (TRIANGLE), ແຜ່ນດິສກ໌ (START) ແລະ ສິ່ງທີ່ມີກ່ອນ (CIRCLE). ຕັ້ງ, ສ້ອມແປງ ຫຼື ກູ້ຄືນສິ່ງທີ່ມັນແທນ?"
   "This game starts through Neutrino, and RIPPS2 found none: not at Settings' path, on the game's drive, on the memory cards or on any started drive. Put Neutrino by rickgaiser (github.com/rickgaiser/neutrino) in a neutrino folder on the game's drive or a memory card, or point Game Launching > Neutrino at it.": "ເກມນີ້ເລີ່ມຜ່ານ Neutrino, ແລະ RIPPS2 ບໍ່ພົບເລີຍ: ບໍ່ມີທີ່ເສັ້ນທາງໃນການຕັ້ງຄ່າ, ໃນໄດຣຟ໌ຂອງເກມ, ໃນບັດຄວາມຈຳ ຫຼື ໃນໄດຣຟ໌ໃດທີ່ເລີ່ມແລ້ວ. ວາງ Neutrino ຂອງ rickgaiser (github.com/rickgaiser/neutrino) ໃນໂຟນເດີ neutrino ໃນໄດຣຟ໌ຂອງເກມ ຫຼື ບັດຄວາມຈຳ, ຫຼື ຊີ້ ການເປີດເກມ > Neutrino ໄປຫາມັນ."
   "Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets. Get Neutrino at github.com/rickgaiser/neutrino and put it in a neutrino folder on a drive or a memory card.": "Neutrino ຂອງທ່ານຢູ່ໃສ, ໂໝດວິດີໂອຂອງມັນ ແລະ ອາກິວເມັນ ທີ່ທຸກການເປີດ Neutrino ໄດ້ຮັບ. ເອົາ Neutrino ທີ່ github.com/rickgaiser/neutrino ແລະ ວາງໃນໂຟນເດີ neutrino ໃນໄດຣຟ໌ ຫຼື ບັດຄວາມຈຳ."
   "This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer.": "Neutrino ນີ້ເກົ່າກວ່າ 1.3, ເຊິ່ງເລີ່ມເກມຈາກ HDD APA ບໍ່ໄດ້. ຊີ້ ການເປີດເກມ > Neutrino ໄປຫາ Neutrino 1.3 ຫຼື ໃໝ່ກວ່າ."
@@ -311,8 +322,6 @@ strings:
   Reading the memory cards: ກຳລັງອ່ານ ເມມໂມຣີກາດ
   The HDD partition BIBLE uses went away. Nothing was changed.: ພາທິຊັນ HDD ທີ່ BIBLE ໃຊ້ ຫາຍໄປ. ບໍ່ມີຫຍັງ ຖືກປ່ຽນ.
   The HDD's old boot program is back. BIBLE no longer starts from the HDD.: ໂປຣແກຣມບູດເກົ່າ ຂອງ HDD ກັບມາແລ້ວ. BIBLE ບໍ່ເລີ່ມຈາກ HDD ອີກ.
-  ? The console would not bind BIBLE to memory card %d (its MagicGate step failed). Nothing on the card was changed. A card that is not a genuine or MagicGate-compatible one cannot hold a system update.
-  : ເຄື່ອງ ບໍ່ຍອມຜູກ BIBLE ກັບເມມໂມຣີກາດ %d (ຂັ້ນ MagicGate ລົ້ມເຫຼວ). ບໍ່ມີຫຍັງ ເທິງກາດ ຖືກປ່ຽນ. ກາດທີ່ບໍ່ແມ່ນຂອງແທ້ ຫຼື ບໍ່ເຂົ້າກັບ MagicGate ເກັບອັບເດດລະບົບ ບໍ່ໄດ້.
   'The one that was there is kept in RIPPS2/MBR-BACKUP.KELF on the HDD: BOOT LOADER > MANAGE > RESTORE puts it back.': 'ອັນທີ່ເຄີຍຢູ່ ຖືກເກັບໄວ້ໃນ RIPPS2/MBR-BACKUP.KELF ເທິງ HDD: ໂຕໂຫຼດບູດ > ຈັດການ > ກູ້ຄືນ ໃສ່ມັນຄືນ.'
   The security module would not start on this console. Nothing on the memory card was changed.: ໂມດູນຄວາມປອດໄພ ບໍ່ຍອມເລີ່ມ ເທິງເຄື່ອງນີ້. ບໍ່ມີຫຍັງ ເທິງເມມໂມຣີກາດ ຖືກປ່ຽນ.
   ? 'There is no formatted PS2 memory card in either slot, and no internal HDD. BIBLE lives on a memory card or the HDD: insert a card, then try again.'
@@ -784,11 +793,9 @@ strings:
   POPSTARTER and Ember: POPSTARTER ແລະ Ember
   PS1 SETTINGS: ການຕັ້ງຄ່າ PS1
   PS2BBL for RIPPS2: PS2BBL ສຳລັບ RIPPS2
-  RIP THIS CONSOLE'S SOUNDS: ຖອດສຽງ ຂອງເຄື່ອງນີ້
   STATUS: ສະຖານະ
   a drive of unknown kind: ໄດຣຟ໌ ປະເພດທີ່ບໍ່ຮູ້ຈັກ
   boot loader, card by card: ໂຕໂຫຼດບູດ, ທີລະກາດ
-  from its BIOS, into AUDIO: ຈາກ BIOS ຂອງມັນ, ໄປ AUDIO
   internal HDD (exFAT): HDD ພາຍໃນ (exFAT)
   its own IP and SMB files: ໄຟລ໌ IP ແລະ SMB ຂອງມັນເອງ
   path, video, arguments: ເສັ້ນທາງ, ວິດີໂອ, ອາກິວເມັນ
@@ -1138,7 +1145,6 @@ strings:
   'Game lists: each shows at once from its cache and stands until SELECT': 'ລາຍການເກມ: ຂຶ້ນທັນທີຈາກ cache ແລະ ຢູ່ຈົນ SELECT'
   'Game lists: each shows at once from its cache, then is read again': 'ລາຍການເກມ: ຂຶ້ນທັນທີຈາກ cache, ແລ້ວອ່ານໃໝ່'
   LOADING: ກຳລັງໂຫຼດ
-  Makes RIPPS2's sounds from this console's own BIOS and writes them to the AUDIO folder.: ສ້າງສຽງຂອງ RIPPS2 ຈາກ BIOS ຂອງເຄື່ອງນີ້ເອງ ແລະ ຂຽນໃສ່ໂຟນເດີ AUDIO.
   'No music yet: Audio settings > BIOS Music rips this console''s menu music.': 'ຍັງບໍ່ມີເພງ: ການຕັ້ງຄ່າສຽງ > ເພງ BIOS ຖອດເພງເມນູຂອງເຄື່ອງນີ້.'
   SAVE DIAGNOSTICS: ບັນທຶກຂໍ້ມູນວິນິດໄສ
   Searches the drives for POPSTARTER, the POPS files, Ember, Ember's BIOS and Neutrino, and remembers where each one is.: ຊອກຫາ POPSTARTER, ໄຟລ໌ POPS, Ember, BIOS ຂອງ Ember ແລະ Neutrino ໃນໄດຣຟ໌, ແລະ ຈື່ວ່າແຕ່ລະອັນຢູ່ໃສ.
@@ -1175,12 +1181,6 @@ strings:
   : 'ກາດ SD2PSX ຫຼື MMCE ອາດປ້ອງກັນຕົວເອງຫຼັງຈາກການຂຽນຖືກປະຕິເສດ: ຖ້າຕອນນີ້ເມມໂມຣີກາດ ຫຼື ໄດຣຟ໌ MMCE ຫາຍໄປ, ໃຫ້ປິດເຄື່ອງແລ້ວເປີດໃໝ່.'
   BOOT LOCK ON: BOOT LOCK ເປີດ
   'Done: the memory card in slot %d starts what it started before BIBLE. BIBLE is kept in mc%d:/%s.': 'ແລ້ວ: ເມມໂມຣີກາດໃນຊ່ອງ %d ເລີ່ມສິ່ງທີ່ມັນເຄີຍເລີ່ມກ່ອນ BIBLE. ເກັບ BIBLE ໄວ້ໃນ mc%d:/%s.'
-  ? 'For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 2''s config before slot 1''s.
-  
-    '
-  : 'ສຳລັບເມມໂມຣີກາດ PS2 ມາດຕະຖານ 8 MB (ກາດ MagicGate, ຫຼື ກາດ BOOT ຂອງ SD2PSX ຫຼື MMCE): ອັນທີ່ຢູ່ໃນຊ່ອງ %d. ຕອນເປີດເຄື່ອງ, PS2BBL ອ່ານການຕັ້ງຄ່າຂອງຊ່ອງ 2 ກ່ອນຊ່ອງ 1.
-  
-    '
   MEMORY CARD IN SLOT %d  (%s): ເມມໂມຣີກາດໃນຊ່ອງ %d  (%s)
   ? PS2BBL cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
   : PS2BBL ເລີ່ມ RIPPS2 ຈາກບ່ອນທີ່ມັນຢູ່ຕອນນີ້ບໍ່ໄດ້ (ມັນເຂົ້າເຖິງເມມໂມຣີກາດ, ໄດຣຟ໌ USB ແລະ MX4SIO), ແລະ RIPPS2 ບໍ່ສຳເນົາຕົວເອງ. ໃຫ້ວາງ RIPPS2.ELF ໄວ້ໃນເມມໂມຣີກາດ ຫຼື ໄດຣຟ໌ USB ແລ້ວເລີ່ມຈາກບ່ອນນັ້ນ, ຫຼື ໃຊ້ PS2BBL Extended ທີ່ອ່ານ MMCE ແລະ ຮາດດິດໄດ້.
@@ -1216,20 +1216,6 @@ strings:
   'RIPPS2: Setting up BIBLE (restarting the I/O processor)': 'RIPPS2: ກຳລັງຕັ້ງ BIBLE (ກຳລັງເລີ່ມໂປຣເຊສເຊີ I/O ໃໝ່)'
   'RIPPS2: Setting up BIBLE (writing it to the memory card)': 'RIPPS2: ກຳລັງຕັ້ງ BIBLE (ກຳລັງຂຽນລົງເມມໂມຣີກາດ)'
   SET UP BIBLE: ຕັ້ງ BIBLE
-  ? 'SLOT 1: %s
-  
-    SLOT 2: %s
-  
-    %s
-  
-    RIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
-  : 'ຊ່ອງ 1: %s
-  
-    ຊ່ອງ 2: %s
-  
-    %s
-  
-    RIPPS2: ກຳລັງຕັ້ງ BIBLE. PS2BBL ຂອງ El Isra, ທີ່ RIPPS2 ຕັ້ງໄວ້ໃນເມມໂມຣີກາດ PS2 ມາດຕະຖານ 8 MB ຫຼື ຮາດດິດພາຍໃນ: ເລີ່ມໃນ 0 ms ຕອນເປີດເຄື່ອງ (PS2BBL Extended ບໍ່ອະນຸຍາດ 0), RIPPS2 ກ່ອນຈາກບ່ອນທີ່ມັນຢູ່ (ບໍ່ເຄີຍສຳເນົາ), ແລະ ປຸ່ມທີ່ກົດຄ້າງຕອນເປີດເຄື່ອງຍັງພາໄປຫາບຣາວເຊີ (TRIANGLE), ແຜ່ນດິສກ໌ (START) ແລະ ສິ່ງທີ່ມີກ່ອນ (CIRCLE). ຕັ້ງ, ສ້ອມແປງ ຫຼື ກູ້ຄືນສິ່ງທີ່ມັນແທນ?'
   The memory card in slot %d has %d KB free, and BIBLE needs %d KB there. Free some space, then try again.: ເມມໂມຣີກາດໃນຊ່ອງ %d ມີບ່ອນຫວ່າງ %d KB, ແລະ BIBLE ຕ້ອງການ %d KB ຢູ່ນັ້ນ. ໃຫ້ລ້າງພື້ນທີ່ບາງສ່ວນ ແລ້ວລອງໃໝ່.
   ? The memory card in slot %d refused PS2BBL, so RIPPS2 put the card back as it was. Check its free space, then try again. (DIAG.TXT beside RIPPS2 has what the card said.)
   : ເມມໂມຣີກາດໃນຊ່ອງ %d ປະຕິເສດ PS2BBL, ສະນັ້ນ RIPPS2 ປ່ອຍກາດໄວ້ຄືເກົ່າ. ກວດບ່ອນຫວ່າງຂອງມັນ ແລ້ວລອງໃໝ່. (DIAG.TXT ຂ້າງ RIPPS2 ມີຄຳຕອບຂອງກາດ.)
@@ -1398,7 +1384,6 @@ strings:
   'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 'ບໍ່ມີ CHEATS ໃນເມນູໃນເກມ: ສູດທີ່ໝາຍໄວ້ກ່ອນເລີ່ມເຮັດວຽກຕະຫຼອດເກມ ຄືເກົ່າ.'
   BOOT SOUND WITH THE PILLARS: ສຽງເປີດກັບເສົາ
   'Boot Sound: On (fast)': 'ສຽງເປີດ: ເປີດ (ໄວ)'
-  'Boot sound On (fast): %s, as the pillars rise': 'ສຽງເປີດ ເປີດ (ໄວ): %s, ເມື່ອເສົາຂຶ້ນ'
   'Boot sound On: from the AUDIO folder, once its drive is up': 'ສຽງເປີດ ເປີດ: ຈາກ AUDIO, ເມື່ອໄດຣຟ໌ພ້ອມ'
   Boot sound off (Audio settings > Boot Sound): ສຽງເປີດ ປິດ (ຕັ້ງຄ່າສຽງ)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: ສຳເນົາ boot.adp ໄວ້ຂ້າງ RIPPS2 ໃນເມມໂມຣີກາດທີ່ມັນເລີ່ມ, ບ່ອນທີ່ການເປີດເຄື່ອງອ່ານກ່ອນໄດຣຟ໌ໃດພ້ອມ.
@@ -1727,7 +1712,7 @@ labels:
   GAME_TYPE_LABELS: ສະແດງປ້າຍ [PS1]/[PS2]
   NEUTRINO_CHEATS_WRITE_FAILED: ບັນທຶກລາຍການສູດໂກງ ໃສ່ໂຟນເດີ Neutrino ບໍ່ໄດ້, ດັ່ງນັ້ນ Neutrino ໃຊ້ມັນບໍ່ໄດ້. ເລີ່ມ ໂດຍບໍ່ມີສູດໂກງ ບໍ?
   AUTO_CREATE_VMC: ສ້າງ VMC ຕອນເປີດເທື່ອທຳອິດ
-  HINT_AUTO_CREATE_VMC: ການເປີດເກມ PS2 ທີ່ບໍ່ມີ VMC ໃນຊ່ອງ 1 ຈະສ້າງກາດ 8 MB ໃນອຸປະກອນຂອງເກມ, ຕັ້ງຊື່ຕາມທີ່ໜ້າຈໍ VMC ແນະນຳ (ໃຊ້ຮ່ວມກັນທຸກແຜ່ນຂອງເກມ), ແລະ ກຳນົດມັນ. ພາຍໃຕ້ Neutrino ບໍ່ແມ່ນໃນ HDD APA (HDD exFAT ໃຊ້ໄດ້).
+  HINT_AUTO_CREATE_VMC: "ການເປີດເກມ PS2 ທີ່ບໍ່ມີ VMC ໃນຊ່ອງ 0 ຈະສ້າງກາດ 8 MB ໃນອຸປະກອນຂອງເກມ, ຕັ້ງຊື່ຕາມທີ່ໜ້າຈໍ VMC ແນະນຳ (ໃຊ້ຮ່ວມກັນທຸກແຜ່ນຂອງເກມ), ແລະ ກຳນົດມັນ. ພາຍໃຕ້ Neutrino ບໍ່ແມ່ນໃນ HDD APA (HDD exFAT ໃຊ້ໄດ້)."
   AUTO_VMC_CREATING: ກຳລັງສ້າງ VMC ຂອງເກມນີ້...
   AUTO_VMC_FAILED: ສ້າງ VMC ຂອງເກມນີ້ ບໍ່ໄດ້. ເກມເລີ່ມ ໂດຍບໍ່ມີມັນ.
   RIPPS2_BIOS_MUSIC: ເພງ BIOS

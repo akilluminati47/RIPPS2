@@ -3,6 +3,17 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Greek
 strings:
+  "The console would not bind BIBLE to the memory card in slot %d (its MagicGate step failed). Nothing on the card was changed. A card that is not a genuine or MagicGate-compatible one cannot hold a system update.": "Η κονσόλα δεν έδεσε το BIBLE με την κάρτα μνήμης στην υποδοχή %d (το βήμα MagicGate απέτυχε). Δεν άλλαξε τίποτα στην κάρτα. Μια κάρτα που δεν είναι γνήσια ή συμβατή με MagicGate δεν μπορεί να κρατήσει ενημέρωση συστήματος."
+  "An SD2PSX or MMCE card can stop answering after a refused bind: if the memory card or the MMCE drive is missing now, turn the console off and on.": "Μια κάρτα SD2PSX ή MMCE μπορεί να σταματήσει να απαντά μετά από δέσιμο που απορρίφθηκε: αν τώρα λείπει η κάρτα μνήμης ή η μονάδα MMCE, σβήσε και άναψε την κονσόλα."
+  "RIPPS2: Setting up BIBLE\nThe card in slot %d is an SD2PSX or MMCE card. The console cannot bind BIBLE to one (an SD2PSX refuses it, then stops answering until the console is turned off and on), so nothing was tried. Its BOOT card has its own PS2BBL: START turns BOOT LOCK on, so it starts RIPPS2 at power on. BIBLE goes on a genuine PS2 memory card.": "RIPPS2: στήσιμο του BIBLE\nΗ κάρτα στην υποδοχή %d είναι κάρτα SD2PSX ή MMCE. Η κονσόλα δεν μπορεί να δέσει το BIBLE σε τέτοια (μια SD2PSX το αρνείται και μετά δεν απαντά μέχρι να σβήσει και να ανάψει η κονσόλα), οπότε δεν δοκιμάστηκε τίποτα. Η κάρτα BOOT της έχει δικό της PS2BBL: το START ενεργοποιεί το BOOT LOCK, ώστε να ξεκινά το RIPPS2 στην εκκίνηση. Το BIBLE μπαίνει σε γνήσια κάρτα μνήμης PS2."
+  "For a standard 8 MB PS2 memory card (a genuine MagicGate card: an SD2PSX or MMCE card cannot be bound): the one in slot %d. At power on PS2BBL reads slot 1's config before slot 0's.\n": "Για μια κοινή κάρτα μνήμης PS2 των 8 MB (γνήσια κάρτα MagicGate: μια κάρτα SD2PSX ή MMCE δεν μπορεί να δεθεί): αυτή στην υποδοχή %d. Στην εκκίνηση το PS2BBL διαβάζει τις ρυθμίσεις της υποδοχής 1 πριν από αυτές της υποδοχής 0.\n"
+  "RIP THIS CONSOLE'S AUDIO": "ΕΞΑΓΩΓΗ ΤΟΥ ΗΧΟΥ ΑΥΤΗΣ ΤΗΣ ΚΟΝΣΟΛΑΣ"
+  "sounds or music, from its BIOS": "ήχοι ή μουσική, από το BIOS της"
+  "Opens Audio settings on BIOS Sounds and BIOS Music: rip this console's own sounds or its menu music into AUDIO.": "Ανοίγει τις Ρυθμίσεις ήχου στους Ήχους BIOS και τη Μουσική BIOS: εξάγετε τους ήχους αυτής της κονσόλας ή τη μουσική του μενού της στο AUDIO."
+  "Boot sound On (fast): %s on the memory card, as the pillars rise": "Ήχος εκκίνησης Ναι (γρήγορα): %s στην κάρτα μνήμης, καθώς υψώνονται οι πυλώνες"
+  "Boot sound On: %s on the memory card, as the pillars rise": "Ήχος εκκίνησης Ναι: %s στην κάρτα μνήμης, καθώς υψώνονται οι πυλώνες"
+  "Boot sound On: %s, once its drive is up": "Ήχος εκκίνησης Ναι: %s, μόλις ο δίσκος του είναι έτοιμος"
+  "SLOT 0: %s\nSLOT 1: %s\n%s\nRIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?": "ΥΠΟΔΟΧΗ 0: %s\nΥΠΟΔΟΧΗ 1: %s\n%s\nRIPPS2: στήσιμο του BIBLE. Το PS2BBL του El Isra, στημένο από το RIPPS2 σε κοινή κάρτα μνήμης PS2 των 8 MB ή στον εσωτερικό σκληρό δίσκο: εκκίνηση σε 0 ms (το PS2BBL Extended δεν επιτρέπει 0), πρώτα το RIPPS2 από εκεί που είναι (δεν αντιγράφεται ποτέ), και ένα κουμπί πατημένο στην εκκίνηση οδηγεί ακόμα στον browser (TRIANGLE), σε δίσκο (START) και σε ό,τι υπήρχε πριν (CIRCLE). Να στηθεί, να επισκευαστεί ή να επανέλθει ό,τι αντικατέστησε;"
   "This game starts through Neutrino, and RIPPS2 found none: not at Settings' path, on the game's drive, on the memory cards or on any started drive. Put Neutrino by rickgaiser (github.com/rickgaiser/neutrino) in a neutrino folder on the game's drive or a memory card, or point Game Launching > Neutrino at it.": "Αυτό το παιχνίδι ξεκινά μέσω Neutrino, και το RIPPS2 δεν βρήκε κανένα: ούτε στη διαδρομή των Ρυθμίσεων, ούτε στον δίσκο του παιχνιδιού, ούτε στις κάρτες μνήμης, ούτε σε κάποιον δίσκο που ξεκίνησε. Βάλτε το Neutrino του rickgaiser (github.com/rickgaiser/neutrino) σε φάκελο neutrino στον δίσκο του παιχνιδιού ή σε κάρτα μνήμης, ή στρέψτε την Εκκίνηση παιχνιδιών > Neutrino σε αυτό."
   "Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets. Get Neutrino at github.com/rickgaiser/neutrino and put it in a neutrino folder on a drive or a memory card.": "Πού είναι το Neutrino σας, η λειτουργία βίντεο και τα ορίσματα που παίρνει κάθε εκκίνηση με Neutrino. Κατεβάστε το Neutrino από το github.com/rickgaiser/neutrino και βάλτε το σε φάκελο neutrino σε δίσκο ή κάρτα μνήμης."
   "This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer.": "Αυτό το Neutrino είναι παλαιότερο από το 1.3, που δεν μπορεί να ξεκινήσει παιχνίδια από τον APA HDD. Στρέψτε την Εκκίνηση παιχνιδιών > Neutrino σε Neutrino 1.3 ή νεότερο."
@@ -311,8 +322,6 @@ strings:
   Reading the memory cards: Ανάγνωση των καρτών μνήμης
   The HDD partition BIBLE uses went away. Nothing was changed.: Το διαμέρισμα HDD που χρησιμοποιεί το BIBLE εξαφανίστηκε. Δεν άλλαξε τίποτα.
   The HDD's old boot program is back. BIBLE no longer starts from the HDD.: Το παλιό πρόγραμμα εκκίνησης του HDD επέστρεψε. Το BIBLE δεν ξεκινά πια από τον HDD.
-  ? The console would not bind BIBLE to memory card %d (its MagicGate step failed). Nothing on the card was changed. A card that is not a genuine or MagicGate-compatible one cannot hold a system update.
-  : Η κονσόλα δεν έδεσε το BIBLE με την κάρτα μνήμης %d (το βήμα MagicGate απέτυχε). Δεν άλλαξε τίποτα στην κάρτα. Μια κάρτα που δεν είναι γνήσια ή συμβατή με MagicGate δεν μπορεί να κρατήσει ενημέρωση συστήματος.
   'The one that was there is kept in RIPPS2/MBR-BACKUP.KELF on the HDD: BOOT LOADER > MANAGE > RESTORE puts it back.': 'Αυτό που υπήρχε φυλάγεται στο RIPPS2/MBR-BACKUP.KELF στον HDD: το ΦΟΡΤΩΤΗΣ ΕΚΚΙΝΗΣΗΣ > ΔΙΑΧΕΙΡΙΣΗ > ΕΠΑΝΑΦΟΡΑ το επιστρέφει.'
   The security module would not start on this console. Nothing on the memory card was changed.: Η μονάδα ασφαλείας δεν ξεκίνησε σε αυτή την κονσόλα. Δεν άλλαξε τίποτα στην κάρτα μνήμης.
   ? 'There is no formatted PS2 memory card in either slot, and no internal HDD. BIBLE lives on a memory card or the HDD: insert a card, then try again.'
@@ -784,11 +793,9 @@ strings:
   POPSTARTER and Ember: POPSTARTER και Ember
   PS1 SETTINGS: ΡΥΘΜΙΣΕΙΣ PS1
   PS2BBL for RIPPS2: PS2BBL για το RIPPS2
-  RIP THIS CONSOLE'S SOUNDS: ΕΞΑΓΩΓΗ ΤΩΝ ΗΧΩΝ ΑΥΤΗΣ ΤΗΣ ΚΟΝΣΟΛΑΣ
   STATUS: ΚΑΤΑΣΤΑΣΗ
   a drive of unknown kind: δίσκος άγνωστου είδους
   boot loader, card by card: φορτωτής εκκίνησης, κάρτα προς κάρτα
-  from its BIOS, into AUDIO: από το BIOS της, στο AUDIO
   internal HDD (exFAT): εσωτερικός HDD (exFAT)
   its own IP and SMB files: δικά του αρχεία IP και SMB
   path, video, arguments: διαδρομή, βίντεο, ορίσματα
@@ -1138,7 +1145,6 @@ strings:
   'Game lists: each shows at once from its cache and stands until SELECT': 'Λίστες παιχνιδιών: η καθεμία φαίνεται αμέσως από την κρυφή μνήμη και μένει ως το SELECT'
   'Game lists: each shows at once from its cache, then is read again': 'Λίστες παιχνιδιών: η καθεμία φαίνεται αμέσως από την κρυφή μνήμη, μετά διαβάζεται ξανά'
   LOADING: ΦΟΡΤΩΣΗ
-  Makes RIPPS2's sounds from this console's own BIOS and writes them to the AUDIO folder.: Φτιάχνει τους ήχους του RIPPS2 από το BIOS αυτής της κονσόλας και τους γράφει στον φάκελο AUDIO.
   'No music yet: Audio settings > BIOS Music rips this console''s menu music.': 'Δεν υπάρχει ακόμα μουσική: Ρυθμίσεις ήχου > Μουσική BIOS εξάγει τη μουσική μενού αυτής της κονσόλας.'
   SAVE DIAGNOSTICS: ΑΠΟΘΗΚΕΥΣΗ ΔΙΑΓΝΩΣΤΙΚΩΝ
   Searches the drives for POPSTARTER, the POPS files, Ember, Ember's BIOS and Neutrino, and remembers where each one is.: Ψάχνει στους δίσκους για POPSTARTER, τα αρχεία POPS, Ember, το BIOS του Ember και Neutrino, και θυμάται πού είναι το καθένα.
@@ -1175,12 +1181,6 @@ strings:
   : 'Μια κάρτα SD2PSX ή MMCE μπορεί να προστατευτεί μετά από μια εγγραφή που απορρίφθηκε: αν τώρα λείπει η κάρτα μνήμης ή η μονάδα MMCE, σβήσε και άναψε την κονσόλα.'
   BOOT LOCK ON: BOOT LOCK ΕΝΕΡΓΟ
   'Done: the memory card in slot %d starts what it started before BIBLE. BIBLE is kept in mc%d:/%s.': 'Έγινε: η κάρτα μνήμης στην υποδοχή %d ξεκινά ό,τι ξεκινούσε πριν από το BIBLE. Το BIBLE φυλάσσεται στο mc%d:/%s.'
-  ? 'For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 2''s config before slot 1''s.
-  
-    '
-  : 'Για μια κοινή κάρτα μνήμης PS2 των 8 MB (κάρτα MagicGate, ή κάρτα BOOT SD2PSX ή MMCE): αυτή στην υποδοχή %d. Στην εκκίνηση το PS2BBL διαβάζει τις ρυθμίσεις της υποδοχής 2 πριν από αυτές της υποδοχής 1.
-  
-    '
   MEMORY CARD IN SLOT %d  (%s): ΚΑΡΤΑ ΜΝΗΜΗΣ ΣΤΗΝ ΥΠΟΔΟΧΗ %d  (%s)
   ? PS2BBL cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
   : Το PS2BBL δεν μπορεί να ξεκινήσει το RIPPS2 από εκεί που είναι τώρα (φτάνει σε κάρτες μνήμης, μονάδες USB και MX4SIO), και το RIPPS2 δεν αντιγράφει τον εαυτό του. Βάλε το RIPPS2.ELF σε κάρτα μνήμης ή μονάδα USB και ξεκίνα το από εκεί, ή χρησιμοποίησε το PS2BBL Extended, που διαβάζει MMCE και τον σκληρό δίσκο.
@@ -1216,20 +1216,6 @@ strings:
   'RIPPS2: Setting up BIBLE (restarting the I/O processor)': 'RIPPS2: στήσιμο του BIBLE (επανεκκίνηση του επεξεργαστή εισόδου/εξόδου)'
   'RIPPS2: Setting up BIBLE (writing it to the memory card)': 'RIPPS2: στήσιμο του BIBLE (εγγραφή στην κάρτα μνήμης)'
   SET UP BIBLE: ΣΤΗΣΙΜΟ BIBLE
-  ? 'SLOT 1: %s
-  
-    SLOT 2: %s
-  
-    %s
-  
-    RIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
-  : 'ΥΠΟΔΟΧΗ 1: %s
-  
-    ΥΠΟΔΟΧΗ 2: %s
-  
-    %s
-  
-    RIPPS2: στήσιμο του BIBLE. Το PS2BBL του El Isra, στημένο από το RIPPS2 σε κοινή κάρτα μνήμης PS2 των 8 MB ή στον εσωτερικό σκληρό δίσκο: εκκίνηση σε 0 ms (το PS2BBL Extended δεν επιτρέπει 0), πρώτα το RIPPS2 από εκεί που είναι (δεν αντιγράφεται ποτέ), και ένα κουμπί πατημένο στην εκκίνηση οδηγεί ακόμα στον browser (TRIANGLE), σε δίσκο (START) και σε ό,τι υπήρχε πριν (CIRCLE). Να στηθεί, να επισκευαστεί ή να επανέλθει ό,τι αντικατέστησε;'
   The memory card in slot %d has %d KB free, and BIBLE needs %d KB there. Free some space, then try again.: Η κάρτα μνήμης στην υποδοχή %d έχει %d KB ελεύθερα και το BIBLE χρειάζεται εκεί %d KB. Ελευθέρωσε λίγο χώρο και δοκίμασε ξανά.
   ? The memory card in slot %d refused PS2BBL, so RIPPS2 put the card back as it was. Check its free space, then try again. (DIAG.TXT beside RIPPS2 has what the card said.)
   : Η κάρτα μνήμης στην υποδοχή %d απέρριψε το PS2BBL, οπότε το RIPPS2 άφησε την κάρτα όπως ήταν. Έλεγξε τον ελεύθερο χώρο και δοκίμασε ξανά. (Το DIAG.TXT δίπλα στο RIPPS2 έχει την απάντηση της κάρτας.)
@@ -1398,7 +1384,6 @@ strings:
   'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 'Χωρίς CHEATS στο μενού μέσα στο παιχνίδι: τα cheats που επιλέχθηκαν πριν την εκκίνηση τρέχουν όλο το παιχνίδι, όπως πριν.'
   BOOT SOUND WITH THE PILLARS: ΗΧΟΣ ΕΚΚΙΝΗΣΗΣ ΜΕ ΤΟΥΣ ΠΥΛΩΝΕΣ
   'Boot Sound: On (fast)': 'Ήχος εκκίνησης: Ναι (γρήγορα)'
-  'Boot sound On (fast): %s, as the pillars rise': 'Ήχος εκκίνησης Ναι (γρήγορα): %s, καθώς υψώνονται οι πυλώνες'
   'Boot sound On: from the AUDIO folder, once its drive is up': 'Ήχος εκκίνησης Ναι: από τον φάκελο AUDIO, μόλις ο δίσκος του είναι έτοιμος'
   Boot sound off (Audio settings > Boot Sound): Ήχος εκκίνησης όχι (Ρυθμίσεις ήχου > Ήχος εκκίνησης)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Αντιγράφει το boot.adp δίπλα στο RIPPS2 στην κάρτα μνήμης από την οποία ξεκινά, όπου η εκκίνηση το διαβάζει πριν ετοιμαστεί οποιοσδήποτε δίσκος.
@@ -1658,7 +1643,7 @@ labels:
   GAME_TYPE_LABELS: Εμφάνιση ετικετών [PS1]/[PS2]
   NEUTRINO_CHEATS_WRITE_FAILED: Η λίστα κωδικών δεν αποθηκεύτηκε στον φάκελο Neutrino, οπότε το Neutrino δεν μπορεί να τη χρησιμοποιήσει. Εκκίνηση χωρίς κωδικούς;
   AUTO_CREATE_VMC: Δημιουργία VMC στην πρώτη εκκίνηση
-  HINT_AUTO_CREATE_VMC: Η εκκίνηση ενός παιχνιδιού PS2 χωρίς VMC στην υποδοχή 1 δημιουργεί μια κάρτα 8 MB στη συσκευή του παιχνιδιού, με το όνομα που προτείνει η οθόνη VMC (κοινή για όλους τους δίσκους του παιχνιδιού), και την αναθέτει. Με το Neutrino όχι στον APA HDD (ένας exFAT HDD λειτουργεί).
+  HINT_AUTO_CREATE_VMC: "Η εκκίνηση ενός παιχνιδιού PS2 χωρίς VMC στην υποδοχή 0 δημιουργεί μια κάρτα 8 MB στη συσκευή του παιχνιδιού, με το όνομα που προτείνει η οθόνη VMC (κοινή για όλους τους δίσκους του παιχνιδιού), και την αναθέτει. Με το Neutrino όχι στον APA HDD (ένας exFAT HDD λειτουργεί)."
   AUTO_VMC_CREATING: Δημιουργία του VMC αυτού του παιχνιδιού...
   AUTO_VMC_FAILED: Το VMC αυτού του παιχνιδιού δεν δημιουργήθηκε. Το παιχνίδι ξεκινά χωρίς.
   RIPPS2_BIOS_MUSIC: Μουσική BIOS

@@ -66,6 +66,8 @@ cp -f "$HERE"/theme/gfx/*.png "$SRC/gfx/"
 # elf/bible/README.md for its licence and source)
 cp -f "$HERE/bible/SYSTEM.XLF" "$SRC/misc/bible_system.xlf"
 cp -f "$HERE/bible/MX4SIO/SYSTEM.XLF" "$SRC/misc/bible_mx4sio_system.xlf"
+# build 136: BIBLE's MMCE build (reads mmce0:/mmce1:), signed with the others on 11/03
+cp -f "$HERE/bible/MMCE/SYSTEM.XLF" "$SRC/misc/bible_mmce_system.xlf"
 # BIBLE on the HDD (build 73): its HDD build, HSYSTEM.XLF (build 134: BIBLE's, signed with the card builds)
 cp -f "$HERE/bible/HSYSTEM.XLF" "$SRC/misc/bible_hdd_system.xlf"
 # Ember and POPSTARTER are the user's own from build 113, found and launched, not carried (elf/ember, elf/popstarter)

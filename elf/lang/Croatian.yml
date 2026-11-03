@@ -3,6 +3,17 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Croatian
 strings:
+  "The console would not bind BIBLE to the memory card in slot %d (its MagicGate step failed). Nothing on the card was changed. A card that is not a genuine or MagicGate-compatible one cannot hold a system update.": "Konzola nije htjela vezati BIBLE za memorijsku karticu u utoru %d (njezin MagicGate korak nije uspio). Ništa na kartici nije promijenjeno. Kartica koja nije originalna ili kompatibilna s MagicGateom ne može sadržavati ažuriranje sustava."
+  "An SD2PSX or MMCE card can stop answering after a refused bind: if the memory card or the MMCE drive is missing now, turn the console off and on.": "Kartica SD2PSX ili MMCE može prestati odgovarati nakon odbijenog vezanja: ako sada nedostaje memorijska kartica ili MMCE pogon, isključi i ponovno uključi konzolu."
+  "RIPPS2: Setting up BIBLE\nThe card in slot %d is an SD2PSX or MMCE card. The console cannot bind BIBLE to one (an SD2PSX refuses it, then stops answering until the console is turned off and on), so nothing was tried. Its BOOT card has its own PS2BBL: START turns BOOT LOCK on, so it starts RIPPS2 at power on. BIBLE goes on a genuine PS2 memory card.": "RIPPS2: postavljanje BIBLE\nKartica u utoru %d je kartica SD2PSX ili MMCE. Konzola ne može vezati BIBLE za nju (SD2PSX to odbija, a zatim ne odgovara dok se konzola ne isključi i uključi), pa ništa nije pokušano. Njezina BOOT kartica ima vlastiti PS2BBL: START uključuje BOOT LOCK, pa pri uključivanju pokreće RIPPS2. BIBLE ide na originalnu PS2 memorijsku karticu."
+  "For a standard 8 MB PS2 memory card (a genuine MagicGate card: an SD2PSX or MMCE card cannot be bound): the one in slot %d. At power on PS2BBL reads slot 1's config before slot 0's.\n": "Za običnu PS2 memorijsku karticu od 8 MB (originalnu MagicGate karticu: kartica SD2PSX ili MMCE ne može se vezati): onu u utoru %d. Pri uključivanju PS2BBL čita konfiguraciju utora 1 prije konfiguracije utora 0.\n"
+  "RIP THIS CONSOLE'S AUDIO": "IZDVOJI ZVUK OVE KONZOLE"
+  "sounds or music, from its BIOS": "zvukovi ili glazba, iz njezinog BIOS-a"
+  "Opens Audio settings on BIOS Sounds and BIOS Music: rip this console's own sounds or its menu music into AUDIO.": "Otvara Postavke zvuka na BIOS zvukovima i BIOS glazbi: izdvoji vlastite zvukove ove konzole ili glazbu njezinog izbornika u AUDIO."
+  "Boot sound On (fast): %s on the memory card, as the pillars rise": "Zvuk pokretanja Uklj. (brzo): %s na memorijskoj kartici, dok stupovi rastu"
+  "Boot sound On: %s on the memory card, as the pillars rise": "Zvuk pokretanja Uklj.: %s na memorijskoj kartici, dok stupovi rastu"
+  "Boot sound On: %s, once its drive is up": "Zvuk pokretanja Uklj.: %s, kad mu je disk spreman"
+  "SLOT 0: %s\nSLOT 1: %s\n%s\nRIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?": "UTOR 0: %s\nUTOR 1: %s\n%s\nRIPPS2: postavljanje BIBLE. PS2BBL autora El Isre, koji RIPPS2 postavlja na običnu PS2 memorijsku karticu od 8 MB ili unutarnji tvrdi disk: pokretanje za 0 ms pri uključivanju (PS2BBL Extended ne dopušta 0), prvo RIPPS2 s mjesta gdje jest (nikad se ne kopira), a tipka držana pri uključivanju i dalje vodi do preglednika (TRIANGLE), diska (START) i onoga što je bilo prije (CIRCLE). Postaviti, popraviti ili vratiti ono što je zamijenio?"
   "This game starts through Neutrino, and RIPPS2 found none: not at Settings' path, on the game's drive, on the memory cards or on any started drive. Put Neutrino by rickgaiser (github.com/rickgaiser/neutrino) in a neutrino folder on the game's drive or a memory card, or point Game Launching > Neutrino at it.": "Ova se igra pokreće kroz Neutrino, a RIPPS2 nije našao nijedan: ni na putanji iz Postavki, ni na disku igre, ni na memorijskim karticama, ni na bilo kojem pokrenutom disku. Stavi rickgaiserov Neutrino (github.com/rickgaiser/neutrino) u mapu neutrino na disku igre ili memorijskoj kartici ili usmjeri Pokretanje igara > Neutrino na njega."
   "Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets. Get Neutrino at github.com/rickgaiser/neutrino and put it in a neutrino folder on a drive or a memory card.": "Gdje je tvoj Neutrino, njegov video način i argumenti koje dobiva svako pokretanje Neutrina. Neutrino nabavi na github.com/rickgaiser/neutrino i stavi ga u mapu neutrino na disku ili memorijskoj kartici."
   "This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer.": "Ovaj Neutrino stariji je od 1.3, koji ne može pokretati igre s APA HDD-a. Usmjeri Pokretanje igara > Neutrino na Neutrino 1.3 ili noviji."
@@ -311,8 +322,6 @@ strings:
   Reading the memory cards: Čitanje memorijskih kartica
   The HDD partition BIBLE uses went away. Nothing was changed.: Particija HDD-a koju BIBLE koristi je nestala. Ništa nije promijenjeno.
   The HDD's old boot program is back. BIBLE no longer starts from the HDD.: Stari program za pokretanje HDD-a je vraćen. BIBLE se više ne pokreće s HDD-a.
-  ? The console would not bind BIBLE to memory card %d (its MagicGate step failed). Nothing on the card was changed. A card that is not a genuine or MagicGate-compatible one cannot hold a system update.
-  : Konzola nije htjela vezati BIBLE za memorijsku karticu %d (njezin MagicGate korak nije uspio). Ništa na kartici nije promijenjeno. Kartica koja nije originalna ili kompatibilna s MagicGateom ne može sadržavati ažuriranje sustava.
   'The one that was there is kept in RIPPS2/MBR-BACKUP.KELF on the HDD: BOOT LOADER > MANAGE > RESTORE puts it back.': 'Onaj koji je bio ondje čuva se u RIPPS2/MBR-BACKUP.KELF na HDD-u: UČITAVAČ > UPRAVLJAJ > VRATI ga vraća.'
   The security module would not start on this console. Nothing on the memory card was changed.: Sigurnosni modul se nije htio pokrenuti na ovoj konzoli. Ništa na memorijskoj kartici nije promijenjeno.
   ? 'There is no formatted PS2 memory card in either slot, and no internal HDD. BIBLE lives on a memory card or the HDD: insert a card, then try again.'
@@ -784,11 +793,9 @@ strings:
   POPSTARTER and Ember: POPSTARTER i Ember
   PS1 SETTINGS: PS1 POSTAVKE
   PS2BBL for RIPPS2: PS2BBL za RIPPS2
-  RIP THIS CONSOLE'S SOUNDS: IZDVOJI ZVUKOVE OVE KONZOLE
   STATUS: STATUS
   a drive of unknown kind: pogon nepoznate vrste
   boot loader, card by card: učitavač, kartica po kartica
-  from its BIOS, into AUDIO: iz njezina BIOS-a, u AUDIO
   internal HDD (exFAT): unutarnji HDD (exFAT)
   its own IP and SMB files: vlastite IP i SMB datoteke
   path, video, arguments: putanja, video, argumenti
@@ -1138,7 +1145,6 @@ strings:
   'Game lists: each shows at once from its cache and stands until SELECT': 'Popisi igara: svaki se odmah prikaže iz predmemorije i ostaje do SELECT'
   'Game lists: each shows at once from its cache, then is read again': 'Popisi igara: svaki se odmah prikaže iz predmemorije, a zatim se ponovno čita'
   LOADING: UČITAVANJE
-  Makes RIPPS2's sounds from this console's own BIOS and writes them to the AUDIO folder.: Izrađuje zvukove RIPPS2 iz BIOS-a ove konzole i zapisuje ih u mapu AUDIO.
   'No music yet: Audio settings > BIOS Music rips this console''s menu music.': 'Još nema glazbe: Postavke zvuka > BIOS glazba izdvaja glazbu izbornika ove konzole.'
   SAVE DIAGNOSTICS: SPREMI DIJAGNOSTIKU
   Searches the drives for POPSTARTER, the POPS files, Ember, Ember's BIOS and Neutrino, and remembers where each one is.: Pretražuje pogone za POPSTARTER, POPS datoteke, Ember, Emberov BIOS i Neutrino te pamti gdje je što.
@@ -1175,12 +1181,6 @@ strings:
   : 'Kartica SD2PSX ili MMCE može se zaštititi nakon odbijenog upisa: ako sada nedostaje memorijska kartica ili MMCE pogon, isključi i ponovno uključi konzolu.'
   BOOT LOCK ON: BOOT LOCK UKLJUČEN
   'Done: the memory card in slot %d starts what it started before BIBLE. BIBLE is kept in mc%d:/%s.': 'Gotovo: memorijska kartica u utoru %d pokreće ono što je pokretala prije BIBLE. BIBLE čuva se u mc%d:/%s.'
-  ? 'For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 2''s config before slot 1''s.
-  
-    '
-  : 'Za običnu PS2 memorijsku karticu od 8 MB (MagicGate karticu ili BOOT karticu SD2PSX ili MMCE): onu u utoru %d. Pri uključivanju PS2BBL čita konfiguraciju utora 2 prije konfiguracije utora 1.
-  
-    '
   MEMORY CARD IN SLOT %d  (%s): MEMORIJSKA KARTICA U UTORU %d  (%s)
   ? PS2BBL cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
   : PS2BBL ne može pokrenuti RIPPS2 s mjesta na kojem je sada (dohvaća memorijske kartice, USB pogone i MX4SIO), a RIPPS2 ne kopira sam sebe. Stavi RIPPS2.ELF na memorijsku karticu ili USB pogon i pokreni ga odande, ili koristi PS2BBL Extended, koji čita MMCE i tvrdi disk.
@@ -1216,20 +1216,6 @@ strings:
   'RIPPS2: Setting up BIBLE (restarting the I/O processor)': 'RIPPS2: postavljanje BIBLE (ponovno pokretanje U/I procesora)'
   'RIPPS2: Setting up BIBLE (writing it to the memory card)': 'RIPPS2: postavljanje BIBLE (upis na memorijsku karticu)'
   SET UP BIBLE: POSTAVI BIBLE
-  ? 'SLOT 1: %s
-  
-    SLOT 2: %s
-  
-    %s
-  
-    RIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
-  : 'UTOR 1: %s
-  
-    UTOR 2: %s
-  
-    %s
-  
-    RIPPS2: postavljanje BIBLE. PS2BBL autora El Isre, koji RIPPS2 postavlja na običnu PS2 memorijsku karticu od 8 MB ili unutarnji tvrdi disk: pokretanje za 0 ms pri uključivanju (PS2BBL Extended ne dopušta 0), prvo RIPPS2 s mjesta gdje jest (nikad se ne kopira), a tipka držana pri uključivanju i dalje vodi do preglednika (TRIANGLE), diska (START) i onoga što je bilo prije (CIRCLE). Postaviti, popraviti ili vratiti ono što je zamijenio?'
   The memory card in slot %d has %d KB free, and BIBLE needs %d KB there. Free some space, then try again.: Memorijska kartica u utoru %d ima %d KB slobodno, a BIBLE na njoj treba %d KB. Oslobodi malo mjesta pa pokušaj ponovno.
   ? The memory card in slot %d refused PS2BBL, so RIPPS2 put the card back as it was. Check its free space, then try again. (DIAG.TXT beside RIPPS2 has what the card said.)
   : Memorijska kartica u utoru %d odbila je PS2BBL, pa je RIPPS2 ostavio karticu kakva je bila. Provjeri slobodno mjesto pa pokušaj ponovno. (DIAG.TXT uz RIPPS2 sadrži odgovor kartice.)
@@ -1398,7 +1384,6 @@ strings:
   'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 'Bez CHEATS u izborniku u igri: cheatovi označeni prije pokretanja rade cijelu igru, kao dosad.'
   BOOT SOUND WITH THE PILLARS: ZVUK POKRETANJA SA STUPOVIMA
   'Boot Sound: On (fast)': 'Zvuk pokretanja: Uklj. (brzo)'
-  'Boot sound On (fast): %s, as the pillars rise': 'Zvuk pokretanja Uklj. (brzo): %s, dok stupovi rastu'
   'Boot sound On: from the AUDIO folder, once its drive is up': 'Zvuk pokretanja Uklj.: iz mape AUDIO, kad joj je disk spreman'
   Boot sound off (Audio settings > Boot Sound): Zvuk pokretanja isklj. (Postavke zvuka > Zvuk pokretanja)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: Kopira boot.adp pokraj RIPPS2 na memorijsku karticu s koje se pokreće, gdje ga pokretanje čita prije nego što je ijedan disk spreman.
@@ -1440,8 +1425,8 @@ labels:
   VMC_STATUS: Status
   RESETCOLOR: Vrati boje
   INFO: Informacije
-  VMC_SLOT1: VMC utor 1
-  VMC_SLOT2: VMC utor 2
+  VMC_SLOT1: "VMC utor 0"
+  VMC_SLOT2: "VMC utor 1"
   VSYNC: V-Sync
   PS2LOGO: PS2 logo
   HINT_PS2LOGO: Prikazuje se za valjan logo diska koji odgovara regiji konzole.
@@ -1667,7 +1652,7 @@ labels:
   GAME_TYPE_LABELS: Prikaži oznake [PS1]/[PS2]
   NEUTRINO_CHEATS_WRITE_FAILED: Popis varki nije se mogao spremiti u mapu Neutrino, pa ga Neutrino ne može koristiti. Pokrenuti bez varki?
   AUTO_CREATE_VMC: Stvori VMC pri prvom pokretanju
-  HINT_AUTO_CREATE_VMC: Pokretanje PS2 igre bez VMC-a u utoru 1 stvara karticu od 8 MB na uređaju igre, nazvanu kako predlaže zaslon VMC (dijele je svi diskovi igre), i dodjeljuje je. Pod Neutrinom ne na APA HDD-u (exFAT HDD radi).
+  HINT_AUTO_CREATE_VMC: "Pokretanje PS2 igre bez VMC-a u utoru 0 stvara karticu od 8 MB na uređaju igre, nazvanu kako predlaže zaslon VMC (dijele je svi diskovi igre), i dodjeljuje je. Pod Neutrinom ne na APA HDD-u (exFAT HDD radi)."
   AUTO_VMC_CREATING: Stvaranje VMC-a ove igre...
   AUTO_VMC_FAILED: VMC ove igre nije se mogao stvoriti. Igra počinje bez njega.
   RIPPS2_BIOS_MUSIC: BIOS glazba

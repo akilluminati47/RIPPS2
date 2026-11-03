@@ -3,6 +3,17 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: TChinese
 strings:
+  "The console would not bind BIBLE to the memory card in slot %d (its MagicGate step failed). Nothing on the card was changed. A card that is not a genuine or MagicGate-compatible one cannot hold a system update.": "主機不肯把 BIBLE 綁定到插槽 %d 的記憶卡（MagicGate 步驟失敗）。記憶卡上沒有任何變更。非原廠或不相容 MagicGate 的記憶卡無法存放系統更新。"
+  "An SD2PSX or MMCE card can stop answering after a refused bind: if the memory card or the MMCE drive is missing now, turn the console off and on.": "SD2PSX 或 MMCE 卡在綁定被拒後可能不再回應：如果現在記憶卡或 MMCE 磁碟不見了，請關閉主機再開啟。"
+  "RIPPS2: Setting up BIBLE\nThe card in slot %d is an SD2PSX or MMCE card. The console cannot bind BIBLE to one (an SD2PSX refuses it, then stops answering until the console is turned off and on), so nothing was tried. Its BOOT card has its own PS2BBL: START turns BOOT LOCK on, so it starts RIPPS2 at power on. BIBLE goes on a genuine PS2 memory card.": "RIPPS2：正在設定 BIBLE\n插槽 %d 中的卡是 SD2PSX 或 MMCE 卡。主機無法把 BIBLE 綁定到這種卡（SD2PSX 會拒絕，之後直到主機關機再開機都不再回應），所以沒有嘗試任何操作。它的 BOOT 卡有自己的 PS2BBL：按 START 開啟 BOOT LOCK，開機時它就會啟動 RIPPS2。BIBLE 應裝在原廠 PS2 記憶卡上。"
+  "For a standard 8 MB PS2 memory card (a genuine MagicGate card: an SD2PSX or MMCE card cannot be bound): the one in slot %d. At power on PS2BBL reads slot 1's config before slot 0's.\n": "適用於標準 8 MB PS2 記憶卡 (原廠 MagicGate 卡；SD2PSX、MMCE 卡無法綁定)：插槽 %d 中的那張。開機時 PS2BBL 先讀插槽 1 的設定，再讀插槽 0 的。\n"
+  "RIP THIS CONSOLE'S AUDIO": "擷取這台主機的音訊"
+  "sounds or music, from its BIOS": "音效或音樂，來自它的 BIOS"
+  "Opens Audio settings on BIOS Sounds and BIOS Music: rip this console's own sounds or its menu music into AUDIO.": "開啟音訊設定的 BIOS 聲音和 BIOS 音樂：把這台主機的音效或選單音樂擷取到 AUDIO。"
+  "Boot sound On (fast): %s on the memory card, as the pillars rise": "開機音 開(快速):記憶卡上的 %s,光柱升起時"
+  "Boot sound On: %s on the memory card, as the pillars rise": "開機音 開:記憶卡上的 %s,光柱升起時"
+  "Boot sound On: %s, once its drive is up": "開機音 開:%s,其磁碟就緒後"
+  "SLOT 0: %s\nSLOT 1: %s\n%s\nRIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?": "插槽 0：%s\n插槽 1：%s\n%s\nRIPPS2：正在設定 BIBLE。El Isra 的 PS2BBL，由 RIPPS2 設定在標準 8 MB PS2 記憶卡或內建硬碟上：開機 0 ms 啟動 (PS2BBL Extended 不允許 0)，先從 RIPPS2 所在的位置啟動它 (從不複製)，開機時按住按鈕仍可進入瀏覽器 (TRIANGLE)、光碟 (START) 和原本的內容 (CIRCLE)。要設定、修復，還是還原被它取代的內容？"
   "This game starts through Neutrino, and RIPPS2 found none: not at Settings' path, on the game's drive, on the memory cards or on any started drive. Put Neutrino by rickgaiser (github.com/rickgaiser/neutrino) in a neutrino folder on the game's drive or a memory card, or point Game Launching > Neutrino at it.": "這個遊戲透過 Neutrino 啟動，但 RIPPS2 沒有找到：設定中的路徑、遊戲所在的磁碟、記憶卡和任何已啟動的磁碟上都沒有。請把 rickgaiser 的 Neutrino（github.com/rickgaiser/neutrino）放進遊戲所在磁碟或記憶卡上的 neutrino 資料夾，或在遊戲啟動 > Neutrino 中指向它。"
   "Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets. Get Neutrino at github.com/rickgaiser/neutrino and put it in a neutrino folder on a drive or a memory card.": "你的 Neutrino 的位置、影像模式，以及每次用 Neutrino 啟動時傳入的參數。 從 github.com/rickgaiser/neutrino 取得 Neutrino，放進磁碟或記憶卡上的 neutrino 資料夾。"
   "This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer.": "這個 Neutrino 早於 1.3，無法從 APA 硬碟啟動遊戲。請把遊戲啟動 > Neutrino 指向 Neutrino 1.3 或更新版本。"
@@ -311,8 +322,6 @@ strings:
   Reading the memory cards: 正在讀取記憶卡
   The HDD partition BIBLE uses went away. Nothing was changed.: BIBLE 使用的硬碟分割區不見了。沒有任何變更。
   The HDD's old boot program is back. BIBLE no longer starts from the HDD.: 硬碟原本的開機程式已放回。BIBLE 不再從硬碟啟動。
-  ? The console would not bind BIBLE to memory card %d (its MagicGate step failed). Nothing on the card was changed. A card that is not a genuine or MagicGate-compatible one cannot hold a system update.
-  : 主機不肯把 BIBLE 綁定到記憶卡 %d（MagicGate 步驟失敗）。記憶卡上沒有任何變更。非原廠或不相容 MagicGate 的記憶卡無法存放系統更新。
   'The one that was there is kept in RIPPS2/MBR-BACKUP.KELF on the HDD: BOOT LOADER > MANAGE > RESTORE puts it back.': 原本的那個保存在硬碟上的 RIPPS2/MBR-BACKUP.KELF：開機程式 > 管理 > 還原 會把它放回。
   The security module would not start on this console. Nothing on the memory card was changed.: 安全模組無法在這台主機上啟動。記憶卡上沒有任何變更。
   ? 'There is no formatted PS2 memory card in either slot, and no internal HDD. BIBLE lives on a memory card or the HDD: insert a card, then try again.'
@@ -784,11 +793,9 @@ strings:
   POPSTARTER and Ember: POPSTARTER 與 Ember
   PS1 SETTINGS: PS1 設定
   PS2BBL for RIPPS2: 供 RIPPS2 使用的 PS2BBL
-  RIP THIS CONSOLE'S SOUNDS: 擷取這台主機的音效
   STATUS: 狀態
   a drive of unknown kind: 未知類型的磁碟機
   boot loader, card by card: 開機程式，逐卡查看
-  from its BIOS, into AUDIO: 來自其 BIOS，存入 AUDIO
   internal HDD (exFAT): 內建硬碟（exFAT）
   its own IP and SMB files: 獨立的 IP 與 SMB 檔案
   path, video, arguments: 路徑、視訊、參數
@@ -1138,7 +1145,6 @@ strings:
   'Game lists: each shows at once from its cache and stands until SELECT': 遊戲清單：立即從快取顯示，保持到按 SELECT
   'Game lists: each shows at once from its cache, then is read again': 遊戲清單：立即從快取顯示，然後重新讀取
   LOADING: 載入
-  Makes RIPPS2's sounds from this console's own BIOS and writes them to the AUDIO folder.: 用這台主機自己的 BIOS 產生 RIPPS2 的音效，並寫入 AUDIO 資料夾。
   'No music yet: Audio settings > BIOS Music rips this console''s menu music.': 還沒有音樂：音訊設定 > BIOS 音樂可擷取這台主機的選單音樂。
   SAVE DIAGNOSTICS: 儲存診斷資訊
   Searches the drives for POPSTARTER, the POPS files, Ember, Ember's BIOS and Neutrino, and remembers where each one is.: 在各磁碟機上尋找 POPSTARTER、POPS 檔案、Ember、Ember 的 BIOS 和 Neutrino，並記住各自的位置。
@@ -1175,12 +1181,6 @@ strings:
   : SD2PSX 或 MMCE 卡在寫入被拒後可能會自我保護：如果現在記憶卡或 MMCE 磁碟不見了，請關閉主機再開啟。
   BOOT LOCK ON: BOOT LOCK 開啟
   'Done: the memory card in slot %d starts what it started before BIBLE. BIBLE is kept in mc%d:/%s.': 完成：插槽 %d 的記憶卡會啟動 BIBLE 之前啟動的內容。BIBLE 保留在 mc%d:/%s。
-  ? 'For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 2''s config before slot 1''s.
-  
-    '
-  : '適用於標準 8 MB PS2 記憶卡 (MagicGate 卡，或 SD2PSX、MMCE 的 BOOT 卡)：插槽 %d 中的那張。開機時 PS2BBL 先讀插槽 2 的設定，再讀插槽 1 的。
-  
-    '
   MEMORY CARD IN SLOT %d  (%s): 插槽 %d 的記憶卡  (%s)
   ? PS2BBL cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
   : PS2BBL 無法從 RIPPS2 目前的位置啟動它 (它只能存取記憶卡、USB 磁碟和 MX4SIO)，而 RIPPS2 不會複製自己。請把 RIPPS2.ELF 放到記憶卡或 USB 磁碟上並從那裡啟動，或使用能讀取 MMCE 和硬碟的 PS2BBL Extended。
@@ -1216,20 +1216,6 @@ strings:
   'RIPPS2: Setting up BIBLE (restarting the I/O processor)': RIPPS2：正在設定 BIBLE (正在重新啟動 I/O 處理器)
   'RIPPS2: Setting up BIBLE (writing it to the memory card)': RIPPS2：正在設定 BIBLE (正在寫入記憶卡)
   SET UP BIBLE: 設定 BIBLE
-  ? 'SLOT 1: %s
-  
-    SLOT 2: %s
-  
-    %s
-  
-    RIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
-  : '插槽 1：%s
-  
-    插槽 2：%s
-  
-    %s
-  
-    RIPPS2：正在設定 BIBLE。El Isra 的 PS2BBL，由 RIPPS2 設定在標準 8 MB PS2 記憶卡或內建硬碟上：開機 0 ms 啟動 (PS2BBL Extended 不允許 0)，先從 RIPPS2 所在的位置啟動它 (從不複製)，開機時按住按鈕仍可進入瀏覽器 (TRIANGLE)、光碟 (START) 和原本的內容 (CIRCLE)。要設定、修復，還是還原被它取代的內容？'
   The memory card in slot %d has %d KB free, and BIBLE needs %d KB there. Free some space, then try again.: 插槽 %d 的記憶卡剩餘 %d KB，而 BIBLE 需要 %d KB。請騰出一些空間後再試。
   ? The memory card in slot %d refused PS2BBL, so RIPPS2 put the card back as it was. Check its free space, then try again. (DIAG.TXT beside RIPPS2 has what the card said.)
   : 插槽 %d 的記憶卡拒絕了 PS2BBL，所以 RIPPS2 讓卡保持原樣。請檢查剩餘空間後再試。(卡的回應在 RIPPS2 旁邊的 DIAG.TXT 裡。)
@@ -1398,7 +1384,6 @@ strings:
   'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 遊戲內選單沒有 CHEATS:啟動前勾選的金手指照舊全程生效。
   BOOT SOUND WITH THE PILLARS: 開機音隨光柱響起
   'Boot Sound: On (fast)': 開機音:開(快速)
-  'Boot sound On (fast): %s, as the pillars rise': 開機音 開(快速):%s,光柱升起時
   'Boot sound On: from the AUDIO folder, once its drive is up': 開機音 開:來自 AUDIO 資料夾,其磁碟就緒後
   Boot sound off (Audio settings > Boot Sound): 開機音 關(音訊設定 > 開機音)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: 將 boot.adp 複製到啟動所用記憶卡上的 RIPPS2 旁,開機時先於任何磁碟讀取。
@@ -1656,7 +1641,7 @@ labels:
   GAME_TYPE_LABELS: 顯示 [PS1]/[PS2] 標籤
   NEUTRINO_CHEATS_WRITE_FAILED: 無法把金手指清單儲存到 Neutrino 資料夾，因此 Neutrino 無法使用。要不帶金手指啟動嗎？
   AUTO_CREATE_VMC: 首次啟動時建立 VMC
-  HINT_AUTO_CREATE_VMC: 在插槽 1 沒有 VMC 時啟動 PS2 遊戲，會在遊戲所在裝置上建立一張 8 MB 的卡，依 VMC 畫面建議的名稱命名（該遊戲的所有光碟共用），並指派給它。Neutrino 下不能在 APA 硬碟上（exFAT 硬碟可以）。
+  HINT_AUTO_CREATE_VMC: "在插槽 0 沒有 VMC 時啟動 PS2 遊戲，會在遊戲所在裝置上建立一張 8 MB 的卡，依 VMC 畫面建議的名稱命名（該遊戲的所有光碟共用），並指派給它。Neutrino 下不能在 APA 硬碟上（exFAT 硬碟可以）。"
   AUTO_VMC_CREATING: 正在建立這個遊戲的 VMC...
   AUTO_VMC_FAILED: 無法建立這個遊戲的 VMC。遊戲將在沒有 VMC 的情況下啟動。
   RIPPS2_BIOS_MUSIC: BIOS 音樂

@@ -38,7 +38,7 @@ if 'stLauncher(SEANCE_NEUTRINO, "Neutrino", p, 4);' not in st or 'github.com/ric
 for credit in ('"Neutrino by rickgaiser"', '"ORBIT\'s Neutrino fork by danielnuld"', '"github.com/rickgaiser/neutrino"'):
     if credit not in ab:
         fail.append('About keeps the credit %s' % credit)
-if 'bible_xlf.o bible_mx4sio_xlf.o bible_hdd_xlf.o' not in mk:
+if 'bible_xlf.o bible_mx4sio_xlf.o bible_mmce_xlf.o bible_hdd_xlf.o' not in mk:
     fail.append('RIPPS2.elf carries BIBLE')
 
 if fail:

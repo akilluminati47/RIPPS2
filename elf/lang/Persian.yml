@@ -3,6 +3,17 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Persian
 strings:
+  "The console would not bind BIBLE to the memory card in slot %d (its MagicGate step failed). Nothing on the card was changed. A card that is not a genuine or MagicGate-compatible one cannot hold a system update.": "کنسول BIBLE را به کارت حافظه در شکاف %d پیوند نداد (مرحله MagicGate آن ناموفق بود). چیزی روی کارت تغییر نکرد. کارتی که اصل یا سازگار با MagicGate نباشد نمی‌تواند به‌روزرسانی سیستم را نگه دارد."
+  "An SD2PSX or MMCE card can stop answering after a refused bind: if the memory card or the MMCE drive is missing now, turn the console off and on.": "کارت SD2PSX یا MMCE ممکن است بعد از رد شدن پیوند دیگر پاسخ ندهد: اگر حالا کارت حافظه یا درایو MMCE دیده نمی‌شود، کنسول را خاموش و روشن کن."
+  "RIPPS2: Setting up BIBLE\nThe card in slot %d is an SD2PSX or MMCE card. The console cannot bind BIBLE to one (an SD2PSX refuses it, then stops answering until the console is turned off and on), so nothing was tried. Its BOOT card has its own PS2BBL: START turns BOOT LOCK on, so it starts RIPPS2 at power on. BIBLE goes on a genuine PS2 memory card.": "RIPPS2: در حال راه‌اندازی BIBLE\nکارت در شکاف %d یک کارت SD2PSX یا MMCE است. کنسول نمی‌تواند BIBLE را به آن پیوند دهد (SD2PSX آن را رد می‌کند و تا خاموش و روشن شدن کنسول پاسخ نمی‌دهد)، پس کاری امتحان نشد. کارت BOOT آن PS2BBL خودش را دارد: START قفل BOOT LOCK را روشن می‌کند تا هنگام روشن شدن RIPPS2 را اجرا کند. جای BIBLE روی یک کارت حافظه اصل PS2 است."
+  "For a standard 8 MB PS2 memory card (a genuine MagicGate card: an SD2PSX or MMCE card cannot be bound): the one in slot %d. At power on PS2BBL reads slot 1's config before slot 0's.\n": "برای یک کارت حافظه معمولی 8 MB PS2 (کارت اصل MagicGate: کارت SD2PSX یا MMCE پیوند نمی‌خورد): همان که در شکاف %d است. هنگام روشن شدن، PS2BBL پیکربندی شکاف 1 را پیش از شکاف 0 می‌خواند.\n"
+  "RIP THIS CONSOLE'S AUDIO": "استخراج صدای این کنسول"
+  "sounds or music, from its BIOS": "صداها یا موسیقی، از BIOS آن"
+  "Opens Audio settings on BIOS Sounds and BIOS Music: rip this console's own sounds or its menu music into AUDIO.": "تنظیمات صدا را روی صداهای BIOS و موسیقی BIOS باز می‌کند: صداهای این کنسول یا موسیقی منوی آن را در AUDIO استخراج کن."
+  "Boot sound On (fast): %s on the memory card, as the pillars rise": "صدای راه‌اندازی روشن (سریع): %s روی کارت حافظه، هنگام بالا آمدن ستون‌ها"
+  "Boot sound On: %s on the memory card, as the pillars rise": "صدای راه‌اندازی روشن: %s روی کارت حافظه، هنگام بالا آمدن ستون‌ها"
+  "Boot sound On: %s, once its drive is up": "صدای راه‌اندازی روشن: %s، وقتی درایوش آماده شد"
+  "SLOT 0: %s\nSLOT 1: %s\n%s\nRIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?": "شکاف 0: %s\nشکاف 1: %s\n%s\nRIPPS2: در حال راه‌اندازی BIBLE. PS2BBL ساخته El Isra، که RIPPS2 آن را روی یک کارت حافظه معمولی 8 MB PS2 یا هارد دیسک داخلی راه‌اندازی می‌کند: شروع در 0 ms هنگام روشن شدن (PS2BBL Extended اجازه 0 نمی‌دهد)، اول RIPPS2 از جایی که هست (هرگز کپی نمی‌شود)، و دکمه‌ای که هنگام روشن شدن نگه داشته شود هنوز به مرورگر (TRIANGLE)، دیسک (START) و آنچه پیش‌تر بود (CIRCLE) می‌رسد. راه‌اندازی شود، تعمیر شود یا آنچه جایش را گرفته بازگردانده شود؟"
   "This game starts through Neutrino, and RIPPS2 found none: not at Settings' path, on the game's drive, on the memory cards or on any started drive. Put Neutrino by rickgaiser (github.com/rickgaiser/neutrino) in a neutrino folder on the game's drive or a memory card, or point Game Launching > Neutrino at it.": "این بازی با Neutrino شروع می‌شود و RIPPS2 هیچ‌کدام را پیدا نکرد: نه در مسیر تنظیمات، نه روی درایو بازی، نه روی کارت‌های حافظه و نه روی هیچ درایو روشنی. Neutrino ساخته rickgaiser (github.com/rickgaiser/neutrino) را در پوشه neutrino روی درایو بازی یا یک کارت حافظه بگذارید، یا اجرای بازی > Neutrino را به آن بدهید."
   "Where your Neutrino is, its video mode, and the arguments every Neutrino launch gets. Get Neutrino at github.com/rickgaiser/neutrino and put it in a neutrino folder on a drive or a memory card.": "Neutrino شما کجاست، حالت ویدیوی آن و آرگومان‌هایی که هر اجرای Neutrino می‌گیرد. Neutrino را از github.com/rickgaiser/neutrino بگیرید و در پوشه neutrino روی یک درایو یا کارت حافظه بگذارید."
   "This Neutrino is older than 1.3, which cannot start games from the APA HDD. Point Game Launching > Neutrino at Neutrino 1.3 or newer.": "این Neutrino قدیمی‌تر از 1.3 است که نمی‌تواند بازی‌ها را از هارد APA شروع کند. اجرای بازی > Neutrino را به Neutrino 1.3 یا جدیدتر بدهید."
@@ -311,8 +322,6 @@ strings:
   Reading the memory cards: در حال خواندن کارت‌های حافظه
   The HDD partition BIBLE uses went away. Nothing was changed.: پارتیشن هاردی که BIBLE استفاده می‌کند از بین رفت. چیزی تغییر نکرد.
   The HDD's old boot program is back. BIBLE no longer starts from the HDD.: برنامه راه‌اندازی قدیمی هارد برگشت. BIBLE دیگر از هارد اجرا نمی‌شود.
-  ? The console would not bind BIBLE to memory card %d (its MagicGate step failed). Nothing on the card was changed. A card that is not a genuine or MagicGate-compatible one cannot hold a system update.
-  : کنسول BIBLE را به کارت حافظه %d پیوند نداد (مرحله MagicGate آن ناموفق بود). چیزی روی کارت تغییر نکرد. کارتی که اصل یا سازگار با MagicGate نباشد نمی‌تواند به‌روزرسانی سیستم را نگه دارد.
   'The one that was there is kept in RIPPS2/MBR-BACKUP.KELF on the HDD: BOOT LOADER > MANAGE > RESTORE puts it back.': 'آنچه آنجا بود در RIPPS2/MBR-BACKUP.KELF روی هارد نگه داشته می‌شود: بوت‌لودر > مدیریت > بازگردانی آن را برمی‌گرداند.'
   The security module would not start on this console. Nothing on the memory card was changed.: ماژول امنیتی روی این کنسول راه‌اندازی نشد. چیزی روی کارت حافظه تغییر نکرد.
   ? 'There is no formatted PS2 memory card in either slot, and no internal HDD. BIBLE lives on a memory card or the HDD: insert a card, then try again.'
@@ -784,11 +793,9 @@ strings:
   POPSTARTER and Ember: POPSTARTER و Ember
   PS1 SETTINGS: تنظیمات PS1
   PS2BBL for RIPPS2: PS2BBL برای RIPPS2
-  RIP THIS CONSOLE'S SOUNDS: استخراج صداهای این کنسول
   STATUS: وضعیت
   a drive of unknown kind: درایوی از نوع ناشناخته
   boot loader, card by card: بوت‌لودر، کارت به کارت
-  from its BIOS, into AUDIO: از BIOS آن، به AUDIO
   internal HDD (exFAT): هارد داخلی (exFAT)
   its own IP and SMB files: فایل‌های IP و SMB خودش
   path, video, arguments: مسیر، ویدیو، آرگومان‌ها
@@ -1138,7 +1145,6 @@ strings:
   'Game lists: each shows at once from its cache and stands until SELECT': 'فهرست بازی‌ها: هر کدام بی‌درنگ از حافظه نهان نشان داده می‌شود و تا SELECT می‌ماند'
   'Game lists: each shows at once from its cache, then is read again': 'فهرست بازی‌ها: هر کدام بی‌درنگ از حافظه نهان نشان داده می‌شود، سپس دوباره خوانده می‌شود'
   LOADING: بارگذاری
-  Makes RIPPS2's sounds from this console's own BIOS and writes them to the AUDIO folder.: صداهای RIPPS2 را از BIOS خود این کنسول می‌سازد و در پوشه AUDIO می‌نویسد.
   'No music yet: Audio settings > BIOS Music rips this console''s menu music.': 'هنوز موسیقی نیست: تنظیمات صدا > موسیقی BIOS موسیقی منوی این کنسول را استخراج می‌کند.'
   SAVE DIAGNOSTICS: ذخیره عیب‌یابی
   Searches the drives for POPSTARTER, the POPS files, Ember, Ember's BIOS and Neutrino, and remembers where each one is.: درایوها را برای POPSTARTER، فایل‌های POPS، Ember، BIOS ‏Ember و Neutrino جست‌وجو می‌کند و به یاد می‌سپارد هر کدام کجاست.
@@ -1175,12 +1181,6 @@ strings:
   : 'کارت SD2PSX یا MMCE ممکن است بعد از رد شدن یک نوشتن از خودش محافظت کند: اگر حالا کارت حافظه یا درایو MMCE دیده نمی‌شود، کنسول را خاموش و روشن کن.'
   BOOT LOCK ON: BOOT LOCK روشن
   'Done: the memory card in slot %d starts what it started before BIBLE. BIBLE is kept in mc%d:/%s.': 'انجام شد: کارت حافظه در شکاف %d همان چیزی را اجرا می‌کند که پیش از BIBLE اجرا می‌کرد. BIBLE در mc%d:/%s نگه داشته می‌شود.'
-  ? 'For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 2''s config before slot 1''s.
-  
-    '
-  : 'برای یک کارت حافظه معمولی 8 MB PS2 (کارت MagicGate، یا کارت BOOT از SD2PSX یا MMCE): همان که در شکاف %d است. هنگام روشن شدن، PS2BBL پیکربندی شکاف 2 را پیش از شکاف 1 می‌خواند.
-  
-    '
   MEMORY CARD IN SLOT %d  (%s): کارت حافظه در شکاف %d  (%s)
   ? PS2BBL cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
   : PS2BBL نمی‌تواند RIPPS2 را از جایی که الان هست اجرا کند (به کارت‌های حافظه، درایوهای USB و MX4SIO دسترسی دارد)، و RIPPS2 خودش را کپی نمی‌کند. RIPPS2.ELF را روی یک کارت حافظه یا درایو USB بگذار و از آنجا اجرا کن، یا از PS2BBL Extended استفاده کن که MMCE و هارد دیسک را می‌خواند.
@@ -1216,20 +1216,6 @@ strings:
   'RIPPS2: Setting up BIBLE (restarting the I/O processor)': 'RIPPS2: در حال راه‌اندازی BIBLE (راه‌اندازی دوباره پردازنده ورودی و خروجی)'
   'RIPPS2: Setting up BIBLE (writing it to the memory card)': 'RIPPS2: در حال راه‌اندازی BIBLE (نوشتن روی کارت حافظه)'
   SET UP BIBLE: راه‌اندازی BIBLE
-  ? 'SLOT 1: %s
-  
-    SLOT 2: %s
-  
-    %s
-  
-    RIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
-  : 'شکاف 1: %s
-  
-    شکاف 2: %s
-  
-    %s
-  
-    RIPPS2: در حال راه‌اندازی BIBLE. PS2BBL ساخته El Isra، که RIPPS2 آن را روی یک کارت حافظه معمولی 8 MB PS2 یا هارد دیسک داخلی راه‌اندازی می‌کند: شروع در 0 ms هنگام روشن شدن (PS2BBL Extended اجازه 0 نمی‌دهد)، اول RIPPS2 از جایی که هست (هرگز کپی نمی‌شود)، و دکمه‌ای که هنگام روشن شدن نگه داشته شود هنوز به مرورگر (TRIANGLE)، دیسک (START) و آنچه پیش‌تر بود (CIRCLE) می‌رسد. راه‌اندازی شود، تعمیر شود یا آنچه جایش را گرفته بازگردانده شود؟'
   The memory card in slot %d has %d KB free, and BIBLE needs %d KB there. Free some space, then try again.: کارت حافظه در شکاف %d جای خالی %d KB دارد و BIBLE روی آن %d KB لازم دارد. کمی جا خالی کن و دوباره امتحان کن.
   ? The memory card in slot %d refused PS2BBL, so RIPPS2 put the card back as it was. Check its free space, then try again. (DIAG.TXT beside RIPPS2 has what the card said.)
   : کارت حافظه در شکاف %d برنامه PS2BBL را رد کرد، پس RIPPS2 کارت را همان‌طور که بود گذاشت. جای خالی آن را بررسی کن و دوباره امتحان کن. (پاسخ کارت در DIAG.TXT کنار RIPPS2 است.)
@@ -1398,7 +1384,6 @@ strings:
   'No CHEATS in the in-game menu: the cheats ticked before the launch run all game, as before.': 'بدون CHEATS در منوی درون بازی: تقلب‌هایی که پیش از اجرا تیک خورده‌اند مثل قبل در تمام بازی کار می‌کنند.'
   BOOT SOUND WITH THE PILLARS: صدای راه‌اندازی با ستون‌ها
   'Boot Sound: On (fast)': 'صدای راه‌اندازی: روشن (سریع)'
-  'Boot sound On (fast): %s, as the pillars rise': 'صدای راه‌اندازی روشن (سریع): %s، هنگام بالا آمدن ستون‌ها'
   'Boot sound On: from the AUDIO folder, once its drive is up': 'صدای راه‌اندازی روشن: از پوشه AUDIO، وقتی درایوش آماده شد'
   Boot sound off (Audio settings > Boot Sound): صدای راه‌اندازی خاموش (تنظیمات صدا > صدای راه‌اندازی)
   Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.: boot.adp را کنار RIPPS2 روی کارت حافظه‌ای که از آن شروع می‌شود کپی می‌کند، جایی که راه‌اندازی آن را پیش از آماده شدن هر درایوی می‌خواند.
@@ -1573,8 +1558,8 @@ labels:
   SPACE: فاصله
   ENTER: ورود
   MODE: حالت
-  VMC_SLOT1: شیار VMC 1
-  VMC_SLOT2: شیار VMC 2
+  VMC_SLOT1: "شیار VMC 0"
+  VMC_SLOT2: "شیار VMC 1"
   GAME_ID: شناسه بازی
   DMA_MODE: حالت DMA
   VSYNC: V-Sync
@@ -1903,7 +1888,7 @@ labels:
   GAME_TYPE_LABELS: نمایش برچسب‌های [PS1]/[PS2]
   NEUTRINO_CHEATS_WRITE_FAILED: فهرست تقلب‌ها در پوشه Neutrino ذخیره نشد، پس Neutrino نمی‌تواند از آن استفاده کند. بدون تقلب اجرا شود؟
   AUTO_CREATE_VMC: ساخت VMC در نخستین اجرا
-  HINT_AUTO_CREATE_VMC: اجرای یک بازی PS2 بدون VMC در شکاف 1 یک کارت 8 MB روی دستگاه بازی می‌سازد، با نامی که صفحه VMC پیشنهاد می‌دهد (مشترک برای همه دیسک‌های بازی)، و آن را اختصاص می‌دهد. با Neutrino نه روی هارد APA (هارد exFAT کار می‌کند).
+  HINT_AUTO_CREATE_VMC: "اجرای یک بازی PS2 بدون VMC در شکاف 0 یک کارت 8 MB روی دستگاه بازی می‌سازد، با نامی که صفحه VMC پیشنهاد می‌دهد (مشترک برای همه دیسک‌های بازی)، و آن را اختصاص می‌دهد. با Neutrino نه روی هارد APA (هارد exFAT کار می‌کند)."
   AUTO_VMC_CREATING: در حال ساخت VMC این بازی...
   AUTO_VMC_FAILED: VMC این بازی ساخته نشد. بازی بدون آن شروع می‌شود.
   RIPPS2_BIOS_MUSIC: موسیقی BIOS

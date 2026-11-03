@@ -1,0 +1,432 @@
+diff --git a/Makefile b/Makefile
+index 13126a9..1061514 100644
+--- a/Makefile
++++ b/Makefile
+@@ -204,7 +204,7 @@ AUDIO_OBJS =
+ # icon_sys.o + save_icn.o are the memory-card browser save icon for the settings folder.
+ # icon.sys names list.icn, copy.icn and del.icn; all three are the same artwork, so ONE blob is
+ # embedded and util.c writes it out under all three names (see saveIconName in src/util.c).
+-MISC_OBJS =	icon_sys.o save_icn.o ripps2_icn.o icon_sys_A.o icon_sys_J.o icon_sys_C.o bible_xlf.o bible_mx4sio_xlf.o bible_hdd_xlf.o conf_theme_OPL.o theme_coverflow.o theme_ripgrid.o ripps2_font.o ripps2_sleek.o ripps2_sleekbold.o ripps2_sleekcase.o ripps2_one.o ripps2roboto.o ripps2_condensed.o
++MISC_OBJS =	icon_sys.o save_icn.o ripps2_icn.o icon_sys_A.o icon_sys_J.o icon_sys_C.o bible_xlf.o bible_mx4sio_xlf.o bible_mmce_xlf.o bible_hdd_xlf.o conf_theme_OPL.o theme_coverflow.o theme_ripgrid.o ripps2_font.o ripps2_sleek.o ripps2_sleekbold.o ripps2_sleekcase.o ripps2_one.o ripps2roboto.o ripps2_condensed.o
+ # RIPPS2 build 135: one ELF, BIBLE carried, Neutrino found (builds 126-134 also made a lite ELF)
+ 
+ TRANSLATIONS = Albanian Arabic Bulgarian Cebuano Croatian Czech Danish Dutch Filipino French \
+@@ -1275,6 +1275,10 @@ $(EE_ASM_DIR)bible_hdd_xlf.c: misc/bible_hdd_system.xlf | $(EE_ASM_DIR)
+ $(EE_ASM_DIR)bible_mx4sio_xlf.c: misc/bible_mx4sio_system.xlf | $(EE_ASM_DIR)
+ 	$(BIN2C) $< $@ bible_mx4sio_xlf
+ 
++# RIPPS2 build 136: BIBLE's MMCE build (reads mmce0:/mmce1:), copied in by RIPPS2's build.sh
++$(EE_ASM_DIR)bible_mmce_xlf.c: misc/bible_mmce_system.xlf | $(EE_ASM_DIR)
++	$(BIN2C) $< $@ bible_mmce_xlf
++
+ $(EE_ASM_DIR)conf_theme_OPL.c: misc/conf_theme_OPL.cfg | $(EE_ASM_DIR)
+ 	$(BIN2C) $< $@ $(*F)_cfg
+ 
+diff --git a/include/gui.h b/include/gui.h
+index 0173142..790c510 100644
+--- a/include/gui.h
++++ b/include/gui.h
+@@ -183,6 +183,7 @@ int guiIoModeToDeviceType(int ioMode);
+ void guiShowNeutrinoDefaults(void);
+ int guiDrawIconAndTextNoFade(int iconId, int textId, int font, int x, int y, u64 color, u64 iconColor); // build 115: as A, no fade-in
+ int guiShowCacheSettings(void); // RIPPS2 build 115: Game Sources > Cache from STATUS; 1 when a setting changed
++int guiShowAudioFromStatus(void); // RIPPS2 build 136: Audio settings on BIOS Sounds from STATUS; 1 when a setting changed
+ int guiNeutrinoPathHandler(char *text, int maxLen);
+ int guiPopstarterPathHandler(char *text, int maxLen);
+ int guiExitPathHandler(char *text, int maxLen);
+diff --git a/include/sound.h b/include/sound.h
+index fd0790b..92cfe78 100644
+--- a/include/sound.h
++++ b/include/sound.h
+@@ -72,6 +72,7 @@ unsigned int bgmPlayedMs(void);    // build 115: how far into it
+ void sfxBootStart(void);        // RIPPS2: the main thread, as the towers rise: audio up, the boot sound playing
+ void sfxBootEarlyQueue(int themeID); // build 118: with the settings read, the boot sound is the IO worker's first job
+ int sfxCardBootPath(char *out, int size); // build 121: the boot sound's copy beside RIPPS2 on its memory card
++int sfxBootSoundWhere(char *out, int size); // build 136: where the boot reads it: 2 a memory card, 1 a drive, 0 none
+ void sfxBootSoundsLoaded(void); // RIPPS2: the IO worker, every sound loaded: the music may start
+ void bgmBootTick(void);         // RIPPS2: every GUI frame: starts the music once the sounds are in, then fades it in
+ int bgmHudReserve(void);            // RIPPS2 build 71 (perf HUD): decoded chunks waiting, -1 with no music
+diff --git a/lng_tmpl/_base.yml b/lng_tmpl/_base.yml
+index 2e547f8..321fcb5 100644
+--- a/lng_tmpl/_base.yml
++++ b/lng_tmpl/_base.yml
+@@ -339,9 +339,9 @@ gui_strings:
+ - label: MODE
+   string: Mode
+ - label: VMC_SLOT1
+-  string: VMC Slot 1
++  string: VMC Slot 0
+ - label: VMC_SLOT2
+-  string: VMC Slot 2
++  string: VMC Slot 1
+ - label: GAME_ID
+   string: Game ID
+ - label: DMA_MODE
+@@ -942,9 +942,9 @@ gui_strings:
+ - label: VCD_USB_MODE_TITLE
+   string: USB VCD Mode
+ - label: VMC_SLOT1_DISABLE
+-  string: Disable VMC 1 (keep card)
++  string: Disable VMC 0 (keep card)
+ - label: VMC_SLOT2_DISABLE
+-  string: Disable VMC 2 (keep card)
++  string: Disable VMC 1 (keep card)
+ - label: NONE
+   string: "None"
+ - label: SMALL
+@@ -1650,7 +1650,7 @@ gui_strings:
+ - label: AUTO_CREATE_VMC
+   string: Create VMC on First Launch
+ - label: HINT_AUTO_CREATE_VMC
+-  string: "Launching a PS2 game with no VMC in slot 1 creates an 8 MB card on the game's device, named as the VMC screen suggests (shared by every disc of the game), and assigns it. Under Neutrino not on the APA HDD (an exFAT HDD works)."
++  string: "Launching a PS2 game with no VMC in slot 0 creates an 8 MB card on the game's device, named as the VMC screen suggests (shared by every disc of the game), and assigns it. Under Neutrino not on the APA HDD (an exFAT HDD works)."
+ - label: AUTO_VMC_CREATING
+   string: "Creating this game's VMC..."
+ - label: AUTO_VMC_FAILED
+diff --git a/src/gui.c b/src/gui.c
+index 03d4904..f38f911 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -3611,7 +3611,8 @@ static int guiAudioUpdater(int modified)
+     return 0;
+ }
+ 
+-int guiShowAudioConfig(void)
++// first: the row the page opens on (-1: as it was left)
++static int guiShowAudioConfigAt(int first)
+ {
+     static const char *bootModes[] = {N_("Off"), N_("On"), N_("On (fast)"), NULL}; // build 126
+     diaSetEnum(diaAudioConfig, CFG_BOOT_SND, bootModes);
+@@ -3627,8 +3628,9 @@ int guiShowAudioConfig(void)
+ 
+     guiSettingsBeginDialog(diaAudioConfig);
+     int result;
+-    while ((result = diaExecuteDialog(diaAudioConfig, -1, 1, guiAudioUpdater)) == RIPPS2_RIP_BIOS_BUTTON ||
++    while ((result = diaExecuteDialog(diaAudioConfig, first, 1, guiAudioUpdater)) == RIPPS2_RIP_BIOS_BUTTON ||
+            result == RIPPS2_RIP_MUSIC_BUTTON) {
++        first = -1; // back on the button that was pressed
+         if (result == RIPPS2_RIP_BIOS_BUTTON)
+             ripps2RipBiosSoundsDialog(); // RIPPS2 build 88: the console's own menu sounds into AUDIO
+         else
+@@ -3645,6 +3647,27 @@ int guiShowAudioConfig(void)
+     return guiSettingsPageResult(result);
+ }
+ 
++int guiShowAudioConfig(void)
++{
++    return guiShowAudioConfigAt(-1);
++}
++
++// RIPPS2 build 136 (the user, 11/03: "the status link to rip this consoles sounds (and music) should bring us to that menu
++// in audio so we can choose"): STATUS > RIP THIS CONSOLE'S AUDIO opens Audio settings on BIOS Sounds, with BIOS Music below
++// it. 1 when a setting changed there (STATUS saves it as it closes)
++int guiShowAudioFromStatus(void)
++{
++    int sfx = gEnableSFX, boot = gEnableBootSND, bgm = gEnableBGM, sfxVol = gSFXVolume, bootVol = gBootSndVolume,
++        bgmVol = gBGMVolume;
++    char music[sizeof(gRipps2Music)], path[sizeof(gDefaultBGMPath)];
++
++    snprintf(music, sizeof(music), "%s", gRipps2Music);
++    snprintf(path, sizeof(path), "%s", gDefaultBGMPath);
++    guiShowAudioConfigAt(RIPPS2_RIP_BIOS_BUTTON);
++    return sfx != gEnableSFX || boot != gEnableBootSND || bgm != gEnableBGM || sfxVol != gSFXVolume ||
++           bootVol != gBootSndVolume || bgmVol != gBGMVolume || strcmp(music, gRipps2Music) || strcmp(path, gDefaultBGMPath);
++}
++
+ // RIPPS2 build 126 (the user, 10/31: "we are the leaders of .pad"): Controllers > My Pads. Every PADS/VVVV_PPPP.pad beside
+ // RIPPS2 read with the reference reader (padfile.c), each with its name or the line and reason it is refused, and how
+ // many game maps PADS/GAMES holds. Phase 2 hands them to PADEMU (ps2-pillars docs/plans/pad-spec.md)
+diff --git a/src/ripps2boot.c b/src/ripps2boot.c
+index 012cd68..6331748 100644
+--- a/src/ripps2boot.c
++++ b/src/ripps2boot.c
+@@ -82,6 +82,8 @@ extern unsigned char bible_xlf[];
+ extern unsigned int size_bible_xlf;
+ extern unsigned char bible_mx4sio_xlf[];
+ extern unsigned int size_bible_mx4sio_xlf;
++extern unsigned char bible_mmce_xlf[]; // build 136: BIBLE's MMCE build, which reads mmce0:/mmce1: (SD2PSX, MemCard PRO 2)
++extern unsigned int size_bible_mmce_xlf;
+ extern unsigned char bible_hdd_xlf[]; // build 73: PS2BBL 1.2.0's HDD build (HSYSTEM.XLF), as released
+ extern unsigned int size_bible_hdd_xlf;
+ // the browser icon RIPPS2 gives its settings folder (util.c): BIBLE's folders wear it too
+@@ -838,7 +840,7 @@ void ripps2BootLockApply(int on)
+         // What starts at power on is a loader RIPPS2 cannot set, or there is none at all: a config cannot do it
+         blSetLocked(0);
+         if (boot >= 0)
+-            n = snprintf(msg, sizeof(msg), _t("The memory card in slot %d starts %s at power on, which BOOT LOCK cannot set: it works through PS2BBL, FMCB and OSDMenu."), boot + 1, _t(blKindName[kind]));
++            n = snprintf(msg, sizeof(msg), _t("The memory card in slot %d starts %s at power on, which BOOT LOCK cannot set: it works through PS2BBL, FMCB and OSDMenu."), boot, _t(blKindName[kind]));
+         else
+             n = snprintf(msg, sizeof(msg), _t("BOOT LOCK works through a boot loader on a memory card (PS2BBL, FMCB or OSDMenu), and there is none here."));
+         if (changed && n < (int)sizeof(msg))
+@@ -869,7 +871,7 @@ void ripps2BootLockApply(int on)
+     } else if (blKindsFailed & bit)
+         snprintf(msg, sizeof(msg), _t("BOOT LOCK could not write the boot loader's config. Check that the memory card or drive is not write protected, then try again."));
+     else {
+-        n = snprintf(msg, sizeof(msg), _t("The memory card in slot %d starts %s at power on, and BOOT LOCK found no config of it to change (it looks for %s)."), boot + 1, _t(blKindName[kind]),
++        n = snprintf(msg, sizeof(msg), _t("The memory card in slot %d starts %s at power on, and BOOT LOCK found no config of it to change (it looks for %s)."), boot, _t(blKindName[kind]),
+                      kind == BL_FMCB ? "SYS-CONF/FREEMCB.CNF" : kind == BL_OSDMENU ? "SYS-CONF/OSDMENU.CNF" : "PS2BBL/CONFIG.INI");
+         if (kind != BL_PS2BBL && n < (int)sizeof(msg))
+             snprintf(msg + n, sizeof(msg) - n, _t(" Save its settings once with its own configurator, then turn BOOT LOCK on again."));
+@@ -1142,6 +1144,7 @@ typedef struct
+     char copyTo[160]; // "" = no copy; else where RIPPS2 is copied to first
+     char copyWhat[24];
+     int mx4sio;       // the path needs PS2BBL's MX4SIO build
++    int mmce;         // build 136: the path needs BIBLE's MMCE build
+     int cardKb;       // memory card space the copy takes (on the target card), 0 when elsewhere
+     int cardPort;
+ } blWhere_t;
+@@ -1168,8 +1171,8 @@ static int blBibleConfig(const char *alt, const char *backupKelf)
+ static void blInstallOn(int port, const blWhere_t *w, const char *alt)
+ {
+     char msg[700], dir[48], path[96], backup[32] = "", backupKelf[64] = "", conf[48];
+-    const unsigned char *kelf = w->mx4sio ? bible_mx4sio_xlf : bible_xlf;
+-    int kelfSize = w->mx4sio ? (int)size_bible_mx4sio_xlf : (int)size_bible_xlf;
++    const unsigned char *kelf = w->mmce ? bible_mmce_xlf : w->mx4sio ? bible_mx4sio_xlf : bible_xlf;
++    int kelfSize = w->mmce ? (int)size_bible_mmce_xlf : w->mx4sio ? (int)size_bible_mx4sio_xlf : (int)size_bible_xlf;
+     unsigned char *buf, *check;
+     void *img;
+     int imgSize, fd, ok, keptConfig = 0, len;
+@@ -1217,7 +1220,11 @@ static void blInstallOn(int port, const blWhere_t *w, const char *alt)
+     if (SecrDownloadFile(2 + port, 0, buf) == NULL) {
+         free(buf);
+         guiMsgBoxSound(SFX_ERROR);
+-        snprintf(msg, sizeof(msg), _t("The console would not bind BIBLE to memory card %d (its MagicGate step failed). Nothing on the card was changed. A card that is not a genuine or MagicGate-compatible one cannot hold a system update."), port);
++        snprintf(msg, sizeof(msg), _t("The console would not bind BIBLE to the memory card in slot %d (its MagicGate step failed). Nothing on the card was changed. A card that is not a genuine or MagicGate-compatible one cannot hold a system update."), port);
++        // build 136 (the user, 11/03: an SD2PSX in slot 0 refused the bind, then "ghosts until power cycle")
++        snprintf(msg + strlen(msg), sizeof(msg) - strlen(msg), " %s", _t("An SD2PSX or MMCE card can stop answering after a refused bind: if the memory card or the MMCE drive is missing now, turn the console off and on."));
++        ripps2Diag("bible: mc%d refused the bind", port);
++        ripps2DiagBeforeLaunch();
+         guiMsgBox(msg, 0, NULL);
+         return;
+     }
+@@ -1267,7 +1274,7 @@ static void blInstallOn(int port, const blWhere_t *w, const char *alt)
+         }
+         guiMsgBoxSound(SFX_ERROR);
+         // build 115 (the user, 10/26 evening: after a failed write the memory card and MMCE were gone until a power cycle)
+-        snprintf(msg, sizeof(msg), _t("The memory card in slot %d refused PS2BBL, so RIPPS2 put the card back as it was. Check its free space, then try again. (DIAG.TXT beside RIPPS2 has what the card said.)"), port + 1);
++        snprintf(msg, sizeof(msg), _t("The memory card in slot %d refused PS2BBL, so RIPPS2 put the card back as it was. Check its free space, then try again. (DIAG.TXT beside RIPPS2 has what the card said.)"), port);
+         snprintf(msg + strlen(msg), sizeof(msg) - strlen(msg), " %s", _t("An SD2PSX or MMCE card may protect itself after a refused write: if the memory card or the MMCE drive is missing now, turn the console off and on."));
+         ripps2DiagBeforeLaunch();
+         guiMsgBox(msg, 0, NULL);
+@@ -1328,7 +1335,7 @@ static void blInstallOn(int port, const blWhere_t *w, const char *alt)
+     guiMsgBoxSound(SFX_SAVE);
+     {
+         int n = snprintf(msg, sizeof(msg), _t("RIPPS2: BIBLE is set up on the memory card in slot %d (mc%d:/%s/%s), BOOT LOCK on: at power on it starts RIPPS2 from %s, at once."),
+-                         port + 1, port, blSysFolder, blSysFile, w->path);
++                         port, port, blSysFolder, blSysFile, w->path);
+         if (n < (int)sizeof(msg) && backup[0])
+             n += snprintf(msg + n, sizeof(msg) - n, _t(" What was there before is kept in mc%d:/%s%s."), port, backup, backupKelf[0] ? _t(" (hold CIRCLE at power on to start it)") : "");
+         if (n < (int)sizeof(msg) && keptConfig)
+@@ -1735,7 +1742,7 @@ static void blInstall(void)
+     for (port = 0; port < 2; port++)
+         if (blCards[port].present) {
+             blCardWhat(port, bootPort, what, sizeof(what));
+-            snprintf(items[n], sizeof(items[n]), _t("MEMORY CARD IN SLOT %d  (%s)"), port + 1, what); // build 115: slots 1 and 2
++            snprintf(items[n], sizeof(items[n]), _t("MEMORY CARD IN SLOT %d  (%s)"), port, what); // build 136: slots 0 and 1, as mc0: and mc1:
+             list[n] = items[n];
+             ports[n++] = port;
+         }
+@@ -1743,7 +1750,7 @@ static void blInstall(void)
+     for (port = 0; port < 2; port++) { // build 115: put back what BIBLE replaced
+         char b[32];
+         if (blCards[port].present && blCards[port].bible && blBackupOf(port, b, sizeof(b))) {
+-            snprintf(restoreItems[port], sizeof(restoreItems[port]), _t("RESTORE SLOT %d'S OLD BOOT LOADER"), port + 1);
++            snprintf(restoreItems[port], sizeof(restoreItems[port]), _t("RESTORE SLOT %d'S OLD BOOT LOADER"), port);
+             list[n] = restoreItems[port];
+             ports[n++] = 4 + port;
+         }
+@@ -1776,6 +1783,24 @@ static void blInstall(void)
+         blRestoreCard(port - 4);
+         return;
+     }
++    // build 136 (the user, 11/03: the console would not bind BIBLE to an SD2PSX in slot 0, and the card was gone until a
++    // power cycle): an SD2PSX or MMCE card answers mmceman's ping (>= 0; no mmceman, or nothing there, is < 0). Its BOOT
++    // card has its own PS2BBL, which BOOT LOCK sets; nothing is tried on it
++    {
++        char dev[8];
++        snprintf(dev, sizeof(dev), "mmce%d:/", port);
++        if (fileXioDevctl(dev, 0x1, NULL, 0, NULL, 0) >= 0) {
++            ripps2Diag("bible: slot %d is an MMCE card, no bind tried", port);
++            snprintf(msg, sizeof(msg),
++                     _t("RIPPS2: Setting up BIBLE\nThe card in slot %d is an SD2PSX or MMCE card. The console cannot bind BIBLE to one (an SD2PSX refuses it, then stops answering until the console is turned off and on), so nothing was tried. Its BOOT card has its own PS2BBL: START turns BOOT LOCK on, so it starts RIPPS2 at power on. BIBLE goes on a genuine PS2 memory card."),
++                     port);
++            guiMsgBoxSound(SFX_MESSAGE);
++            guiMsgBoxStartOption(_t("BOOT LOCK ON"));
++            if (guiMsgBox(msg, 0, NULL) == 2)
++                ripps2BootLockApply(1);
++            return;
++        }
++    }
+ 
+     // where RIPPS2 starts from: where it is now, when PS2BBL 1.2.0 reaches it. Build 115 (the user, 10/26 evening: "it should
+     // just write the bbl files in and set config to the running RIPPS2.elf like bootlock does ... we aren't going to have
+@@ -1788,6 +1813,13 @@ static void blInstall(void)
+         !(ripps2GetBootBdmType() == BDM_TYPE_SDC && port != 0)) {
+         where[count].mx4sio = !strncmp(where[count].path, "massX:", 6);
+         current = count++;
++    } else if (!strncmp(boot, "mmce0:", 6) || !strncmp(boot, "mmce1:", 6)) {
++        // build 136 (the user, 11/03: "doesnt the bible signed kelf we made support mmce"): BIBLE's MMCE build, signed
++        // with the rest, starts RIPPS2 from an SD2PSX or MMCE card in the other slot (mmce?:, as BIBLE's own config writes it)
++        if (blPathFor(1, boot, 0, where[count].path, sizeof(where[count].path))) {
++            where[count].mmce = 1;
++            current = count++;
++        }
+     }
+     if (count == 0) {
+         // RIPPS2 runs from a drive PS2BBL 1.2.0 cannot read (MMCE, the HDD, a network share). A PS2BBL Extended config (an
+@@ -1818,11 +1850,11 @@ static void blInstall(void)
+ 
+     // room on the card: BIBLE, two icons and a config (build 115: never a copy of RIPPS2)
+     {
+-        int kelfKb = ((where[pick].mx4sio ? size_bible_mx4sio_xlf : size_bible_xlf) + 1023) / 1024;
++        int kelfKb = ((where[pick].mmce ? size_bible_mmce_xlf : where[pick].mx4sio ? size_bible_mx4sio_xlf : size_bible_xlf) + 1023) / 1024;
+         int need = kelfKb + (size_save_icn + 1023) / 1024 + 2 + (size_ripps2_icn + 1023) / 1024 + 2 + 4;
+         if (blCards[port].freeKb < need) {
+             guiMsgBoxSound(SFX_ERROR);
+-            snprintf(msg, sizeof(msg), _t("The memory card in slot %d has %d KB free, and BIBLE needs %d KB there. Free some space, then try again."), port + 1, blCards[port].freeKb, need);
++            snprintf(msg, sizeof(msg), _t("The memory card in slot %d has %d KB free, and BIBLE needs %d KB there. Free some space, then try again."), port, blCards[port].freeKb, need);
+             guiMsgBox(msg, 0, NULL);
+             return;
+         }
+@@ -1834,7 +1866,7 @@ static void blInstall(void)
+         // build 115 (the user, 10/26): the title names what goes on. 10/26 evening: "RIPPS2: Setting up BBL 1.20", for an
+         // 8 MB memory card, and which slot
+         int o = snprintf(msg, sizeof(msg), _t("RIPPS2: Setting up BIBLE\n"));
+-        o += snprintf(msg + o, sizeof(msg) - o, _t("For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 2's config before slot 1's.\n"), port + 1);
++        o += snprintf(msg + o, sizeof(msg) - o, _t("For a standard 8 MB PS2 memory card (a genuine MagicGate card: an SD2PSX or MMCE card cannot be bound): the one in slot %d. At power on PS2BBL reads slot 1's config before slot 0's.\n"), port);
+         char sysDir[48];
+         snprintf(sysDir, sizeof(sysDir), "mc%d:/%s", port, blSysFolder);
+         if (blDirExists(sysDir) && !(c->bible && !strcmp(c->folder, blSysFolder)))
+@@ -1880,7 +1912,7 @@ static void blRestoreCard(int port)
+         return;
+     snprintf(msg, sizeof(msg),
+              _t("RIPPS2: Setting up BIBLE\nThe memory card in slot %d: BIBLE (mc%d:/%s) moves aside, and what it replaced (mc%d:/%s) goes back in its place. Nothing is deleted. The PS2BBL config stays as it is (BOOT LOCK can turn the lock off)."),
+-             port + 1, port, blSysFolder, port, backup);
++             port, port, blSysFolder, port, backup);
+     guiMsgBoxSound(SFX_MESSAGE);
+     guiMsgBoxStartOption(_t("RESTORE"));
+     if (guiMsgBox(msg, 0, NULL) != 2)
+@@ -1898,7 +1930,7 @@ static void blRestoreCard(int port)
+     blScan(); // waits for the IO worker's own card work to finish first
+     if (!blMcRename(port, blSysFolder, aside)) {
+         guiMsgBoxSound(SFX_ERROR);
+-        snprintf(msg, sizeof(msg), _t("The memory card in slot %d would not move BIBLE aside, so nothing was changed. (DIAG.TXT beside RIPPS2 has what the card said.)"), port + 1);
++        snprintf(msg, sizeof(msg), _t("The memory card in slot %d would not move BIBLE aside, so nothing was changed. (DIAG.TXT beside RIPPS2 has what the card said.)"), port);
+         ripps2DiagBeforeLaunch();
+         guiMsgBox(msg, 0, NULL);
+         return;
+@@ -1906,14 +1938,14 @@ static void blRestoreCard(int port)
+     if (!blMcRename(port, backup, blSysFolder)) {
+         blMcRename(port, aside, blSysFolder); // as it was
+         guiMsgBoxSound(SFX_ERROR);
+-        snprintf(msg, sizeof(msg), _t("The memory card in slot %d would not take %s back, so BIBLE stayed. (DIAG.TXT beside RIPPS2 has what the card said.)"), port + 1, backup);
++        snprintf(msg, sizeof(msg), _t("The memory card in slot %d would not take %s back, so BIBLE stayed. (DIAG.TXT beside RIPPS2 has what the card said.)"), port, backup);
+         ripps2DiagBeforeLaunch();
+         guiMsgBox(msg, 0, NULL);
+         return;
+     }
+     ripps2BootLockState(); // build 116: EXIT follows what starts now
+     guiMsgBoxSound(SFX_SAVE);
+-    snprintf(msg, sizeof(msg), _t("Done: the memory card in slot %d starts what it started before BIBLE. BIBLE is kept in mc%d:/%s."), port + 1, port, aside);
++    snprintf(msg, sizeof(msg), _t("Done: the memory card in slot %d starts what it started before BIBLE. BIBLE is kept in mc%d:/%s."), port, port, aside);
+     guiMsgBox(msg, 0, NULL);
+ }
+ 
+@@ -1930,7 +1962,7 @@ void ripps2BibleManage(void)
+     for (port = 0; port < 2; port++)
+         blCardWhat(port, boot, what[port], sizeof(what[port]));
+     snprintf(msg, sizeof(msg),
+-             _t("SLOT 1: %s\nSLOT 2: %s\n%s\n"
++             _t("SLOT 0: %s\nSLOT 1: %s\n%s\n"
+              "RIPPS2: Setting up BIBLE. PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?"),
+              what[0], what[1],
+              removed ? _t("(Removed a SYS-CONF/PS2BBL.INI build 68 wrote for a loader that never reads it.)\n") : "");
+diff --git a/src/ripps2status.c b/src/ripps2status.c
+index fbeafb8..4621c15 100644
+--- a/src/ripps2status.c
++++ b/src/ripps2status.c
+@@ -202,7 +202,7 @@ static void stScan(void)
+         }
+         for (i = 0; i < 2; i++)
+             if ((kb = ripps2CardFreeKb(i)) >= 0) {
+-                snprintf(line, sizeof(line), _t("Memory card %d: %d KB free"), i + 1, kb);
++                snprintf(line, sizeof(line), _t("Memory card %d: %d KB free"), i, kb); // build 136: slot 0 and slot 1
+                 st_row_t *r = stAdd(ROW_STATUS, ACT_NONE, line, NULL);
+                 r->ok = 1;
+             }
+@@ -352,21 +352,26 @@ static void stScan(void)
+             snprintf(line, sizeof(line), _t("No music yet: Audio settings > BIOS Music rips this console's menu music."));
+         stAdd(ROW_STATUS, ACT_NONE, line, NULL)->ok = music > 0;
+     }
+-    stAdd(ROW_ACTION, ACT_SOUNDS_RIP, _t("RIP THIS CONSOLE'S SOUNDS"), _t("from its BIOS, into AUDIO"))->hint =
+-        _t("Makes RIPPS2's sounds from this console's own BIOS and writes them to the AUDIO folder.");
+-    // build 126 (the user, 10/31: "fast boot boot sound should also be in status"): where the boot sound is read from
++    // build 136 (the user, 11/03: "rip this consoles audio"): Audio settings, on BIOS Sounds and BIOS Music, to choose
++    stAdd(ROW_ACTION, ACT_SOUNDS_RIP, _t("RIP THIS CONSOLE'S AUDIO"), _t("sounds or music, from its BIOS"))->hint =
++        _t("Opens Audio settings on BIOS Sounds and BIOS Music: rip this console's own sounds or its menu music into AUDIO.");
++    // build 126 (the user, 10/31: "fast boot boot sound should also be in status"): where the boot sound is read from.
++    // Build 136: the file itself, wherever it is, and a memory card's said as one (the AUDIO folder's on a card too)
+     {
+         char card[300];
+-        struct stat cs;
+-        int onCard = sfxCardBootPath(card, sizeof(card)) && stat(card, &cs) == 0 && cs.st_size > 0;
++        int where = sfxBootSoundWhere(card, sizeof(card));
+         if (!gEnableBootSND)
+             snprintf(line, sizeof(line), _t("Boot sound off (Audio settings > Boot Sound)"));
+-        else if (gEnableBootSND == 2 && onCard)
+-            snprintf(line, sizeof(line), _t("Boot sound On (fast): %s, as the pillars rise"), card);
++        else if (where == 2)
++            snprintf(line, sizeof(line), gEnableBootSND == 2 ? _t("Boot sound On (fast): %s on the memory card, as the pillars rise") :
++                                                                _t("Boot sound On: %s on the memory card, as the pillars rise"),
++                     card);
++        else if (where == 1)
++            snprintf(line, sizeof(line), _t("Boot sound On: %s, once its drive is up"), card);
+         else
+             snprintf(line, sizeof(line), _t("Boot sound On: from the AUDIO folder, once its drive is up"));
+-        stAdd(ROW_STATUS, ACT_NONE, line, NULL)->ok = gEnableBootSND == 2 && onCard;
+-        if (gEnableBootSND && !(gEnableBootSND == 2 && onCard))
++        stAdd(ROW_STATUS, ACT_NONE, line, NULL)->ok = where == 2;
++        if (gEnableBootSND && where != 2)
+             stAdd(ROW_ACTION, ACT_BOOT_FAST, _t("BOOT SOUND WITH THE PILLARS"), _t("Boot Sound: On (fast)"))->hint =
+                 _t("Copies boot.adp beside RIPPS2 on the memory card it starts from, where the boot reads it before any drive is up.");
+     }
+@@ -573,8 +578,8 @@ void ripps2Status(void)
+                     ripps2BibleManage();
+                     rescan = 1;
+                     break;
+-                case ACT_SOUNDS_RIP:
+-                    ripps2RipBiosSoundsDialog();
++                case ACT_SOUNDS_RIP: // build 136: Audio settings, on its BIOS Sounds and BIOS Music rows
++                    changed |= guiShowAudioFromStatus();
+                     rescan = 1;
+                     break;
+                 case ACT_BOOT_FAST: // build 126
+diff --git a/src/sound.c b/src/sound.c
+index c9f401f..fcf278e 100644
+--- a/src/sound.c
++++ b/src/sound.c
+@@ -602,6 +602,24 @@ int sfxCardBootPath(char *out, int size)
+     return snprintf(out, size, "%s%s", dir, sfx_files[SFX_BOOT].name) < size;
+ }
+ 
++/* RIPPS2 build 136 (the user, 11/03: "display the fast boot sound is located on status too when it is on memory card"):
++   the file the boot reads the boot sound from, found as sfxBootEarlyWork below looks (the disk theme's aside): the copy
++   beside RIPPS2 with On (fast), else the AUDIO folder's. out gets its path; 2 when it is on a memory card (read as the
++   pillars rise), 1 on a drive (once the drive is up), 0 when there is none */
++int sfxBootSoundWhere(char *out, int size)
++{
++    char base[256];
++    struct stat st;
++
++    if (gEnableBootSND == 2 && sfxCardBootPath(out, size) && stat(out, &st) == 0 && st.st_size > 0)
++        return 2;
++    if (ripps2AudioBase(base, sizeof(base) - 8, 0) && snprintf(out, size, "%sAUDIO/%s", base, sfx_files[SFX_BOOT].name) < size &&
++        stat(out, &st) == 0 && st.st_size > 0)
++        return !strncmp(out, "mc", 2) ? 2 : 1;
++    out[0] = '\0';
++    return 0;
++}
++
+ static void sfxBootEarlyWork(void)
+ {
+     char base[256], path[300];
