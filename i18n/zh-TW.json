@@ -7,9 +7,9 @@
   "en": "03be7325b77b",
   "t": "RIPPS2 由 akilluminati47 設計和主導，與 Claude (Anthropic) 一起打造。測試者：ripto、nuno6573、zackcage6、eliminator1403、FifthFox、Mr.sus.60、lukeatmynose、ahavasi，以及所有在 Discord 上測試的人。GitHub 上的 issue：DarkNerdShawny 和每一個提 issue 的人（issue 是讓 RIPPS2 更新的最好方式：向他們學習，[提一個](https://github.com/akilluminati47/RIPPS2/issues)）。也特別感謝 YouTube 上的所有支援：無論你透過哪種方式聯絡我，我都樂意幫忙。"
  },
- "0416bc745d73": {
-  "en": "0416bc745d73",
-  "t": "> 1. **[下載 RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)**（始終是最新版本）（一個檔案，2,723 KB），需要的話再下載 **[主題包](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)**（Adapt 和 Adapt Rx，第 136 版：各一個配置和一張圖片；RIPGRID 和 RIPFLOW 為內建），以及 **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)**，用你的語言使用 RIPPS2（33 種語言；每個版本都附帶）。"
+ "04b63e681261": {
+  "en": "04b63e681261",
+  "t": "> [組建 138 的新內容](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.8-beta) | [Changelog](CHANGELOG.md) | **[影片](#videos)** | [所有版本](https://github.com/akilluminati47/RIPPS2/releases) | [在 psx-place 討論](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "064d7e03de66": {
   "en": "064d7e03de66",
@@ -26,10 +26,6 @@
  "0e6d84eabbaa": {
   "en": "0e6d84eabbaa",
   "t": "RIPPS2 聽起來像一臺從未離開客廳的 PS2：**Sony 主機自己的聲音**、Sony 的系統音樂，以及瀏覽時的 **一首 Nintendo 曲目**（RIPPS2 設計者本人的選擇）。這些都不隨 RIPPS2 附帶；**[RIPPS2 Media Studio](tools/media-studio)** 會用 [你自己 PS2 的 BIOS 轉儲](https://pcsx2.net/docs/setup/bios/)（PCSX2 使用的檔案）和你自己的音樂帶你實現它。**Start** 把那些主機聲音提取成一個完整的 `AUDIO` 資料夾；這就是它們的對應表。或者跳過電腦：**Settings > Audio > BIOS Sounds > Rip** 直接把主機自己的聲音寫入 `AUDIO`：選單音效以及（從組建 89 起）由 BIOS 自己的樂譜演奏的開機和遊戲啟動音樂。旁邊的 BIOS Music 提取選單音樂，即時鐘的曲子（或紅屏的曲子，或兩者：組建 112）。**[v1.1.2 聲音巡覽](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)** 一鏡到底播放全部，從開機聲到啟動遊戲。"
- },
- "0fb4bf0d3557": {
-  "en": "0fb4bf0d3557",
-  "t": "> [組建 136 的新內容](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.6-beta) | [Changelog](CHANGELOG.md) | **[影片](#videos)** | [所有版本](https://github.com/akilluminati47/RIPPS2/releases) | [在 psx-place 討論](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "1238c5cafd27": {
   "en": "1238c5cafd27",
@@ -94,6 +90,10 @@
  "2bb78085b36f": {
   "en": "2bb78085b36f",
   "t": "| [組建 88 短片](https://www.youtube.com/shorts/Sqprz22tdtg) | Short | 配合 Slideshow 的組建 88 |"
+ },
+ "2e611083b6bf": {
+  "en": "2e611083b6bf",
+  "t": "> ### 開始提取：RIPPS2 組建 138，v1.3.8 測試版"
  },
  "2f0ee80297df": {
   "en": "2f0ee80297df",
@@ -235,10 +235,6 @@
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | 光球 |"
  },
- "84033d4979bd": {
-  "en": "84033d4979bd",
-  "t": "> ### 開始提取：RIPPS2 組建 136，v1.3.6 測試版"
- },
  "85be5f3270be": {
   "en": "85be5f3270be",
   "t": "| [v1.1.0 介紹短片](https://youtu.be/Q8ZLd6ArV8s) | 3:57 | 配合 Over the Rainbow 剪輯的 v1.1.0 |"
@@ -318,6 +314,10 @@
  "af3b1669b5f4": {
   "en": "af3b1669b5f4",
   "t": "| ↕ | 游標 | `cursor.adp` | **Menu sound 7** |"
+ },
+ "b001b2c9e02b": {
+  "en": "b001b2c9e02b",
+  "t": "> 1. **[下載 RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)**（始終是最新版本）（一個檔案，2,730 KB），需要的話再下載 **[主題包](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)**（Adapt 和 Adapt Rx，第 136 版：各一個配置和一張圖片；RIPGRID 和 RIPFLOW 為內建），以及 **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)**，用你的語言使用 RIPPS2（33 種語言；每個版本都附帶）。"
  },
  "b0a6e7370567": {
   "en": "b0a6e7370567",

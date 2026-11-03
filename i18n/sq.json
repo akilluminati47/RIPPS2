@@ -7,9 +7,9 @@
   "en": "03be7325b77b",
   "t": "RIPPS2 projektohet dhe drejtohet nga akilluminati47 dhe ndërtohet me Claude (Anthropic). Testuesit: ripto, nuno6573, zackcage6, eliminator1403, FifthFox, Mr.sus.60, lukeatmynose, ahavasi dhe të gjithë ata që testojnë në Discord. Issues në GitHub: DarkNerdShawny dhe kushdo që hap një (një issue është mënyra më e mirë për ta përditësuar RIPPS2: bëhu si ata dhe [hap një](https://github.com/akilluminati47/RIPPS2/issues)). Falënderime të veçanta edhe për gjithë dashurinë në YouTube: me kënaqësi ndihmoj sido që të më gjesh."
  },
- "0416bc745d73": {
-  "en": "0416bc745d73",
-  "t": "> 1. **[Shkarko RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (gjithmonë botimi më i ri) (një skedar, 2.723 KB), dhe **[paketën e temave](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** nëse dëshiron (Adapt, Adapt Rx, botimi 136: nga një konfigurim dhe një figurë; RIPGRID dhe RIPFLOW janë të integruara), dhe **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** për RIPPS2 në gjuhën tënde (33 gjuhë; çdo botim e ka)."
+ "04b63e681261": {
+  "en": "04b63e681261",
+  "t": "> [Çfarë ka të re në ndërtimin 138](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.8-beta) | [Changelog](CHANGELOG.md) | **[Video](#videos)** | [Të gjitha botimet](https://github.com/akilluminati47/RIPPS2/releases) | [Fol për të në psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "064d7e03de66": {
   "en": "064d7e03de66",
@@ -26,10 +26,6 @@
  "0e6d84eabbaa": {
   "en": "0e6d84eabbaa",
   "t": "RIPPS2 tingëllon si një PS2 që nuk e la kurrë dhomën e ndenjes: **tingujt e vetë konsolës së Sony**, muzikë sistemi e Sony dhe **një këngë e Nintendo** për shfletim (zgjedhjet e vetë projektuesit të RIPPS2). Asgjë prej tyre nuk vjen me RIPPS2; **[RIPPS2 Media Studio](tools/media-studio)** të çon atje nga [dump-i i BIOS-it të PS2-së sate](https://pcsx2.net/docs/setup/bios/) (skedari që përdor PCSX2) dhe kopjet e tua të muzikës. **Start**-i i tij i nxjerr tingujt e konsolës në një dosje `AUDIO` të plotë; kjo është harta ku hyjnë. Ose kapërce kompjuterin: **Settings > Audio > BIOS Sounds > Rip** shkruan tingujt e vetë konsolës drejtpërdrejt në `AUDIO`: tingujt e menysë dhe (që nga ndërtimi 89) muzikën e nisjes dhe të nisjes së lojës të luajtura nga notat e vetë BIOS-it. BIOS Music pranë tij nxjerr muzikën e menysë, pjesën e orës (ose atë të ekranit të kuq, ose të dyja: ndërtimi 112). **[Turi i tingujve të v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)** i luan të gjitha në një xhirim të vetëm, nga tingulli i nisjes deri te nisja e një loje."
- },
- "0fb4bf0d3557": {
-  "en": "0fb4bf0d3557",
-  "t": "> [Çfarë ka të re në ndërtimin 136](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.6-beta) | [Changelog](CHANGELOG.md) | **[Video](#videos)** | [Të gjitha botimet](https://github.com/akilluminati47/RIPPS2/releases) | [Fol për të në psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "1238c5cafd27": {
   "en": "1238c5cafd27",
@@ -94,6 +90,10 @@
  "2bb78085b36f": {
   "en": "2bb78085b36f",
   "t": "| [Short-i i ndërtimit 88](https://www.youtube.com/shorts/Sqprz22tdtg) | Short | Ndërtimi 88, mbi Slideshow |"
+ },
+ "2e611083b6bf": {
+  "en": "2e611083b6bf",
+  "t": "> ### Bëje rip: RIPPS2 build 138, v1.3.8 beta"
  },
  "2f0ee80297df": {
   "en": "2f0ee80297df",
@@ -235,10 +235,6 @@
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | Sferat |"
  },
- "84033d4979bd": {
-  "en": "84033d4979bd",
-  "t": "> ### Bëje rip: RIPPS2 build 136, v1.3.6 beta"
- },
  "85be5f3270be": {
   "en": "85be5f3270be",
   "t": "| [Reel-i i v1.1.0](https://youtu.be/Q8ZLd6ArV8s) | 3:57 | v1.1.0, e montuar mbi Over the Rainbow |"
@@ -318,6 +314,10 @@
  "af3b1669b5f4": {
   "en": "af3b1669b5f4",
   "t": "| ↕ | Kursori | `cursor.adp` | **Menu sound 7** |"
+ },
+ "b001b2c9e02b": {
+  "en": "b001b2c9e02b",
+  "t": "> 1. **[Shkarko RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (gjithmonë botimi më i ri) (një skedar, 2.730 KB), dhe **[paketën e temave](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** nëse dëshiron (Adapt, Adapt Rx, botimi 136: nga një konfigurim dhe një figurë; RIPGRID dhe RIPFLOW janë të integruara), dhe **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** për RIPPS2 në gjuhën tënde (33 gjuhë; çdo botim e ka)."
  },
  "b0a6e7370567": {
   "en": "b0a6e7370567",

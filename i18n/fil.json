@@ -7,9 +7,9 @@
   "en": "03be7325b77b",
   "t": "Ang RIPPS2 ay dinisenyo at pinamumunuan ni akilluminati47 at binubuo kasama si Claude (Anthropic). Mga tester: ripto, nuno6573, zackcage6, eliminator1403, FifthFox, Mr.sus.60, lukeatmynose, ahavasi, at lahat ng sumusubok sa Discord. Mga issue sa GitHub: si DarkNerdShawny at ang lahat ng nagbubukas nito (ang issue ang pinakamagandang paraan para ma-update ang RIPPS2: maging tulad nila at [magbukas ng isa](https://github.com/akilluminati47/RIPPS2/issues)). Espesyal na pasasalamat din sa lahat ng pagmamahal sa YouTube: masaya akong tumulong, saan mo man ako abutin."
  },
- "0416bc745d73": {
-  "en": "0416bc745d73",
-  "t": "> 1. **[I-download ang RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (laging ang pinakabagong release) (isang file, 2,723 KB), at kung gusto mo ang **[theme pack](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt at Adapt Rx, edisyon 136: tig-isang config at isang larawan; built in na ang RIPGRID at RIPFLOW), at ang **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** para sa RIPPS2 sa sarili mong wika (33 wika; kasama sa bawat release)."
+ "04b63e681261": {
+  "en": "04b63e681261",
+  "t": "> [Mga bago sa build 138](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.8-beta) | [Changelog](CHANGELOG.md) | **[Mga video](#videos)** | [Lahat ng release](https://github.com/akilluminati47/RIPPS2/releases) | [Pag-usapan sa psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "064d7e03de66": {
   "en": "064d7e03de66",
@@ -26,10 +26,6 @@
  "0e6d84eabbaa": {
   "en": "0e6d84eabbaa",
   "t": "Tunog ng PS2 na hindi kailanman umalis sa sala ang RIPPS2: **ang sariling mga tunog ng console ng Sony**, ang system music ng Sony, at **isang track ng Nintendo** para sa pagba-browse (pinili mismo ng designer ng RIPPS2). Wala sa mga ito ang kasama ng RIPPS2; dinadala ka roon ng **[RIPPS2 Media Studio](tools/media-studio)** mula sa [BIOS dump mula sa sarili mong PS2](https://pcsx2.net/docs/setup/bios/) (ang file na ginagamit ng PCSX2) at sarili mong kopya ng musika. Nire-rip ng **Start** ang mga tunog na iyon ng console sa isang kumpletong `AUDIO` folder; ito ang mapa kung saan sila napupunta. O laktawan ang PC: isinusulat ng **Settings > Audio > BIOS Sounds > Rip** ang sariling mga tunog ng console diretso sa `AUDIO`: ang mga tunog ng menu at (mula build 89) ang musika ng boot at paglulunsad ng laro na tinutugtog mula sa sariling nota ng BIOS. Nire-rip ng BIOS Music sa tabi nito ang musika ng menu, ang tugtog ng orasan (o ng pulang screen, o pareho: build 112). Pinapatugtog ng **[v1.1.2 sounds tour](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)** ang lahat sa isang take, mula boot hanggang paglulunsad ng laro."
- },
- "0fb4bf0d3557": {
-  "en": "0fb4bf0d3557",
-  "t": "> [Mga bago sa build 136](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.6-beta) | [Changelog](CHANGELOG.md) | **[Mga video](#videos)** | [Lahat ng release](https://github.com/akilluminati47/RIPPS2/releases) | [Pag-usapan sa psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "1238c5cafd27": {
   "en": "1238c5cafd27",
@@ -94,6 +90,10 @@
  "2bb78085b36f": {
   "en": "2bb78085b36f",
   "t": "| [Build 88 Short](https://www.youtube.com/shorts/Sqprz22tdtg) | Short | Ang build 88 kasabay ng Slideshow |"
+ },
+ "2e611083b6bf": {
+  "en": "2e611083b6bf",
+  "t": "> ### I-rip na: RIPPS2 build 138, v1.3.8 beta"
  },
  "2f0ee80297df": {
   "en": "2f0ee80297df",
@@ -235,10 +235,6 @@
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | Ang mga bola |"
  },
- "84033d4979bd": {
-  "en": "84033d4979bd",
-  "t": "> ### I-rip na: RIPPS2 build 136, v1.3.6 beta"
- },
  "85be5f3270be": {
   "en": "85be5f3270be",
   "t": "| [v1.1.0 reel](https://youtu.be/Q8ZLd6ArV8s) | 3:57 | Ang v1.1.0, inedit kasabay ng Over the Rainbow |"
@@ -318,6 +314,10 @@
  "af3b1669b5f4": {
   "en": "af3b1669b5f4",
   "t": "| ↕ | Cursor | `cursor.adp` | **Menu sound 7** |"
+ },
+ "b001b2c9e02b": {
+  "en": "b001b2c9e02b",
+  "t": "> 1. **[I-download ang RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (laging ang pinakabagong release) (isang file, 2,730 KB), at kung gusto mo ang **[theme pack](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt at Adapt Rx, edisyon 136: tig-isang config at isang larawan; built in na ang RIPGRID at RIPFLOW), at ang **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** para sa RIPPS2 sa sarili mong wika (33 wika; kasama sa bawat release)."
  },
  "b0a6e7370567": {
   "en": "b0a6e7370567",

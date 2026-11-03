@@ -7,9 +7,9 @@
   "en": "03be7325b77b",
   "t": "RIPPS2 dizajnira i vodi akilluminati47, a gradi se s Claudeom (Anthropic). Testeri: ripto, nuno6573, zackcage6, eliminator1403, FifthFox, Mr.sus.60, lukeatmynose, ahavasi i svi koji testiraju na Discordu. Issues na GitHubu: DarkNerdShawny i svi koji otvore jedan (issue je najbolji način da RIPPS2 dobije ažuriranje: budi kao oni i [otvori jedan](https://github.com/akilluminati47/RIPPS2/issues)). Posebna zahvala i za svu ljubav na YouTubeu: rado pomažem kako god me kontaktirao."
  },
- "0416bc745d73": {
-  "en": "0416bc745d73",
-  "t": "> 1. **[Preuzmi RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (uvijek najnovije izdanje) (jedna datoteka, 2.723 KB), i **[paket tema](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** ako želiš (Adapt, Adapt Rx, izdanje 136: po jedna konfiguracija i jedna slika; RIPGRID i RIPFLOW su ugrađeni), i **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** za RIPPS2 na tvom jeziku (33 jezika; svako izdanje ga sadrži)."
+ "04b63e681261": {
+  "en": "04b63e681261",
+  "t": "> [Novo u buildu 138](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.8-beta) | [Changelog](CHANGELOG.md) | **[Videozapisi](#videos)** | [Sva izdanja](https://github.com/akilluminati47/RIPPS2/releases) | [Razgovaraj o tome na psx-placeu](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "064d7e03de66": {
   "en": "064d7e03de66",
@@ -26,10 +26,6 @@
  "0e6d84eabbaa": {
   "en": "0e6d84eabbaa",
   "t": "RIPPS2 zvuči kao PS2 koja nikad nije napustila dnevni boravak: **Sonyjevi vlastiti zvukovi konzole**, Sonyjeva sistemska glazba i **jedna Nintendova pjesma** za pregledavanje (izbor samog dizajnera RIPPS2). Ništa od toga ne dolazi s RIPPS2; **[RIPPS2 Media Studio](tools/media-studio)** te dovede do toga iz [BIOS dumpa tvoje vlastite PS2](https://pcsx2.net/docs/setup/bios/) (datoteke koju koristi PCSX2) i tvojih vlastitih kopija glazbe. Njegov **Start** ripa zvukove konzole u punu mapu `AUDIO`; ovo je karta u koju ulaze. Ili preskoči računalo: **Settings > Audio > BIOS Sounds > Rip** zapisuje vlastite zvukove konzole izravno u `AUDIO`: zvukove izbornika i (od builda 89) glazbu pokretanja i pokretanja igre sviranu iz vlastitih nota BIOS-a. BIOS Music pokraj ripa glazbu izbornika, skladbu sata (ili crvenog zaslona, ili obje: build 112). **[Obilazak zvukova za v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)** svira svaki od njih u jednom kadru, od zvuka pokretanja do pokretanja igre."
- },
- "0fb4bf0d3557": {
-  "en": "0fb4bf0d3557",
-  "t": "> [Novo u buildu 136](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.6-beta) | [Changelog](CHANGELOG.md) | **[Videozapisi](#videos)** | [Sva izdanja](https://github.com/akilluminati47/RIPPS2/releases) | [Razgovaraj o tome na psx-placeu](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "1238c5cafd27": {
   "en": "1238c5cafd27",
@@ -94,6 +90,10 @@
  "2bb78085b36f": {
   "en": "2bb78085b36f",
   "t": "| [Short builda 88](https://www.youtube.com/shorts/Sqprz22tdtg) | Short | Build 88, uz Slideshow |"
+ },
+ "2e611083b6bf": {
+  "en": "2e611083b6bf",
+  "t": "> ### Ripaj ga: RIPPS2 build 138, v1.3.8 beta"
  },
  "2f0ee80297df": {
   "en": "2f0ee80297df",
@@ -235,10 +235,6 @@
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | Kugle |"
  },
- "84033d4979bd": {
-  "en": "84033d4979bd",
-  "t": "> ### Ripaj ga: RIPPS2 build 136, v1.3.6 beta"
- },
  "85be5f3270be": {
   "en": "85be5f3270be",
   "t": "| [Reel za v1.1.0](https://youtu.be/Q8ZLd6ArV8s) | 3:57 | v1.1.0, montirana uz Over the Rainbow |"
@@ -318,6 +314,10 @@
  "af3b1669b5f4": {
   "en": "af3b1669b5f4",
   "t": "| ↕ | Pokazivač | `cursor.adp` | **Menu sound 7** |"
+ },
+ "b001b2c9e02b": {
+  "en": "b001b2c9e02b",
+  "t": "> 1. **[Preuzmi RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (uvijek najnovije izdanje) (jedna datoteka, 2.730 KB), i **[paket tema](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** ako želiš (Adapt, Adapt Rx, izdanje 136: po jedna konfiguracija i jedna slika; RIPGRID i RIPFLOW su ugrađeni), i **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** za RIPPS2 na tvom jeziku (33 jezika; svako izdanje ga sadrži)."
  },
  "b0a6e7370567": {
   "en": "b0a6e7370567",

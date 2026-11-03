@@ -7,9 +7,9 @@
   "en": "03be7325b77b",
   "t": "RIPPS2 är designad och regisserad av akilluminati47 och byggd med Claude (Anthropic). Testare: ripto, nuno6573, zackcage6, eliminator1403, FifthFox, Mr.sus.60, lukeatmynose, ahavasi och alla som testar på Discord. Issues på GitHub: DarkNerdShawny och alla som öppnar ett (ett issue är det bästa sättet att få RIPPS2 uppdaterad: var som dem och [öppna ett](https://github.com/akilluminati47/RIPPS2/issues)). Särskilt tack också för all kärlek på YouTube: jag hjälper gärna, hur du än når mig."
  },
- "0416bc745d73": {
-  "en": "0416bc745d73",
-  "t": "> 1. **[Ladda ner RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (alltid den senaste versionen) (en fil, 2 723 KB), och **[temapaketet](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** om du vill (Adapt, Adapt Rx, utgåva 136: en konfiguration och en bild vardera; RIPGRID och RIPFLOW är inbyggda), och **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** för RIPPS2 på ditt språk (33 stycken; varje version har den med)."
+ "04b63e681261": {
+  "en": "04b63e681261",
+  "t": "> [Nytt i build 138](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.8-beta) | [Changelog](CHANGELOG.md) | **[Videor](#videos)** | [Alla versioner](https://github.com/akilluminati47/RIPPS2/releases) | [Prata om den på psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "064d7e03de66": {
   "en": "064d7e03de66",
@@ -26,10 +26,6 @@
  "0e6d84eabbaa": {
   "en": "0e6d84eabbaa",
   "t": "RIPPS2 låter som en PS2 som aldrig lämnade vardagsrummet: **Sonys egna konsolljud**, Sony-systemmusik och **ett Nintendo-spår** att bläddra till (RIPPS2-designerns egna val). Inget av det följer med RIPPS2; **[RIPPS2 Media Studio](tools/media-studio)** tar dig dit från [BIOS-dumpen från din egen PS2](https://pcsx2.net/docs/setup/bios/) (filen PCSX2 använder) och dina egna kopior av musiken. Dess **Start** rippar konsolens ljud till en fullständig `AUDIO`-mapp; det här är kartan de hamnar i. Eller hoppa över datorn: **Settings > Audio > BIOS Sounds > Rip** skriver konsolens egna ljud direkt till `AUDIO`: menyljuden och (sedan build 89) start- och spelstartsmusiken, spelad ur BIOS:ens egna noter. BIOS Music bredvid rippar menymusiken, klockans stycke (eller den röda skärmens, eller båda: build 112). **[Ljudgenomgången för v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)** spelar vartenda ett i en tagning, från startljudet till ett spel som startar."
- },
- "0fb4bf0d3557": {
-  "en": "0fb4bf0d3557",
-  "t": "> [Nytt i build 136](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.6-beta) | [Changelog](CHANGELOG.md) | **[Videor](#videos)** | [Alla versioner](https://github.com/akilluminati47/RIPPS2/releases) | [Prata om den på psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "1238c5cafd27": {
   "en": "1238c5cafd27",
@@ -94,6 +90,10 @@
  "2bb78085b36f": {
   "en": "2bb78085b36f",
   "t": "| [Shorten för build 88](https://www.youtube.com/shorts/Sqprz22tdtg) | Short | Build 88, till Slideshow |"
+ },
+ "2e611083b6bf": {
+  "en": "2e611083b6bf",
+  "t": "> ### Rippa den: RIPPS2 build 138, v1.3.8 beta"
  },
  "2f0ee80297df": {
   "en": "2f0ee80297df",
@@ -235,10 +235,6 @@
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | Kloten |"
  },
- "84033d4979bd": {
-  "en": "84033d4979bd",
-  "t": "> ### Rippa den: RIPPS2 build 136, v1.3.6 beta"
- },
  "85be5f3270be": {
   "en": "85be5f3270be",
   "t": "| [Reelen för v1.1.0](https://youtu.be/Q8ZLd6ArV8s) | 3:57 | v1.1.0, klippt till Over the Rainbow |"
@@ -318,6 +314,10 @@
  "af3b1669b5f4": {
   "en": "af3b1669b5f4",
   "t": "| ↕ | Markör | `cursor.adp` | **Menu sound 7** |"
+ },
+ "b001b2c9e02b": {
+  "en": "b001b2c9e02b",
+  "t": "> 1. **[Ladda ner RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (alltid den senaste versionen) (en fil, 2 730 KB), och **[temapaketet](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** om du vill (Adapt, Adapt Rx, utgåva 136: en konfiguration och en bild vardera; RIPGRID och RIPFLOW är inbyggda), och **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** för RIPPS2 på ditt språk (33 stycken; varje version har den med)."
  },
  "b0a6e7370567": {
   "en": "b0a6e7370567",

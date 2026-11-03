@@ -2,8 +2,9 @@
 
 ## Build 138 (beta, v1.3.8-beta), changes since build 137
 
-BIBLE on a real PS2 (11/03): the user signed BIBLE, KELFBinder bound it to an SD2PSX BOOT card, and BIBLE started
-RIPPS2 at power on.
+BIBLE on a real PS2 (11/03, SCPH-39001 USA, SD2PSX BOOT card in slot 0): the user signed BIBLE, KELFBinder bound it,
+then build 138's own Manage bound it too, and each time BIBLE started RIPPS2 at power on; Manage showed the card as
+"BIBLE (MMCE build)".
 
 **BIBLE**
 - **The MMCE and MX4SIO builds start again.** The ones builds 134 to 137 carried (BIBLE `f31c8d5`) stopped on a black

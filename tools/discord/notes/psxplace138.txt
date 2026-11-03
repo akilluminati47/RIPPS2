@@ -1,0 +1,18 @@
+psx-place bump for v1.3.8 beta (build 138). The user posts it. Paste from the [CENTER] line. In the first post, only the "Current release" line and the size sentence change (psxplace-post.bbcode has them).
+
+[CENTER][MEDIA=youtube]OEa8b5rbyco[/MEDIA]
+[SIZE=2]The tour: everything RIPPS2 does, 10:48, chapters in its description[/SIZE]
+
+[SIZE=5][B]RIPPS2 v1.3.8 beta (build 138)[/B][/SIZE]
+[URL='https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf']RIPPS2.elf[/URL] (2,730 KB)  |  [URL='https://github.com/akilluminati47/RIPPS2-themes/releases/latest']Theme pack, edition 136[/URL]  |  [URL='https://github.com/akilluminati47/RIPPS2/blob/main/CHANGELOG.md']Changelog[/URL][/CENTER]
+
+[B]BIBLE boots on a real PS2.[/B] BIBLE, akilluminati47's boot loader built on El Isra's PS2BBL (GPL-3), was signed by akilluminati47 and bound to an SD2PSX BOOT card on a SCPH-39001 by RIPPS2's own Settings > General > Boot Loader > Manage: at power on, BIBLE's splash, then RIPPS2 from the SD card. BIBLE rides inside RIPPS2.elf, nothing else to download.
+
+[LIST]
+[*][B]Manage binds like KELFBinder[/B]: it boots KELFBinder's own IOPRP image (El Isra, GPL-3) for the bind, so an SD2PSX takes it.
+[*][B]BIBLE's MMCE and MX4SIO builds[/B] (black screen in 1.3.4 to 1.3.6) start again, signed anew.
+[*][B]BIBLE is recognized by its bytes[/B]: "BIBLE (MMCE build)", whatever the card's icon says.
+[*]SD2PSX owners: a ready BIBLE BOOT card is on [URL='https://github.com/akilluminati47/BIBLE/releases/latest']BIBLE's release page[/URL].
+[/LIST]
+
+[B]Try BIBLE on a genuine card, an SD2PSX or a MemCard PRO 2[/B], PAL and Japanese consoles most of all, and [URL='https://github.com/akilluminati47/RIPPS2/issues']open an issue[/URL] with your console model and how it went.

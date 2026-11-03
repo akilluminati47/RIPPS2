@@ -7,9 +7,9 @@
   "en": "03be7325b77b",
   "t": "RIPPS2 navrhuje a vede akilluminati47 a staví ho s Claude (Anthropic). Testeři: ripto, nuno6573, zackcage6, eliminator1403, FifthFox, Mr.sus.60, lukeatmynose, ahavasi a všichni, kdo testují na Discordu. Issues na GitHubu: DarkNerdShawny a každý, kdo nějaké otevře (issue je nejlepší cesta k aktualizaci RIPPS2: buď jako oni a [nějaké otevři](https://github.com/akilluminati47/RIPPS2/issues)). Zvláštní poděkování také za všechnu lásku na YouTube: rád pomůžu, ať mě kontaktuješ jakkoli."
  },
- "0416bc745d73": {
-  "en": "0416bc745d73",
-  "t": "> 1. **[Stáhni RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (vždy nejnovější vydání) (jeden soubor, 2 723 KB), a pokud chceš, i **[balíček motivů](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt, Adapt Rx, edice 136: každý jedna konfigurace a jeden obrázek; RIPGRID a RIPFLOW jsou vestavěné), a **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** pro RIPPS2 ve tvém jazyce (33 jazyků; každé vydání ho obsahuje)."
+ "04b63e681261": {
+  "en": "04b63e681261",
+  "t": "> [Novinky v buildu 138](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.8-beta) | [Changelog](CHANGELOG.md) | **[Videa](#videos)** | [Všechna vydání](https://github.com/akilluminati47/RIPPS2/releases) | [Pobav se o něm na psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "064d7e03de66": {
   "en": "064d7e03de66",
@@ -26,10 +26,6 @@
  "0e6d84eabbaa": {
   "en": "0e6d84eabbaa",
   "t": "RIPPS2 zní jako PS2, která nikdy neopustila obývák: **vlastní zvuky konzole od Sony**, systémová hudba Sony a **jedna skladba od Nintenda** k procházení (výběr samotného návrháře RIPPS2). Nic z toho se s RIPPS2 nedodává; **[RIPPS2 Media Studio](tools/media-studio)** tě k tomu dovede z [dumpu BIOSu tvé vlastní PS2](https://pcsx2.net/docs/setup/bios/) (soubor, který používá PCSX2) a tvých vlastních kopií hudby. Jeho **Start** ripne zvuky konzole do úplné složky `AUDIO`; tohle je mapa, do které se zařadí. Nebo vynech PC: **Settings > Audio > BIOS Sounds > Rip** zapíše vlastní zvuky konzole přímo do `AUDIO`: zvuky menu a (od buildu 89) hudbu při startu a spuštění hry zahranou z vlastních not BIOSu. BIOS Music vedle ripne hudbu menu, skladbu hodin (nebo červené obrazovky, nebo obě: build 112). **[Prohlídka zvuků k v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)** přehraje každý z nich v jednom záběru, od zvuku spuštění po spuštění hry."
- },
- "0fb4bf0d3557": {
-  "en": "0fb4bf0d3557",
-  "t": "> [Novinky v buildu 136](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.6-beta) | [Changelog](CHANGELOG.md) | **[Videa](#videos)** | [Všechna vydání](https://github.com/akilluminati47/RIPPS2/releases) | [Pobav se o něm na psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "1238c5cafd27": {
   "en": "1238c5cafd27",
@@ -94,6 +90,10 @@
  "2bb78085b36f": {
   "en": "2bb78085b36f",
   "t": "| [Short buildu 88](https://www.youtube.com/shorts/Sqprz22tdtg) | Short | Build 88, na Slideshow |"
+ },
+ "2e611083b6bf": {
+  "en": "2e611083b6bf",
+  "t": "> ### Ripni to: RIPPS2 build 138, v1.3.8 beta"
  },
  "2f0ee80297df": {
   "en": "2f0ee80297df",
@@ -235,10 +235,6 @@
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | Koule |"
  },
- "84033d4979bd": {
-  "en": "84033d4979bd",
-  "t": "> ### Ripni to: RIPPS2 build 136, v1.3.6 beta"
- },
  "85be5f3270be": {
   "en": "85be5f3270be",
   "t": "| [Reel k v1.1.0](https://youtu.be/Q8ZLd6ArV8s) | 3:57 | v1.1.0, sestříhaná na Over the Rainbow |"
@@ -318,6 +314,10 @@
  "af3b1669b5f4": {
   "en": "af3b1669b5f4",
   "t": "| ↕ | Kurzor | `cursor.adp` | **Menu sound 7** |"
+ },
+ "b001b2c9e02b": {
+  "en": "b001b2c9e02b",
+  "t": "> 1. **[Stáhni RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (vždy nejnovější vydání) (jeden soubor, 2 730 KB), a pokud chceš, i **[balíček motivů](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt, Adapt Rx, edice 136: každý jedna konfigurace a jeden obrázek; RIPGRID a RIPFLOW jsou vestavěné), a **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** pro RIPPS2 ve tvém jazyce (33 jazyků; každé vydání ho obsahuje)."
  },
  "b0a6e7370567": {
   "en": "b0a6e7370567",

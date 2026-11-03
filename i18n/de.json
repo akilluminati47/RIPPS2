@@ -7,9 +7,9 @@
   "en": "03be7325b77b",
   "t": "RIPPS2 wird von akilluminati47 entworfen und geleitet und mit Claude (Anthropic) gebaut. Tester: ripto, nuno6573, zackcage6, eliminator1403, FifthFox, Mr.sus.60, lukeatmynose, ahavasi und alle, die auf Discord testen. Issues auf GitHub: DarkNerdShawny und alle, die eines eröffnen (ein Issue ist der beste Weg zu RIPPS2-Updates: sei wie sie und [eröffne eines](https://github.com/akilluminati47/RIPPS2/issues)). Besonderer Dank auch für all die Liebe auf YouTube: ich helfe gern, wie auch immer du mich erreichst."
  },
- "0416bc745d73": {
-  "en": "0416bc745d73",
-  "t": "> 1. **[Lade RIPPS2.elf herunter](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (immer das neueste Release) (eine Datei, 2.723 KB), und das **[Theme-Paket](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)**, wenn du magst (Adapt, Adapt Rx, Ausgabe 136: je eine Konfiguration und ein Bild; RIPGRID und RIPFLOW sind eingebaut), und **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** für RIPPS2 in deiner Sprache (33 davon; jedes Release enthält es)."
+ "04b63e681261": {
+  "en": "04b63e681261",
+  "t": "> [Neu in Build 138](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.8-beta) | [Changelog](CHANGELOG.md) | **[Videos](#videos)** | [Alle Releases](https://github.com/akilluminati47/RIPPS2/releases) | [Darüber reden auf psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "064d7e03de66": {
   "en": "064d7e03de66",
@@ -26,10 +26,6 @@
  "0e6d84eabbaa": {
   "en": "0e6d84eabbaa",
   "t": "RIPPS2 klingt wie eine PS2, die das Wohnzimmer nie verlassen hat: **Sonys eigene Konsolensounds**, Sony-Systemmusik und **ein Nintendo-Track** zum Stöbern (die eigene Auswahl des RIPPS2-Designers). Nichts davon wird mit RIPPS2 ausgeliefert; **[RIPPS2 Media Studio](tools/media-studio)** bringt dich dorthin, aus dem [BIOS-Dump deiner eigenen PS2](https://pcsx2.net/docs/setup/bios/) (der Datei, die PCSX2 nutzt) und deinen eigenen Kopien der Musik. Sein **Start** rippt die Konsolensounds in einen vollständigen `AUDIO`-Ordner; das ist die Karte, nach der sie einsortiert werden. Oder lass den PC weg: **Settings > Audio > BIOS Sounds > Rip** schreibt die Konsolensounds direkt in `AUDIO`: die Menüsounds und (seit Build 89) die Start- und Spielstartmusik, gespielt aus den eigenen Noten des BIOS. BIOS Music daneben rippt die Menümusik, das Stück der Uhr (oder das des roten Bildschirms, oder beide: Build 112). **[Der Sound-Rundgang von v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)** spielt jeden davon in einem Take, vom Startsound bis zum Spielstart."
- },
- "0fb4bf0d3557": {
-  "en": "0fb4bf0d3557",
-  "t": "> [Neu in Build 136](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.6-beta) | [Changelog](CHANGELOG.md) | **[Videos](#videos)** | [Alle Releases](https://github.com/akilluminati47/RIPPS2/releases) | [Darüber reden auf psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "1238c5cafd27": {
   "en": "1238c5cafd27",
@@ -94,6 +90,10 @@
  "2bb78085b36f": {
   "en": "2bb78085b36f",
   "t": "| [Der Build-88-Short](https://www.youtube.com/shorts/Sqprz22tdtg) | Short | Build 88, zu Slideshow |"
+ },
+ "2e611083b6bf": {
+  "en": "2e611083b6bf",
+  "t": "> ### Rip it: RIPPS2 Build 138, v1.3.8 Beta"
  },
  "2f0ee80297df": {
   "en": "2f0ee80297df",
@@ -235,10 +235,6 @@
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | Die Kugeln |"
  },
- "84033d4979bd": {
-  "en": "84033d4979bd",
-  "t": "> ### Rip it: RIPPS2 Build 136, v1.3.6 Beta"
- },
  "85be5f3270be": {
   "en": "85be5f3270be",
   "t": "| [Das v1.1.0-Reel](https://youtu.be/Q8ZLd6ArV8s) | 3:57 | v1.1.0, geschnitten zu Over the Rainbow |"
@@ -318,6 +314,10 @@
  "af3b1669b5f4": {
   "en": "af3b1669b5f4",
   "t": "| ↕ | Cursor | `cursor.adp` | **Menu sound 7** |"
+ },
+ "b001b2c9e02b": {
+  "en": "b001b2c9e02b",
+  "t": "> 1. **[Lade RIPPS2.elf herunter](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (immer das neueste Release) (eine Datei, 2.730 KB), und das **[Theme-Paket](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)**, wenn du magst (Adapt, Adapt Rx, Ausgabe 136: je eine Konfiguration und ein Bild; RIPGRID und RIPFLOW sind eingebaut), und **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** für RIPPS2 in deiner Sprache (33 davon; jedes Release enthält es)."
  },
  "b0a6e7370567": {
   "en": "b0a6e7370567",

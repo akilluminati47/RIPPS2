@@ -7,9 +7,9 @@
   "en": "03be7325b77b",
   "t": "صمّم RIPPS2 ويقوده akilluminati47، ويُبنى بمساعدة Claude (Anthropic). المختبرون: ripto وnuno6573 وzackcage6 وeliminator1403 وFifthFox وMr.sus.60 وlukeatmynose وahavasi، وكل من يختبر على Discord. والـ issues على GitHub: DarkNerdShawny وكل من يفتح واحدًا (الـ issue أفضل طريقة لتحديث RIPPS2: كن مثلهم و[افتح واحدًا](https://github.com/akilluminati47/RIPPS2/issues)). وشكر خاص أيضًا لكل المحبة على YouTube: يسعدني أن أساعد أيًّا كانت الطريقة التي تصلني بها."
  },
- "0416bc745d73": {
-  "en": "0416bc745d73",
-  "t": "> 1. **[نزّل RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (دائمًا أحدث إصدار) (ملف واحد، 2.723 KB)، و**[حزمة السمات](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** إن شئت (Adapt وAdapt Rx، الإصدار 136: إعداد واحد وصورة واحدة لكل منهما؛ RIPGRID وRIPFLOW مدمجتان)، و**[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** ليظهر RIPPS2 بلغتك (33 لغة؛ يأتي مع كل إصدار)."
+ "04b63e681261": {
+  "en": "04b63e681261",
+  "t": "> [الجديد في الإصدار 138](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.8-beta) | [Changelog](CHANGELOG.md) | **[الفيديوهات](#videos)** | [كل الإصدارات](https://github.com/akilluminati47/RIPPS2/releases) | [تحدّث عنه في psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "064d7e03de66": {
   "en": "064d7e03de66",
@@ -26,10 +26,6 @@
  "0e6d84eabbaa": {
   "en": "0e6d84eabbaa",
   "t": "صوت RIPPS2 كصوت PS2 لم يغادر غرفة المعيشة قط: **أصوات جهاز Sony نفسه**، وموسيقى نظام Sony، و**مقطع واحد من Nintendo** للتصفح (اختيارات مصمّم RIPPS2 نفسه). لا يأتي شيء من ذلك مع RIPPS2؛ يوصلك **[RIPPS2 Media Studio](tools/media-studio)** إليه من [نسخة BIOS من جهازك PS2](https://pcsx2.net/docs/setup/bios/) (الملف الذي يستخدمه PCSX2) ومن نسخك الخاصة من الموسيقى. زر **Start** فيه يسحب أصوات الجهاز إلى مجلد `AUDIO` كامل؛ وهذه هي الخريطة التي تدخل فيها. أو استغنِ عن الحاسوب: **Settings > Audio > BIOS Sounds > Rip** يكتب أصوات الجهاز نفسه مباشرة في `AUDIO`: أصوات القائمة و(منذ الإصدار 89) موسيقى الإقلاع وبدء اللعبة تُعزف من نوتات BIOS نفسه. وبجواره BIOS Music يسحب موسيقى القائمة، مقطوعة الساعة (أو مقطوعة الشاشة الحمراء، أو كلتيهما: الإصدار 112). **[جولة أصوات v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)** تشغّلها كلها في لقطة واحدة، من صوت الإقلاع حتى تشغيل لعبة."
- },
- "0fb4bf0d3557": {
-  "en": "0fb4bf0d3557",
-  "t": "> [الجديد في الإصدار 136](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.6-beta) | [Changelog](CHANGELOG.md) | **[الفيديوهات](#videos)** | [كل الإصدارات](https://github.com/akilluminati47/RIPPS2/releases) | [تحدّث عنه في psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "1238c5cafd27": {
   "en": "1238c5cafd27",
@@ -94,6 +90,10 @@
  "2bb78085b36f": {
   "en": "2bb78085b36f",
   "t": "| [مقطع Short للإصدار 88](https://www.youtube.com/shorts/Sqprz22tdtg) | Short | الإصدار 88 على أنغام Slideshow |"
+ },
+ "2e611083b6bf": {
+  "en": "2e611083b6bf",
+  "t": "> ### اسحبه: RIPPS2 الإصدار 138، v1.3.8 بيتا"
  },
  "2f0ee80297df": {
   "en": "2f0ee80297df",
@@ -235,10 +235,6 @@
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | الكرات |"
  },
- "84033d4979bd": {
-  "en": "84033d4979bd",
-  "t": "> ### اسحبه: RIPPS2 الإصدار 136، v1.3.6 بيتا"
- },
  "85be5f3270be": {
   "en": "85be5f3270be",
   "t": "| [عرض v1.1.0](https://youtu.be/Q8ZLd6ArV8s) | 3:57 | الإصدار v1.1.0 مونتاجًا على Over the Rainbow |"
@@ -318,6 +314,10 @@
  "af3b1669b5f4": {
   "en": "af3b1669b5f4",
   "t": "| ↕ | المؤشر | `cursor.adp` | **Menu sound 7** |"
+ },
+ "b001b2c9e02b": {
+  "en": "b001b2c9e02b",
+  "t": "> 1. **[نزّل RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (دائمًا أحدث إصدار) (ملف واحد، 2.730 KB)، و**[حزمة السمات](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** إن شئت (Adapt وAdapt Rx، الإصدار 136: إعداد واحد وصورة واحدة لكل منهما؛ RIPGRID وRIPFLOW مدمجتان)، و**[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** ليظهر RIPPS2 بلغتك (33 لغة؛ يأتي مع كل إصدار)."
  },
  "b0a6e7370567": {
   "en": "b0a6e7370567",

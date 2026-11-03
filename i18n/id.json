@@ -7,9 +7,9 @@
   "en": "03be7325b77b",
   "t": "RIPPS2 dirancang dan diarahkan oleh akilluminati47 dan dibangun bersama Claude (Anthropic). Penguji: ripto, nuno6573, zackcage6, eliminator1403, FifthFox, Mr.sus.60, lukeatmynose, ahavasi, dan semua orang yang menguji di Discord. Issue di GitHub: DarkNerdShawny dan semua orang yang membukanya (issue adalah cara terbaik agar RIPPS2 diperbarui: jadilah seperti mereka dan [buka satu](https://github.com/akilluminati47/RIPPS2/issues)). Terima kasih khusus juga atas semua dukungan di YouTube: saya senang membantu, lewat jalan apa pun Anda menghubungi saya."
  },
- "0416bc745d73": {
-  "en": "0416bc745d73",
-  "t": "> 1. **[Unduh RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (selalu rilis terbaru) (satu berkas, 2.723 KB), dan bila mau **[paket tema](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt dan Adapt Rx, edisi 136: masing-masing satu konfigurasi dan satu gambar; RIPGRID dan RIPFLOW sudah bawaan), serta **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** untuk RIPPS2 dalam bahasa Anda (33 bahasa; disertakan di setiap rilis)."
+ "04b63e681261": {
+  "en": "04b63e681261",
+  "t": "> [Yang baru di build 138](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.8-beta) | [Changelog](CHANGELOG.md) | **[Video](#videos)** | [Semua rilis](https://github.com/akilluminati47/RIPPS2/releases) | [Diskusikan di psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "064d7e03de66": {
   "en": "064d7e03de66",
@@ -26,10 +26,6 @@
  "0e6d84eabbaa": {
   "en": "0e6d84eabbaa",
   "t": "RIPPS2 terdengar seperti PS2 yang tidak pernah meninggalkan ruang keluarga: **suara konsol Sony sendiri**, musik sistem Sony, dan **satu lagu Nintendo** untuk menjelajah (pilihan perancang RIPPS2 sendiri). Tidak satu pun ikut bersama RIPPS2; **[RIPPS2 Media Studio](tools/media-studio)** membawa Anda ke sana dari [dump BIOS dari PS2 Anda sendiri](https://pcsx2.net/docs/setup/bios/) (berkas yang dipakai PCSX2) dan salinan musik Anda sendiri. **Start** me-rip suara konsol itu menjadi folder `AUDIO` yang lengkap; inilah peta tempatnya. Atau lewati PC: **Settings > Audio > BIOS Sounds > Rip** menulis suara konsol sendiri langsung ke `AUDIO`: suara menu dan (sejak build 89) musik boot dan peluncuran game yang dimainkan dari not BIOS sendiri. BIOS Music di sebelahnya me-rip musik menu, lagu jam (atau lagu layar merah, atau keduanya: build 112). **[Tur suara v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)** memutar semuanya dalam satu pengambilan, dari suara boot sampai peluncuran game."
- },
- "0fb4bf0d3557": {
-  "en": "0fb4bf0d3557",
-  "t": "> [Yang baru di build 136](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.6-beta) | [Changelog](CHANGELOG.md) | **[Video](#videos)** | [Semua rilis](https://github.com/akilluminati47/RIPPS2/releases) | [Diskusikan di psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "1238c5cafd27": {
   "en": "1238c5cafd27",
@@ -94,6 +90,10 @@
  "2bb78085b36f": {
   "en": "2bb78085b36f",
   "t": "| [Short build 88](https://www.youtube.com/shorts/Sqprz22tdtg) | Short | Build 88 mengikuti Slideshow |"
+ },
+ "2e611083b6bf": {
+  "en": "2e611083b6bf",
+  "t": "> ### Rip sekarang: RIPPS2 build 138, v1.3.8 beta"
  },
  "2f0ee80297df": {
   "en": "2f0ee80297df",
@@ -235,10 +235,6 @@
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | Bola-bola |"
  },
- "84033d4979bd": {
-  "en": "84033d4979bd",
-  "t": "> ### Rip sekarang: RIPPS2 build 136, v1.3.6 beta"
- },
  "85be5f3270be": {
   "en": "85be5f3270be",
   "t": "| [Video perkenalan v1.1.0](https://youtu.be/Q8ZLd6ArV8s) | 3:57 | v1.1.0, disunting mengikuti Over the Rainbow |"
@@ -318,6 +314,10 @@
  "af3b1669b5f4": {
   "en": "af3b1669b5f4",
   "t": "| ↕ | Kursor | `cursor.adp` | **Menu sound 7** |"
+ },
+ "b001b2c9e02b": {
+  "en": "b001b2c9e02b",
+  "t": "> 1. **[Unduh RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (selalu rilis terbaru) (satu berkas, 2.730 KB), dan bila mau **[paket tema](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt dan Adapt Rx, edisi 136: masing-masing satu konfigurasi dan satu gambar; RIPGRID dan RIPFLOW sudah bawaan), serta **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** untuk RIPPS2 dalam bahasa Anda (33 bahasa; disertakan di setiap rilis)."
  },
  "b0a6e7370567": {
   "en": "b0a6e7370567",

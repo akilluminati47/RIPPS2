@@ -7,9 +7,9 @@
   "en": "03be7325b77b",
   "t": "RIPPS2 e conceput și condus de akilluminati47 și construit cu Claude (Anthropic). Testeri: ripto, nuno6573, zackcage6, eliminator1403, FifthFox, Mr.sus.60, lukeatmynose, ahavasi și toți cei care testează pe Discord. Issues pe GitHub: DarkNerdShawny și toți cei care deschid unul (un issue e cel mai bun mod de a primi actualizări la RIPPS2: fii ca ei și [deschide unul](https://github.com/akilluminati47/RIPPS2/issues)). Mulțumiri speciale și pentru toată dragostea de pe YouTube: mă bucur să ajut, oricum m-ai găsi."
  },
- "0416bc745d73": {
-  "en": "0416bc745d73",
-  "t": "> 1. **[Descarcă RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (mereu cea mai nouă versiune) (un singur fișier, 2.723 KB), și **[pachetul de teme](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** dacă vrei (Adapt, Adapt Rx, ediția 136: câte o configurație și o imagine; RIPGRID și RIPFLOW sunt incluse), și **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** pentru RIPPS2 în limba ta (33 de limbi; fiecare versiune îl conține)."
+ "04b63e681261": {
+  "en": "04b63e681261",
+  "t": "> [Ce e nou în build-ul 138](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.8-beta) | [Changelog](CHANGELOG.md) | **[Videoclipuri](#videos)** | [Toate versiunile](https://github.com/akilluminati47/RIPPS2/releases) | [Discută despre el pe psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "064d7e03de66": {
   "en": "064d7e03de66",
@@ -26,10 +26,6 @@
  "0e6d84eabbaa": {
   "en": "0e6d84eabbaa",
   "t": "RIPPS2 sună ca un PS2 care n-a plecat niciodată din sufragerie: **propriile sunete ale consolei Sony**, muzică de sistem Sony și **o piesă Nintendo** pentru navigare (alegerile designerului RIPPS2). Nimic din toate acestea nu vine cu RIPPS2; **[RIPPS2 Media Studio](tools/media-studio)** te duce acolo pornind de la [dump-ul BIOS al propriului PS2](https://pcsx2.net/docs/setup/bios/) (fișierul pe care îl folosește PCSX2) și de la propriile copii ale muzicii. **Start**-ul lui scoate sunetele consolei într-un folder `AUDIO` complet; aceasta e harta în care intră. Sau sari peste PC: **Settings > Audio > BIOS Sounds > Rip** scrie propriile sunete ale consolei direct în `AUDIO`: sunetele de meniu și (din build-ul 89) muzica de pornire și de lansare a jocului cântată din propriile note ale BIOS-ului. BIOS Music de lângă scoate muzica meniului, piesa ceasului (sau a ecranului roșu, sau pe amândouă: build 112). **[Turul sunetelor din v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)** le redă pe toate într-o singură dublă, de la sunetul de pornire până la lansarea unui joc."
- },
- "0fb4bf0d3557": {
-  "en": "0fb4bf0d3557",
-  "t": "> [Ce e nou în build-ul 136](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.6-beta) | [Changelog](CHANGELOG.md) | **[Videoclipuri](#videos)** | [Toate versiunile](https://github.com/akilluminati47/RIPPS2/releases) | [Discută despre el pe psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "1238c5cafd27": {
   "en": "1238c5cafd27",
@@ -94,6 +90,10 @@
  "2bb78085b36f": {
   "en": "2bb78085b36f",
   "t": "| [Short-ul build-ului 88](https://www.youtube.com/shorts/Sqprz22tdtg) | Short | Build-ul 88, pe Slideshow |"
+ },
+ "2e611083b6bf": {
+  "en": "2e611083b6bf",
+  "t": "> ### Fă-i rip: RIPPS2 build 138, v1.3.8 beta"
  },
  "2f0ee80297df": {
   "en": "2f0ee80297df",
@@ -235,10 +235,6 @@
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | Sferele |"
  },
- "84033d4979bd": {
-  "en": "84033d4979bd",
-  "t": "> ### Fă-i rip: RIPPS2 build 136, v1.3.6 beta"
- },
  "85be5f3270be": {
   "en": "85be5f3270be",
   "t": "| [Reel-ul pentru v1.1.0](https://youtu.be/Q8ZLd6ArV8s) | 3:57 | v1.1.0, montată pe Over the Rainbow |"
@@ -318,6 +314,10 @@
  "af3b1669b5f4": {
   "en": "af3b1669b5f4",
   "t": "| ↕ | Cursor | `cursor.adp` | **Menu sound 7** |"
+ },
+ "b001b2c9e02b": {
+  "en": "b001b2c9e02b",
+  "t": "> 1. **[Descarcă RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (mereu cea mai nouă versiune) (un singur fișier, 2.730 KB), și **[pachetul de teme](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** dacă vrei (Adapt, Adapt Rx, ediția 136: câte o configurație și o imagine; RIPGRID și RIPFLOW sunt incluse), și **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** pentru RIPPS2 în limba ta (33 de limbi; fiecare versiune îl conține)."
  },
  "b0a6e7370567": {
   "en": "b0a6e7370567",

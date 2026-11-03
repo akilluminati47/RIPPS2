@@ -44,13 +44,13 @@
 
 # RIPPS2
 
-> ### 開始提取：RIPPS2 組建 136，v1.3.6 測試版
+> ### 開始提取：RIPPS2 組建 138，v1.3.8 測試版
 > **RIP PS2，ELF 殺手。** 獨立執行，從不破壞：你的其他 ELF 安然留在[架子](https://akilluminati47.github.io/RIPPS2/)上（除非你要求，否則什麼都不會刪除），只是得到它們應得的休息。
-> 1. **[下載 RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)**（始終是最新版本）（一個檔案，2,723 KB），需要的話再下載 **[主題包](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)**（Adapt 和 Adapt Rx，第 136 版：各一個配置和一張圖片；RIPGRID 和 RIPFLOW 為內建），以及 **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)**，用你的語言使用 RIPPS2（33 種語言；每個版本都附帶）。
+> 1. **[下載 RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)**（始終是最新版本）（一個檔案，2,730 KB），需要的話再下載 **[主題包](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)**（Adapt 和 Adapt Rx，第 136 版：各一個配置和一張圖片；RIPGRID 和 RIPFLOW 為內建），以及 **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)**，用你的語言使用 RIPPS2（33 種語言；每個版本都附帶）。
 > 2. 把它複製到 隨身碟或記憶卡，用 FreeMcBoot、PS2BBL、wLaunchELF 或你平時執行 homebrew 的工具啟動。在 PCSX2 中：**System > Start File** 並選擇 `RIPPS2.elf`。
 > 3. 告訴我們效果如何：[psx-place 帖子](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)、[一個 issue](https://github.com/akilluminati47/RIPPS2/issues)，或開發者 Discord 的 **#RIPPS2**，[discord.gg/Z7m9u5kby](https://discord.gg/Z7m9u5kby)（邀請有效期至 2026 年 12 月 1 日）。
 >
-> [組建 136 的新內容](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.6-beta) | [Changelog](CHANGELOG.md) | **[影片](#videos)** | [所有版本](https://github.com/akilluminati47/RIPPS2/releases) | [在 psx-place 討論](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>
+> [組建 138 的新內容](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.8-beta) | [Changelog](CHANGELOG.md) | **[影片](#videos)** | [所有版本](https://github.com/akilluminati47/RIPPS2/releases) | [在 psx-place 討論](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>
 > [為 RIPPS2 製作主題](https://github.com/akilluminati47/RIPPS2-themes)（無需重新組建，方便AI 代理） | [填充 AUDIO 和 MEDIA 資料夾](#the-sound-ripps2-was-made-with) 使用 [RIPPS2 Media Studio](tools/media-studio)（音效、音樂和影片；[下載 Windows 版](https://github.com/akilluminati47/RIPPS2/releases/download/media-studio/RIPPS2-Media-Studio.zip)） | [以真正的 720p 和 1080i 檢視主題：RIPPCSX2](https://github.com/akilluminati47/RIPPCSX2/releases/latest)（帶 HDTV 輸出的 PCSX2）
 
 RIPPS2 是裝在單個 `.elf` 中的 PS2 前端：把 [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader)（Open PS2 Loader 的分支）拆開重組，以 rickgaiser 的 [Neutrino](https://github.com/rickgaiser/neutrino) 作為第二個遊戲核心，並擁有自己的外觀、啟動器、檔案瀏覽器和儲存工具。玻璃塔矗立在你的遊戲後面，軌道陣列排列在你的檔案後面，全部由 PS2 實時繪製。

@@ -7,9 +7,9 @@
   "en": "03be7325b77b",
   "t": "RIPPS2 は akilluminati47 が設計と指揮をし、Claude (Anthropic) とともに作っています。テスター: ripto、nuno6573、zackcage6、eliminator1403、FifthFox、Mr.sus.60、lukeatmynose、ahavasi、そして Discord でテストしてくれる皆さん。GitHub の issue: DarkNerdShawny と、issue を立ててくれるすべての人 (issue は RIPPS2 を更新させる一番の方法です: 彼らのように [1 つ立てましょう](https://github.com/akilluminati47/RIPPS2/issues))。YouTube での応援にも特に感謝します: どこから連絡をもらっても、喜んで手伝います。"
  },
- "0416bc745d73": {
-  "en": "0416bc745d73",
-  "t": "> 1. **[RIPPS2.elf をダウンロード](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (常に最新リリース) (ファイル 1 つ、2,723 KB)、必要なら **[テーマパック](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt と Adapt Rx、エディション 136: それぞれ設定 1 つと画像 1 枚。RIPGRID と RIPFLOW は内蔵)、そして RIPPS2 を自分の言語で使うための **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** (33 言語。毎リリースに同梱)。"
+ "04b63e681261": {
+  "en": "04b63e681261",
+  "t": "> [ビルド 138 の新機能](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.8-beta) | [Changelog](CHANGELOG.md) | **[動画](#videos)** | [すべてのリリース](https://github.com/akilluminati47/RIPPS2/releases) | [psx-place で話そう](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "064d7e03de66": {
   "en": "064d7e03de66",
@@ -26,10 +26,6 @@
  "0e6d84eabbaa": {
   "en": "0e6d84eabbaa",
   "t": "RIPPS2 はリビングから出なかった PS2 の音がします: **Sony のコンソール自身の音**、Sony のシステム音楽、そしてブラウズ用の **Nintendo の 1 曲** (RIPPS2 のデザイナー自身の選曲)。どれも RIPPS2 には同梱されていません。**[RIPPS2 Media Studio](tools/media-studio)** が [自分の PS2 の BIOS ダンプ](https://pcsx2.net/docs/setup/bios/) (PCSX2 が使うファイル) と自分で持っている音楽からそこへ連れて行きます。**Start** でそのコンソール音を完全な `AUDIO` フォルダーにリップします。これはその配置図です。または PC を飛ばして: **Settings > Audio > BIOS Sounds > Rip** がコンソール自身の音を直接 `AUDIO` に書きます: メニュー音と (ビルド 89 から) BIOS 自身の楽譜から演奏される起動音とゲーム起動の音楽。その隣の BIOS Music はメニュー音楽、時計の曲 (または赤い画面の曲、または両方: ビルド 112) をリップします。**[v1.1.2 サウンドツアー](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)** は起動音からゲームの起動まで、すべてを 1 テイクで再生します。"
- },
- "0fb4bf0d3557": {
-  "en": "0fb4bf0d3557",
-  "t": "> [ビルド 136 の新機能](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.6-beta) | [Changelog](CHANGELOG.md) | **[動画](#videos)** | [すべてのリリース](https://github.com/akilluminati47/RIPPS2/releases) | [psx-place で話そう](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "1238c5cafd27": {
   "en": "1238c5cafd27",
@@ -94,6 +90,10 @@
  "2bb78085b36f": {
   "en": "2bb78085b36f",
   "t": "| [ビルド 88 ショート](https://www.youtube.com/shorts/Sqprz22tdtg) | Short | Slideshow に合わせたビルド 88 |"
+ },
+ "2e611083b6bf": {
+  "en": "2e611083b6bf",
+  "t": "> ### リップしよう: RIPPS2 ビルド 138、v1.3.8 ベータ"
  },
  "2f0ee80297df": {
   "en": "2f0ee80297df",
@@ -235,10 +235,6 @@
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | オーブ |"
  },
- "84033d4979bd": {
-  "en": "84033d4979bd",
-  "t": "> ### リップしよう: RIPPS2 ビルド 136、v1.3.6 ベータ"
- },
  "85be5f3270be": {
   "en": "85be5f3270be",
   "t": "| [v1.1.0 紹介リール](https://youtu.be/Q8ZLd6ArV8s) | 3:57 | Over the Rainbow に合わせて編集した v1.1.0 |"
@@ -318,6 +314,10 @@
  "af3b1669b5f4": {
   "en": "af3b1669b5f4",
   "t": "| ↕ | カーソル | `cursor.adp` | **Menu sound 7** |"
+ },
+ "b001b2c9e02b": {
+  "en": "b001b2c9e02b",
+  "t": "> 1. **[RIPPS2.elf をダウンロード](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (常に最新リリース) (ファイル 1 つ、2,730 KB)、必要なら **[テーマパック](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt と Adapt Rx、エディション 136: それぞれ設定 1 つと画像 1 枚。RIPGRID と RIPFLOW は内蔵)、そして RIPPS2 を自分の言語で使うための **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** (33 言語。毎リリースに同梱)。"
  },
  "b0a6e7370567": {
   "en": "b0a6e7370567",
