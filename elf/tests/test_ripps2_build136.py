@@ -58,6 +58,16 @@ if 'guiShowAudioConfigAt(RIPPS2_RIP_BIOS_BUTTON);' not in gui:
 if 'int sfxBootSoundWhere(char *out, int size)' not in snd or 'sfxBootSoundWhere(card, sizeof(card));' not in st:
     fail.append('STATUS names the boot sound file, and a memory card\'s as one')
 
+# RIPGRID (and Adapt in the pack): Pop In with the categories across the top, Pop In and Name with the sidebar (RIPGRID
+# in Planet N), and a name set in the category row drawn below the PS2 mark while the categories run across the top
+rg, ui, th = rd('misc/theme_ripgrid.cfg'), rd('src/ripps2ui.c'), rd('src/themes.c')
+if 'source_name=pop' not in rg or 'source_name_sidebar=pop_name' not in rg or 'font9=builtin:ripps2' not in rg or '\tsidebar_font=9' not in rg:
+    fail.append('RIPGRID: Pop In across the top, Pop In and Name in Planet N with the sidebar')
+if 'gTheme->srcNamePopSide > 0 && ripps2SidebarOn()' not in ui or 'int ripps2CatBarBottom(void)' not in ui:
+    fail.append('the Source Name follows source_name_sidebar while the sidebar is on')
+if '"%s_sidebar_font"' not in th or 'y = below + 9;' not in th:
+    fail.append('MenuText takes <name>_sidebar_font with the sidebar, and drops below the category row across the top')
+
 # the languages: every new line, and the VMC slot labels from 0
 tpl = set(e['en'] for e in yaml.safe_load((elf / 'lang' / '_strings.yml').read_text(encoding='utf-8'))['strings'])
 new = [k for k in tpl if k.startswith(('RIP THIS CONSOLE\'S AUDIO', 'Boot sound On (fast): %s on the memory card', 'An SD2PSX or MMCE card can stop answering', 'SLOT 0: %s'))]

@@ -34,6 +34,18 @@ index 0173142..790c510 100644
  int guiNeutrinoPathHandler(char *text, int maxLen);
  int guiPopstarterPathHandler(char *text, int maxLen);
  int guiExitPathHandler(char *text, int maxLen);
+diff --git a/include/ripps2.h b/include/ripps2.h
+index 13d3de5..0937301 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -116,6 +116,7 @@ void ripps2GlyphsPoke(int which);   // Left / Right (Up / Down on Coverflow) swi
+ float ripps2GlyphsAlpha(int which); // 0..1 this frame; call once a frame while that name is on screen
+ float ripps2HintsAlpha(void);       // 0..1
+ float ripps2CatBarAlpha(void);      // 0..1
++int ripps2CatBarBottom(void);       // build 136: y below the category row and its mark across the top, -1 when none
+ 
+ // RIPPS2 build 90: Controller Settings > Hints and Glyphs and the theme keys behind it (ripps2hints.c). Every
+ // row's first choice (0) is Theme: what the theme says (conf_theme.cfg hints_hide, hints_order, hints_labels,
 diff --git a/include/sound.h b/include/sound.h
 index fd0790b..92cfe78 100644
 --- a/include/sound.h
@@ -46,6 +58,26 @@ index fd0790b..92cfe78 100644
  void sfxBootSoundsLoaded(void); // RIPPS2: the IO worker, every sound loaded: the music may start
  void bgmBootTick(void);         // RIPPS2: every GUI frame: starts the music once the sounds are in, then fades it in
  int bgmHudReserve(void);            // RIPPS2 build 71 (perf HUD): decoded chunks waiting, -1 with no music
+diff --git a/include/themes.h b/include/themes.h
+index f5b2763..99aef36 100644
+--- a/include/themes.h
++++ b/include/themes.h
+@@ -121,6 +121,7 @@ typedef struct theme_element
+     short scaled;
+     u64 color;
+     int font;
++    int sidebarFont;      // RIPPS2 build 136: MenuText's face while the sidebar is on (<name>_sidebar_font; -1 = font)
+     int reflection;
+     int reflectionOffset; // Coverflow: vertical px shift of the mirror (theme key reflection_offset; -up / +down)
+     int showRun;          // InfoHintText: draw the Run hint (theme key <name>_show_run; default 1)
+@@ -257,6 +258,7 @@ typedef struct theme
+     const void *frostKey[2][2];
+     int frostCrop[2];      // RIPPS2 build 79: the frost's source is drawn widecrop // ... made from this texture memory, for this item (rebuilt when either changes)
+     int srcNamePop;        // RIPPS2 build 80: source_name=pop, the theme's Source Name is Pop In unless the user picked otherwise
++    int srcNamePopSide;    // build 136: source_name_sidebar=pop|pop_name, the same while the sidebar is on (-1: as source_name)
+                            // (build 119: 2, source_name=pop_name, Pop In and Name)
+     int noTowers;          // RIPPS2 build 78: towers=0, the game pages never show the pillars (bg_color instead)
+     // RIPPS2 build 81: the theme's defaults for Colors and More (-1: none), each standing in while the
 diff --git a/lng_tmpl/_base.yml b/lng_tmpl/_base.yml
 index 2e547f8..321fcb5 100644
 --- a/lng_tmpl/_base.yml
@@ -83,6 +115,38 @@ index 2e547f8..321fcb5 100644
  - label: AUTO_VMC_CREATING
    string: "Creating this game's VMC..."
  - label: AUTO_VMC_FAILED
+diff --git a/misc/theme_ripgrid.cfg b/misc/theme_ripgrid.cfg
+index 6753e0d..69d8184 100644
+--- a/misc/theme_ripgrid.cfg
++++ b/misc/theme_ripgrid.cfg
+@@ -24,6 +24,9 @@ ui_text_color=#C4DAFF
+ towers=0
+ bg_blur=weak
+ source_name=pop
++# build 136 (the user, 11/03): Pop In alone with the categories across the top; with the sidebar, the name over the grid
++# too (Pop In and Name), in Planet N (font9)
++source_name_sidebar=pop_name
+ default_font=builtin:ripps2sleek
+ default_font_size=17
+ font1=builtin:ripps2sleekcase
+@@ -58,6 +61,9 @@ font15_size=15
+ # build 97: the chosen game's name under the grid, in RIPPS2 Sleek Bold
+ font7=builtin:ripps2sleekbold
+ font7_size=22
++# build 136: Planet N, RIPPS2's own face, for the source name over the grid with the sidebar on
++font9=builtin:ripps2
++font9_size=18
+ # RIPGRID's type: RIPPS2 Sleek (Regular, Bold, Bold Case), built into RIPPS2 (builtin: fonts)
+ # [circle.png] [cross.png] [square.png] [triangle.png] [select.png] [start.png] from the Grunge theme
+ 
+@@ -122,6 +128,7 @@ main6:
+ 	aligned=1
+ 	width=225
+ 	font=0
++	sidebar_font=9
+ info0:
+ 	type=Background
+ 	pattern=BG
 diff --git a/src/gui.c b/src/gui.c
 index 03d4904..f38f911 100644
 --- a/src/gui.c
@@ -401,6 +465,41 @@ index fbeafb8..4621c15 100644
                      rescan = 1;
                      break;
                  case ACT_BOOT_FAST: // build 126
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index 2c330d4..6ca31ab 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -242,8 +242,11 @@ float ripps2CatBarAlpha(void)
+ 
+ int ripps2SourceNameMode(void)
+ {
+-    int def = gTheme == NULL ? -1 : gTheme->srcNamePop == 2 ? RIPPS2_SRC_POPNAME : gTheme->srcNamePop ? RIPPS2_SRC_POP
+-                                                                                      : gTheme->srcNameDef; // build 80: pop; 81: the others; 119: pop_name
++    int pop = gTheme == NULL ? 0 : gTheme->srcNamePop;
++    if (gTheme != NULL && gTheme->srcNamePopSide > 0 && ripps2SidebarOn())
++        pop = gTheme->srcNamePopSide; // build 136: source_name_sidebar, while the sidebar is on
++    int def = gTheme == NULL ? -1 : pop == 2 ? RIPPS2_SRC_POPNAME : pop ? RIPPS2_SRC_POP
++                                                                  : gTheme->srcNameDef; // build 80: pop; 81: the others; 119: pop_name
+     return themeDefault(gRipps2SrcName, RIPPS2_SHOW_ON, def, RIPPS2_SET_SRCNAME);
+ }
+ 
+@@ -915,6 +918,16 @@ static int catAcross(void)
+     return gTheme->catY >= 0 ? gTheme->catY : BAR_Y;
+ }
+ 
++// build 136 (the user, 11/03: RIPGRID "on the categories up top underneath it had the source name crappy"): where text
++// may start below the category row and its PS2 mark when the categories run across the top and are not hidden; -1 when
++// nothing is drawn up there (a sidebar, a column, a legacy theme, the bar hidden)
++int ripps2CatBarBottom(void)
++{
++    if (gTheme == NULL || ripps2Legacy() || ripps2SidebarOn() || gTheme->catColumn || catBarMode() == RIPPS2_SHOW_OFF)
++        return -1;
++    return catAcross() - BAR_Y + MARK_Y + MARK_H / 2;
++}
++
+ // build 92: Colors and More > Page Transition (0 Theme, 1 None, 2 Fade, 3 Flash), else the theme's
+ // category_transition: switching category, the new page comes in from the background colour or a flash
+ int gRipps2Transition = 0;
 diff --git a/src/sound.c b/src/sound.c
 index c9f401f..fcf278e 100644
 --- a/src/sound.c
@@ -430,3 +529,105 @@ index c9f401f..fcf278e 100644
  static void sfxBootEarlyWork(void)
  {
      char base[256], path[300];
+diff --git a/src/themes.c b/src/themes.c
+index 2ab5bf0..bb8d39c 100644
+--- a/src/themes.c
++++ b/src/themes.c
+@@ -4233,6 +4233,11 @@ static theme_element_t *initBasic(const char *themePath, config_set_t *themeConf
+         if (intValue > 0 && intValue < THM_MAX_FONTS)
+             elem->font = theme->fonts[intValue];
+     }
++    // build 136 (the user, 11/03: RIPGRID's source name "for sidebar ... slot it to planet n font"): its face with the sidebar on
++    elem->sidebarFont = -1;
++    snprintf(elemProp, sizeof(elemProp), "%s_sidebar_font", name);
++    if (configGetInt(themeConfig, elemProp, &intValue) && intValue >= 0 && intValue < THM_MAX_FONTS)
++        elem->sidebarFont = theme->fonts[intValue];
+ 
+     snprintf(elemProp, sizeof(elemProp), "%s_reflection", name);
+     if (configGetInt(themeConfig, elemProp, &intValue))
+@@ -4428,6 +4433,12 @@ static void drawMenuText(struct menu_list *menu, struct submenu_list *item, conf
+     else
+         glyphAlpha = glyphAlpha < 0x78 ? glyphAlpha + 0x08 : 0x80;
+     // and RIPPSettings: hidden (the default), shown, or fading in or out around a press
++    // build 136 (the user, 11/03: RIPGRID "on the categories up top underneath it had the source name crappy"): a name the
++    // theme puts in the category row (RIPGRID's, for its sidebar) drops below the row and its PS2 mark while they run across
++    // the top, where it was drawn over the middle label; with the sidebar on it takes <name>_sidebar_font when the theme has one
++    int y = elem->posY, below = ripps2CatBarBottom(), font = elem->sidebarFont >= 0 && ripps2SidebarOn() ? elem->sidebarFont : elem->font;
++    if (below >= 0 && y < below)
++        y = below + 9;
+     float srcA = ripps2SourceNameAlpha(); // build 71: Source Name, Shown / Fade When Idle / Hidden
+     if (ripps2SourceNameMode() == RIPPS2_SRC_POP) { // build 81: no line over the list, the view word names it
+         ripps2SourceToast(text);
+@@ -4440,7 +4451,7 @@ static void drawMenuText(struct menu_list *menu, struct submenu_list *item, conf
+     if (gTheme->hintsFlank && elem->aligned && !ripps2SidebarOn()) {
+         if (srcA <= 0.0f)
+             return;
+-        int confirm = gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON, half = rmUnScaleX(fntCalcDimensions(elem->font, text)) / 2;
++        int confirm = gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON, half = rmUnScaleX(fntCalcDimensions(font, text)) / 2;
+         int info = thmIsInfoFamily(elem->family);
+         float k = info ? 0.0f : flankInfoK(menu), a;
+         int pass;
+@@ -4453,16 +4464,16 @@ static void drawMenuText(struct menu_list *menu, struct submenu_list *item, conf
+             u64 tc = (elem->color & ~(0xFFULL << 24)) | ((u64)(int)(((elem->color >> 24) & 0xFF) * a) << 24);
+             u64 ic = GS_SETREG_RGBA(0x80, 0x80, 0x80, (int)(0x80 * a));
+             int lIcon = pass ? SQUARE_ICON : confirm, lText = pass ? _STR_INFO : _STR_RUN;
+-            guiDrawIconAndTextNoFade(lIcon, lText, elem->font, elem->posX - half - gTheme->hintsFlankGap - guiIconTextWidth(lIcon, lText, elem->font),
+-                                     elem->posY - 10, tc, ic);
++            guiDrawIconAndTextNoFade(lIcon, lText, font, elem->posX - half - gTheme->hintsFlankGap - guiIconTextWidth(lIcon, lText, font),
++                                     y - 10, tc, ic);
+             if (pass)
+-                guiDrawIconAndTextNoFade(TRIANGLE_ICON, _STR_OPTIONS, elem->font, elem->posX + half + gTheme->hintsFlankGap, elem->posY - 10, tc, ic);
++                guiDrawIconAndTextNoFade(TRIANGLE_ICON, _STR_OPTIONS, font, elem->posX + half + gTheme->hintsFlankGap, y - 10, tc, ic);
+             else if (info) // build 125 (the user, 10/29): on the info page the cancel button goes back, so it says BACK there
+-                guiDrawIconAndTextNoFade(guiCancelIcon(), _STR_BACK, elem->font, elem->posX + half + gTheme->hintsFlankGap, elem->posY - 10, tc, ic);
++                guiDrawIconAndTextNoFade(guiCancelIcon(), _STR_BACK, font, elem->posX + half + gTheme->hintsFlankGap, y - 10, tc, ic);
+             else if (findMenuNext(menu) != 0 || findMenuPrev(menu) != 0)
+-                guiDrawIconAndTextNoFade(guiCancelIcon(), _STR_RIPPS2_SOURCE, elem->font, elem->posX + half + gTheme->hintsFlankGap, elem->posY - 10, tc, ic);
++                guiDrawIconAndTextNoFade(guiCancelIcon(), _STR_RIPPS2_SOURCE, font, elem->posX + half + gTheme->hintsFlankGap, y - 10, tc, ic);
+         }
+-        fntRenderString(elem->font, elem->posX, elem->posY, elem->aligned, 0, 0, text, c);
++        fntRenderString(font, elem->posX, y, elem->aligned, 0, 0, text, c);
+         return;
+     }
+     int shownAlpha = (int)(glyphAlpha * ripps2GlyphsAlpha(RIPPS2_GLYPH_DRIVES) * srcA);
+@@ -4472,21 +4483,21 @@ static void drawMenuText(struct menu_list *menu, struct submenu_list *item, conf
+         // nothing beside the name
+     } else if (elem->aligned) {
+         // RIPPS2 build 70: either side of the centred name (RIPFLOW's source at the bottom centre)
+-        int offset = rmUnScaleX(fntCalcDimensions(elem->font, text)) / 2 + 16;
++        int offset = rmUnScaleX(fntCalcDimensions(font, text)) / 2 + 16;
+         if (leftIconTex && leftIconTex->Mem)
+-            rmDrawPixmap(leftIconTex, elem->posX - offset, elem->posY, elem->aligned, 18, 18, elem->scaled, glyphCol, 0);
++            rmDrawPixmap(leftIconTex, elem->posX - offset, y, elem->aligned, 18, 18, elem->scaled, glyphCol, 0);
+         if (rightIconTex && rightIconTex->Mem)
+-            rmDrawPixmap(rightIconTex, elem->posX + offset, elem->posY, elem->aligned, 18, 18, elem->scaled, glyphCol, 0);
++            rmDrawPixmap(rightIconTex, elem->posX + offset, y, elem->aligned, 18, 18, elem->scaled, glyphCol, 0);
+     } else {
+         // RIPPS2: either side of the name itself (the theme's width is the whole row's)
+-        int textW = rmUnScaleX(fntCalcDimensions(elem->font, text));
++        int textW = rmUnScaleX(fntCalcDimensions(font, text));
+         if (leftIconTex && leftIconTex->Mem)
+-            rmDrawPixmap(leftIconTex, elem->posX - 24, elem->posY - 2, elem->aligned, 18, 18, elem->scaled, glyphCol, 0);
++            rmDrawPixmap(leftIconTex, elem->posX - 24, y - 2, elem->aligned, 18, 18, elem->scaled, glyphCol, 0);
+         if (rightIconTex && rightIconTex->Mem)
+-            rmDrawPixmap(rightIconTex, elem->posX + textW + 6, elem->posY - 2, elem->aligned, 18, 18, elem->scaled, glyphCol, 0);
++            rmDrawPixmap(rightIconTex, elem->posX + textW + 6, y - 2, elem->aligned, 18, 18, elem->scaled, glyphCol, 0);
+     }
+     if (srcA > 0.0f)
+-        fntRenderString(elem->font, elem->posX, elem->posY, elem->aligned, 0, 0, text,
++        fntRenderString(font, elem->posX, y, elem->aligned, 0, 0, text,
+                         (elem->color & ~(0xFFULL << 24)) | ((u64)(int)(((elem->color >> 24) & 0xFF) * srcA) << 24));
+ }
+ 
+@@ -6875,6 +6886,11 @@ static int thmLoad(const char *themePath)
+         const char *srcName = NULL;
+         if (configGetStr(themeConfig, "source_name", &srcName) && srcName != NULL)
+             newT->srcNamePop = !strcmp(srcName, "pop") ? 1 : !strcmp(srcName, "pop_name") ? 2 : 0;
++        // build 136 (the user, 11/03: "pop in only for ripgrid with categories but for sidebar show the source name with pop
++        // in", Adapt the same): source_name_sidebar is the Source Name while the sidebar is on
++        newT->srcNamePopSide = -1;
++        if (configGetStr(themeConfig, "source_name_sidebar", &srcName) && srcName != NULL)
++            newT->srcNamePopSide = !strcmp(srcName, "pop") ? 1 : !strcmp(srcName, "pop_name") ? 2 : -1;
+     }
+     // RIPPS2 build 81: the rest of Colors and More from the theme, each standing in while the user's setting
+     // is at its default and untouched: color_theme=ripps2|ember|blood|ectoplasm|amethyst|bone, category_bar= and

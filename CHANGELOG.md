@@ -19,6 +19,14 @@ The user's first BIBLE try on an SD2PSX (11/03), and STATUS's sound rows.
 - The boot sound line names its file, and says when it is on a memory card (read as the pillars rise), including an
   AUDIO folder kept on a card.
 
+**RIPGRID and Adapt: the source name**
+- **With the categories across the top, the source name is Pop In only**: the big name as the source changes, and no
+  line in the category row, where RIPGRID drew it over STORAGE (the user, 11/03). **With the sidebar, it shows over
+  the grid too** (Pop In and Name), in Planet N on RIPGRID; Adapt and Adapt Rx (theme pack) follow the same rule in
+  their own face. New theme keys: `source_name_sidebar` and a MenuText's `sidebar_font`.
+- A source name a theme sets in the category row now drops below the row and its PS2 mark while the categories run
+  across the top, for a Source Name set to Shown in Settings.
+
 **Languages**
 - The new and changed lines are in all 32 languages.
 
