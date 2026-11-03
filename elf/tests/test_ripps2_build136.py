@@ -24,16 +24,16 @@ for line in boot.split('\n') + st.split('\n'):
         fail.append('a slot still counted from 1: %s' % line.strip()[:90])
 if '_t("SLOT 0: %s\\nSLOT 1: %s\\n%s\\n"' not in boot:
     fail.append('the Manage screen heads its cards SLOT 0 and SLOT 1')
-if "reads slot 1's config before slot 0's" not in boot or 'SD2PSX or MMCE BOOT card' in boot:
-    fail.append('the confirm screen says an SD2PSX or MMCE card cannot be bound, slots 0 and 1')
+if "reads slot 1's config before slot 0's" not in boot:
+    fail.append('the confirm screen counts slots 0 and 1')
 
 # an SD2PSX or MMCE card: said before the restart, BOOT LOCK offered; a refused bind asks for a power cycle
 i, j = boot.find('if (port == 4 || port == 5) {'), boot.find('// where RIPPS2 starts from: where it is now')
 mm = boot[i:j]
-if 'fileXioDevctl(dev, 0x1, NULL, 0, NULL, 0) >= 0' not in mm or 'ripps2BootLockApply(1);' not in mm or 'nothing was tried' not in mm:
-    fail.append('Manage checks the slot for an SD2PSX or MMCE card before it restarts the I/O processor, and offers BOOT LOCK')
+if 'fileXioDevctl(dev, 0x1, NULL, 0, NULL, 0) >= 0' not in mm:
+    fail.append('Manage checks the slot for an SD2PSX or MMCE card before it restarts the I/O processor (build 137: and binds on START)')
 k = boot.find('if (SecrDownloadFile(2 + port, 0, buf) == NULL) {')
-if k < 0 or 'stop answering after a refused bind' not in boot[k:k + 1200]:
+if 'stop answering after a refused bind' not in boot:
     fail.append('a refused bind says to turn the console off and on')
 
 # BIBLE's MMCE build, carried and picked for an MMCE start

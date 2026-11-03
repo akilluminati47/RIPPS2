@@ -1,0 +1,92 @@
+diff --git a/src/ripps2boot.c b/src/ripps2boot.c
+index 6331748..576b781 100644
+--- a/src/ripps2boot.c
++++ b/src/ripps2boot.c
+@@ -1175,7 +1175,7 @@ static void blInstallOn(int port, const blWhere_t *w, const char *alt)
+     int kelfSize = w->mmce ? (int)size_bible_mmce_xlf : w->mx4sio ? (int)size_bible_mx4sio_xlf : (int)size_bible_xlf;
+     unsigned char *buf, *check;
+     void *img;
+-    int imgSize, fd, ok, keptConfig = 0, len;
++    int imgSize, fd, ok, keptConfig = 0, len, bound;
+     blCard_t *c = &blCards[port];
+     sceMcTblGetDir info;
+ 
+@@ -1217,10 +1217,37 @@ static void blInstallOn(int port, const blWhere_t *w, const char *alt)
+         return;
+     }
+     memcpy(buf, kelf, kelfSize);
+-    if (SecrDownloadFile(2 + port, 0, buf) == NULL) {
++    // build 137: the bind; refused, the card logs in again and the bind's first step (the header) runs on a copy, each in
++    // DIAG.TXT so a refusal says where it stopped, then the bind once more
++    {
++        static SecrBitTable_t bits;
++        unsigned char *probe;
++        s32 hsize;
++        int h, tries;
++        bound = 0;
++        for (tries = 0; tries < 2 && !bound; tries++) {
++            if (tries) {
++                DelayThread(500000);
++                ripps2Diag("bible: mc%d card logs in again: %s", port, blCardInfo(port, NULL) ? "ready" : "not ready");
++                h = -99;
++                hsize = 0;
++                if ((probe = memalign(64, kelfSize + 4096)) != NULL) {
++                    memcpy(probe, kelf, kelfSize);
++                    h = SecrDownloadHeader(2 + port, 0, probe, &bits, &hsize);
++                    free(probe);
++                }
++                ripps2Diag("bible: mc%d bind header: %d (size %d)", port, h, (int)hsize);
++                memcpy(buf, kelf, kelfSize);
++            }
++            bound = SecrDownloadFile(2 + port, 0, buf) != NULL;
++            ripps2Diag("bible: mc%d bind try %d: %s", port, tries + 1, bound ? "bound" : "refused");
++        }
++    }
++    if (!bound) {
+         free(buf);
+         guiMsgBoxSound(SFX_ERROR);
+         snprintf(msg, sizeof(msg), _t("The console would not bind BIBLE to the memory card in slot %d (its MagicGate step failed). Nothing on the card was changed. A card that is not a genuine or MagicGate-compatible one cannot hold a system update."), port);
++        snprintf(msg + strlen(msg), sizeof(msg) - strlen(msg), " %s", _t("(DIAG.TXT beside RIPPS2 has what the card said.)"));
+         // build 136 (the user, 11/03: an SD2PSX in slot 0 refused the bind, then "ghosts until power cycle")
+         snprintf(msg + strlen(msg), sizeof(msg) - strlen(msg), " %s", _t("An SD2PSX or MMCE card can stop answering after a refused bind: if the memory card or the MMCE drive is missing now, turn the console off and on."));
+         ripps2Diag("bible: mc%d refused the bind", port);
+@@ -1784,21 +1811,22 @@ static void blInstall(void)
+         return;
+     }
+     // build 136 (the user, 11/03: the console would not bind BIBLE to an SD2PSX in slot 0, and the card was gone until a
+-    // power cycle): an SD2PSX or MMCE card answers mmceman's ping (>= 0; no mmceman, or nothing there, is < 0). Its BOOT
+-    // card has its own PS2BBL, which BOOT LOCK sets; nothing is tried on it
++    // power cycle): an SD2PSX or MMCE card answers mmceman's ping (>= 0; no mmceman, or nothing there, is < 0). Build 137
++    // (the user: "i want to bind it to my boot card myself to overwrite as real use case"): said once, and START binds
++    // anyway. SD2PSX's firmware answers the bind's key step (it hands the key back as it got it, and reads a file bound
++    // that way at boot), so the bind can take there; DIAG.TXT says which step did not
+     {
+         char dev[8];
+         snprintf(dev, sizeof(dev), "mmce%d:/", port);
+         if (fileXioDevctl(dev, 0x1, NULL, 0, NULL, 0) >= 0) {
+-            ripps2Diag("bible: slot %d is an MMCE card, no bind tried", port);
++            ripps2Diag("bible: slot %d is an MMCE card", port);
+             snprintf(msg, sizeof(msg),
+-                     _t("RIPPS2: Setting up BIBLE\nThe card in slot %d is an SD2PSX or MMCE card. The console cannot bind BIBLE to one (an SD2PSX refuses it, then stops answering until the console is turned off and on), so nothing was tried. Its BOOT card has its own PS2BBL: START turns BOOT LOCK on, so it starts RIPPS2 at power on. BIBLE goes on a genuine PS2 memory card."),
++                     _t("RIPPS2: Setting up BIBLE\nThe card in slot %d is an SD2PSX or MMCE card. Its BOOT card can hold BIBLE in place of the PS2BBL it has (that one is moved aside, whole, first), if the console binds BIBLE to it. If the bind is refused, nothing on the card changes, and the card may stop answering until the console is turned off and on. START binds BIBLE to it."),
+                      port);
+             guiMsgBoxSound(SFX_MESSAGE);
+-            guiMsgBoxStartOption(_t("BOOT LOCK ON"));
+-            if (guiMsgBox(msg, 0, NULL) == 2)
+-                ripps2BootLockApply(1);
+-            return;
++            guiMsgBoxStartOption(_t("BIND BIBLE"));
++            if (guiMsgBox(msg, 0, NULL) != 2)
++                return;
+         }
+     }
+ 
+@@ -1866,7 +1894,7 @@ static void blInstall(void)
+         // build 115 (the user, 10/26): the title names what goes on. 10/26 evening: "RIPPS2: Setting up BBL 1.20", for an
+         // 8 MB memory card, and which slot
+         int o = snprintf(msg, sizeof(msg), _t("RIPPS2: Setting up BIBLE\n"));
+-        o += snprintf(msg + o, sizeof(msg) - o, _t("For a standard 8 MB PS2 memory card (a genuine MagicGate card: an SD2PSX or MMCE card cannot be bound): the one in slot %d. At power on PS2BBL reads slot 1's config before slot 0's.\n"), port);
++        o += snprintf(msg + o, sizeof(msg) - o, _t("For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 1's config before slot 0's.\n"), port);
+         char sysDir[48];
+         snprintf(sysDir, sizeof(sysDir), "mc%d:/%s", port, blSysFolder);
+         if (blDirExists(sysDir) && !(c->bible && !strcmp(c->folder, blSysFolder)))

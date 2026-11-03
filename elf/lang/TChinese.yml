@@ -3,10 +3,12 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: TChinese
 strings:
+  "RIPPS2: Setting up BIBLE\nThe card in slot %d is an SD2PSX or MMCE card. Its BOOT card can hold BIBLE in place of the PS2BBL it has (that one is moved aside, whole, first), if the console binds BIBLE to it. If the bind is refused, nothing on the card changes, and the card may stop answering until the console is turned off and on. START binds BIBLE to it.": "RIPPS2：正在設定 BIBLE\n插槽 %d 中的卡是 SD2PSX 或 MMCE 卡。如果主機把 BIBLE 綁定到這張卡，它的 BOOT 卡就能用 BIBLE 取代現有的 PS2BBL（現有的會先整個移到一旁）。如果綁定被拒絕，卡上不會有任何變更，但在主機關機再開機之前，這張卡可能不再回應。按 START 把 BIBLE 綁定到這張卡。"
+  "BIND BIBLE": "綁定 BIBLE"
+  "(DIAG.TXT beside RIPPS2 has what the card said.)": "(卡的回應在 RIPPS2 旁邊的 DIAG.TXT 裡。)"
+  "For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 1's config before slot 0's.\n": "適用於標準 8 MB PS2 記憶卡 (MagicGate 卡，或 SD2PSX、MMCE 的 BOOT 卡)：插槽 %d 中的那張。開機時 PS2BBL 先讀插槽 1 的設定，再讀插槽 0 的。\n"
   "The console would not bind BIBLE to the memory card in slot %d (its MagicGate step failed). Nothing on the card was changed. A card that is not a genuine or MagicGate-compatible one cannot hold a system update.": "主機不肯把 BIBLE 綁定到插槽 %d 的記憶卡（MagicGate 步驟失敗）。記憶卡上沒有任何變更。非原廠或不相容 MagicGate 的記憶卡無法存放系統更新。"
   "An SD2PSX or MMCE card can stop answering after a refused bind: if the memory card or the MMCE drive is missing now, turn the console off and on.": "SD2PSX 或 MMCE 卡在綁定被拒後可能不再回應：如果現在記憶卡或 MMCE 磁碟不見了，請關閉主機再開啟。"
-  "RIPPS2: Setting up BIBLE\nThe card in slot %d is an SD2PSX or MMCE card. The console cannot bind BIBLE to one (an SD2PSX refuses it, then stops answering until the console is turned off and on), so nothing was tried. Its BOOT card has its own PS2BBL: START turns BOOT LOCK on, so it starts RIPPS2 at power on. BIBLE goes on a genuine PS2 memory card.": "RIPPS2：正在設定 BIBLE\n插槽 %d 中的卡是 SD2PSX 或 MMCE 卡。主機無法把 BIBLE 綁定到這種卡（SD2PSX 會拒絕，之後直到主機關機再開機都不再回應），所以沒有嘗試任何操作。它的 BOOT 卡有自己的 PS2BBL：按 START 開啟 BOOT LOCK，開機時它就會啟動 RIPPS2。BIBLE 應裝在原廠 PS2 記憶卡上。"
-  "For a standard 8 MB PS2 memory card (a genuine MagicGate card: an SD2PSX or MMCE card cannot be bound): the one in slot %d. At power on PS2BBL reads slot 1's config before slot 0's.\n": "適用於標準 8 MB PS2 記憶卡 (原廠 MagicGate 卡；SD2PSX、MMCE 卡無法綁定)：插槽 %d 中的那張。開機時 PS2BBL 先讀插槽 1 的設定，再讀插槽 0 的。\n"
   "RIP THIS CONSOLE'S AUDIO": "擷取這台主機的音訊"
   "sounds or music, from its BIOS": "音效或音樂，來自它的 BIOS"
   "Opens Audio settings on BIOS Sounds and BIOS Music: rip this console's own sounds or its menu music into AUDIO.": "開啟音訊設定的 BIOS 聲音和 BIOS 音樂：把這台主機的音效或選單音樂擷取到 AUDIO。"

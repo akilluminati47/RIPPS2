@@ -3,10 +3,12 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Japanese
 strings:
+  "RIPPS2: Setting up BIBLE\nThe card in slot %d is an SD2PSX or MMCE card. Its BOOT card can hold BIBLE in place of the PS2BBL it has (that one is moved aside, whole, first), if the console binds BIBLE to it. If the bind is refused, nothing on the card changes, and the card may stop answering until the console is turned off and on. START binds BIBLE to it.": "RIPPS2: BIBLE を設定中\nスロット %d のカードは SD2PSX または MMCE のカードです。本体が BIBLE をこのカードに結び付ければ、その BOOT カードは今の PS2BBL の代わりに BIBLE を持てます（今のものは先にまるごと退避します）。結び付けが拒否されてもカードは何も変わりませんが、本体の電源を入れ直すまでカードが応答しなくなることがあります。START で BIBLE を結び付けます。"
+  "BIND BIBLE": "BIBLE を結び付ける"
+  "(DIAG.TXT beside RIPPS2 has what the card said.)": "(カードの応答は RIPPS2 の隣の DIAG.TXT にあります。)"
+  "For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 1's config before slot 0's.\n": "標準の 8 MB PS2 メモリーカード (MagicGate カード、または SD2PSX や MMCE の BOOT カード) 用です: スロット %d のカード。電源を入れると、PS2BBL はスロット 1 の設定をスロット 0 より先に読みます。\n"
   "The console would not bind BIBLE to the memory card in slot %d (its MagicGate step failed). Nothing on the card was changed. A card that is not a genuine or MagicGate-compatible one cannot hold a system update.": "本体が BIBLE をスロット %d のメモリーカードに結び付けられませんでした（MagicGate の手順が失敗）。カード上は何も変更していません。純正または MagicGate 対応ではないカードにはシステム更新を入れられません。"
   "An SD2PSX or MMCE card can stop answering after a refused bind: if the memory card or the MMCE drive is missing now, turn the console off and on.": "SD2PSX や MMCE のカードは、結び付けを拒否した後に応答しなくなることがあります: 今メモリーカードや MMCE ドライブが見当たらない場合は、本体の電源を入れ直してください。"
-  "RIPPS2: Setting up BIBLE\nThe card in slot %d is an SD2PSX or MMCE card. The console cannot bind BIBLE to one (an SD2PSX refuses it, then stops answering until the console is turned off and on), so nothing was tried. Its BOOT card has its own PS2BBL: START turns BOOT LOCK on, so it starts RIPPS2 at power on. BIBLE goes on a genuine PS2 memory card.": "RIPPS2: BIBLE を設定中\nスロット %d のカードは SD2PSX または MMCE のカードです。本体はこのカードに BIBLE を結び付けられません（SD2PSX は拒否し、その後は本体の電源を入れ直すまで応答しません）。そのため何も試していません。その BOOT カードには独自の PS2BBL があります: START で BOOT LOCK をオンにすると、電源投入時に RIPPS2 を起動します。BIBLE は純正の PS2 メモリーカードに入れます。"
-  "For a standard 8 MB PS2 memory card (a genuine MagicGate card: an SD2PSX or MMCE card cannot be bound): the one in slot %d. At power on PS2BBL reads slot 1's config before slot 0's.\n": "標準の 8 MB PS2 メモリーカード (純正の MagicGate カード。SD2PSX や MMCE のカードには結び付けられません) 用です: スロット %d のカード。電源を入れると、PS2BBL はスロット 1 の設定をスロット 0 より先に読みます。\n"
   "RIP THIS CONSOLE'S AUDIO": "この本体のオーディオを抽出"
   "sounds or music, from its BIOS": "サウンドまたは音楽、BIOS から"
   "Opens Audio settings on BIOS Sounds and BIOS Music: rip this console's own sounds or its menu music into AUDIO.": "オーディオ設定を BIOSサウンドと BIOS 音楽の位置で開きます: この本体のサウンドかメニュー音楽を AUDIO に抽出します。"

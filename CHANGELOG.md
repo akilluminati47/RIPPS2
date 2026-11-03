@@ -1,5 +1,20 @@
 # RIPPS2 changelog
 
+## Build 137 (beta, v1.3.7-beta), changes since build 136
+
+The user, 11/03: "i want to bind it to my boot card myself to overwrite as real use case".
+
+**BIBLE on an SD2PSX or MMCE BOOT card**
+- **Manage binds BIBLE to an SD2PSX or MMCE card on START**, after one warning (build 136 refused it). Its PS2BBL is
+  moved aside, whole, first, as on any card; with RIPPS2 on the SD card, BIBLE's MMCE build goes on, so it starts
+  RIPPS2 from there. SD2PSX's firmware answers the bind's key step, so the bind can take there.
+- **A refused bind tries once more** after the card logs in again, and DIAG.TXT now says what happened: each try, the
+  card's login and the bind's header step. The message points at DIAG.TXT.
+- The confirm screen names an SD2PSX or MMCE BOOT card again, with slots 0 and 1.
+
+**Languages**
+- The new and changed lines are in all 32 languages.
+
 ## Build 136 (beta, v1.3.6-beta), changes since build 135
 
 The user's first BIBLE try on an SD2PSX (11/03), and STATUS's sound rows.
