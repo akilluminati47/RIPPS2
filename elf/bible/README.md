@@ -3,17 +3,22 @@
 From build 134 these files are **BIBLE**, akilluminati47's boot loader built on **PS2BBL (PlayStation 2 Basic
 BootLoader) by El Isra (israpps)** and saildot4k's PS2BBL Extended: its splash, its keys pages and its HD modes, from
 [github.com/akilluminati47/BIBLE](https://github.com/akilluminati47/BIBLE) at commit `f31c8d5`, signed for RIPPS2
-on 2026-11-02 (the MMCE build on 2026-11-03, for build 136; build 133 and earlier carried El Isra's own PS2BBL 1.2.0
+on 2026-11-02 by akilluminati47 (build 138: the MMCE and MX4SIO builds from commit `a1ffb0b`, signed 2026-11-03, see
+below; build 133 and earlier carried El Isra's own PS2BBL 1.2.0
 builds, unchanged):
 
 | File here | BIBLE build | SHA-256 |
 |---|---|---|
 | `SYSTEM.XLF` | `PS2` (memory card KELF) | `1a27175c3bcdba8209a0a8bf8ddb32e6bfb9773754ac642c9d82f67fd8f3ec36` |
-| `MX4SIO/SYSTEM.XLF` | `PS2_MX4SIO` (memory card KELF; also reads `mx4sio:/` in slot 2) | `42720e7c57fc04e2a800cd23700da61b0eddc55eeb9b572e6b95f8d43ab453fe` |
-| `MMCE/SYSTEM.XLF` | `PS2_MMCE` (memory card KELF; also reads `mmce0:/` and `mmce1:/`, an SD2PSX or MemCard PRO 2) | `20074daa0cc6c8a6bff95c3725ba36f58dc96ca2f22bb033d65a413d0edcf8c9` |
+| `MX4SIO/SYSTEM.XLF` | `PS2_MX4SIO` at `a1ffb0b` (memory card KELF; also reads `mx4sio:/` in slot 2) | `c961a8ff2b666b36aae246f9f6cfac5ebd26161dbdfd90eb04cb83a18ffba018` |
+| `MMCE/SYSTEM.XLF` | `PS2_MMCE` at `a1ffb0b` (memory card KELF; also reads `mmce0:/` and `mmce1:/`, an SD2PSX or MemCard PRO 2) | `cacf865b196d4ee91e322152ae0d76107b56112c3e226c1c1918703641e269bb` |
 | `HSYSTEM.XLF` | `PS2_HDD` (for the HDD's boot area) | `95d0756f8dc66e557c6a727314178c29a248749a7b143580ba8d887c9b138407` |
 | `LICENSE.TXT` | GNU General Public License v3 | |
 
+- **Build 138:** the MMCE and MX4SIO builds that builds 134 to 137 carried (`f31c8d5`) stopped on a black screen at power
+  on: their own memory card driver did not link on the console (an IOP link error), so they waited for the memory card
+  service forever. BIBLE `a1ffb0b` loads RIPPS2's memory card and pad drivers instead; signed again on 2026-11-03, the
+  MMCE build was bound to an SD2PSX BOOT card (by KELFBinder) and started RIPPS2 on a real PS2 at power on.
 - Source: https://github.com/akilluminati47/BIBLE/tree/f31c8d5, built on
   https://github.com/israpps/PlayStation2-Basic-BootLoader (GPL-3)
 - The signed files are also on BIBLE's releases page.

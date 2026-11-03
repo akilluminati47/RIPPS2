@@ -36,7 +36,7 @@ for p, s in (('ripps2boot.c', boot), ('ripps2status.c', rd('src/ripps2status.c')
             fail.append('%s still says the old loader on screen: %s' % (p, line.strip()[:80]))
 
 sums = {'SYSTEM.XLF': '1a27175c3bcdba8209a0a8bf8ddb32e6bfb9773754ac642c9d82f67fd8f3ec36',
-        'MX4SIO/SYSTEM.XLF': '42720e7c57fc04e2a800cd23700da61b0eddc55eeb9b572e6b95f8d43ab453fe',
+        'MX4SIO/SYSTEM.XLF': 'c961a8ff2b666b36aae246f9f6cfac5ebd26161dbdfd90eb04cb83a18ffba018',
         'HSYSTEM.XLF': '95d0756f8dc66e557c6a727314178c29a248749a7b143580ba8d887c9b138407'}
 for name, want in sums.items():
     data = (elf / 'bible' / name).read_bytes()

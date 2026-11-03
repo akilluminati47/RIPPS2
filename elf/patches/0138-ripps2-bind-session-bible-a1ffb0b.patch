@@ -1,0 +1,196 @@
+diff --git a/include/ripps2.h b/include/ripps2.h
+index 0937301..935401f 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -46,6 +46,8 @@ const char *ripps2ExitPath(char *buf, int size); // where EXIT goes: the IGR Pat
+ int ripps2ExitPathIgnored(void);                  // build 119: an IGR Path is set that EXIT passes over for the browser
+ void ripps2BibleManage(void);               // BOOT LOADER > MANAGE: what each card starts; BIBLE (PS2BBL 1.2.0) to install or repair
+ int ripps2RebootIopWith(const void *ioprp, int size); // opl.c: the IOP rebooted from an IOPRP image, the menu taken down and back
++int ripps2RebootIopForBind(const void *ioprp, int size); // build 138: the same for BIBLE's bind, with only the card and pad drivers back
++void ripps2RebootIopAfterBind(void);                     // build 138: the IOP as usual again, the menu back
+ int ripps2GetBootPath(char *out, int size); // opl.c: the path RIPPS2 was started from; 0 when unknown
+ int ripps2GetBootBdmType(void);             // opl.c: BDM_TYPE_* of the drive RIPPS2 was started from
+ 
+diff --git a/src/opl.c b/src/opl.c
+index 29cb7d7..de12d9d 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -5651,6 +5651,69 @@ int ripps2RebootIopWith(const void *ioprp, int size)
+     return 1;
+ }
+ 
++/* RIPPS2 build 138 (the user's SD2PSX, 11/03: after ripps2RebootIopWith the card did not log in, "not ready", and the
++   bind was refused, while KELFBinder bound the same card): the bind on its own, as KELFBinder does it. The IOP reboots
++   from the IOPRP image and gets back only the memory card, USB and pad drivers (sysReset), no drives: MMCE is not
++   started, so nothing else talks to an SD2PSX or MMCE card while it logs in and binds, and no sound runs. Requests stay
++   blocked. ripps2RebootIopAfterBind brings the menu back as ripps2RebootIopWith would. 1 = done; 0 = busy, nothing
++   changed */
++int ripps2RebootIopForBind(const void *ioprp, int size)
++{
++    int ret = 0, tries = 0;
++
++    if (!cacheAbortMmceImageLoadsTimed(LWNBD_ART_DRAIN_TICKS) || !cacheCancelPendingImageLoadsTimed(LWNBD_ART_DRAIN_TICKS))
++        return 0;
++    ioBlockOpsTimed(1, LWNBD_IO_DRAIN_TICKS);
++    if (ioHasPendingRequests()) {
++        ioBlockOps(0);
++        return 0;
++    }
++
++    audioEnd();
++    guiExecDeferredOps();
++    deinitAllSupport(NO_EXCEPTION, IO_MODE_SELECTED_ALL);
++    clearErrorMessage();
++    unloadPads();
++
++    sysSetRebootImage(ioprp, size);
++    reset();
++    sysSetRebootImage(NULL, 0);
++
++    LOG_INIT();
++    LOG_ENABLE();
++    padInit(0);
++    while (!ret && tries++ < 100) {
++        ret = startPads();
++        if (!ret)
++            delay(50);
++    }
++    return 1;
++}
++
++// build 138: the bind is over; the IOP again with the console's own SECRMAN, and the drives, pads, music and sounds back
++void ripps2RebootIopAfterBind(void)
++{
++    int ret = 0, tries = 0;
++
++    unloadPads();
++    reset();
++
++    LOG_INIT();
++    LOG_ENABLE();
++    padInit(0);
++    while (!ret && tries++ < 100) {
++        ret = startPads();
++        if (!ret)
++            delay(50);
++    }
++    ioBlockOps(0);
++    initAllSupport(1);
++    audioInit();
++    sfxReload(-1);
++    if (gEnableBGM)
++        bgmStart();
++}
++
+ // ----------------------------------------------------------
+ // --------------------- Init/Deinit ------------------------
+ // ----------------------------------------------------------
+diff --git a/src/ripps2boot.c b/src/ripps2boot.c
+index 576b781..8cd2826 100644
+--- a/src/ripps2boot.c
++++ b/src/ripps2boot.c
+@@ -94,7 +94,8 @@ extern unsigned int size_save_icn;
+ extern unsigned char ripps2_icn[]; // build 98: the dead elf's hat, RIPPS2's own card folder icon
+ extern unsigned int size_ripps2_icn;
+ 
+-int ripps2RebootIopWith(const void *ioprp, int size); // opl.c
++int ripps2RebootIopForBind(const void *ioprp, int size); // opl.c (build 138)
++void ripps2RebootIopAfterBind(void);
+ 
+ // Where PS2BBL and PS2BBL Extended look for their config: beside the loader (its CWD, the
+ // system-update folder), PS2BBL/CONFIG.INI on either card or a drive, Extended's SYS-CONF/PS2BBL.INI
+@@ -1168,48 +1169,30 @@ static int blBibleConfig(const char *alt, const char *backupKelf)
+     return n > 0 && n < (int)sizeof(blText) ? n : -1;
+ }
+ 
+-static void blInstallOn(int port, const blWhere_t *w, const char *alt)
++// build 138: the bind and the writes, inside the bind's own IOP session (blInstallOn, below): only the memory card and pad
++// drivers are up, as KELFBinder has it, so nothing else talks to an SD2PSX or MMCE card while it logs in and binds
++static void blInstallBound(int port, const blWhere_t *w, const char *alt)
+ {
+     char msg[700], dir[48], path[96], backup[32] = "", backupKelf[64] = "", conf[48];
+     const unsigned char *kelf = w->mmce ? bible_mmce_xlf : w->mx4sio ? bible_mx4sio_xlf : bible_xlf;
+     int kelfSize = w->mmce ? (int)size_bible_mmce_xlf : w->mx4sio ? (int)size_bible_mx4sio_xlf : (int)size_bible_xlf;
+     unsigned char *buf, *check;
+-    void *img;
+-    int imgSize, fd, ok, keptConfig = 0, len, bound;
++    int fd, ok, keptConfig = 0, len, bound;
+     blCard_t *c = &blCards[port];
+     sceMcTblGetDir info;
+ 
+-    // build 115 (the user, 10/26 evening): RIPPS2 is never copied anywhere for BIBLE; PS2BBL starts it where it is
+-
+-    // the IOP again, with ps2sdk's SECRMAN in the ROM's place: the console binds a KELF through it. ripps2RebootIopWith
+-    // stops every drive read first (art, lists, music), so nothing else is on the card while it is written
+-    guiRenderTextScreen(_t("RIPPS2: Setting up BIBLE (restarting the I/O processor)"));
+-    if ((img = blMakeIoprp("SECRMAN", secrman_irx, size_secrman_irx, &imgSize)) == NULL) {
+-        guiMsgBoxSound(SFX_ERROR);
+-        guiMsgBox(_t("BIBLE ran out of memory before it started. Nothing was changed."), 0, NULL);
+-        return;
+-    }
+-    ok = ripps2RebootIopWith(img, imgSize);
+-    free(img);
+-    if (!ok) {
+-        guiMsgBoxSound(SFX_ERROR);
+-        guiMsgBox(_t("RIPPS2 was busy reading a drive and could not restart the I/O processor. Nothing was changed: try again in a moment."), 0, NULL);
+-        return;
+-    }
+     guiRenderTextScreen(_t("RIPPS2: Setting up BIBLE (binding PS2BBL to the memory card)"));
++    {
++        // the card logs in first, twice (the first answer after a new mcInit is the "new card" one), as KELFBinder does
++        int l1 = blCardInfo(port, NULL), l2 = blCardInfo(port, NULL);
++        ripps2Diag("bible: mc%d card login after the restart: %s, %s", port, l1 ? "ready" : "not ready", l2 ? "ready" : "not ready");
++    }
+     if (sysLoadModuleBuffer(secrsif_irx, size_secrsif_irx, 0, NULL) != 0) {
+         guiMsgBoxSound(SFX_ERROR);
+         guiMsgBox(_t("The security module would not start on this console. Nothing on the memory card was changed."), 0, NULL);
+         return;
+     }
+     SecrInit();
+-    {
+-        // the drives come back on the IO worker after the restart: let that settle before the card
+-        int waited = 0;
+-        while (ioWorkPending() && waited++ < 250)
+-            DelayThread(20000);
+-    }
+-    blCardInfo(port, NULL); // the card, authenticated again after the restart
+ 
+     if ((buf = memalign(64, kelfSize + 4096)) == NULL) {
+         guiMsgBoxSound(SFX_ERROR);
+@@ -1373,6 +1356,36 @@ static void blInstallOn(int port, const blWhere_t *w, const char *alt)
+     guiMsgBox(msg, 0, NULL);
+ }
+ 
++// The bind's own IOP session around blInstallBound (build 138): the IOP again with ps2sdk's SECRMAN in the ROM's place
++// (the console binds a KELF through it) and only the card and pad drivers, then as usual again, the drives and sounds
++// back, and DIAG.TXT written beside RIPPS2 once its drive is up. Build 115 (the user, 10/26 evening): RIPPS2 is never
++// copied anywhere for BIBLE; PS2BBL starts it where it is
++static void blInstallOn(int port, const blWhere_t *w, const char *alt)
++{
++    void *img;
++    int imgSize, ok, waited = 0;
++
++    guiRenderTextScreen(_t("RIPPS2: Setting up BIBLE (restarting the I/O processor)"));
++    if ((img = blMakeIoprp("SECRMAN", secrman_irx, size_secrman_irx, &imgSize)) == NULL) {
++        guiMsgBoxSound(SFX_ERROR);
++        guiMsgBox(_t("BIBLE ran out of memory before it started. Nothing was changed."), 0, NULL);
++        return;
++    }
++    ok = ripps2RebootIopForBind(img, imgSize);
++    free(img);
++    if (!ok) {
++        guiMsgBoxSound(SFX_ERROR);
++        guiMsgBox(_t("RIPPS2 was busy reading a drive and could not restart the I/O processor. Nothing was changed: try again in a moment."), 0, NULL);
++        return;
++    }
++    blInstallBound(port, w, alt);
++    guiRenderTextScreen(_t("RIPPS2: Setting up BIBLE (restarting the I/O processor)"));
++    ripps2RebootIopAfterBind();
++    while (ioWorkPending() && waited++ < 250)
++        DelayThread(20000);
++    ripps2DiagBeforeLaunch();
++}
++
+ // ---- BIBLE on the HDD (build 73) ----
+ //
+ // PS2BBL 1.2.0's HDD build (El Isra's HSYSTEM.XLF, signed for the HDD's boot area as FHDB's is) goes

@@ -1,5 +1,20 @@
 # RIPPS2 changelog
 
+## Build 138 (beta, v1.3.8-beta), changes since build 137
+
+BIBLE on a real PS2 (11/03): the user signed BIBLE, KELFBinder bound it to an SD2PSX BOOT card, and BIBLE started
+RIPPS2 at power on.
+
+**BIBLE**
+- **The MMCE and MX4SIO builds start again.** The ones builds 134 to 137 carried (BIBLE `f31c8d5`) stopped on a black
+  screen at power on: their memory card driver did not link on the console, so they waited for it forever. RIPPS2 now
+  carries BIBLE `a1ffb0b`, which loads RIPPS2's own memory card and pad drivers, signed again by the user on 11/03. The
+  plain memory card and HDD builds were never affected and are unchanged.
+- **Manage binds in a session of its own**, as KELFBinder does: after the I/O processor restarts for the bind, only the
+  memory card and pad drivers come back (no MMCE, no drives, no sound), the card logs in, BIBLE is bound and written,
+  then the I/O processor restarts as usual and everything returns. On the user's SD2PSX the old restart brought MMCE
+  back while the card logged in, and the card answered "not ready". DIAG.TXT is written once the drive is back.
+
 ## Build 137 (beta, v1.3.7-beta), changes since build 136
 
 The user, 11/03: "i want to bind it to my boot card myself to overwrite as real use case".
