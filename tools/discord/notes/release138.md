@@ -7,7 +7,7 @@
 **[Download RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/download/v1.3.8-beta/RIPPS2.elf)** (one file, 2,730 KB) and put it in place of your old one. Your settings stay where they were. **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/download/v1.3.8-beta/RIPPS2-languages.zip)** has RIPPS2 in 33 languages, and the **[theme pack](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** stays at edition 136.
 
 ### BIBLE boots on a real PS2
-<p align="center"><img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/v1.3.8-beta/media/b138/bible-signed.gif" width="70%" alt="BIBLE's splash, signed by akilluminati47"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/7b2ac3102582fcabe0046c03df32ef5b0c5e9a48/media/b138/bible-1080i-signed.gif" width="80%" alt="BIBLE's splash in 1080i with all sixteen buttons, signed by akilluminati47"></p>
 
 **BIBLE** is akilluminati47's boot loader, built on [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) by El Isra and [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) by saildot4k (GPL-3), with its own splash, keys pages and HD modes. Every BIBLE build in this release was **signed by akilluminati47**, with kelftool on their own PC; no one else's keys or signing were used.
 
@@ -53,6 +53,11 @@ BIBLE reads **`mc?:/SYS-CONF/PS2BBL.INI`** on the card it starts from (else `PS2
 | `NAME_<button>`, `LK_<button>_E1` to `_E3` | What each button starts (AUTO: no button held), the first entry that exists; `$OSDSYS` the browser, `$CDVD` the disc, `$CREDITS` BIBLE's credits |
 
 At power on, **L2 + R2** shows every button's launch path and **TRIANGLE + CROSS** opens the video mode page.
+
+#### Or no buttons at all
+The splash above is 1080i with `BIBLE_GLYPHS = 2`, all sixteen buttons. `BIBLE_GLYPHS = 0` leaves the logo alone, here in 480i; 1 (the default) shows the four face buttons. `BIBLE_INFO`, the console model, clock and countdown line, is off unless you set it to 1.
+
+<p align="center"><img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/7b2ac3102582fcabe0046c03df32ef5b0c5e9a48/media/b138/bible-480i-no-glyphs.gif" width="50%" alt="BIBLE's splash in 480i with no buttons"></p>
 
 ### Please test
 Install BIBLE with Manage on a **genuine memory card**, an **SD2PSX** or a **MemCard PRO 2**, and power on with it; PAL and Japanese consoles are wanted most. Please [open an issue](https://github.com/akilluminati47/RIPPS2/issues) with your console model, your card, a photo of anything odd and your `DIAG.TXT` (STATUS > SAVE DIAGNOSTICS).

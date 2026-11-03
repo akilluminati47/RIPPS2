@@ -1,0 +1,14 @@
+{
+ "title": "BIBLE a1ffb0b: signed by akilluminati47, boots on a real PS2",
+ "url": "https://github.com/akilluminati47/BIBLE/releases/tag/signed-a1ffb0b",
+ "description": "**BIBLE** is akilluminati47's boot loader, built on PS2BBL by El Isra and PS2BBL Extended by saildot4k (GPL-3), with its own splash, keys pages and HD modes. Above: its splash in **1080i** with all sixteen buttons.\n\n**Every build was signed by akilluminati47**, with kelftool on their own PC, and BIBLE now starts on a real PS2.",
+ "fields": [
+  ["Tested on a real PS2", "SCPH-39001 (USA, fat), SD2PSX BOOT card in slot 0:\n- Bound by **KELFBinder**: BIBLE's splash, then RIPPS2 from the SD card\n- Bound by **RIPPS2 1.3.8's own Manage**: the same\n- Manage shows the card as **BIBLE (MMCE build)**\n- The **ready SD2PSX BOOT card** below: BIBLE, then RIPPS2\nThe MX4SIO build reaches its splash in PCSX2; the memory card and HDD builds are unchanged and not yet bound on a PS2."],
+  ["Get it", "**With RIPPS2: nothing to download.** BIBLE rides inside [RIPPS2.elf v1.3.8](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.8-beta); Settings > General > Boot Loader > Manage binds and installs it on your card and writes its settings.\n**Attached here** (and on [the release page](https://github.com/akilluminati47/BIBLE/releases/tag/signed-a1ffb0b)): `BIBLE-signed-a1ffb0b.zip`, all four signed builds for other installers, and `BIBLE-SD2PSX-BootCard-a1ffb0b.zip`, a BOOT card for an SD2PSX with BIBLE already bound: copy it over your `BootCard-1.mcd` (keep yours), put RIPPS2.ELF in the SD card's APPS folder, power on."],
+  ["Fixed", "The MMCE and MX4SIO builds that RIPPS2 1.3.4 to 1.3.6 carried stopped on a black screen at power on (their memory card driver did not load). BIBLE `a1ffb0b` fixes both, and they were signed again."],
+  ["Its settings: SYS-CONF/PS2BBL.INI", "On the card BIBLE starts from; Manage writes it, and RIPPS2's Memory Files opens it.\n`LOGO_DISPLAY` 0 / 2 splash / 3 with button names\n`BIBLE_GLYPHS` 0 none, 1 face buttons (default), 2 all sixteen\n`BIBLE_INFO` 1: model, clock, countdown (off by default)\n`VIDEO_MODE` AUTO, NTSC, PAL, 480P, 576P, 720P, 1080I\n`BIBLE_WIDESCREEN`, `BIBLE_COLOR` (the sky), `KEY_READ_WAIT_TIME`\n`NAME_` / `LK_<button>_E1..E3`: what each button starts\nHold **L2 + R2** at power on for every launch path, **TRIANGLE + CROSS** for the video mode page."],
+  ["Please test", "A genuine memory card, an SD2PSX or a MemCard PRO 2; PAL and Japanese consoles most of all. Tell us here or [open an issue](https://github.com/akilluminati47/RIPPS2/issues) with your console model and card."],
+  ["Thanks", "El Isra for PS2BBL and KELFBinder, saildot4k for PS2BBL Extended."]
+ ],
+ "footer": "BIBLE signed-a1ffb0b  |  rides inside RIPPS2 v1.3.8"
+}
