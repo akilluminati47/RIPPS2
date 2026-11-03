@@ -7,6 +7,10 @@
   "en": "03be7325b77b",
   "t": "RIPPS2 được akilluminati47 thiết kế và chỉ đạo, và được xây dựng cùng Claude (Anthropic). Người thử nghiệm: ripto, nuno6573, zackcage6, eliminator1403, FifthFox, Mr.sus.60, lukeatmynose, ahavasi và mọi người thử nghiệm trên Discord. Issue trên GitHub: DarkNerdShawny và mọi người mở issue (một issue là cách tốt nhất để RIPPS2 được cập nhật: hãy như họ và [mở một cái](https://github.com/akilluminati47/RIPPS2/issues)). Đặc biệt cảm ơn mọi tình cảm trên YouTube: tôi rất vui được giúp, dù bạn liên lạc bằng cách nào."
  },
+ "0416bc745d73": {
+  "en": "0416bc745d73",
+  "t": "> 1. **[Tải RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (luôn là bản phát hành mới nhất) (một tệp, 2.723 KB), nếu muốn thì thêm **[gói giao diện](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt và Adapt Rx, phiên bản 136: mỗi cái một cấu hình và một ảnh; RIPGRID và RIPFLOW có sẵn bên trong), và **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** để dùng RIPPS2 bằng ngôn ngữ của bạn (33 ngôn ngữ; đi kèm mọi bản phát hành)."
+ },
  "064d7e03de66": {
   "en": "064d7e03de66",
   "t": "## Video"
@@ -23,9 +27,9 @@
   "en": "0e6d84eabbaa",
   "t": "RIPPS2 mang âm thanh của một chiếc PS2 chưa bao giờ rời phòng khách: **âm thanh của chính máy Sony**, nhạc hệ thống của Sony, và **một bản nhạc Nintendo** khi duyệt (lựa chọn của chính nhà thiết kế RIPPS2). Không cái nào đi kèm RIPPS2; **[RIPPS2 Media Studio](tools/media-studio)** đưa bạn tới đó từ [bản dump BIOS từ chính PS2 của bạn](https://pcsx2.net/docs/setup/bios/) (tệp mà PCSX2 dùng) và các bản nhạc bạn sở hữu. **Start** rip những âm thanh máy đó thành một thư mục `AUDIO` hoàn chỉnh; đây là bản đồ vị trí của chúng. Hoặc bỏ qua máy tính: **Settings > Audio > BIOS Sounds > Rip** ghi âm thanh của chính máy thẳng vào `AUDIO`: âm thanh menu và (từ bản dựng 89) nhạc khởi động và chạy game được chơi từ chính bản nhạc của BIOS. BIOS Music bên cạnh rip nhạc menu, giai điệu của đồng hồ (hoặc của màn hình đỏ, hoặc cả hai: bản dựng 112). **[Tham quan âm thanh v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)** phát tất cả trong một cảnh quay, từ tiếng khởi động đến khi chạy game."
  },
- "118478459c9c": {
-  "en": "118478459c9c",
-  "t": "> ### Rip nào: RIPPS2 bản dựng 135, v1.3.5 beta"
+ "0fb4bf0d3557": {
+  "en": "0fb4bf0d3557",
+  "t": "> [Có gì mới trong bản dựng 136](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.6-beta) | [Changelog](CHANGELOG.md) | **[Video](#videos)** | [Mọi bản phát hành](https://github.com/akilluminati47/RIPPS2/releases) | [Thảo luận trên psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "1238c5cafd27": {
   "en": "1238c5cafd27",
@@ -215,10 +219,6 @@
   "en": "75ae3c119793",
   "t": "- [wLaunchELF](https://github.com/ps2homebrew/wLaunchELF) của đội ps2homebrew, và wLaunchELF R3Z của NathanNeurotic: mô hình hành vi cho trình duyệt Memory Files và lưới cài đặt của nó."
  },
- "7783fc2cbabf": {
-  "en": "7783fc2cbabf",
-  "t": "> 1. **[Tải RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (luôn là bản phát hành mới nhất) (một tệp, 2.580 KB), nếu muốn thì thêm **[gói giao diện](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt và Adapt Rx, phiên bản 128: mỗi cái một cấu hình và một ảnh; RIPGRID và RIPFLOW có sẵn bên trong), và **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** để dùng RIPPS2 bằng ngôn ngữ của bạn (33 ngôn ngữ; đi kèm mọi bản phát hành)."
- },
  "7c613ae2e427": {
   "en": "7c613ae2e427",
   "t": "## Âm thanh và nhạc của riêng bạn"
@@ -234,6 +234,10 @@
  "801b0c43a8b7": {
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | Các quả cầu |"
+ },
+ "84033d4979bd": {
+  "en": "84033d4979bd",
+  "t": "> ### Rip nào: RIPPS2 bản dựng 136, v1.3.6 beta"
  },
  "85be5f3270be": {
   "en": "85be5f3270be",
@@ -358,10 +362,6 @@
  "bea8ee5528d7": {
   "en": "bea8ee5528d7",
   "t": "| [Video giới thiệu bản dựng 55](media/ripps2-b55-reel.mp4) và [bản demo bản dựng 22](media/ripps2-b22-demo.mp4) (trên GitHub) | | Những bản alpha đầu tiên |"
- },
- "bfd122c10125": {
-  "en": "bfd122c10125",
-  "t": "> [Có gì mới trong bản dựng 135](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.5-beta) | [Changelog](CHANGELOG.md) | **[Video](#videos)** | [Mọi bản phát hành](https://github.com/akilluminati47/RIPPS2/releases) | [Thảo luận trên psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "c1bc4a56fd54": {
   "en": "c1bc4a56fd54",

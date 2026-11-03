@@ -7,6 +7,10 @@
   "en": "03be7325b77b",
   "t": "RIPPS2 е проектиран и ръководен от akilluminati47 и изграден с Claude (Anthropic). Тестери: ripto, nuno6573, zackcage6, eliminator1403, FifthFox, Mr.sus.60, lukeatmynose, ahavasi и всички, които тестват в Discord. Issues в GitHub: DarkNerdShawny и всеки, който отвори такова (issue е най-добрият начин RIPPS2 да се обнови: бъди като тях и [отвори едно](https://github.com/akilluminati47/RIPPS2/issues)). Специални благодарности и за цялата любов в YouTube: радвам се да помогна, по какъвто и начин да се свържеш с мен."
  },
+ "0416bc745d73": {
+  "en": "0416bc745d73",
+  "t": "> 1. **[Изтегли RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (винаги най-новото издание) (един файл, 2723 KB), и **[пакета с теми](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)**, ако искаш (Adapt, Adapt Rx, издание 136: по една конфигурация и една картинка; RIPGRID и RIPFLOW са вградени), и **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** за RIPPS2 на твоя език (33 езика; всяко издание го съдържа)."
+ },
  "064d7e03de66": {
   "en": "064d7e03de66",
   "t": "## Видеа"
@@ -23,9 +27,9 @@
   "en": "0e6d84eabbaa",
   "t": "RIPPS2 звучи като PS2, която никога не е напускала хола: **собствените звуци на конзолата на Sony**, системна музика на Sony и **една песен на Nintendo** за разглеждане (изборът на самия дизайнер на RIPPS2). Нищо от това не идва с RIPPS2; **[RIPPS2 Media Studio](tools/media-studio)** те води дотам от [BIOS дъмпа на собствения ти PS2](https://pcsx2.net/docs/setup/bios/) (файла, който ползва PCSX2) и от собствените ти копия на музиката. Неговият **Start** рипва звуците на конзолата в пълна папка `AUDIO`; това е картата, по която влизат. Или пропусни компютъра: **Settings > Audio > BIOS Sounds > Rip** записва собствените звуци на конзолата направо в `AUDIO`: звуците на менюто и (от компилация 89) музиката при стартиране и пускане на игра, изсвирена от собствените ноти на BIOS. BIOS Music до него рипва музиката на менюто, мелодията на часовника (или на червения екран, или и двете: компилация 112). **[Обиколка на звуците за v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)** свири всеки от тях в един дубъл, от звука при стартиране до пускането на игра."
  },
- "118478459c9c": {
-  "en": "118478459c9c",
-  "t": "> ### Рипни го: RIPPS2 build 135, v1.3.5 бета"
+ "0fb4bf0d3557": {
+  "en": "0fb4bf0d3557",
+  "t": "> [Новото в компилация 136](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.6-beta) | [Changelog](CHANGELOG.md) | **[Видеа](#videos)** | [Всички издания](https://github.com/akilluminati47/RIPPS2/releases) | [Обсъди го в psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "1238c5cafd27": {
   "en": "1238c5cafd27",
@@ -215,10 +219,6 @@
   "en": "75ae3c119793",
   "t": "- [wLaunchELF](https://github.com/ps2homebrew/wLaunchELF) от екипа ps2homebrew и wLaunchELF R3Z от NathanNeurotic: образците за поведението на браузъра Memory Files и неговата мрежа от настройки."
  },
- "7783fc2cbabf": {
-  "en": "7783fc2cbabf",
-  "t": "> 1. **[Изтегли RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (винаги най-новото издание) (един файл, 2580 KB), и **[пакета с теми](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)**, ако искаш (Adapt, Adapt Rx, издание 128: по една конфигурация и една картинка; RIPGRID и RIPFLOW са вградени), и **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** за RIPPS2 на твоя език (33 езика; всяко издание го съдържа)."
- },
  "7c613ae2e427": {
   "en": "7c613ae2e427",
   "t": "## Собствените ти звуци и музика"
@@ -234,6 +234,10 @@
  "801b0c43a8b7": {
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | Кълбата |"
+ },
+ "84033d4979bd": {
+  "en": "84033d4979bd",
+  "t": "> ### Рипни го: RIPPS2 build 136, v1.3.6 бета"
  },
  "85be5f3270be": {
   "en": "85be5f3270be",
@@ -358,10 +362,6 @@
  "bea8ee5528d7": {
   "en": "bea8ee5528d7",
   "t": "| [Reel на компилация 55](media/ripps2-b55-reel.mp4) и [демото на компилация 22](media/ripps2-b22-demo.mp4) (в GitHub) | | Ранните алфи |"
- },
- "bfd122c10125": {
-  "en": "bfd122c10125",
-  "t": "> [Новото в компилация 135](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.5-beta) | [Changelog](CHANGELOG.md) | **[Видеа](#videos)** | [Всички издания](https://github.com/akilluminati47/RIPPS2/releases) | [Обсъди го в psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "c1bc4a56fd54": {
   "en": "c1bc4a56fd54",

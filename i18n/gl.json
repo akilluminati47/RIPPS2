@@ -7,6 +7,10 @@
   "en": "03be7325b77b",
   "t": "RIPPS2 está deseñado e dirixido por akilluminati47 e feito con Claude (Anthropic). Probadores: ripto, nuno6573, zackcage6, eliminator1403, FifthFox, Mr.sus.60, lukeatmynose, ahavasi e todos os que proban en Discord. Issues en GitHub: DarkNerdShawny e todos os que abren un (un issue é a mellor forma de que RIPPS2 se actualice: sé coma eles e [abre un](https://github.com/akilluminati47/RIPPS2/issues)). Un agradecemento especial tamén a todo o cariño de YouTube: encantado de axudar como sexa que me contactes."
  },
+ "0416bc745d73": {
+  "en": "0416bc745d73",
+  "t": "> 1. **[Descarga RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (sempre a versión máis nova) (un só ficheiro, 2.723 KB), e o **[paquete de temas](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** se queres (Adapt, Adapt Rx, edición 136: unha configuración e unha imaxe cada un; RIPGRID e RIPFLOW veñen integrados), e **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** para ter RIPPS2 na túa lingua (33; cada versión o trae)."
+ },
  "064d7e03de66": {
   "en": "064d7e03de66",
   "t": "## Vídeos"
@@ -23,9 +27,9 @@
   "en": "0e6d84eabbaa",
   "t": "RIPPS2 soa coma unha PS2 que nunca saíu do salón: **os propios sons da consola de Sony**, música do sistema de Sony e **unha pista de Nintendo** para navegar (a escolla do propio deseñador de RIPPS2). Nada disto vén con RIPPS2; **[RIPPS2 Media Studio](tools/media-studio)** consíguecho a partir do [volcado de BIOS da túa propia PS2](https://pcsx2.net/docs/setup/bios/) (o ficheiro que usa PCSX2) e das túas propias copias da música. O seu **Start** extrae os sons da consola nun cartafol `AUDIO` completo; este é o mapa no que entran. Ou sáltate o PC: **Settings > Audio > BIOS Sounds > Rip** escribe os propios sons da consola directamente en `AUDIO`: os sons de menú e (desde a build 89) a música de arranque e de lanzamento de xogo tocadas a partir das propias notas da BIOS. BIOS Music, ao seu carón, extrae a música do menú, a peza do reloxo (ou a da pantalla vermella, ou ambas: build 112). **[O percorrido polos sons da v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)** reprodúceos todos nunha soa toma, desde o son de arranque ata que se lanza un xogo."
  },
- "118478459c9c": {
-  "en": "118478459c9c",
-  "t": "> ### Rípao: RIPPS2 build 135, v1.3.5 beta"
+ "0fb4bf0d3557": {
+  "en": "0fb4bf0d3557",
+  "t": "> [Novidades da build 136](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.6-beta) | [Changelog](CHANGELOG.md) | **[Vídeos](#videos)** | [Todas as versións](https://github.com/akilluminati47/RIPPS2/releases) | [Fala diso en psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "1238c5cafd27": {
   "en": "1238c5cafd27",
@@ -215,10 +219,6 @@
   "en": "75ae3c119793",
   "t": "- [wLaunchELF](https://github.com/ps2homebrew/wLaunchELF) do equipo ps2homebrew, e wLaunchELF R3Z de NathanNeurotic: as referencias de comportamento do explorador de Memory Files e da súa grade de axustes."
  },
- "7783fc2cbabf": {
-  "en": "7783fc2cbabf",
-  "t": "> 1. **[Descarga RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (sempre a versión máis nova) (un só ficheiro, 2.580 KB), e o **[paquete de temas](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** se queres (Adapt, Adapt Rx, edición 128: unha configuración e unha imaxe cada un; RIPGRID e RIPFLOW veñen integrados), e **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** para ter RIPPS2 na túa lingua (33; cada versión o trae)."
- },
  "7c613ae2e427": {
   "en": "7c613ae2e427",
   "t": "## Os teus propios sons e música"
@@ -234,6 +234,10 @@
  "801b0c43a8b7": {
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | Os orbes |"
+ },
+ "84033d4979bd": {
+  "en": "84033d4979bd",
+  "t": "> ### Rípao: RIPPS2 build 136, v1.3.6 beta"
  },
  "85be5f3270be": {
   "en": "85be5f3270be",
@@ -358,10 +362,6 @@
  "bea8ee5528d7": {
   "en": "bea8ee5528d7",
   "t": "| [O reel da build 55](media/ripps2-b55-reel.mp4) e [a demo da build 22](media/ripps2-b22-demo.mp4) (en GitHub) | | As primeiras alfas |"
- },
- "bfd122c10125": {
-  "en": "bfd122c10125",
-  "t": "> [Novidades da build 135](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.5-beta) | [Changelog](CHANGELOG.md) | **[Vídeos](#videos)** | [Todas as versións](https://github.com/akilluminati47/RIPPS2/releases) | [Fala diso en psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "c1bc4a56fd54": {
   "en": "c1bc4a56fd54",

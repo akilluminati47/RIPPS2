@@ -7,6 +7,10 @@
   "en": "03be7325b77b",
   "t": "RIPPS2'yi akilluminati47 tasarlar ve yönetir, Claude (Anthropic) ile yapılır. Test edenler: ripto, nuno6573, zackcage6, eliminator1403, FifthFox, Mr.sus.60, lukeatmynose, ahavasi ve Discord'da test eden herkes. GitHub'daki issue'lar: DarkNerdShawny ve bir tane açan herkes (bir issue RIPPS2'nin güncellenmesinin en iyi yoludur: onlar gibi ol ve [bir tane aç](https://github.com/akilluminati47/RIPPS2/issues)). YouTube'daki tüm sevgi için de ayrıca teşekkürler: bana nasıl ulaşırsan ulaş yardım etmekten memnuniyet duyarım."
  },
+ "0416bc745d73": {
+  "en": "0416bc745d73",
+  "t": "> 1. **[RIPPS2.elf dosyasını indir](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (her zaman en yeni sürüm) (tek dosya, 2.723 KB), istersen **[tema paketini](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt, Adapt Rx, 136. baskı: her biri bir yapılandırma ve bir resim; RIPGRID ve RIPFLOW yerleşik), ve RIPPS2'yi kendi dilinde kullanmak için **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** (33 dil; her sürümde var)."
+ },
  "064d7e03de66": {
   "en": "064d7e03de66",
   "t": "## Videolar"
@@ -23,9 +27,9 @@
   "en": "0e6d84eabbaa",
   "t": "RIPPS2 salondan hiç çıkmamış bir PS2 gibi ses verir: **Sony'nin kendi konsol sesleri**, Sony sistem müziği ve gezinmek için **bir Nintendo parçası** (RIPPS2 tasarımcısının kendi seçimleri). Bunların hiçbiri RIPPS2 ile gelmez; **[RIPPS2 Media Studio](tools/media-studio)** seni oraya [kendi PS2'nin BIOS dökümünden](https://pcsx2.net/docs/setup/bios/) (PCSX2'nin kullandığı dosya) ve müziğin kendi kopyalarından götürür. **Start**'ı konsolun seslerini tam bir `AUDIO` klasörüne rip'ler; bu da onların yerleştiği haritadır. Ya da bilgisayarı atla: **Settings > Audio > BIOS Sounds > Rip** konsolun kendi seslerini doğrudan `AUDIO` içine yazar: menü seslerini ve (derleme 89'dan beri) BIOS'un kendi notalarından çalınan açılış ve oyun başlatma müziğini. Yanındaki BIOS Music menü müziğini, saatin parçasını (ya da kırmızı ekranınkini, ya da ikisini: derleme 112) rip'ler. **[v1.1.2 ses turu](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)** hepsini tek çekimde, açılış sesinden bir oyunun başlamasına kadar çalar."
  },
- "118478459c9c": {
-  "en": "118478459c9c",
-  "t": "> ### Rip'le: RIPPS2 build 135, v1.3.5 beta"
+ "0fb4bf0d3557": {
+  "en": "0fb4bf0d3557",
+  "t": "> [136. derlemedeki yenilikler](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.6-beta) | [Changelog](CHANGELOG.md) | **[Videolar](#videos)** | [Tüm sürümler](https://github.com/akilluminati47/RIPPS2/releases) | [psx-place'te konuş](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "1238c5cafd27": {
   "en": "1238c5cafd27",
@@ -215,10 +219,6 @@
   "en": "75ae3c119793",
   "t": "- ps2homebrew ekibinin [wLaunchELF](https://github.com/ps2homebrew/wLaunchELF)'i ve NathanNeurotic'in wLaunchELF R3Z'si: Memory Files tarayıcısının ve ayar ızgarasının davranış örnekleri."
  },
- "7783fc2cbabf": {
-  "en": "7783fc2cbabf",
-  "t": "> 1. **[RIPPS2.elf dosyasını indir](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (her zaman en yeni sürüm) (tek dosya, 2.580 KB), istersen **[tema paketini](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt, Adapt Rx, 128. baskı: her biri bir yapılandırma ve bir resim; RIPGRID ve RIPFLOW yerleşik), ve RIPPS2'yi kendi dilinde kullanmak için **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** (33 dil; her sürümde var)."
- },
  "7c613ae2e427": {
   "en": "7c613ae2e427",
   "t": "## Kendi seslerin ve müziğin"
@@ -234,6 +234,10 @@
  "801b0c43a8b7": {
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | Küreler |"
+ },
+ "84033d4979bd": {
+  "en": "84033d4979bd",
+  "t": "> ### Rip'le: RIPPS2 build 136, v1.3.6 beta"
  },
  "85be5f3270be": {
   "en": "85be5f3270be",
@@ -358,10 +362,6 @@
  "bea8ee5528d7": {
   "en": "bea8ee5528d7",
   "t": "| [Derleme 55 reel'i](media/ripps2-b55-reel.mp4) ve [derleme 22 demosu](media/ripps2-b22-demo.mp4) (GitHub'da) | | İlk alfalar |"
- },
- "bfd122c10125": {
-  "en": "bfd122c10125",
-  "t": "> [135. derlemedeki yenilikler](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.5-beta) | [Changelog](CHANGELOG.md) | **[Videolar](#videos)** | [Tüm sürümler](https://github.com/akilluminati47/RIPPS2/releases) | [psx-place'te konuş](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "c1bc4a56fd54": {
   "en": "c1bc4a56fd54",

@@ -7,6 +7,10 @@
   "en": "03be7325b77b",
   "t": "RIPPS2 projektohet dhe drejtohet nga akilluminati47 dhe ndërtohet me Claude (Anthropic). Testuesit: ripto, nuno6573, zackcage6, eliminator1403, FifthFox, Mr.sus.60, lukeatmynose, ahavasi dhe të gjithë ata që testojnë në Discord. Issues në GitHub: DarkNerdShawny dhe kushdo që hap një (një issue është mënyra më e mirë për ta përditësuar RIPPS2: bëhu si ata dhe [hap një](https://github.com/akilluminati47/RIPPS2/issues)). Falënderime të veçanta edhe për gjithë dashurinë në YouTube: me kënaqësi ndihmoj sido që të më gjesh."
  },
+ "0416bc745d73": {
+  "en": "0416bc745d73",
+  "t": "> 1. **[Shkarko RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (gjithmonë botimi më i ri) (një skedar, 2.723 KB), dhe **[paketën e temave](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** nëse dëshiron (Adapt, Adapt Rx, botimi 136: nga një konfigurim dhe një figurë; RIPGRID dhe RIPFLOW janë të integruara), dhe **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** për RIPPS2 në gjuhën tënde (33 gjuhë; çdo botim e ka)."
+ },
  "064d7e03de66": {
   "en": "064d7e03de66",
   "t": "## Video"
@@ -23,9 +27,9 @@
   "en": "0e6d84eabbaa",
   "t": "RIPPS2 tingëllon si një PS2 që nuk e la kurrë dhomën e ndenjes: **tingujt e vetë konsolës së Sony**, muzikë sistemi e Sony dhe **një këngë e Nintendo** për shfletim (zgjedhjet e vetë projektuesit të RIPPS2). Asgjë prej tyre nuk vjen me RIPPS2; **[RIPPS2 Media Studio](tools/media-studio)** të çon atje nga [dump-i i BIOS-it të PS2-së sate](https://pcsx2.net/docs/setup/bios/) (skedari që përdor PCSX2) dhe kopjet e tua të muzikës. **Start**-i i tij i nxjerr tingujt e konsolës në një dosje `AUDIO` të plotë; kjo është harta ku hyjnë. Ose kapërce kompjuterin: **Settings > Audio > BIOS Sounds > Rip** shkruan tingujt e vetë konsolës drejtpërdrejt në `AUDIO`: tingujt e menysë dhe (që nga ndërtimi 89) muzikën e nisjes dhe të nisjes së lojës të luajtura nga notat e vetë BIOS-it. BIOS Music pranë tij nxjerr muzikën e menysë, pjesën e orës (ose atë të ekranit të kuq, ose të dyja: ndërtimi 112). **[Turi i tingujve të v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)** i luan të gjitha në një xhirim të vetëm, nga tingulli i nisjes deri te nisja e një loje."
  },
- "118478459c9c": {
-  "en": "118478459c9c",
-  "t": "> ### Bëje rip: RIPPS2 build 135, v1.3.5 beta"
+ "0fb4bf0d3557": {
+  "en": "0fb4bf0d3557",
+  "t": "> [Çfarë ka të re në ndërtimin 136](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.6-beta) | [Changelog](CHANGELOG.md) | **[Video](#videos)** | [Të gjitha botimet](https://github.com/akilluminati47/RIPPS2/releases) | [Fol për të në psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "1238c5cafd27": {
   "en": "1238c5cafd27",
@@ -215,10 +219,6 @@
   "en": "75ae3c119793",
   "t": "- [wLaunchELF](https://github.com/ps2homebrew/wLaunchELF) nga ekipi ps2homebrew, dhe wLaunchELF R3Z nga NathanNeurotic: modelet e sjelljes për shfletuesin e Memory Files dhe rrjetin e tij të cilësimeve."
  },
- "7783fc2cbabf": {
-  "en": "7783fc2cbabf",
-  "t": "> 1. **[Shkarko RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (gjithmonë botimi më i ri) (një skedar, 2.580 KB), dhe **[paketën e temave](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** nëse dëshiron (Adapt, Adapt Rx, botimi 128: nga një konfigurim dhe një figurë; RIPGRID dhe RIPFLOW janë të integruara), dhe **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** për RIPPS2 në gjuhën tënde (33 gjuhë; çdo botim e ka)."
- },
  "7c613ae2e427": {
   "en": "7c613ae2e427",
   "t": "## Tingujt dhe muzika jote"
@@ -234,6 +234,10 @@
  "801b0c43a8b7": {
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | Sferat |"
+ },
+ "84033d4979bd": {
+  "en": "84033d4979bd",
+  "t": "> ### Bëje rip: RIPPS2 build 136, v1.3.6 beta"
  },
  "85be5f3270be": {
   "en": "85be5f3270be",
@@ -358,10 +362,6 @@
  "bea8ee5528d7": {
   "en": "bea8ee5528d7",
   "t": "| [Reel-i i ndërtimit 55](media/ripps2-b55-reel.mp4) dhe [demo e ndërtimit 22](media/ripps2-b22-demo.mp4) (në GitHub) | | Alfat e hershme |"
- },
- "bfd122c10125": {
-  "en": "bfd122c10125",
-  "t": "> [Çfarë ka të re në ndërtimin 135](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.5-beta) | [Changelog](CHANGELOG.md) | **[Video](#videos)** | [Të gjitha botimet](https://github.com/akilluminati47/RIPPS2/releases) | [Fol për të në psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "c1bc4a56fd54": {
   "en": "c1bc4a56fd54",

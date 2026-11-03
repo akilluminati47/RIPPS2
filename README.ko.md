@@ -44,13 +44,13 @@
 
 # RIPPS2
 
-> ### 립하세요: RIPPS2 빌드 135, v1.3.5 베타
+> ### 립하세요: RIPPS2 빌드 136, v1.3.6 베타
 > **RIP PS2, ELF 킬러.** 혼자서 동작하고 절대 망가뜨리지 않습니다: 다른 ELF는 [선반](https://akilluminati47.github.io/RIPPS2/)에 무사히 남아 있고 (요청하지 않으면 아무것도 지우지 않습니다), 그저 마땅한 휴식을 취할 뿐입니다.
-> 1. **[RIPPS2.elf 다운로드](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (항상 최신 릴리스) (파일 하나, 2,580 KB), 원하면 **[테마 팩](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt와 Adapt Rx, 에디션 128: 각각 설정 하나와 이미지 하나. RIPGRID와 RIPFLOW는 내장), 그리고 RIPPS2를 내 언어로 쓰기 위한 **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** (33개 언어. 모든 릴리스에 포함).
+> 1. **[RIPPS2.elf 다운로드](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (항상 최신 릴리스) (파일 하나, 2,723 KB), 원하면 **[테마 팩](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt와 Adapt Rx, 에디션 136: 각각 설정 하나와 이미지 하나. RIPGRID와 RIPFLOW는 내장), 그리고 RIPPS2를 내 언어로 쓰기 위한 **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** (33개 언어. 모든 릴리스에 포함).
 > 2. USB 메모리나 메모리 카드에 복사하고 FreeMcBoot, PS2BBL, wLaunchELF 등 homebrew를 실행할 때 쓰는 것으로 실행합니다. PCSX2에서는 **System > Start File**에서 `RIPPS2.elf`를 고릅니다.
 > 3. 어땠는지 알려 주세요: [psx-place 스레드](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/), [issue](https://github.com/akilluminati47/RIPPS2/issues), 또는 개발자 Discord의 **#RIPPS2**, [discord.gg/Z7m9u5kby](https://discord.gg/Z7m9u5kby) (초대는 2026년 12월 1일까지 유효).
 >
-> [빌드 135의 새 기능](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.5-beta) | [Changelog](CHANGELOG.md) | **[영상](#videos)** | [모든 릴리스](https://github.com/akilluminati47/RIPPS2/releases) | [psx-place에서 이야기하기](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>
+> [빌드 136의 새 기능](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.6-beta) | [Changelog](CHANGELOG.md) | **[영상](#videos)** | [모든 릴리스](https://github.com/akilluminati47/RIPPS2/releases) | [psx-place에서 이야기하기](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>
 > [RIPPS2 테마 만들기](https://github.com/akilluminati47/RIPPS2-themes) (다시 빌드할 필요 없음, 에이전트 친화적) | [AUDIO와 MEDIA 폴더 채우기](#the-sound-ripps2-was-made-with) [RIPPS2 Media Studio](tools/media-studio)로 (사운드, 음악, 영상. [Windows용 다운로드](https://github.com/akilluminati47/RIPPS2/releases/download/media-studio/RIPPS2-Media-Studio.zip)) | [테마를 진짜 720p와 1080i로 보기: RIPPCSX2](https://github.com/akilluminati47/RIPPCSX2/releases/latest) (HDTV 출력이 있는 PCSX2)
 
 RIPPS2는 하나의 `.elf`에 담긴 PS2 프런트엔드입니다: [RiptOPL](https://github.com/NathanNeurotic/Open-PS2-Loader) (Open PS2 Loader 포크)을 열어 다시 짜고, rickgaiser의 [Neutrino](https://github.com/rickgaiser/neutrino)를 두 번째 게임 코어로 쓰며, 고유의 외관, 런처, 파일 브라우저, 저장소 도구를 갖추었습니다. 유리 탑이 게임 뒤에 서고 궤도 대형이 파일 뒤에 늘어서며, 모두 PS2가 실시간으로 그립니다.

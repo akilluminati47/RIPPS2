@@ -7,6 +7,10 @@
   "en": "03be7325b77b",
   "t": "RIPPS2 由 akilluminati47 設計和主導，與 Claude (Anthropic) 一起打造。測試者：ripto、nuno6573、zackcage6、eliminator1403、FifthFox、Mr.sus.60、lukeatmynose、ahavasi，以及所有在 Discord 上測試的人。GitHub 上的 issue：DarkNerdShawny 和每一個提 issue 的人（issue 是讓 RIPPS2 更新的最好方式：向他們學習，[提一個](https://github.com/akilluminati47/RIPPS2/issues)）。也特別感謝 YouTube 上的所有支援：無論你透過哪種方式聯絡我，我都樂意幫忙。"
  },
+ "0416bc745d73": {
+  "en": "0416bc745d73",
+  "t": "> 1. **[下載 RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)**（始終是最新版本）（一個檔案，2,723 KB），需要的話再下載 **[主題包](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)**（Adapt 和 Adapt Rx，第 136 版：各一個配置和一張圖片；RIPGRID 和 RIPFLOW 為內建），以及 **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)**，用你的語言使用 RIPPS2（33 種語言；每個版本都附帶）。"
+ },
  "064d7e03de66": {
   "en": "064d7e03de66",
   "t": "## 影片"
@@ -23,9 +27,9 @@
   "en": "0e6d84eabbaa",
   "t": "RIPPS2 聽起來像一臺從未離開客廳的 PS2：**Sony 主機自己的聲音**、Sony 的系統音樂，以及瀏覽時的 **一首 Nintendo 曲目**（RIPPS2 設計者本人的選擇）。這些都不隨 RIPPS2 附帶；**[RIPPS2 Media Studio](tools/media-studio)** 會用 [你自己 PS2 的 BIOS 轉儲](https://pcsx2.net/docs/setup/bios/)（PCSX2 使用的檔案）和你自己的音樂帶你實現它。**Start** 把那些主機聲音提取成一個完整的 `AUDIO` 資料夾；這就是它們的對應表。或者跳過電腦：**Settings > Audio > BIOS Sounds > Rip** 直接把主機自己的聲音寫入 `AUDIO`：選單音效以及（從組建 89 起）由 BIOS 自己的樂譜演奏的開機和遊戲啟動音樂。旁邊的 BIOS Music 提取選單音樂，即時鐘的曲子（或紅屏的曲子，或兩者：組建 112）。**[v1.1.2 聲音巡覽](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)** 一鏡到底播放全部，從開機聲到啟動遊戲。"
  },
- "118478459c9c": {
-  "en": "118478459c9c",
-  "t": "> ### 開始提取：RIPPS2 組建 135，v1.3.5 測試版"
+ "0fb4bf0d3557": {
+  "en": "0fb4bf0d3557",
+  "t": "> [組建 136 的新內容](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.6-beta) | [Changelog](CHANGELOG.md) | **[影片](#videos)** | [所有版本](https://github.com/akilluminati47/RIPPS2/releases) | [在 psx-place 討論](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "1238c5cafd27": {
   "en": "1238c5cafd27",
@@ -215,10 +219,6 @@
   "en": "75ae3c119793",
   "t": "- [wLaunchELF](https://github.com/ps2homebrew/wLaunchELF)，由 ps2homebrew 團隊開發，以及 wLaunchELF R3Z，由 NathanNeurotic 開發：Memory Files 瀏覽器及其設定網格的行為參考。"
  },
- "7783fc2cbabf": {
-  "en": "7783fc2cbabf",
-  "t": "> 1. **[下載 RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)**（始終是最新版本）（一個檔案，2,580 KB），需要的話再下載 **[主題包](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)**（Adapt 和 Adapt Rx，第 128 版：各一個配置和一張圖片；RIPGRID 和 RIPFLOW 為內建），以及 **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)**，用你的語言使用 RIPPS2（33 種語言；每個版本都附帶）。"
- },
  "7c613ae2e427": {
   "en": "7c613ae2e427",
   "t": "## 你自己的聲音和音樂"
@@ -234,6 +234,10 @@
  "801b0c43a8b7": {
   "en": "801b0c43a8b7",
   "t": "| **Memory Files** | 光球 |"
+ },
+ "84033d4979bd": {
+  "en": "84033d4979bd",
+  "t": "> ### 開始提取：RIPPS2 組建 136，v1.3.6 測試版"
  },
  "85be5f3270be": {
   "en": "85be5f3270be",
@@ -358,10 +362,6 @@
  "bea8ee5528d7": {
   "en": "bea8ee5528d7",
   "t": "| [組建 55 介紹短片](media/ripps2-b55-reel.mp4) 和 [組建 22 演示](media/ripps2-b22-demo.mp4)（在 GitHub 上） | | 早期 alpha |"
- },
- "bfd122c10125": {
-  "en": "bfd122c10125",
-  "t": "> [組建 135 的新內容](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.5-beta) | [Changelog](CHANGELOG.md) | **[影片](#videos)** | [所有版本](https://github.com/akilluminati47/RIPPS2/releases) | [在 psx-place 討論](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "c1bc4a56fd54": {
   "en": "c1bc4a56fd54",
