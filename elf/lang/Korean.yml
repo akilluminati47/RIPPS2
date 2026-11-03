@@ -3,6 +3,27 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Korean
 strings:
+  "SET UP, UPDATE OR RESTORE BIBLE": "BIBLE 설치, 업데이트 또는 복원"
+  "UPDATE BIBLE: SLOT %d HAS AN OLDER ONE": "BIBLE 업데이트: 슬롯 %d에 이전 버전이 있습니다"
+  "Background": "배경"
+  "Sky": "하늘"
+  "Black": "검정"
+  "Splash": "스플래시"
+  "Logo": "로고"
+  "Logo and Names": "로고와 이름"
+  "Button Glyphs": "버튼 기호"
+  "Face Buttons": "액션 버튼"
+  "All Sixteen": "16개 모두"
+  "Info Line": "정보 줄"
+  "Power-on Wait": "전원 켤 때 대기"
+  "EDIT BIBLE'S SETTINGS FILE": "BIBLE 설정 파일 편집"
+  "BIBLE's settings file (%s) could not be written. Check that the memory card is in and has room, then try again.": "BIBLE 설정 파일(%s)을 쓸 수 없습니다. 메모리 카드가 꽂혀 있고 공간이 있는지 확인한 뒤 다시 시도하세요."
+  "BIBLE's settings file (%s) was not found. SET UP, UPDATE OR RESTORE BIBLE writes one.": "BIBLE 설정 파일(%s)을 찾지 못했습니다. BIBLE 설치, 업데이트 또는 복원에서 새로 씁니다."
+  "Boot sound On (fast): %s, handed over by BIBLE": "부팅음 켬(빠르게): %s, BIBLE이 넘겨줌"
+  "BIBLE: akilluminati47's PS2BBL Extended fork, every build signed by akilluminati47 (GPL-3)": "BIBLE: akilluminati47의 PS2BBL Extended 포크, 모든 빌드를 akilluminati47가 서명 (GPL-3)"
+  "its IOPRP image binds BIBLE to your card (GPL-3): the console does the crypto, no keys": "그 IOPRP 이미지가 BIBLE을 메모리 카드에 연결합니다 (GPL-3). 암호화는 본체가 하며 키가 필요 없습니다"
+  "KELFBinder by El Isra": "El Isra의 KELFBinder"
+  "source: github.com/akilluminati47/BIBLE": "소스: github.com/akilluminati47/BIBLE"
   "SLOT 0: %s\nSLOT 1: %s\n%s\nRIPPS2: Setting up BIBLE. BIBLE, akilluminati47's boot loader built on PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?": "슬롯 0: %s\n슬롯 1: %s\n%s\nRIPPS2: BIBLE 설정 중. BIBLE(El Isra의 PS2BBL을 바탕으로 한 akilluminati47의 부트로더)을 RIPPS2가 표준 8 MB PS2 메모리 카드나 내장 HDD에 설정합니다: 전원을 켜고 0 ms 만에 시작(PS2BBL Extended는 0 불가), 먼저 RIPPS2를 지금 있는 곳에서(복사하지 않음). 전원을 켤 때 버튼을 누르고 있으면 브라우저(TRIANGLE), 디스크(START), 이전 것(CIRCLE)으로도 갈 수 있습니다. 설정할까요, 고칠까요, 아니면 대신했던 것을 되돌릴까요?"
   "RIPPS2: Setting up BIBLE\nThe card in slot %d is an SD2PSX or MMCE card. Its BOOT card can hold BIBLE in place of the PS2BBL it has (that one is moved aside, whole, first), if the console binds BIBLE to it. If the bind is refused, nothing on the card changes, and the card may stop answering until the console is turned off and on. START binds BIBLE to it.": "RIPPS2: BIBLE 설정 중\n슬롯 %d의 카드는 SD2PSX 또는 MMCE 카드입니다. 본체가 BIBLE을 이 카드에 연결하면, 그 BOOT 카드는 지금의 PS2BBL 대신 BIBLE을 담을 수 있습니다 (지금 것은 먼저 통째로 옮겨 둡니다). 연결이 거부되면 카드는 바뀌지 않지만, 콘솔을 껐다 켤 때까지 카드가 응답하지 않을 수 있습니다. START로 BIBLE을 연결합니다."
   "BIND BIBLE": "BIBLE 연결"
@@ -25,7 +46,6 @@ strings:
   "GAME LIST": "게임 목록"
   "%s in %s": "%s (%s)"
   "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "쓰기 작업이 꺼져 있어 RIPPS2가 게임 정보를 저장하거나 이름을 바꿀 수 없습니다. 켤까요?"
-  "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "BIBLE은 El Isra의 PS2BBL을 바탕으로 만들어졌으며, 카드용과 HDD용은 RIPPS2용으로 서명되었습니다 (GPL-3)"
   "START %s": "%s 시작"
   "NETWORK": "네트워크"
   "%s did not answer. Is it connected?": "%s이(가) 응답하지 않았습니다. 연결되어 있나요?"
@@ -163,7 +183,6 @@ strings:
   'an MC annihilator: Square on a memory card': '메모리 카드 정리 도구: 메모리 카드에서 네모'
   and the Open PS2 Loader team, whose credits follow: 그리고 Open PS2 Loader 팀, 크레딧은 아래와 같습니다
   behavior reference: 동작 참고
-  binds BIBLE to your card; the console does the crypto, no keys: BIBLE을 메모리 카드에 연결합니다. 암호화는 본체가 하며 키가 필요 없습니다
   from your memory card's DVD player update folder: 메모리 카드의 DVD 플레이어 업데이트 폴더에서
   game hashes and memory telemetry, made solid on hardware by oMrRexD: 게임 해시와 메모리 텔레메트리, oMrRexD가 실기에서 다듬음
   'its MPEG-4 and MP3 decoders: ffmpeg, mpg123 (LGPL 2.1)': 'MPEG-4와 MP3 디코더: ffmpeg, mpg123 (LGPL 2.1)'
@@ -173,7 +192,6 @@ strings:
   mymc by Ross Ridge, mymcplus by Florian Maerkl: Ross Ridge의 mymc, Florian Maerkl의 mymcplus
   ps2-covers by xlenore: xlenore의 ps2-covers
   ps2sdk by the ps2dev team: ps2dev 팀의 ps2sdk
-  ps2sdk's SECRMAN, from the FMCB installer by SP193: ps2sdk의 SECRMAN, SP193의 FMCB 설치기에서
   ps2sdk's libcdvd and audsrv: ps2sdk의 libcdvd와 audsrv
   'source: github.com/israpps/PlayStation2-Basic-BootLoader': '소스: github.com/israpps/PlayStation2-Basic-BootLoader'
   started from your own copy (APPS, BOOT or ESR folders): 내 사본에서 시작 (APPS, BOOT 또는 ESR 폴더)

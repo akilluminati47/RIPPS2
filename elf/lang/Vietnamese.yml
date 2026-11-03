@@ -3,6 +3,27 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Vietnamese
 strings:
+  "SET UP, UPDATE OR RESTORE BIBLE": "BIBLE: CÀI ĐẶT, CẬP NHẬT HOẶC KHÔI PHỤC"
+  "UPDATE BIBLE: SLOT %d HAS AN OLDER ONE": "CẬP NHẬT BIBLE: KHE %d CÓ BẢN CŨ HƠN"
+  "Background": "Nền"
+  "Sky": "Bầu trời"
+  "Black": "Đen"
+  "Splash": "Màn hình mở đầu"
+  "Logo": "Logo"
+  "Logo and Names": "Logo và tên"
+  "Button Glyphs": "Ký hiệu nút"
+  "Face Buttons": "Nút hành động"
+  "All Sixteen": "Cả mười sáu"
+  "Info Line": "Dòng thông tin"
+  "Power-on Wait": "Chờ khi bật máy"
+  "EDIT BIBLE'S SETTINGS FILE": "SỬA TỆP CÀI ĐẶT CỦA BIBLE"
+  "BIBLE's settings file (%s) could not be written. Check that the memory card is in and has room, then try again.": "Không ghi được tệp cài đặt của BIBLE (%s). Hãy kiểm tra thẻ nhớ đã cắm và còn chỗ trống, rồi thử lại."
+  "BIBLE's settings file (%s) was not found. SET UP, UPDATE OR RESTORE BIBLE writes one.": "Không tìm thấy tệp cài đặt của BIBLE (%s). BIBLE: CÀI ĐẶT, CẬP NHẬT HOẶC KHÔI PHỤC sẽ ghi một tệp."
+  "Boot sound On (fast): %s, handed over by BIBLE": "Âm khởi động Bật (nhanh): %s, do BIBLE chuyển giao"
+  "BIBLE: akilluminati47's PS2BBL Extended fork, every build signed by akilluminati47 (GPL-3)": "BIBLE: bản fork PS2BBL Extended của akilluminati47, mọi bản dựng đều do akilluminati47 ký (GPL-3)"
+  "its IOPRP image binds BIBLE to your card (GPL-3): the console does the crypto, no keys": "ảnh IOPRP của nó gắn BIBLE vào thẻ của bạn (GPL-3): máy tự lo phần mã hóa, không cần khóa"
+  "KELFBinder by El Isra": "KELFBinder của El Isra"
+  "source: github.com/akilluminati47/BIBLE": "mã nguồn: github.com/akilluminati47/BIBLE"
   "SLOT 0: %s\nSLOT 1: %s\n%s\nRIPPS2: Setting up BIBLE. BIBLE, akilluminati47's boot loader built on PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?": "KHE 0: %s\nKHE 1: %s\n%s\nRIPPS2: đang cài BIBLE. BIBLE, trình khởi động của akilluminati47 dựa trên PS2BBL của El Isra, được RIPPS2 cài trên thẻ nhớ PS2 tiêu chuẩn 8 MB hoặc ổ cứng trong: khởi động 0 ms khi bật máy (PS2BBL Extended không cho phép 0), RIPPS2 trước tiên từ chỗ của nó (không bao giờ bị sao chép), và giữ một nút khi bật máy vẫn đưa tới trình duyệt (TRIANGLE), một đĩa (START) và thứ có trước đó (CIRCLE). Cài, sửa, hay khôi phục thứ nó đã thay?"
   "RIPPS2: Setting up BIBLE\nThe card in slot %d is an SD2PSX or MMCE card. Its BOOT card can hold BIBLE in place of the PS2BBL it has (that one is moved aside, whole, first), if the console binds BIBLE to it. If the bind is refused, nothing on the card changes, and the card may stop answering until the console is turned off and on. START binds BIBLE to it.": "RIPPS2: đang cài BIBLE\nThẻ ở khe %d là thẻ SD2PSX hoặc MMCE. Thẻ BOOT của nó có thể chứa BIBLE thay cho PS2BBL đang có (cái đó được dời sang một bên trước, nguyên vẹn), nếu máy gắn BIBLE vào nó. Nếu việc gắn bị từ chối, thẻ không thay đổi gì, và thẻ có thể ngừng phản hồi cho đến khi tắt rồi bật lại máy. START gắn BIBLE vào nó."
   "BIND BIBLE": "GẮN BIBLE"
@@ -25,7 +46,6 @@ strings:
   "GAME LIST": "DANH SÁCH TRÒ CHƠI"
   "%s in %s": "%s trong %s"
   "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "Thao tác ghi đang tắt, nên RIPPS2 không thể lưu thông tin trò chơi hay đổi tên nó. Bật lên?"
-  "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "BIBLE được xây trên PS2BBL của El Isra, các bản cho thẻ và HDD đã được ký cho RIPPS2 (GPL-3)"
   "START %s": "KHỞI ĐỘNG %s"
   "NETWORK": "MẠNG"
   "%s did not answer. Is it connected?": "%s không phản hồi. Đã kết nối chưa?"
@@ -163,7 +183,6 @@ strings:
   'an MC annihilator: Square on a memory card': 'công cụ xóa sạch thẻ nhớ: Vuông trên thẻ nhớ'
   and the Open PS2 Loader team, whose credits follow: và nhóm Open PS2 Loader, danh sách ghi công ở dưới
   behavior reference: tham chiếu hành vi
-  binds BIBLE to your card; the console does the crypto, no keys: gắn BIBLE vào thẻ của bạn; máy tự lo phần mã hóa, không cần khóa
   from your memory card's DVD player update folder: từ thư mục cập nhật đầu DVD trên thẻ nhớ của bạn
   game hashes and memory telemetry, made solid on hardware by oMrRexD: mã băm trò chơi và đo đạc bộ nhớ, oMrRexD làm vững trên máy thật
   'its MPEG-4 and MP3 decoders: ffmpeg, mpg123 (LGPL 2.1)': 'bộ giải mã MPEG-4 và MP3 của nó: ffmpeg, mpg123 (LGPL 2.1)'
@@ -173,7 +192,6 @@ strings:
   mymc by Ross Ridge, mymcplus by Florian Maerkl: mymc của Ross Ridge, mymcplus của Florian Maerkl
   ps2-covers by xlenore: ps2-covers của xlenore
   ps2sdk by the ps2dev team: ps2sdk của nhóm ps2dev
-  ps2sdk's SECRMAN, from the FMCB installer by SP193: SECRMAN của ps2sdk, từ trình cài FMCB của SP193
   ps2sdk's libcdvd and audsrv: libcdvd và audsrv của ps2sdk
   'source: github.com/israpps/PlayStation2-Basic-BootLoader': 'mã nguồn: github.com/israpps/PlayStation2-Basic-BootLoader'
   started from your own copy (APPS, BOOT or ESR folders): chạy từ bản sao của chính bạn (thư mục APPS, BOOT hoặc ESR)

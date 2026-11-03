@@ -3,6 +3,27 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Polish
 strings:
+  "SET UP, UPDATE OR RESTORE BIBLE": "BIBLE: ZAINSTALUJ, ZAKTUALIZUJ LUB PRZYWRÓĆ"
+  "UPDATE BIBLE: SLOT %d HAS AN OLDER ONE": "ZAKTUALIZUJ BIBLE: W GNIEŹDZIE %d JEST STARSZY"
+  "Background": "Tło"
+  "Sky": "Niebo"
+  "Black": "Czarne"
+  "Splash": "Ekran startowy"
+  "Logo": "Logo"
+  "Logo and Names": "Logo i nazwy"
+  "Button Glyphs": "Symbole przycisków"
+  "Face Buttons": "Przyciski akcji"
+  "All Sixteen": "Wszystkie szesnaście"
+  "Info Line": "Wiersz informacji"
+  "Power-on Wait": "Czekanie po włączeniu"
+  "EDIT BIBLE'S SETTINGS FILE": "EDYTUJ PLIK USTAWIEŃ BIBLE"
+  "BIBLE's settings file (%s) could not be written. Check that the memory card is in and has room, then try again.": "Nie udało się zapisać pliku ustawień BIBLE (%s). Sprawdź, czy karta pamięci jest włożona i ma miejsce, i spróbuj ponownie."
+  "BIBLE's settings file (%s) was not found. SET UP, UPDATE OR RESTORE BIBLE writes one.": "Nie znaleziono pliku ustawień BIBLE (%s). BIBLE: ZAINSTALUJ, ZAKTUALIZUJ LUB PRZYWRÓĆ zapisuje nowy."
+  "Boot sound On (fast): %s, handed over by BIBLE": "Dźwięk startu Wł. (szybko): %s, przekazany przez BIBLE"
+  "BIBLE: akilluminati47's PS2BBL Extended fork, every build signed by akilluminati47 (GPL-3)": "BIBLE: fork PS2BBL Extended od akilluminati47, każda kompilacja podpisana przez akilluminati47 (GPL-3)"
+  "its IOPRP image binds BIBLE to your card (GPL-3): the console does the crypto, no keys": "jego obraz IOPRP wiąże BIBLE z twoją kartą (GPL-3): szyfrowanie robi konsola, bez kluczy"
+  "KELFBinder by El Isra": "KELFBinder autorstwa El Isry"
+  "source: github.com/akilluminati47/BIBLE": "źródło: github.com/akilluminati47/BIBLE"
   "SLOT 0: %s\nSLOT 1: %s\n%s\nRIPPS2: Setting up BIBLE. BIBLE, akilluminati47's boot loader built on PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?": "GNIAZDO 0: %s\nGNIAZDO 1: %s\n%s\nRIPPS2: konfiguracja BIBLE. BIBLE, bootloader akilluminati47 oparty na PS2BBL autorstwa El Isry, skonfigurowany przez RIPPS2 na zwykłej karcie pamięci PS2 8 MB lub wewnętrznym dysku twardym: start w 0 ms przy włączaniu (PS2BBL Extended nie pozwala na 0), najpierw RIPPS2 z miejsca, w którym jest (nigdy nie jest kopiowany), a przycisk przytrzymany przy włączaniu nadal prowadzi do przeglądarki (TRIANGLE), płyty (START) i tego, co było wcześniej (CIRCLE). Skonfigurować, naprawić czy przywrócić to, co zastąpił?"
   "RIPPS2: Setting up BIBLE\nThe card in slot %d is an SD2PSX or MMCE card. Its BOOT card can hold BIBLE in place of the PS2BBL it has (that one is moved aside, whole, first), if the console binds BIBLE to it. If the bind is refused, nothing on the card changes, and the card may stop answering until the console is turned off and on. START binds BIBLE to it.": "RIPPS2: konfiguracja BIBLE\nKarta w gnieździe %d to karta SD2PSX lub MMCE. Jej karta BOOT może mieć BIBLE zamiast swojego PS2BBL (ten jest najpierw w całości odkładany na bok), jeśli konsola zwiąże z nią BIBLE. Jeśli wiązanie zostanie odrzucone, nic na karcie się nie zmieni, a karta może przestać odpowiadać, dopóki konsola nie zostanie wyłączona i włączona. START wiąże z nią BIBLE."
   "BIND BIBLE": "ZWIĄŻ BIBLE"
@@ -25,7 +46,6 @@ strings:
   "GAME LIST": "LISTA GIER"
   "%s in %s": "%s w %s"
   "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "Operacje zapisu są wyłączone, więc RIPPS2 nie może zapisać danych gry ani zmienić jej nazwy. Włączyć je?"
-  "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "BIBLE powstał na bazie PS2BBL autorstwa El Isry, a jego wersje na kartę i HDD są podpisane dla RIPPS2 (GPL-3)"
   "START %s": "URUCHOM %s"
   "NETWORK": "SIEĆ"
   "%s did not answer. Is it connected?": "%s nie odpowiedział. Czy jest podłączony?"
@@ -163,7 +183,6 @@ strings:
   'an MC annihilator: Square on a memory card': 'niszczyciel MC: Kwadrat na karcie pamięci'
   and the Open PS2 Loader team, whose credits follow: oraz zespół Open PS2 Loadera, którego autorzy są poniżej
   behavior reference: wzór działania
-  binds BIBLE to your card; the console does the crypto, no keys: wiąże BIBLE z twoją kartą; szyfrowanie robi konsola, bez kluczy
   from your memory card's DVD player update folder: z folderu aktualizacji odtwarzacza DVD na twojej karcie pamięci
   game hashes and memory telemetry, made solid on hardware by oMrRexD: skróty gier i telemetria pamięci, dopracowane na sprzęcie przez oMrRexD
   'its MPEG-4 and MP3 decoders: ffmpeg, mpg123 (LGPL 2.1)': 'jego dekodery MPEG-4 i MP3: ffmpeg, mpg123 (LGPL 2.1)'
@@ -173,7 +192,6 @@ strings:
   mymc by Ross Ridge, mymcplus by Florian Maerkl: mymc autorstwa Rossa Ridge'a, mymcplus autorstwa Floriana Maerkla
   ps2-covers by xlenore: ps2-covers autorstwa xlenore
   ps2sdk by the ps2dev team: ps2sdk autorstwa zespołu ps2dev
-  ps2sdk's SECRMAN, from the FMCB installer by SP193: SECRMAN z ps2sdk, z instalatora FMCB od SP193
   ps2sdk's libcdvd and audsrv: libcdvd i audsrv z ps2sdk
   'source: github.com/israpps/PlayStation2-Basic-BootLoader': 'źródło: github.com/israpps/PlayStation2-Basic-BootLoader'
   started from your own copy (APPS, BOOT or ESR folders): uruchamiane z twojej własnej kopii (foldery APPS, BOOT lub ESR)

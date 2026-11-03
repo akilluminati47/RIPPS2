@@ -44,12 +44,12 @@ bound = boot[j:boot.find('SecrInit();', j)]
 if 'l1 = blCardInfo(port, NULL), l2 = blCardInfo(port, NULL)' not in bound or 'card login after the restart' not in bound:
     fail.append('the card logs in twice before the bind, and DIAG.TXT says how')
 
-sums = {'MMCE/SYSTEM.XLF': 'cacf865b196d4ee91e322152ae0d76107b56112c3e226c1c1918703641e269bb',
-        'MX4SIO/SYSTEM.XLF': 'c961a8ff2b666b36aae246f9f6cfac5ebd26161dbdfd90eb04cb83a18ffba018'}
+sums = {'MMCE/SYSTEM.XLF': 'cbcff26cf6900df479e43eb66a601294ba75029486d967c292687562d7bacf05',
+        'MX4SIO/SYSTEM.XLF': '9f11f1d461e668d1a35179340b332aa446aa188932596618201dd750770f47f2'}
 readme = (elf / 'bible' / 'README.md').read_text(encoding='utf-8')
 for name, want in sums.items():
     if hashlib.sha256((elf / 'bible' / name).read_bytes()).hexdigest() != want:
-        fail.append('elf/bible/%s is BIBLE a1ffb0b, signed 11/03' % name)
+        fail.append('elf/bible/%s is the BIBLE RIPPS2 carries (build 139: 3282396, signed 11/03)' % name)
     if want not in readme:
         fail.append('elf/bible/README.md lists %s\'s SHA-256' % name)
 

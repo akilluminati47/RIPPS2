@@ -381,6 +381,7 @@ strings:
 - en: None
   in:
   - gui.c
+  - ripps2boot.c
 - en: None in AUDIO
   in:
   - gui.c
@@ -399,10 +400,12 @@ strings:
 - en: 'Off'
   in:
   - gui.c
+  - ripps2boot.c
   - ripps2shot.c
 - en: 'On'
   in:
   - gui.c
+  - ripps2boot.c
   - ripps2shot.c
 - en: On (L2+R2)
   in:
@@ -699,7 +702,7 @@ strings:
   - ripps2shot.c
   - ripps2status.c
   - ripps2ui.c
-- en: BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)
+- en: 'BIBLE: akilluminati47''s PS2BBL Extended fork, every build signed by akilluminati47 (GPL-3)'
   in:
   - ripps2about.c
 - en: BIOS Sounds > Rip plays them as the SPU2 does; no BIOS ships
@@ -742,6 +745,9 @@ strings:
   in:
   - ripps2about.c
 - en: IN-GAME MENU
+  in:
+  - ripps2about.c
+- en: KELFBinder by El Isra
   in:
   - ripps2about.c
 - en: LAUNCH DISC
@@ -861,9 +867,6 @@ strings:
 - en: behavior reference
   in:
   - ripps2about.c
-- en: binds BIBLE to your card; the console does the crypto, no keys
-  in:
-  - ripps2about.c
 - en: from your memory card's DVD player update folder
   in:
   - ripps2about.c
@@ -874,6 +877,9 @@ strings:
   in:
   - ripps2about.c
 - en: glad to help however you reach me.
+  in:
+  - ripps2about.c
+- en: 'its IOPRP image binds BIBLE to your card (GPL-3): the console does the crypto, no keys'
   in:
   - ripps2about.c
 - en: 'its MPEG-4 and MP3 decoders: ffmpeg, mpg123 (LGPL 2.1)'
@@ -897,10 +903,10 @@ strings:
 - en: ps2sdk by the ps2dev team
   in:
   - ripps2about.c
-- en: ps2sdk's SECRMAN, from the FMCB installer by SP193
+- en: ps2sdk's libcdvd and audsrv
   in:
   - ripps2about.c
-- en: ps2sdk's libcdvd and audsrv
+- en: 'source: github.com/akilluminati47/BIBLE'
   in:
   - ripps2about.c
 - en: 'source: github.com/israpps/PlayStation2-Basic-BootLoader'
@@ -1447,12 +1453,19 @@ strings:
     The I/O processor restarts for this and every drive read stops until it is done; music and drives come back after. Keep the card in and the console on until it says done.'
   in:
   - ripps2boot.c
+- en: All Sixteen
+  in:
+  - ripps2boot.c
 - en: 'An SD2PSX or MMCE card can stop answering after a refused bind: if the memory card or the MMCE drive is missing now, turn the console off and on.'
   in:
   - ripps2boot.c
 - en: 'An SD2PSX or MMCE card may protect itself after a refused write: if the memory card or the MMCE drive is missing now, turn the console off and on.'
   in:
   - ripps2boot.c
+- en: Auto
+  in:
+  - ripps2boot.c
+  - ripps2shot.c
 - en: BIBLE could not copy RIPPS2 to the HDD's %s partition. Check its free space. Nothing else was changed.
   in:
   - ripps2boot.c
@@ -1478,6 +1491,12 @@ strings:
   in:
   - ripps2boot.c
 - en: BIBLE ran out of memory. Nothing on the memory card was changed.
+  in:
+  - ripps2boot.c
+- en: BIBLE's settings file (%s) could not be written. Check that the memory card is in and has room, then try again.
+  in:
+  - ripps2boot.c
+- en: BIBLE's settings file (%s) was not found. SET UP, UPDATE OR RESTORE BIBLE writes one.
   in:
   - ripps2boot.c
 - en: 'BIBLE: copying RIPPS2 to %s (%d%%)'
@@ -1516,7 +1535,22 @@ strings:
 - en: BOOT LOCK works through a boot loader on a memory card (PS2BBL, FMCB or OSDMenu), and there is none here.
   in:
   - ripps2boot.c
+- en: Background
+  in:
+  - ripps2boot.c
+- en: Black
+  in:
+  - ripps2boot.c
+- en: Button Glyphs
+  in:
+  - ripps2boot.c
 - en: 'Done: the memory card in slot %d starts what it started before BIBLE. BIBLE is kept in mc%d:/%s.'
+  in:
+  - ripps2boot.c
+- en: EDIT BIBLE'S SETTINGS FILE
+  in:
+  - ripps2boot.c
+- en: Face Buttons
   in:
   - ripps2boot.c
 - en: 'For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 1''s config before slot 0''s.
@@ -1540,6 +1574,15 @@ strings:
 - en: INTERNAL HDD  (its boot area)
   in:
   - ripps2boot.c
+- en: Info Line
+  in:
+  - ripps2boot.c
+- en: Logo
+  in:
+  - ripps2boot.c
+- en: Logo and Names
+  in:
+  - ripps2boot.c
 - en: MEMORY CARD IN SLOT %d  (%s)
   in:
   - ripps2boot.c
@@ -1549,6 +1592,9 @@ strings:
 - en: 'PUT BACK THE HDD''S OLD BOOT PROGRAM
 
     The one BIBLE kept (RIPPS2/MBR-BACKUP.KELF on the HDD) goes back in __mbr, in BIBLE''s place. RIPPS2 and the PS2BBL config stay where they are.'
+  in:
+  - ripps2boot.c
+- en: Power-on Wait
   in:
   - ripps2boot.c
 - en: RESTORE
@@ -1621,6 +1667,9 @@ strings:
 - en: SET UP BIBLE
   in:
   - ripps2boot.c
+- en: SET UP, UPDATE OR RESTORE BIBLE
+  in:
+  - ripps2boot.c
 - en: 'SLOT 0: %s
 
     SLOT 1: %s
@@ -1628,6 +1677,12 @@ strings:
     %s
 
     RIPPS2: Setting up BIBLE. BIBLE, akilluminati47''s boot loader built on PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
+  in:
+  - ripps2boot.c
+- en: Sky
+  in:
+  - ripps2boot.c
+- en: Splash
   in:
   - ripps2boot.c
 - en: The HDD partition BIBLE uses went away. Nothing was changed.
@@ -1670,6 +1725,9 @@ strings:
   in:
   - ripps2boot.c
 - en: This HDD has no __sysconf partition, so BIBLE's config has to go on a memory card (PS2BBL reads a card's first), and there is none in either slot. Insert one, then try again.
+  in:
+  - ripps2boot.c
+- en: 'UPDATE BIBLE: SLOT %d HAS AN OLDER ONE'
   in:
   - ripps2boot.c
 - en: a boot loader RIPPS2 does not know
@@ -3562,9 +3620,6 @@ strings:
 - en: ART
   in:
   - ripps2shot.c
-- en: Auto
-  in:
-  - ripps2shot.c
 - en: CHEATS in the in-game menu turns each of the game's cheats on or off while you play. Changes apply on RESUME; a cheat turned off stops writing, what it wrote stays. Needs Cheats on for the game.
   in:
   - ripps2shot.c
@@ -3666,6 +3721,9 @@ strings:
   in:
   - ripps2status.c
 - en: 'Boot sound On (fast): %s on the memory card, as the pillars rise'
+  in:
+  - ripps2status.c
+- en: 'Boot sound On (fast): %s, handed over by BIBLE'
   in:
   - ripps2status.c
 - en: 'Boot sound On: %s on the memory card, as the pillars rise'

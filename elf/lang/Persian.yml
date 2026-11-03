@@ -3,6 +3,27 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Persian
 strings:
+  "SET UP, UPDATE OR RESTORE BIBLE": "BIBLE: نصب، به‌روزرسانی یا بازگردانی"
+  "UPDATE BIBLE: SLOT %d HAS AN OLDER ONE": "به‌روزرسانی BIBLE: شکاف %d نسخهٔ قدیمی‌تری دارد"
+  "Background": "پس‌زمینه"
+  "Sky": "آسمان"
+  "Black": "سیاه"
+  "Splash": "صفحهٔ آغاز"
+  "Logo": "لوگو"
+  "Logo and Names": "لوگو و نام‌ها"
+  "Button Glyphs": "نمادهای دکمه"
+  "Face Buttons": "دکمه‌های عمل"
+  "All Sixteen": "هر شانزده"
+  "Info Line": "خط اطلاعات"
+  "Power-on Wait": "انتظار هنگام روشن شدن"
+  "EDIT BIBLE'S SETTINGS FILE": "ویرایش فایل تنظیمات BIBLE"
+  "BIBLE's settings file (%s) could not be written. Check that the memory card is in and has room, then try again.": "فایل تنظیمات BIBLE (%s) نوشته نشد. بررسی کنید کارت حافظه وصل است و جا دارد، سپس دوباره امتحان کنید."
+  "BIBLE's settings file (%s) was not found. SET UP, UPDATE OR RESTORE BIBLE writes one.": "فایل تنظیمات BIBLE (%s) پیدا نشد. BIBLE: نصب، به‌روزرسانی یا بازگردانی یکی می‌نویسد."
+  "Boot sound On (fast): %s, handed over by BIBLE": "صدای راه‌اندازی روشن (سریع): %s، تحویل‌شده از BIBLE"
+  "BIBLE: akilluminati47's PS2BBL Extended fork, every build signed by akilluminati47 (GPL-3)": "BIBLE: انشعاب akilluminati47 از PS2BBL Extended، هر نسخه امضاشده توسط akilluminati47 (GPL-3)"
+  "its IOPRP image binds BIBLE to your card (GPL-3): the console does the crypto, no keys": "تصویر IOPRP آن، BIBLE را به کارت شما پیوند می‌دهد (GPL-3): رمزنگاری را کنسول انجام می‌دهد، بدون کلید"
+  "KELFBinder by El Isra": "KELFBinder از El Isra"
+  "source: github.com/akilluminati47/BIBLE": "کد منبع: github.com/akilluminati47/BIBLE"
   "SLOT 0: %s\nSLOT 1: %s\n%s\nRIPPS2: Setting up BIBLE. BIBLE, akilluminati47's boot loader built on PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?": "شکاف 0: %s\nشکاف 1: %s\n%s\nRIPPS2: در حال راه‌اندازی BIBLE. BIBLE، بوت‌لودر akilluminati47 بر پایه PS2BBL ساخته El Isra، که RIPPS2 آن را روی یک کارت حافظه معمولی 8 MB PS2 یا هارد دیسک داخلی راه‌اندازی می‌کند: شروع در 0 ms هنگام روشن شدن (PS2BBL Extended اجازه 0 نمی‌دهد)، اول RIPPS2 از جایی که هست (هرگز کپی نمی‌شود)، و دکمه‌ای که هنگام روشن شدن نگه داشته شود هنوز به مرورگر (TRIANGLE)، دیسک (START) و آنچه پیش‌تر بود (CIRCLE) می‌رسد. راه‌اندازی شود، تعمیر شود یا آنچه جایش را گرفته بازگردانده شود؟"
   "RIPPS2: Setting up BIBLE\nThe card in slot %d is an SD2PSX or MMCE card. Its BOOT card can hold BIBLE in place of the PS2BBL it has (that one is moved aside, whole, first), if the console binds BIBLE to it. If the bind is refused, nothing on the card changes, and the card may stop answering until the console is turned off and on. START binds BIBLE to it.": "RIPPS2: در حال راه‌اندازی BIBLE\nکارت در شکاف %d یک کارت SD2PSX یا MMCE است. کارت BOOT آن می‌تواند به جای PS2BBL خودش BIBLE را نگه دارد (آن یکی اول به‌طور کامل کنار گذاشته می‌شود)، اگر کنسول BIBLE را به آن پیوند دهد. اگر پیوند رد شود، چیزی روی کارت تغییر نمی‌کند و ممکن است کارت تا خاموش و روشن شدن کنسول پاسخ ندهد. START، BIBLE را به آن پیوند می‌دهد."
   "BIND BIBLE": "پیوند BIBLE"
@@ -25,7 +46,6 @@ strings:
   "GAME LIST": "فهرست بازی‌ها"
   "%s in %s": "%s در %s"
   "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "عملیات نوشتن خاموش است، پس RIPPS2 نمی‌تواند جزئیات بازی را ذخیره یا نام آن را عوض کند. روشن شود؟"
-  "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "BIBLE بر پایه PS2BBL ساخته El Isra است و نسخه‌های کارت و HDD آن برای RIPPS2 امضا شده‌اند (GPL-3)"
   "START %s": "شروع %s"
   "NETWORK": "شبکه"
   "%s did not answer. Is it connected?": "%s پاسخ نداد. آیا وصل است؟"
@@ -163,7 +183,6 @@ strings:
   'an MC annihilator: Square on a memory card': 'نابودگر کارت حافظه: مربع روی کارت حافظه'
   and the Open PS2 Loader team, whose credits follow: و تیم Open PS2 Loader، که نامشان در ادامه می‌آید
   behavior reference: مرجع رفتار
-  binds BIBLE to your card; the console does the crypto, no keys: BIBLE را به کارت شما پیوند می‌دهد؛ رمزنگاری را کنسول انجام می‌دهد، بدون کلید
   from your memory card's DVD player update folder: از پوشه به‌روزرسانی پخش‌کننده DVD روی کارت حافظه شما
   game hashes and memory telemetry, made solid on hardware by oMrRexD: هش بازی‌ها و تله‌متری حافظه، که oMrRexD آن را روی سخت‌افزار استوار کرد
   'its MPEG-4 and MP3 decoders: ffmpeg, mpg123 (LGPL 2.1)': 'رمزگشاهای MPEG-4 و MP3 آن: ffmpeg، mpg123 (LGPL 2.1)'
@@ -173,7 +192,6 @@ strings:
   mymc by Ross Ridge, mymcplus by Florian Maerkl: mymc از Ross Ridge، mymcplus از Florian Maerkl
   ps2-covers by xlenore: ps2-covers از xlenore
   ps2sdk by the ps2dev team: ps2sdk از تیم ps2dev
-  ps2sdk's SECRMAN, from the FMCB installer by SP193: SECRMAN از ps2sdk، برگرفته از نصب‌کننده FMCB از SP193
   ps2sdk's libcdvd and audsrv: libcdvd و audsrv از ps2sdk
   'source: github.com/israpps/PlayStation2-Basic-BootLoader': 'کد منبع: github.com/israpps/PlayStation2-Basic-BootLoader'
   started from your own copy (APPS, BOOT or ESR folders): از نسخه خود شما اجرا می‌شود (پوشه‌های APPS، BOOT یا ESR)

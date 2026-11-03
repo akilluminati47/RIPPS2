@@ -3,6 +3,27 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Indonesian
 strings:
+  "SET UP, UPDATE OR RESTORE BIBLE": "BIBLE: PASANG, PERBARUI, ATAU PULIHKAN"
+  "UPDATE BIBLE: SLOT %d HAS AN OLDER ONE": "PERBARUI BIBLE: SLOT %d BERISI YANG LEBIH LAMA"
+  "Background": "Latar"
+  "Sky": "Langit"
+  "Black": "Hitam"
+  "Splash": "Layar pembuka"
+  "Logo": "Logo"
+  "Logo and Names": "Logo dan nama"
+  "Button Glyphs": "Simbol tombol"
+  "Face Buttons": "Tombol aksi"
+  "All Sixteen": "Keenam belas"
+  "Info Line": "Baris info"
+  "Power-on Wait": "Tunggu saat menyala"
+  "EDIT BIBLE'S SETTINGS FILE": "UBAH FILE PENGATURAN BIBLE"
+  "BIBLE's settings file (%s) could not be written. Check that the memory card is in and has room, then try again.": "File pengaturan BIBLE (%s) tidak bisa ditulis. Pastikan kartu memori terpasang dan masih ada ruang, lalu coba lagi."
+  "BIBLE's settings file (%s) was not found. SET UP, UPDATE OR RESTORE BIBLE writes one.": "File pengaturan BIBLE (%s) tidak ditemukan. BIBLE: PASANG, PERBARUI, ATAU PULIHKAN menulis satu."
+  "Boot sound On (fast): %s, handed over by BIBLE": "Suara boot Aktif (cepat): %s, diserahkan oleh BIBLE"
+  "BIBLE: akilluminati47's PS2BBL Extended fork, every build signed by akilluminati47 (GPL-3)": "BIBLE: fork PS2BBL Extended oleh akilluminati47, setiap build ditandatangani akilluminati47 (GPL-3)"
+  "its IOPRP image binds BIBLE to your card (GPL-3): the console does the crypto, no keys": "image IOPRP-nya mengikat BIBLE ke kartumu (GPL-3): konsol yang mengurus kriptonya, tanpa kunci"
+  "KELFBinder by El Isra": "KELFBinder oleh El Isra"
+  "source: github.com/akilluminati47/BIBLE": "sumber: github.com/akilluminati47/BIBLE"
   "SLOT 0: %s\nSLOT 1: %s\n%s\nRIPPS2: Setting up BIBLE. BIBLE, akilluminati47's boot loader built on PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?": "SLOT 0: %s\nSLOT 1: %s\n%s\nRIPPS2: memasang BIBLE. BIBLE, boot loader buatan akilluminati47 yang dibangun di atas PS2BBL karya El Isra, dipasang oleh RIPPS2 di kartu memori PS2 standar 8 MB atau hard disk internal: mulai dalam 0 ms saat dinyalakan (PS2BBL Extended tidak mengizinkan 0), RIPPS2 lebih dulu dari tempatnya (tidak pernah disalin), dan tombol yang ditahan saat dinyalakan tetap membawa ke browser (TRIANGLE), ke disk (START), dan ke yang sebelumnya (CIRCLE). Pasang, perbaiki, atau pulihkan yang digantikannya?"
   "RIPPS2: Setting up BIBLE\nThe card in slot %d is an SD2PSX or MMCE card. Its BOOT card can hold BIBLE in place of the PS2BBL it has (that one is moved aside, whole, first), if the console binds BIBLE to it. If the bind is refused, nothing on the card changes, and the card may stop answering until the console is turned off and on. START binds BIBLE to it.": "RIPPS2: memasang BIBLE\nKartu di slot %d adalah kartu SD2PSX atau MMCE. Kartu BOOT-nya bisa memuat BIBLE sebagai pengganti PS2BBL yang ada (yang itu dipindahkan dulu ke samping, utuh), jika konsol mengikat BIBLE ke kartu itu. Jika pengikatan ditolak, tidak ada yang berubah di kartu, dan kartu bisa berhenti menjawab sampai konsol dimatikan dan dinyalakan. START mengikat BIBLE ke kartu itu."
   "BIND BIBLE": "IKAT BIBLE"
@@ -25,7 +46,6 @@ strings:
   "GAME LIST": "DAFTAR GAME"
   "%s in %s": "%s di %s"
   "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "Operasi tulis mati, jadi RIPPS2 tidak bisa menyimpan detail game atau mengganti namanya. Nyalakan?"
-  "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "BIBLE dibangun di atas PS2BBL milik El Isra, dengan versi kartu dan HDD-nya ditandatangani untuk RIPPS2 (GPL-3)"
   "START %s": "MULAI %s"
   "NETWORK": "JARINGAN"
   "%s did not answer. Is it connected?": "%s tidak menjawab. Apakah tersambung?"
@@ -163,7 +183,6 @@ strings:
   'an MC annihilator: Square on a memory card': 'penghapus MC: Kotak pada kartu memori'
   and the Open PS2 Loader team, whose credits follow: dan tim Open PS2 Loader, yang kreditnya menyusul
   behavior reference: acuan perilaku
-  binds BIBLE to your card; the console does the crypto, no keys: mengikat BIBLE ke kartumu; konsol yang mengurus kriptonya, tanpa kunci
   from your memory card's DVD player update folder: dari folder pembaruan pemutar DVD di kartu memorimu
   game hashes and memory telemetry, made solid on hardware by oMrRexD: hash game dan telemetri memori, dimantapkan di perangkat asli oleh oMrRexD
   'its MPEG-4 and MP3 decoders: ffmpeg, mpg123 (LGPL 2.1)': 'dekoder MPEG-4 dan MP3-nya: ffmpeg, mpg123 (LGPL 2.1)'
@@ -173,7 +192,6 @@ strings:
   mymc by Ross Ridge, mymcplus by Florian Maerkl: mymc oleh Ross Ridge, mymcplus oleh Florian Maerkl
   ps2-covers by xlenore: ps2-covers oleh xlenore
   ps2sdk by the ps2dev team: ps2sdk oleh tim ps2dev
-  ps2sdk's SECRMAN, from the FMCB installer by SP193: SECRMAN dari ps2sdk, dari penginstal FMCB milik SP193
   ps2sdk's libcdvd and audsrv: libcdvd dan audsrv dari ps2sdk
   'source: github.com/israpps/PlayStation2-Basic-BootLoader': 'sumber: github.com/israpps/PlayStation2-Basic-BootLoader'
   started from your own copy (APPS, BOOT or ESR folders): dijalankan dari salinanmu sendiri (folder APPS, BOOT, atau ESR)

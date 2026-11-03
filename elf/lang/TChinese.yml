@@ -3,6 +3,27 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: TChinese
 strings:
+  "SET UP, UPDATE OR RESTORE BIBLE": "BIBLE：安裝、更新或還原"
+  "UPDATE BIBLE: SLOT %d HAS AN OLDER ONE": "更新 BIBLE：插槽 %d 中是舊版"
+  "Background": "背景"
+  "Sky": "天空"
+  "Black": "黑色"
+  "Splash": "啟動畫面"
+  "Logo": "標誌"
+  "Logo and Names": "標誌和名稱"
+  "Button Glyphs": "按鍵符號"
+  "Face Buttons": "動作鍵"
+  "All Sixteen": "全部十六個"
+  "Info Line": "資訊行"
+  "Power-on Wait": "開機等待"
+  "EDIT BIBLE'S SETTINGS FILE": "編輯 BIBLE 的設定檔"
+  "BIBLE's settings file (%s) could not be written. Check that the memory card is in and has room, then try again.": "無法寫入 BIBLE 的設定檔（%s）。請確認記憶卡已插好且有空間，然後再試一次。"
+  "BIBLE's settings file (%s) was not found. SET UP, UPDATE OR RESTORE BIBLE writes one.": "找不到 BIBLE 的設定檔（%s）。BIBLE：安裝、更新或還原 會寫入一個。"
+  "Boot sound On (fast): %s, handed over by BIBLE": "開機音 開(快速):%s,由 BIBLE 移交"
+  "BIBLE: akilluminati47's PS2BBL Extended fork, every build signed by akilluminati47 (GPL-3)": "BIBLE：akilluminati47 的 PS2BBL Extended 分支，每個版本都由 akilluminati47 簽署（GPL-3）"
+  "its IOPRP image binds BIBLE to your card (GPL-3): the console does the crypto, no keys": "它的 IOPRP 映像把 BIBLE 綁定到你的記憶卡（GPL-3）：加密由主機完成，不需要金鑰"
+  "KELFBinder by El Isra": "El Isra的 KELFBinder"
+  "source: github.com/akilluminati47/BIBLE": "原始碼：github.com/akilluminati47/BIBLE"
   "SLOT 0: %s\nSLOT 1: %s\n%s\nRIPPS2: Setting up BIBLE. BIBLE, akilluminati47's boot loader built on PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?": "插槽 0：%s\n插槽 1：%s\n%s\nRIPPS2：正在設定 BIBLE。BIBLE（akilluminati47 以 El Isra 的 PS2BBL 為基礎製作的開機載入程式），由 RIPPS2 設定在標準 8 MB PS2 記憶卡或內建硬碟上：開機 0 ms 啟動 (PS2BBL Extended 不允許 0)，先從 RIPPS2 所在的位置啟動它 (從不複製)，開機時按住按鈕仍可進入瀏覽器 (TRIANGLE)、光碟 (START) 和原本的內容 (CIRCLE)。要設定、修復，還是還原被它取代的內容？"
   "RIPPS2: Setting up BIBLE\nThe card in slot %d is an SD2PSX or MMCE card. Its BOOT card can hold BIBLE in place of the PS2BBL it has (that one is moved aside, whole, first), if the console binds BIBLE to it. If the bind is refused, nothing on the card changes, and the card may stop answering until the console is turned off and on. START binds BIBLE to it.": "RIPPS2：正在設定 BIBLE\n插槽 %d 中的卡是 SD2PSX 或 MMCE 卡。如果主機把 BIBLE 綁定到這張卡，它的 BOOT 卡就能用 BIBLE 取代現有的 PS2BBL（現有的會先整個移到一旁）。如果綁定被拒絕，卡上不會有任何變更，但在主機關機再開機之前，這張卡可能不再回應。按 START 把 BIBLE 綁定到這張卡。"
   "BIND BIBLE": "綁定 BIBLE"
@@ -25,7 +46,6 @@ strings:
   "GAME LIST": "遊戲列表"
   "%s in %s": "%s 於 %s"
   "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "寫入操作已關閉，因此 RIPPS2 無法儲存遊戲資訊或重新命名遊戲。要開啟嗎？"
-  "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "BIBLE 以 El Isra 的 PS2BBL 為基礎，其記憶卡版與 HDD 版已為 RIPPS2 簽署（GPL-3）"
   "START %s": "啟動 %s"
   "NETWORK": "網路"
   "%s did not answer. Is it connected?": "%s 沒有回應。是否已連接？"
@@ -163,7 +183,6 @@ strings:
   'an MC annihilator: Square on a memory card': 記憶卡清除器：在記憶卡上按方塊
   and the Open PS2 Loader team, whose credits follow: 以及 Open PS2 Loader 團隊，其名單如下
   behavior reference: 行為參考
-  binds BIBLE to your card; the console does the crypto, no keys: 把 BIBLE 綁定到你的記憶卡；加密由主機完成，不需要金鑰
   from your memory card's DVD player update folder: 來自你記憶卡上的 DVD 播放器更新資料夾
   game hashes and memory telemetry, made solid on hardware by oMrRexD: 遊戲雜湊與記憶體遙測，由 oMrRexD 在實機上完善
   'its MPEG-4 and MP3 decoders: ffmpeg, mpg123 (LGPL 2.1)': 它的 MPEG-4 與 MP3 解碼器：ffmpeg、mpg123（LGPL 2.1）
@@ -173,7 +192,6 @@ strings:
   mymc by Ross Ridge, mymcplus by Florian Maerkl: Ross Ridge 的 mymc，Florian Maerkl 的 mymcplus
   ps2-covers by xlenore: xlenore 的 ps2-covers
   ps2sdk by the ps2dev team: ps2dev 團隊的 ps2sdk
-  ps2sdk's SECRMAN, from the FMCB installer by SP193: ps2sdk 的 SECRMAN，來自 SP193 的 FMCB 安裝程式
   ps2sdk's libcdvd and audsrv: ps2sdk 的 libcdvd 與 audsrv
   'source: github.com/israpps/PlayStation2-Basic-BootLoader': 原始碼：github.com/israpps/PlayStation2-Basic-BootLoader
   started from your own copy (APPS, BOOT or ESR folders): 從你自己的副本啟動（APPS、BOOT 或 ESR 資料夾）

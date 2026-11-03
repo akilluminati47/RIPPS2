@@ -3,6 +3,27 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Laotian
 strings:
+  "SET UP, UPDATE OR RESTORE BIBLE": "BIBLE: ຕິດຕັ້ງ, ອັບເດດ ຫຼື ກູ້ຄືນ"
+  "UPDATE BIBLE: SLOT %d HAS AN OLDER ONE": "ອັບເດດ BIBLE: ຊ່ອງ %d ມີລຸ້ນເກົ່າກວ່າ"
+  "Background": "ພື້ນຫຼັງ"
+  "Sky": "ທ້ອງຟ້າ"
+  "Black": "ສີດຳ"
+  "Splash": "ໜ້າເປີດ"
+  "Logo": "ໂລໂກ້"
+  "Logo and Names": "ໂລໂກ້ ແລະ ຊື່"
+  "Button Glyphs": "ສັນຍາລັກປຸ່ມ"
+  "Face Buttons": "ປຸ່ມກະທຳ"
+  "All Sixteen": "ທັງສິບຫົກ"
+  "Info Line": "ແຖວຂໍ້ມູນ"
+  "Power-on Wait": "ລໍຖ້າເມື່ອເປີດເຄື່ອງ"
+  "EDIT BIBLE'S SETTINGS FILE": "ແກ້ໄຂໄຟລ໌ການຕັ້ງຄ່າຂອງ BIBLE"
+  "BIBLE's settings file (%s) could not be written. Check that the memory card is in and has room, then try again.": "ຂຽນໄຟລ໌ການຕັ້ງຄ່າຂອງ BIBLE (%s) ບໍ່ໄດ້. ກວດເບິ່ງວ່າເມມໂມຣີກາດສຽບຢູ່ ແລະ ມີບ່ອນຫວ່າງ, ແລ້ວລອງໃໝ່."
+  "BIBLE's settings file (%s) was not found. SET UP, UPDATE OR RESTORE BIBLE writes one.": "ບໍ່ພົບໄຟລ໌ການຕັ້ງຄ່າຂອງ BIBLE (%s). BIBLE: ຕິດຕັ້ງ, ອັບເດດ ຫຼື ກູ້ຄືນ ຈະຂຽນໄຟລ໌ໃໝ່."
+  "Boot sound On (fast): %s, handed over by BIBLE": "ສຽງເປີດ ເປີດ (ໄວ): %s, BIBLE ສົ່ງຕໍ່ມາ"
+  "BIBLE: akilluminati47's PS2BBL Extended fork, every build signed by akilluminati47 (GPL-3)": "BIBLE: fork ຂອງ PS2BBL Extended ໂດຍ akilluminati47, ທຸກ build ລົງນາມໂດຍ akilluminati47 (GPL-3)"
+  "its IOPRP image binds BIBLE to your card (GPL-3): the console does the crypto, no keys": "ອິມເມຈ IOPRP ຂອງມັນຜູກ BIBLE ກັບກາດຂອງທ່ານ (GPL-3): ເຄື່ອງເປັນຜູ້ເຂົ້າລະຫັດ, ບໍ່ມີກະແຈ"
+  "KELFBinder by El Isra": "KELFBinder ໂດຍ El Isra"
+  "source: github.com/akilluminati47/BIBLE": "ຊອດໂຄດ: github.com/akilluminati47/BIBLE"
   "SLOT 0: %s\nSLOT 1: %s\n%s\nRIPPS2: Setting up BIBLE. BIBLE, akilluminati47's boot loader built on PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?": "ຊ່ອງ 0: %s\nຊ່ອງ 1: %s\n%s\nRIPPS2: ກຳລັງຕັ້ງ BIBLE. BIBLE, ບູດໂຫຼດເດີຂອງ akilluminati47 ທີ່ສ້າງຈາກ PS2BBL ຂອງ El Isra, ທີ່ RIPPS2 ຕັ້ງໄວ້ໃນເມມໂມຣີກາດ PS2 ມາດຕະຖານ 8 MB ຫຼື ຮາດດິດພາຍໃນ: ເລີ່ມໃນ 0 ms ຕອນເປີດເຄື່ອງ (PS2BBL Extended ບໍ່ອະນຸຍາດ 0), RIPPS2 ກ່ອນຈາກບ່ອນທີ່ມັນຢູ່ (ບໍ່ເຄີຍສຳເນົາ), ແລະ ປຸ່ມທີ່ກົດຄ້າງຕອນເປີດເຄື່ອງຍັງພາໄປຫາບຣາວເຊີ (TRIANGLE), ແຜ່ນດິສກ໌ (START) ແລະ ສິ່ງທີ່ມີກ່ອນ (CIRCLE). ຕັ້ງ, ສ້ອມແປງ ຫຼື ກູ້ຄືນສິ່ງທີ່ມັນແທນ?"
   "RIPPS2: Setting up BIBLE\nThe card in slot %d is an SD2PSX or MMCE card. Its BOOT card can hold BIBLE in place of the PS2BBL it has (that one is moved aside, whole, first), if the console binds BIBLE to it. If the bind is refused, nothing on the card changes, and the card may stop answering until the console is turned off and on. START binds BIBLE to it.": "RIPPS2: ກຳລັງຕັ້ງ BIBLE\nກາດໃນຊ່ອງ %d ແມ່ນກາດ SD2PSX ຫຼື MMCE. ກາດ BOOT ຂອງມັນເກັບ BIBLE ແທນ PS2BBL ທີ່ມີຢູ່ໄດ້ (ອັນນັ້ນຖືກຍ້າຍອອກໄປກ່ອນ, ທັງໝົດ), ຖ້າເຄື່ອງຜູກ BIBLE ກັບມັນ. ຖ້າການຜູກຖືກປະຕິເສດ, ບໍ່ມີຫຍັງເທິງກາດປ່ຽນ, ແລະ ກາດອາດບໍ່ຕອບຈົນກວ່າຈະປິດແລະເປີດເຄື່ອງໃໝ່. START ຜູກ BIBLE ກັບມັນ."
   "BIND BIBLE": "ຜູກ BIBLE"
@@ -25,7 +46,6 @@ strings:
   "GAME LIST": "ລາຍຊື່ເກມ"
   "%s in %s": "%s ໃນ %s"
   "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "ການຂຽນຖືກປິດຢູ່, ສະນັ້ນ RIPPS2 ບໍ່ສາມາດບັນທຶກລາຍລະອຽດຂອງເກມ ຫຼື ປ່ຽນຊື່ໄດ້. ເປີດບໍ?"
-  "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "BIBLE ສ້າງຂຶ້ນຈາກ PS2BBL ຂອງ El Isra, ສະບັບສຳລັບກາດ ແລະ HDD ຖືກເຊັນສຳລັບ RIPPS2 (GPL-3)"
   "START %s": "ເລີ່ມ %s"
   "NETWORK": "ເຄືອຂ່າຍ"
   "%s did not answer. Is it connected?": "%s ບໍ່ຕອບ. ເຊື່ອມຕໍ່ແລ້ວບໍ?"
@@ -163,7 +183,6 @@ strings:
   'an MC annihilator: Square on a memory card': 'ຕົວທຳລາຍ MC: ສີ່ຫຼ່ຽມ ເທິງເມມໂມຣີກາດ'
   and the Open PS2 Loader team, whose credits follow: ແລະ ທີມ Open PS2 Loader, ເຊິ່ງລາຍຊື່ຢູ່ຕໍ່ໄປ
   behavior reference: ແບບຢ່າງ ການເຮັດວຽກ
-  binds BIBLE to your card; the console does the crypto, no keys: ຜູກ BIBLE ກັບກາດຂອງທ່ານ; ເຄື່ອງເປັນຜູ້ເຂົ້າລະຫັດ, ບໍ່ມີກະແຈ
   from your memory card's DVD player update folder: ຈາກ ໂຟນເດີອັບເດດ ເຄື່ອງຫຼິ້ນ DVD ເທິງເມມໂມຣີກາດຂອງທ່ານ
   game hashes and memory telemetry, made solid on hardware by oMrRexD: ແຮຊຂອງເກມ ແລະ ເທເລເມທຣີ ໜ່ວຍຄວາມຈຳ, ເຮັດໃຫ້ໝັ້ນຄົງ ເທິງຮາດແວ ໂດຍ oMrRexD
   'its MPEG-4 and MP3 decoders: ffmpeg, mpg123 (LGPL 2.1)': 'ໂຕຖອດລະຫັດ MPEG-4 ແລະ MP3 ຂອງມັນ: ffmpeg, mpg123 (LGPL 2.1)'
@@ -173,7 +192,6 @@ strings:
   mymc by Ross Ridge, mymcplus by Florian Maerkl: mymc ໂດຍ Ross Ridge, mymcplus ໂດຍ Florian Maerkl
   ps2-covers by xlenore: ps2-covers ໂດຍ xlenore
   ps2sdk by the ps2dev team: ps2sdk ໂດຍ ທີມ ps2dev
-  ps2sdk's SECRMAN, from the FMCB installer by SP193: SECRMAN ຂອງ ps2sdk, ຈາກໂຕຕິດຕັ້ງ FMCB ຂອງ SP193
   ps2sdk's libcdvd and audsrv: libcdvd ແລະ audsrv ຂອງ ps2sdk
   'source: github.com/israpps/PlayStation2-Basic-BootLoader': 'ຊອດໂຄດ: github.com/israpps/PlayStation2-Basic-BootLoader'
   started from your own copy (APPS, BOOT or ESR folders): ເລີ່ມຈາກ ສຳເນົາຂອງທ່ານເອງ (ໂຟນເດີ APPS, BOOT ຫຼື ESR)

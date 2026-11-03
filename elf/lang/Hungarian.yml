@@ -3,6 +3,27 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Hungarian
 strings:
+  "SET UP, UPDATE OR RESTORE BIBLE": "BIBLE: TELEPÍTÉS, FRISSÍTÉS VAGY VISSZAÁLLÍTÁS"
+  "UPDATE BIBLE: SLOT %d HAS AN OLDER ONE": "BIBLE FRISSÍTÉSE: A(Z) %d. FOGLALATBAN RÉGEBBI VAN"
+  "Background": "Háttér"
+  "Sky": "Égbolt"
+  "Black": "Fekete"
+  "Splash": "Nyitókép"
+  "Logo": "Logó"
+  "Logo and Names": "Logó és nevek"
+  "Button Glyphs": "Gombjelek"
+  "Face Buttons": "Akciógombok"
+  "All Sixteen": "Mind a tizenhat"
+  "Info Line": "Infósor"
+  "Power-on Wait": "Várakozás bekapcsoláskor"
+  "EDIT BIBLE'S SETTINGS FILE": "A BIBLE BEÁLLÍTÁSFÁJLJÁNAK SZERKESZTÉSE"
+  "BIBLE's settings file (%s) could not be written. Check that the memory card is in and has room, then try again.": "A BIBLE beállításfájlját (%s) nem sikerült írni. Ellenőrizd, hogy a memóriakártya be van-e helyezve és van-e rajta hely, majd próbáld újra."
+  "BIBLE's settings file (%s) was not found. SET UP, UPDATE OR RESTORE BIBLE writes one.": "A BIBLE beállításfájlja (%s) nem található. A(z) BIBLE: TELEPÍTÉS, FRISSÍTÉS VAGY VISSZAÁLLÍTÁS ír egyet."
+  "Boot sound On (fast): %s, handed over by BIBLE": "Indítási hang Be (gyors): %s, a BIBLE adta át"
+  "BIBLE: akilluminati47's PS2BBL Extended fork, every build signed by akilluminati47 (GPL-3)": "BIBLE: akilluminati47 PS2BBL Extended forkja, minden buildet akilluminati47 írt alá (GPL-3)"
+  "its IOPRP image binds BIBLE to your card (GPL-3): the console does the crypto, no keys": "IOPRP képe a kártyádhoz köti a BIBLE-t (GPL-3): a titkosítást a konzol végzi, kulcsok nélkül"
+  "KELFBinder by El Isra": "KELFBinder, El Isra munkája"
+  "source: github.com/akilluminati47/BIBLE": "forrás: github.com/akilluminati47/BIBLE"
   "SLOT 0: %s\nSLOT 1: %s\n%s\nRIPPS2: Setting up BIBLE. BIBLE, akilluminati47's boot loader built on PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?": "0. FOGLALAT: %s\n1. FOGLALAT: %s\n%s\nRIPPS2: a BIBLE beállítása. A BIBLE, akilluminati47 El Isra PS2BBL-jára épülő rendszerbetöltője, amelyet a RIPPS2 egy szabványos 8 MB-os PS2 memóriakártyára vagy a belső merevlemezre állít be: 0 ms-os indulás bekapcsoláskor (a PS2BBL Extended nem enged 0-t), először a RIPPS2 onnan, ahol van (soha nem másolja), és a bekapcsoláskor nyomva tartott gomb továbbra is a böngészőbe (TRIANGLE), egy lemezhez (START) és az előzőhöz (CIRCLE) visz. Beállítod, javítod, vagy visszaállítod, amit lecserélt?"
   "RIPPS2: Setting up BIBLE\nThe card in slot %d is an SD2PSX or MMCE card. Its BOOT card can hold BIBLE in place of the PS2BBL it has (that one is moved aside, whole, first), if the console binds BIBLE to it. If the bind is refused, nothing on the card changes, and the card may stop answering until the console is turned off and on. START binds BIBLE to it.": "RIPPS2: a BIBLE beállítása\nA(z) %d. foglalatban lévő kártya SD2PSX vagy MMCE kártya. A BOOT kártyája a meglévő PS2BBL helyett a BIBLE-t is hordozhatja (azt előbb egészben félreteszi), ha a konzol hozzá köti a BIBLE-t. Ha a kötést elutasítja, a kártyán semmi nem változik, és a kártya nem válaszolhat, amíg a konzolt ki és be nem kapcsolod. A START hozzá köti a BIBLE-t."
   "BIND BIBLE": "BIBLE KÖTÉSE"
@@ -25,7 +46,6 @@ strings:
   "GAME LIST": "JÁTÉKLISTA"
   "%s in %s": "%s itt: %s"
   "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "Az írási műveletek ki vannak kapcsolva, így a RIPPS2 nem tudja menteni egy játék adatait vagy átnevezni. Bekapcsolja?"
-  "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "A BIBLE El Isra PS2BBL-jére épül, kártyás és HDD-s változata a RIPPS2-höz van aláírva (GPL-3)"
   "START %s": "INDÍTÁS: %s"
   "NETWORK": "HÁLÓZAT"
   "%s did not answer. Is it connected?": "A(z) %s nem válaszolt. Csatlakoztatva van?"
@@ -163,7 +183,6 @@ strings:
   'an MC annihilator: Square on a memory card': 'MC-irtó: Négyzet egy memóriakártyán'
   and the Open PS2 Loader team, whose credits follow: és az Open PS2 Loader csapata, akiket alább sorolunk fel
   behavior reference: viselkedési minta
-  binds BIBLE to your card; the console does the crypto, no keys: a kártyádhoz köti a BIBLE-t; a titkosítást a konzol végzi, kulcsok nélkül
   from your memory card's DVD player update folder: a memóriakártyád DVD-lejátszó frissítési mappájából
   game hashes and memory telemetry, made solid on hardware by oMrRexD: játékhash-ek és memóriatelemetria, hardveren megbízhatóvá téve oMrRexD által
   'its MPEG-4 and MP3 decoders: ffmpeg, mpg123 (LGPL 2.1)': 'az MPEG-4 és MP3 dekóderei: ffmpeg, mpg123 (LGPL 2.1)'
@@ -173,7 +192,6 @@ strings:
   mymc by Ross Ridge, mymcplus by Florian Maerkl: mymc, Ross Ridge munkája; mymcplus, Florian Maerkl munkája
   ps2-covers by xlenore: ps2-covers, xlenore munkája
   ps2sdk by the ps2dev team: ps2sdk, a ps2dev csapat munkája
-  ps2sdk's SECRMAN, from the FMCB installer by SP193: A ps2sdk SECRMAN-ja, SP193 FMCB telepítőjéből
   ps2sdk's libcdvd and audsrv: A ps2sdk libcdvd és audsrv könyvtára
   'source: github.com/israpps/PlayStation2-Basic-BootLoader': 'forrás: github.com/israpps/PlayStation2-Basic-BootLoader'
   started from your own copy (APPS, BOOT or ESR folders): a saját példányodról indítva (APPS, BOOT vagy ESR mappa)

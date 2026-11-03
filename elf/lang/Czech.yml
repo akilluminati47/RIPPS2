@@ -3,6 +3,27 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Czech
 strings:
+  "SET UP, UPDATE OR RESTORE BIBLE": "BIBLE: NAINSTALOVAT, AKTUALIZOVAT NEBO VRÁTIT PŮVODNÍ"
+  "UPDATE BIBLE: SLOT %d HAS AN OLDER ONE": "AKTUALIZOVAT BIBLE: SLOT %d MÁ STARŠÍ"
+  "Background": "Pozadí"
+  "Sky": "Obloha"
+  "Black": "Černé"
+  "Splash": "Úvodní obrazovka"
+  "Logo": "Logo"
+  "Logo and Names": "Logo a názvy"
+  "Button Glyphs": "Symboly tlačítek"
+  "Face Buttons": "Akční tlačítka"
+  "All Sixteen": "Všech šestnáct"
+  "Info Line": "Řádek s informacemi"
+  "Power-on Wait": "Čekání po zapnutí"
+  "EDIT BIBLE'S SETTINGS FILE": "UPRAVIT SOUBOR NASTAVENÍ BIBLE"
+  "BIBLE's settings file (%s) could not be written. Check that the memory card is in and has room, then try again.": "Soubor nastavení BIBLE (%s) nešlo zapsat. Zkontrolujte, že je paměťová karta vložená a má místo, a zkuste to znovu."
+  "BIBLE's settings file (%s) was not found. SET UP, UPDATE OR RESTORE BIBLE writes one.": "Soubor nastavení BIBLE (%s) nebyl nalezen. BIBLE: NAINSTALOVAT, AKTUALIZOVAT NEBO VRÁTIT PŮVODNÍ ho zapíše."
+  "Boot sound On (fast): %s, handed over by BIBLE": "Zvuk spuštění Zap. (rychle): %s, předal BIBLE"
+  "BIBLE: akilluminati47's PS2BBL Extended fork, every build signed by akilluminati47 (GPL-3)": "BIBLE: fork PS2BBL Extended od akilluminati47, každé sestavení podepsal akilluminati47 (GPL-3)"
+  "its IOPRP image binds BIBLE to your card (GPL-3): the console does the crypto, no keys": "jeho obraz IOPRP sváže BIBLE s vaší kartou (GPL-3): šifrování provede konzole, bez klíčů"
+  "KELFBinder by El Isra": "KELFBinder od El Isry"
+  "source: github.com/akilluminati47/BIBLE": "zdroj: github.com/akilluminati47/BIBLE"
   "SLOT 0: %s\nSLOT 1: %s\n%s\nRIPPS2: Setting up BIBLE. BIBLE, akilluminati47's boot loader built on PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?": "SLOT 0: %s\nSLOT 1: %s\n%s\nRIPPS2: nastavuje se BIBLE. BIBLE, zavaděč od akilluminati47 postavený na PS2BBL od El Isry, nastavený z RIPPS2 na běžné 8MB paměťové kartě PS2 nebo interním pevném disku: start za 0 ms při zapnutí (PS2BBL Extended 0 nedovoluje), nejdřív RIPPS2 z místa, kde je (nikdy se nekopíruje), a tlačítko držené při zapnutí pořád vede do prohlížeče (TRIANGLE), na disk (START) a k tomu, co tu bylo předtím (CIRCLE). Nastavit, opravit, nebo obnovit to, co nahradil?"
   "RIPPS2: Setting up BIBLE\nThe card in slot %d is an SD2PSX or MMCE card. Its BOOT card can hold BIBLE in place of the PS2BBL it has (that one is moved aside, whole, first), if the console binds BIBLE to it. If the bind is refused, nothing on the card changes, and the card may stop answering until the console is turned off and on. START binds BIBLE to it.": "RIPPS2: nastavuje se BIBLE\nKarta ve slotu %d je karta SD2PSX nebo MMCE. Její karta BOOT může nést BIBLE místo svého PS2BBL (ten se nejdřív celý přesune stranou), pokud s ní konzole BIBLE sváže. Pokud je svázání odmítnuto, na kartě se nic nezmění a karta může přestat odpovídat, dokud se konzole nevypne a nezapne. START s ní BIBLE sváže."
   "BIND BIBLE": "SVÁZAT BIBLE"
@@ -25,7 +46,6 @@ strings:
   "GAME LIST": "SEZNAM HER"
   "%s in %s": "%s v %s"
   "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "Zápisové operace jsou vypnuté, takže RIPPS2 nemůže uložit údaje hry ani ji přejmenovat. Zapnout je?"
-  "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "BIBLE je postaven na PS2BBL od El Isry, jeho verze pro kartu a HDD jsou podepsané pro RIPPS2 (GPL-3)"
   "START %s": "SPUSTIT %s"
   "NETWORK": "SÍŤ"
   "%s did not answer. Is it connected?": "%s neodpověděl. Je připojen?"
@@ -163,7 +183,6 @@ strings:
   'an MC annihilator: Square on a memory card': 'ničitel MC: Čtverec na paměťové kartě'
   and the Open PS2 Loader team, whose credits follow: a tým Open PS2 Loaderu, jehož zásluhy následují
   behavior reference: vzor chování
-  binds BIBLE to your card; the console does the crypto, no keys: sváže BIBLE s vaší kartou; šifrování provede konzole, bez klíčů
   from your memory card's DVD player update folder: ze složky aktualizace DVD přehrávače na vaší paměťové kartě
   game hashes and memory telemetry, made solid on hardware by oMrRexD: hashe her a telemetrie paměti, na hardwaru odladil oMrRexD
   'its MPEG-4 and MP3 decoders: ffmpeg, mpg123 (LGPL 2.1)': 'jeho dekodéry MPEG-4 a MP3: ffmpeg, mpg123 (LGPL 2.1)'
@@ -173,7 +192,6 @@ strings:
   mymc by Ross Ridge, mymcplus by Florian Maerkl: mymc od Rosse Ridge, mymcplus od Floriana Maerkla
   ps2-covers by xlenore: ps2-covers od xlenore
   ps2sdk by the ps2dev team: ps2sdk od týmu ps2dev
-  ps2sdk's SECRMAN, from the FMCB installer by SP193: SECRMAN z ps2sdk, z instalátoru FMCB od SP193
   ps2sdk's libcdvd and audsrv: libcdvd a audsrv z ps2sdk
   'source: github.com/israpps/PlayStation2-Basic-BootLoader': 'zdroj: github.com/israpps/PlayStation2-Basic-BootLoader'
   started from your own copy (APPS, BOOT or ESR folders): spouštěno z vaší vlastní kopie (složky APPS, BOOT nebo ESR)

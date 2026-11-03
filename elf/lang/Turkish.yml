@@ -3,6 +3,27 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Turkish
 strings:
+  "SET UP, UPDATE OR RESTORE BIBLE": "BIBLE: KUR, GÜNCELLE YA DA GERİ YÜKLE"
+  "UPDATE BIBLE: SLOT %d HAS AN OLDER ONE": "BIBLE'I GÜNCELLE: %d. YUVADA DAHA ESKİSİ VAR"
+  "Background": "Arka plan"
+  "Sky": "Gökyüzü"
+  "Black": "Siyah"
+  "Splash": "Açılış ekranı"
+  "Logo": "Logo"
+  "Logo and Names": "Logo ve adlar"
+  "Button Glyphs": "Düğme simgeleri"
+  "Face Buttons": "Eylem düğmeleri"
+  "All Sixteen": "On altısı da"
+  "Info Line": "Bilgi satırı"
+  "Power-on Wait": "Açılışta bekleme"
+  "EDIT BIBLE'S SETTINGS FILE": "BIBLE AYAR DOSYASINI DÜZENLE"
+  "BIBLE's settings file (%s) could not be written. Check that the memory card is in and has room, then try again.": "BIBLE'ın ayar dosyası (%s) yazılamadı. Hafıza kartının takılı olduğunu ve yer olduğunu kontrol edip yeniden deneyin."
+  "BIBLE's settings file (%s) was not found. SET UP, UPDATE OR RESTORE BIBLE writes one.": "BIBLE'ın ayar dosyası (%s) bulunamadı. BIBLE: KUR, GÜNCELLE YA DA GERİ YÜKLE bir tane yazar."
+  "Boot sound On (fast): %s, handed over by BIBLE": "Açılış sesi Açık (hızlı): %s, BIBLE'dan devralındı"
+  "BIBLE: akilluminati47's PS2BBL Extended fork, every build signed by akilluminati47 (GPL-3)": "BIBLE: akilluminati47'in PS2BBL Extended çatalı, her sürüm akilluminati47 tarafından imzalandı (GPL-3)"
+  "its IOPRP image binds BIBLE to your card (GPL-3): the console does the crypto, no keys": "IOPRP imajı BIBLE'ı kartınıza bağlar (GPL-3): şifrelemeyi konsol yapar, anahtar gerekmez"
+  "KELFBinder by El Isra": "El Isra'dan KELFBinder"
+  "source: github.com/akilluminati47/BIBLE": "kaynak: github.com/akilluminati47/BIBLE"
   "SLOT 0: %s\nSLOT 1: %s\n%s\nRIPPS2: Setting up BIBLE. BIBLE, akilluminati47's boot loader built on PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?": "YUVA 0: %s\nYUVA 1: %s\n%s\nRIPPS2: BIBLE kuruluyor. BIBLE, akilluminati47'in El Isra'nın PS2BBL'ı üzerine kurulu önyükleyicisi, RIPPS2 tarafından standart 8 MB'lık bir PS2 hafıza kartına ya da dahili sabit diske kurulur: açılışta 0 ms'lik başlangıç (PS2BBL Extended 0'a izin vermez), önce bulunduğu yerden RIPPS2 (asla kopyalanmaz) ve açılışta basılı tutulan bir tuş yine tarayıcıya (TRIANGLE), bir diske (START) ve öncekine (CIRCLE) götürür. Kurulsun mu, onarılsın mı, yoksa yerini aldığı şey geri mi getirilsin?"
   "RIPPS2: Setting up BIBLE\nThe card in slot %d is an SD2PSX or MMCE card. Its BOOT card can hold BIBLE in place of the PS2BBL it has (that one is moved aside, whole, first), if the console binds BIBLE to it. If the bind is refused, nothing on the card changes, and the card may stop answering until the console is turned off and on. START binds BIBLE to it.": "RIPPS2: BIBLE kuruluyor\n%d. yuvadaki kart bir SD2PSX ya da MMCE kartıdır. Konsol BIBLE'ı ona bağlarsa, BOOT kartı mevcut PS2BBL yerine BIBLE'ı taşıyabilir (o önce bütünüyle kenara alınır). Bağlama reddedilirse kartta hiçbir şey değişmez, ve kart konsol kapatılıp açılana kadar yanıt vermeyebilir. START, BIBLE'ı ona bağlar."
   "BIND BIBLE": "BIBLE'I BAĞLA"
@@ -25,7 +46,6 @@ strings:
   "GAME LIST": "OYUN LİSTESİ"
   "%s in %s": "%s, %s içinde"
   "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "Yazma işlemleri kapalı, bu yüzden RIPPS2 bir oyunun bilgilerini kaydedemez veya adını değiştiremez. Açılsın mı?"
-  "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "BIBLE, El Isra'nın PS2BBL'i üzerine kurulu; kart ve HDD sürümleri RIPPS2 için imzalı (GPL-3)"
   "START %s": "%s BAŞLAT"
   "NETWORK": "AĞ"
   "%s did not answer. Is it connected?": "%s yanıt vermedi. Bağlı mı?"
@@ -163,7 +183,6 @@ strings:
   'an MC annihilator: Square on a memory card': 'bir MC yok edici: hafıza kartında Kare'
   and the Open PS2 Loader team, whose credits follow: ve emeği aşağıda yazan Open PS2 Loader ekibi
   behavior reference: davranış referansı
-  binds BIBLE to your card; the console does the crypto, no keys: BIBLE'ı kartınıza bağlar; şifrelemeyi konsol yapar, anahtar gerekmez
   from your memory card's DVD player update folder: hafıza kartınızın DVD oynatıcı güncelleme klasöründen
   game hashes and memory telemetry, made solid on hardware by oMrRexD: oyun özetleri ve bellek telemetrisi, gerçek donanımda oMrRexD sağlamlaştırdı
   'its MPEG-4 and MP3 decoders: ffmpeg, mpg123 (LGPL 2.1)': 'MPEG-4 ve MP3 kod çözücüleri: ffmpeg, mpg123 (LGPL 2.1)'
@@ -173,7 +192,6 @@ strings:
   mymc by Ross Ridge, mymcplus by Florian Maerkl: Ross Ridge'den mymc, Florian Maerkl'den mymcplus
   ps2-covers by xlenore: xlenore'dan ps2-covers
   ps2sdk by the ps2dev team: ps2dev ekibinden ps2sdk
-  ps2sdk's SECRMAN, from the FMCB installer by SP193: ps2sdk'nin SECRMAN'i, SP193'ün FMCB yükleyicisinden
   ps2sdk's libcdvd and audsrv: ps2sdk'nin libcdvd ve audsrv'si
   'source: github.com/israpps/PlayStation2-Basic-BootLoader': 'kaynak: github.com/israpps/PlayStation2-Basic-BootLoader'
   started from your own copy (APPS, BOOT or ESR folders): kendi kopyanızdan başlatılır (APPS, BOOT veya ESR klasörleri)

@@ -3,6 +3,27 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Filipino
 strings:
+  "SET UP, UPDATE OR RESTORE BIBLE": "BIBLE: I-SET UP, I-UPDATE O IBALIK"
+  "UPDATE BIBLE: SLOT %d HAS AN OLDER ONE": "I-UPDATE ANG BIBLE: MAY MAS LUMA SA SLOT %d"
+  "Background": "Background"
+  "Sky": "Langit"
+  "Black": "Itim"
+  "Splash": "Splash"
+  "Logo": "Logo"
+  "Logo and Names": "Logo at mga Pangalan"
+  "Button Glyphs": "Mga Glyph ng Button"
+  "Face Buttons": "Mga Action Button"
+  "All Sixteen": "Lahat ng Labing-anim"
+  "Info Line": "Linya ng Info"
+  "Power-on Wait": "Paghintay sa Pag-on"
+  "EDIT BIBLE'S SETTINGS FILE": "I-EDIT ANG SETTINGS FILE NG BIBLE"
+  "BIBLE's settings file (%s) could not be written. Check that the memory card is in and has room, then try again.": "Hindi maisulat ang settings file ng BIBLE (%s). Tiyaking nakasaksak ang memory card at may espasyo, saka subukan muli."
+  "BIBLE's settings file (%s) was not found. SET UP, UPDATE OR RESTORE BIBLE writes one.": "Hindi nakita ang settings file ng BIBLE (%s). Ang BIBLE: I-SET UP, I-UPDATE O IBALIK ay magsusulat ng isa."
+  "Boot sound On (fast): %s, handed over by BIBLE": "Boot sound On (mabilis): %s, iniabot ng BIBLE"
+  "BIBLE: akilluminati47's PS2BBL Extended fork, every build signed by akilluminati47 (GPL-3)": "BIBLE: ang fork ni akilluminati47 ng PS2BBL Extended, bawat build ay pinirmahan ni akilluminati47 (GPL-3)"
+  "its IOPRP image binds BIBLE to your card (GPL-3): the console does the crypto, no keys": "ikinakabit ng IOPRP image nito ang BIBLE sa iyong card (GPL-3): ang console ang gumagawa ng crypto, walang key"
+  "KELFBinder by El Isra": "KELFBinder ni El Isra"
+  "source: github.com/akilluminati47/BIBLE": "source: github.com/akilluminati47/BIBLE"
   "SLOT 0: %s\nSLOT 1: %s\n%s\nRIPPS2: Setting up BIBLE. BIBLE, akilluminati47's boot loader built on PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?": "SLOT 0: %s\nSLOT 1: %s\n%s\nRIPPS2: Sine-set up ang BIBLE. BIBLE, ang boot loader ni akilluminati47 na nakabatay sa PS2BBL ni El Isra, na sine-set up ng RIPPS2 sa karaniwang 8 MB na PS2 memory card o sa internal HDD: 0 ms na simula sa pag-on (hindi pinapayagan ng PS2BBL Extended ang 0), RIPPS2 muna mula sa kinaroroonan nito (hindi ito kinokopya kailanman), at ang button na hawak sa pag-on ay dadalhin ka pa rin sa browser (TRIANGLE), sa disc (START) at sa dati (CIRCLE). I-set up, ayusin, o ibalik ang pinalitan nito?"
   "RIPPS2: Setting up BIBLE\nThe card in slot %d is an SD2PSX or MMCE card. Its BOOT card can hold BIBLE in place of the PS2BBL it has (that one is moved aside, whole, first), if the console binds BIBLE to it. If the bind is refused, nothing on the card changes, and the card may stop answering until the console is turned off and on. START binds BIBLE to it.": "RIPPS2: Sine-set up ang BIBLE\nAng card sa slot %d ay SD2PSX o MMCE card. Kaya ng BOOT card nito na maglaman ng BIBLE kapalit ng PS2BBL na nasa kanya (inililipat muna iyon sa gilid, buo), kung ikakabit ng console ang BIBLE dito. Kung tinanggihan ang pagkabit, walang nababago sa card, at maaaring hindi na sumagot ang card hanggang patayin at buksan muli ang console. Ikinakabit ng START ang BIBLE dito."
   "BIND BIBLE": "IKABIT ANG BIBLE"
@@ -25,7 +46,6 @@ strings:
   "GAME LIST": "LISTAHAN NG LARO"
   "%s in %s": "%s sa %s"
   "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "Naka-off ang Write Operations, kaya hindi ma-save ng RIPPS2 ang mga detalye ng laro o ma-rename ito. I-on?"
-  "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "Ang BIBLE ay nakabatay sa PS2BBL ni El Isra, at ang mga build nito para sa card at HDD ay pinirmahan para sa RIPPS2 (GPL-3)"
   "START %s": "SIMULAN ANG %s"
   "NETWORK": "NETWORK"
   "%s did not answer. Is it connected?": "Hindi sumagot ang %s. Nakakonekta ba ito?"
@@ -163,7 +183,6 @@ strings:
   'an MC annihilator: Square on a memory card': 'MC annihilator: Square sa memory card'
   and the Open PS2 Loader team, whose credits follow: at ang team ng Open PS2 Loader, na ang mga kredito ay kasunod
   behavior reference: sanggunian sa pag-uugali
-  binds BIBLE to your card; the console does the crypto, no keys: ikinakabit ang BIBLE sa iyong card; ang console ang gumagawa ng crypto, walang key
   from your memory card's DVD player update folder: mula sa DVD player update folder ng iyong memory card
   game hashes and memory telemetry, made solid on hardware by oMrRexD: mga game hash at memory telemetry, pinatibay sa hardware ni oMrRexD
   'its MPEG-4 and MP3 decoders: ffmpeg, mpg123 (LGPL 2.1)': 'ang MPEG-4 at MP3 decoder nito: ffmpeg, mpg123 (LGPL 2.1)'
@@ -173,7 +192,6 @@ strings:
   mymc by Ross Ridge, mymcplus by Florian Maerkl: mymc ni Ross Ridge, mymcplus ni Florian Maerkl
   ps2-covers by xlenore: ps2-covers ni xlenore
   ps2sdk by the ps2dev team: ps2sdk ng ps2dev team
-  ps2sdk's SECRMAN, from the FMCB installer by SP193: SECRMAN ng ps2sdk, mula sa FMCB installer ni SP193
   ps2sdk's libcdvd and audsrv: libcdvd at audsrv ng ps2sdk
   'source: github.com/israpps/PlayStation2-Basic-BootLoader': 'source: github.com/israpps/PlayStation2-Basic-BootLoader'
   started from your own copy (APPS, BOOT or ESR folders): sinisimulan mula sa sarili mong kopya (mga folder na APPS, BOOT o ESR)

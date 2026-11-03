@@ -3,6 +3,27 @@
 # as they are, in the same order, and the same capitals as the English (the code makes hints sentence case).
 language: Russian
 strings:
+  "SET UP, UPDATE OR RESTORE BIBLE": "BIBLE: УСТАНОВИТЬ, ОБНОВИТЬ ИЛИ ВОССТАНОВИТЬ"
+  "UPDATE BIBLE: SLOT %d HAS AN OLDER ONE": "ОБНОВИТЬ BIBLE: В СЛОТЕ %d БОЛЕЕ СТАРАЯ ВЕРСИЯ"
+  "Background": "Фон"
+  "Sky": "Небо"
+  "Black": "Чёрный"
+  "Splash": "Заставка"
+  "Logo": "Логотип"
+  "Logo and Names": "Логотип и названия"
+  "Button Glyphs": "Значки кнопок"
+  "Face Buttons": "Кнопки действий"
+  "All Sixteen": "Все шестнадцать"
+  "Info Line": "Строка сведений"
+  "Power-on Wait": "Ожидание при включении"
+  "EDIT BIBLE'S SETTINGS FILE": "ИЗМЕНИТЬ ФАЙЛ НАСТРОЕК BIBLE"
+  "BIBLE's settings file (%s) could not be written. Check that the memory card is in and has room, then try again.": "Не удалось записать файл настроек BIBLE (%s). Проверьте, что карта памяти вставлена и на ней есть место, и попробуйте снова."
+  "BIBLE's settings file (%s) was not found. SET UP, UPDATE OR RESTORE BIBLE writes one.": "Файл настроек BIBLE (%s) не найден. BIBLE: УСТАНОВИТЬ, ОБНОВИТЬ ИЛИ ВОССТАНОВИТЬ запишет новый."
+  "Boot sound On (fast): %s, handed over by BIBLE": "Звук запуска Вкл. (быстро): %s, передан из BIBLE"
+  "BIBLE: akilluminati47's PS2BBL Extended fork, every build signed by akilluminati47 (GPL-3)": "BIBLE: форк PS2BBL Extended от akilluminati47, каждая сборка подписана akilluminati47 (GPL-3)"
+  "its IOPRP image binds BIBLE to your card (GPL-3): the console does the crypto, no keys": "его образ IOPRP привязывает BIBLE к вашей карте (GPL-3): шифрование делает консоль, без ключей"
+  "KELFBinder by El Isra": "KELFBinder от El Isra"
+  "source: github.com/akilluminati47/BIBLE": "исходники: github.com/akilluminati47/BIBLE"
   "SLOT 0: %s\nSLOT 1: %s\n%s\nRIPPS2: Setting up BIBLE. BIBLE, akilluminati47's boot loader built on PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?": "СЛОТ 0: %s\nСЛОТ 1: %s\n%s\nRIPPS2: установка BIBLE. BIBLE, загрузчик akilluminati47 на основе PS2BBL от El Isra, который RIPPS2 ставит на обычную карту памяти PS2 на 8 МБ или на внутренний жёсткий диск: запуск за 0 мс при включении (PS2BBL Extended не позволяет 0), сначала RIPPS2 оттуда, где он лежит (он никогда не копируется), а кнопка, зажатая при включении, по-прежнему ведёт в браузер (TRIANGLE), к диску (START) и к прежнему (CIRCLE). Установить, починить или вернуть то, что он заменил?"
   "RIPPS2: Setting up BIBLE\nThe card in slot %d is an SD2PSX or MMCE card. Its BOOT card can hold BIBLE in place of the PS2BBL it has (that one is moved aside, whole, first), if the console binds BIBLE to it. If the bind is refused, nothing on the card changes, and the card may stop answering until the console is turned off and on. START binds BIBLE to it.": "RIPPS2: установка BIBLE\nКарта в слоте %d это карта SD2PSX или MMCE. Её BOOT-карта может хранить BIBLE вместо своего PS2BBL (тот сначала целиком убирается в сторону), если консоль привяжет к ней BIBLE. Если привязка будет отклонена, на карте ничего не изменится, и карта может перестать отвечать, пока консоль не выключат и не включат. START привязывает к ней BIBLE."
   "BIND BIBLE": "ПРИВЯЗАТЬ BIBLE"
@@ -25,7 +46,6 @@ strings:
   "GAME LIST": "СПИСОК ИГР"
   "%s in %s": "%s в %s"
   "Write Operations are off, so RIPPS2 cannot save a game's details or rename it. Turn them on?": "Запись отключена, поэтому RIPPS2 не может сохранить сведения об игре или переименовать её. Включить?"
-  "BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)": "BIBLE построен на PS2BBL от El Isra, его версии для карты и HDD подписаны для RIPPS2 (GPL-3)"
   "START %s": "ЗАПУСТИТЬ %s"
   "NETWORK": "СЕТЬ"
   "%s did not answer. Is it connected?": "%s не ответил. Он подключён?"
@@ -163,7 +183,6 @@ strings:
   'an MC annihilator: Square on a memory card': 'уничтожитель MC: Квадрат на карте памяти'
   and the Open PS2 Loader team, whose credits follow: и команда Open PS2 Loader, чьи титры следуют
   behavior reference: образец поведения
-  binds BIBLE to your card; the console does the crypto, no keys: привязывает BIBLE к вашей карте; шифрование делает консоль, без ключей
   from your memory card's DVD player update folder: из папки обновления DVD-плеера на вашей карте памяти
   game hashes and memory telemetry, made solid on hardware by oMrRexD: хэши игр и телеметрия памяти, отлаженные на железе oMrRexD
   'its MPEG-4 and MP3 decoders: ffmpeg, mpg123 (LGPL 2.1)': 'его декодеры MPEG-4 и MP3: ffmpeg, mpg123 (LGPL 2.1)'
@@ -173,7 +192,6 @@ strings:
   mymc by Ross Ridge, mymcplus by Florian Maerkl: mymc от Ross Ridge, mymcplus от Florian Maerkl
   ps2-covers by xlenore: ps2-covers от xlenore
   ps2sdk by the ps2dev team: ps2sdk от команды ps2dev
-  ps2sdk's SECRMAN, from the FMCB installer by SP193: SECRMAN из ps2sdk, из установщика FMCB от SP193
   ps2sdk's libcdvd and audsrv: libcdvd и audsrv из ps2sdk
   'source: github.com/israpps/PlayStation2-Basic-BootLoader': 'исходники: github.com/israpps/PlayStation2-Basic-BootLoader'
   started from your own copy (APPS, BOOT or ESR folders): запускается из вашей копии (папки APPS, BOOT или ESR)

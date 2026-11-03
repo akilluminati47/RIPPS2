@@ -1,0 +1,451 @@
+diff --git a/include/sound.h b/include/sound.h
+index 92cfe78..8b5f391 100644
+--- a/include/sound.h
++++ b/include/sound.h
+@@ -73,6 +73,10 @@ void sfxBootStart(void);        // RIPPS2: the main thread, as the towers rise:
+ void sfxBootEarlyQueue(int themeID); // build 118: with the settings read, the boot sound is the IO worker's first job
+ int sfxCardBootPath(char *out, int size); // build 121: the boot sound's copy beside RIPPS2 on its memory card
+ int sfxBootSoundWhere(char *out, int size); // build 136: where the boot reads it: 2 a memory card, 1 a drive, 0 none
++extern char gBibleHome[64];                 // build 139: the folder BIBLE read its config from ("" not started by BIBLE)
++extern int gBibleSoundHanded;               // build 139: the boot sound came from BIBLE, in RAM
++void ripps2BibleArgs(int argc, char *argv[]); // build 139: -bible-home= and -bible-bootsnd=, first thing in main
++void sfxBibleCopyDrop(void);                // build 139: Boot Sound Off or On: the copy beside BIBLE goes
+ void sfxBootSoundsLoaded(void); // RIPPS2: the IO worker, every sound loaded: the music may start
+ void bgmBootTick(void);         // RIPPS2: every GUI frame: starts the music once the sounds are in, then fades it in
+ int bgmHudReserve(void);            // RIPPS2 build 71 (perf HUD): decoded chunks waiting, -1 with no music
+diff --git a/src/gui.c b/src/gui.c
+index f38f911..159ad71 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -3643,6 +3643,7 @@ static int guiShowAudioConfigAt(int first)
+         gEnableBootSND = 1;
+         guiSettingsSavePending = 1;
+     }
++    sfxBibleCopyDrop(); // build 139: Off or On: BIBLE stops reading its copy and waiting for it
+     guiSettingsEndDialog();
+     return guiSettingsPageResult(result);
+ }
+diff --git a/src/opl.c b/src/opl.c
+index de12d9d..5f2d5ec 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -6954,6 +6954,8 @@ int ripps2GetBootBdmType(void)
+ 
+ int main(int argc, char *argv[])
+ {
++    // RIPPS2 build 139: the boot sound BIBLE handed over in RAM is copied out before anything else is allocated
++    ripps2BibleArgs(argc, argv);
+ #ifdef __DECI2_DEBUG
+     sysInitDECI2();
+ #endif
+diff --git a/src/ripps2about.c b/src/ripps2about.c
+index 9f4c20d..2f9cd67 100644
+--- a/src/ripps2about.c
++++ b/src/ripps2about.c
+@@ -117,14 +117,15 @@ static const ab_row_t abRows[] = {
+     {'H', N_("BOOT LOCK AND BIBLE")},
+     {'T', N_("PS2BBL by El Isra (israpps)")},
+     {'S', N_("the PlayStation 2 Basic BootLoader: BOOT LOCK starts RIPPS2 with it")},
+-    {'S', N_("BIBLE is built on El Isra's PS2BBL, its card and HDD builds signed for RIPPS2 (GPL-3)")}, // build 134
++    {'S', N_("BIBLE: akilluminati47's PS2BBL Extended fork, every build signed by akilluminati47 (GPL-3)")}, // build 139
++    {'S', N_("source: github.com/akilluminati47/BIBLE")}, // build 139
+     {'S', N_("source: github.com/israpps/PlayStation2-Basic-BootLoader")},
+     {'T', N_("PS2BBL Extended by saildot4k")},
+     {'S', N_("BOOT LOCK edits its config too")},
+     {'T', N_("the HDD boot area install as FHDB and OSDMenu MBR do it")},
+     {'S', N_("SP193's FMCB installer and pcm720's OSDMenu, followed step by step")},
+-    {'T', N_("ps2sdk's SECRMAN, from the FMCB installer by SP193")},
+-    {'S', N_("binds BIBLE to your card; the console does the crypto, no keys")},
++    {'T', N_("KELFBinder by El Isra")}, // build 139: its IOPRP image, carried as it is (build 138)
++    {'S', N_("its IOPRP image binds BIBLE to your card (GPL-3): the console does the crypto, no keys")},
+     {'G', NULL},
+     {'H', N_("MEMORY FILES")},
+     {'T', N_("MCKILLA, RIPPS2's card manager fork")},
+diff --git a/src/ripps2boot.c b/src/ripps2boot.c
+index 4a312e0..1b8f7a0 100644
+--- a/src/ripps2boot.c
++++ b/src/ripps2boot.c
+@@ -1993,16 +1993,223 @@ static void blRestoreCard(int port)
+     guiMsgBox(msg, 0, NULL);
+ }
+ 
++// ---- BIBLE's settings (build 139) ----
++//
++// The user, 11/03: "cant i set the blank background from ripps2 and even install the system update? why use kelfbinder
++// again". With BIBLE on a card (or BIBLE having started RIPPS2), MANAGE opens a BIBLE menu: setting it up or updating it
++// first (the BIBLE RIPPS2 carries is bound and written over the one there), then BIBLE's own settings, each written in
++// place in the settings file BIBLE reads (mc?:/SYS-CONF/PS2BBL.INI): only that key's line changes, comments and every
++// other key stay, so the file stays one to edit by hand (EDIT BIBLE'S SETTINGS FILE opens it). The values are BIBLE's
++// (BIBLE's src/loader_config.c); a key not in the file shows BIBLE's default.
++typedef struct
++{
++    const char *key;
++    const char *label;
++    int count;
++    const char *values[7];
++    const char *shown[7];
++    int def; // BIBLE's own when the key is not in the file; -1 none
++} blSet_t;
++
++static const blSet_t blSets[] = {
++    {"BIBLE_BACKGROUND", N_("Background"), 3, {"AUTO", "SKY", "BLANK"}, {N_("Auto"), N_("Sky"), N_("Black")}, 0},
++    {"LOGO_DISPLAY", N_("Splash"), 3, {"0", "2", "3"}, {N_("Off"), N_("Logo"), N_("Logo and Names")}, 1},
++    {"BIBLE_GLYPHS", N_("Button Glyphs"), 3, {"0", "1", "2"}, {N_("None"), N_("Face Buttons"), N_("All Sixteen")}, 1},
++    {"BIBLE_INFO", N_("Info Line"), 2, {"0", "1"}, {N_("Off"), N_("On")}, 0},
++    {"KEY_READ_WAIT_TIME", N_("Power-on Wait"), 6, {"0", "1000", "2000", "3000", "6000", "10000"}, {"0 ms", "1000 ms", "2000 ms", "3000 ms", "6000 ms", "10000 ms"}, -1},
++    {"VIDEO_MODE", "Video Mode", 7, {"AUTO", "NTSC", "PAL", "480P", "576P", "720P", "1080I"}, {N_("Auto"), "NTSC", "PAL", "480p", "576p", "720p", "1080i"}, 0},
++    {"BIBLE_WIDESCREEN", "Widescreen", 3, {"AUTO", "ON", "OFF"}, {N_("Auto"), N_("On"), N_("Off")}, 0},
++};
++#define BL_SETS ((int)(sizeof(blSets) / sizeof(blSets[0])))
++
++static char blSetPath[96];
++
++// The settings file BIBLE reads: the one it read at this power on (it started RIPPS2), else the one on the card the
++// console starts BIBLE from, else either card's with BIBLE on it
++static int blSettingsFile(int boot)
++{
++    int i, port;
++    if (gBibleHome[0])
++        return snprintf(blSetPath, sizeof(blSetPath), "%sPS2BBL.INI", gBibleHome) < (int)sizeof(blSetPath);
++    for (i = -1; i < 2; i++) {
++        port = i < 0 ? boot : i;
++        if (port >= 0 && blCards[port].present && blCards[port].bible) {
++            snprintf(blSetPath, sizeof(blSetPath), "mc%d:/SYS-CONF/PS2BBL.INI", port);
++            return 1;
++        }
++    }
++    blSetPath[0] = '\0';
++    return 0;
++}
++
++// A key's value in blText (trimmed), 1 when the file has it
++static int blIniGet(const char *key, char *val, int size)
++{
++    const char *p = blText, *e, *eq, *end;
++    char k[48];
++    int len, n;
++    while (*p) {
++        e = strchr(p, '\n');
++        len = e != NULL ? (int)(e - p) : (int)strlen(p);
++        blKey(p, len, k, sizeof(k));
++        if (k[0] && !strcasecmp(k, key) && (eq = memchr(p, '=', len)) != NULL) {
++            eq++;
++            end = p + len;
++            while (eq < end && (*eq == ' ' || *eq == '\t'))
++                eq++;
++            while (end > eq && (end[-1] == '\r' || end[-1] == ' ' || end[-1] == '\t'))
++                end--;
++            n = (int)(end - eq) < size - 1 ? (int)(end - eq) : size - 1;
++            memcpy(val, eq, n);
++            val[n] = '\0';
++            return 1;
++        }
++        p = e != NULL ? e + 1 : p + len;
++    }
++    val[0] = '\0';
++    return 0;
++}
++
++// Which of a setting's values the file holds: its index, or -1 for one RIPPS2 does not offer (shown as it is)
++static int blSetIndex(const blSet_t *s, const char *val)
++{
++    int j;
++    for (j = 0; j < s->count; j++)
++        if (!strcasecmp(val, s->values[j]) || (!strcmp(s->key, "KEY_READ_WAIT_TIME") && atoi(val) == atoi(s->values[j]) && val[0] >= '0' && val[0] <= '9'))
++            return j;
++    if (!strcmp(s->key, "BIBLE_BACKGROUND")) // BIBLE reads BLACK, OFF and 0 as BLANK, ON and 1 as SKY
++        return !strcasecmp(val, "BLACK") || !strcasecmp(val, "OFF") || !strcmp(val, "0") ? 2 : !strcasecmp(val, "ON") || !strcmp(val, "1") ? 1 : -1;
++    return -1;
++}
++
++// key = value in the file: that key's line replaced, or a line added at the end; 1 when it was written
++static int blIniSet(const char *path, const char *key, const char *value)
++{
++    const char *p, *e, *nl;
++    char k[48];
++    int len, o = 0, done = 0;
++    if (blRead(path) < 0)
++        return 0;
++    nl = strstr(blText, "\r\n") != NULL ? "\r\n" : "\n";
++    for (p = blText; *p;) {
++        e = strchr(p, '\n');
++        len = e != NULL ? (int)(e - p) + 1 : (int)strlen(p);
++        blKey(p, len, k, sizeof(k));
++        if (!done && k[0] && !strcasecmp(k, key) && memchr(p, '=', len) != NULL) {
++            o += snprintf(blOut + o, sizeof(blOut) - o, "%s = %s%s", key, value, e != NULL ? nl : "");
++            done = 1;
++        } else if (o + len < (int)sizeof(blOut)) {
++            memcpy(blOut + o, p, len);
++            o += len;
++        }
++        if (o >= (int)sizeof(blOut) - 64)
++            return 0;
++        p += len;
++    }
++    if (!done) {
++        if (o > 0 && blOut[o - 1] != '\n')
++            o += snprintf(blOut + o, sizeof(blOut) - o, "%s", nl);
++        o += snprintf(blOut + o, sizeof(blOut) - o, "%s = %s%s", key, value, nl);
++    }
++    if (o >= (int)sizeof(blOut))
++        return 0;
++    ripps2Diag("bible: %s: %s = %s", path, key, value);
++    return blWrite(path, blOut, o) == 0;
++}
++
++static void blManageCards(int boot, int removed);
++
++static void blBibleMenu(int boot, int removed)
++{
++    static char items[BL_SETS + 2][128];
++    const char *list[BL_SETS + 2];
++    char val[48], msg[400];
++    int n, i, j, pick, have, older = -1, port;
++
++    for (port = 0; port < 2; port++)
++        if (blCards[port].present && blCards[port].bible && blCards[port].bibleBuild == NULL) {
++            older = port; // a BIBLE that is not the one RIPPS2 carries (an earlier build)
++            break;
++        }
++    while (1) {
++        have = blSettingsFile(boot) && blRead(blSetPath) >= 0;
++        n = 0;
++        if (older >= 0)
++            snprintf(items[n], sizeof(items[n]), _t("UPDATE BIBLE: SLOT %d HAS AN OLDER ONE"), older);
++        else
++            snprintf(items[n], sizeof(items[n]), "%s", _t("SET UP, UPDATE OR RESTORE BIBLE"));
++        list[n] = items[n];
++        n++;
++        for (i = 0; i < BL_SETS; i++) {
++            const blSet_t *s = &blSets[i];
++            const char *shown = "-";
++            if (have) {
++                if (blIniGet(s->key, val, sizeof(val)))
++                    shown = (j = blSetIndex(s, val)) >= 0 ? _t(s->shown[j]) : val;
++                else if (s->def >= 0)
++                    shown = _t(s->shown[s->def]);
++            }
++            snprintf(items[n], sizeof(items[n]), "%s: %s", _t(s->label), shown);
++            list[n] = items[n];
++            n++;
++        }
++        snprintf(items[n], sizeof(items[n]), "%s", _t("EDIT BIBLE'S SETTINGS FILE"));
++        list[n] = items[n];
++        n++;
++
++        if ((pick = ripps2PickList(list, n)) < 0)
++            return;
++        if (pick == 0) {
++            blManageCards(boot, removed);
++            return;
++        }
++        if (!have) {
++            guiMsgBoxSound(SFX_ERROR);
++            snprintf(msg, sizeof(msg), _t("BIBLE's settings file (%s) was not found. SET UP, UPDATE OR RESTORE BIBLE writes one."),
++                     blSetPath[0] ? blSetPath : "mc?:/SYS-CONF/PS2BBL.INI");
++            guiMsgBox(msg, 0, NULL);
++            continue;
++        }
++        if (pick == n - 1) {
++            ripps2EditFile(blSetPath);
++            continue;
++        }
++        {
++            const blSet_t *s = &blSets[pick - 1];
++            const char *vals[7];
++            for (j = 0; j < s->count; j++)
++                vals[j] = s->shown[j]; // the list hands in its English
++            if ((j = ripps2PickList(vals, s->count)) < 0)
++                continue;
++            if (!blIniSet(blSetPath, s->key, s->values[j])) {
++                guiMsgBoxSound(SFX_ERROR);
++                snprintf(msg, sizeof(msg), _t("BIBLE's settings file (%s) could not be written. Check that the memory card is in and has room, then try again."), blSetPath);
++                guiMsgBox(msg, 0, NULL);
++            }
++        }
++    }
++}
++
+ // BOOT LOADER > MANAGE: what each card starts, and BIBLE to install or repair
+ void ripps2BibleManage(void)
+ {
+     ripps2BootLockForget(); // build 134: an install or a restore can change what starts
+-    char msg[900], what[2][64];
+-    int boot, removed, port;
++    int boot, removed;
+ 
+     guiRenderTextScreen(_t("Reading the memory cards"));
+     boot = blScan();
+     removed = blCleanStrays();
++    if (gBibleHome[0] || (blCards[0].present && blCards[0].bible) || (blCards[1].present && blCards[1].bible))
++        blBibleMenu(boot, removed); // build 139
++    else
++        blManageCards(boot, removed);
++}
++
++static void blManageCards(int boot, int removed)
++{
++    char msg[900], what[2][64];
++    int port;
++
+     for (port = 0; port < 2; port++)
+         blCardWhat(port, boot, what[port], sizeof(what[port]));
+     snprintf(msg, sizeof(msg),
+diff --git a/src/ripps2status.c b/src/ripps2status.c
+index 4621c15..aa13af2 100644
+--- a/src/ripps2status.c
++++ b/src/ripps2status.c
+@@ -362,6 +362,8 @@ static void stScan(void)
+         int where = sfxBootSoundWhere(card, sizeof(card));
+         if (!gEnableBootSND)
+             snprintf(line, sizeof(line), _t("Boot sound off (Audio settings > Boot Sound)"));
++        else if (where == 2 && gBibleSoundHanded) // build 139
++            snprintf(line, sizeof(line), _t("Boot sound On (fast): %s, handed over by BIBLE"), card);
+         else if (where == 2)
+             snprintf(line, sizeof(line), gEnableBootSND == 2 ? _t("Boot sound On (fast): %s on the memory card, as the pillars rise") :
+                                                                 _t("Boot sound On: %s on the memory card, as the pillars rise"),
+diff --git a/src/sound.c b/src/sound.c
+index fcf278e..c24d4f9 100644
+--- a/src/sound.c
++++ b/src/sound.c
+@@ -19,6 +19,7 @@
+ #include <string.h>
+ #include <ctype.h> // build 98: bgmHoldsPath
+ #include <iopheap.h> // build 95: SifAllocIopHeap, the room check before audsrv takes a sound
++#include <zlib.h>    // build 139: crc32, the check on the boot sound BIBLE hands over
+ 
+ #include "include/sound.h"
+ #include "include/ripps2diag.h" // build 115: the boot's steps in DIAG.TXT
+@@ -548,6 +549,84 @@ static void sfxBootPlay(void)
+    audsrv's load takes IOP memory through the same unlocked RPC client the IO worker's driver loads use: with a language
+    on the memory card the main thread came late, sent it while the HDD's drivers were loading, and the boot stopped on
+    the towers (v1.1.8: any language but English with a sound set beside RIPPS2). */
++/* RIPPS2 build 139 (BIBLE's docs/boot-sound-handoff.md; the user, 11/03: "Bible boot sound fast primed read handoff? saves
++   boot.adp near the bible install instead of ripps2?"). Started by BIBLE, RIPPS2 gets -bible-home=<the folder BIBLE read
++   its config from, on a memory card> and, when BIBLE read the boot sound beside it during its splash,
++   -bible-bootsnd=mem:<address>:<size>:<crc32> (8 hex digits each): the sound sits in RAM at that address (BIBLE's stage 2
++   loader keeps it through the ELF load). It is copied out first thing in main, before anything big is allocated (the heap
++   grows towards it), checked by its CRC-32 and its APCM header, and the boot plays it as if it had been read from the card.
++   With a home, On (fast) keeps its copy there (sfxCardBootPath), where BIBLE reads it; RIPPS2 on an SD2PSX, USB or the HDD
++   has no card of its own for it. */
++char gBibleHome[64];               // "mc0:/SYS-CONF/", "" when RIPPS2 was not started by BIBLE
++static unsigned char *sfxBibleSnd; // the copy out of BIBLE's RAM, until the boot takes it
++static int sfxBibleSndSize;
++static int sfxBibleNote;           // what happened, for DIAG.TXT once it can be written: 0 not passed, 1 taken, 2 bad CRC, 3 bad
++int gBibleSoundHanded;             // the boot sound playing is the one BIBLE handed over (STATUS)
++
++static int sfxHex8(const char *s, unsigned int *out)
++{
++    unsigned int v = 0;
++    int i;
++    for (i = 0; i < 8; i++) {
++        char c = s[i];
++        v <<= 4;
++        if (c >= '0' && c <= '9')
++            v |= c - '0';
++        else if (c >= 'A' && c <= 'F')
++            v |= c - 'A' + 10;
++        else if (c >= 'a' && c <= 'f')
++            v |= c - 'a' + 10;
++        else
++            return 0;
++    }
++    *out = v;
++    return 1;
++}
++
++static int sfxHeaderMs(const unsigned char *h, int size);
++
++void ripps2BibleArgs(int argc, char *argv[])
++{
++    int i;
++    gBibleHome[0] = '\0';
++    for (i = 1; i < argc; i++) {
++        const char *a = argv[i];
++        if (a == NULL)
++            continue;
++        if (!strncmp(a, "-bible-home=", 12)) {
++            const char *h = a + 12;
++            int n = strlen(h);
++            if ((!strncmp(h, "mc0:/", 5) || !strncmp(h, "mc1:/", 5)) && n > 5 && n < (int)sizeof(gBibleHome) && h[n - 1] == '/')
++                memcpy(gBibleHome, h, n + 1);
++        } else if (!strncmp(a, "-bible-bootsnd=mem:", 19)) {
++            unsigned int addr, size, crc;
++            const char *v = a + 19;
++            sfxBibleNote = 3;
++            if (strlen(v) != 26 || v[8] != ':' || v[17] != ':' || !sfxHex8(v, &addr) || !sfxHex8(v + 9, &size) || !sfxHex8(v + 18, &crc))
++                continue;
++            if (addr < 0x00100000 || addr + size > 0x02000000 || size < 32 || size > SFX_MAX_BYTES || (addr & 63))
++                continue;
++            if (crc32(0L, (const unsigned char *)addr, size) != crc) {
++                sfxBibleNote = 2;
++                continue;
++            }
++            if (!sfxHeaderMs((const unsigned char *)addr, (int)size) || (sfxBibleSnd = memalign(64, size)) == NULL)
++                continue;
++            memcpy(sfxBibleSnd, (const void *)addr, size);
++            sfxBibleSndSize = (int)size;
++            sfxBibleNote = 1;
++        }
++    }
++}
++
++// Boot Sound set to Off or On (not fast): BIBLE stops reading its copy, and stops waiting for it
++void sfxBibleCopyDrop(void)
++{
++    char path[96];
++    if (gBibleHome[0] && gEnableBootSND != 2 && snprintf(path, sizeof(path), "%s%s", gBibleHome, sfx_files[SFX_BOOT].name) < (int)sizeof(path))
++        remove(path);
++}
++
+ #define SFX_EARLY_NONE  0
+ #define SFX_EARLY_READ  1 // in RAM, audio not up yet
+ #define SFX_EARLY_READY 2 // in the SPU: sfxInit(1) keeps it
+@@ -579,6 +658,8 @@ int sfxCardBootPath(char *out, int size)
+     int port, n;
+     DIR *d;
+ 
++    if (gBibleHome[0]) // build 139: beside BIBLE's config, where BIBLE reads it during its splash
++        return snprintf(out, size, "%s%s", gBibleHome, sfx_files[SFX_BOOT].name) < size;
+     if (!oplGetRipps2Dir(dir, sizeof(dir)) || strncmp(dir, "mc", 2) != 0)
+         return 0;
+     if (dir[2] == '?') { // either card: the one RIPPS2's folder is on
+@@ -629,6 +710,27 @@ static void sfxBootEarlyWork(void)
+         snprintf(path, sizeof(path), "%s/%s", sfxBootThemePath, sfx_files[SFX_BOOT].name);
+         ret = sfxRead(path, &sfx_files[SFX_BOOT]);
+     }
++    // build 139: the copy BIBLE read during its splash and handed over in RAM (ripps2BibleArgs)
++    if (sfxBibleNote == 1)
++        ripps2Diag("boot: BIBLE handed the boot sound over in RAM (%d bytes)%s", sfxBibleSndSize, ret == 0 ? ", the theme's own plays" : "");
++    else if (sfxBibleNote == 2)
++        ripps2Diag("boot: BIBLE's boot sound failed its CRC: read from %s instead", gBibleHome);
++    else if (sfxBibleNote == 3)
++        ripps2Diag("boot: BIBLE's boot sound argument was not usable: read from %s instead", gBibleHome);
++    else if (gBibleHome[0])
++        ripps2Diag("boot: started by BIBLE (%s), no boot sound handed over", gBibleHome);
++    if (ret != 0 && sfxBibleSnd != NULL) {
++        sfx_files[SFX_BOOT].buffer = sfxBibleSnd;
++        sfx_files[SFX_BOOT].size = sfxBibleSndSize;
++        sfx_files[SFX_BOOT].baked = 0;
++        sfx_files[SFX_BOOT].duration_ms = sfxHeaderMs(sfxBibleSnd, sfxBibleSndSize);
++        sfxBibleSnd = NULL;
++        gBibleSoundHanded = 1;
++        ret = 0;
++    } else if (sfxBibleSnd != NULL) {
++        free(sfxBibleSnd);
++        sfxBibleSnd = NULL;
++    }
+     // build 121: the card's copy, before a drive's AUDIO folder; build 126: with Boot Sound on On (fast) only
+     if (ret != 0 && gEnableBootSND == 2 && sfxCardBootPath(path, sizeof(path)))
+         ret = sfxRead(path, &sfx_files[SFX_BOOT]);
+@@ -652,6 +754,10 @@ void sfxBootEarlyQueue(int themeID)
+     static int queued = 0;
+     char *thmPath;
+ 
++    if (!gEnableBootSND && sfxBibleSnd != NULL) { // build 139: Boot Sound Off: BIBLE's copy is not needed
++        free(sfxBibleSnd);
++        sfxBibleSnd = NULL;
++    }
+     if (queued || !gEnableBootSND)
+         return;
+     queued = 1;
