@@ -271,10 +271,18 @@ index 4c04b4d..bef82cc 100644
      {"BIBLE_WIDESCREEN", "Widescreen", 3, {"AUTO", "ON", "OFF"}, {N_("Auto"), N_("On"), N_("Off")}, 0},
  };
 diff --git a/src/ripps2edit.c b/src/ripps2edit.c
-index 760c95f..5f0a929 100644
+index 760c95f..f42b13d 100644
 --- a/src/ripps2edit.c
 +++ b/src/ripps2edit.c
-@@ -420,8 +420,8 @@ static const char *const ratingChoices[] = {"rating/0", "rating/1", "rating/2",
+@@ -35,6 +35,7 @@
+ #include "include/ripps2.h"
+ #include "include/ripps2tint.h" // RIPPSettings Color Theme: last, so every colour below goes through it
+ #include "include/ripps2tr.h" // build 104: _t, RIPPS2's words in the chosen language
++#include "include/lang.h"     // build 140: _l, the page's title is the row's own name
+ 
+ #define ED_MAX_LINES 4096 // build 98: a file with more is refused, never cut short on save (was 1000, silently)
+ #define ED_LINE      1024 // build 98: the longest line the keyboard edits; longer ones load and save whole (was 256, cut)
+@@ -420,8 +421,8 @@ static const char *const ratingChoices[] = {"rating/0", "rating/1", "rating/2",
  // TITLE shows the list's name when neither you nor the database gave one, and FILE NAME (no key: it is not a detail)
  // shows the game's file, where Cross renames it on a page that can
  static const ed_field_t mdFields[] = {
@@ -284,7 +292,7 @@ index 760c95f..5f0a929 100644
      {"Description", N_("DESCRIPTION"), NULL},
      {"Genre", N_("GENRE"), NULL},
      {"Developer", N_("DEVELOPER"), NULL},
-@@ -453,53 +453,121 @@ static struct
+@@ -453,53 +454,121 @@ static struct
      const char *title;
      const char *file;  // build 134: the FILE NAME row's value
      int titleFromList; // build 134: the TITLE shown is the list's name
@@ -435,7 +443,7 @@ index 760c95f..5f0a929 100644
  {
      // build 115: RENAME THE GAME, when the page can (Set Metadata (Rename) is the one row for both)
      static const char *const actions[] = {N_("SAVE"), N_("CLEAR THIS FIELD"), N_("CLOSE"), N_("RENAME THE GAME")};
-@@ -543,8 +611,8 @@ int ripps2EditMetadata(config_set_t *config, const char *gameName, int canRename
+@@ -543,8 +612,8 @@ int ripps2EditMetadata(config_set_t *config, const char *gameName, int canRename
          snprintf(fileShown, sizeof(fileShown), "%s", file);
      }
      // build 134: the TITLE filled in from the list when neither you nor the database named the game
@@ -446,7 +454,7 @@ index 760c95f..5f0a929 100644
          titleFromList = 1;
      }
  
-@@ -564,6 +632,7 @@ int ripps2EditMetadata(config_set_t *config, const char *gameName, int canRename
+@@ -564,6 +633,7 @@ int ripps2EditMetadata(config_set_t *config, const char *gameName, int canRename
          mdView.file = fileShown;
          mdView.titleFromList = titleFromList;
          mdView.canRename = canRename;
