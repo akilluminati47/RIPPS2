@@ -38,7 +38,8 @@ Each choice changes only its own line in BIBLE's settings file; your notes and o
 |---|---|---|
 | Signing all four BIBLE builds | akilluminati47's PC, kelftool | Signed by akilluminati47 on 11/03 |
 | Manage's BIBLE menu on a card with the BIBLE 1.3.8 carried | PCSX2 lab, a card holding akilluminati47's own SD2PSX-bound BIBLE from 1.3.8 | It says UPDATE BIBLE: SLOT 0 HAS AN OLDER ONE; Background: Black wrote one line, `BIBLE_BACKGROUND = BLANK`, and kept the rest |
-| BIBLE's Background (Auto, Sky, Black) and the boot sound hand-off | PCSX2 lab, BIBLE's own takes | Sky from RIPPS2's settings, black otherwise; the sound arrives in RIPPS2 intact |
+| BIBLE's Background (Auto, Sky, Black) | PCSX2 lab, BIBLE's own takes | Sky from RIPPS2's settings, black for another AUTO, BLANK forced |
+| The boot sound handed over: BIBLE's MMCE build starting RIPPS2 1.3.9 | PCSX2 lab | BIBLE read boot.adp in 440 ms; RIPPS2 took it from memory (DIAG.TXT: "BIBLE handed the boot sound over in RAM"), reached its menu, and STATUS said "handed over by BIBLE" |
 | Updating BIBLE with Manage and powering on | SCPH-39001 (USA, fat), SD2PSX BOOT card | TEST_HW |
 
 #### Also in 1.3.9
