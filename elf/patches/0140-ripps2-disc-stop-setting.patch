@@ -115,7 +115,7 @@ index aa13af2..be8cb0a 100644
      return ok;
  }
 diff --git a/src/sound.c b/src/sound.c
-index c24d4f9..822cd2b 100644
+index c24d4f9..01a01ec 100644
 --- a/src/sound.c
 +++ b/src/sound.c
 @@ -14,6 +14,7 @@
@@ -179,7 +179,64 @@ index c24d4f9..822cd2b 100644
      }
  }
  
-@@ -516,8 +556,11 @@ static volatile int sfxIntroOn = 0;     // the intro's towers have begun their s
+@@ -290,6 +330,38 @@ static int sfxHeaderMs(const unsigned char *h, int size)
+     return (int)((unsigned long long)samples * 4096000ull / ((unsigned long long)pitch * 48000ull)) + 1;
+ }
+ 
++/* RIPPS2 build 140 (the user, 11/04: "played another sound effect after its playback", and earlier a confirm-like sound and a transition after one cursor move: the
++   sound trace shows nothing asked for them). audsrv never sets a voice's loop address, and a block flagged "end, no repeat" (flags 1: every rip's last sound
++   block, Media Studio's last block) sends the voice to that address: only a block with the loop-start flag sets it, and on these files the one block that has
++   it comes after the end, so it is never read. The address left over from an earlier sound is where the voice goes, reading another sound's memory for as long as
++   it is still sounding. Here the "end, no repeat" flag comes off and the sound ends on a silent block that loops on itself (flags 7), which sets the loop
++   address to its own and raises the end bit audsrv checks, so a voice can never leave its own sound. A sound that loops on purpose (repeat) is left alone. The
++   buffer has room for one more block. The new size. */
++static int sfxSealEnd(unsigned char *buf, int size)
++{
++    unsigned char *b = buf + 16;
++    int n = (size - 16) / 16, i, k;
++
++    for (i = 0; i < n && !(b[i * 16 + 1] & 1); i++)
++        ;
++    if (i < n && (b[i * 16 + 1] & 2)) {
++        // already looping: a silent tail is kept, and takes filter 0 so nothing rings from the decoder's history
++        if (b[i * 16 + 1] == 7) {
++            for (k = 2; k < 16 && b[i * 16 + k] == 0; k++)
++                ;
++            if (k == 16)
++                b[i * 16] = 0;
++        }
++        return size;
++    }
++    if (i < n)
++        b[i * 16 + 1] &= ~1;
++    k = i < n ? i + 1 : n;
++    memset(b + k * 16, 0, 16);
++    b[k * 16 + 1] = 7;
++    return 16 + (k + 1) * 16;
++}
++
+ // Returns 0 if the file was read; sfx is not changed otherwise
+ static int sfxRead(const char *full_path, struct sfxEffect *sfx)
+ {
+@@ -308,7 +380,7 @@ static int sfxRead(const char *full_path, struct sfxEffect *sfx)
+         return -EINVAL;
+     }
+     lseek(adpcm, 0L, SEEK_SET);
+-    if ((buffer = memalign(64, size)) == NULL) {
++    if ((buffer = memalign(64, size + 16)) == NULL) { // build 140: room for sfxSealEnd's block
+         close(adpcm);
+         return -ENOMEM;
+     }
+@@ -330,7 +402,7 @@ static int sfxRead(const char *full_path, struct sfxEffect *sfx)
+         return -EIO;
+     }
+     sfx->buffer = buffer;
+-    sfx->size = size;
++    sfx->size = sfxSealEnd((unsigned char *)buffer, size);
+     sfx->baked = 0;
+     sfx->duration_ms = ms;
+     return 0;
+@@ -516,8 +588,11 @@ static volatile int sfxIntroOn = 0;     // the intro's towers have begun their s
  
  void sfxIntroStarted(void)
  {
@@ -192,7 +249,7 @@ index c24d4f9..822cd2b 100644
  }
  
  // build 126 (the user, 10/31: "boot sound on should play it even if the sfx is set off"): the boot sound follows its own
-@@ -535,6 +578,8 @@ static void sfxBootPlay(void)
+@@ -535,6 +610,8 @@ static void sfxBootPlay(void)
          voiceLen[SFX_BOOT_VOICE] = (unsigned int)sfx_files[SFX_BOOT].duration_ms * (CLOCKS_PER_SEC / 1000);
          voiceSound[SFX_BOOT_VOICE] = SFX_BOOT;
          bootSoundEnds = clock() + (clock_t)sfx_files[SFX_BOOT].duration_ms * (CLOCKS_PER_SEC / 1000);
@@ -201,7 +258,20 @@ index c24d4f9..822cd2b 100644
      }
  }
  
-@@ -632,19 +677,24 @@ void sfxBibleCopyDrop(void)
+@@ -610,10 +687,10 @@ void ripps2BibleArgs(int argc, char *argv[])
+                 sfxBibleNote = 2;
+                 continue;
+             }
+-            if (!sfxHeaderMs((const unsigned char *)addr, (int)size) || (sfxBibleSnd = memalign(64, size)) == NULL)
++            if (!sfxHeaderMs((const unsigned char *)addr, (int)size) || (sfxBibleSnd = memalign(64, size + 16)) == NULL)
+                 continue;
+             memcpy(sfxBibleSnd, (const void *)addr, size);
+-            sfxBibleSndSize = (int)size;
++            sfxBibleSndSize = sfxSealEnd(sfxBibleSnd, (int)size);
+             sfxBibleNote = 1;
+         }
+     }
+@@ -632,19 +709,24 @@ void sfxBibleCopyDrop(void)
  #define SFX_EARLY_READY 2 // in the SPU: sfxInit(1) keeps it
  static volatile int sfxBootEarly = SFX_EARLY_NONE;
  static volatile int sfxAudioUp = 0;
@@ -227,7 +297,7 @@ index c24d4f9..822cd2b 100644
  }
  
  /* RIPPS2 build 121 (the user, 10/28: the boot sound with the pillars when the sounds live on a drive). RIPPS2 started from a
-@@ -701,6 +751,8 @@ int sfxBootSoundWhere(char *out, int size)
+@@ -701,6 +783,8 @@ int sfxBootSoundWhere(char *out, int size)
      return 0;
  }
  
@@ -236,7 +306,7 @@ index c24d4f9..822cd2b 100644
  static void sfxBootEarlyWork(void)
  {
      char base[256], path[300];
-@@ -740,6 +792,20 @@ static void sfxBootEarlyWork(void)
+@@ -740,6 +824,20 @@ static void sfxBootEarlyWork(void)
      }
      if (ret != 0)
          return; // no boot sound where the set loads from: the set's load looks again, as before
@@ -257,7 +327,7 @@ index c24d4f9..822cd2b 100644
      DIntr();
      up = sfxAudioUp;
      if (!up)
-@@ -865,6 +931,11 @@ int sfxInit(int bootSnd)
+@@ -865,6 +963,11 @@ int sfxInit(int bootSnd)
      // build 118: at boot the boot sound may be in the SPU already, and playing (sfxBootEarlyWork): the rest load after it,
      // with no audsrv_adpcm_init under it (sfxBootStart did that before it went in)
      int keepBoot = bootSnd && sfxBootEarly == SFX_EARLY_READY && sfxReady[SFX_BOOT];
@@ -269,7 +339,7 @@ index c24d4f9..822cd2b 100644
      sfxLoading = 1;     // build 101: the GUI touches no voice until the set is in
      clock_t loadStart = clock(); // build 115: how long the GUI's sounds were held, in DIAG.TXT
      if (!keepBoot) {
-@@ -931,8 +1002,11 @@ int sfxInit(int bootSnd)
+@@ -931,8 +1034,11 @@ int sfxInit(int bootSnd)
      sfxLoading = 0;
      // build 115 (the user, 10/26 evening: navigation sounds bugging again): a load holds every menu sound until it is done,
      // so the hardware log says when one ran and for how long
@@ -282,7 +352,7 @@ index c24d4f9..822cd2b 100644
      if (!sfxReloadBusy) // the late AUDIO find and the boot: a press caught by the load (sfxReloadWork does its own)
          sfxPlayHeld();
      return loaded;
-@@ -1229,32 +1303,52 @@ static void sfxRumble(int id)
+@@ -1229,32 +1335,52 @@ static void sfxRumble(int id)
    which already sounded: no connect sound on top (the lab's Start Device played confirm, then connect).
  */
  #define SFX_DRIVE_ANSWER_MS 3000
@@ -339,7 +409,7 @@ index c24d4f9..822cd2b 100644
          if (oneShot) {
              lastOneShotTicks = sfxStartTicks;
              lastOneShotId = id;
-@@ -1277,20 +1371,27 @@ void sfxFlush(void)
+@@ -1277,20 +1403,27 @@ void sfxFlush(void)
      sfxPendingId = -1;
      if (sfxSetBusy()) { // the set is being loaded (leaving a page that changed the theme): build 101: it waits,
          sfxHold(id);    // and sounds once the set is in only if that is still its moment
@@ -369,7 +439,7 @@ index c24d4f9..822cd2b 100644
  
      // RIPPS2: an event without a sound of its own plays the one it falls back to, or nothing
      while (id >= 0 && id < SFX_COUNT && !sfxReady[id])
-@@ -1301,26 +1402,42 @@ void sfxPlay(int id)
+@@ -1301,26 +1434,42 @@ void sfxPlay(int id)
      if (asked == SFX_CONFIRM)
          sfxLastConfirmTicks = cpu_ticks() | 1;
      if (sfxSetBusy()) { // build 101: the set is loading: a one-shot waits (sfxHold), anything else is dropped
@@ -418,7 +488,7 @@ index c24d4f9..822cd2b 100644
      sfxPlayNow(id);
  }
  
-@@ -1337,6 +1454,27 @@ void ripps2QuietBootMark(int bootSoundOn)
+@@ -1337,6 +1486,27 @@ void ripps2QuietBootMark(int bootSoundOn)
  // then called audsrv from this thread while the IO worker sent the boot sound through the same RPC client. It stays at
  // the end of init, after applyConfig. Build 122 moved it to right after _loadConfig: the lab boot sound came at the
  // same moment (3.90 s after the sky either way), so the wait is not in the fonts and languages, and it stays here.
@@ -446,7 +516,7 @@ index c24d4f9..822cd2b 100644
  void sfxBootStart(void)
  {
      static int done = 0;
-@@ -1344,9 +1482,12 @@ void sfxBootStart(void)
+@@ -1344,9 +1514,12 @@ void sfxBootStart(void)
      if (done)
          return;
      done = 1;
@@ -460,7 +530,7 @@ index c24d4f9..822cd2b 100644
      audsrv_adpcm_init();
      voicesReset();
      voicesSilence(); // build 100: init turned every voice up
-@@ -1358,6 +1499,7 @@ void sfxBootStart(void)
+@@ -1358,6 +1531,7 @@ void sfxBootStart(void)
          have = sfxBootEarly == SFX_EARLY_READ;
          sfxAudioUp = 1;
          EIntr();
@@ -468,7 +538,7 @@ index c24d4f9..822cd2b 100644
          // build 119: on the IO worker, ahead of the drives' jobs still waiting; if it cannot be queued, the set's load
          // (sfxInit) reads it again as before
          if (have && ioPutRequestFront(IO_CUSTOM_SIMPLEACTION, &sfxBootEarlyUpload) != IO_OK)
-@@ -1369,13 +1511,20 @@ void sfxBootStart(void)
+@@ -1369,13 +1543,20 @@ void sfxBootStart(void)
  // a drive once that drive is up. The GUI asks every few seconds for the first three minutes; the IO
  // worker looks, and on a find loads the sounds from there and starts the music.
  static volatile int audioLatePending = 0;
@@ -490,7 +560,7 @@ index c24d4f9..822cd2b 100644
              bgmFadeIn = 1;
              bgmFadeAt = clock();
              bgmStart();
-@@ -1390,7 +1539,9 @@ static void audioLateTick(void)
+@@ -1390,7 +1571,9 @@ static void audioLateTick(void)
  {
      static clock_t next = 0;
      clock_t now = clock();
@@ -501,7 +571,7 @@ index c24d4f9..822cd2b 100644
          return;
      // build 126: only a card or drive that has become ready since the last look is asked (no more three minutes of
      // asking every place every 4 s when there is no AUDIO folder at all); at most one look every 4 s
-@@ -1398,15 +1549,18 @@ static void audioLateTick(void)
+@@ -1398,15 +1581,18 @@ static void audioLateTick(void)
          return;
      next = now + 4 * CLOCKS_PER_SEC;
      audioLatePending = 1;
@@ -522,7 +592,7 @@ index c24d4f9..822cd2b 100644
  }
  
  // build 115: 32 KB, as the music threads: the start decodes an MP3's first frame here, and minimp3 keeps ~16 KB of
-@@ -1438,8 +1592,7 @@ void bgmBootTick(void)
+@@ -1438,8 +1624,7 @@ void bgmBootTick(void)
      sfxReloadTick(); // build 98: the reload a preview's close asked for
      bgmStartWaiting(); // build 102: a start that waited for a stopped stream's decoder
  

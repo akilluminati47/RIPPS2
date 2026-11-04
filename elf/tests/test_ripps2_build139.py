@@ -38,7 +38,7 @@ if m < 0 or opl.find('ripps2BibleArgs(argc, argv);', m) > opl.find('LOG_INIT();'
 a = snd.find('void ripps2BibleArgs(int argc, char *argv[])')
 args = snd[a:snd.find('\n}\n', a)]
 for want in ('"-bible-home="', '"-bible-bootsnd=mem:"', 'crc32(0L, (const unsigned char *)addr, size) != crc', 'addr + size > 0x02000000',
-             'size > SFX_MAX_BYTES', 'sfxHeaderMs((const unsigned char *)addr', 'memalign(64, size)', '"mc0:/"'):
+             'size > SFX_MAX_BYTES', 'sfxHeaderMs((const unsigned char *)addr', 'memalign(64, size + 16)', '"mc0:/"'):
     if want not in args:
         fail.append('ripps2BibleArgs checks %s' % want)
 w = snd.find('static void sfxBootEarlyWork(void)')

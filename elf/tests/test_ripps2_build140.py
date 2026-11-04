@@ -52,6 +52,10 @@ if 'audioSfx ? audio_path : "", themeSfx' in snd or '"BIBLE\'s copy in RAM"' not
 if 'name != NULL ? name + 1 : card' not in st:
     fail.append('STATUS\'s hand-off row names the file alone')
 
+# every sound ends on its own silent loop: no voice reads on into another sound's memory
+if 'sfx->size = sfxSealEnd((unsigned char *)buffer, size);' not in snd or 'sfxBibleSndSize = sfxSealEnd(sfxBibleSnd, (int)size);' not in snd or 'memalign(64, size + 16)) == NULL) { // build 140' not in snd:
+    fail.append('sfxRead and the hand-off seal each sound, with room for the block')
+
 # the sounds ahead of the drive jobs, the music still behind them; a late find keeps the boot sound
 opl = (root / 'src/opl.c').read_text(encoding='utf-8')
 if 'ioPutRequestFront(IO_CUSTOM_SIMPLEACTION, &deferredAudioInit)' not in opl or 'ioPutRequest(IO_CUSTOM_SIMPLEACTION, &deferredAudioDrivesDone);' not in opl:
