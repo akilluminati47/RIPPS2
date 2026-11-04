@@ -11,7 +11,11 @@ BIBLE is akilluminati47's boot loader, built on [PS2BBL](https://github.com/isra
 - **The boot sound, primed for RIPPS2**: RIPPS2's Boot Sound On (fast) keeps `boot.adp` beside BIBLE's settings (`mc?:/SYS-CONF/boot.adp`). BIBLE reads it while its splash counts down and hands it to RIPPS2 in memory, so it plays with RIPPS2's first frame (the MMCE, MX4SIO and HDD builds; the memory card build tells RIPPS2 the folder). With `KEY_READ_WAIT_TIME = 0` BIBLE reads it before RIPPS2 starts, about 2 s on a memory card; no `boot.adp` is the fastest boot. [How it works](https://github.com/akilluminati47/BIBLE/blob/main/docs/boot-sound-handoff.md).
 - **RIPPS2 first**: the built-in defaults and the config template try `mc?:/RIPPS2/RIPPS2.ELF` and `mmce?:/APPS/RIPPS2.ELF` before OSDMenu and FMCB.
 
-<p align="center"><img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b139/bible-sky-or-black.jpg" width="80%" alt="BIBLE on RIPPS2's sky, and on black when it starts something else"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b139/bible-race-6000-vs-0.gif" width="90%" alt="Black, no buttons: Power-on Wait 6000 ms with the info line beside 0 ms, racing into RIPPS2"></p>
+<p align="center"><sub>Background Black, no buttons, video mode AUTO. PCSX2, RIPPS2 on a memory card; the same 6.5 s of black load is cut from both sides, so the 6 s between them is real. The 0 ms side also has <code>DISC_STOP = 0</code>: BIBLE then leaves the disc drive alone at launch instead of waiting for it, 3.3 s saved here.</sub></p>
+
+<p align="center"><img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b139/bible-sky-red-green.jpg" width="90%" alt="BIBLE on the skies of two RIPPS2 Color Themes, Blood and Ectoplasm, in 1080i"></p>
+<p align="center"><sub>Background Auto: your RIPPS2 Color Theme's sky when BIBLE starts RIPPS2. Here Blood and Ectoplasm, in 1080i.</sub></p>
 
 ### Tested
 | What | Where | Result |

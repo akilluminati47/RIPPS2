@@ -28,7 +28,11 @@ With BIBLE on a card, Manage opens a menu of its own:
 
 Each choice changes only its own line in BIBLE's settings file; your notes and other lines stay.
 
-<p align="center"><img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/v1.3.9-beta/media/b139/bible-sky-or-black.jpg" width="80%" alt="BIBLE on RIPPS2's sky, and on black when it starts something else"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b139/bible-race-6000-vs-0.gif" width="90%" alt="Black, no buttons: Power-on Wait 6000 ms with the info line beside 0 ms, racing into RIPPS2"></p>
+<p align="center"><sub>Background Black, no buttons, video mode AUTO. PCSX2, RIPPS2 on a memory card; the same 6.5 s of black load is cut from both sides, so the 6 s between them is real. The 0 ms side also has <code>DISC_STOP = 0</code> in BIBLE's settings file: BIBLE then leaves the disc drive alone at launch instead of waiting for it, 3.3 s saved here.</sub></p>
+
+<p align="center"><img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b139/bible-sky-red-green.jpg" width="90%" alt="BIBLE on the skies of two RIPPS2 Color Themes, Blood and Ectoplasm, in 1080i"></p>
+<p align="center"><sub>Background Auto: your RIPPS2 Color Theme's sky when BIBLE starts RIPPS2. Here Blood and Ectoplasm, in 1080i.</sub></p>
 
 #### The boot sound, with RIPPS2's first frame
 **Audio settings > Boot Sound > On (fast)** now keeps `boot.adp` beside BIBLE's settings (`mc?:/SYS-CONF/boot.adp`). BIBLE reads it while its splash counts down and hands it to RIPPS2 in memory, so the sound plays with RIPPS2's first frame even when RIPPS2 starts from an SD2PSX. STATUS says "handed over by BIBLE". Boot Sound Off is still the fastest boot: with BIBLE's Power-on Wait at 0 ms, BIBLE reads the sound before RIPPS2 starts (about 2 s on a memory card).

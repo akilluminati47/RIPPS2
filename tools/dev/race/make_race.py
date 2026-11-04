@@ -10,7 +10,7 @@ BOX = (8, 52, 1292, 1026)
 W, H = 480, 364
 BAND, GAP = 34, 6
 FPS, LEN, CUT = 20, 8.0, 6.5
-RUNS = (('w6000', 631, 7.0, 'Power-on Wait: 6000 ms'), ('w0', 2336, 1.0, 'Power-on Wait: 0 ms'))
+RUNS = (('w6000', 631, 7.0, 'Power-on Wait: 6000 ms'), ('w0d', 612, 0.7, 'Power-on Wait: 0 ms'))
 
 shutil.rmtree(OUT, ignore_errors=True)
 os.makedirs(OUT)
@@ -27,7 +27,7 @@ def frame(run, logo, cutat, t):
     i = min(bisect.bisect_right(ms, want) - 1, len(ms) - 1)
     im = Image.open(os.path.join(D, run, 'f%06d.bmp' % ms[max(i, 0)])).convert('RGB').crop(BOX)
     # PCSX2's own 'Memory Card saved' popup, top left, painted out with the same rows further along (the sky is level)
-    im.paste(im.crop((370, 0, 730, 56)), (0, 0))
+    im.paste(im.crop((370, 0, 730, 46)), (0, 0))
     return im.resize((W, H), Image.LANCZOS)
 
 
