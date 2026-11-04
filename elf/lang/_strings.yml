@@ -1571,12 +1571,21 @@ strings:
 - en: EDIT BIBLE'S SETTINGS FILE
   in:
   - ripps2boot.c
+- en: Eject Tray at Launch
+  in:
+  - ripps2boot.c
 - en: Face Buttons
   in:
   - ripps2boot.c
 - en: 'For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 1''s config before slot 0''s.
 
     '
+  in:
+  - ripps2boot.c
+- en: Game ID for Apps
+  in:
+  - ripps2boot.c
+- en: Game ID for Discs
   in:
   - ripps2boot.c
 - en: 'INSTALL BIBLE ON THE INTERNAL HDD
@@ -1680,6 +1689,9 @@ strings:
   in:
   - ripps2boot.c
 - en: 'RIPPS2: Setting up BIBLE (writing it to the memory card)'
+  in:
+  - ripps2boot.c
+- en: Read Console History
   in:
   - ripps2boot.c
 - en: Reading the memory cards
