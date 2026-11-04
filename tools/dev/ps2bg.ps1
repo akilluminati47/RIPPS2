@@ -16,7 +16,7 @@
 # script's process (a job that ends with it), so ending the run in Task Manager closes PCSX2 too. -NoPanel leaves the
 # window out; -Title names the run in it.
 #
-# Step tokens: wait:<sec>, grab, shot, rec, sstate (F1: a save state, for reading a stuck EE), up, down, left, right, cross, circle, square, triangle, start, select,
+# Step tokens: wait:<sec>, grab, burst:<sec> (frames to PS2BG_BURST as fast as they come), shot, rec, sstate (F1: a save state, for reading a stuck EE), up, down, left, right, cross, circle, square, triangle, start, select,
 #              l1, r1, l2, r2, l3, r3, rup/rdown/rleft/rright (right stick), hold:<button>:<ms>,
 #              kdown:<button> / kup:<button>
 param(
@@ -103,6 +103,24 @@ public static class BG {
   }
   public static void Post(IntPtr h, uint msg, long w, long l) { OnDesk(() => PostMessage(h, msg, (IntPtr)w, (IntPtr)l)); }
   public static bool GrabOnDesk(IntPtr h, string file) { bool ok = false; OnDesk(() => { ok = Grab(h, file); }); return ok; }
+  // 11/03: burst:<sec>, frames as fast as PrintWindow gives them, uncompressed, named by the ms since the burst began. PCSX2's
+  // video capture dies when one ELF starts another (BIBLE into RIPPS2); this carries straight through it
+  public static int BurstOnDesk(IntPtr h, string dir, double seconds) {
+    int n = 0;
+    OnDesk(() => {
+      RECT r; GetWindowRect(h, out r); int w = r.R - r.L, hh = r.B - r.T;
+      var sw = System.Diagnostics.Stopwatch.StartNew();
+      using (var bmp = new System.Drawing.Bitmap(w, hh, System.Drawing.Imaging.PixelFormat.Format24bppRgb)) {
+        while (sw.Elapsed.TotalSeconds < seconds) {
+          long ms = sw.ElapsedMilliseconds;
+          using (var g = System.Drawing.Graphics.FromImage(bmp)) { IntPtr dc = g.GetHdc(); PrintWindow(h, dc, 2); g.ReleaseHdc(dc); }
+          bmp.Save(System.IO.Path.Combine(dir, "f" + ms.ToString("D6") + ".bmp"), System.Drawing.Imaging.ImageFormat.Bmp);
+          n++;
+        }
+      }
+    });
+    return n;
+  }
   public static void ParkOnDesk(IntPtr h, int w, int hgt) { OnDesk(() => Park(h, w, hgt)); }
 
   public static int Launch(string exe, string args, string dir) {
@@ -345,6 +363,12 @@ for ($n = 0; $n -lt $list.Count; $n++) {
   [LabPanel]::Status = "step $($n + 1) of $($list.Count): $s"
   if ($s -like 'wait:*') { Waiting ([double]($s.Split(':')[1])); continue }
   if ($s -eq 'rec') { $recOn = -not $recOn }
+  if ($s -like 'burst:*') {
+    $burstDir = if ($env:PS2BG_BURST) { $env:PS2BG_BURST } else { Join-Path $grabDir ("burst_{0}" -f (Get-Date -Format 'HHmmss')) }
+    New-Item -ItemType Directory -Force $burstDir | Out-Null
+    "burst $burstDir : $([BG]::BurstOnDesk($script:main, $burstDir, [double]($s.Split(':')[1]))) frames"
+    continue
+  }
   if ($s -eq 'grab') {
     $file = Join-Path $grabDir ("grab_{0}.png" -f (Get-Date -Format 'HHmmss_fff'))
     if ([BG]::GrabOnDesk($script:main, $file)) { "grab $file" } else { "grab failed" }
