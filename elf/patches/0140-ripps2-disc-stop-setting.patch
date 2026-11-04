@@ -27,3 +27,102 @@ index 4c04b4d..bef82cc 100644
      {"VIDEO_MODE", "Video Mode", 7, {"AUTO", "NTSC", "PAL", "480P", "576P", "720P", "1080I"}, {N_("Auto"), "NTSC", "PAL", "480p", "576p", "720p", "1080i"}, 0},
      {"BIBLE_WIDESCREEN", "Widescreen", 3, {"AUTO", "ON", "OFF"}, {N_("Auto"), N_("On"), N_("Off")}, 0},
  };
+diff --git a/src/ripps2status.c b/src/ripps2status.c
+index aa13af2..babe200 100644
+--- a/src/ripps2status.c
++++ b/src/ripps2status.c
+@@ -362,8 +362,10 @@ static void stScan(void)
+         int where = sfxBootSoundWhere(card, sizeof(card));
+         if (!gEnableBootSND)
+             snprintf(line, sizeof(line), _t("Boot sound off (Audio settings > Boot Sound)"));
+-        else if (where == 2 && gBibleSoundHanded) // build 139
+-            snprintf(line, sizeof(line), _t("Boot sound On (fast): %s, handed over by BIBLE"), card);
++        else if (where == 2 && gBibleSoundHanded) { // build 139; build 140: the file's name, the whole path shrank the row
++            const char *name = strrchr(card, '/');
++            snprintf(line, sizeof(line), _t("Boot sound On (fast): %s, handed over by BIBLE"), name != NULL ? name + 1 : card);
++        }
+         else if (where == 2)
+             snprintf(line, sizeof(line), gEnableBootSND == 2 ? _t("Boot sound On (fast): %s on the memory card, as the pillars rise") :
+                                                                 _t("Boot sound On: %s on the memory card, as the pillars rise"),
+diff --git a/src/sound.c b/src/sound.c
+index c24d4f9..35838cf 100644
+--- a/src/sound.c
++++ b/src/sound.c
+@@ -516,8 +516,11 @@ static volatile int sfxIntroOn = 0;     // the intro's towers have begun their s
+ 
+ void sfxIntroStarted(void)
+ {
++    // build 115: with the lines below, how long a boot takes, step by step. Build 140: this runs twice, for the towers' first
++    // frame and then for the menu, and both said "the menu is up"
++    static int calls = 0;
+     sfxIntroOn = 1;
+-    ripps2Diag("boot: the menu is up"); // build 115: with the lines below, how long a boot takes, step by step
++    ripps2Diag("boot: %s", calls++ ? "the menu is up" : "the towers are up");
+ }
+ 
+ // build 126 (the user, 10/31: "boot sound on should play it even if the sfx is set off"): the boot sound follows its own
+@@ -535,6 +538,7 @@ static void sfxBootPlay(void)
+         voiceLen[SFX_BOOT_VOICE] = (unsigned int)sfx_files[SFX_BOOT].duration_ms * (CLOCKS_PER_SEC / 1000);
+         voiceSound[SFX_BOOT_VOICE] = SFX_BOOT;
+         bootSoundEnds = clock() + (clock_t)sfx_files[SFX_BOOT].duration_ms * (CLOCKS_PER_SEC / 1000);
++        ripps2Diag("boot: the boot sound plays"); // build 140
+     }
+ }
+ 
+@@ -636,15 +640,19 @@ static char sfxBootThemePath[256]; // the disk theme's sound folder ("" for none
+ 
+ static void sfxBootEarlyUpload(void)
+ {
++    clock_t start = clock();
++    // build 140: from "audio is up" to here is the wait for the IO worker, and from here to the next line is the send
++    ripps2Diag("boot: the boot sound goes to the sound chip (%d bytes)", sfx_files[SFX_BOOT].size);
+     if (sfxLoad(&sfx_files[SFX_BOOT], &sfx[SFX_BOOT]) != 0) {
+         sfxBootEarly = SFX_EARLY_NONE;
++        ripps2Diag("boot: the boot sound did not reach the sound chip");
+         return;
+     }
+     sfxReady[SFX_BOOT] = 1;
+     sfxBootEarly = SFX_EARLY_READY;
+     if (gEnableBootSND)
+         sfxBootPending = 1; // sfxBootPlay, from the towers' first frame
+-    ripps2Diag("boot: the boot sound is ready before the drives start");
++    ripps2Diag("boot: the boot sound is in the sound chip, %d ms to send", (int)((clock() - start) * 1000 / CLOCKS_PER_SEC));
+ }
+ 
+ /* RIPPS2 build 121 (the user, 10/28: the boot sound with the pillars when the sounds live on a drive). RIPPS2 started from a
+@@ -745,6 +753,7 @@ static void sfxBootEarlyWork(void)
+     if (!up)
+         sfxBootEarly = SFX_EARLY_READ; // sfxBootStart sends it on
+     EIntr();
++    ripps2Diag("boot: the boot sound is in RAM%s", up ? "" : ", audio is not up yet"); // build 140
+     if (up)
+         sfxBootEarlyUpload();
+ }
+@@ -931,8 +940,10 @@ int sfxInit(int bootSnd)
+     sfxLoading = 0;
+     // build 115 (the user, 10/26 evening: navigation sounds bugging again): a load holds every menu sound until it is done,
+     // so the hardware log says when one ran and for how long
++    // build 140: never a blank "from": no AUDIO folder and no theme sounds can still leave the boot sound in
+     ripps2Diag("sounds: %d loaded in %d ms from %s%s", loaded, (int)((clock() - loadStart) * 1000 / CLOCKS_PER_SEC),
+-               audioSfx ? audio_path : "", themeSfx ? " and the theme" : "");
++               audioSfx ? audio_path : themeSfx ? "the theme" : !loaded ? "nowhere, no sound files found" : gBibleSoundHanded ? "BIBLE's copy in RAM" : "the boot sound read earlier",
++               audioSfx && themeSfx ? " and the theme" : "");
+     if (!sfxReloadBusy) // the late AUDIO find and the boot: a press caught by the load (sfxReloadWork does its own)
+         sfxPlayHeld();
+     return loaded;
+@@ -1344,6 +1355,7 @@ void sfxBootStart(void)
+     if (done)
+         return;
+     done = 1;
++    ripps2Diag("boot: audio starts"); // build 140
+     audioInit();
+     if (!audio_initialized)
+         return;
+@@ -1358,6 +1370,7 @@ void sfxBootStart(void)
+         have = sfxBootEarly == SFX_EARLY_READ;
+         sfxAudioUp = 1;
+         EIntr();
++        ripps2Diag("boot: audio is up%s", have ? ", the boot sound was waiting" : ""); // build 140
+         // build 119: on the IO worker, ahead of the drives' jobs still waiting; if it cannot be queued, the set's load
+         // (sfxInit) reads it again as before
+         if (have && ioPutRequestFront(IO_CUSTOM_SIMPLEACTION, &sfxBootEarlyUpload) != IO_OK)

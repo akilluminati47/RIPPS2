@@ -1,5 +1,6 @@
 """Build 140: DISC_STOP in Manage's BIBLE menu (BIBLE's default stops the disc at a launch and waits on the drive), and
-DISC_STOP = 0 in the config a fresh install writes; a config already on the card is kept as it is.
+DISC_STOP = 0 in the config a fresh install writes; a config already on the card is kept as it is. DIAG.TXT says where the
+boot sound's time goes, the sounds line never ends on a blank "from", and STATUS's hand-off row names the file alone.
 
 Static checks on the patched tree."""
 import os
@@ -8,6 +9,8 @@ from pathlib import Path
 
 root = Path(os.environ.get('RIPTOPL_DIR', '.'))
 boot = (root / 'src/ripps2boot.c').read_text(encoding='utf-8')
+snd = (root / 'src/sound.c').read_text(encoding='utf-8')
+st = (root / 'src/ripps2status.c').read_text(encoding='utf-8')
 fail = []
 
 s = boot.find('static const blSet_t blSets[] = {')
@@ -20,5 +23,27 @@ conf = boot[c:boot.find('\n}\n', c)]
 if 'EJECT_TRAY = 0\\r\\nDISC_STOP = 0\\r\\n' not in conf:
     fail.append('a fresh install writes DISC_STOP = 0')
 
-print('\n'.join(fail) or 'build140: DISC_STOP row and fresh install default OK')
+
+def body(name):
+    a = snd.find(name)
+    return snd[a:snd.find('\n}\n', a)]
+
+
+for fn, want in (('void sfxIntroStarted(void)', '"the towers are up"'),
+                 ('static void sfxBootPlay(void)', '"boot: the boot sound plays"'),
+                 ('static void sfxBootEarlyUpload(void)', '"boot: the boot sound goes to the sound chip (%d bytes)"'),
+                 ('static void sfxBootEarlyUpload(void)', '"boot: the boot sound is in the sound chip, %d ms to send"'),
+                 ('static void sfxBootEarlyWork(void)', '"boot: the boot sound is in RAM%s"'),
+                 ('void sfxBootStart(void)', '"boot: audio starts"'),
+                 ('void sfxBootStart(void)', '"boot: audio is up%s"')):
+    if want not in body(fn):
+        fail.append('%s logs %s' % (fn, want))
+
+if 'audioSfx ? audio_path : "", themeSfx' in snd or '"BIBLE\'s copy in RAM"' not in snd or '"nowhere, no sound files found"' not in snd:
+    fail.append('the sounds line always says where they came from')
+
+if 'name != NULL ? name + 1 : card' not in st:
+    fail.append('STATUS\'s hand-off row names the file alone')
+
+print('\n'.join(fail) or 'build140: DISC_STOP, the boot sound\'s timing lines, the sounds line and the STATUS row OK')
 sys.exit(1 if fail else 0)
