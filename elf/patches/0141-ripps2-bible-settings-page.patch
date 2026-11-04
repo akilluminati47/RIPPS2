@@ -29,20 +29,21 @@ index b1f6567..f2af125 100644
  void ripps2CardManager(int slot, const char *image); // ripps2card.c (build 86): memory card 1/2 (slot 0/1), or a card image (slot -1)
  // ripps2media.c (build 93): Memory Files opens pictures (PNG, JPG) and video (AVI, with libsmslite)
 diff --git a/src/ripps2boot.c b/src/ripps2boot.c
-index 5b025f9..14a2aa7 100644
+index 5b025f9..fe2a10e 100644
 --- a/src/ripps2boot.c
 +++ b/src/ripps2boot.c
-@@ -65,6 +65,9 @@
+@@ -65,6 +65,10 @@
  #include "include/hddsupport.h" // hddCheck: BIBLE on the HDD (build 73)
  #include "include/ripps2tr.h" // build 104: _t, RIPPS2's words in the chosen language
  #include "include/ripps2diag.h" // build 115: each BIBLE step into DIAG.TXT
 +#include "include/ripps2biossnd.h" // build 141: Boot Sound in the BIBLE page
 +#include "include/dia.h"         // build 141: the keyboard, for a launch key
 +#include "include/pad.h"         // build 141: readPads
++#include "include/lang.h"        // build 141: _l, the saving screen
  #include <errno.h>
  #include <zlib.h> // build 139: crc32, the older BIBLE builds told apart
  
-@@ -2076,17 +2079,17 @@ static int blSettingsFile(int boot)
+@@ -2076,17 +2080,17 @@ static int blSettingsFile(int boot)
      return 0;
  }
  
@@ -64,7 +65,7 @@ index 5b025f9..14a2aa7 100644
              eq++;
              end = p + len;
              while (eq < end && (*eq == ' ' || *eq == '\t'))
-@@ -2104,6 +2107,11 @@ static int blIniGet(const char *key, char *val, int size)
+@@ -2104,6 +2108,11 @@ static int blIniGet(const char *key, char *val, int size)
      return 0;
  }
  
@@ -76,7 +77,7 @@ index 5b025f9..14a2aa7 100644
  // Which of a setting's values the file holds: its index, or -1 for one RIPPS2 does not offer (shown as it is)
  static int blSetIndex(const blSet_t *s, const char *val)
  {
-@@ -2116,87 +2124,604 @@ static int blSetIndex(const blSet_t *s, const char *val)
+@@ -2116,87 +2125,605 @@ static int blSetIndex(const blSet_t *s, const char *val)
      return -1;
  }
  
@@ -202,6 +203,7 @@ index 5b025f9..14a2aa7 100644
 +
 +    if (!blDirty)
 +        return 1;
++    guiRenderTextScreen(_l(_STR_SAVING_SETTINGS));
 +    while (ioWorkPending() && waited++ < 100) // let a settings save or art read finish with the cards first
 +        DelayThread(10000);
 +    if (!blTmpPath(tmp, sizeof(tmp)))
@@ -383,7 +385,7 @@ index 5b025f9..14a2aa7 100644
 +        memset(rows, 0, sizeof(rows));
 +        rows[0].label = _t("Name");
 +        rows[0].value = vals[0][0] ? vals[0] : "-";
-+        rows[0].tip = locked ? _t("BOOT LOCK holds this line. Turn BOOT LOCK off to change it.") : _t("What BIBLE's splash calls this button, with Splash on Logo and Names.");
++        rows[0].tip = locked ? _t("BOOT LOCK holds this line. Turn BOOT LOCK off to change it.") : _t("The name BIBLE's splash shows for this button.");
 +        rows[0].confirm = locked ? NULL : _t("EDIT");
 +        rows[0].clears = !locked && vals[0][0];
 +        for (e = 1; e <= BL_PATHS; e++) {
@@ -657,7 +659,7 @@ index 5b025f9..14a2aa7 100644
 +                kind[n] = BLR_SKY;
 +                rows[n].label = _t("Sky Color");
 +                rows[n].value = own[n];
-+                rows[n].tip = _t("The sky on BIBLE's splash. Follow Color Theme uses the sky RIPPS2 saves with its settings. A color named here stays, whatever the theme. Background on Black hides it.");
++                rows[n].tip = _t("The sky on BIBLE's splash. Follow Color Theme uses the sky RIPPS2 saves with its settings. A color named here stays, whatever the theme.");
 +                rows[n].confirm = _t("NEXT VALUE");
 +                rows[n].steps = 1;
 +                rows[n].sky = sscanf(text, "%6x,%6x,%6x", &sky[0], &sky[1], &sky[2]) == 3 ? sky : NULL;
@@ -722,7 +724,7 @@ index 5b025f9..14a2aa7 100644
          if (!have) {
              guiMsgBoxSound(SFX_ERROR);
              snprintf(msg, sizeof(msg), _t("BIBLE's settings file (%s) was not found. SET UP, UPDATE OR RESTORE BIBLE writes one."),
-@@ -2204,22 +2729,39 @@ static void blBibleMenu(int boot, int removed)
+@@ -2204,22 +2731,39 @@ static void blBibleMenu(int boot, int removed)
              guiMsgBox(msg, 0, NULL);
              continue;
          }

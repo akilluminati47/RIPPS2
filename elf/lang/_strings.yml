@@ -1867,6 +1867,9 @@ strings:
 - en: The memory card in slot %d would not take %s back, so BIBLE stayed. (DIAG.TXT beside RIPPS2 has what the card said.)
   in:
   - ripps2boot.c
+- en: The name BIBLE's splash shows for this button.
+  in:
+  - ripps2boot.c
 - en: 'The one that was there is kept in RIPPS2/MBR-BACKUP.KELF on the HDD: BOOT LOADER > MANAGE > RESTORE puts it back.'
   in:
   - ripps2boot.c
@@ -1882,7 +1885,7 @@ strings:
 - en: The signal BIBLE starts in. Auto uses RIPPS2's Video Mode when its settings are on a memory card, and the console's own mode when they are not.
   in:
   - ripps2boot.c
-- en: The sky on BIBLE's splash. Follow Color Theme uses the sky RIPPS2 saves with its settings. A color named here stays, whatever the theme. Background on Black hides it.
+- en: The sky on BIBLE's splash. Follow Color Theme uses the sky RIPPS2 saves with its settings. A color named here stays, whatever the theme.
   in:
   - ripps2boot.c
 - en: 'There is no formatted PS2 memory card in either slot, and no internal HDD. BIBLE lives on a memory card or the HDD: insert a card, then try again.'
@@ -1907,9 +1910,6 @@ strings:
   in:
   - ripps2boot.c
 - en: What BIBLE starts when this button is held at power on. L2 + R2 held at power on shows BIBLE's own page of them all.
-  in:
-  - ripps2boot.c
-- en: What BIBLE's splash calls this button, with Splash on Logo and Names.
   in:
   - ripps2boot.c
 - en: What each button starts at power on, each with up to ten paths chosen from your drives.
