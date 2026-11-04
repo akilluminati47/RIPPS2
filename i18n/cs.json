@@ -87,6 +87,10 @@
   "en": "2bb78085b36f",
   "t": "| [Short buildu 88](https://www.youtube.com/shorts/Sqprz22tdtg) | Short | Build 88, na Slideshow |"
  },
+ "2c1c50e84927": {
+  "en": "2c1c50e84927",
+  "t": "> 1. **[Stáhni RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (vždy nejnovější vydání) (jeden soubor, 2 775 KB), a pokud chceš, i **[balíček motivů](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt, Adapt Rx, edice 136: každý jedna konfigurace a jeden obrázek; RIPGRID a RIPFLOW jsou vestavěné), a **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** pro RIPPS2 ve tvém jazyce (33 jazyků; každé vydání ho obsahuje)."
+ },
  "2f0ee80297df": {
   "en": "2f0ee80297df",
   "t": "- **MEMORY FILES** je vestavěný prohlížeč souborů: kopíruj, přesouvej a mazej mezi paměťovými kartami, USB, MMCE a HDD (každá kopie se přečte zpět a zkontroluje); otevírej obrazy karet VMC z OPL jako složky; exportuj a importuj uložené hry PSU; upravuj textové soubory; otevírej obrázky, přehrávej AVI video **na celé obrazovce** s **ovládáním přehrávače** (Cross přehraje/pozastaví, Circle zastaví, L1/R1 skáčou o 10 s, L2/R2 hlasitost, START opakuje; nápovědy při přehrávání mizí a při pauze zůstávají) ([RIPPS2 Media Studio](tools/media-studio) z jakéhokoli videa, i z MP4 z telefonu, takové udělá), a přehrávej soubory `.mp3`, `.ogg` a `.wav`, nebo jich několik označ a otevři společně, ať hrají jako jeden disk v CD přehrávači Launch Disc; **`.tar` je modrá složka**, kterou můžeš otevřít, vkládat do ní obrázky a kopírovat z ní položky (build 125); Trojúhelník na `.tar` do něj sloučí jiný `.tar` s ART ([níže](#covers-from-one-file-art-pack)). **Otevřená složka je první řádek** a ukazuje počet položek, počet označených, celkovou velikost a volné místo na disku; Cross nebo Square na ní označí vše (nebo, pokud je něco označeno, nic). START otevře její nastavení, kde **SEARCH FILES** najde jakýkoli soubor nebo složku podle jména na každém spuštěném disku a otevře strom tam, kde je. Square na paměťové kartě otevře **CARD MANAGER** (zálohovat kartu do VMC, zapsat uložené hry z VMC zpět na kartu, smazat uložené hry, formátovat) a Square na APA HDD **HDD MANAGER** (jeho oddíly, jejich velikosti a odebrání jednoho po úplné kontrole tabulky oddílů)."
@@ -102,6 +106,10 @@
  "324016ff9971": {
   "en": "324016ff9971",
   "t": "**Police s elfy:** výloha Storage. Dřevěné prkno z uOPL před věžemi a na něm značka RIPPS2 desetkrát: plstěný klobouk mrtvého elfa stojící okrajem dolů ve vlastní kaluži krve, jeden pro každý Color Theme (RIPPS2, Ember, Blood, Ectoplasm, Amethyst, Bone, Tangerine, Flamingo, Turquoise, Moonlight). Najednou jsou vidět tři, tak jak RIPFLOW ukazuje obaly: prostřední se otáčí, aby se díval na ukazatel (čím blíž, tím rychleji se otáčí), a pohupuje se na pružině, a Left / Right nebo dotyk na kterémkoli sousedovi polici otočí. Zastaví se na modrém klobouku RIPPS2. Stisknutý klobouk pošle svůj Color Theme přes věže (vlastní barevná matice ELF, takže věže vypadají tak, jak je ten motiv dělá): ťuknutí je výtrysk barvy, který přejde přes pole a odplyne zpět do modré RIPPS2; podržený motiv zůstane nad celým vykreslením, dokud nepustíš."
+ },
+ "32675f221dd5": {
+  "en": "32675f221dd5",
+  "t": "> ### Ripni to: RIPPS2 build 141, v1.4.1 beta"
  },
  "376d12fba45e": {
   "en": "376d12fba45e",
@@ -363,9 +371,9 @@
   "en": "c2409d3b212c",
   "t": "| ✕ | Potvrzení | `confirm.adp` | **Menu sound 5** |"
  },
- "c4671696596b": {
-  "en": "c4671696596b",
-  "t": "> 1. **[Stáhni RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (vždy nejnovější vydání) (jeden soubor, 2 764 KB), a pokud chceš, i **[balíček motivů](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt, Adapt Rx, edice 136: každý jedna konfigurace a jeden obrázek; RIPGRID a RIPFLOW jsou vestavěné), a **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** pro RIPPS2 ve tvém jazyce (33 jazyků; každé vydání ho obsahuje)."
+ "c8222b627615": {
+  "en": "c8222b627615",
+  "t": "> [Novinky v buildu 141](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.4.1-beta) | [Changelog](CHANGELOG.md) | **[Videa](#videos)** | [Všechna vydání](https://github.com/akilluminati47/RIPPS2/releases) | [Pobav se o něm na psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "c8eb072f3f8f": {
   "en": "c8eb072f3f8f",
@@ -383,17 +391,9 @@
   "en": "cc3d4e294dca",
   "t": "- [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/) od krHACKen spouští hry PS1 z tvé vlastní kopie, kterou RIPPS2 najde na tvých discích a paměťových kartách ([`elf/popstarter`](elf/popstarter/README.md))."
  },
- "ccdef30a7623": {
-  "en": "ccdef30a7623",
-  "t": "> ### Ripni to: RIPPS2 build 139, v1.3.9 beta"
- },
  "cd91a464e4a7": {
   "en": "cd91a464e4a7",
   "t": "| ✓ | Uložení | `save.adp` | **Menu sound 12** |"
- },
- "d00f49a314cd": {
-  "en": "d00f49a314cd",
-  "t": "> [Novinky v buildu 139](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.9-beta) | [Changelog](CHANGELOG.md) | **[Videa](#videos)** | [Všechna vydání](https://github.com/akilluminati47/RIPPS2/releases) | [Pobav se o něm na psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "d1471c7da040": {
   "en": "d1471c7da040",

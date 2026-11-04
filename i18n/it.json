@@ -87,6 +87,10 @@
   "en": "2bb78085b36f",
   "t": "| [Lo Short della build 88](https://www.youtube.com/shorts/Sqprz22tdtg) | Short | La build 88, su Slideshow |"
  },
+ "2c1c50e84927": {
+  "en": "2c1c50e84927",
+  "t": "> 1. **[Scarica RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (sempre la release più recente) (un solo file, 2.775 KB), e il **[pacchetto di temi](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** se vuoi (Adapt, Adapt Rx, edizione 136: una configurazione e un'immagine ciascuno; RIPGRID e RIPFLOW sono integrati), e **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** per avere RIPPS2 nella tua lingua (33; ogni release lo include)."
+ },
  "2f0ee80297df": {
   "en": "2f0ee80297df",
   "t": "- **MEMORY FILES** è un file browser integrato: copia, sposta ed elimina tra memory card, USB, MMCE e l'HDD (ogni copia viene riletta e verificata); apre le immagini di card VMC di OPL come cartelle; esporta e importa salvataggi PSU; modifica file di testo; apre immagini, riproduce video AVI **a schermo intero** con **comandi da lettore** (Cross riproduce/mette in pausa, Circle ferma, L1/R1 saltano di 10 s, L2/R2 volume, START ripete; i suggerimenti svaniscono durante la riproduzione e restano in pausa) ([RIPPS2 Media Studio](tools/media-studio) trasforma qualsiasi video, anche l'MP4 di un telefono, in uno di questi), e riproduce file `.mp3`, `.ogg` e `.wav`, oppure ne segni diversi e li apri insieme per ascoltarli come un unico disco nel lettore CD di Launch Disc; un **`.tar` è una cartella blu** che puoi aprire, in cui incollare immagini e da cui copiare i contenuti (build 125); Triangolo su un `.tar` vi unisce un altro `.tar` di ART ([più sotto](#covers-from-one-file-art-pack)). La **cartella aperta è la prima riga**, con il numero di voci, quelle segnate, la dimensione totale e lo spazio libero dell'unità; Cross o Square su di essa segna tutto (o, se c'è qualcosa di segnato, niente). START apre le sue impostazioni, dove **SEARCH FILES** trova qualsiasi file o cartella per nome su tutte le unità avviate e apre l'albero dove si trova. Square su una memory card apre il **CARD MANAGER** (salva una card in una VMC, riscrive i salvataggi di una VMC su una card, cancella i salvataggi dei giochi, formatta), e Square sull'HDD APA l'**HDD MANAGER** (le sue partizioni, le loro dimensioni, e la rimozione di una dopo un controllo completo della tabella delle partizioni)."
@@ -102,6 +106,10 @@
  "324016ff9971": {
   "en": "324016ff9971",
   "t": "**Lo scaffale degli elfi:** la vetrina di Storage. L'asse di legno di uOPL davanti alle torri, e sopra il marchio di RIPPS2 dieci volte: il cappello di feltro di un elfo morto, a testa in giù nella sua pozza di sangue, uno per ogni Color Theme (RIPPS2, Ember, Blood, Ectoplasm, Amethyst, Bone, Tangerine, Flamingo, Turquoise, Moonlight). Se ne vedono tre per volta, come RIPFLOW mostra le copertine: quello centrale si gira a guardare il puntatore (più è vicino, più gira in fretta) e dondola sulla sua molla, e Left / Right o un tocco su uno dei vicini fa girare lo scaffale. Si ferma sul cappello blu di RIPPS2. Premere un cappello manda il suo Color Theme attraverso le torri (la matrice di colore dell'ELF stesso, così le torri appaiono come le fa quel tema): un tocco è una raffica di colore che attraversa il campo e torna al blu di RIPPS2; tenuto premuto, il tema resta su tutto il render finché non lo lasci."
+ },
+ "32675f221dd5": {
+  "en": "32675f221dd5",
+  "t": "> ### Rippalo: RIPPS2 build 141, v1.4.1 beta"
  },
  "376d12fba45e": {
   "en": "376d12fba45e",
@@ -363,9 +371,9 @@
   "en": "c2409d3b212c",
   "t": "| ✕ | Conferma | `confirm.adp` | **Menu sound 5** |"
  },
- "c4671696596b": {
-  "en": "c4671696596b",
-  "t": "> 1. **[Scarica RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (sempre la release più recente) (un solo file, 2.764 KB), e il **[pacchetto di temi](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** se vuoi (Adapt, Adapt Rx, edizione 136: una configurazione e un'immagine ciascuno; RIPGRID e RIPFLOW sono integrati), e **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** per avere RIPPS2 nella tua lingua (33; ogni release lo include)."
+ "c8222b627615": {
+  "en": "c8222b627615",
+  "t": "> [Novità della build 141](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.4.1-beta) | [Changelog](CHANGELOG.md) | **[Video](#videos)** | [Tutte le release](https://github.com/akilluminati47/RIPPS2/releases) | [Parlane su psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "c8eb072f3f8f": {
   "en": "c8eb072f3f8f",
@@ -383,17 +391,9 @@
   "en": "cc3d4e294dca",
   "t": "- [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/) di krHACKen avvia i giochi PS1 dalla tua copia, che RIPPS2 trova sulle tue unità e memory card ([`elf/popstarter`](elf/popstarter/README.md))."
  },
- "ccdef30a7623": {
-  "en": "ccdef30a7623",
-  "t": "> ### Rippalo: RIPPS2 build 139, v1.3.9 beta"
- },
  "cd91a464e4a7": {
   "en": "cd91a464e4a7",
   "t": "| ✓ | Salva | `save.adp` | **Menu sound 12** |"
- },
- "d00f49a314cd": {
-  "en": "d00f49a314cd",
-  "t": "> [Novità della build 139](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.9-beta) | [Changelog](CHANGELOG.md) | **[Video](#videos)** | [Tutte le release](https://github.com/akilluminati47/RIPPS2/releases) | [Parlane su psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "d1471c7da040": {
   "en": "d1471c7da040",

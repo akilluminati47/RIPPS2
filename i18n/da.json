@@ -87,6 +87,10 @@
   "en": "2bb78085b36f",
   "t": "| [Build 88-Shorten](https://www.youtube.com/shorts/Sqprz22tdtg) | Short | Build 88, sat til Slideshow |"
  },
+ "2c1c50e84927": {
+  "en": "2c1c50e84927",
+  "t": "> 1. **[Hent RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (altid den nyeste udgivelse) (én fil, 2.775 KB), og **[temapakken](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** hvis du vil (Adapt, Adapt Rx, udgave 136: en konfiguration og ét billede hver; RIPGRID og RIPFLOW er indbygget), og **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** til RIPPS2 på dit sprog (33 sprog; hver udgivelse har den med)."
+ },
  "2f0ee80297df": {
   "en": "2f0ee80297df",
   "t": "- **MEMORY FILES** er en indbygget filbrowser: kopiér, flyt og slet mellem memory cards, USB, MMCE og HDD'en (hver kopi læses tilbage og kontrolleres); åbn OPL's VMC-kortimages som mapper; eksportér og importér PSU-gemte spil; redigér tekstfiler; åbn billeder, afspil AVI-video **i fuld skærm** med **afspillerknapper** (Cross afspiller/pauser, Circle stopper, L1/R1 springer 10 s, L2/R2 lydstyrke, START gentager; tipsene fader ud under afspilning og bliver ved pause) ([RIPPS2 Media Studio](tools/media-studio) laver enhver video, også en telefons MP4, om til en), og afspil `.mp3`-, `.ogg`- og `.wav`-filer, eller markér flere og åbn dem sammen for at høre dem som én disk i Launch Discs cd-afspiller; en **`.tar` er en blå mappe**, du kan åbne, sætte billeder ind i og kopiere indhold ud af (build 125); Trekant på en `.tar` fletter en anden ART-`.tar` ind i den ([nedenfor](#covers-from-one-file-art-pack)). Den **åbne mappe er første række** og viser antal poster, antal markerede, samlet størrelse og drevets ledige plads; Cross eller Square på den markerer alt (eller, hvis noget er markeret, intet). START åbner dens indstillinger, hvor **SEARCH FILES** finder enhver fil eller mappe efter navn på hvert startet drev og åbner træet, hvor den ligger. Square på et memory card åbner **CARD MANAGER** (tag backup af et kort til en VMC, skriv en VMC's gemte spil tilbage på et kort, slet spillenes gemte spil, formatér), og Square på APA-HDD'en **HDD MANAGER** (dens partitioner, deres størrelser, og fjernelse af en efter en fuld kontrol af partitionstabellen)."
@@ -102,6 +106,10 @@
  "324016ff9971": {
   "en": "324016ff9971",
   "t": "**Alfehylde:** Storages udstillingsvindue. uOPLs træplanke foran tårnene, og på den RIPPS2-mærket ti gange: en død alfs filthat stående med skyggen nedad i sin egen blodpøl, én for hvert Color Theme (RIPPS2, Ember, Blood, Ectoplasm, Amethyst, Bone, Tangerine, Flamingo, Turquoise, Moonlight). Tre vises ad gangen, sådan som RIPFLOW viser covers: den midterste drejer sig for at se på markøren (jo tættere, jo hurtigere drejer den) og vipper på sin fjeder, og Left / Right eller et tryk på en af naboerne drejer hylden. Den lander på den blå RIPPS2-hat. En hat, der trykkes, sender sit Color Theme hen over tårnene (ELF'ens egen farvematrix, så tårnene ser ud, som det tema gør dem): et tryk er et farvestød, der krydser feltet og skyller tilbage til RIPPS2's blå; holdt nede bliver temaet over hele renderingen, til man slipper."
+ },
+ "32675f221dd5": {
+  "en": "32675f221dd5",
+  "t": "> ### Rip den: RIPPS2 build 141, v1.4.1 beta"
  },
  "376d12fba45e": {
   "en": "376d12fba45e",
@@ -363,9 +371,9 @@
   "en": "c2409d3b212c",
   "t": "| ✕ | Bekræft | `confirm.adp` | **Menu sound 5** |"
  },
- "c4671696596b": {
-  "en": "c4671696596b",
-  "t": "> 1. **[Hent RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (altid den nyeste udgivelse) (én fil, 2.764 KB), og **[temapakken](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** hvis du vil (Adapt, Adapt Rx, udgave 136: en konfiguration og ét billede hver; RIPGRID og RIPFLOW er indbygget), og **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** til RIPPS2 på dit sprog (33 sprog; hver udgivelse har den med)."
+ "c8222b627615": {
+  "en": "c8222b627615",
+  "t": "> [Nyt i build 141](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.4.1-beta) | [Changelog](CHANGELOG.md) | **[Videoer](#videos)** | [Alle udgivelser](https://github.com/akilluminati47/RIPPS2/releases) | [Snak om det på psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "c8eb072f3f8f": {
   "en": "c8eb072f3f8f",
@@ -383,17 +391,9 @@
   "en": "cc3d4e294dca",
   "t": "- [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/) af krHACKen starter PS1-spil fra din egen kopi, som RIPPS2 finder på dine drev og memory cards ([`elf/popstarter`](elf/popstarter/README.md))."
  },
- "ccdef30a7623": {
-  "en": "ccdef30a7623",
-  "t": "> ### Rip den: RIPPS2 build 139, v1.3.9 beta"
- },
  "cd91a464e4a7": {
   "en": "cd91a464e4a7",
   "t": "| ✓ | Gem | `save.adp` | **Menu sound 12** |"
- },
- "d00f49a314cd": {
-  "en": "d00f49a314cd",
-  "t": "> [Nyt i build 139](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.9-beta) | [Changelog](CHANGELOG.md) | **[Videoer](#videos)** | [Alle udgivelser](https://github.com/akilluminati47/RIPPS2/releases) | [Snak om det på psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "d1471c7da040": {
   "en": "d1471c7da040",

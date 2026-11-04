@@ -87,6 +87,10 @@
   "en": "2bb78085b36f",
   "t": "| [Short build 88](https://www.youtube.com/shorts/Sqprz22tdtg) | Short | Build 88 mengikuti Slideshow |"
  },
+ "2c1c50e84927": {
+  "en": "2c1c50e84927",
+  "t": "> 1. **[Unduh RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (selalu rilis terbaru) (satu berkas, 2.775 KB), dan bila mau **[paket tema](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt dan Adapt Rx, edisi 136: masing-masing satu konfigurasi dan satu gambar; RIPGRID dan RIPFLOW sudah bawaan), serta **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** untuk RIPPS2 dalam bahasa Anda (33 bahasa; disertakan di setiap rilis)."
+ },
  "2f0ee80297df": {
   "en": "2f0ee80297df",
   "t": "- **MEMORY FILES** adalah penjelajah berkas bawaan: salin, pindahkan, dan hapus antara memory card, USB, MMCE, dan HDD (setiap salinan dibaca ulang untuk diperiksa); buka image kartu VMC OPL sebagai folder; ekspor dan impor save PSU; sunting berkas teks; buka gambar, putar video AVI **layar penuh** dengan **kontrol pemutar** (Cross putar/jeda, Circle berhenti, L1/R1 lompat 10 detik, L2/R2 volume, START ulang; panduan memudar saat diputar dan tetap tampil saat dijeda) ([RIPPS2 Media Studio](tools/media-studio) mengubah video apa pun, termasuk MP4 ponsel, menjadi berkas seperti itu), dan putar berkas `.mp3`, `.ogg`, dan `.wav`, atau tandai beberapa lalu buka bersama agar diputar seperti satu disk di pemutar CD Launch Disc; **sebuah `.tar` adalah folder biru** yang bisa Anda buka, tempeli gambar, dan salin anggotanya keluar (build 125); segitiga pada `.tar` menggabungkan `.tar` ART lain ke dalamnya ([di bawah](#covers-from-one-file-art-pack)). **Folder yang terbuka adalah baris pertama**, dengan jumlah entri, jumlah yang ditandai, ukuran total, dan ruang kosong drive; Cross atau Square di sana menandai semuanya (atau tidak ada, bila sudah ada yang ditandai). START membuka pengaturannya, tempat **SEARCH FILES** mencari berkas atau folder apa pun berdasarkan nama di setiap drive yang sudah dimulai dan membuka pohonnya di tempat. Square pada memory card membuka **CARD MANAGER** (cadangkan kartu ke VMC, tulis save dari VMC ke kartu, hapus save game, format), dan Square pada APA HDD membuka **HDD MANAGER** (partisinya, ukurannya, dan menghapus satu partisi setelah pemeriksaan penuh tabel partisi)."
@@ -102,6 +106,10 @@
  "324016ff9971": {
   "en": "324016ff9971",
   "t": "**Rak peri:** etalase Storage. Papan kayu uOPL di depan menara, dan di atasnya lambang RIPPS2 sepuluh kali: topi laken peri yang mati, pinggirannya ke bawah di genangan darahnya sendiri, satu untuk setiap Color Theme (RIPPS2, Ember, Blood, Ectoplasm, Amethyst, Bone, Tangerine, Flamingo, Turquoise, Moonlight). Tiga terlihat sekaligus, seperti RIPFLOW menampilkan sampul: topi tengah berputar menghadap kursor (makin dekat makin cepat) dan bergoyang di pegasnya, dan Left / Right atau mengetuk tetangga memutar rak. Ia berhenti di topi biru RIPPS2. Topi yang ditekan mengirim Color Theme-nya ke menara (matriks warna ELF sendiri, sehingga menara tampak seperti yang digambar tema itu): ketukan adalah semburan warna yang melintasi lapangan lalu kembali ke biru RIPPS2; menahannya membuat tema tetap di seluruh gambar sampai Anda melepas."
+ },
+ "32675f221dd5": {
+  "en": "32675f221dd5",
+  "t": "> ### Rip sekarang: RIPPS2 build 141, v1.4.1 beta"
  },
  "376d12fba45e": {
   "en": "376d12fba45e",
@@ -363,9 +371,9 @@
   "en": "c2409d3b212c",
   "t": "| ✕ | Konfirmasi | `confirm.adp` | **Menu sound 5** |"
  },
- "c4671696596b": {
-  "en": "c4671696596b",
-  "t": "> 1. **[Unduh RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (selalu rilis terbaru) (satu berkas, 2.764 KB), dan bila mau **[paket tema](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt dan Adapt Rx, edisi 136: masing-masing satu konfigurasi dan satu gambar; RIPGRID dan RIPFLOW sudah bawaan), serta **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** untuk RIPPS2 dalam bahasa Anda (33 bahasa; disertakan di setiap rilis)."
+ "c8222b627615": {
+  "en": "c8222b627615",
+  "t": "> [Yang baru di build 141](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.4.1-beta) | [Changelog](CHANGELOG.md) | **[Video](#videos)** | [Semua rilis](https://github.com/akilluminati47/RIPPS2/releases) | [Diskusikan di psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "c8eb072f3f8f": {
   "en": "c8eb072f3f8f",
@@ -383,17 +391,9 @@
   "en": "cc3d4e294dca",
   "t": "- [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/) oleh krHACKen menjalankan game PS1 dari salinan Anda, yang ditemukan RIPPS2 di drive dan memory card Anda ([`elf/popstarter`](elf/popstarter/README.md))."
  },
- "ccdef30a7623": {
-  "en": "ccdef30a7623",
-  "t": "> ### Rip sekarang: RIPPS2 build 139, v1.3.9 beta"
- },
  "cd91a464e4a7": {
   "en": "cd91a464e4a7",
   "t": "| ✓ | Simpan | `save.adp` | **Menu sound 12** |"
- },
- "d00f49a314cd": {
-  "en": "d00f49a314cd",
-  "t": "> [Yang baru di build 139](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.9-beta) | [Changelog](CHANGELOG.md) | **[Video](#videos)** | [Semua rilis](https://github.com/akilluminati47/RIPPS2/releases) | [Diskusikan di psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "d1471c7da040": {
   "en": "d1471c7da040",

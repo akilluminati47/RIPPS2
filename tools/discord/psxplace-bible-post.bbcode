@@ -9,7 +9,7 @@
 [I]The boot loader RIPPS2 sets up. Signed, bound, and starting real PS2s.[/I]
 
 [URL='https://github.com/akilluminati47/BIBLE/releases/latest'][B]Signed builds and SD2PSX BOOT card[/B][/URL]  |  [URL='https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf']RIPPS2.elf (installs it for you)[/URL]  |  [URL='https://github.com/akilluminati47/BIBLE#readme']Every setting[/URL]  |  [URL='https://github.com/akilluminati47/BIBLE']Source (GPL-3)[/URL]  |  [URL='https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/']RIPPS2's thread[/URL]
-[SIZE=2]Current: BIBLE 3282396, carried by RIPPS2 v1.4.0 beta[/SIZE][/CENTER]
+[SIZE=2]Current: BIBLE 3282396, carried by RIPPS2 v1.4.1 beta[/SIZE][/CENTER]
 
 [SIZE=3]BIBLE is akilluminati47's boot loader: a fork of saildot4k's [URL='https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended']PS2BBL Extended[/URL], itself built on El Isra's [URL='https://github.com/israpps/PlayStation2-Basic-BootLoader']PS2BBL[/URL]. It sits on your memory card as the console's system update (or in the internal HDD's boot area) and, at power on, starts what you chose, RIPPS2 first. [B]Every build is signed by akilluminati47[/B], with kelftool on their own PC: nobody else's keys, nobody else's signing.[/SIZE]
 
@@ -57,7 +57,7 @@ Hold [B]TRIANGLE + CROSS[/B] at power on for the video mode page. It always open
 [SIZE=5][B]Install it[/B][/SIZE]
 [LIST]
 [*][LEFT][B]With RIPPS2 (nothing to download)[/B]: RIPPS2.elf carries all four signed builds. Settings > General > Boot Loader > [B]Manage[/B] picks the one that reaches where RIPPS2 lives, has the console bind it to your card, moves whatever was there into a backup folder (nothing is deleted) and writes BIBLE's settings file, starting RIPPS2 first.[/LEFT]
-[*][LEFT][B]Already have BIBLE?[/B] Manage opens a BIBLE menu. [B]UPDATE BIBLE[/B] binds the newest over an older one in place, and every setting above is one pick away.[/LEFT]
+[*][LEFT][B]Already have BIBLE?[/B] Manage opens a BIBLE menu. [B]UPDATE BIBLE[/B] binds the newest over an older one in place, and every setting is on one page with a tip on each row.[/LEFT]
 [/LIST]
 [CENTER][IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b139/new-01-bible-menu.jpg[/IMG]
 [SIZE=2]Manage's BIBLE menu[/SIZE][/CENTER]
@@ -79,8 +79,8 @@ One text file on the card, [B]mc?:/SYS-CONF/PS2BBL.INI[/B] (read first; else PS2
 [TR][TD]VIDEO_MODE[/TD][TD]Video Mode[/TD][TD]AUTO, NTSC, PAL, 480P, 576P, 720P or 1080I[/TD][/TR]
 [TR][TD]BIBLE_WIDESCREEN[/TD][TD]Widescreen[/TD][TD]AUTO (RIPPS2's Widescreen, else the PS2's 16:9 setting), ON or OFF[/TD][/TR]
 [TR][TD]DISC_STOP[/TD][TD]Stop Disc at Launch[/TD][TD]1 stops the disc at launch and waits for the drive (the default), 0 leaves it alone[/TD][/TR]
-[TR][TD]BIBLE_COLOR[/TD][TD]the file[/TD][TD]The sky's top, horizon and floor colours (0D0000,700400,170000); unset, the Color Theme RIPPS2 saved[/TD][/TR]
-[TR][TD]NAME_<button>, LK_<button>_E1 to E10[/TD][TD]the file[/TD][TD]What each button starts (AUTO: no button held), the first entry that exists. $OSDSYS the browser, $CDVD the disc, $CREDITS BIBLE's credits[/TD][/TR]
+[TR][TD]BIBLE_COLOR[/TD][TD]Sky Color[/TD][TD]The sky's top, horizon and floor colours (0D0000,700400,170000); unset, the Color Theme RIPPS2 saved[/TD][/TR]
+[TR][TD]NAME_<button>, LK_<button>_E1 to E10, ARG_<button>_E1 to E10[/TD][TD]Launch Keys[/TD][TD]What each button starts (AUTO: no button held), the first entry that exists, chosen with the Memory Files browser. $OSDSYS the browser, $CDVD the disc, $CREDITS BIBLE's credits[/TD][/TR]
 [/TABLE]
 
 [SIZE=5][B]Tested on a real PS2[/B][/SIZE]

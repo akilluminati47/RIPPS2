@@ -1,5 +1,35 @@
 # RIPPS2 changelog
 
+## Build 141 (beta, v1.4.1-beta), changes since build 140
+
+The user, 11/04: "the bible manage menu should be like the update we did for the rename matching the rest of the settings layouts,
+this enhances it and allows tooltips to display". Built and run in the PCSX2 lab; nothing here has been on a real PS2.
+
+**BIBLE's Settings page**
+- Manage's BIBLE menu is a full page (`ripps2Page`): the Set Metadata (Rename) look, Roboto, a title with its line, label left, value
+  right, and the chosen row's tip above the hints. Every row has a tip.
+- The cursor stays on its row. Left and Right step a value; confirm is the next value.
+- A change stays in memory and the file is written once when the page closes, so stepping never waits on the card.
+- The file goes through `PS2BBL.TMP`, read back whole, and then takes the old one's name. If the power goes between those two
+  steps, the next visit names the temporary copy back. Comments and every other line stay.
+- **Sky Color** (`BIBLE_COLOR`): Follow Color Theme, or any Color Theme's sky, with a swatch beside it.
+- **Boot Sound** on the page, the same setting as Audio and closed the same way.
+
+**Launch Keys**
+- A page of 17 buttons, then a page per button: its name and ten paths. A path comes from the Memory Files browser
+  (`ripps2FilesPick`: the drives, START DRIVES and folders as ever, an ELF is the choice), typed on the keyboard, or from BIBLE's
+  commands, with arguments per path. New lines go after the button's own lines. Square clears.
+- BIBLE's facts on the page: BOOT LOCK's lines only show; the last path in the file stays, since a file with none sends BIBLE to its
+  rescue mode; a path that card's BIBLE build cannot read says so on its row.
+
+**Found while testing**
+- `OSDHISTORY_READ` is parsed by BIBLE 3282396 and nothing reads it, so its row's tip says it changes nothing yet.
+- `EJECT_TRAY` opens the tray when a disc launch finds none.
+- The recovery first used `stat`, which says a missing file on a memory card is there, and it deleted the only copy. It opens the
+  files now, and the lab passed that case.
+
+Next: BIBLE's hand-off of the boot sound in memory on an SD2PSX (needs a BIBLE re-sign).
+
 ## Build 140 (beta, v1.4.0-beta), changes since build 139
 
 The user, 11/04: the boot sound still late after BIBLE's work, stray sounds ("played another sound effect after its

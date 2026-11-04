@@ -87,6 +87,10 @@
   "en": "2bb78085b36f",
   "t": "| [مقطع Short للإصدار 88](https://www.youtube.com/shorts/Sqprz22tdtg) | Short | الإصدار 88 على أنغام Slideshow |"
  },
+ "2c1c50e84927": {
+  "en": "2c1c50e84927",
+  "t": "> 1. **[نزّل RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (دائمًا أحدث إصدار) (ملف واحد، 2.775 KB)، و**[حزمة السمات](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** إن شئت (Adapt وAdapt Rx، الإصدار 136: إعداد واحد وصورة واحدة لكل منهما؛ RIPGRID وRIPFLOW مدمجتان)، و**[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** ليظهر RIPPS2 بلغتك (33 لغة؛ يأتي مع كل إصدار)."
+ },
  "2f0ee80297df": {
   "en": "2f0ee80297df",
   "t": "- **MEMORY FILES** متصفح ملفات مدمج: انسخ وانقل واحذف بين بطاقات الذاكرة وUSB وMMCE والقرص الصلب (كل نسخة تُقرأ مرة أخرى وتُفحص)؛ افتح صور بطاقات VMC الخاصة بـ OPL كأنها مجلدات؛ صدّر حفظات PSU واستوردها؛ حرّر الملفات النصية؛ افتح الصور، وشغّل فيديو AVI **بملء الشاشة** مع **أزرار المشغّل** (Cross للتشغيل والإيقاف المؤقت، وCircle للإيقاف، وL1/R1 للقفز 10 ثوانٍ، وL2/R2 للصوت، وSTART للتكرار؛ تتلاشى التلميحات أثناء التشغيل وتبقى عند الإيقاف المؤقت) (يحوّل [RIPPS2 Media Studio](tools/media-studio) أي فيديو إلى ملف كهذا، حتى MP4 من الهاتف)، وشغّل ملفات `.mp3` و`.ogg` و`.wav`، أو حدّد عدة ملفات وافتحها معًا لتشغيلها كقرص واحد في مشغّل CD الخاص بـ Launch Disc؛ وملف **`.tar` مجلد أزرق** يمكنك فتحه ولصق الصور فيه ونسخ محتوياته منه (الإصدار 125)؛ والمثلث على ملف `.tar` يدمج فيه ملف `.tar` آخر من ART ([أدناه](#covers-from-one-file-art-pack)). **المجلد المفتوح هو الصف الأول**، ويعرض عدد عناصره وعدد المحدد منها والحجم الكلي والمساحة الحرة في المحرّك؛ وCross أو Square عليه يحدد الكل (أو لا شيء إن كان شيء محددًا). START يفتح إعداداته، حيث يجد **SEARCH FILES** أي ملف أو مجلد بالاسم على كل محرّك مشغَّل ويفتح الشجرة حيث يوجد. وSquare على بطاقة ذاكرة يفتح **CARD MANAGER** (نسخ احتياطي للبطاقة إلى VMC، وإعادة كتابة حفظات VMC إلى بطاقة، ومسح حفظات الألعاب، والتهيئة)، وSquare على قرص APA HDD يفتح **HDD MANAGER** (أقسامه وأحجامها وإزالة قسم بعد فحص كامل لجدول الأقسام)."
@@ -102,6 +106,10 @@
  "324016ff9971": {
   "en": "324016ff9971",
   "t": "**رف الأقزام:** واجهة عرض Storage. لوح خشب uOPL أمام الأبراج، وعليه علامة RIPPS2 عشر مرات: قبعة لبّاد لقزم ميت تقف وحافتها إلى الأسفل في بركة دمه، واحدة لكل Color Theme (RIPPS2 وEmber وBlood وEctoplasm وAmethyst وBone وTangerine وFlamingo وTurquoise وMoonlight). تظهر ثلاث منها في كل مرة، كما يعرض RIPFLOW الأغلفة: تلتفت الوسطى لتنظر إلى المؤشر (كلما اقترب، التفتت أسرع) وتتمايل على نابضها، وLeft / Right أو لمسة على أي من الجارتين تدير الرف. ويستقر على قبعة RIPPS2 الزرقاء. والقبعة التي تُضغط ترسل Color Theme الخاص بها عبر الأبراج (مصفوفة ألوان ملف ELF نفسه، فتبدو الأبراج كما تصنعها تلك السمة): اللمسة دفقة لون تعبر الساحة وتعود إلى أزرق RIPPS2؛ ومع الضغط المطوّل تبقى السمة فوق كامل العرض حتى تفلتها."
+ },
+ "32675f221dd5": {
+  "en": "32675f221dd5",
+  "t": "> ### اسحبه: RIPPS2 الإصدار 141، v1.4.1 بيتا"
  },
  "376d12fba45e": {
   "en": "376d12fba45e",
@@ -363,9 +371,9 @@
   "en": "c2409d3b212c",
   "t": "| ✕ | التأكيد | `confirm.adp` | **Menu sound 5** |"
  },
- "c4671696596b": {
-  "en": "c4671696596b",
-  "t": "> 1. **[نزّل RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (دائمًا أحدث إصدار) (ملف واحد، 2.764 KB)، و**[حزمة السمات](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** إن شئت (Adapt وAdapt Rx، الإصدار 136: إعداد واحد وصورة واحدة لكل منهما؛ RIPGRID وRIPFLOW مدمجتان)، و**[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** ليظهر RIPPS2 بلغتك (33 لغة؛ يأتي مع كل إصدار)."
+ "c8222b627615": {
+  "en": "c8222b627615",
+  "t": "> [الجديد في الإصدار 141](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.4.1-beta) | [Changelog](CHANGELOG.md) | **[الفيديوهات](#videos)** | [كل الإصدارات](https://github.com/akilluminati47/RIPPS2/releases) | [تحدّث عنه في psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "c8eb072f3f8f": {
   "en": "c8eb072f3f8f",
@@ -383,17 +391,9 @@
   "en": "cc3d4e294dca",
   "t": "- [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/) من krHACKen يشغّل ألعاب PS1 من نسختك الخاصة، التي يعثر عليها RIPPS2 على محرّكاتك وبطاقات الذاكرة لديك ([`elf/popstarter`](elf/popstarter/README.md))."
  },
- "ccdef30a7623": {
-  "en": "ccdef30a7623",
-  "t": "> ### اسحبه: RIPPS2 الإصدار 139، v1.3.9 بيتا"
- },
  "cd91a464e4a7": {
   "en": "cd91a464e4a7",
   "t": "| ✓ | الحفظ | `save.adp` | **Menu sound 12** |"
- },
- "d00f49a314cd": {
-  "en": "d00f49a314cd",
-  "t": "> [الجديد في الإصدار 139](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.9-beta) | [Changelog](CHANGELOG.md) | **[الفيديوهات](#videos)** | [كل الإصدارات](https://github.com/akilluminati47/RIPPS2/releases) | [تحدّث عنه في psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "d1471c7da040": {
   "en": "d1471c7da040",

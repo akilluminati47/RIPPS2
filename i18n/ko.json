@@ -87,6 +87,10 @@
   "en": "2bb78085b36f",
   "t": "| [빌드 88 쇼츠](https://www.youtube.com/shorts/Sqprz22tdtg) | Short | Slideshow에 맞춘 빌드 88 |"
  },
+ "2c1c50e84927": {
+  "en": "2c1c50e84927",
+  "t": "> 1. **[RIPPS2.elf 다운로드](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (항상 최신 릴리스) (파일 하나, 2,775 KB), 원하면 **[테마 팩](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt와 Adapt Rx, 에디션 136: 각각 설정 하나와 이미지 하나. RIPGRID와 RIPFLOW는 내장), 그리고 RIPPS2를 내 언어로 쓰기 위한 **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** (33개 언어. 모든 릴리스에 포함)."
+ },
  "2f0ee80297df": {
   "en": "2f0ee80297df",
   "t": "- **MEMORY FILES**는 내장 파일 브라우저입니다: 메모리 카드, USB, MMCE, HDD 사이에서 복사, 이동, 삭제 (모든 복사는 다시 읽어 확인). OPL의 VMC 카드 이미지를 폴더처럼 열기. PSU 세이브 내보내기와 가져오기. 텍스트 파일 편집. 이미지를 열고, AVI 영상을 **전체 화면**으로 **플레이어 조작**과 함께 재생 (Cross 재생/일시 정지, Circle 정지, L1/R1 10초 건너뛰기, L2/R2 볼륨, START 반복. 안내는 재생 중에 사라지고 일시 정지 중에는 남습니다) ([RIPPS2 Media Studio](tools/media-studio)는 휴대폰의 MP4를 포함한 어떤 영상이든 이 형식으로 바꿉니다), `.mp3`, `.ogg`, `.wav`를 재생하거나, 여러 개에 표시하고 함께 열면 Launch Disc의 CD 플레이어에서 디스크처럼 재생됩니다. **`.tar`는 파란 폴더**로, 열어서 이미지를 붙여 넣거나 안의 항목을 복사해 꺼낼 수 있습니다 (빌드 125). `.tar`에서 세모는 다른 ART `.tar`를 그 안에 합칩니다 ([아래](#covers-from-one-file-art-pack)). **열린 폴더가 첫 행**이며, 항목 수, 표시한 수, 전체 크기, 드라이브 여유 공간을 보여 줍니다. 거기서 Cross나 Square를 누르면 모두 표시합니다 (무언가 표시되어 있으면 모두 해제). START는 설정을 열고, 그곳의 **SEARCH FILES**는 시작된 어느 드라이브에서든 파일이나 폴더를 이름으로 찾아 그 자리에서 트리를 엽니다. 메모리 카드에서 Square는 **CARD MANAGER** (카드를 VMC로 백업, VMC의 세이브를 카드에 쓰기, 게임 세이브 지우기, 포맷)를, APA HDD에서 Square는 **HDD MANAGER** (파티션, 그 크기, 파티션 테이블을 모두 확인한 뒤의 삭제)를 엽니다."
@@ -102,6 +106,10 @@
  "324016ff9971": {
   "en": "324016ff9971",
   "t": "**엘프 선반:** Storage의 진열장. 탑 앞의 uOPL 나무판, 그 위에 RIPPS2 마크가 열 개: 죽은 엘프의 펠트 모자가 챙을 아래로 하고 자기 피 웅덩이에 서 있습니다. Color Theme마다 하나 (RIPPS2, Ember, Blood, Ectoplasm, Amethyst, Bone, Tangerine, Flamingo, Turquoise, Moonlight). RIPFLOW가 커버를 보여 주듯 한 번에 세 개가 보이며, 가운데 모자는 커서를 향해 돌고 (가까울수록 빨리 돕니다) 스프링 위에서 흔들립니다. Left / Right나 이웃을 탭하면 선반이 돕니다. 파란 RIPPS2 모자에서 멈춥니다. 누른 모자는 자기 Color Theme을 탑에 보냅니다 (ELF 자신의 색 행렬이므로 탑은 그 테마가 그리는 그대로 보입니다): 탭하면 필드를 가로지르는 색의 분출 후 RIPPS2 파랑으로 돌아오고, 누르고 있으면 놓을 때까지 테마가 화면 전체에 남습니다."
+ },
+ "32675f221dd5": {
+  "en": "32675f221dd5",
+  "t": "> ### 립하세요: RIPPS2 빌드 141, v1.4.1 베타"
  },
  "376d12fba45e": {
   "en": "376d12fba45e",
@@ -363,9 +371,9 @@
   "en": "c2409d3b212c",
   "t": "| ✕ | 확인 | `confirm.adp` | **Menu sound 5** |"
  },
- "c4671696596b": {
-  "en": "c4671696596b",
-  "t": "> 1. **[RIPPS2.elf 다운로드](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (항상 최신 릴리스) (파일 하나, 2,764 KB), 원하면 **[테마 팩](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt와 Adapt Rx, 에디션 136: 각각 설정 하나와 이미지 하나. RIPGRID와 RIPFLOW는 내장), 그리고 RIPPS2를 내 언어로 쓰기 위한 **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** (33개 언어. 모든 릴리스에 포함)."
+ "c8222b627615": {
+  "en": "c8222b627615",
+  "t": "> [빌드 141의 새 기능](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.4.1-beta) | [Changelog](CHANGELOG.md) | **[영상](#videos)** | [모든 릴리스](https://github.com/akilluminati47/RIPPS2/releases) | [psx-place에서 이야기하기](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "c8eb072f3f8f": {
   "en": "c8eb072f3f8f",
@@ -383,17 +391,9 @@
   "en": "cc3d4e294dca",
   "t": "- [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/), krHACKen: 내 것으로 PS1 게임을 실행하며, RIPPS2가 드라이브와 메모리 카드에서 찾습니다 ([`elf/popstarter`](elf/popstarter/README.md))."
  },
- "ccdef30a7623": {
-  "en": "ccdef30a7623",
-  "t": "> ### 립하세요: RIPPS2 빌드 139, v1.3.9 베타"
- },
  "cd91a464e4a7": {
   "en": "cd91a464e4a7",
   "t": "| ✓ | 저장 | `save.adp` | **Menu sound 12** |"
- },
- "d00f49a314cd": {
-  "en": "d00f49a314cd",
-  "t": "> [빌드 139의 새 기능](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.9-beta) | [Changelog](CHANGELOG.md) | **[영상](#videos)** | [모든 릴리스](https://github.com/akilluminati47/RIPPS2/releases) | [psx-place에서 이야기하기](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "d1471c7da040": {
   "en": "d1471c7da040",

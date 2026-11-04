@@ -87,6 +87,10 @@
   "en": "2bb78085b36f",
   "t": "| [A 88-as build Shortja](https://www.youtube.com/shorts/Sqprz22tdtg) | Short | A 88-as build, Slideshow-ra |"
  },
+ "2c1c50e84927": {
+  "en": "2c1c50e84927",
+  "t": "> 1. **[Töltsd le a RIPPS2.elf fájlt](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (mindig a legújabb kiadás) (egyetlen fájl, 2775 KB), és ha szeretnéd, a **[témacsomagot](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt, Adapt Rx, 136-as kiadás: egy-egy konfiguráció és kép; a RIPGRID és a RIPFLOW beépített), és a **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** csomagot, hogy a RIPPS2 a te nyelveden szóljon (33 nyelv; minden kiadás tartalmazza)."
+ },
  "2f0ee80297df": {
   "en": "2f0ee80297df",
   "t": "- A **MEMORY FILES** beépített fájlböngésző: másolás, áthelyezés és törlés memóriakártyák, USB, MMCE és a HDD között (minden másolatot visszaolvas és ellenőriz); az OPL VMC kártyaképeit mappaként nyitja meg; PSU-mentéseket exportál és importál; szöveges fájlokat szerkeszt; képeket nyit meg, AVI-videót játszik le **teljes képernyőn** **lejátszógombokkal** (a Cross lejátszás/szünet, a Circle leállítás, az L1/R1 10 mp-es ugrás, az L2/R2 hangerő, a START ismétlés; a súgók lejátszás közben elhalványulnak, szünetben megmaradnak) (a [RIPPS2 Media Studio](tools/media-studio) bármilyen videót, egy telefon MP4-ét is ilyenné alakítja), és `.mp3`, `.ogg` meg `.wav` fájlokat játszik le, vagy jelölj ki többet és nyisd meg együtt, hogy egy lemezként szóljanak a Launch Disc CD-lejátszójában; egy **`.tar` kék mappa**, amelyet megnyithatsz, képeket illeszthetsz bele és elemeket másolhatsz ki belőle (125-ös build); a Háromszög egy `.tar` fájlon egy másik ART `.tar` fájlt olvaszt bele ([lent](#covers-from-one-file-art-pack)). A **megnyitott mappa az első sor**, benne a bejegyzések száma, a kijelöltek száma, a teljes méret és a meghajtó szabad helye; a Cross vagy a Square rajta mindent kijelöl (vagy, ha van kijelölt, semmit). A START megnyitja a beállításait, ahol a **SEARCH FILES** név szerint megtalál bármely fájlt vagy mappát minden elindított meghajtón, és ott nyitja meg a fát, ahol van. A Square egy memóriakártyán megnyitja a **CARD MANAGER** eszközt (kártya mentése VMC-be, egy VMC mentéseinek visszaírása kártyára, a játékmentések törlése, formázás), a Square az APA HDD-n pedig a **HDD MANAGER** eszközt (a partíciói, méreteik, és egy partíció eltávolítása a partíciós tábla teljes ellenőrzése után)."
@@ -102,6 +106,10 @@
  "324016ff9971": {
   "en": "324016ff9971",
   "t": "**Manópolc:** a Storage kirakata. Az uOPL fapallója a tornyok előtt, rajta a RIPPS2-jel tízszer: egy halott manó filckalapja, karimával lefelé a saját vértócsájában, minden Color Theme-hez egy (RIPPS2, Ember, Blood, Ectoplasm, Amethyst, Bone, Tangerine, Flamingo, Turquoise, Moonlight). Egyszerre három látszik, ahogy a RIPFLOW a borítókat mutatja: a középső a mutató felé fordul (minél közelebb van, annál gyorsabban fordul), és rugózik a rugóján, a Left / Right vagy egy érintés valamelyik szomszédon pedig elforgatja a polcot. A kék RIPPS2-kalapon áll meg. Egy megnyomott kalap a Color Theme-jét küldi végig a tornyokon (az ELF saját színmátrixa, így a tornyok úgy néznek ki, ahogy az a téma teszi őket): egy koppintás színlöket, amely átsöpör a mezőn, és visszamossa a RIPPS2 kékjét; nyomva tartva a téma az egész kép fölött marad, amíg el nem engeded."
+ },
+ "32675f221dd5": {
+  "en": "32675f221dd5",
+  "t": "> ### Rippeld: RIPPS2 build 141, v1.4.1 béta"
  },
  "376d12fba45e": {
   "en": "376d12fba45e",
@@ -363,9 +371,9 @@
   "en": "c2409d3b212c",
   "t": "| ✕ | Megerősítés | `confirm.adp` | **Menu sound 5** |"
  },
- "c4671696596b": {
-  "en": "c4671696596b",
-  "t": "> 1. **[Töltsd le a RIPPS2.elf fájlt](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (mindig a legújabb kiadás) (egyetlen fájl, 2764 KB), és ha szeretnéd, a **[témacsomagot](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt, Adapt Rx, 136-as kiadás: egy-egy konfiguráció és kép; a RIPGRID és a RIPFLOW beépített), és a **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** csomagot, hogy a RIPPS2 a te nyelveden szóljon (33 nyelv; minden kiadás tartalmazza)."
+ "c8222b627615": {
+  "en": "c8222b627615",
+  "t": "> [Újdonságok a 141-ös buildben](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.4.1-beta) | [Changelog](CHANGELOG.md) | **[Videók](#videos)** | [Minden kiadás](https://github.com/akilluminati47/RIPPS2/releases) | [Beszélgess róla a psx-place-en](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "c8eb072f3f8f": {
   "en": "c8eb072f3f8f",
@@ -383,17 +391,9 @@
   "en": "cc3d4e294dca",
   "t": "- A [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/), krHACKen munkája, a saját példányodból indít PS1-játékokat, amelyet a RIPPS2 megtalál a meghajtóidon és memóriakártyáidon ([`elf/popstarter`](elf/popstarter/README.md))."
  },
- "ccdef30a7623": {
-  "en": "ccdef30a7623",
-  "t": "> ### Rippeld: RIPPS2 build 139, v1.3.9 béta"
- },
  "cd91a464e4a7": {
   "en": "cd91a464e4a7",
   "t": "| ✓ | Mentés | `save.adp` | **Menu sound 12** |"
- },
- "d00f49a314cd": {
-  "en": "d00f49a314cd",
-  "t": "> [Újdonságok a 139-ös buildben](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.9-beta) | [Changelog](CHANGELOG.md) | **[Videók](#videos)** | [Minden kiadás](https://github.com/akilluminati47/RIPPS2/releases) | [Beszélgess róla a psx-place-en](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "d1471c7da040": {
   "en": "d1471c7da040",

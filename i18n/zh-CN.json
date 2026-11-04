@@ -87,6 +87,10 @@
   "en": "2bb78085b36f",
   "t": "| [构建 88 短片](https://www.youtube.com/shorts/Sqprz22tdtg) | Short | 配合 Slideshow 的构建 88 |"
  },
+ "2c1c50e84927": {
+  "en": "2c1c50e84927",
+  "t": "> 1. **[下载 RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)**（始终是最新版本）（一个文件，2,775 KB），需要的话再下载 **[主题包](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)**（Adapt 和 Adapt Rx，第 136 版：各一个配置和一张图片；RIPGRID 和 RIPFLOW 为内置），以及 **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)**，用你的语言使用 RIPPS2（33 种语言；每个版本都附带）。"
+ },
  "2f0ee80297df": {
   "en": "2f0ee80297df",
   "t": "- **MEMORY FILES** 是内置文件浏览器：在记忆卡、USB、MMCE 和 HDD 之间复制、移动和删除（每次复制都会重新读取校验）；把 OPL 的 VMC 卡镜像当作文件夹打开；导出和导入 PSU 存档；编辑文本文件；打开图片，**全屏**播放 AVI 视频并带有**播放控制**（Cross 播放/暂停，Circle 停止，L1/R1 跳 10 秒，L2/R2 音量，START 循环；提示在播放时淡出，暂停时保留）（[RIPPS2 Media Studio](tools/media-studio) 能把任何视频，包括手机拍的 MP4，转换成这种文件），播放 `.mp3`、`.ogg` 和 `.wav` 文件，或标记多个一起打开，在 Launch Disc 的 CD 播放器中像一张光盘一样播放；**`.tar` 是一个蓝色文件夹**，你可以打开它、往里粘贴图片、把成员复制出来（构建 125）；在 `.tar` 上按三角可把另一个 ART 的 `.tar` 合并进来（[见下文](#covers-from-one-file-art-pack)）。**打开的文件夹是第一行**，显示项目数、已标记数、总大小和驱动器剩余空间；在它上面按 Cross 或 Square 标记全部（若已有标记则全部取消）。START 打开它的设置，其中的 **SEARCH FILES** 可在任何已启动的驱动器上按名称查找文件或文件夹并就地展开目录树。在记忆卡上按 Square 打开 **CARD MANAGER**（把卡备份为 VMC、把 VMC 的存档写入卡、清除游戏存档、格式化），在 APA HDD 上按 Square 打开 **HDD MANAGER**（它的分区、大小，以及在完整检查分区表后删除一个分区）。"
@@ -102,6 +106,10 @@
  "324016ff9971": {
   "en": "324016ff9971",
   "t": "**精灵架:** Storage 的展示架。高塔前面的一块 uOPL 木板，上面有十个 RIPPS2 标志：一顶死去精灵的毡帽，帽檐朝下立在自己的血泊中，每个 Color Theme 一顶（RIPPS2、Ember、Blood、Ectoplasm、Amethyst、Bone、Tangerine、Flamingo、Turquoise、Moonlight）。一次可见三顶，就像 RIPFLOW 展示封面一样：中间的帽子转向光标（越近转得越快）并在弹簧上摇摆，Left / Right 或点按相邻的帽子会转动架子。它停在蓝色的 RIPPS2 帽子上。按下的帽子会把自己的 Color Theme 送到高塔上（使用 ELF 自己的颜色矩阵，所以高塔看起来和该主题绘制的一样）：点按是一道穿过场地的色彩喷发，然后回到 RIPPS2 蓝；按住则主题会覆盖整个画面直到你松开。"
+ },
+ "32675f221dd5": {
+  "en": "32675f221dd5",
+  "t": "> ### 开始提取：RIPPS2 构建 141，v1.4.1 测试版"
  },
  "376d12fba45e": {
   "en": "376d12fba45e",
@@ -363,9 +371,9 @@
   "en": "c2409d3b212c",
   "t": "| ✕ | 确认 | `confirm.adp` | **Menu sound 5** |"
  },
- "c4671696596b": {
-  "en": "c4671696596b",
-  "t": "> 1. **[下载 RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)**（始终是最新版本）（一个文件，2,764 KB），需要的话再下载 **[主题包](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)**（Adapt 和 Adapt Rx，第 136 版：各一个配置和一张图片；RIPGRID 和 RIPFLOW 为内置），以及 **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)**，用你的语言使用 RIPPS2（33 种语言；每个版本都附带）。"
+ "c8222b627615": {
+  "en": "c8222b627615",
+  "t": "> [构建 141 的新内容](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.4.1-beta) | [Changelog](CHANGELOG.md) | **[视频](#videos)** | [所有版本](https://github.com/akilluminati47/RIPPS2/releases) | [在 psx-place 讨论](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "c8eb072f3f8f": {
   "en": "c8eb072f3f8f",
@@ -383,17 +391,9 @@
   "en": "cc3d4e294dca",
   "t": "- [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/)，由 krHACKen 开发，用你自己的副本运行 PS1 游戏，RIPPS2 会在你的驱动器和记忆卡上找到它（[`elf/popstarter`](elf/popstarter/README.md)）。"
  },
- "ccdef30a7623": {
-  "en": "ccdef30a7623",
-  "t": "> ### 开始提取：RIPPS2 构建 139，v1.3.9 测试版"
- },
  "cd91a464e4a7": {
   "en": "cd91a464e4a7",
   "t": "| ✓ | 保存 | `save.adp` | **Menu sound 12** |"
- },
- "d00f49a314cd": {
-  "en": "d00f49a314cd",
-  "t": "> [构建 139 的新内容](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.9-beta) | [Changelog](CHANGELOG.md) | **[视频](#videos)** | [所有版本](https://github.com/akilluminati47/RIPPS2/releases) | [在 psx-place 讨论](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "d1471c7da040": {
   "en": "d1471c7da040",

@@ -87,6 +87,10 @@
   "en": "2bb78085b36f",
   "t": "| [Short builda 88](https://www.youtube.com/shorts/Sqprz22tdtg) | Short | Build 88, uz Slideshow |"
  },
+ "2c1c50e84927": {
+  "en": "2c1c50e84927",
+  "t": "> 1. **[Preuzmi RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (uvijek najnovije izdanje) (jedna datoteka, 2.775 KB), i **[paket tema](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** ako želiš (Adapt, Adapt Rx, izdanje 136: po jedna konfiguracija i jedna slika; RIPGRID i RIPFLOW su ugrađeni), i **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** za RIPPS2 na tvom jeziku (33 jezika; svako izdanje ga sadrži)."
+ },
  "2f0ee80297df": {
   "en": "2f0ee80297df",
   "t": "- **MEMORY FILES** je ugrađeni preglednik datoteka: kopiraj, premještaj i briši između memorijskih kartica, USB-a, MMCE-a i HDD-a (svaka kopija se čita natrag i provjerava); otvaraj OPL-ove VMC slike kartica kao mape; izvozi i uvozi PSU spremanja; uređuj tekstne datoteke; otvaraj slike, reproduciraj AVI video **preko cijelog zaslona** s **kontrolama playera** (Cross reproducira/pauzira, Circle zaustavlja, L1/R1 skaču 10 s, L2/R2 glasnoća, START ponavlja; savjeti nestaju tijekom reprodukcije i ostaju u pauzi) ([RIPPS2 Media Studio](tools/media-studio) od bilo kojeg videa, pa i MP4-a s mobitela, napravi takav), i reproduciraj `.mp3`, `.ogg` i `.wav` datoteke, ili ih označi više i otvori zajedno da ih slušaš kao jedan disk u CD playeru Launch Disca; **`.tar` je plava mapa** koju možeš otvoriti, u nju zalijepiti slike i iz nje kopirati sadržaj (build 125); Trokut na `.tar` u njega spaja drugi ART `.tar` ([dolje](#covers-from-one-file-art-pack)). **Otvorena mapa je prvi redak**, s brojem stavki, brojem označenih, ukupnom veličinom i slobodnim prostorom pogona; Cross ili Square na njoj označava sve (ili, ako je nešto označeno, ništa). START otvara njezine postavke, gdje **SEARCH FILES** pronalazi bilo koju datoteku ili mapu po imenu na svakom pokrenutom pogonu i otvara stablo tamo gdje je. Square na memorijskoj kartici otvara **CARD MANAGER** (sigurnosna kopija kartice u VMC, vraćanje spremanja iz VMC-a na karticu, brisanje spremanja igara, formatiranje), a Square na APA HDD-u **HDD MANAGER** (njegove particije, njihove veličine i uklanjanje jedne nakon potpune provjere tablice particija)."
@@ -102,6 +106,10 @@
  "324016ff9971": {
   "en": "324016ff9971",
   "t": "**Polica s vilenjacima:** izlog Storagea. Drvena daska iz uOPL-a ispred kula, a na njoj oznaka RIPPS2 deset puta: filcani šešir mrtvog vilenjaka koji stoji obodom dolje u vlastitoj lokvi krvi, po jedan za svaki Color Theme (RIPPS2, Ember, Blood, Ectoplasm, Amethyst, Bone, Tangerine, Flamingo, Turquoise, Moonlight). Odjednom se vide tri, kao što RIPFLOW prikazuje omote: srednji se okreće da gleda pokazivač (što je bliže, to se brže okreće) i poskakuje na opruzi, a Left / Right ili dodir na bilo kojeg susjeda okreće policu. Zaustavlja se na plavom šeširu RIPPS2. Pritisnuti šešir šalje svoj Color Theme preko kula (vlastita matrica boja ELF-a, pa kule izgledaju onako kako ih ta tema čini): dodir je nalet boje koji prijeđe polje i vrati se u plavu boju RIPPS2; držan, tema ostaje nad cijelim prikazom dok ga ne pustiš."
+ },
+ "32675f221dd5": {
+  "en": "32675f221dd5",
+  "t": "> ### Ripaj ga: RIPPS2 build 141, v1.4.1 beta"
  },
  "376d12fba45e": {
   "en": "376d12fba45e",
@@ -363,9 +371,9 @@
   "en": "c2409d3b212c",
   "t": "| ✕ | Potvrda | `confirm.adp` | **Menu sound 5** |"
  },
- "c4671696596b": {
-  "en": "c4671696596b",
-  "t": "> 1. **[Preuzmi RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (uvijek najnovije izdanje) (jedna datoteka, 2.764 KB), i **[paket tema](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** ako želiš (Adapt, Adapt Rx, izdanje 136: po jedna konfiguracija i jedna slika; RIPGRID i RIPFLOW su ugrađeni), i **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** za RIPPS2 na tvom jeziku (33 jezika; svako izdanje ga sadrži)."
+ "c8222b627615": {
+  "en": "c8222b627615",
+  "t": "> [Novo u buildu 141](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.4.1-beta) | [Changelog](CHANGELOG.md) | **[Videozapisi](#videos)** | [Sva izdanja](https://github.com/akilluminati47/RIPPS2/releases) | [Razgovaraj o tome na psx-placeu](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "c8eb072f3f8f": {
   "en": "c8eb072f3f8f",
@@ -383,17 +391,9 @@
   "en": "cc3d4e294dca",
   "t": "- [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/) od krHACKena pokreće PS1 igre iz tvoje vlastite kopije, koju RIPPS2 pronalazi na tvojim pogonima i memorijskim karticama ([`elf/popstarter`](elf/popstarter/README.md))."
  },
- "ccdef30a7623": {
-  "en": "ccdef30a7623",
-  "t": "> ### Ripaj ga: RIPPS2 build 139, v1.3.9 beta"
- },
  "cd91a464e4a7": {
   "en": "cd91a464e4a7",
   "t": "| ✓ | Spremanje | `save.adp` | **Menu sound 12** |"
- },
- "d00f49a314cd": {
-  "en": "d00f49a314cd",
-  "t": "> [Novo u buildu 139](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.9-beta) | [Changelog](CHANGELOG.md) | **[Videozapisi](#videos)** | [Sva izdanja](https://github.com/akilluminati47/RIPPS2/releases) | [Razgovaraj o tome na psx-placeu](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "d1471c7da040": {
   "en": "d1471c7da040",

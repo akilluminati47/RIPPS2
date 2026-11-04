@@ -4,7 +4,7 @@
 
 **[Download RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/download/v1.4.0-beta/RIPPS2.elf)** (one file, 2,768 KB) and put it in place of your old one. Your settings stay where they were. **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/download/v1.4.0-beta/RIPPS2-languages.zip)** has RIPPS2 in 33 languages, and the **[theme pack](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** stays at edition 136.
 
-The pictures below open short silent videos from this repo.
+The pictures below open short silent videos from this repo. **What this release adds on screen has only run in the PCSX2 lab**: see What was tested. [1.4.1](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.4.1-beta) came out with it.
 
 ### The sounds, sorted out
 - **Stray sounds.** Every ripped sound marked its end in a way that can send a voice on to read other memory, which fits another effect playing after one had finished. Each sound now ends on its own silent block as it loads, and none has been heard since on the test console. Your files are not touched, and there is nothing to rip again.
@@ -14,7 +14,7 @@ The pictures below open short silent videos from this repo.
 - **The music**: a start over another start now goes no further, and `DIAG.TXT` says who asked for each one. If you hear it load twice, your log will show why.
 
 ### Set Metadata (Rename)
-<p align="center"><a href="https://github.com/akilluminati47/RIPPS2/blob/main/media/b140/set-metadata.mp4"><img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b140/set-metadata.jpg" width="70%" alt="Set Metadata (Rename) on a PS2 game: the file name first, the details under it, the tip above the hints"></a></p>
+<p align="center"><a href="https://github.com/akilluminati47/RIPPS2/blob/main/media/b140/set-metadata.mp4"><img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b140/set-metadata.gif" width="70%" alt="Set Metadata (Rename) on a PS2 game: the file name first, the details under it, the tip above the hints"></a></p>
 <p align="center"><sub><a href="https://github.com/akilluminati47/RIPPS2/blob/main/media/b140/set-metadata.mp4">Watch: the new page</a></sub></p>
 
 - **One name on every row**: PS2 games, PS1 games and apps all read **Set Metadata (Rename)**.
@@ -31,11 +31,11 @@ The pictures below open short silent videos from this repo.
 | Starred game | Take off its star (R3) first | |
 | Favorites | Rename it on its own drive's page | |
 
-<p align="center"><a href="https://github.com/akilluminati47/RIPPS2/blob/main/media/b140/rename-ps1.mp4"><img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b140/rename-ps1.jpg" width="70%" alt="Renaming a PS1 test game: the tip, the keyboard, then the new name in the list"></a></p>
+<p align="center"><a href="https://github.com/akilluminati47/RIPPS2/blob/main/media/b140/rename-ps1.mp4"><img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b140/rename-ps1.gif" width="70%" alt="Renaming a PS1 test game: the tip, the keyboard, then the new name in the list"></a></p>
 <p align="center"><sub><a href="https://github.com/akilluminati47/RIPPS2/blob/main/media/b140/rename-ps1.mp4">Watch: renaming a PS1 test game</a></sub></p>
 
 ### The video player: a timeline for L1 and R1
-<p align="center"><a href="https://github.com/akilluminati47/RIPPS2/blob/main/media/b140/scrub.mp4"><img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b140/scrub.jpg" width="70%" alt="The timeline in the video player, on a test pattern"></a></p>
+<p align="center"><a href="https://github.com/akilluminati47/RIPPS2/blob/main/media/b140/scrub.mp4"><img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b140/scrub.gif" width="70%" alt="The timeline in the video player, on a test pattern"></a></p>
 <p align="center"><sub><a href="https://github.com/akilluminati47/RIPPS2/blob/main/media/b140/scrub.mp4">Watch: tap and hold on a 2 h 11 test film</a></sub></p>
 
 Every press used to stop the player and start it again at once, and spamming it to reach far into a film could crash it. Now L1 and R1 move a marker on a timeline:
@@ -45,11 +45,11 @@ Every press used to stop the player and start it again at once, and spamming it 
 - **Confirm** goes there now. **Cancel** stays where you were.
 
 ### Manage's BIBLE menu: faster, and more of it
-<p align="center"><a href="https://github.com/akilluminati47/RIPPS2/blob/main/media/b140/bible-menu.mp4"><img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b140/bible-menu.jpg" width="70%" alt="Manage's BIBLE menu with Stop Disc at Launch, Eject Tray at Launch, Read Console History and the two Game ID rows"></a></p>
+<p align="center"><a href="https://github.com/akilluminati47/RIPPS2/blob/main/media/b140/bible-menu.mp4"><img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b140/bible-menu.gif" width="70%" alt="Manage's BIBLE menu with Stop Disc at Launch, Eject Tray at Launch, Read Console History and the two Game ID rows"></a></p>
 <p align="center"><sub><a href="https://github.com/akilluminati47/RIPPS2/blob/main/media/b140/bible-menu.mp4">Watch: the new rows</a></sub></p>
 
 - **Stop Disc at Launch**: BIBLE's default stops the disc at a launch and waits for the drive to answer. Off skips that wait, about 3.3 s in the lab, and a disc in the tray keeps spinning. **A new BIBLE install now starts with it Off**; a settings file already on your card is kept, so turn it Off here.
-- **Eject Tray at Launch**, **Read Console History**, **Game ID for Apps** and **Game ID for Discs**.
+- **Eject Tray at Launch**, **Read Console History**, **Game ID for Apps** and **Game ID for Discs**. [1.4.1](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.4.1-beta) makes this menu a full page, with a tip on every row.
 
 ### For reports
 `DIAG.TXT` (STATUS > SAVE DIAGNOSTICS, or by itself when a game or a video starts from a drive) now ends with a **sound trace**: every sound asked for, which function asked, and what became of it. It also says who started and stopped the music, and each jump in a video.
@@ -63,7 +63,7 @@ Every press used to stop the player and start it again at once, and spamming it 
 | Set Metadata (Rename) on PS2 and PS1 rows | PCSX2 lab | One screen, nothing under the hints |
 | Renaming a PS1 test game with a CFG and art | PCSX2 lab, then the drive read back | Game, CFG and both art files renamed; the other game's art left alone |
 | 30 quick R1 presses, a hold and a cancel on a 2 h 41 film | PCSX2 lab | One jump each, no crash |
-| **The new page, the timeline and the rename on a real PS2** | SCPH-39001, SD2PSX | **TO FILL IN FROM THE CONSOLE TEST** |
+| **The new page, the timeline and the rename on a real PS2** | | **Not run yet** |
 
 #### Known
 - BIBLE's hand-off of the boot sound in memory has only passed in the lab; on a real SD2PSX RIPPS2 reads the card's copy itself, as these numbers do.
