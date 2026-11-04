@@ -7,10 +7,6 @@
   "en": "03be7325b77b",
   "t": "Ang RIPPS2 gidisenyo ug gipangulohan ni akilluminati47 ug gitukod uban si Claude (Anthropic). Mga tester: ripto, nuno6573, zackcage6, eliminator1403, FifthFox, Mr.sus.60, lukeatmynose, ahavasi, ug ang tanang nagsulay sa Discord. Mga issue sa GitHub: si DarkNerdShawny ug ang tanang nag-abli niini (ang issue mao ang labing maayong paagi aron ma-update ang RIPPS2: mahimong sama nila ug [pag-abli og usa](https://github.com/akilluminati47/RIPPS2/issues)). Espesyal nga pasalamat usab sa tanang gugma sa YouTube: malipay ko nga motabang, bisan asa ka moabot kanako."
  },
- "04b63e681261": {
-  "en": "04b63e681261",
-  "t": "> [Unsay bag-o sa build 138](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.8-beta) | [Changelog](CHANGELOG.md) | **[Mga video](#videos)** | [Tanang release](https://github.com/akilluminati47/RIPPS2/releases) | [Hisgoti sa psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
- },
  "064d7e03de66": {
   "en": "064d7e03de66",
   "t": "## Mga video"
@@ -90,10 +86,6 @@
  "2bb78085b36f": {
   "en": "2bb78085b36f",
   "t": "| [Build 88 Short](https://www.youtube.com/shorts/Sqprz22tdtg) | Short | Ang build 88 uban sa Slideshow |"
- },
- "2e611083b6bf": {
-  "en": "2e611083b6bf",
-  "t": "> ### I-rip na: RIPPS2 build 138, v1.3.8 beta"
  },
  "2f0ee80297df": {
   "en": "2f0ee80297df",
@@ -195,13 +187,13 @@
   "en": "60f96e9259c8",
   "t": "<sub>Giihap ang mga tingog sa menu sumala sa paglista sa Media Studio sa usa ka SCPH-39001 dump. Nabutang na sa Start ang kadaghanan sa ilang lugar; para niining mapa, i-convert ang save, error, random, ug ang duha ka tingog sa drive gikan sa mga tingog sa menu nga gihisgotan dinhi.</sub>"
  },
- "618c478fd292": {
-  "en": "618c478fd292",
-  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) ni El Isra (israpps) ug [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) ni saildot4k: gi-edit sa BOOT LOCK ang ilang config aron padaganon sa console ang RIPPS2 (sukad sa build 116 apil ang config sa FreeMcBoot ug OSDMenu). Sukad sa build 134, dala sa RIPPS2.elf ang [BIBLE](https://github.com/akilluminati47/BIBLE), among bersyon sa PS2BBL nga gipirmahan para sa RIPPS2, aron i-install sa **Boot Loader > Manage** (ang mga build 69 hangtod 133 nagdala sa PS2BBL 1.2.0 ni El Isra). Anaa sa [`elf/bible`](elf/bible/README.md) ang GPL-3.0 nga lisensya ug source niini; ang pag-bind sa card mogamit sa abli nga SECRMAN sa ps2sdk (AFL), walay yawe."
- },
  "67788a3fdaa3": {
   "en": "67788a3fdaa3",
   "t": "| [v1.1.2 sounds tour](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4) (sa GitHub) | 2:11 | Matag tingog nga gi-rip gikan sa console, sa usa ka take, gikan sa boot hangtod sa pagpadagan sa dula |"
+ },
+ "68edcf86e41c": {
+  "en": "68edcf86e41c",
+  "t": "- **BIBLE ug BOOT LOCK.** Gi-install sa Settings > General & System > Boot Loader > **Manage** ang **BIBLE**, ang boot loader ni akilluminati47 (usa ka fork sa PS2BBL Extended, matag build gipirmahan ni akilluminati47), sa memory card, sa BOOT card sa SD2PSX o MMCE o sa HDD, gi-update ang mas daan, ug gi-set ang background, splash ug video mode sa BIBLE gikan sa kaugalingon niining menu. Gihikay sa **Boot Lock** ang bootloader nga tinuod nga padaganon sa imong console aron padaganon ang RIPPS2: dayon kini padaganon sa PS2BBL ug FreeMcBoot, ibutang kini sa OSDMenu sa una sa iyang menu, ug ibalik sa pagpalong ang kaniadto."
  },
  "72db6e21b0bb": {
   "en": "72db6e21b0bb",
@@ -315,10 +307,6 @@
   "en": "af3b1669b5f4",
   "t": "| ↕ | Cursor | `cursor.adp` | **Menu sound 7** |"
  },
- "b001b2c9e02b": {
-  "en": "b001b2c9e02b",
-  "t": "> 1. **[I-download ang RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (kanunay ang pinakabag-ong release) (usa ka file, 2,730 KB), ug kon gusto nimo ang **[theme pack](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt ug Adapt Rx, edisyon 136: tag-usa ka config ug usa ka hulagway; built in na ang RIPGRID ug RIPFLOW), ug ang **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** para sa RIPPS2 sa imong kaugalingong pinulongan (33 ka pinulongan; kauban sa matag release)."
- },
  "b0a6e7370567": {
   "en": "b0a6e7370567",
   "t": "| Musika | Track | Gikan asa | Unsaon pagkuha |"
@@ -334,6 +322,10 @@
  "b7ec1e99d662": {
   "en": "b7ec1e99d662",
   "t": "- [Apollo Save Tool](https://github.com/bucanero/apollo-ps2) ni bucanero: modelo para sa mga save tool (PSU, card image). Kaugalingong code sa RIPPS2 kini, gisulat gikan sa mga format."
+ },
+ "b9a17e01f56e": {
+  "en": "b9a17e01f56e",
+  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) ni El Isra (israpps) ug [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) ni saildot4k: gi-edit sa BOOT LOCK ang ilang config aron padaganon sa console ang RIPPS2 (sukad sa build 116 apil ang config sa FreeMcBoot ug OSDMenu). Sukad sa build 134, dala sa RIPPS2.elf ang [BIBLE](https://github.com/akilluminati47/BIBLE), ang fork ni akilluminati47 sa PS2BBL Extended, matag build gipirmahan ni akilluminati47, aron i-install ug i-update sa **Boot Loader > Manage** (ang mga build 69 hangtod 133 nagdala sa PS2BBL 1.2.0 ni El Isra). Naa sa [`elf/bible`](elf/bible/README.md) ang GPL-3.0 nga lisensya ug source niini. Sukad sa build 138, ablihan sa paghigot sa card ang IOPRP image sa [KELFBinder](https://github.com/israpps/KELFBinder) ni El Isra (GPL-3.0, gidala isip data sa [`elf/kelfbinder`](elf/kelfbinder/README.md)); ang console ang mohimo sa crypto, ug walay key nga apil."
  },
  "b9a7a548f42d": {
   "en": "b9a7a548f42d",
@@ -371,6 +363,10 @@
   "en": "c2409d3b212c",
   "t": "| ✕ | Kumpirmaha | `confirm.adp` | **Menu sound 5** |"
  },
+ "c4671696596b": {
+  "en": "c4671696596b",
+  "t": "> 1. **[I-download ang RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (kanunay ang pinakabag-ong release) (usa ka file, 2,764 KB), ug kon gusto nimo ang **[theme pack](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt ug Adapt Rx, edisyon 136: tag-usa ka config ug usa ka hulagway; built in na ang RIPGRID ug RIPFLOW), ug ang **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** para sa RIPPS2 sa imong kaugalingong pinulongan (33 ka pinulongan; kauban sa matag release)."
+ },
  "c8eb072f3f8f": {
   "en": "c8eb072f3f8f",
   "t": "- **Ang hulagway diin kini gusto sa imong TV.** Settings > Interface > Screen: Video Mode (hangtod 720p ug 1080i), Widescreen, ug H-POS, V-POS, ug Overscan, nga sukad sa build 124 gitipigan nga lahi para sa matag video mode, busa ang 1080i ug 480i adunay kaugalingong pagsentro."
@@ -387,9 +383,17 @@
   "en": "cc3d4e294dca",
   "t": "- Gipadagan sa [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/) ni krHACKen ang mga PS1 nga dula gikan sa imong kaugalingong kopya, nga makit-an sa RIPPS2 sa imong mga drive ug memory card ([`elf/popstarter`](elf/popstarter/README.md))."
  },
+ "ccdef30a7623": {
+  "en": "ccdef30a7623",
+  "t": "> ### I-rip na: RIPPS2 build 139, v1.3.9 beta"
+ },
  "cd91a464e4a7": {
   "en": "cd91a464e4a7",
   "t": "| ✓ | I-save | `save.adp` | **Menu sound 12** |"
+ },
+ "d00f49a314cd": {
+  "en": "d00f49a314cd",
+  "t": "> [Unsay bag-o sa build 139](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.9-beta) | [Changelog](CHANGELOG.md) | **[Mga video](#videos)** | [Tanang release](https://github.com/akilluminati47/RIPPS2/releases) | [Hisgoti sa psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "d1471c7da040": {
   "en": "d1471c7da040",
@@ -430,10 +434,6 @@
  "da42e53699c3": {
   "en": "da42e53699c3",
   "t": "- **Paspas nga boot.** Ang Settings > Game Sources > Cache > **Fast Boot** mobasa lang sa kaugalingong drive sa RIPPS2 sa pag-on: ang mga setting ug tingog tupad sa `RIPPS2.ELF`, ug matag lista gikan sa cache niini. Maghulat ang ubang drive hangtod imong pislitan ang SELECT sa ilang pahina o mopili og usa sa ilang mga dula. Ang dula nga gipili samtang nagbasa o nagsulat ang RIPPS2 maghulat sa likod sa panel nga nagsulti kon unsay nahibilin (START NOW moadto dayon), busa dili gayud mabalda sa pagpadagan ang usa ka pagsulat."
- },
- "dabbb8b086c6": {
-  "en": "dabbb8b086c6",
-  "t": "- **BIBLE ug BOOT LOCK.** Gipakita sa Settings > General & System > Boot Loader kon unsay padaganon sa matag memory card sa pag-on ug gi-install ang **BIBLE**, ang PS2BBL nga giandam para sa RIPPS2, sa memory card. Gihikay sa **Boot Lock** ang bootloader nga tinuod nga padaganon sa imong console aron padaganon ang RIPPS2: dayon kini padaganon sa PS2BBL ug FreeMcBoot, ibutang kini sa OSDMenu sa una sa iyang menu, ug ibalik sa pagpalong ang kaniadto."
  },
  "de8f1cb0c1f9": {
   "en": "de8f1cb0c1f9",

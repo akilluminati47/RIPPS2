@@ -7,10 +7,6 @@
   "en": "03be7325b77b",
   "t": "RIPPS2 dizajnira i vodi akilluminati47, a gradi se s Claudeom (Anthropic). Testeri: ripto, nuno6573, zackcage6, eliminator1403, FifthFox, Mr.sus.60, lukeatmynose, ahavasi i svi koji testiraju na Discordu. Issues na GitHubu: DarkNerdShawny i svi koji otvore jedan (issue je najbolji način da RIPPS2 dobije ažuriranje: budi kao oni i [otvori jedan](https://github.com/akilluminati47/RIPPS2/issues)). Posebna zahvala i za svu ljubav na YouTubeu: rado pomažem kako god me kontaktirao."
  },
- "04b63e681261": {
-  "en": "04b63e681261",
-  "t": "> [Novo u buildu 138](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.8-beta) | [Changelog](CHANGELOG.md) | **[Videozapisi](#videos)** | [Sva izdanja](https://github.com/akilluminati47/RIPPS2/releases) | [Razgovaraj o tome na psx-placeu](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
- },
  "064d7e03de66": {
   "en": "064d7e03de66",
   "t": "## Videozapisi"
@@ -90,10 +86,6 @@
  "2bb78085b36f": {
   "en": "2bb78085b36f",
   "t": "| [Short builda 88](https://www.youtube.com/shorts/Sqprz22tdtg) | Short | Build 88, uz Slideshow |"
- },
- "2e611083b6bf": {
-  "en": "2e611083b6bf",
-  "t": "> ### Ripaj ga: RIPPS2 build 138, v1.3.8 beta"
  },
  "2f0ee80297df": {
   "en": "2f0ee80297df",
@@ -195,13 +187,13 @@
   "en": "60f96e9259c8",
   "t": "<sub>Zvukovi izbornika numerirani su onako kako Media Studio navodi dump SCPH-39001. Start već stavlja većinu na mjesto; za ovu kartu pretvori save, error, random i dva zvuka pogona iz ovdje navedenih zvukova izbornika.</sub>"
  },
- "618c478fd292": {
-  "en": "618c478fd292",
-  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) od El Isre (israpps) i [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) od saildot4ka: BOOT LOCK uređuje njihovu konfiguraciju tako da konzola pokreće RIPPS2 (od builda 116 i konfiguraciju FreeMcBoota i OSDMenua). Od builda 134 RIPPS2.elf nosi [BIBLE](https://github.com/akilluminati47/BIBLE), našu inačicu PS2BBL-a potpisanu za RIPPS2, koju instalira **Boot Loader > Manage** (buildovi 69 do 133 nosili su El Isrin PS2BBL 1.2.0). Licenca GPL-3.0 i izvorni kod su u [`elf/bible`](elf/bible/README.md); vezanje za karticu koristi otvoreni SECRMAN iz ps2sdk-a (AFL), bez ključeva."
- },
  "67788a3fdaa3": {
   "en": "67788a3fdaa3",
   "t": "| [Obilazak zvukova za v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4) (na GitHubu) | 2:11 | Svaki zvuk ripan s konzole, u jednom kadru, od zvuka pokretanja do pokretanja igre |"
+ },
+ "68edcf86e41c": {
+  "en": "68edcf86e41c",
+  "t": "- **BIBLE i BOOT LOCK.** Settings > General & System > Boot Loader > **Manage** instalira **BIBLE**, akilluminati47-ov boot loader (fork PS2BBL Extended, svaku verziju potpisao akilluminati47), na memorijsku karticu, SD2PSX ili MMCE BOOT karticu ili tvrdi disk, ažurira stariji i iz vlastitog izbornika postavlja pozadinu, uvodni zaslon i video način BIBLE-a. **Boot Lock** postavlja boot loader koji tvoja konzola zaista pokreće tako da pokreće RIPPS2: PS2BBL i FreeMcBoot ga pokreću odmah, OSDMenu ga stavlja prvog u svoj izbornik, a isključivanje vraća ono što je bilo prije."
  },
  "72db6e21b0bb": {
   "en": "72db6e21b0bb",
@@ -315,10 +307,6 @@
   "en": "af3b1669b5f4",
   "t": "| ↕ | Pokazivač | `cursor.adp` | **Menu sound 7** |"
  },
- "b001b2c9e02b": {
-  "en": "b001b2c9e02b",
-  "t": "> 1. **[Preuzmi RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (uvijek najnovije izdanje) (jedna datoteka, 2.730 KB), i **[paket tema](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** ako želiš (Adapt, Adapt Rx, izdanje 136: po jedna konfiguracija i jedna slika; RIPGRID i RIPFLOW su ugrađeni), i **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** za RIPPS2 na tvom jeziku (33 jezika; svako izdanje ga sadrži)."
- },
  "b0a6e7370567": {
   "en": "b0a6e7370567",
   "t": "| Glazba | Pjesma | Odakle | Kako je dobiti |"
@@ -334,6 +322,10 @@
  "b7ec1e99d662": {
   "en": "b7ec1e99d662",
   "t": "- [Apollo Save Tool](https://github.com/bucanero/apollo-ps2) od bucanera: uzor za alate za spremanja (PSU, slike kartica). Kod je vlastiti kod RIPPS2, napisan prema formatima."
+ },
+ "b9a17e01f56e": {
+  "en": "b9a17e01f56e",
+  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) od El Isre (israpps) i [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) od saildot4ka: BOOT LOCK uređuje njihovu konfiguraciju tako da konzola pokreće RIPPS2 (od builda 116 i konfiguraciju FreeMcBoota i OSDMenua). Od builda 134 RIPPS2.elf nosi [BIBLE](https://github.com/akilluminati47/BIBLE), akilluminati47-ov fork PS2BBL Extended, svaku verziju potpisao akilluminati47, koji **Boot Loader > Manage** instalira i ažurira (buildovi 69 do 133 nosili su PS2BBL 1.2.0 od El Isre). Njegova licenca GPL-3.0 i izvorni kod su u [`elf/bible`](elf/bible/README.md). Od builda 138 vezanje za karticu pokreće IOPRP sliku iz [KELFBinder](https://github.com/israpps/KELFBinder) od El Isre (GPL-3.0, nošena kao podaci u [`elf/kelfbinder`](elf/kelfbinder/README.md)); šifriranje radi konzola i ključevi nisu potrebni."
  },
  "b9a7a548f42d": {
   "en": "b9a7a548f42d",
@@ -371,6 +363,10 @@
   "en": "c2409d3b212c",
   "t": "| ✕ | Potvrda | `confirm.adp` | **Menu sound 5** |"
  },
+ "c4671696596b": {
+  "en": "c4671696596b",
+  "t": "> 1. **[Preuzmi RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (uvijek najnovije izdanje) (jedna datoteka, 2.764 KB), i **[paket tema](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** ako želiš (Adapt, Adapt Rx, izdanje 136: po jedna konfiguracija i jedna slika; RIPGRID i RIPFLOW su ugrađeni), i **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** za RIPPS2 na tvom jeziku (33 jezika; svako izdanje ga sadrži)."
+ },
  "c8eb072f3f8f": {
   "en": "c8eb072f3f8f",
   "t": "- **Slika gdje je tvoj televizor želi.** Settings > Interface > Screen: Video Mode (do 720p i 1080i), Widescreen te H-POS, V-POS i Overscan, koji se od builda 124 pamte za svaki video način, pa 1080i i 480i zadržavaju svaki svoje centriranje."
@@ -387,9 +383,17 @@
   "en": "cc3d4e294dca",
   "t": "- [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/) od krHACKena pokreće PS1 igre iz tvoje vlastite kopije, koju RIPPS2 pronalazi na tvojim pogonima i memorijskim karticama ([`elf/popstarter`](elf/popstarter/README.md))."
  },
+ "ccdef30a7623": {
+  "en": "ccdef30a7623",
+  "t": "> ### Ripaj ga: RIPPS2 build 139, v1.3.9 beta"
+ },
  "cd91a464e4a7": {
   "en": "cd91a464e4a7",
   "t": "| ✓ | Spremanje | `save.adp` | **Menu sound 12** |"
+ },
+ "d00f49a314cd": {
+  "en": "d00f49a314cd",
+  "t": "> [Novo u buildu 139](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.9-beta) | [Changelog](CHANGELOG.md) | **[Videozapisi](#videos)** | [Sva izdanja](https://github.com/akilluminati47/RIPPS2/releases) | [Razgovaraj o tome na psx-placeu](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "d1471c7da040": {
   "en": "d1471c7da040",
@@ -430,10 +434,6 @@
  "da42e53699c3": {
   "en": "da42e53699c3",
   "t": "- **Brzo pokretanje.** Settings > Game Sources > Cache > **Fast Boot** pri pokretanju čita samo pogon samog RIPPS2: postavke i zvukove pored `RIPPS2.ELF` i svaki popis iz njegove predmemorije. Ostali pogoni čekaju dok ne pritisneš SELECT na njihovoj stranici ili odabereš neku od njihovih igara. Igra odabrana dok RIPPS2 još čita ili piše čeka iza ploče koja kaže što je preostalo (START NOW kreće odmah), pa pokretanje nikad ne prekida pisanje."
- },
- "dabbb8b086c6": {
-  "en": "dabbb8b086c6",
-  "t": "- **BIBLE i BOOT LOCK.** Settings > General & System > Boot Loader prikazuje što svaka memorijska kartica pokreće pri uključivanju i instalira **BIBLE**, PS2BBL postavljen za RIPPS2, na memorijsku karticu. **Boot Lock** postavlja boot loader koji tvoja konzola zaista pokreće tako da pokreće RIPPS2: PS2BBL i FreeMcBoot ga pokreću odmah, OSDMenu ga stavlja prvog u svoj izbornik, a isključivanje vraća ono što je bilo prije."
  },
  "de8f1cb0c1f9": {
   "en": "de8f1cb0c1f9",

@@ -7,10 +7,6 @@
   "en": "03be7325b77b",
   "t": "صمّم RIPPS2 ويقوده akilluminati47، ويُبنى بمساعدة Claude (Anthropic). المختبرون: ripto وnuno6573 وzackcage6 وeliminator1403 وFifthFox وMr.sus.60 وlukeatmynose وahavasi، وكل من يختبر على Discord. والـ issues على GitHub: DarkNerdShawny وكل من يفتح واحدًا (الـ issue أفضل طريقة لتحديث RIPPS2: كن مثلهم و[افتح واحدًا](https://github.com/akilluminati47/RIPPS2/issues)). وشكر خاص أيضًا لكل المحبة على YouTube: يسعدني أن أساعد أيًّا كانت الطريقة التي تصلني بها."
  },
- "04b63e681261": {
-  "en": "04b63e681261",
-  "t": "> [الجديد في الإصدار 138](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.8-beta) | [Changelog](CHANGELOG.md) | **[الفيديوهات](#videos)** | [كل الإصدارات](https://github.com/akilluminati47/RIPPS2/releases) | [تحدّث عنه في psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
- },
  "064d7e03de66": {
   "en": "064d7e03de66",
   "t": "## الفيديوهات"
@@ -90,10 +86,6 @@
  "2bb78085b36f": {
   "en": "2bb78085b36f",
   "t": "| [مقطع Short للإصدار 88](https://www.youtube.com/shorts/Sqprz22tdtg) | Short | الإصدار 88 على أنغام Slideshow |"
- },
- "2e611083b6bf": {
-  "en": "2e611083b6bf",
-  "t": "> ### اسحبه: RIPPS2 الإصدار 138، v1.3.8 بيتا"
  },
  "2f0ee80297df": {
   "en": "2f0ee80297df",
@@ -195,13 +187,13 @@
   "en": "60f96e9259c8",
   "t": "<sub>أصوات القائمة مرقّمة كما يسرد Media Studio نسخة من SCPH-39001. يضع Start معظمها في مكانها؛ ولهذه الخريطة، حوّل save وerror وrandom وصوتي المحرّك من أصوات القائمة المذكورة هنا.</sub>"
  },
- "618c478fd292": {
-  "en": "618c478fd292",
-  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) من El Isra (israpps) و[PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) من saildot4k: يحرّر BOOT LOCK إعداداتهما ليشغّل الجهاز RIPPS2 (ومنذ الإصدار 116 إعدادات FreeMcBoot وOSDMenu أيضًا). ومنذ الإصدار 134 يحمل RIPPS2.elf [BIBLE](https://github.com/akilluminati47/BIBLE)، نسختنا من PS2BBL الموقّعة لـ RIPPS2، ليثبّتها **Boot Loader > Manage** (حملت الإصدارات 69 إلى 133 نسخة PS2BBL 1.2.0 من El Isra). رخصتها GPL-3.0 وشيفرتها المصدرية في [`elf/bible`](elf/bible/README.md)؛ ويستخدم ربط البطاقة SECRMAN المفتوح من ps2sdk (AFL)، دون أي مفاتيح."
- },
  "67788a3fdaa3": {
   "en": "67788a3fdaa3",
   "t": "| [جولة أصوات v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4) (على GitHub) | 2:11 | كل صوت مسحوب من الجهاز، في لقطة واحدة، من صوت الإقلاع حتى تشغيل لعبة |"
+ },
+ "68edcf86e41c": {
+  "en": "68edcf86e41c",
+  "t": "- **BIBLE وBOOT LOCK.** يثبّت Settings > General & System > Boot Loader > **Manage** برنامج **BIBLE**، محمّل الإقلاع الخاص بـ akilluminati47 (نسخة مشتقة من PS2BBL Extended، كل إصدار موقّع من akilluminati47)، على بطاقة ذاكرة أو بطاقة BOOT لـ SD2PSX أو MMCE أو على القرص الصلب، ويحدّث النسخة الأقدم، ويضبط خلفية BIBLE وشاشة بدايته ووضع الفيديو من قائمة خاصة به. يضبط **Boot Lock** محمّل الإقلاع الذي يشغّله جهازك فعلًا ليشغّل RIPPS2: يشغّله PS2BBL وFreeMcBoot فورًا، ويضعه OSDMenu أولًا في قائمته، وإطفاؤه يعيد ما كان من قبل."
  },
  "72db6e21b0bb": {
   "en": "72db6e21b0bb",
@@ -315,10 +307,6 @@
   "en": "af3b1669b5f4",
   "t": "| ↕ | المؤشر | `cursor.adp` | **Menu sound 7** |"
  },
- "b001b2c9e02b": {
-  "en": "b001b2c9e02b",
-  "t": "> 1. **[نزّل RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (دائمًا أحدث إصدار) (ملف واحد، 2.730 KB)، و**[حزمة السمات](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** إن شئت (Adapt وAdapt Rx، الإصدار 136: إعداد واحد وصورة واحدة لكل منهما؛ RIPGRID وRIPFLOW مدمجتان)، و**[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** ليظهر RIPPS2 بلغتك (33 لغة؛ يأتي مع كل إصدار)."
- },
  "b0a6e7370567": {
   "en": "b0a6e7370567",
   "t": "| الموسيقى | المقطع | المصدر | كيف تحصل عليه |"
@@ -334,6 +322,10 @@
  "b7ec1e99d662": {
   "en": "b7ec1e99d662",
   "t": "- [Apollo Save Tool](https://github.com/bucanero/apollo-ps2) من bucanero: المرجع لأدوات الحفظ (PSU، وصور البطاقات). الشيفرة خاصة بـ RIPPS2، مكتوبة انطلاقًا من الصيغ."
+ },
+ "b9a17e01f56e": {
+  "en": "b9a17e01f56e",
+  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) من El Isra (israpps) و[PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) من saildot4k: يحرّر BOOT LOCK إعداداتهما ليشغّل الجهاز RIPPS2 (ومنذ الإصدار 116 إعدادات FreeMcBoot وOSDMenu أيضًا). ومنذ الإصدار 134 يحمل RIPPS2.elf [BIBLE](https://github.com/akilluminati47/BIBLE)، نسخة akilluminati47 المشتقة من PS2BBL Extended، كل إصدار موقّع من akilluminati47، ليثبّتها **Boot Loader > Manage** ويحدّثها (حملت الإصدارات 69 إلى 133 برنامج PS2BBL 1.2.0 من El Isra). ترخيصها GPL-3.0 وشيفرتها في [`elf/bible`](elf/bible/README.md). ومنذ الإصدار 138 يشغّل الربط بالبطاقة صورة IOPRP من [KELFBinder](https://github.com/israpps/KELFBinder) من El Isra (GPL-3.0، محمولة كبيانات في [`elf/kelfbinder`](elf/kelfbinder/README.md))؛ الجهاز يقوم بالتشفير، ولا مفاتيح في الأمر."
  },
  "b9a7a548f42d": {
   "en": "b9a7a548f42d",
@@ -371,6 +363,10 @@
   "en": "c2409d3b212c",
   "t": "| ✕ | التأكيد | `confirm.adp` | **Menu sound 5** |"
  },
+ "c4671696596b": {
+  "en": "c4671696596b",
+  "t": "> 1. **[نزّل RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (دائمًا أحدث إصدار) (ملف واحد، 2.764 KB)، و**[حزمة السمات](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** إن شئت (Adapt وAdapt Rx، الإصدار 136: إعداد واحد وصورة واحدة لكل منهما؛ RIPGRID وRIPFLOW مدمجتان)، و**[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** ليظهر RIPPS2 بلغتك (33 لغة؛ يأتي مع كل إصدار)."
+ },
  "c8eb072f3f8f": {
   "en": "c8eb072f3f8f",
   "t": "- **الصورة حيث يريدها تلفازك.** Settings > Interface > Screen: Video Mode (حتى 720p و1080i)، وWidescreen، وH-POS وV-POS وOverscan، التي تُحفظ منذ الإصدار 124 لكل وضع فيديو على حدة، فيحتفظ 1080i و480i كلٌّ بتوسيطه الخاص."
@@ -387,9 +383,17 @@
   "en": "cc3d4e294dca",
   "t": "- [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/) من krHACKen يشغّل ألعاب PS1 من نسختك الخاصة، التي يعثر عليها RIPPS2 على محرّكاتك وبطاقات الذاكرة لديك ([`elf/popstarter`](elf/popstarter/README.md))."
  },
+ "ccdef30a7623": {
+  "en": "ccdef30a7623",
+  "t": "> ### اسحبه: RIPPS2 الإصدار 139، v1.3.9 بيتا"
+ },
  "cd91a464e4a7": {
   "en": "cd91a464e4a7",
   "t": "| ✓ | الحفظ | `save.adp` | **Menu sound 12** |"
+ },
+ "d00f49a314cd": {
+  "en": "d00f49a314cd",
+  "t": "> [الجديد في الإصدار 139](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.9-beta) | [Changelog](CHANGELOG.md) | **[الفيديوهات](#videos)** | [كل الإصدارات](https://github.com/akilluminati47/RIPPS2/releases) | [تحدّث عنه في psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "d1471c7da040": {
   "en": "d1471c7da040",
@@ -430,10 +434,6 @@
  "da42e53699c3": {
   "en": "da42e53699c3",
   "t": "- **إقلاع سريع.** Settings > Game Sources > Cache > **Fast Boot** يقرأ عند الإقلاع محرّك RIPPS2 وحده: الإعدادات والأصوات بجوار `RIPPS2.ELF`، وكل قائمة من ذاكرتها المؤقتة. تنتظر المحرّكات الأخرى حتى تضغط SELECT في صفحتها أو تختار إحدى ألعابها. اللعبة التي تُختار بينما RIPPS2 ما زال يقرأ أو يكتب تنتظر خلف لوحة تخبرك بما تبقى (START NOW يبدأ فورًا)، فلا يقطع التشغيل أي عملية كتابة أبدًا."
- },
- "dabbb8b086c6": {
-  "en": "dabbb8b086c6",
-  "t": "- **BIBLE وBOOT LOCK.** Settings > General & System > Boot Loader يعرض ما تشغّله كل بطاقة ذاكرة عند التشغيل، ويثبّت **BIBLE**، أي PS2BBL المُعدّ لـ RIPPS2، على بطاقة ذاكرة. يضبط **Boot Lock** محمّل الإقلاع الذي يشغّله جهازك فعلًا ليشغّل RIPPS2: يشغّله PS2BBL وFreeMcBoot فورًا، ويضعه OSDMenu أولًا في قائمته، وإطفاؤه يعيد ما كان من قبل."
  },
  "de8f1cb0c1f9": {
   "en": "de8f1cb0c1f9",

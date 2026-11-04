@@ -7,10 +7,6 @@
   "en": "03be7325b77b",
   "t": "RIPPS2 e conceput și condus de akilluminati47 și construit cu Claude (Anthropic). Testeri: ripto, nuno6573, zackcage6, eliminator1403, FifthFox, Mr.sus.60, lukeatmynose, ahavasi și toți cei care testează pe Discord. Issues pe GitHub: DarkNerdShawny și toți cei care deschid unul (un issue e cel mai bun mod de a primi actualizări la RIPPS2: fii ca ei și [deschide unul](https://github.com/akilluminati47/RIPPS2/issues)). Mulțumiri speciale și pentru toată dragostea de pe YouTube: mă bucur să ajut, oricum m-ai găsi."
  },
- "04b63e681261": {
-  "en": "04b63e681261",
-  "t": "> [Ce e nou în build-ul 138](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.8-beta) | [Changelog](CHANGELOG.md) | **[Videoclipuri](#videos)** | [Toate versiunile](https://github.com/akilluminati47/RIPPS2/releases) | [Discută despre el pe psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
- },
  "064d7e03de66": {
   "en": "064d7e03de66",
   "t": "## Videoclipuri"
@@ -90,10 +86,6 @@
  "2bb78085b36f": {
   "en": "2bb78085b36f",
   "t": "| [Short-ul build-ului 88](https://www.youtube.com/shorts/Sqprz22tdtg) | Short | Build-ul 88, pe Slideshow |"
- },
- "2e611083b6bf": {
-  "en": "2e611083b6bf",
-  "t": "> ### Fă-i rip: RIPPS2 build 138, v1.3.8 beta"
  },
  "2f0ee80297df": {
   "en": "2f0ee80297df",
@@ -195,13 +187,13 @@
   "en": "60f96e9259c8",
   "t": "<sub>Sunetele de meniu sunt numerotate așa cum Media Studio listează un dump SCPH-39001. Start pune deja majoritatea la locul lor; pentru această hartă, convertește save, error, random și cele două sunete de unitate din sunetele de meniu numite aici.</sub>"
  },
- "618c478fd292": {
-  "en": "618c478fd292",
-  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) de la El Isra (israpps) și [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) de la saildot4k: BOOT LOCK le editează configurația astfel încât consola să pornească RIPPS2 (din build-ul 116 și pe cea a FreeMcBoot și OSDMenu). De la build-ul 134, RIPPS2.elf are [BIBLE](https://github.com/akilluminati47/BIBLE), varianta noastră de PS2BBL semnată pentru RIPPS2, pe care o instalează **Boot Loader > Manage** (build-urile 69–133 aveau PS2BBL 1.2.0 al lui El Isra). Licența GPL-3.0 și sursa sunt în [`elf/bible`](elf/bible/README.md); legarea de card folosește SECRMAN-ul deschis din ps2sdk (AFL), fără chei."
- },
  "67788a3fdaa3": {
   "en": "67788a3fdaa3",
   "t": "| [Turul sunetelor din v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4) (pe GitHub) | 2:11 | Fiecare sunet scos din consolă, într-o singură dublă, de la sunetul de pornire până la lansarea unui joc |"
+ },
+ "68edcf86e41c": {
+  "en": "68edcf86e41c",
+  "t": "- **BIBLE și BOOT LOCK.** Settings > General & System > Boot Loader > **Manage** instalează **BIBLE**, boot loaderul lui akilluminati47 (un fork al PS2BBL Extended, fiecare versiune semnată de akilluminati47), pe un card de memorie, un card BOOT SD2PSX sau MMCE sau pe HDD, actualizează unul mai vechi și setează fundalul, ecranul de pornire și modul video al BIBLE dintr-un meniu propriu. **Boot Lock** setează boot loaderul pe care consola ta îl pornește de fapt astfel încât să pornească RIPPS2: PS2BBL și FreeMcBoot îl pornesc imediat, OSDMenu îl pune primul în meniul lui, iar dezactivarea pune înapoi ce era înainte."
  },
  "72db6e21b0bb": {
   "en": "72db6e21b0bb",
@@ -315,10 +307,6 @@
   "en": "af3b1669b5f4",
   "t": "| ↕ | Cursor | `cursor.adp` | **Menu sound 7** |"
  },
- "b001b2c9e02b": {
-  "en": "b001b2c9e02b",
-  "t": "> 1. **[Descarcă RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (mereu cea mai nouă versiune) (un singur fișier, 2.730 KB), și **[pachetul de teme](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** dacă vrei (Adapt, Adapt Rx, ediția 136: câte o configurație și o imagine; RIPGRID și RIPFLOW sunt incluse), și **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** pentru RIPPS2 în limba ta (33 de limbi; fiecare versiune îl conține)."
- },
  "b0a6e7370567": {
   "en": "b0a6e7370567",
   "t": "| Muzică | Piesă | De unde | Cum o obții |"
@@ -334,6 +322,10 @@
  "b7ec1e99d662": {
   "en": "b7ec1e99d662",
   "t": "- [Apollo Save Tool](https://github.com/bucanero/apollo-ps2) de la bucanero: modelul pentru uneltele de salvări (PSU, imagini de card). Codul e al RIPPS2, scris pornind de la formate."
+ },
+ "b9a17e01f56e": {
+  "en": "b9a17e01f56e",
+  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) de la El Isra (israpps) și [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) de la saildot4k: BOOT LOCK le editează configurația astfel încât consola să pornească RIPPS2 (din build-ul 116 și pe cea a FreeMcBoot și OSDMenu). De la build-ul 134, RIPPS2.elf are [BIBLE](https://github.com/akilluminati47/BIBLE), fork-ul PS2BBL Extended al lui akilluminati47, fiecare versiune semnată de akilluminati47, pe care **Boot Loader > Manage** îl instalează și îl actualizează (build-urile 69-133 aveau PS2BBL 1.2.0 de la El Isra). Licența GPL-3.0 și codul sunt în [`elf/bible`](elf/bible/README.md). De la build-ul 138, legarea de card pornește imaginea IOPRP din [KELFBinder](https://github.com/israpps/KELFBinder) de la El Isra (GPL-3.0, purtată ca date în [`elf/kelfbinder`](elf/kelfbinder/README.md)); consola face criptarea și nu e nevoie de chei."
  },
  "b9a7a548f42d": {
   "en": "b9a7a548f42d",
@@ -371,6 +363,10 @@
   "en": "c2409d3b212c",
   "t": "| ✕ | Confirmare | `confirm.adp` | **Menu sound 5** |"
  },
+ "c4671696596b": {
+  "en": "c4671696596b",
+  "t": "> 1. **[Descarcă RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (mereu cea mai nouă versiune) (un singur fișier, 2.764 KB), și **[pachetul de teme](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** dacă vrei (Adapt, Adapt Rx, ediția 136: câte o configurație și o imagine; RIPGRID și RIPFLOW sunt incluse), și **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** pentru RIPPS2 în limba ta (33 de limbi; fiecare versiune îl conține)."
+ },
  "c8eb072f3f8f": {
   "en": "c8eb072f3f8f",
   "t": "- **Imaginea unde o vrea televizorul tău.** Settings > Interface > Screen: Video Mode (până la 720p și 1080i), Widescreen, și H-POS, V-POS și Overscan, care din build-ul 124 sunt păstrate pentru fiecare mod video, așa că 1080i și 480i își păstrează fiecare propria centrare."
@@ -387,9 +383,17 @@
   "en": "cc3d4e294dca",
   "t": "- [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/) de la krHACKen pornește jocuri PS1 din propria ta copie, pe care RIPPS2 o găsește pe unitățile și cardurile tale de memorie ([`elf/popstarter`](elf/popstarter/README.md))."
  },
+ "ccdef30a7623": {
+  "en": "ccdef30a7623",
+  "t": "> ### Fă-i rip: RIPPS2 build 139, v1.3.9 beta"
+ },
  "cd91a464e4a7": {
   "en": "cd91a464e4a7",
   "t": "| ✓ | Salvare | `save.adp` | **Menu sound 12** |"
+ },
+ "d00f49a314cd": {
+  "en": "d00f49a314cd",
+  "t": "> [Ce e nou în build-ul 139](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.9-beta) | [Changelog](CHANGELOG.md) | **[Videoclipuri](#videos)** | [Toate versiunile](https://github.com/akilluminati47/RIPPS2/releases) | [Discută despre el pe psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "d1471c7da040": {
   "en": "d1471c7da040",
@@ -430,10 +434,6 @@
  "da42e53699c3": {
   "en": "da42e53699c3",
   "t": "- **O pornire rapidă.** Settings > Game Sources > Cache > **Fast Boot** citește la pornire doar unitatea lui RIPPS2: setările și sunetele de lângă `RIPPS2.ELF`, și fiecare listă din cache-ul ei. Celelalte unități așteaptă până apeși SELECT pe pagina lor sau alegi unul dintre jocurile lor. Un joc ales în timp ce RIPPS2 încă citește sau scrie așteaptă în spatele unui panou care spune ce a mai rămas (START NOW pornește imediat), așa că o lansare nu taie niciodată o scriere."
- },
- "dabbb8b086c6": {
-  "en": "dabbb8b086c6",
-  "t": "- **BIBLE și BOOT LOCK.** Settings > General & System > Boot Loader arată ce pornește fiecare card de memorie la pornire și instalează **BIBLE**, PS2BBL configurat pentru RIPPS2, pe un card de memorie. **Boot Lock** setează boot loaderul pe care consola ta îl pornește de fapt astfel încât să pornească RIPPS2: PS2BBL și FreeMcBoot îl pornesc imediat, OSDMenu îl pune primul în meniul lui, iar dezactivarea pune înapoi ce era înainte."
  },
  "de8f1cb0c1f9": {
   "en": "de8f1cb0c1f9",

@@ -7,10 +7,6 @@
   "en": "03be7325b77b",
   "t": "RIPPS2 は akilluminati47 が設計と指揮をし、Claude (Anthropic) とともに作っています。テスター: ripto、nuno6573、zackcage6、eliminator1403、FifthFox、Mr.sus.60、lukeatmynose、ahavasi、そして Discord でテストしてくれる皆さん。GitHub の issue: DarkNerdShawny と、issue を立ててくれるすべての人 (issue は RIPPS2 を更新させる一番の方法です: 彼らのように [1 つ立てましょう](https://github.com/akilluminati47/RIPPS2/issues))。YouTube での応援にも特に感謝します: どこから連絡をもらっても、喜んで手伝います。"
  },
- "04b63e681261": {
-  "en": "04b63e681261",
-  "t": "> [ビルド 138 の新機能](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.8-beta) | [Changelog](CHANGELOG.md) | **[動画](#videos)** | [すべてのリリース](https://github.com/akilluminati47/RIPPS2/releases) | [psx-place で話そう](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
- },
  "064d7e03de66": {
   "en": "064d7e03de66",
   "t": "## 動画"
@@ -90,10 +86,6 @@
  "2bb78085b36f": {
   "en": "2bb78085b36f",
   "t": "| [ビルド 88 ショート](https://www.youtube.com/shorts/Sqprz22tdtg) | Short | Slideshow に合わせたビルド 88 |"
- },
- "2e611083b6bf": {
-  "en": "2e611083b6bf",
-  "t": "> ### リップしよう: RIPPS2 ビルド 138、v1.3.8 ベータ"
  },
  "2f0ee80297df": {
   "en": "2f0ee80297df",
@@ -195,13 +187,13 @@
   "en": "60f96e9259c8",
   "t": "<sub>メニュー音の番号は Media Studio が SCPH-39001 のダンプを一覧する順です。Start でほとんどがすでに配置されます。この配置にするには、save、error、random、2 つのドライブ音を、ここに挙げたメニュー音から変換します。</sub>"
  },
- "618c478fd292": {
-  "en": "618c478fd292",
-  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) by El Isra (israpps) と [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) by saildot4k: BOOT LOCK はその設定を編集してコンソールに RIPPS2 を起動させます (ビルド 116 から FreeMcBoot と OSDMenu の設定も)。ビルド 134 から、RIPPS2.elf は RIPPS2 向けに署名した PS2BBL の派生版 [BIBLE](https://github.com/akilluminati47/BIBLE) を同梱し、**Boot Loader > Manage** がインストールします (ビルド 69 から 133 は El Isra の PS2BBL 1.2.0 を同梱)。GPL-3.0 ライセンスとソースは [`elf/bible`](elf/bible/README.md) にあります。カードへの紐付けには ps2sdk のオープンな SECRMAN (AFL) を使い、鍵は使いません。"
- },
  "67788a3fdaa3": {
   "en": "67788a3fdaa3",
   "t": "| [v1.1.2 サウンドツアー](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4) (GitHub 上) | 2:11 | コンソールからリップしたすべての音を 1 テイクで、起動音からゲームの起動まで |"
+ },
+ "68edcf86e41c": {
+  "en": "68edcf86e41c",
+  "t": "- **BIBLE と BOOT LOCK。** Settings > General & System > Boot Loader > **Manage** は、akilluminati47 のブートローダー **BIBLE**（PS2BBL Extended のフォーク。どのビルドも akilluminati47 が署名）をメモリーカード、SD2PSX や MMCE の BOOT カード、または HDD にインストールし、古いものを更新し、BIBLE の背景、スプラッシュ、ビデオモードを専用のメニューで設定します。**Boot Lock** は、コンソールが実際に起動するブートローダーを RIPPS2 を起動するよう設定します: PS2BBL と FreeMcBoot はすぐに起動し、OSDMenu はメニューの先頭に置き、オフにすれば元の状態に戻ります。"
  },
  "72db6e21b0bb": {
   "en": "72db6e21b0bb",
@@ -315,10 +307,6 @@
   "en": "af3b1669b5f4",
   "t": "| ↕ | カーソル | `cursor.adp` | **Menu sound 7** |"
  },
- "b001b2c9e02b": {
-  "en": "b001b2c9e02b",
-  "t": "> 1. **[RIPPS2.elf をダウンロード](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (常に最新リリース) (ファイル 1 つ、2,730 KB)、必要なら **[テーマパック](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt と Adapt Rx、エディション 136: それぞれ設定 1 つと画像 1 枚。RIPGRID と RIPFLOW は内蔵)、そして RIPPS2 を自分の言語で使うための **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** (33 言語。毎リリースに同梱)。"
- },
  "b0a6e7370567": {
   "en": "b0a6e7370567",
   "t": "| 音楽 | 曲 | 出典 | 入手方法 |"
@@ -334,6 +322,10 @@
  "b7ec1e99d662": {
   "en": "b7ec1e99d662",
   "t": "- [Apollo Save Tool](https://github.com/bucanero/apollo-ps2) by bucanero: セーブツール (PSU、カードイメージ) の手本。コードは RIPPS2 独自で、フォーマットから書いています。"
+ },
+ "b9a17e01f56e": {
+  "en": "b9a17e01f56e",
+  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) by El Isra (israpps) と [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) by saildot4k: BOOT LOCK はその設定を編集してコンソールに RIPPS2 を起動させます (ビルド 116 から FreeMcBoot と OSDMenu の設定も)。ビルド 134 から、RIPPS2.elf は [BIBLE](https://github.com/akilluminati47/BIBLE) を同梱します。akilluminati47 による PS2BBL Extended のフォークで、どのビルドも akilluminati47 が署名しており、**Boot Loader > Manage** がインストールと更新を行います (ビルド 69〜133 は El Isra の PS2BBL 1.2.0 を同梱)。GPL-3.0 ライセンスとソースは [`elf/bible`](elf/bible/README.md) にあります。ビルド 138 から、カードへの結び付けは El Isra の [KELFBinder](https://github.com/israpps/KELFBinder) の IOPRP イメージを起動します (GPL-3.0、[`elf/kelfbinder`](elf/kelfbinder/README.md) にデータとして同梱)。暗号処理は本体が行い、鍵は使いません。"
  },
  "b9a7a548f42d": {
   "en": "b9a7a548f42d",
@@ -371,6 +363,10 @@
   "en": "c2409d3b212c",
   "t": "| ✕ | 決定 | `confirm.adp` | **Menu sound 5** |"
  },
+ "c4671696596b": {
+  "en": "c4671696596b",
+  "t": "> 1. **[RIPPS2.elf をダウンロード](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (常に最新リリース) (ファイル 1 つ、2,764 KB)、必要なら **[テーマパック](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt と Adapt Rx、エディション 136: それぞれ設定 1 つと画像 1 枚。RIPGRID と RIPFLOW は内蔵)、そして RIPPS2 を自分の言語で使うための **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** (33 言語。毎リリースに同梱)。"
+ },
  "c8eb072f3f8f": {
   "en": "c8eb072f3f8f",
   "t": "- **テレビが求める位置に映像を。** Settings > Interface > Screen: Video Mode (720p と 1080i まで)、Widescreen、H-POS、V-POS、Overscan。ビルド 124 からビデオモードごとに保存されるので、1080i と 480i はそれぞれ自分の位置合わせを持ちます。"
@@ -387,9 +383,17 @@
   "en": "cc3d4e294dca",
   "t": "- [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/) by krHACKen は自分で用意したもので PS1 ゲームを起動し、RIPPS2 はそれをドライブやメモリーカード上で見つけます ([`elf/popstarter`](elf/popstarter/README.md))。"
  },
+ "ccdef30a7623": {
+  "en": "ccdef30a7623",
+  "t": "> ### リップしよう: RIPPS2 ビルド 139、v1.3.9 ベータ"
+ },
  "cd91a464e4a7": {
   "en": "cd91a464e4a7",
   "t": "| ✓ | 保存 | `save.adp` | **Menu sound 12** |"
+ },
+ "d00f49a314cd": {
+  "en": "d00f49a314cd",
+  "t": "> [ビルド 139 の新機能](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.9-beta) | [Changelog](CHANGELOG.md) | **[動画](#videos)** | [すべてのリリース](https://github.com/akilluminati47/RIPPS2/releases) | [psx-place で話そう](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "d1471c7da040": {
   "en": "d1471c7da040",
@@ -430,10 +434,6 @@
  "da42e53699c3": {
   "en": "da42e53699c3",
   "t": "- **高速起動。** Settings > Game Sources > Cache > **Fast Boot** は電源投入時に RIPPS2 自身のドライブだけを読みます: `RIPPS2.ELF` の横の設定とサウンド、そして各一覧はキャッシュから。ほかのドライブは、そのページで SELECT を押すかそのゲームを選ぶまで待ちます。RIPPS2 が読み書き中に選んだゲームは、残りを示すパネルの後ろで待ちます (START NOW ですぐ起動)。だから起動が書き込みを途中で止めることはありません。"
- },
- "dabbb8b086c6": {
-  "en": "dabbb8b086c6",
-  "t": "- **BIBLE と BOOT LOCK。** Settings > General & System > Boot Loader は各メモリーカードが電源投入時に何を起動するかを表示し、RIPPS2 用に準備した PS2BBL である **BIBLE** をメモリーカードにインストールします。**Boot Lock** は、コンソールが実際に起動するブートローダーを RIPPS2 を起動するよう設定します: PS2BBL と FreeMcBoot はすぐに起動し、OSDMenu はメニューの先頭に置き、オフにすれば元の状態に戻ります。"
  },
  "de8f1cb0c1f9": {
   "en": "de8f1cb0c1f9",

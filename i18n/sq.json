@@ -7,10 +7,6 @@
   "en": "03be7325b77b",
   "t": "RIPPS2 projektohet dhe drejtohet nga akilluminati47 dhe ndërtohet me Claude (Anthropic). Testuesit: ripto, nuno6573, zackcage6, eliminator1403, FifthFox, Mr.sus.60, lukeatmynose, ahavasi dhe të gjithë ata që testojnë në Discord. Issues në GitHub: DarkNerdShawny dhe kushdo që hap një (një issue është mënyra më e mirë për ta përditësuar RIPPS2: bëhu si ata dhe [hap një](https://github.com/akilluminati47/RIPPS2/issues)). Falënderime të veçanta edhe për gjithë dashurinë në YouTube: me kënaqësi ndihmoj sido që të më gjesh."
  },
- "04b63e681261": {
-  "en": "04b63e681261",
-  "t": "> [Çfarë ka të re në ndërtimin 138](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.8-beta) | [Changelog](CHANGELOG.md) | **[Video](#videos)** | [Të gjitha botimet](https://github.com/akilluminati47/RIPPS2/releases) | [Fol për të në psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
- },
  "064d7e03de66": {
   "en": "064d7e03de66",
   "t": "## Video"
@@ -90,10 +86,6 @@
  "2bb78085b36f": {
   "en": "2bb78085b36f",
   "t": "| [Short-i i ndërtimit 88](https://www.youtube.com/shorts/Sqprz22tdtg) | Short | Ndërtimi 88, mbi Slideshow |"
- },
- "2e611083b6bf": {
-  "en": "2e611083b6bf",
-  "t": "> ### Bëje rip: RIPPS2 build 138, v1.3.8 beta"
  },
  "2f0ee80297df": {
   "en": "2f0ee80297df",
@@ -195,13 +187,13 @@
   "en": "60f96e9259c8",
   "t": "<sub>Tingujt e menysë janë numëruar siç i rendit Media Studio në një dump SCPH-39001. Start i vendos tashmë shumicën në vend; për këtë hartë, konverto save, error, random dhe dy tingujt e pajisjeve nga tingujt e menysë të përmendur këtu.</sub>"
  },
- "618c478fd292": {
-  "en": "618c478fd292",
-  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) nga El Isra (israpps) dhe [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) nga saildot4k: BOOT LOCK redakton konfigurimin e tyre që konsola të nisë RIPPS2 (që nga ndërtimi 116 edhe atë të FreeMcBoot dhe OSDMenu). Që nga ndërtimi 134, RIPPS2.elf mbart [BIBLE](https://github.com/akilluminati47/BIBLE), variantin tonë të PS2BBL të nënshkruar për RIPPS2, që e instalon **Boot Loader > Manage** (ndërtimet 69 deri 133 mbartnin PS2BBL 1.2.0 të El Isra). Licenca GPL-3.0 dhe kodi burim janë te [`elf/bible`](elf/bible/README.md); lidhja me kartën përdor SECRMAN e hapur të ps2sdk (AFL), pa çelësa."
- },
  "67788a3fdaa3": {
   "en": "67788a3fdaa3",
   "t": "| [Turi i tingujve të v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4) (në GitHub) | 2:11 | Çdo tingull i nxjerrë nga konsola, në një xhirim të vetëm, nga tingulli i nisjes deri te nisja e një loje |"
+ },
+ "68edcf86e41c": {
+  "en": "68edcf86e41c",
+  "t": "- **BIBLE dhe BOOT LOCK.** Settings > General & System > Boot Loader > **Manage** instalon **BIBLE**, ngarkuesin e nisjes së akilluminati47 (një fork i PS2BBL Extended, çdo version i nënshkruar nga akilluminati47), në një kartë memorieje, një kartë BOOT SD2PSX ose MMCE ose në diskun e ngurtë, përditëson një më të vjetër dhe vendos sfondin, ekranin e hapjes dhe mënyrën video të BIBLE nga një meny e vetën. **Boot Lock** e vendos ngarkuesin e nisjes që konsola jote e nis vërtet që ai të nisë RIPPS2: PS2BBL dhe FreeMcBoot e nisin menjëherë, OSDMenu e vë të parin në menynë e vet, dhe fikja kthen atë që ishte më parë."
  },
  "72db6e21b0bb": {
   "en": "72db6e21b0bb",
@@ -315,10 +307,6 @@
   "en": "af3b1669b5f4",
   "t": "| ↕ | Kursori | `cursor.adp` | **Menu sound 7** |"
  },
- "b001b2c9e02b": {
-  "en": "b001b2c9e02b",
-  "t": "> 1. **[Shkarko RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (gjithmonë botimi më i ri) (një skedar, 2.730 KB), dhe **[paketën e temave](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** nëse dëshiron (Adapt, Adapt Rx, botimi 136: nga një konfigurim dhe një figurë; RIPGRID dhe RIPFLOW janë të integruara), dhe **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** për RIPPS2 në gjuhën tënde (33 gjuhë; çdo botim e ka)."
- },
  "b0a6e7370567": {
   "en": "b0a6e7370567",
   "t": "| Muzika | Kënga | Nga | Si ta marrësh |"
@@ -334,6 +322,10 @@
  "b7ec1e99d662": {
   "en": "b7ec1e99d662",
   "t": "- [Apollo Save Tool](https://github.com/bucanero/apollo-ps2) nga bucanero: modeli për mjetet e ruajtjeve (PSU, imazhe kartash). Kodi është i vetë RIPPS2, i shkruar sipas formateve."
+ },
+ "b9a17e01f56e": {
+  "en": "b9a17e01f56e",
+  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) nga El Isra (israpps) dhe [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) nga saildot4k: BOOT LOCK redakton konfigurimin e tyre që konsola të nisë RIPPS2 (që nga ndërtimi 116 edhe atë të FreeMcBoot dhe OSDMenu). Që nga ndërtimi 134, RIPPS2.elf mbart [BIBLE](https://github.com/akilluminati47/BIBLE), fork-un e PS2BBL Extended të akilluminati47, çdo version i nënshkruar nga akilluminati47, që **Boot Loader > Manage** e instalon dhe e përditëson (ndërtimet 69 deri 133 mbartnin PS2BBL 1.2.0 të El Isra). Licenca GPL-3.0 dhe kodi janë në [`elf/bible`](elf/bible/README.md). Që nga ndërtimi 138, lidhja me kartën nis imazhin IOPRP të [KELFBinder](https://github.com/israpps/KELFBinder) nga El Isra (GPL-3.0, i mbartur si të dhëna në [`elf/kelfbinder`](elf/kelfbinder/README.md)); kriptimin e bën konsola dhe nuk duhen çelësa."
  },
  "b9a7a548f42d": {
   "en": "b9a7a548f42d",
@@ -371,6 +363,10 @@
   "en": "c2409d3b212c",
   "t": "| ✕ | Konfirmimi | `confirm.adp` | **Menu sound 5** |"
  },
+ "c4671696596b": {
+  "en": "c4671696596b",
+  "t": "> 1. **[Shkarko RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (gjithmonë botimi më i ri) (një skedar, 2.764 KB), dhe **[paketën e temave](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** nëse dëshiron (Adapt, Adapt Rx, botimi 136: nga një konfigurim dhe një figurë; RIPGRID dhe RIPFLOW janë të integruara), dhe **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** për RIPPS2 në gjuhën tënde (33 gjuhë; çdo botim e ka)."
+ },
  "c8eb072f3f8f": {
   "en": "c8eb072f3f8f",
   "t": "- **Figura ku e do televizori yt.** Settings > Interface > Screen: Video Mode (deri në 720p dhe 1080i), Widescreen, dhe H-POS, V-POS dhe Overscan, që nga ndërtimi 124 ruhen për çdo mënyrë video, kështu që 1080i dhe 480i mbajnë secila qendërzimin e vet."
@@ -387,9 +383,17 @@
   "en": "cc3d4e294dca",
   "t": "- [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/) nga krHACKen nis lojëra PS1 nga kopja jote, që RIPPS2 e gjen në pajisjet dhe kartat e tua të memories ([`elf/popstarter`](elf/popstarter/README.md))."
  },
+ "ccdef30a7623": {
+  "en": "ccdef30a7623",
+  "t": "> ### Bëje rip: RIPPS2 build 139, v1.3.9 beta"
+ },
  "cd91a464e4a7": {
   "en": "cd91a464e4a7",
   "t": "| ✓ | Ruajtja | `save.adp` | **Menu sound 12** |"
+ },
+ "d00f49a314cd": {
+  "en": "d00f49a314cd",
+  "t": "> [Çfarë ka të re në ndërtimin 139](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.9-beta) | [Changelog](CHANGELOG.md) | **[Video](#videos)** | [Të gjitha botimet](https://github.com/akilluminati47/RIPPS2/releases) | [Fol për të në psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "d1471c7da040": {
   "en": "d1471c7da040",
@@ -430,10 +434,6 @@
  "da42e53699c3": {
   "en": "da42e53699c3",
   "t": "- **Një nisje e shpejtë.** Settings > Game Sources > Cache > **Fast Boot** lexon në nisje vetëm pajisjen e vetë RIPPS2: cilësimet dhe tingujt pranë `RIPPS2.ELF`, dhe çdo listë nga cache-ja e saj. Pajisjet e tjera presin derisa të shtypësh SELECT në faqen e tyre ose të zgjedhësh një nga lojërat e tyre. Një lojë e zgjedhur ndërsa RIPPS2 ende lexon ose shkruan pret pas një paneli që tregon çfarë ka mbetur (START NOW niset menjëherë), kështu që një nisje nuk e ndërpret kurrë një shkrim."
- },
- "dabbb8b086c6": {
-  "en": "dabbb8b086c6",
-  "t": "- **BIBLE dhe BOOT LOCK.** Settings > General & System > Boot Loader tregon çfarë nis çdo kartë memorieje kur ndizet konsola dhe instalon **BIBLE**, PS2BBL të përgatitur për RIPPS2, në një kartë memorieje. **Boot Lock** e vendos ngarkuesin e nisjes që konsola jote e nis vërtet që ai të nisë RIPPS2: PS2BBL dhe FreeMcBoot e nisin menjëherë, OSDMenu e vë të parin në menynë e vet, dhe fikja kthen atë që ishte më parë."
  },
  "de8f1cb0c1f9": {
   "en": "de8f1cb0c1f9",

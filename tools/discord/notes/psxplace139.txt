@@ -1,0 +1,19 @@
+psx-place bump for v1.3.9 beta (build 139), the BIBLE update. The user posts it. Paste from the [CENTER] line. The first post (psxplace-post.bbcode) has the new release line, size and BIBLE section.
+
+[CENTER][IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b138/bible-1080i-signed.gif[/IMG]
+
+[SIZE=5][B]RIPPS2 v1.3.9 beta: BIBLE, set up from RIPPS2[/B][/SIZE]
+[URL='https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf']RIPPS2.elf[/URL] (2,764 KB)  |  [URL='https://github.com/akilluminati47/BIBLE/releases/latest']BIBLE's signed builds[/URL]  |  [URL='https://github.com/akilluminati47/RIPPS2/blob/main/CHANGELOG.md']Changelog[/URL][/CENTER]
+
+[B]BIBLE's next update rides inside RIPPS2.elf[/B], all four builds signed by akilluminati47. No KELFBinder needed: with BIBLE on a card, Settings > General > Boot Loader > [B]Manage[/B] opens a BIBLE menu.
+
+[LIST]
+[*][B]UPDATE BIBLE[/B] binds the new one over an older one, in place. Every BIBLE RIPPS2 carried before is recognized ("BIBLE (MMCE build, older)").
+[*][B]Background[/B]: Auto (your RIPPS2 sky when BIBLE starts RIPPS2, black for anything else), Sky or Black.
+[*][B]Splash, Button Glyphs, Info Line, Power-on Wait, Video Mode (up to 1080i), Widescreen[/B], each one line of SYS-CONF/PS2BBL.INI; EDIT BIBLE'S SETTINGS FILE for what each button starts.
+[*][B]The boot sound with RIPPS2's first frame[/B]: Boot Sound On (fast) keeps boot.adp beside BIBLE's settings, and BIBLE hands it to RIPPS2 in memory during its splash, even from an SD2PSX.
+[/LIST]
+
+[CENTER][IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b139/bible-sky-or-black.jpg[/IMG][/CENTER]
+
+[B]Update BIBLE on a genuine card, an SD2PSX or a MemCard PRO 2[/B], PAL and Japanese consoles most of all, and [URL='https://github.com/akilluminati47/RIPPS2/issues']open an issue[/URL] with your console model and how it went.

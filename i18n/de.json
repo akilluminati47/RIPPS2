@@ -7,10 +7,6 @@
   "en": "03be7325b77b",
   "t": "RIPPS2 wird von akilluminati47 entworfen und geleitet und mit Claude (Anthropic) gebaut. Tester: ripto, nuno6573, zackcage6, eliminator1403, FifthFox, Mr.sus.60, lukeatmynose, ahavasi und alle, die auf Discord testen. Issues auf GitHub: DarkNerdShawny und alle, die eines eröffnen (ein Issue ist der beste Weg zu RIPPS2-Updates: sei wie sie und [eröffne eines](https://github.com/akilluminati47/RIPPS2/issues)). Besonderer Dank auch für all die Liebe auf YouTube: ich helfe gern, wie auch immer du mich erreichst."
  },
- "04b63e681261": {
-  "en": "04b63e681261",
-  "t": "> [Neu in Build 138](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.8-beta) | [Changelog](CHANGELOG.md) | **[Videos](#videos)** | [Alle Releases](https://github.com/akilluminati47/RIPPS2/releases) | [Darüber reden auf psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
- },
  "064d7e03de66": {
   "en": "064d7e03de66",
   "t": "## Videos"
@@ -90,10 +86,6 @@
  "2bb78085b36f": {
   "en": "2bb78085b36f",
   "t": "| [Der Build-88-Short](https://www.youtube.com/shorts/Sqprz22tdtg) | Short | Build 88, zu Slideshow |"
- },
- "2e611083b6bf": {
-  "en": "2e611083b6bf",
-  "t": "> ### Rip it: RIPPS2 Build 138, v1.3.8 Beta"
  },
  "2f0ee80297df": {
   "en": "2f0ee80297df",
@@ -195,13 +187,13 @@
   "en": "60f96e9259c8",
   "t": "<sub>Die Menüsounds sind so nummeriert, wie Media Studio einen SCPH-39001-Dump auflistet. Start legt die meisten schon an ihren Platz; für diese Karte wandle save, error, random und die beiden Laufwerkssounds aus den hier genannten Menüsounds um.</sub>"
  },
- "618c478fd292": {
-  "en": "618c478fd292",
-  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) von El Isra (israpps) und [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) von saildot4k: BOOT LOCK bearbeitet ihre Konfiguration, damit die Konsole RIPPS2 startet (seit Build 116 auch die von FreeMcBoot und OSDMenu). Seit Build 134 bringt RIPPS2.elf [BIBLE](https://github.com/akilluminati47/BIBLE) mit, unseren für RIPPS2 signierten PS2BBL-Ableger, den **Boot Loader > Manage** installiert (Build 69 bis 133 brachten El Isras PS2BBL 1.2.0 mit). Lizenz (GPL-3.0) und Quellcode liegen in [`elf/bible`](elf/bible/README.md); die Bindung an die Karte nutzt das offene SECRMAN von ps2sdk (AFL), ohne Schlüssel."
- },
  "67788a3fdaa3": {
   "en": "67788a3fdaa3",
   "t": "| [Der Sound-Rundgang von v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4) (auf GitHub) | 2:11 | Jeder aus der Konsole gerippte Sound, in einem Take, vom Startsound bis zum Spielstart |"
+ },
+ "68edcf86e41c": {
+  "en": "68edcf86e41c",
+  "t": "- **BIBLE und BOOT LOCK.** Settings > General & System > Boot Loader > **Manage** installiert **BIBLE**, akilluminati47s Bootloader (ein Fork von PS2BBL Extended, jeder Build von akilluminati47 signiert), auf einer Memory Card, einer SD2PSX- oder MMCE-BOOT-Karte oder der Festplatte, aktualisiert ein älteres und stellt Hintergrund, Startbild und Videomodus von BIBLE in einem eigenen Menü ein. **Boot Lock** stellt den Bootloader, den deine Konsole wirklich startet, so ein, dass er RIPPS2 startet: PS2BBL und FreeMcBoot starten es sofort, OSDMenu setzt es an die erste Stelle seines Menüs, und Ausschalten stellt wieder her, was vorher da war."
  },
  "72db6e21b0bb": {
   "en": "72db6e21b0bb",
@@ -315,10 +307,6 @@
   "en": "af3b1669b5f4",
   "t": "| ↕ | Cursor | `cursor.adp` | **Menu sound 7** |"
  },
- "b001b2c9e02b": {
-  "en": "b001b2c9e02b",
-  "t": "> 1. **[Lade RIPPS2.elf herunter](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (immer das neueste Release) (eine Datei, 2.730 KB), und das **[Theme-Paket](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)**, wenn du magst (Adapt, Adapt Rx, Ausgabe 136: je eine Konfiguration und ein Bild; RIPGRID und RIPFLOW sind eingebaut), und **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** für RIPPS2 in deiner Sprache (33 davon; jedes Release enthält es)."
- },
  "b0a6e7370567": {
   "en": "b0a6e7370567",
   "t": "| Musik | Track | Herkunft | So bekommst du ihn |"
@@ -334,6 +322,10 @@
  "b7ec1e99d662": {
   "en": "b7ec1e99d662",
   "t": "- [Apollo Save Tool](https://github.com/bucanero/apollo-ps2) von bucanero: das Vorbild für die Spielstand-Werkzeuge (PSU, Kartenimages). Der Code ist RIPPS2s eigener, aus den Formaten geschrieben."
+ },
+ "b9a17e01f56e": {
+  "en": "b9a17e01f56e",
+  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) von El Isra (israpps) und [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) von saildot4k: BOOT LOCK bearbeitet ihre Konfiguration, damit die Konsole RIPPS2 startet (seit Build 116 auch die von FreeMcBoot und OSDMenu). Seit Build 134 bringt RIPPS2.elf [BIBLE](https://github.com/akilluminati47/BIBLE) mit, akilluminati47s Fork von PS2BBL Extended, jeder Build von akilluminati47 signiert, den **Boot Loader > Manage** installiert und aktualisiert (Builds 69 bis 133 brachten El Isras PS2BBL 1.2.0 mit). Lizenz (GPL-3.0) und Quellcode liegen in [`elf/bible`](elf/bible/README.md). Seit Build 138 bootet das Binden an die Karte das IOPRP-Image von [KELFBinder](https://github.com/israpps/KELFBinder) von El Isra (GPL-3.0, als Daten mitgeführt in [`elf/kelfbinder`](elf/kelfbinder/README.md)); die Kryptografie macht die Konsole, Schlüssel sind nicht im Spiel."
  },
  "b9a7a548f42d": {
   "en": "b9a7a548f42d",
@@ -371,6 +363,10 @@
   "en": "c2409d3b212c",
   "t": "| ✕ | Bestätigen | `confirm.adp` | **Menu sound 5** |"
  },
+ "c4671696596b": {
+  "en": "c4671696596b",
+  "t": "> 1. **[Lade RIPPS2.elf herunter](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (immer das neueste Release) (eine Datei, 2.764 KB), und das **[Theme-Paket](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)**, wenn du magst (Adapt, Adapt Rx, Ausgabe 136: je eine Konfiguration und ein Bild; RIPGRID und RIPFLOW sind eingebaut), und **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** für RIPPS2 in deiner Sprache (33 davon; jedes Release enthält es)."
+ },
  "c8eb072f3f8f": {
   "en": "c8eb072f3f8f",
   "t": "- **Das Bild, wo dein Fernseher es will.** Settings > Interface > Screen: Video Mode (bis 720p und 1080i), Widescreen sowie H-POS, V-POS und Overscan, die seit Build 124 für jeden Videomodus gespeichert werden, so behalten 1080i und 480i jeweils ihre eigene Zentrierung."
@@ -387,9 +383,17 @@
   "en": "cc3d4e294dca",
   "t": "- [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/) von krHACKen startet PS1-Spiele aus deiner eigenen Kopie, die RIPPS2 auf deinen Laufwerken und Memory Cards findet ([`elf/popstarter`](elf/popstarter/README.md))."
  },
+ "ccdef30a7623": {
+  "en": "ccdef30a7623",
+  "t": "> ### Rip it: RIPPS2 Build 139, v1.3.9 Beta"
+ },
  "cd91a464e4a7": {
   "en": "cd91a464e4a7",
   "t": "| ✓ | Speichern | `save.adp` | **Menu sound 12** |"
+ },
+ "d00f49a314cd": {
+  "en": "d00f49a314cd",
+  "t": "> [Neu in Build 139](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.9-beta) | [Changelog](CHANGELOG.md) | **[Videos](#videos)** | [Alle Releases](https://github.com/akilluminati47/RIPPS2/releases) | [Darüber reden auf psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "d1471c7da040": {
   "en": "d1471c7da040",
@@ -430,10 +434,6 @@
  "da42e53699c3": {
   "en": "da42e53699c3",
   "t": "- **Ein schneller Start.** Settings > Game Sources > Cache > **Fast Boot** liest beim Start nur das Laufwerk von RIPPS2 selbst: die Einstellungen und Sounds neben `RIPPS2.ELF` und jede Liste aus ihrem Cache. Die anderen Laufwerke warten, bis du auf ihrer Seite SELECT drückst oder eines ihrer Spiele wählst. Ein Spiel, das gewählt wird, während RIPPS2 noch liest oder schreibt, wartet hinter einem Panel, das sagt, was noch fehlt (START NOW startet sofort), so unterbricht ein Start nie einen Schreibvorgang."
- },
- "dabbb8b086c6": {
-  "en": "dabbb8b086c6",
-  "t": "- **BIBLE und BOOT LOCK.** Settings > General & System > Boot Loader zeigt, was jede Memory Card beim Einschalten startet, und installiert **BIBLE**, PS2BBL für RIPPS2 eingerichtet, auf einer Memory Card. **Boot Lock** stellt den Bootloader, den deine Konsole wirklich startet, so ein, dass er RIPPS2 startet: PS2BBL und FreeMcBoot starten es sofort, OSDMenu setzt es an die erste Stelle seines Menüs, und Ausschalten stellt wieder her, was vorher da war."
  },
  "de8f1cb0c1f9": {
   "en": "de8f1cb0c1f9",

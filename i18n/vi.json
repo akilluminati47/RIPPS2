@@ -7,10 +7,6 @@
   "en": "03be7325b77b",
   "t": "RIPPS2 được akilluminati47 thiết kế và chỉ đạo, và được xây dựng cùng Claude (Anthropic). Người thử nghiệm: ripto, nuno6573, zackcage6, eliminator1403, FifthFox, Mr.sus.60, lukeatmynose, ahavasi và mọi người thử nghiệm trên Discord. Issue trên GitHub: DarkNerdShawny và mọi người mở issue (một issue là cách tốt nhất để RIPPS2 được cập nhật: hãy như họ và [mở một cái](https://github.com/akilluminati47/RIPPS2/issues)). Đặc biệt cảm ơn mọi tình cảm trên YouTube: tôi rất vui được giúp, dù bạn liên lạc bằng cách nào."
  },
- "04b63e681261": {
-  "en": "04b63e681261",
-  "t": "> [Có gì mới trong bản dựng 138](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.8-beta) | [Changelog](CHANGELOG.md) | **[Video](#videos)** | [Mọi bản phát hành](https://github.com/akilluminati47/RIPPS2/releases) | [Thảo luận trên psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
- },
  "064d7e03de66": {
   "en": "064d7e03de66",
   "t": "## Video"
@@ -90,10 +86,6 @@
  "2bb78085b36f": {
   "en": "2bb78085b36f",
   "t": "| [Short bản dựng 88](https://www.youtube.com/shorts/Sqprz22tdtg) | Short | Bản dựng 88 theo Slideshow |"
- },
- "2e611083b6bf": {
-  "en": "2e611083b6bf",
-  "t": "> ### Rip nào: RIPPS2 bản dựng 138, v1.3.8 beta"
  },
  "2f0ee80297df": {
   "en": "2f0ee80297df",
@@ -195,13 +187,13 @@
   "en": "60f96e9259c8",
   "t": "<sub>Âm thanh menu được đánh số theo cách Media Studio liệt kê một bản dump SCPH-39001. Start đã đặt sẵn phần lớn; với bản đồ này, hãy chuyển save, error, random và hai âm thanh ổ từ các âm thanh menu được nêu ở đây.</sub>"
  },
- "618c478fd292": {
-  "en": "618c478fd292",
-  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) của El Isra (israpps) và [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) của saildot4k: BOOT LOCK sửa cấu hình của chúng để máy chạy RIPPS2 (từ bản dựng 116 cả cấu hình của FreeMcBoot và OSDMenu). Từ bản dựng 134, RIPPS2.elf mang theo [BIBLE](https://github.com/akilluminati47/BIBLE), bản phái sinh PS2BBL của chúng tôi được ký cho RIPPS2, để **Boot Loader > Manage** cài đặt (các bản dựng 69 đến 133 mang PS2BBL 1.2.0 của El Isra). Giấy phép GPL-3.0 và mã nguồn nằm trong [`elf/bible`](elf/bible/README.md); việc gắn vào thẻ dùng SECRMAN mở của ps2sdk (AFL), không cần khóa."
- },
  "67788a3fdaa3": {
   "en": "67788a3fdaa3",
   "t": "| [Tham quan âm thanh v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4) (trên GitHub) | 2:11 | Mọi âm thanh rip từ máy, trong một cảnh quay, từ tiếng khởi động đến khi chạy game |"
+ },
+ "68edcf86e41c": {
+  "en": "68edcf86e41c",
+  "t": "- **BIBLE và BOOT LOCK.** Settings > General & System > Boot Loader > **Manage** cài **BIBLE**, trình khởi động của akilluminati47 (bản fork PS2BBL Extended, mọi bản dựng đều do akilluminati47 ký), lên thẻ nhớ, thẻ BOOT SD2PSX hoặc MMCE hay ổ cứng, cập nhật bản cũ hơn và đặt nền, màn hình mở đầu và chế độ video của BIBLE từ menu riêng. **Boot Lock** thiết lập trình khởi động mà máy của bạn thực sự chạy để chạy RIPPS2: PS2BBL và FreeMcBoot chạy nó ngay, OSDMenu đặt nó lên đầu menu, và tắt đi sẽ trả lại như cũ."
  },
  "72db6e21b0bb": {
   "en": "72db6e21b0bb",
@@ -315,10 +307,6 @@
   "en": "af3b1669b5f4",
   "t": "| ↕ | Con trỏ | `cursor.adp` | **Menu sound 7** |"
  },
- "b001b2c9e02b": {
-  "en": "b001b2c9e02b",
-  "t": "> 1. **[Tải RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (luôn là bản phát hành mới nhất) (một tệp, 2.730 KB), nếu muốn thì thêm **[gói giao diện](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt và Adapt Rx, phiên bản 136: mỗi cái một cấu hình và một ảnh; RIPGRID và RIPFLOW có sẵn bên trong), và **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** để dùng RIPPS2 bằng ngôn ngữ của bạn (33 ngôn ngữ; đi kèm mọi bản phát hành)."
- },
  "b0a6e7370567": {
   "en": "b0a6e7370567",
   "t": "| Nhạc | Bài | Từ đâu | Cách lấy |"
@@ -334,6 +322,10 @@
  "b7ec1e99d662": {
   "en": "b7ec1e99d662",
   "t": "- [Apollo Save Tool](https://github.com/bucanero/apollo-ps2) của bucanero: mô hình cho công cụ dữ liệu lưu (PSU, ảnh thẻ). Mã là của riêng RIPPS2, viết từ các định dạng."
+ },
+ "b9a17e01f56e": {
+  "en": "b9a17e01f56e",
+  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) của El Isra (israpps) và [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) của saildot4k: BOOT LOCK sửa cấu hình của chúng để máy chạy RIPPS2 (từ bản dựng 116 cả cấu hình của FreeMcBoot và OSDMenu). Từ bản dựng 134, RIPPS2.elf mang theo [BIBLE](https://github.com/akilluminati47/BIBLE), bản fork PS2BBL Extended của akilluminati47, mọi bản dựng đều do akilluminati47 ký, để **Boot Loader > Manage** cài và cập nhật (các bản dựng 69 đến 133 mang PS2BBL 1.2.0 của El Isra). Giấy phép GPL-3.0 và mã nguồn của nó nằm trong [`elf/bible`](elf/bible/README.md). Từ bản dựng 138, việc gắn vào thẻ khởi động ảnh IOPRP của [KELFBinder](https://github.com/israpps/KELFBinder) của El Isra (GPL-3.0, mang theo dạng dữ liệu trong [`elf/kelfbinder`](elf/kelfbinder/README.md)); máy tự lo phần mã hóa và không cần khóa nào."
  },
  "b9a7a548f42d": {
   "en": "b9a7a548f42d",
@@ -371,6 +363,10 @@
   "en": "c2409d3b212c",
   "t": "| ✕ | Xác nhận | `confirm.adp` | **Menu sound 5** |"
  },
+ "c4671696596b": {
+  "en": "c4671696596b",
+  "t": "> 1. **[Tải RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (luôn là bản phát hành mới nhất) (một tệp, 2.764 KB), nếu muốn thì thêm **[gói giao diện](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt và Adapt Rx, phiên bản 136: mỗi cái một cấu hình và một ảnh; RIPGRID và RIPFLOW có sẵn bên trong), và **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** để dùng RIPPS2 bằng ngôn ngữ của bạn (33 ngôn ngữ; đi kèm mọi bản phát hành)."
+ },
  "c8eb072f3f8f": {
   "en": "c8eb072f3f8f",
   "t": "- **Hình ảnh ở đúng chỗ TV của bạn cần.** Settings > Interface > Screen: Video Mode (lên đến 720p và 1080i), Widescreen, và H-POS, V-POS và Overscan, từ bản dựng 124 được lưu riêng cho từng chế độ video, nên 1080i và 480i mỗi cái giữ cách căn giữa riêng."
@@ -387,9 +383,17 @@
   "en": "cc3d4e294dca",
   "t": "- [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/) của krHACKen chạy game PS1 từ bản của bạn, mà RIPPS2 tìm thấy trên các ổ và thẻ nhớ của bạn ([`elf/popstarter`](elf/popstarter/README.md))."
  },
+ "ccdef30a7623": {
+  "en": "ccdef30a7623",
+  "t": "> ### Rip nào: RIPPS2 bản dựng 139, v1.3.9 beta"
+ },
  "cd91a464e4a7": {
   "en": "cd91a464e4a7",
   "t": "| ✓ | Lưu | `save.adp` | **Menu sound 12** |"
+ },
+ "d00f49a314cd": {
+  "en": "d00f49a314cd",
+  "t": "> [Có gì mới trong bản dựng 139](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.9-beta) | [Changelog](CHANGELOG.md) | **[Video](#videos)** | [Mọi bản phát hành](https://github.com/akilluminati47/RIPPS2/releases) | [Thảo luận trên psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "d1471c7da040": {
   "en": "d1471c7da040",
@@ -430,10 +434,6 @@
  "da42e53699c3": {
   "en": "da42e53699c3",
   "t": "- **Khởi động nhanh.** Settings > Game Sources > Cache > **Fast Boot** chỉ đọc ổ của chính RIPPS2 khi bật máy: cài đặt và âm thanh cạnh `RIPPS2.ELF`, và mỗi danh sách từ bộ nhớ đệm. Các ổ khác chờ đến khi bạn bấm SELECT trên trang của chúng hoặc chọn một game của chúng. Một game được chọn khi RIPPS2 đang đọc hoặc ghi sẽ chờ sau một bảng cho biết việc còn lại (START NOW chạy ngay), nên việc chạy game không bao giờ cắt ngang một lần ghi."
- },
- "dabbb8b086c6": {
-  "en": "dabbb8b086c6",
-  "t": "- **BIBLE và BOOT LOCK.** Settings > General & System > Boot Loader cho thấy mỗi thẻ nhớ chạy gì khi bật máy và cài **BIBLE**, tức PS2BBL được chuẩn bị cho RIPPS2, lên thẻ nhớ. **Boot Lock** thiết lập trình khởi động mà máy của bạn thực sự chạy để chạy RIPPS2: PS2BBL và FreeMcBoot chạy nó ngay, OSDMenu đặt nó lên đầu menu, và tắt đi sẽ trả lại như cũ."
  },
  "de8f1cb0c1f9": {
   "en": "de8f1cb0c1f9",

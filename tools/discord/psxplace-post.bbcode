@@ -6,11 +6,11 @@
 [I]RIP PS2, the ELF killer. ELF-sufficient, never ELF-destructive.[/I]
 
 [URL='https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf'][B]Download the latest RIPPS2.elf[/B][/URL]  |  [URL='https://github.com/akilluminati47/RIPPS2/releases/latest']What's new[/URL]  |  [URL='https://github.com/akilluminati47/RIPPS2-themes/releases/latest/download/RIPPS2-themes.zip']Theme pack[/URL]  |  [URL='https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip']Languages[/URL]  |  [URL='https://github.com/akilluminati47/RIPPS2']GitHub[/URL]  |  [URL='https://akilluminati47.github.io/RIPPS2/']Website[/URL]
-[SIZE=2]Current release: v1.3.8 beta (build 138)  |  [URL='https://github.com/akilluminati47/RIPPS2/blob/main/CHANGELOG.md']Changelog[/URL]  |  [URL='https://github.com/akilluminati47/RIPPS2/releases']All releases[/URL][/SIZE][/CENTER]
+[SIZE=2]Current release: v1.3.9 beta (build 139)  |  [URL='https://github.com/akilluminati47/RIPPS2/blob/main/CHANGELOG.md']Changelog[/URL]  |  [URL='https://github.com/akilluminati47/RIPPS2/releases']All releases[/URL][/SIZE][/CENTER]
 
 Hey everyone. RIPPS2 is in beta, and the download link above always gets the newest build.
 
-[SIZE=3]RIPPS2 is a PS2 front end in a single .elf (2,730 KB): a teardown and rebuild of [URL='https://github.com/NathanNeurotic/Open-PS2-Loader']RiptOPL[/URL], the Open PS2 Loader fork, with rickgaiser's [URL='https://github.com/rickgaiser/neutrino']Neutrino[/URL] as its second game core, and its own look, launchers, file browser and save tools. Glass towers stand behind your games and orbits behind your files, all drawn live by the PS2. The video is RIPPS2 running in PCSX2, from the web page it started as to what it does now; its only music is a PS2's own, the menu's and the red screen's, ripped from its BIOS by RIPPS2 itself.[/SIZE]
+[SIZE=3]RIPPS2 is a PS2 front end in a single .elf (2,764 KB): a teardown and rebuild of [URL='https://github.com/NathanNeurotic/Open-PS2-Loader']RiptOPL[/URL], the Open PS2 Loader fork, with rickgaiser's [URL='https://github.com/rickgaiser/neutrino']Neutrino[/URL] as its second game core, and its own look, launchers, file browser and save tools. Glass towers stand behind your games and orbits behind your files, all drawn live by the PS2. The video is RIPPS2 running in PCSX2, from the web page it started as to what it does now; its only music is a PS2's own, the menu's and the red screen's, ripped from its BIOS by RIPPS2 itself.[/SIZE]
 
 [SIZE=5][B]Launch Disc[/B][/SIZE]
 [LIST]
@@ -68,7 +68,8 @@ Hey everyone. RIPPS2 is in beta, and the download link above always gets the new
 [*][LEFT][B]BIBLE[/B] is akilluminati47's boot loader, built on El Isra's PS2BBL and saildot4k's PS2BBL Extended: its own splash (the buttons, and the console's model and clock if you want them), a launch keys page (hold L2 + R2 at power on) and a video mode page up to 1080i (TRIANGLE + CROSS). [B]Signed by akilluminati47.[/B][/LEFT]
 [*][LEFT]It rides inside RIPPS2.elf, nothing else to download. Settings > General > Boot Loader > [B]Manage[/B] binds it to your memory card, an SD2PSX or MMCE BOOT card too (the way KELFBinder does it), or puts it in the internal HDD's boot area, and at power on it starts RIPPS2 at once from wherever RIPPS2 lives: a memory card, USB, MX4SIO or the SD card of an SD2PSX. It never copies RIPPS2.[/LEFT]
 [*][LEFT][B]Tested on a real PS2[/B] (SCPH-39001 with an SD2PSX): bound by RIPPS2 itself, BIBLE's splash, then RIPPS2. Manage tells BIBLE apart by its own bytes, so a card says "BIBLE (MMCE build)" whatever its icon says.[/LEFT]
-[*][LEFT]Its settings are one text file on the card, [B]SYS-CONF/PS2BBL.INI[/B]: what each button starts, the splash, the video mode, widescreen and the sky's colours (the sky follows your RIPPS2 Color Theme). Open it in Memory Files.[/LEFT]
+[*][LEFT][B]Set it up from RIPPS2[/B]: with BIBLE on a card, Manage opens a BIBLE menu. UPDATE BIBLE binds the new one over an older one in place, and Background (Auto: your RIPPS2 sky when it starts RIPPS2, black for anything else; Sky; Black), Splash, Button Glyphs, Info Line, Power-on Wait, Video Mode and Widescreen each change one line of its settings file, [B]SYS-CONF/PS2BBL.INI[/B]. EDIT BIBLE'S SETTINGS FILE opens the rest (what each button starts).[/LEFT]
+[*][LEFT][B]The boot sound with RIPPS2's first frame[/B]: Boot Sound On (fast) keeps boot.adp beside BIBLE's settings; BIBLE reads it during its splash and hands it to RIPPS2 in memory, even from an SD2PSX.[/LEFT]
 [*][LEFT]SD2PSX owners: a [URL='https://github.com/akilluminati47/BIBLE/releases/latest']ready BIBLE BOOT card[/URL] is on BIBLE's release page.[/LEFT]
 [/LIST]
 

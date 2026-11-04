@@ -7,10 +7,6 @@
   "en": "03be7325b77b",
   "t": "RIPPS2 dirancang dan diarahkan oleh akilluminati47 dan dibangun bersama Claude (Anthropic). Penguji: ripto, nuno6573, zackcage6, eliminator1403, FifthFox, Mr.sus.60, lukeatmynose, ahavasi, dan semua orang yang menguji di Discord. Issue di GitHub: DarkNerdShawny dan semua orang yang membukanya (issue adalah cara terbaik agar RIPPS2 diperbarui: jadilah seperti mereka dan [buka satu](https://github.com/akilluminati47/RIPPS2/issues)). Terima kasih khusus juga atas semua dukungan di YouTube: saya senang membantu, lewat jalan apa pun Anda menghubungi saya."
  },
- "04b63e681261": {
-  "en": "04b63e681261",
-  "t": "> [Yang baru di build 138](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.8-beta) | [Changelog](CHANGELOG.md) | **[Video](#videos)** | [Semua rilis](https://github.com/akilluminati47/RIPPS2/releases) | [Diskusikan di psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
- },
  "064d7e03de66": {
   "en": "064d7e03de66",
   "t": "## Video"
@@ -90,10 +86,6 @@
  "2bb78085b36f": {
   "en": "2bb78085b36f",
   "t": "| [Short build 88](https://www.youtube.com/shorts/Sqprz22tdtg) | Short | Build 88 mengikuti Slideshow |"
- },
- "2e611083b6bf": {
-  "en": "2e611083b6bf",
-  "t": "> ### Rip sekarang: RIPPS2 build 138, v1.3.8 beta"
  },
  "2f0ee80297df": {
   "en": "2f0ee80297df",
@@ -195,13 +187,13 @@
   "en": "60f96e9259c8",
   "t": "<sub>Suara menu diberi nomor sesuai cara Media Studio mendaftar dump SCPH-39001. Start sudah menaruh sebagian besar di tempatnya; untuk peta ini, konversikan save, error, random, dan dua suara drive dari suara menu yang disebut di sini.</sub>"
  },
- "618c478fd292": {
-  "en": "618c478fd292",
-  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) oleh El Isra (israpps) dan [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) oleh saildot4k: BOOT LOCK menyunting konfigurasinya agar konsol menjalankan RIPPS2 (sejak build 116 juga konfigurasi FreeMcBoot dan OSDMenu). Sejak build 134, RIPPS2.elf membawa [BIBLE](https://github.com/akilluminati47/BIBLE), varian PS2BBL kami yang ditandatangani untuk RIPPS2, untuk dipasang oleh **Boot Loader > Manage** (build 69 sampai 133 membawa PS2BBL 1.2.0 milik El Isra). Lisensi GPL-3.0 dan kode sumbernya ada di [`elf/bible`](elf/bible/README.md); pengikatan ke kartu memakai SECRMAN terbuka dari ps2sdk (AFL), tanpa kunci."
- },
  "67788a3fdaa3": {
   "en": "67788a3fdaa3",
   "t": "| [Tur suara v1.1.2](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4) (di GitHub) | 2:11 | Setiap suara yang di-rip dari konsol, dalam satu pengambilan, dari suara boot sampai peluncuran game |"
+ },
+ "68edcf86e41c": {
+  "en": "68edcf86e41c",
+  "t": "- **BIBLE dan BOOT LOCK.** Settings > General & System > Boot Loader > **Manage** memasang **BIBLE**, bootloader buatan akilluminati47 (fork PS2BBL Extended, setiap build ditandatangani akilluminati47), ke memory card, kartu BOOT SD2PSX atau MMCE, atau HDD, memperbarui yang lebih lama, dan mengatur latar, layar pembuka, dan mode video BIBLE dari menunya sendiri. **Boot Lock** mengatur bootloader yang benar-benar dijalankan konsol Anda agar menjalankan RIPPS2: PS2BBL dan FreeMcBoot langsung menjalankannya, OSDMenu menaruhnya di urutan pertama menunya, dan mematikannya mengembalikan yang sebelumnya."
  },
  "72db6e21b0bb": {
   "en": "72db6e21b0bb",
@@ -315,10 +307,6 @@
   "en": "af3b1669b5f4",
   "t": "| ↕ | Kursor | `cursor.adp` | **Menu sound 7** |"
  },
- "b001b2c9e02b": {
-  "en": "b001b2c9e02b",
-  "t": "> 1. **[Unduh RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (selalu rilis terbaru) (satu berkas, 2.730 KB), dan bila mau **[paket tema](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt dan Adapt Rx, edisi 136: masing-masing satu konfigurasi dan satu gambar; RIPGRID dan RIPFLOW sudah bawaan), serta **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** untuk RIPPS2 dalam bahasa Anda (33 bahasa; disertakan di setiap rilis)."
- },
  "b0a6e7370567": {
   "en": "b0a6e7370567",
   "t": "| Musik | Lagu | Dari | Cara mendapatkannya |"
@@ -334,6 +322,10 @@
  "b7ec1e99d662": {
   "en": "b7ec1e99d662",
   "t": "- [Apollo Save Tool](https://github.com/bucanero/apollo-ps2) oleh bucanero: model untuk alat save (PSU, image kartu). Kodenya milik RIPPS2 sendiri, ditulis dari formatnya."
+ },
+ "b9a17e01f56e": {
+  "en": "b9a17e01f56e",
+  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader) oleh El Isra (israpps) dan [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended) oleh saildot4k: BOOT LOCK menyunting konfigurasinya agar konsol menjalankan RIPPS2 (sejak build 116 juga konfigurasi FreeMcBoot dan OSDMenu). Sejak build 134, RIPPS2.elf membawa [BIBLE](https://github.com/akilluminati47/BIBLE), fork PS2BBL Extended buatan akilluminati47, setiap build ditandatangani akilluminati47, untuk dipasang dan diperbarui oleh **Boot Loader > Manage** (build 69 sampai 133 membawa PS2BBL 1.2.0 milik El Isra). Lisensi GPL-3.0 dan kode sumbernya ada di [`elf/bible`](elf/bible/README.md). Sejak build 138, pengikatan ke kartu menjalankan image IOPRP dari [KELFBinder](https://github.com/israpps/KELFBinder) oleh El Isra (GPL-3.0, dibawa sebagai data di [`elf/kelfbinder`](elf/kelfbinder/README.md)); konsol yang mengurus kriptonya, dan tidak ada kunci yang terlibat."
  },
  "b9a7a548f42d": {
   "en": "b9a7a548f42d",
@@ -371,6 +363,10 @@
   "en": "c2409d3b212c",
   "t": "| ✕ | Konfirmasi | `confirm.adp` | **Menu sound 5** |"
  },
+ "c4671696596b": {
+  "en": "c4671696596b",
+  "t": "> 1. **[Unduh RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)** (selalu rilis terbaru) (satu berkas, 2.764 KB), dan bila mau **[paket tema](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)** (Adapt dan Adapt Rx, edisi 136: masing-masing satu konfigurasi dan satu gambar; RIPGRID dan RIPFLOW sudah bawaan), serta **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)** untuk RIPPS2 dalam bahasa Anda (33 bahasa; disertakan di setiap rilis)."
+ },
  "c8eb072f3f8f": {
   "en": "c8eb072f3f8f",
   "t": "- **Gambar di tempat yang diinginkan TV Anda.** Settings > Interface > Screen: Video Mode (hingga 720p dan 1080i), Widescreen, serta H-POS, V-POS, dan Overscan, yang sejak build 124 disimpan per mode video, sehingga 1080i dan 480i masing-masing punya pemusatan sendiri."
@@ -387,9 +383,17 @@
   "en": "cc3d4e294dca",
   "t": "- [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/) oleh krHACKen menjalankan game PS1 dari salinan Anda, yang ditemukan RIPPS2 di drive dan memory card Anda ([`elf/popstarter`](elf/popstarter/README.md))."
  },
+ "ccdef30a7623": {
+  "en": "ccdef30a7623",
+  "t": "> ### Rip sekarang: RIPPS2 build 139, v1.3.9 beta"
+ },
  "cd91a464e4a7": {
   "en": "cd91a464e4a7",
   "t": "| ✓ | Simpan | `save.adp` | **Menu sound 12** |"
+ },
+ "d00f49a314cd": {
+  "en": "d00f49a314cd",
+  "t": "> [Yang baru di build 139](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.9-beta) | [Changelog](CHANGELOG.md) | **[Video](#videos)** | [Semua rilis](https://github.com/akilluminati47/RIPPS2/releases) | [Diskusikan di psx-place](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "d1471c7da040": {
   "en": "d1471c7da040",
@@ -430,10 +434,6 @@
  "da42e53699c3": {
   "en": "da42e53699c3",
   "t": "- **Boot cepat.** Settings > Game Sources > Cache > **Fast Boot** hanya membaca drive RIPPS2 sendiri saat dinyalakan: pengaturan dan suara di samping `RIPPS2.ELF`, dan setiap daftar dari cache-nya. Drive lain menunggu sampai Anda menekan SELECT di halamannya atau memilih salah satu game-nya. Game yang dipilih saat RIPPS2 sedang membaca atau menulis menunggu di balik panel yang menunjukkan sisa pekerjaan (START NOW langsung jalan), jadi peluncuran tidak pernah memotong penulisan di tengah jalan."
- },
- "dabbb8b086c6": {
-  "en": "dabbb8b086c6",
-  "t": "- **BIBLE dan BOOT LOCK.** Settings > General & System > Boot Loader menunjukkan apa yang dijalankan setiap memory card saat dinyalakan dan memasang **BIBLE**, PS2BBL yang disiapkan untuk RIPPS2, ke memory card. **Boot Lock** mengatur bootloader yang benar-benar dijalankan konsol Anda agar menjalankan RIPPS2: PS2BBL dan FreeMcBoot langsung menjalankannya, OSDMenu menaruhnya di urutan pertama menunya, dan mematikannya mengembalikan yang sebelumnya."
  },
  "de8f1cb0c1f9": {
   "en": "de8f1cb0c1f9",

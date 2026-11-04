@@ -1,5 +1,37 @@
 # RIPPS2 changelog
 
+## Build 139 (beta, v1.3.9-beta), changes since build 138
+
+The user, 11/03: "cant i set the blank background from ripps2 and even install the system update? why use kelfbinder
+again". RIPPS2 now carries BIBLE's next update and sets BIBLE up from its own menu.
+
+**BIBLE `3282396` inside** (all four builds signed by the user on 11/03)
+- `BIBLE_BACKGROUND`: AUTO (RIPPS2's sky when RIPPS2's settings are found, else black like a plain loader), SKY or
+  BLANK. RIPPS2's settings are also read from `mc?:/RIPPS2` when BIBLE's AUTO entry starts RIPPS2 from an SD2PSX, USB
+  or the HDD, and RIPPS2 is first in BIBLE's AUTO entries.
+- The boot sound, primed: `boot.adp` beside BIBLE's settings file, read during BIBLE's splash and handed to RIPPS2 in
+  RAM (the MMCE, MX4SIO and HDD builds), so it plays with RIPPS2's first frame even from an SD2PSX.
+
+**Manage's BIBLE menu**
+- With BIBLE on a card (or BIBLE having started RIPPS2), **Settings > General > Boot Loader > Manage** opens a BIBLE
+  menu: **SET UP, UPDATE OR RESTORE BIBLE** first (it says **UPDATE BIBLE: SLOT n HAS AN OLDER ONE** when a card has an
+  earlier BIBLE; the update binds the new one over it, in place), then **Background**, **Splash**, **Button Glyphs**,
+  **Info Line**, **Power-on Wait**, **Video Mode** and **Widescreen**, each written in place in
+  `mc?:/SYS-CONF/PS2BBL.INI` (only that key's line changes; comments and other keys stay), and **EDIT BIBLE'S
+  SETTINGS FILE** for the rest (launch keys and names).
+- The BIBLE builds RIPPS2 carried before (`f31c8d5` in 1.3.4 to 1.3.6, `a1ffb0b` in 1.3.8) are recognized by their
+  size and the CRC-32 of everything outside the key bytes, shown as "BIBLE (MMCE build, older)", whatever the folder's
+  icon says.
+
+**The boot sound from BIBLE**
+- Started by BIBLE, RIPPS2 reads `-bible-home=` and `-bible-bootsnd=mem:<address>:<size>:<crc32>` first thing in
+  `main`, checks the sound (CRC-32, its APCM header, the range) and plays it as if it had read the card's copy.
+  Boot Sound On (fast) keeps its copy beside BIBLE's settings (`mc?:/SYS-CONF/boot.adp`); Off or On removes it, so
+  BIBLE stops reading and waiting. STATUS says "handed over by BIBLE"; DIAG.TXT says which path ran.
+
+**About**: KELFBinder's IOPRP image (El Isra, GPL-3) binds BIBLE; every BIBLE build signed by akilluminati47; BIBLE's
+source. 21 new strings in all 32 languages.
+
 ## Build 138 (beta, v1.3.8-beta), changes since build 137
 
 BIBLE on a real PS2 (11/03, SCPH-39001 USA, SD2PSX BOOT card in slot 0): the user signed BIBLE, KELFBinder bound it,

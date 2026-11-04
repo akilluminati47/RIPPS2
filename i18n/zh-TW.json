@@ -7,10 +7,6 @@
   "en": "03be7325b77b",
   "t": "RIPPS2 由 akilluminati47 設計和主導，與 Claude (Anthropic) 一起打造。測試者：ripto、nuno6573、zackcage6、eliminator1403、FifthFox、Mr.sus.60、lukeatmynose、ahavasi，以及所有在 Discord 上測試的人。GitHub 上的 issue：DarkNerdShawny 和每一個提 issue 的人（issue 是讓 RIPPS2 更新的最好方式：向他們學習，[提一個](https://github.com/akilluminati47/RIPPS2/issues)）。也特別感謝 YouTube 上的所有支援：無論你透過哪種方式聯絡我，我都樂意幫忙。"
  },
- "04b63e681261": {
-  "en": "04b63e681261",
-  "t": "> [組建 138 的新內容](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.8-beta) | [Changelog](CHANGELOG.md) | **[影片](#videos)** | [所有版本](https://github.com/akilluminati47/RIPPS2/releases) | [在 psx-place 討論](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
- },
  "064d7e03de66": {
   "en": "064d7e03de66",
   "t": "## 影片"
@@ -90,10 +86,6 @@
  "2bb78085b36f": {
   "en": "2bb78085b36f",
   "t": "| [組建 88 短片](https://www.youtube.com/shorts/Sqprz22tdtg) | Short | 配合 Slideshow 的組建 88 |"
- },
- "2e611083b6bf": {
-  "en": "2e611083b6bf",
-  "t": "> ### 開始提取：RIPPS2 組建 138，v1.3.8 測試版"
  },
  "2f0ee80297df": {
   "en": "2f0ee80297df",
@@ -195,13 +187,13 @@
   "en": "60f96e9259c8",
   "t": "<sub>選單音效的編號按 Media Studio 列出 SCPH-39001 轉儲的順序。Start 已把大部分放好；要得到這張對應表，請從這裡列出的選單音效轉換 save、error、random 和兩個磁碟機音效。</sub>"
  },
- "618c478fd292": {
-  "en": "618c478fd292",
-  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader)，由 El Isra (israpps) 開發，以及 [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended)，由 saildot4k 開發：BOOT LOCK 編輯它們的配置，讓主機執行 RIPPS2（從組建 116 起也編輯 FreeMcBoot 和 OSDMenu 的配置）。從組建 134 起，RIPPS2.elf 內附 [BIBLE](https://github.com/akilluminati47/BIBLE)，即我們為 RIPPS2 簽署的 PS2BBL 分支，由 **Boot Loader > Manage** 安裝（組建 69 到 133 內附的是 El Isra 的 PS2BBL 1.2.0）。其 GPL-3.0 授權與原始碼在 [`elf/bible`](elf/bible/README.md)；綁定記憶卡使用 ps2sdk 開源的 SECRMAN（AFL），不涉及任何金鑰。"
- },
  "67788a3fdaa3": {
   "en": "67788a3fdaa3",
   "t": "| [v1.1.2 聲音巡覽](https://akilluminati47.github.io/RIPPS2/media/b112/ripps2-v112-sounds.mp4)（在 GitHub 上） | 2:11 | 從主機提取的每個聲音，一鏡到底，從開機聲到啟動遊戲 |"
+ },
+ "68edcf86e41c": {
+  "en": "68edcf86e41c",
+  "t": "- **BIBLE 和 BOOT LOCK。** Settings > General & System > Boot Loader > **Manage** 把 akilluminati47 的開機載入程式 **BIBLE**（PS2BBL Extended 的分支，每個版本都由 akilluminati47 簽署）安裝到記憶卡、SD2PSX 或 MMCE 的 BOOT 卡或硬碟上，更新舊版，並在它自己的選單裡設定 BIBLE 的背景、啟動畫面和視訊模式。**Boot Lock** 設定你主機實際執行的載入程式去執行 RIPPS2：PS2BBL 和 FreeMcBoot 會立即執行它，OSDMenu 把它放在選單首位，關閉則恢復原來的狀態。"
  },
  "72db6e21b0bb": {
   "en": "72db6e21b0bb",
@@ -315,10 +307,6 @@
   "en": "af3b1669b5f4",
   "t": "| ↕ | 游標 | `cursor.adp` | **Menu sound 7** |"
  },
- "b001b2c9e02b": {
-  "en": "b001b2c9e02b",
-  "t": "> 1. **[下載 RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)**（始終是最新版本）（一個檔案，2,730 KB），需要的話再下載 **[主題包](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)**（Adapt 和 Adapt Rx，第 136 版：各一個配置和一張圖片；RIPGRID 和 RIPFLOW 為內建），以及 **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)**，用你的語言使用 RIPPS2（33 種語言；每個版本都附帶）。"
- },
  "b0a6e7370567": {
   "en": "b0a6e7370567",
   "t": "| 音樂 | 曲目 | 來源 | 如何獲得 |"
@@ -334,6 +322,10 @@
  "b7ec1e99d662": {
   "en": "b7ec1e99d662",
   "t": "- [Apollo Save Tool](https://github.com/bucanero/apollo-ps2)，由 bucanero 開發：存檔工具（PSU、卡映象）的參考。程式碼是 RIPPS2 自己的，依據格式編寫。"
+ },
+ "b9a17e01f56e": {
+  "en": "b9a17e01f56e",
+  "t": "- [PS2BBL](https://github.com/israpps/PlayStation2-Basic-BootLoader)，由 El Isra (israpps) 開發，以及 [PS2BBL Extended](https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended)，由 saildot4k 開發：BOOT LOCK 編輯它們的配置，讓主機執行 RIPPS2（從組建 116 起也編輯 FreeMcBoot 和 OSDMenu 的配置）。從組建 134 起，RIPPS2.elf 內附 [BIBLE](https://github.com/akilluminati47/BIBLE)，即 akilluminati47 的 PS2BBL Extended 分支，每個版本都由 akilluminati47 簽署，由 **Boot Loader > Manage** 安裝和更新（組建 69 到 133 內附的是 El Isra 的 PS2BBL 1.2.0）。它的 GPL-3.0 授權和原始碼在 [`elf/bible`](elf/bible/README.md)。從組建 138 起，綁定到卡時啟動 El Isra 的 [KELFBinder](https://github.com/israpps/KELFBinder) 的 IOPRP 映像（GPL-3.0，作為資料放在 [`elf/kelfbinder`](elf/kelfbinder/README.md)）；加密由主機完成，不涉及任何金鑰。"
  },
  "b9a7a548f42d": {
   "en": "b9a7a548f42d",
@@ -371,6 +363,10 @@
   "en": "c2409d3b212c",
   "t": "| ✕ | 確認 | `confirm.adp` | **Menu sound 5** |"
  },
+ "c4671696596b": {
+  "en": "c4671696596b",
+  "t": "> 1. **[下載 RIPPS2.elf](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf)**（始終是最新版本）（一個檔案，2,764 KB），需要的話再下載 **[主題包](https://github.com/akilluminati47/RIPPS2-themes/releases/latest)**（Adapt 和 Adapt Rx，第 136 版：各一個配置和一張圖片；RIPGRID 和 RIPFLOW 為內建），以及 **[RIPPS2-languages.zip](https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2-languages.zip)**，用你的語言使用 RIPPS2（33 種語言；每個版本都附帶）。"
+ },
  "c8eb072f3f8f": {
   "en": "c8eb072f3f8f",
   "t": "- **畫面放在電視需要的位置。** Settings > Interface > Screen：Video Mode（最高 720p 和 1080i）、Widescreen，以及 H-POS、V-POS 和 Overscan，從組建 124 起按影片模式分別儲存，所以 1080i 和 480i 各有自己的居中。"
@@ -387,9 +383,17 @@
   "en": "cc3d4e294dca",
   "t": "- [POPSTARTER](https://www.psx-place.com/resources/popstarter.683/)，由 krHACKen 開發，用你自己的副本執行 PS1 遊戲，RIPPS2 會在你的磁碟機和記憶卡上找到它（[`elf/popstarter`](elf/popstarter/README.md)）。"
  },
+ "ccdef30a7623": {
+  "en": "ccdef30a7623",
+  "t": "> ### 開始提取：RIPPS2 組建 139，v1.3.9 測試版"
+ },
  "cd91a464e4a7": {
   "en": "cd91a464e4a7",
   "t": "| ✓ | 儲存 | `save.adp` | **Menu sound 12** |"
+ },
+ "d00f49a314cd": {
+  "en": "d00f49a314cd",
+  "t": "> [組建 139 的新內容](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.9-beta) | [Changelog](CHANGELOG.md) | **[影片](#videos)** | [所有版本](https://github.com/akilluminati47/RIPPS2/releases) | [在 psx-place 討論](https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/)<br>"
  },
  "d1471c7da040": {
   "en": "d1471c7da040",
@@ -430,10 +434,6 @@
  "da42e53699c3": {
   "en": "da42e53699c3",
   "t": "- **快速啟動。** Settings > Game Sources > Cache > **Fast Boot** 開機時只讀取 RIPPS2 自己所在的磁碟機：`RIPPS2.ELF` 旁邊的設定和聲音，每個清單則從快取讀取。其他磁碟機會等到你在它們的頁面上按 SELECT 或選擇它們的某個遊戲。在 RIPPS2 讀寫時選擇的遊戲，會在一個顯示剩餘工作的面板後面等待（START NOW 立即啟動），因此啟動永遠不會把寫入中途打斷。"
- },
- "dabbb8b086c6": {
-  "en": "dabbb8b086c6",
-  "t": "- **BIBLE 和 BOOT LOCK。** Settings > General & System > Boot Loader 顯示每張記憶卡開機時執行什麼，並把 **BIBLE**，即為 RIPPS2 準備好的 PS2BBL，安裝到記憶卡上。**Boot Lock** 設定你主機實際執行的載入程式去執行 RIPPS2：PS2BBL 和 FreeMcBoot 會立即執行它，OSDMenu 把它放在選單首位，關閉則恢復原來的狀態。"
  },
  "de8f1cb0c1f9": {
   "en": "de8f1cb0c1f9",
