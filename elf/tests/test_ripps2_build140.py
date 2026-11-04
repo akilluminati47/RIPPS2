@@ -52,6 +52,29 @@ if 'audioSfx ? audio_path : "", themeSfx' in snd or '"BIBLE\'s copy in RAM"' not
 if 'name != NULL ? name + 1 : card' not in st:
     fail.append('STATUS\'s hand-off row names the file alone')
 
+# one name, the page, the rename's tip and what it takes with it
+menu = (root / 'src/menusys.c').read_text(encoding='utf-8')
+edit = (root / 'src/ripps2edit.c').read_text(encoding='utf-8')
+sup = (root / 'src/supportbase.c').read_text(encoding='utf-8')
+media = (root / 'src/ripps2media.c').read_text(encoding='utf-8')
+if '_STR_RIPPS2_SET_METADATA)' in menu or menu.count('_STR_RIPPS2_SET_METADATA_RENAME') != 3:
+    fail.append('every menu reads Set Metadata (Rename)')
+if edit.find('N_("FILE NAME")') > edit.find('{"Title", N_("TITLE")') or 'static void mdTip(' not in edit or '_l(_STR_RIPPS2_SET_METADATA_RENAME)' not in edit:
+    fail.append('the page has the Settings title, the file name first, and the tip')
+if 'static const char *menuRenameTip(' not in menu or menu.count('menuRenameTip(selected_item') != 2:
+    fail.append('both editors say what a rename does on this row')
+for f in ('bdmsupport', 'mmcesupport', 'ethsupport'):
+    if 'sbRenameSidecars(' not in (root / ('src/%s.c' % f)).read_text(encoding='utf-8'):
+        fail.append('%s takes a PS1 game\'s CFG and art along' % f)
+if 'void sbRenameSidecars(' not in sup:
+    fail.append('sbRenameSidecars')
+
+# the scrub guard, and the music
+if 'smsLiteSkip(' in media or 'smsLiteSeekTo(seekTarget' not in media or 'smsLiteSeekSettled()' not in media or 'ripps2DiagBeforeLaunch();' not in media:
+    fail.append('L1 / R1 move a target and the player seeks once, when the last one has settled')
+if 'static void bgmStartInner(void)' not in snd or 'busy = bgmStartBusy || bgmIsPlaying;' not in snd:
+    fail.append('no music start over a start')
+
 # every sound ends on its own silent loop: no voice reads on into another sound's memory
 if 'sfx->size = sfxSealEnd((unsigned char *)buffer, size);' not in snd or 'sfxBibleSndSize = sfxSealEnd(sfxBibleSnd, (int)size);' not in snd or 'memalign(64, size + 16)) == NULL) { // build 140' not in snd:
     fail.append('sfxRead and the hand-off seal each sound, with room for the block')

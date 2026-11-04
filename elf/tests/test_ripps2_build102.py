@@ -30,7 +30,7 @@ def cfg_blocks(text):  # {block name: {key: value}} and the global keys under ''
 
 # 1. the music never lets audsrv run dry (its ring loops: the beeping), and a stop never waits long on a stuck read
 snd = rd('src/sound.c')
-thread, stop, start = body(snd, 'static void bgmThread(void *arg)'), body(snd, 'void bgmStop(void)'), body(snd, 'void bgmStart(void)')
+thread, stop, start = body(snd, 'static void bgmThread(void *arg)'), body(snd, 'void bgmStop(void)'), body(snd, 'static void bgmStartInner(void)')
 if 'PollSema(outSema) < 0' not in thread or 'bgmFeedSilence();' not in thread or 'WaitSema(outSema);' in thread:
     fail.append('the playback thread must poll for a chunk and feed silence while none is ready')
 if 'audsrv_queued()' not in body(snd, 'static void bgmFeedSilence(void)'):

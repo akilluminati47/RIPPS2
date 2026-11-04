@@ -1,3 +1,16 @@
+diff --git a/include/ripps2.h b/include/ripps2.h
+index 935401f..b1f6567 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -290,7 +290,7 @@ void ripps2ColorsSaveConfig(config_set_t *config);
+ void ripps2BibleSky(char *out, size_t size); // build 119: the theme's sky as RRGGBB,RRGGBB,RRGGBB for BIBLE
+ void ripps2HintsSaveConfig(config_set_t *config);
+ int ripps2EditFile(const char *path);                              // 1 when it saved
+-int ripps2EditMetadata(config_set_t *config, const char *gameName, int canRename); // 1 SAVE (values set, not written);
++int ripps2EditMetadata(config_set_t *config, const char *gameName, int canRename, const char *renameTip); // 1 SAVE (values set, not written);
+                                                                                    // build 115: 2 RENAME, 3 RENAME with values set
+ 
+ void ripps2HddManager(void); // ripps2hdd.c
 diff --git a/include/sound.h b/include/sound.h
 index 8b5f391..3a6a565 100644
 --- a/include/sound.h
@@ -11,6 +24,175 @@ index 8b5f391..3a6a565 100644
  void bgmBootTick(void);         // RIPPS2: every GUI frame: starts the music once the sounds are in, then fades it in
  int bgmHudReserve(void);            // RIPPS2 build 71 (perf HUD): decoded chunks waiting, -1 with no music
  extern volatile unsigned int gBgmUnderruns;  // RIPPS2 build 71 (perf HUD): times audsrv's ring ran dry
+diff --git a/include/supportbase.h b/include/supportbase.h
+index b9d4aab..c151624 100644
+--- a/include/supportbase.h
++++ b/include/supportbase.h
+@@ -102,6 +102,7 @@ void sbRebuildULCfg(base_game_info_t **list, const char *prefix, int gamecount,
+ void sbCreatePath(const base_game_info_t *game, char *path, const char *prefix, const char *sep, int part);
+ void sbDelete(base_game_info_t **list, const char *prefix, const char *sep, int gamecount, int id);
+ void sbRename(base_game_info_t **list, const char *prefix, const char *sep, int gamecount, int id, char *newname);
++void sbRenameSidecars(const char *prefix, const char *sep, const char *oldName, const char *newName); // build 140: a PS1 game's CFG and art
+ config_set_t *sbPopulateConfig(base_game_info_t *game, const char *prefix, const char *sep);
+ void sbSetPathOverride(const char *path);                       // RIPPS2 build 100: an ISO/ZSO launched where it sits
+ int sbIsoStartup(const char *path, char *startup, int size);    // RIPPS2 build 100: its boot file from SYSTEM.CNF
+diff --git a/src/bdmsupport.c b/src/bdmsupport.c
+index 0ae0d18..9b628a2 100644
+--- a/src/bdmsupport.c
++++ b/src/bdmsupport.c
+@@ -2016,8 +2016,10 @@ static void bdmRenameGame(item_list_t *itemList, int id, char *newName)
+         // so the rename would quietly do nothing; and where a .VCD of the same name exists (a game
+         // held for BOTH cores, which the merged list makes an ordinary case) it would rename the
+         // POPSTARTER file instead. Renaming the wrong file is the worse half of that.
+-        if ((cueIsCueEntry(game) ? cueRenameGame(vcdPrefix, game->name, newName) : vcdRenameFile(vcdPrefix, game->name, newName)) == 0)
++        if ((cueIsCueEntry(game) ? cueRenameGame(vcdPrefix, game->name, newName) : vcdRenameFile(vcdPrefix, game->name, newName)) == 0) {
++            sbRenameSidecars(vcdPrefix, "/", game->name, newName); // build 140
+             pDeviceData->ForceRefresh = 1; // the queued menu update re-scans both libraries
++        }
+         return;
+     }
+     if (bdmActiveGame(itemList, id) == &bdmEmptyGame)
+diff --git a/src/ethsupport.c b/src/ethsupport.c
+index 5357527..683cac0 100644
+--- a/src/ethsupport.c
++++ b/src/ethsupport.c
+@@ -687,6 +687,7 @@ static void ethRenameGame(item_list_t *itemList, int id, char *newName)
+         // POPSTARTER title is a .VCD file in POPS/. Renaming one as the other silently fails.
+         if (game != NULL &&
+             (cueIsCueEntry(game) ? cueRenameGame(ethPrefix, game->name, newName) : vcdRenameFile(ethPrefix, game->name, newName)) == 0) {
++            sbRenameSidecars(ethPrefix, "\\", game->name, newName); // build 140
+             // ETH otherwise treats its VCD list as toggle-only; consume this on the already queued
+             // deferred update so the renamed POPS/ directory is scanned again.
+             libViewMarkDirty(itemList->mode);
+diff --git a/src/hddsupport.c b/src/hddsupport.c
+index 90fbcdf..2b72b83 100644
+--- a/src/hddsupport.c
++++ b/src/hddsupport.c
+@@ -2118,6 +2118,8 @@ static void hddRenameVcd(int id, const char *newName)
+         guiMsgBox(_l(_STR_HDD_PARTITION_RENAME_UNSUPPORTED), 0, NULL);
+ 
+     if (renamed) {
++        if (gHDDPrefix != NULL && gHDDPrefix[0])
++            sbRenameSidecars(gHDDPrefix, "/", oldName, newName); // build 140: its CFG and art are named after it
+         vcdInvalidateGameIds();
+         hddVcdInvalidateCache();
+     }
+diff --git a/src/menusys.c b/src/menusys.c
+index 0e89f26..6c4cdf5 100644
+--- a/src/menusys.c
++++ b/src/menusys.c
+@@ -261,15 +261,17 @@ static void menuRenameGame(submenu_list_t **submenu)
+             if (menuCheckParentalLock() == 0) {
+                 sfxPlay(SFX_MESSAGE);
+                 int nameLength = support->itemGetNameLength(support, selected_item->item->current->item.id);
+-                char newName[nameLength];
+-                strncpy(newName, selected_item->item->current->item.text, nameLength);
++                char newName[nameLength], oldName[nameLength];
++                // build 140: the file's own name: a row can show a title from its CFG, and that compare was against the wrong name
++                snprintf(oldName, nameLength, "%s", support->itemGetName != NULL ? support->itemGetName(support, selected_item->item->current->item.id) : selected_item->item->current->item.text);
++                snprintf(newName, nameLength, "%s", oldName);
+                 if (guiShowKeyboard(newName, nameLength)) {
+                     guiSwitchScreen(GUI_SCREEN_MAIN);
+                     submenuDestroy(submenu);
+ 
+                     // Only rename the file if the name changed; trying to rename a file with a file name that hasn't changed can cause the file
+                     // to be deleted on certain file systems.
+-                    if (strcmp(newName, selected_item->item->current->item.text) != 0) {
++                    if (strcmp(newName, oldName) != 0) {
+                         support->itemRename(support, selected_item->item->current->item.id, newName);
+                         ioPutRequest(IO_MENU_UPDATE_DEFFERED, &support->mode);
+                     }
+@@ -859,6 +861,35 @@ static int gameCanRename(item_list_t *support)
+     return gEnableWrite && (fav || (rs != NULL && rs->itemRename != NULL && rs->mode != HDD_MODE));
+ }
+ 
++/* build 140 (the user, 11/04: "disclose that renaming does not break the art lookup ... make sure if its drive related that the tooltip would reflect it"). What the file
++   name row of Set Metadata (Rename) says on this row, and whether it can rename. A PS2 game's art and CFG go by its game ID (itemGetStartup); a PS1 game's and an Ember
++   title's go by name, so sbRenameSidecars takes them along; an app's title is only its title. ps1: the row came through the apps' and PS1 games' menu. */
++static const char *menuRenameTip(item_list_t *support, int ps1, int *can)
++{
++    item_list_t *rs = support;
++    *can = 0;
++    if (support != NULL && support->mode == FAV_MODE)
++        return _t("This list shows games from other drives. Rename a game on its own drive's page.");
++    if (selected_item != NULL && selected_item->item->current != NULL && selected_item->item->current->item.favourited)
++        return _t("A starred game cannot be renamed. Take off its star (R3), rename it, then star it again.");
++    if (support != NULL && MODE_IS_MIX(support->mode) && selected_item != NULL && selected_item->item->current != NULL) {
++        int sm = mixGetItemSourceMode(support->mode, selected_item->item->current->item.id);
++        opl_io_module_t *m = sm >= 0 ? oplGetModule(sm) : NULL;
++        rs = m != NULL ? m->support : NULL;
++        if (rs == NULL)
++            return _t("This game's drive has not answered yet. Wait for it, then try again.");
++    }
++    if (rs == NULL || rs->itemRename == NULL)
++        return _t("This drive cannot rename its files. The details can still be set.");
++    if (!ps1 && rs->mode == HDD_MODE)
++        return _t("On an APA HDD a PS2 game's name lives in the partition table, so it cannot be renamed here. Its details can still be set.");
++    *can = 1;
++    if (rs->mode == APP_MODE)
++        return _t("Renames the app in your list. Its ELF and its art keep their names.");
++    return ps1 ? _t("Renames the game on its drive. PS1 games find their art and settings by name, so RIPPS2 renames those with it. Art in an ART Pack needs the pack built again.") :
++                 _t("Renames the game's file on its drive. PS2 games find their art and settings by game ID, so nothing is lost.");
++}
++
+ // build 134 (the user, 11/02: Set Metadata should "ask for write permissions if they are off so it will work"): with
+ // Write Operations off, opening it asks to turn them on (and saves that). 0 when they stay off: nothing opens.
+ static int menuAskWrite(void)
+@@ -894,8 +925,9 @@ void menuInitGameMenu(item_list_t *support)
+     // game's details, and its ACTIONS (Triangle) rename the game itself. Where the page cannot rename, "Set Metadata".
+     // Offer only what the page can do. Favorites keeps rename so it can explain why not. The APA HDD page neither renames
+     // nor deletes PS2 games: both would edit the partition table.
++    // build 140 (the user, 11/04: "I need them to all read the same"): the one name everywhere; the page says when the file itself cannot be renamed
+     gameMenuCanRename = gameCanRename(support);
+-    submenuAppendItem(&gameMenu, -1, NULL, GAME_SET_METADATA, gameMenuCanRename ? _STR_RIPPS2_SET_METADATA_RENAME : _STR_RIPPS2_SET_METADATA);
++    submenuAppendItem(&gameMenu, -1, NULL, GAME_SET_METADATA, _STR_RIPPS2_SET_METADATA_RENAME);
+     if (gEnableWrite) {
+         // RIPPS2 build 114: LAST RITES deletes on every source but Apps (the APA HDD by its partition), and Hide Game
+         if (support != NULL && support->mode != APP_MODE) {
+@@ -924,7 +956,7 @@ void menuInitAppMenu(void)
+     appCaseChanged = 0;
+     submenuAppendItem(&appMenu, -1, appCaseLabel, APP_CASE_SHAPE, -1);
+     appMenuCanRename = gEnableWrite;
+-    submenuAppendItem(&appMenu, -1, NULL, APP_SET_METADATA, appMenuCanRename ? _STR_RIPPS2_SET_METADATA_RENAME : _STR_RIPPS2_SET_METADATA);
++    submenuAppendItem(&appMenu, -1, NULL, APP_SET_METADATA, _STR_RIPPS2_SET_METADATA_RENAME); // build 140: the one name
+     if (gEnableWrite)
+         submenuAppendItem(&appMenu, -1, NULL, APP_DELETE, _STR_DELETE);
+ 
+@@ -3126,8 +3158,8 @@ void menuHandleInputGameMenu()
+             // RENAME action renames the game (its details kept first, when they changed). Build 134: writing off, it asks
+             int r = 0;
+             if (menuAskWrite()) {
+-                gameMenuCanRename = gameCanRename(selected_item->item->userdata);
+-                r = ripps2EditMetadata(itemConfig, selected_item->item->current->item.text, gameMenuCanRename);
++                const char *tip = menuRenameTip(selected_item->item->userdata, 0, &gameMenuCanRename); // build 140
++                r = ripps2EditMetadata(itemConfig, selected_item->item->current->item.text, gameMenuCanRename, tip);
+             }
+             if (r == 1) {
+                 if (menuSaveConfig())
+@@ -3360,9 +3392,9 @@ void menuHandleInputAppMenu()
+             config_set_t *cfg = NULL;
+             int r = 0;
+             if (menuAskWrite()) {
+-                appMenuCanRename = 1;
++                const char *tip = menuRenameTip(selected_item->item->userdata, 1, &appMenuCanRename); // build 140
+                 cfg = gameMenuLoadConfig(NULL);
+-                r = cfg != NULL ? ripps2EditMetadata(cfg, selected_item->item->current->item.text, appMenuCanRename) : -1;
++                r = cfg != NULL ? ripps2EditMetadata(cfg, selected_item->item->current->item.text, appMenuCanRename, tip) : -1;
+             }
+             if (r < 0)
+                 guiMsgBox(_l(_STR_ERROR_SAVING_SETTINGS), 0, NULL);
+diff --git a/src/mmcesupport.c b/src/mmcesupport.c
+index bbb3c71..e8d81bb 100644
+--- a/src/mmcesupport.c
++++ b/src/mmcesupport.c
+@@ -1042,6 +1042,7 @@ static void mmceRenameGame(item_list_t *itemList, int id, char *newName)
+         mmceGetDeviceRoot(ps1Root, sizeof(ps1Root));
+         int renamed = cueIsCueEntry(game) ? cueRenameGame(ps1Root, game->name, newName) : vcdRenameFile(ps1Root, game->name, newName);
+         if (renamed == 0) {
++            sbRenameSidecars(ps1Root, "/", game->name, newName); // build 140
+             // MMCE normally latches a successful VCD scan under NOUPDATE. Re-arm its normal scan
+             // path so the deferred menu update publishes the new filename immediately.
+             mmcePs1Scanned = 0;
 diff --git a/src/opl.c b/src/opl.c
 index 5f2d5ec..2ed0f03 100644
 --- a/src/opl.c
@@ -88,6 +270,329 @@ index 4c04b4d..bef82cc 100644
      {"VIDEO_MODE", "Video Mode", 7, {"AUTO", "NTSC", "PAL", "480P", "576P", "720P", "1080I"}, {N_("Auto"), "NTSC", "PAL", "480p", "576p", "720p", "1080i"}, 0},
      {"BIBLE_WIDESCREEN", "Widescreen", 3, {"AUTO", "ON", "OFF"}, {N_("Auto"), N_("On"), N_("Off")}, 0},
  };
+diff --git a/src/ripps2edit.c b/src/ripps2edit.c
+index 760c95f..5f0a929 100644
+--- a/src/ripps2edit.c
++++ b/src/ripps2edit.c
+@@ -420,8 +420,8 @@ static const char *const ratingChoices[] = {"rating/0", "rating/1", "rating/2",
+ // TITLE shows the list's name when neither you nor the database gave one, and FILE NAME (no key: it is not a detail)
+ // shows the game's file, where Cross renames it on a page that can
+ static const ed_field_t mdFields[] = {
++    {NULL, N_("FILE NAME"), NULL}, // build 140: first, and apart from the details
+     {"Title", N_("TITLE"), NULL},
+-    {NULL, N_("FILE NAME"), NULL},
+     {"Description", N_("DESCRIPTION"), NULL},
+     {"Genre", N_("GENRE"), NULL},
+     {"Developer", N_("DEVELOPER"), NULL},
+@@ -453,53 +453,121 @@ static struct
+     const char *title;
+     const char *file;  // build 134: the FILE NAME row's value
+     int titleFromList; // build 134: the TITLE shown is the list's name
++    const char *tip;   // build 140: what a rename does here, or why it cannot
+     int canRename;
+     int cursor, top, modified;
+ } mdView;
+ 
++/* build 140 (the user, 11/04: "the entire set metadata menu can be remade to match the settings menu with the roboto font and header above with the line, make it clean and
++   not have a field on the bottom row covered by the hints"). A Settings page's title, line, faces and hint row, every row on one screen with the tip's band above the hints; the
++   file name first, on its own and in full, with a line between it and the details. */
++#define MD_TIP_H 54
++
++// The tip, at most three lines, broken at spaces where there are any (and between characters where a language has none)
++static void mdTip(const char *text, int x, int y, int width)
++{
++    char line[256];
++    const char *p = text;
++    int row;
++
++    for (row = 0; row < 3 && *p; row++) {
++        int len = 0, fit = 0, space = 0;
++        while (p[len] && len < (int)sizeof(line) - 5) {
++            int n = 1;
++            while ((p[len + n] & 0xC0) == 0x80)
++                n++;
++            memcpy(line, p, len + n);
++            line[len + n] = '\0';
++            if (rmUnScaleX(fntCalcDimensions(ED_FONT, line)) > width)
++                break;
++            len += n;
++            fit = len;
++            if (p[len] == ' ')
++                space = len;
++        }
++        if (p[fit] && space > 0)
++            fit = space;
++        memcpy(line, p, fit);
++        line[fit] = '\0';
++        fntRenderString(ED_FONT, x, y + row * 17, ALIGN_VCENTER, 0, 0, line, ED_SOFT);
++        p += fit;
++        while (*p == ' ')
++            p++;
++    }
++}
++
+ static void mdDraw(void)
+ {
+-    char shown[CONFIG_KEY_VALUE_LEN];
+-    int i;
++    char shown[CONFIG_KEY_VALUE_LEN], low[64];
++    int f, hintY = gTheme->usedHeight - 32, tipY = hintY - MD_TIP_H, cur0 = mdView.cursor == 0;
++    int rows = MD_COUNT - 1, y = 106, rowH = (tipY - y) / rows;
++    const char *confirmWord;
++
++    if (rowH > 30)
++        rowH = 30;
++    guiDrawBGPlasma();
++    fntRenderString(RIPPS2_DIA_FONT, 20, 16, ALIGN_NONE, 0, 0, _l(_STR_RIPPS2_SET_METADATA_RENAME), gTheme->selTextColor);
++    if (mdView.modified) {
++        const char *ns = ripps2HintCaseText(_t("NOT SAVED"), low, sizeof(low));
++        fntRenderString(ED_FONT, 620 - rmUnScaleX(fntCalcDimensions(ED_FONT, ns)), 28, ALIGN_VCENTER, 0, 0, ns, ED_SOFT);
++    }
++    rmDrawLine(20, 46, 620, 46, gColWhite);
+ 
+-    edFrameStart(mdView.title, mdView.modified ? _t("NOT SAVED") : "");
+-    for (i = 0; i < ED_ROWS && mdView.top + i < MD_COUNT; i++) {
+-        int f = mdView.top + i, y = ED_LIST_Y + i * 34, cur = f == mdView.cursor;
+-        const char *v = mdView.user[f][0] ? mdView.user[f] : mdView.db[f];
++    // the file, as it appears in the games list
++    if (cur0) {
++        rmDrawRect(ED_X - 6, 50, ED_RIGHT - ED_X + 12, 48, ED_PRIM(0x1E, 0x3C, 0x96, 0x58));
++        rmDrawRect(ED_X - 6, 50, 3, 48, ED_PRIM(0x6A, 0x9A, 0xFF, 0x80));
++    }
++    fntRenderString(ED_FONT, ED_X + 4, 62, ALIGN_VCENTER, 0, 0, _t("File name (as it appears in your games list)"), cur0 ? ED_LIT : ED_SOFT);
++    fntRenderStringFit(ED_FONT, ED_X + 4, 84, ALIGN_VCENTER, ED_RIGHT - ED_X - 8, mdView.file[0] ? mdView.file : "-", ED_LIT, cur0);
++    rmDrawLine(20, 102, 620, 102, gColWhite);
++
++    // the details
++    for (f = 1; f < MD_COUNT; f++, y += rowH) {
++        int cur = f == mdView.cursor, cy = y + rowH / 2;
++        const char *v = mdView.user[f][0] ? mdView.user[f] : mdView.db[f], *from = NULL;
+         if (cur) {
+-            rmDrawRect(ED_X - 6, y - 1, ED_RIGHT - ED_X + 12, 32, ED_PRIM(0x1E, 0x3C, 0x96, 0x58));
+-            rmDrawRect(ED_X - 6, y - 1, 3, 32, ED_PRIM(0x6A, 0x9A, 0xFF, 0x80));
+-        }
+-        fntRenderString(ED_FONT, ED_X + 4, y + 8, ALIGN_VCENTER, 0, 0, _t(mdFields[f].label), cur ? ED_LIT : ED_SOFT);
+-        if (mdFields[f].key == NULL) { // build 134: FILE NAME, renamed with Cross where the page can
+-            fntRenderString(RIPPS2_CASE_FONT, ED_X + 4, y + 22, ALIGN_VCENTER, ED_RIGHT - ED_X - 120, 0, mdView.file[0] ? mdView.file : "-", ED_SOFT);
+-            if (mdView.canRename)
+-                fntRenderString(ED_FONT, ED_RIGHT - fntCalcDimensions(ED_FONT, _t("RENAME")), y + 8, ALIGN_VCENTER, 0, 0, _t("RENAME"), ED_DIM);
+-            continue;
++            rmDrawRect(ED_X - 6, y, ED_RIGHT - ED_X + 12, rowH - 1, ED_PRIM(0x1E, 0x3C, 0x96, 0x58));
++            rmDrawRect(ED_X - 6, y, 3, rowH - 1, ED_PRIM(0x6A, 0x9A, 0xFF, 0x80));
+         }
++        fntRenderString(ED_FONT, ED_X + 4, cy, ALIGN_VCENTER, 0, 0, ripps2HintCaseText(_t(mdFields[f].label), low, sizeof(low)), cur ? ED_LIT : ED_SOFT);
+         if (mdFields[f].choices && v[0])
+             mdPretty(v, shown, sizeof(shown));
+         else
+             snprintf(shown, sizeof(shown), "%s", v[0] ? v : "-");
+         // bright: the user's own value; dim: what the metadata database says
+-        fntRenderString(RIPPS2_CASE_FONT, ED_X + 4, y + 22, ALIGN_VCENTER, ED_RIGHT - ED_X - 120, 0, shown, mdView.user[f][0] ? ED_LIT : ED_DIM);
+-        if (!mdView.user[f][0] && mdView.db[f][0]) {
+-            const char *from = f == 0 && mdView.titleFromList ? _t("GAME LIST") : _t("DATABASE");
+-            fntRenderString(ED_FONT, ED_RIGHT - fntCalcDimensions(ED_FONT, from), y + 8, ALIGN_VCENTER, 0, 0, from, ED_DIM);
++        fntRenderStringFit(ED_FONT, 170, cy, ALIGN_VCENTER, 340, shown, mdView.user[f][0] ? ED_LIT : ED_DIM, cur);
++        if (mdView.user[f][0])
++            from = _t("YOURS");
++        else if (mdView.db[f][0])
++            from = f == 1 && mdView.titleFromList ? _t("GAME LIST") : _t("DATABASE");
++        if (from != NULL) {
++            from = ripps2HintCaseText(from, low, sizeof(low));
++            fntRenderString(ED_FONT, ED_RIGHT - rmUnScaleX(fntCalcDimensions(ED_FONT, from)), cy, ALIGN_VCENTER, 0, 0, from, ED_DIM);
+         }
+-        else if (mdView.user[f][0])
+-            fntRenderString(ED_FONT, ED_RIGHT - fntCalcDimensions(ED_FONT, _t("YOURS")), y + 8, ALIGN_VCENTER, 0, 0, _t("YOURS"), ED_SOFT);
+     }
+-    int hx = 44;
+-    if (mdFields[mdView.cursor].key != NULL || mdView.canRename)
+-        edHint(gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON,
+-               mdFields[mdView.cursor].key == NULL ? _t("RENAME") : mdFields[mdView.cursor].choices ? _t("NEXT VALUE") : _t("EDIT"), &hx, 448);
+-    edHint(SQUARE_ICON, _t("CLEAR"), &hx, 448);
+-    edHint(TRIANGLE_ICON, _t("ACTIONS"), &hx, 448);
+-    edHint(gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON, _t("CLOSE"), &hx, 448);
++    if (cur0 && mdView.tip != NULL)
++        mdTip(mdView.tip, ED_X + 4, tipY + 10, ED_RIGHT - ED_X - 8);
++
++    confirmWord = mdFields[mdView.cursor].key == NULL ? (mdView.canRename ? _t("RENAME") : NULL) : mdFields[mdView.cursor].choices ? _t("NEXT VALUE") : _t("EDIT");
++    {
++        int hw = 0, hx;
++        if (confirmWord != NULL)
++            hw += 24 + ripps2HintWidth(confirmWord) + 18;
++        if (!cur0)
++            hw += 24 + ripps2HintWidth(_t("CLEAR")) + 18;
++        hw += 24 + ripps2HintWidth(_t("ACTIONS")) + 18 + 24 + ripps2HintWidth(_t("CLOSE"));
++        hx = (640 - hw) / 2;
++        if (confirmWord != NULL)
++            edHint(gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON, confirmWord, &hx, hintY + 10);
++        if (!cur0)
++            edHint(SQUARE_ICON, _t("CLEAR"), &hx, hintY + 10);
++        edHint(TRIANGLE_ICON, _t("ACTIONS"), &hx, hintY + 10);
++        edHint(gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON, _t("CLOSE"), &hx, hintY + 10);
++    }
+ }
+ 
+-int ripps2EditMetadata(config_set_t *config, const char *gameName, int canRename)
++int ripps2EditMetadata(config_set_t *config, const char *gameName, int canRename, const char *renameTip)
+ {
+     // build 115: RENAME THE GAME, when the page can (Set Metadata (Rename) is the one row for both)
+     static const char *const actions[] = {N_("SAVE"), N_("CLEAR THIS FIELD"), N_("CLOSE"), N_("RENAME THE GAME")};
+@@ -543,8 +611,8 @@ int ripps2EditMetadata(config_set_t *config, const char *gameName, int canRename
+         snprintf(fileShown, sizeof(fileShown), "%s", file);
+     }
+     // build 134: the TITLE filled in from the list when neither you nor the database named the game
+-    if (!user[0][0] && !db[0][0] && gameName != NULL && gameName[0]) {
+-        snprintf(db[0], sizeof(db[0]), "%s", gameName);
++    if (!user[1][0] && !db[1][0] && gameName != NULL && gameName[0]) { // build 140: Title is the second field now
++        snprintf(db[1], sizeof(db[1]), "%s", gameName);
+         titleFromList = 1;
+     }
+ 
+@@ -564,6 +632,7 @@ int ripps2EditMetadata(config_set_t *config, const char *gameName, int canRename
+         mdView.file = fileShown;
+         mdView.titleFromList = titleFromList;
+         mdView.canRename = canRename;
++        mdView.tip = renameTip;
+         rmStartFrame();
+         mdDraw();
+         rmEndFrame();
+diff --git a/src/ripps2media.c b/src/ripps2media.c
+index b114d7f..4d504fb 100644
+--- a/src/ripps2media.c
++++ b/src/ripps2media.c
+@@ -991,9 +991,45 @@ static void vpPaintPop(int vol)
+             vpOver(b + (y * VP_POP_W + 36 + x) * 4, 0xFF, 0xFF, 0xFF, x < bar ? 0x70 : 0x18);
+ }
+ 
++/* build 140 (the user, 11/04: spamming R1 to reach far into a film crashed the player: "a scrub guard like launch guard"). Every press stopped the player and started it again
++   at once, the next press landing mid-restart. Now L1 / R1 only move a target on a timeline in the hint row's place: a tap 10 s, held it runs (30 s a second, then 2, then
++   10 minutes a second). The player seeks once, 0.6 s after the last input and only when its last seek has its first frame up; the confirm button goes now, cancel keeps the place. */
++static void vpClock(int ms, char *out, int size)
++{
++    int s = ms / 1000;
++    snprintf(out, size, "%d:%02d:%02d", s / 3600, (s / 60) % 60, s % 60);
++}
++
++static void vpPaintSeek(int target, int dur, int pos)
++{
++    unsigned char *b = vpHints;
++    char text[16];
++    int font = ripps2HintFontId(), x, y, x0 = 104, x1 = 536, w = x1 - x0;
++    int at = dur > 0 ? (int)((s64)target * w / dur) : 0, now = dur > 0 ? (int)((s64)pos * w / dur) : 0;
++
++    memset(b, 0, VP_HINT_W * VP_HINT_H * 4);
++    for (y = 0; y < VP_HINT_H; y++)
++        for (x = 0; x < VP_HINT_W; x++)
++            vpOver(b + (y * VP_HINT_W + x) * 4, 0, 0, 0, 0x50);
++    for (y = 18; y < 22; y++)
++        for (x = 0; x < w; x++)
++            vpOver(b + (y * VP_HINT_W + x0 + x) * 4, 0xFF, 0xFF, 0xFF, x < at ? 0x70 : 0x20);
++    for (y = 15; y < 25; y++) // where it is playing, dim, and where it will go
++        vpOver(b + (y * VP_HINT_W + x0 + now) * 4, 0xFF, 0xFF, 0xFF, 0x40);
++    for (y = 12; y < 28; y++)
++        for (x = -1; x <= 1; x++)
++            vpOver(b + (y * VP_HINT_W + x0 + at + x) * 4, 0xFF, 0xFF, 0xFF, 0x80);
++    vpClock(target, text, sizeof(text));
++    vpText(b, VP_HINT_W, VP_HINT_H, font, 15, text, 22, 25, 0xFFFFFF);
++    vpClock(dur, text, sizeof(text));
++    vpText(b, VP_HINT_W, VP_HINT_H, font, 15, text, x1 + 18, 25, 0xA8B0C8);
++}
++
+ // The pad while the player has the screen (build 125: the buttons above), and the two pictures over the video.
+ static void videoPadThread(void *arg)
+ {
++    int seeking = 0, seekTarget = 0, seekDir = 1, seekDur = -1, seekNow = 0; // build 140: the scrub guard above
++    clock_t seekAt = 0, seekHeld = 0, seekStep = 0, seekPaint = 0;
+     int paused = 0, loop = 0, vol = 100, sw = 0, sh = 0, hintsShown = 0, popShown = 0, hintsDirty = 1, popDirty = 1;
+     int confirm = gSelectButton == KEY_CIRCLE ? KEY_CIRCLE : KEY_CROSS;
+     clock_t hintsAt = 0, popAt = 0, popIn = 0;
+@@ -1001,7 +1037,11 @@ static void videoPadThread(void *arg)
+     while (videoPadRun) {
+         int r1, l1, up, down;
+         readPads();
+-        if (getKeyOn(guiCancelKey()) || getKeyOn(KEY_SELECT)) {
++        if (seeking && getKeyOn(guiCancelKey())) { // build 140: it stays where it was playing
++            seeking = 0;
++            hintsDirty = 1;
++            hintsAt = clock();
++        } else if (getKeyOn(guiCancelKey()) || getKeyOn(KEY_SELECT)) {
+             LOG("MEDIA: video stop asked\n");
+             smsLiteOverlayShow(SMSLITE_OVERLAY_HINTS, 0, 256);
+             smsLiteOverlayShow(SMSLITE_OVERLAY_POP, 0, 256);
+@@ -1010,7 +1050,9 @@ static void videoPadThread(void *arg)
+             DelayThread(16 * 1000);
+             continue;
+         }
+-        if (getKeyOn(confirm)) {
++        if (seeking && getKeyOn(confirm)) {
++            seekNow = 1; // build 140: go there now
++        } else if (getKeyOn(confirm)) {
+             paused = !paused;
+             smsLitePause(paused); // build 131: the player fades the sound out and holds the frame, then fades it back
+             LOG("MEDIA: video %s\n", paused ? "paused" : "resumed");
+@@ -1025,14 +1067,38 @@ static void videoPadThread(void *arg)
+         }
+         l1 = getKeyOn(KEY_L1);
+         r1 = getKeyOn(KEY_R1);
+-        if (l1 || r1) {
+-            if (paused) { // a skip plays on from where it lands (the player lets go of the pause as it starts again)
+-                paused = 0;
+-                hintsDirty = 1;
++        if ((l1 || r1) && seekDur < 0)
++            seekDur = smsLiteDurationMs();
++        if ((l1 || r1) && seekDur > 0) { // build 140: no index, no seeking, as the old skip found out by stopping
++            if (!seeking)
++                seekTarget = smsLitePositionMs();
++            seeking = 1;
++            seekDir = r1 ? 1 : -1;
++            seekTarget += seekDir * 10000;
++            seekHeld = seekStep = seekAt = clock();
++            hintsDirty = 1;
++        }
++        if (seeking) {
++            int held = getKeyPressed(seekDir > 0 ? KEY_R1 : KEY_L1);
++            if (held) {
++                float h = vpSince(seekHeld);
++                if (h > 0.4f)
++                    seekTarget += seekDir * (int)((h < 2.0f ? 30000.0f : h < 5.0f ? 120000.0f : 600000.0f) * vpSince(seekStep));
++                seekStep = seekAt = clock();
++                if (vpSince(seekPaint) > 0.08f)
++                    hintsDirty = 1;
+             }
+-            smsLiteSkip(r1 ? 10000 : -10000);
++            seekTarget = seekTarget < 0 ? 0 : seekTarget > seekDur - 5000 ? (seekDur > 5000 ? seekDur - 5000 : 0) : seekTarget;
+             hintsShown = 1;
+             hintsAt = clock();
++            if (!held && (seekNow || vpSince(seekAt) > 0.6f) && (smsLiteSeekSettled() || vpSince(seekAt) > 5.0f)) {
++                int pos = smsLitePositionMs();
++                ripps2Diag("video: seek from %d s to %d s", pos / 1000, seekTarget / 1000);
++                paused = 0; // a seek plays on from where it lands (the player lets go of the pause as it starts again)
++                smsLiteSeekTo(seekTarget, seekTarget < pos ? -1 : 1);
++                seeking = seekNow = 0;
++                hintsDirty = 1;
++            }
+         }
+         down = getKey(KEY_L2);
+         up = getKey(KEY_R2);
+@@ -1062,7 +1128,11 @@ static void videoPadThread(void *arg)
+         if (sw > 0 && vpHints != NULL && vpPop != NULL) {
+             float t;
+             if (hintsShown && hintsDirty) {
+-                vpPaintHints(paused, loop);
++                if (seeking) { // build 140
++                    vpPaintSeek(seekTarget, seekDur, smsLitePositionMs());
++                    seekPaint = clock();
++                } else
++                    vpPaintHints(paused, loop);
+                 smsLiteOverlaySet(SMSLITE_OVERLAY_HINTS, vpHints, VP_HINT_W, VP_HINT_H, (sw - VP_HINT_W) / 2, sh - VP_HINT_H - 14);
+                 hintsDirty = 0;
+             }
+@@ -1206,6 +1276,7 @@ void ripps2PlayVideo(const char *path)
+                      (unsigned)(u32)probe, videoLargestFreeKb());
+         free(probe);
+     }
++    ripps2DiagBeforeLaunch(); // build 140: the log so far is on the drive if the player goes down with it
+     r = smsLitePlayFullscreen(path);
+     smsLiteStage("stopped: returned %d", r);
+     smsLiteSetStageLog(NULL);
 diff --git a/src/ripps2status.c b/src/ripps2status.c
 index aa13af2..be8cb0a 100644
 --- a/src/ripps2status.c
@@ -115,7 +620,7 @@ index aa13af2..be8cb0a 100644
      return ok;
  }
 diff --git a/src/sound.c b/src/sound.c
-index c24d4f9..01a01ec 100644
+index c24d4f9..0c8c5c8 100644
 --- a/src/sound.c
 +++ b/src/sound.c
 @@ -14,6 +14,7 @@
@@ -602,3 +1107,90 @@ index c24d4f9..01a01ec 100644
      if (!started) {
          // once the sounds are in, and not before the boot sound's last two seconds: it ushers the
          // music in rather than playing under it
+@@ -3190,7 +3375,30 @@ static void bgmShutdownDelayCallback(s32 alarm_id, u16 time, void *common)
+     iWakeupThread((int)common);
+ }
+ 
++/* RIPPS2 build 140 (the user, 11/04: "the bgm loading in twice on this last boot"). The two callers that look first (isBgmPlaying) could both look while a start was still
++   opening its file: a start takes that long, and playing is only said at its end. Now a start over a start, or over a stream playing, goes no further, and DIAG.TXT says who
++   asked each time (the caller's address, named by the build's opl.elf). */
++static volatile int bgmStartBusy = 0;
++static void bgmStartInner(void);
++
+ void bgmStart(void)
++{
++    void *from = __builtin_return_address(0);
++    int busy;
++
++    DIntr();
++    busy = bgmStartBusy || bgmIsPlaying;
++    if (!busy)
++        bgmStartBusy = 1;
++    EIntr();
++    ripps2Diag("music: start asked by %08X%s", (unsigned)from, busy ? ", already starting or playing: not again" : "");
++    if (busy)
++        return;
++    bgmStartInner();
++    bgmStartBusy = 0;
++}
++
++static void bgmStartInner(void)
+ {
+     struct audsrv_fmt_t audsrvFmt;
+ 
+@@ -3407,6 +3615,7 @@ void bgmQuiesce(void)
+ 
+ void bgmStop(void)
+ {
++    ripps2Diag("music: stop asked by %08X", (unsigned)__builtin_return_address(0)); // build 140
+     int threadId;
+ 
+     if (!audio_initialized) {
+diff --git a/src/supportbase.c b/src/supportbase.c
+index 3a5edd7..1d5fe0d 100644
+--- a/src/supportbase.c
++++ b/src/supportbase.c
+@@ -1,3 +1,5 @@
++#include <dirent.h> // build 140: sbRenameSidecars
++#include "include/ripps2diag.h" // build 140: sbRenameSidecars
+ #include "include/opl.h"
+ #include "include/lang.h"
+ #include "include/util.h"
+@@ -1372,6 +1374,37 @@ void sbDelete(base_game_info_t **list, const char *prefix, const char *sep, int
+     }
+ }
+ 
++/* RIPPS2 build 140: a PS1 game's or Ember title's art and CFG are named after the game (its startup IS its name: bdmGetGameStartup and sbPopulateConfig), so a rename
++   would leave them behind. They go with it: CFG/<name>.cfg and every ART/<name>_*. An ART Pack keeps its copies under the old name until it is built again (the page says so). */
++void sbRenameSidecars(const char *prefix, const char *sep, const char *oldName, const char *newName)
++{
++    static char names[64][128];
++    char from[384], to[384];
++    struct dirent *e;
++    size_t ol = strlen(oldName);
++    int n = 0, i, moved = 0;
++    DIR *d;
++
++    snprintf(from, sizeof(from), "%sCFG%s%s.cfg", prefix, sep, oldName);
++    snprintf(to, sizeof(to), "%sCFG%s%s.cfg", prefix, sep, newName);
++    if (rename(from, to) == 0)
++        moved++;
++    snprintf(from, sizeof(from), "%sART", prefix);
++    if ((d = opendir(from)) != NULL) { // the names first: a directory is not renamed in as it is read
++        while (n < 64 && (e = readdir(d)) != NULL)
++            if (!strncmp(e->d_name, oldName, ol) && e->d_name[ol] == '_' && strlen(e->d_name) < sizeof(names[0]))
++                snprintf(names[n++], sizeof(names[0]), "%s", e->d_name);
++        closedir(d);
++    }
++    for (i = 0; i < n; i++) {
++        snprintf(from, sizeof(from), "%sART%s%s", prefix, sep, names[i]);
++        snprintf(to, sizeof(to), "%sART%s%s%s", prefix, sep, newName, names[i] + ol);
++        if (rename(from, to) == 0)
++            moved++;
++    }
++    ripps2Diag("rename: %d settings and art files went with %s", moved, newName);
++}
++
+ void sbRename(base_game_info_t **list, const char *prefix, const char *sep, int gamecount, int id, char *newname)
+ {
+     int part;

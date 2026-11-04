@@ -546,6 +546,9 @@ strings:
 - en: the right stick to the right
   in:
   - gui.c
+- en: A starred game cannot be renamed. Take off its star (R3), rename it, then star it again.
+  in:
+  - menusys.c
 - en: 'Case Shape: %s'
   in:
   - menusys.c
@@ -561,10 +564,22 @@ strings:
 - en: Memory Files
   in:
   - menusys.c
+- en: On an APA HDD a PS2 game's name lives in the partition table, so it cannot be renamed here. Its details can still be set.
+  in:
+  - menusys.c
 - en: PS1 (square)
   in:
   - menusys.c
 - en: PS2 (tall)
+  in:
+  - menusys.c
+- en: Renames the app in your list. Its ELF and its art keep their names.
+  in:
+  - menusys.c
+- en: Renames the game on its drive. PS1 games find their art and settings by name, so RIPPS2 renames those with it. Art in an ART Pack needs the pack built again.
+  in:
+  - menusys.c
+- en: Renames the game's file on its drive. PS2 games find their art and settings by game ID, so nothing is lost.
   in:
   - menusys.c
 - en: STARS HIDDEN
@@ -573,10 +588,16 @@ strings:
 - en: STARS SHOWN
   in:
   - menusys.c
+- en: This drive cannot rename its files. The details can still be set.
+  in:
+  - menusys.c
 - en: This game's drive has not answered yet. Wait for it, then try again.
   in:
   - menusys.c
   - ripps2games.c
+- en: This list shows games from other drives. Rename a game on its own drive's page.
+  in:
+  - menusys.c
 - en: Uncompress to ISO
   in:
   - menusys.c
@@ -2196,6 +2217,9 @@ strings:
   in:
   - ripps2edit.c
 - en: FILE NAME
+  in:
+  - ripps2edit.c
+- en: File name (as it appears in your games list)
   in:
   - ripps2edit.c
 - en: GAME LIST

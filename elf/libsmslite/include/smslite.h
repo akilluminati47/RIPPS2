@@ -52,6 +52,12 @@ void smsLiteSetVolume(int percent);
 /* From the frame on screen, by deltaMs (10 s back: -10000), to the key frame on that side. The file stays open,
    so it is quick; past the last key frame the video ends (or, looping, starts again). It carries on playing. */
 void smsLiteSkip(int deltaMs);
+/* RIPPS2 build 140: for a host that scrubs: the film's length and where it is (ms; 0 when it has no index, so no seeking), one seek to a place, and whether the last
+   seek has its first frame on screen (only then is another one safe to ask) */
+int smsLiteDurationMs(void);
+int smsLitePositionMs(void);
+void smsLiteSeekTo(int ms, int dir);
+int smsLiteSeekSettled(void);
 
 /* On: at its end the video starts again from the top. Off when a playback starts. */
 void smsLiteSetLoop(int on);

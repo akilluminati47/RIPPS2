@@ -2039,12 +2039,51 @@ void smsLiteSkip(int deltaMs)
 
     if (!active || s_smsLiteUserStop)
         return;
-    from = s_smsLiteSeekPending ? s_smsLiteSeekMs : (active->havePTS ? (int)active->lastPTS : 0);
+    /* build 140: lastPTS even before the first frame after a skip (smsLiteRestartAt sets it to the key frame): a press in that moment went back to the film's start */
+    from = s_smsLiteSeekPending ? s_smsLiteSeekMs : (int)active->lastPTS;
     from += deltaMs;
     s_smsLiteSeekMs = from < 0 ? 0 : from;
     s_smsLiteSeekDir = deltaMs < 0 ? -1 : 1;
     s_smsLiteSeekPending = 1;
     active->stopRequested = 1;
+}
+
+int smsLiteDurationMs(void)
+{
+    SMSLitePlayback* active = s_smsLiteActive;
+    int32_t scale, rate;
+    uint32_t n;
+
+    if (!active || !active->container.Seek || active->videoStreamIndex < 0 ||
+        smsLiteAviTiming(&active->container, active->videoStreamIndex, &scale, &rate, &n) != 0 || rate <= 0)
+        return 0;
+    return (int)((s64)n * scale * 1000 / rate);
+}
+
+int smsLitePositionMs(void)
+{
+    SMSLitePlayback* active = s_smsLiteActive;
+
+    return active ? (int)active->lastPTS : 0;
+}
+
+void smsLiteSeekTo(int ms, int dir)
+{
+    SMSLitePlayback* active = s_smsLiteActive;
+
+    if (!active || s_smsLiteUserStop)
+        return;
+    s_smsLiteSeekMs = ms < 0 ? 0 : ms;
+    s_smsLiteSeekDir = dir < 0 ? -1 : 1;
+    s_smsLiteSeekPending = 1;
+    active->stopRequested = 1;
+}
+
+int smsLiteSeekSettled(void)
+{
+    SMSLitePlayback* active = s_smsLiteActive;
+
+    return active && !s_smsLiteSeekPending && !active->stopRequested && active->havePTS;
 }
 
 void smsLiteOverlaySet(int slot, const void* rgba, int w, int h, int x, int y)
