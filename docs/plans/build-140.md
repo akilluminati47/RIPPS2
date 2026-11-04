@@ -68,6 +68,21 @@ C. If A shows the upload itself is slow (`audsrv_load_adpcm`, 368 KB), look at t
 
 Target: the sound within a few frames of the towers, lab first, then the console.
 
+### Results (lab, 11/04, step B shipped in patch 0140)
+
+A confirmed: audio up 1.75 s, send started 4.25 s, send 121 ms. Same stress take on both builds (BIBLE MMCE build, DISC_STOP = 0, the
+user's art.tar, ripped music and sounds, real games, RIPPS2 theme):
+
+| Build | Towers | Sound plays | Gap | Menu | 14 other sounds in |
+|---|---|---|---|---|---|
+| 139 | 1.88 s | about 4.50 s (ready line) | about 2.6 s | 5.15 s | 16.25 s |
+| 140 | 1.86 s | 1.99 s | 0.13 s | 5.13 s | 13.73 s |
+
+Art came from art.tar alone on t140-pack.raw (no loose ART files), the music flag went on, Auto Modellista and Vice City Debug launched,
+Fast Boot on gave the same split, and no dialogs. Not covered: MMCE timing, a console, what it sounds like, a long list (2 games).
+Seen, not fixed: the rest of the sounds arrive about 8.6 s after the menu in the lab (8.69 s on the console's 139 log, 5.3 s after it);
+BIBLE's EE_SIO log prints the read time as 4294967166 ms (a timer underflow, log only).
+
 ### The hand-off did not happen on the user's console
 
 `D:\APPS\DIAG.TXT` (build 139, hardware) says: `started by BIBLE (mc0:/SYS-CONF/), no boot sound handed over`, then ready
