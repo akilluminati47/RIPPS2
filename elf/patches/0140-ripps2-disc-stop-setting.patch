@@ -1,3 +1,62 @@
+diff --git a/include/sound.h b/include/sound.h
+index 8b5f391..c4c9117 100644
+--- a/include/sound.h
++++ b/include/sound.h
+@@ -78,6 +78,7 @@ extern int gBibleSoundHanded;               // build 139: the boot sound came fr
+ void ripps2BibleArgs(int argc, char *argv[]); // build 139: -bible-home= and -bible-bootsnd=, first thing in main
+ void sfxBibleCopyDrop(void);                // build 139: Boot Sound Off or On: the copy beside BIBLE goes
+ void sfxBootSoundsLoaded(void); // RIPPS2: the IO worker, every sound loaded: the music may start
++void sfxTraceWrite(int fd);     // build 140: DIAG.TXT's sound trace
+ void bgmBootTick(void);         // RIPPS2: every GUI frame: starts the music once the sounds are in, then fades it in
+ int bgmHudReserve(void);            // RIPPS2 build 71 (perf HUD): decoded chunks waiting, -1 with no music
+ extern volatile unsigned int gBgmUnderruns;  // RIPPS2 build 71 (perf HUD): times audsrv's ring ran dry
+diff --git a/src/opl.c b/src/opl.c
+index 5f2d5ec..3d19c4c 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -131,6 +131,7 @@ static void clearMenuGameList(opl_io_module_t *mdl);
+ static void moduleCleanup(opl_io_module_t *mod, int exception, int modeSelected);
+ static void reset(void);
+ static void deferredAudioInit(void);
++static void deferredAudioDrivesDone(void);
+ static void deferredInit(void);
+ 
+ // frame counter
+@@ -6315,6 +6316,7 @@ static void init(void)
+     ioNameAction((void *)&ripps2SaveSettingsWorker, "QUIET SETTINGS SAVE");
+     ioNameAction((void *)&deferredInit, "STARTUP");
+     ioNameAction((void *)&deferredAudioInit, "SOUND LOAD");
++    ioNameAction((void *)&deferredAudioDrivesDone, "SOUND LOAD DONE");
+     bdmSetAutoLaunch(0);
+     menuInit();
+ 
+@@ -6371,8 +6373,12 @@ static void init(void)
+     sfxBootStart(); // RIPPS2: the boot sound, as the towers start to rise (the settings are loaded now)
+ 
+ 
+-    // queue deffered init of sound effects, which will take place after the preceding initialization steps within the queue are complete.
+-    ioPutRequest(IO_CUSTOM_SIMPLEACTION, &deferredAudioInit);
++    // RIPPS2 build 140 (the user, 11/04: every drive on Auto, the sounds came 38 s after the towers though the set takes 657 ms; "close the loading to zilch"):
++    // the sounds go right behind the job that is running, ahead of the drive jobs, so a slow drive holds up none of them. What they cannot find yet (a
++    // drive not up) is found by the late check. The music still waits for the end of the drive jobs, where the sounds used to be.
++    if (ioPutRequestFront(IO_CUSTOM_SIMPLEACTION, &deferredAudioInit) != IO_OK)
++        ioPutRequest(IO_CUSTOM_SIMPLEACTION, &deferredAudioInit);
++    ioPutRequest(IO_CUSTOM_SIMPLEACTION, &deferredAudioDrivesDone);
+ }
+ 
+ static void deferredInit(void)
+@@ -6455,6 +6461,11 @@ static void deferredAudioInit(void)
+         LOG("sfxInit: failed to initialize - %d.\n", ret);
+     else
+         LOG("sfxInit: %d samples loaded.\n", ret);
++}
++
++// RIPPS2 build 140: the drive jobs queued at boot are done
++static void deferredAudioDrivesDone(void)
++{
+     sfxBootSoundsLoaded(); // RIPPS2: the music may start (bgmBootTick)
+ }
+ 
 diff --git a/src/ripps2boot.c b/src/ripps2boot.c
 index 4c04b4d..bef82cc 100644
 --- a/src/ripps2boot.c
@@ -28,7 +87,7 @@ index 4c04b4d..bef82cc 100644
      {"BIBLE_WIDESCREEN", "Widescreen", 3, {"AUTO", "ON", "OFF"}, {N_("Auto"), N_("On"), N_("Off")}, 0},
  };
 diff --git a/src/ripps2status.c b/src/ripps2status.c
-index aa13af2..babe200 100644
+index aa13af2..be8cb0a 100644
 --- a/src/ripps2status.c
 +++ b/src/ripps2status.c
 @@ -362,8 +362,10 @@ static void stScan(void)
@@ -44,11 +103,81 @@ index aa13af2..babe200 100644
          else if (where == 2)
              snprintf(line, sizeof(line), gEnableBootSND == 2 ? _t("Boot sound On (fast): %s on the memory card, as the pillars rise") :
                                                                  _t("Boot sound On: %s on the memory card, as the pillars rise"),
+@@ -677,6 +679,8 @@ int ripps2DiagSave(const char *dir, char *path, int pathSize)
+     if ((fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0666)) < 0)
+         return 0;
+     ok = write(fd, head, strlen(head)) == (int)strlen(head) && write(fd, copy, len) == len;
++    if (ok)
++        sfxTraceWrite(fd); // build 140: every sound asked for, who asked and what became of it
+     close(fd);
+     return ok;
+ }
 diff --git a/src/sound.c b/src/sound.c
-index c24d4f9..845df0e 100644
+index c24d4f9..85aba13 100644
 --- a/src/sound.c
 +++ b/src/sound.c
-@@ -516,8 +516,11 @@ static volatile int sfxIntroOn = 0;     // the intro's towers have begun their s
+@@ -14,6 +14,7 @@
+ #include <strings.h>
+ #include <dirent.h>
+ #include <fcntl.h>
++#include "include/ripps2_build.h" // build 140: the sound trace names its build
+ #include <unistd.h>
+ #include <sys/stat.h>
+ #include <string.h>
+@@ -120,6 +121,44 @@ static int voiceBusy(int v)
+     return voiceLen[v] != 0 && (unsigned int)(clock() - voiceStart[v]) < voiceLen[v];
+ }
+ 
++/* RIPPS2 build 140 (the user, 11/04: "the cursor sound on the list was causing the loading icon to make a confirmlike sound and then the transition
++   sound from one cursor movement bug", and random stacking a high ring). What a sound was asked for, what played, on which voice, how many voices were
++   sounding then, and who asked (the caller's address: the build's opl.elf names it), the last SFX_TRACE_MAX of them, at the end of DIAG.TXT. */
++enum { SFX_TR_PLAY = 0, SFX_TR_NOVOICE, SFX_TR_OFF, SFX_TR_HOLD, SFX_TR_BUSY, SFX_TR_NOSOUND, SFX_TR_DRIVE, SFX_TR_PEND, SFX_TR_SAME, SFX_TR_PRESS, SFX_TR_MUTE, SFX_TR_LOAD, SFX_TR_LOADED, SFX_TR_BOOT };
++static const char *const sfxTrWhat[] = {"played", "NO VOICE", "off", "held", "dropped, loading", "no sound", "drive sound quiet", "waits for frame", "same, too soon", "gave way", "muted", "LOAD starts", "LOAD ends", "boot sound"};
++typedef struct
++{
++    u32 ms;
++    u32 from;
++    signed char asked, played, voice;
++    unsigned char what, live;
++    unsigned char pad[3];
++} sfxTrace_t;
++#define SFX_TRACE_MAX 512
++static sfxTrace_t sfxTraceRing[SFX_TRACE_MAX];
++static volatile unsigned int sfxTraceCount = 0;
++
++static void sfxTrace(int asked, int played, int voice, int what, void *from)
++{
++    sfxTrace_t *e;
++    unsigned int n;
++    int v, live = 0;
++    for (v = 0; v < SFX_VOICES; v++)
++        if (voiceBusy(v) && !voiceMuted[v])
++            live++;
++    DIntr();
++    n = sfxTraceCount++;
++    EIntr();
++    e = &sfxTraceRing[n % SFX_TRACE_MAX];
++    e->ms = (u32)(clock() / (CLOCKS_PER_SEC / 1000));
++    e->from = (u32)from;
++    e->asked = (signed char)asked;
++    e->played = (signed char)played;
++    e->voice = (signed char)voice;
++    e->what = (unsigned char)what;
++    e->live = (unsigned char)live;
++}
++
+ static void voicesReset(void) // audsrv_adpcm_init keyed every voice off
+ {
+     int v;
+@@ -165,6 +204,7 @@ static void voiceMute(int v)
+     if (!voiceMuted[v]) {
+         audsrv_adpcm_set_volume_and_pan(v, 0, 0);
+         voiceMuted[v] = 1;
++        sfxTrace(voiceSound[v], -1, v, SFX_TR_MUTE, NULL); // build 140
+     }
+ }
+ 
+@@ -516,8 +556,11 @@ static volatile int sfxIntroOn = 0;     // the intro's towers have begun their s
  
  void sfxIntroStarted(void)
  {
@@ -61,15 +190,16 @@ index c24d4f9..845df0e 100644
  }
  
  // build 126 (the user, 10/31: "boot sound on should play it even if the sfx is set off"): the boot sound follows its own
-@@ -535,6 +538,7 @@ static void sfxBootPlay(void)
+@@ -535,6 +578,8 @@ static void sfxBootPlay(void)
          voiceLen[SFX_BOOT_VOICE] = (unsigned int)sfx_files[SFX_BOOT].duration_ms * (CLOCKS_PER_SEC / 1000);
          voiceSound[SFX_BOOT_VOICE] = SFX_BOOT;
          bootSoundEnds = clock() + (clock_t)sfx_files[SFX_BOOT].duration_ms * (CLOCKS_PER_SEC / 1000);
 +        ripps2Diag("boot: the boot sound plays"); // build 140
++        sfxTrace(SFX_BOOT, SFX_BOOT, SFX_BOOT_VOICE, SFX_TR_BOOT, NULL);
      }
  }
  
-@@ -632,19 +636,24 @@ void sfxBibleCopyDrop(void)
+@@ -632,19 +677,24 @@ void sfxBibleCopyDrop(void)
  #define SFX_EARLY_READY 2 // in the SPU: sfxInit(1) keeps it
  static volatile int sfxBootEarly = SFX_EARLY_NONE;
  static volatile int sfxAudioUp = 0;
@@ -95,7 +225,7 @@ index c24d4f9..845df0e 100644
  }
  
  /* RIPPS2 build 121 (the user, 10/28: the boot sound with the pillars when the sounds live on a drive). RIPPS2 started from a
-@@ -701,6 +710,8 @@ int sfxBootSoundWhere(char *out, int size)
+@@ -701,6 +751,8 @@ int sfxBootSoundWhere(char *out, int size)
      return 0;
  }
  
@@ -104,7 +234,7 @@ index c24d4f9..845df0e 100644
  static void sfxBootEarlyWork(void)
  {
      char base[256], path[300];
-@@ -740,6 +751,20 @@ static void sfxBootEarlyWork(void)
+@@ -740,6 +792,20 @@ static void sfxBootEarlyWork(void)
      }
      if (ret != 0)
          return; // no boot sound where the set loads from: the set's load looks again, as before
@@ -125,7 +255,19 @@ index c24d4f9..845df0e 100644
      DIntr();
      up = sfxAudioUp;
      if (!up)
-@@ -931,8 +956,10 @@ int sfxInit(int bootSnd)
+@@ -865,6 +931,11 @@ int sfxInit(int bootSnd)
+     // build 118: at boot the boot sound may be in the SPU already, and playing (sfxBootEarlyWork): the rest load after it,
+     // with no audsrv_adpcm_init under it (sfxBootStart did that before it went in)
+     int keepBoot = bootSnd && sfxBootEarly == SFX_EARLY_READY && sfxReady[SFX_BOOT];
++    // build 140: the AUDIO folder found while the boot sound still plays (a late find, on a drive that came up after the towers) loads the rest around it:
++    // starting audsrv over keyed it off with seconds left
++    if (!keepBoot && !bootSnd && sfxReady[SFX_BOOT] && sfxLoadedCount == 1 && voiceBusy(SFX_BOOT_VOICE))
++        keepBoot = 1;
++    sfxTrace(-1, -1, -1, SFX_TR_LOAD, NULL);
+     sfxLoading = 1;     // build 101: the GUI touches no voice until the set is in
+     clock_t loadStart = clock(); // build 115: how long the GUI's sounds were held, in DIAG.TXT
+     if (!keepBoot) {
+@@ -931,8 +1002,11 @@ int sfxInit(int bootSnd)
      sfxLoading = 0;
      // build 115 (the user, 10/26 evening: navigation sounds bugging again): a load holds every menu sound until it is done,
      // so the hardware log says when one ran and for how long
@@ -134,10 +276,175 @@ index c24d4f9..845df0e 100644
 -               audioSfx ? audio_path : "", themeSfx ? " and the theme" : "");
 +               audioSfx ? audio_path : themeSfx ? "the theme" : !loaded ? "nowhere, no sound files found" : gBibleSoundHanded ? "BIBLE's copy in RAM" : "the boot sound read earlier",
 +               audioSfx && themeSfx ? " and the theme" : "");
++    sfxTrace(loaded, -1, -1, SFX_TR_LOADED, NULL);
      if (!sfxReloadBusy) // the late AUDIO find and the boot: a press caught by the load (sfxReloadWork does its own)
          sfxPlayHeld();
      return loaded;
-@@ -1344,9 +1371,12 @@ void sfxBootStart(void)
+@@ -1229,32 +1303,52 @@ static void sfxRumble(int id)
+   which already sounded: no connect sound on top (the lab's Start Device played confirm, then connect).
+ */
+ #define SFX_DRIVE_ANSWER_MS 3000
++#define SFX_DRIVES_QUIET_S  5 // build 140: after the boot's drive jobs end, a drive's first list may still be on its way
++
++static void *sfxPendingFrom = NULL; // build 140: the trace: who asked for the confirm or cancel waiting for its frame
++static clock_t sfxDrivesDoneAt = 0;
++
++static int sfxBootDrivesQuiet(void)
++{
++    return !bootAudioReady || (long)(clock() - sfxDrivesDoneAt) < (long)(SFX_DRIVES_QUIET_S * CLOCKS_PER_SEC);
++}
++
++static int sfxNowAsked = -1; // build 140: the trace: what the caller of sfxPlayNow asked for, and who it was
++static void *sfxNowFrom = NULL;
+ 
+ static void sfxPlayNow(int id)
+ {
+     int v;
+     u32 sfxStartTicks = cpu_ticks();
+     if (id == SFX_CURSOR) {
+-        if (lastCursorTicks != 0 && (sfxStartTicks - lastCursorTicks) / SFX_CLOCKS_PER_MS < 45)
++        if (lastCursorTicks != 0 && (sfxStartTicks - lastCursorTicks) / SFX_CLOCKS_PER_MS < 45) {
++            sfxTrace(sfxNowAsked, id, -1, SFX_TR_SAME, sfxNowFrom);
+             return;
++        }
+         lastCursorTicks = sfxStartTicks;
+         sfxCursorRoom();
+-        sfxStart(id, gSFXVolume);
++        v = sfxStart(id, gSFXVolume);
++        sfxTrace(sfxNowAsked, id, v, v >= 0 ? SFX_TR_PLAY : SFX_TR_NOVOICE, sfxNowFrom);
+     } else {
+         int oneShot = sfxIsUiOneShot(id);
+         if (oneShot) {
+             u32 sinceMs = lastOneShotTicks != 0 ? (sfxStartTicks - lastOneShotTicks) / SFX_CLOCKS_PER_MS : 0xFFFFFFFFu;
+-            if (id == lastOneShotId && sinceMs < SFX_ONESHOT_COALESCE_MS)
++            if (id == lastOneShotId && sinceMs < SFX_ONESHOT_COALESCE_MS) {
++                sfxTrace(sfxNowAsked, id, -1, SFX_TR_SAME, sfxNowFrom);
+                 return;
++            }
+             if (sinceMs < SFX_PRESS_MS) {
+-                if (sfxPressRank(id) < sfxPressRank(lastOneShotId))
++                if (sfxPressRank(id) < sfxPressRank(lastOneShotId)) {
++                    sfxTrace(sfxNowAsked, id, -1, SFX_TR_PRESS, sfxNowFrom);
+                     return; // build 71: the page sound of this press already played
++                }
+                 if (lastOneShotVoice >= 0 && voiceSound[lastOneShotVoice] == lastOneShotId && voiceBusy(lastOneShotVoice))
+                     voiceMute(lastOneShotVoice); // the smaller sound of this press gives way
+             }
+         }
+         sfxMuteSound(id);
+         v = sfxStart(id, gSFXVolume);
++        sfxTrace(sfxNowAsked, id, v, v >= 0 ? SFX_TR_PLAY : SFX_TR_NOVOICE, sfxNowFrom);
+         if (oneShot) {
+             lastOneShotTicks = sfxStartTicks;
+             lastOneShotId = id;
+@@ -1277,20 +1371,27 @@ void sfxFlush(void)
+     sfxPendingId = -1;
+     if (sfxSetBusy()) { // the set is being loaded (leaving a page that changed the theme): build 101: it waits,
+         sfxHold(id);    // and sounds once the set is in only if that is still its moment
++        sfxTrace(id, id, -1, SFX_TR_HOLD, sfxPendingFrom);
+         return;
+     }
+-    if (audio_initialized && !sfxPreviewing && gEnableSFX && id < SFX_COUNT && sfxReady[id])
++    if (audio_initialized && !sfxPreviewing && gEnableSFX && id < SFX_COUNT && sfxReady[id]) {
++        sfxNowAsked = id;
++        sfxNowFrom = sfxPendingFrom;
+         sfxPlayNow(id);
++    }
+ }
+ 
+ void sfxPlay(int id)
+ {
+     int asked = id;
++    void *from = __builtin_return_address(0); // build 140: the trace
+ 
+     sfxRumble(id);
+ 
+-    if (!audio_initialized || sfxPreviewing)
++    if (!audio_initialized || sfxPreviewing) {
++        sfxTrace(asked, -1, -1, SFX_TR_OFF, from);
+         return;
++    }
+ 
+     // RIPPS2: an event without a sound of its own plays the one it falls back to, or nothing
+     while (id >= 0 && id < SFX_COUNT && !sfxReady[id])
+@@ -1301,26 +1402,42 @@ void sfxPlay(int id)
+     if (asked == SFX_CONFIRM)
+         sfxLastConfirmTicks = cpu_ticks() | 1;
+     if (sfxSetBusy()) { // build 101: the set is loading: a one-shot waits (sfxHold), anything else is dropped
+-        if (gEnableSFX && asked >= 0 && asked < SFX_COUNT && asked != SFX_BOOT && sfxIsUiOneShot(asked))
++        if (gEnableSFX && asked >= 0 && asked < SFX_COUNT && asked != SFX_BOOT && sfxIsUiOneShot(asked)) {
+             sfxHold(asked);
++            sfxTrace(asked, id, -1, SFX_TR_HOLD, from);
++        } else
++            sfxTrace(asked, id, -1, SFX_TR_BUSY, from);
+         return;
+     }
+-    if (id < 0 || id >= SFX_COUNT || id == SFX_BOOT || !gEnableSFX)
++    if (id < 0 || id >= SFX_COUNT || id == SFX_BOOT || !gEnableSFX) {
++        sfxTrace(asked, id, -1, gEnableSFX ? SFX_TR_NOSOUND : SFX_TR_OFF, from);
+         return;
++    }
+ 
+-    if ((asked == SFX_BD_CONNECT || asked == SFX_BD_DISCONNECT) && sfxLastConfirmTicks != 0 &&
+-        (cpu_ticks() - sfxLastConfirmTicks) / SFX_CLOCKS_PER_MS < SFX_DRIVE_ANSWER_MS)
+-        return; // the drive answered a press, which already sounded
++    if (asked == SFX_BD_CONNECT || asked == SFX_BD_DISCONNECT) {
++        // the drive answered a press, which already sounded; build 140: or the boot is still bringing the drives up, with nothing pressed: a connect
++        // sound landing on a cursor move read as a stray confirm
++        if ((sfxLastConfirmTicks != 0 && (cpu_ticks() - sfxLastConfirmTicks) / SFX_CLOCKS_PER_MS < SFX_DRIVE_ANSWER_MS) || sfxBootDrivesQuiet()) {
++            sfxTrace(asked, id, -1, SFX_TR_DRIVE, from);
++            return;
++        }
++    }
+     if (asked == SFX_CONFIRM || asked == SFX_CANCEL) {
+         sfxPendingId = id; // what it opens may still sound this frame
++        sfxPendingFrom = from;
++        sfxTrace(asked, id, -1, SFX_TR_PEND, from);
+         return;
+     }
+     if (sfxPendingId >= 0) {
+-        if (id == SFX_CURSOR)
++        if (id == SFX_CURSOR) {
++            sfxTrace(asked, id, -1, SFX_TR_PRESS, from);
+             return; // the press of this frame has its sound
++        }
+         if (sfxIsUiOneShot(id))
+             sfxPendingId = -1; // what the press opened sounds instead
+     }
++    sfxNowAsked = asked;
++    sfxNowFrom = from;
+     sfxPlayNow(id);
+ }
+ 
+@@ -1337,6 +1454,27 @@ void ripps2QuietBootMark(int bootSoundOn)
+ // then called audsrv from this thread while the IO worker sent the boot sound through the same RPC client. It stays at
+ // the end of init, after applyConfig. Build 122 moved it to right after _loadConfig: the lab boot sound came at the
+ // same moment (3.90 s after the sky either way), so the wait is not in the fonts and languages, and it stays here.
++// build 140: DIAG.TXT's last part, oldest first
++void sfxTraceWrite(int fd)
++{
++    static const int LINE = 96;
++    unsigned int n = sfxTraceCount, i, first = n > SFX_TRACE_MAX ? n - SFX_TRACE_MAX : 0;
++    char *buf = malloc((n - first + 2) * LINE);
++    int o;
++    if (buf == NULL)
++        return;
++    o = snprintf(buf, LINE * 2, "\r\nSound trace, oldest first: seconds, asked, played, voice, voices sounding, what, who asked (RIPPS2 build %d's opl.elf names it)\r\n", RIPPS2_BUILD);
++    for (i = first; i < n; i++) {
++        const sfxTrace_t *e = &sfxTraceRing[i % SFX_TRACE_MAX];
++        const char *a = e->asked >= 0 && e->asked < SFX_COUNT ? sfx_files[(int)e->asked].name : "-";
++        const char *p = e->played >= 0 && e->played < SFX_COUNT ? sfx_files[(int)e->played].name : "-";
++        o += snprintf(buf + o, LINE, "%6u.%02u  %-18s %-18s v%-2d live %-2u %-18s %08X\r\n", (unsigned)(e->ms / 1000), (unsigned)(e->ms % 1000 / 10), a, p, (int)e->voice, (unsigned)e->live,
++                      e->what < sizeof(sfxTrWhat) / sizeof(sfxTrWhat[0]) ? sfxTrWhat[e->what] : "?", (unsigned)e->from);
++    }
++    write(fd, buf, o);
++    free(buf);
++}
++
+ void sfxBootStart(void)
+ {
+     static int done = 0;
+@@ -1344,9 +1482,12 @@ void sfxBootStart(void)
      if (done)
          return;
      done = 1;
@@ -145,13 +452,13 @@ index c24d4f9..845df0e 100644
      audioInit();
 -    if (!audio_initialized)
 +    if (!audio_initialized) {
-+        sfxAudioFailed = 1;
++        sfxAudioFailed = 1; // nothing waits for audio
          return;
 +    }
      audsrv_adpcm_init();
      voicesReset();
      voicesSilence(); // build 100: init turned every voice up
-@@ -1358,6 +1388,7 @@ void sfxBootStart(void)
+@@ -1358,6 +1499,7 @@ void sfxBootStart(void)
          have = sfxBootEarly == SFX_EARLY_READ;
          sfxAudioUp = 1;
          EIntr();
@@ -159,9 +466,30 @@ index c24d4f9..845df0e 100644
          // build 119: on the IO worker, ahead of the drives' jobs still waiting; if it cannot be queued, the set's load
          // (sfxInit) reads it again as before
          if (have && ioPutRequestFront(IO_CUSTOM_SIMPLEACTION, &sfxBootEarlyUpload) != IO_OK)
-@@ -1406,7 +1437,8 @@ static void audioLateTick(void)
+@@ -1375,7 +1517,8 @@ static void audioLateWork(void)
+     char dir[256];
+     if (!audioBaseFound && ripps2AudioBase(dir, sizeof(dir), 1) && audioBaseFound) {
+         sfxInit(0);
+-        if (gEnableBGM && !isBgmPlaying()) {
++        // build 140: found while the boot's drive jobs still run: the music waits for them (bgmBootTick), as it always has
++        if (bootAudioReady && gEnableBGM && !isBgmPlaying()) {
+             bgmFadeIn = 1;
+             bgmFadeAt = clock();
+             bgmStart();
+@@ -1398,15 +1541,18 @@ static void audioLateTick(void)
+         return;
+     next = now + 4 * CLOCKS_PER_SEC;
+     audioLatePending = 1;
+-    if (ioPutRequest(IO_CUSTOM_SIMPLEACTION, &audioLateWork) != IO_OK)
++    // build 140: right behind the job that is running, not behind every drive job still queued
++    if (ioPutRequestFront(IO_CUSTOM_SIMPLEACTION, &audioLateWork) != IO_OK)
+         audioLatePending = 0;
+ }
+ 
+ // The IO worker, once every sound is loaded
  void sfxBootSoundsLoaded(void)
  {
++    sfxDrivesDoneAt = clock();
      bootAudioReady = 1;
 -    ripps2Diag("boot: %d sounds loaded from %s", sfxLoadedCount, audioBaseFound ? audioBase : "RIPPS2's own set");
 +    // build 140: "1 sounds loaded from RIPPS2's own set" was the boot sound alone, with no AUDIO folder found yet
@@ -169,3 +497,13 @@ index c24d4f9..845df0e 100644
  }
  
  // build 115: 32 KB, as the music threads: the start decodes an MP3's first frame here, and minimp3 keeps ~16 KB of
+@@ -1438,8 +1584,7 @@ void bgmBootTick(void)
+     sfxReloadTick(); // build 98: the reload a preview's close asked for
+     bgmStartWaiting(); // build 102: a start that waited for a stopped stream's decoder
+ 
+-    if (started)
+-        audioLateTick(); // build 74: an AUDIO folder on a drive that started after the boot
++    audioLateTick(); // build 74: an AUDIO folder on a drive that started after the boot; build 140: from the first frame, not after the boot sound
+     if (!started) {
+         // once the sounds are in, and not before the boot sound's last two seconds: it ushers the
+         // music in rather than playing under it

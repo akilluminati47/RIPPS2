@@ -52,5 +52,25 @@ if 'audioSfx ? audio_path : "", themeSfx' in snd or '"BIBLE\'s copy in RAM"' not
 if 'name != NULL ? name + 1 : card' not in st:
     fail.append('STATUS\'s hand-off row names the file alone')
 
-print('\n'.join(fail) or 'build140: DISC_STOP, the boot sound sent as audio comes up, its timing lines, the sounds line and the STATUS row OK')
+# the sounds ahead of the drive jobs, the music still behind them; a late find keeps the boot sound
+opl = (root / 'src/opl.c').read_text(encoding='utf-8')
+if 'ioPutRequestFront(IO_CUSTOM_SIMPLEACTION, &deferredAudioInit)' not in opl or 'ioPutRequest(IO_CUSTOM_SIMPLEACTION, &deferredAudioDrivesDone);' not in opl:
+    fail.append('the sounds load right behind the running job, and the music waits for the drive jobs')
+if 'sfxBootSoundsLoaded();' not in opl[opl.find('static void deferredAudioDrivesDone(void)\n{') if 'static void deferredAudioDrivesDone(void)\n{' in opl else opl.find('static void deferredAudioDrivesDone(void)\r\n{'):][:200]:
+    fail.append('bootAudioReady is set when the drive jobs are done')
+if 'ioPutRequestFront(IO_CUSTOM_SIMPLEACTION, &audioLateWork)' not in snd or 'if (bootAudioReady && gEnableBGM && !isBgmPlaying())' not in body('static void audioLateWork(void)'):
+    fail.append('the late AUDIO find runs ahead of queued drive jobs and starts no music before they end')
+if 'sfxLoadedCount == 1 && voiceBusy(SFX_BOOT_VOICE)' not in body('int sfxInit(int bootSnd)'):
+    fail.append('a late load keeps the boot sound still playing')
+
+# no drive sounds during the boot, and the trace
+if 'sfxBootDrivesQuiet()' not in body('void sfxPlay(int id)'):
+    fail.append('a drive coming up during the boot makes no sound')
+for want in ('__builtin_return_address(0)', 'SFX_TR_HOLD', 'SFX_TR_DRIVE', 'SFX_TR_PEND'):
+    if want not in body('void sfxPlay(int id)'):
+        fail.append('sfxPlay traces %s' % want)
+if 'sfxTraceWrite(fd);' not in st or 'void sfxTraceWrite(int fd)' not in snd or 'SFX_TR_MUTE' not in body('static void voiceMute(int v)'):
+    fail.append('DIAG.TXT ends with the sound trace')
+
+print('\n'.join(fail) or 'build140: DISC_STOP, the boot sound sent as audio comes up, its timing lines, the sounds ahead of the drives, the sound trace, the sounds line and the STATUS row OK')
 sys.exit(1 if fail else 0)
