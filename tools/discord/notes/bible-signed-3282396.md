@@ -18,7 +18,7 @@ BIBLE is akilluminati47's boot loader, built on [PS2BBL](https://github.com/isra
 |---|---|---|
 | Signing | akilluminati47's PC, kelftool (memory card builds: dnasload, HDD build: fhdb) | All four signed by akilluminati47 on 11/03 |
 | Background and the boot sound hand-off | PCSX2 (memory card and MMCE builds) | Sky from RIPPS2's settings, black for another AUTO, BLANK forced; the sound reaches RIPPS2 with its CRC intact |
-| MMCE build, bound and started | SCPH-39001 (USA, fat), SD2PSX BOOT card in slot 0 | TEST_HW |
+| MMCE build, bound by RIPPS2 1.3.9's UPDATE BIBLE over `a1ffb0b` | SCPH-39001 (USA, fat), SD2PSX BOOT card in slot 0 | Bound; at power on its splash, then RIPPS2 |
 
 ### The files
 | File | Build | SHA-256 |
@@ -28,6 +28,8 @@ BIBLE is akilluminati47's boot loader, built on [PS2BBL](https://github.com/isra
 | `MMCE/SYSTEM.XLF` | memory card, also reads MMCE (SD2PSX, MemCard PRO 2) | `cbcff26cf6900df479e43eb66a601294ba75029486d967c292687562d7bacf05` |
 | `HSYSTEM.XLF` | the internal HDD's boot area | `0f8f2a7ca76d4f3392636b0a1263b62d9a155285cce40b3226ab7926af5cf2b8` |
 
-**`BIBLE-signed-3282396.zip`**: the four files, their SHA-256s, the licence and a README. A memory card KELF only starts once a console has bound it to that card (RIPPS2's Manage or KELFBinder do this as they install it); copying the file onto a card by hand does not make it boot. BOOT_CARD_LINE
+**`BIBLE-signed-3282396.zip`**: the four files, their SHA-256s, the licence and a README. A memory card KELF only starts once a console has bound it to that card (RIPPS2's Manage or KELFBinder do this as they install it); copying the file onto a card by hand does not make it boot.
+
+**SD2PSX owners:** the ready BOOT card on [`signed-a1ffb0b`](https://github.com/akilluminati47/BIBLE/releases/tag/signed-a1ffb0b) still boots; put RIPPS2 1.3.9 in the SD card's APPS folder and **Manage > UPDATE BIBLE** brings it to this BIBLE.
 
 Thanks to El Isra for PS2BBL and KELFBinder, and to saildot4k for PS2BBL Extended.

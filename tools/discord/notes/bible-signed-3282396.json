@@ -3,12 +3,30 @@
  "url": "https://github.com/akilluminati47/BIBLE/releases/tag/signed-3282396",
  "description": "**BIBLE** is akilluminati47's boot loader, built on PS2BBL by El Isra and PS2BBL Extended by saildot4k (GPL-3). Its next update is out, **every build signed by akilluminati47**, and RIPPS2 1.3.9 now installs, updates and sets it up by itself: no KELFBinder needed.",
  "fields": [
-  ["New in BIBLE", "- **Background**: Auto (your RIPPS2 sky when BIBLE starts RIPPS2, black for anything else), Sky or Black (`BIBLE_BACKGROUND`)\n- **The boot sound, primed**: Boot Sound On (fast) keeps `boot.adp` beside BIBLE's settings; BIBLE reads it during its splash and hands it to RIPPS2 in memory, so it plays with RIPPS2's first frame, even from an SD2PSX\n- **RIPPS2 first** in BIBLE's own defaults"],
-  ["Set it up from RIPPS2 1.3.9", "Settings > General > Boot Loader > **Manage** opens a BIBLE menu: **UPDATE BIBLE** binds this one over an older one, in place, and **Background, Splash, Button Glyphs, Info Line, Power-on Wait, Video Mode, Widescreen** each change one line of `SYS-CONF/PS2BBL.INI`. **EDIT BIBLE'S SETTINGS FILE** for what each button starts."],
-  ["Tested", "TEST_FIELD"],
-  ["Get it", "**With RIPPS2: nothing to download.** BIBLE rides inside [RIPPS2.elf v1.3.9](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.9-beta).\n**Attached here** (and on [the release page](https://github.com/akilluminati47/BIBLE/releases/tag/signed-3282396)): `BIBLE-signed-3282396.zip`, all four signed builds for other installers."],
-  ["Please test", "Update BIBLE with Manage on a genuine memory card, an SD2PSX or a MemCard PRO 2; PAL and Japanese consoles most of all. Tell us here or [open an issue](https://github.com/akilluminati47/RIPPS2/issues) with your console model and card."],
-  ["Thanks", "El Isra for PS2BBL and KELFBinder, saildot4k for PS2BBL Extended."]
+  [
+   "New in BIBLE",
+   "- **Background**: Auto (your RIPPS2 sky when BIBLE starts RIPPS2, black for anything else), Sky or Black (`BIBLE_BACKGROUND`)\n- **The boot sound, primed**: Boot Sound On (fast) keeps `boot.adp` beside BIBLE's settings; BIBLE reads it during its splash and hands it to RIPPS2 in memory, so it plays with RIPPS2's first frame, even from an SD2PSX\n- **RIPPS2 first** in BIBLE's own defaults"
+  ],
+  [
+   "Set it up from RIPPS2 1.3.9",
+   "Settings > General > Boot Loader > **Manage** opens a BIBLE menu: **UPDATE BIBLE** binds this one over an older one, in place, and **Background, Splash, Button Glyphs, Info Line, Power-on Wait, Video Mode, Widescreen** each change one line of `SYS-CONF/PS2BBL.INI`. **EDIT BIBLE'S SETTINGS FILE** for what each button starts."
+  ],
+  [
+   "Tested",
+   "**On a real PS2** (SCPH-39001, USA, SD2PSX BOOT card in slot 0): RIPPS2 1.3.9's **UPDATE BIBLE** bound this BIBLE over the one 1.3.8 had put there; at power on, its splash, then RIPPS2.\n**In the lab** (PCSX2): Background (sky from RIPPS2's settings, black for anything else) and the boot sound handed over (RIPPS2's DIAG: \"handed the boot sound over in RAM\")."
+  ],
+  [
+   "Get it",
+   "**With RIPPS2: nothing to download.** BIBLE rides inside [RIPPS2.elf v1.3.9](https://github.com/akilluminati47/RIPPS2/releases/tag/v1.3.9-beta).\n**Attached here** (and on [the release page](https://github.com/akilluminati47/BIBLE/releases/tag/signed-3282396)): `BIBLE-signed-3282396.zip`, all four signed builds for other installers."
+  ],
+  [
+   "Please test",
+   "Update BIBLE with Manage on a genuine memory card, an SD2PSX or a MemCard PRO 2; PAL and Japanese consoles most of all. Tell us here or [open an issue](https://github.com/akilluminati47/RIPPS2/issues) with your console model and card."
+  ],
+  [
+   "Thanks",
+   "El Isra for PS2BBL and KELFBinder, saildot4k for PS2BBL Extended."
+  ]
  ],
  "footer": "BIBLE signed-3282396  |  rides inside RIPPS2 v1.3.9"
 }

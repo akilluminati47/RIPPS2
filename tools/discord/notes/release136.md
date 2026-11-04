@@ -11,7 +11,7 @@
 <p align="center"><a href="https://github.com/akilluminati47/RIPPS2/blob/v1.3.6-beta/media/b136/bible-manage.mp4">BIBLE's Manage: the cards by slot, then the picker (video, 14 s)</a></p>
 
 - **BIBLE's MMCE build is carried too, signed by akilluminati47.** It reads `mmce0:/` and `mmce1:/`, so with RIPPS2 on an SD2PSX or MemCard PRO 2, Manage installs it on a genuine memory card in the other slot and it starts RIPPS2 from the SD card at power on. Put that genuine card in slot 0: the console boots slot 0's card first.
-- **An SD2PSX or MMCE card is never bound.** The console refuses it, and an SD2PSX then stops answering until a power cycle. Manage now says so before anything restarts and offers BOOT LOCK instead: the SD2PSX BOOT card's own PS2BBL starts RIPPS2.
+- **On an SD2PSX or MMCE card, Manage warns first.** One SD2PSX refused the bind in testing and then stopped answering until a power cycle. Build 136 stopped there; **[build 137](https://github.com/akilluminati47/RIPPS2/blob/main/CHANGELOG.md) binds BIBLE to an SD2PSX or MMCE BOOT card on START** (its firmware answers the bind's key step) and logs each step to DIAG.TXT.
 - **A refused bind on any card** now says to turn the console off and on if the card has gone.
 - **Slots are counted 0 and 1**, as mc0: and mc1: and Memory Files name them: every Manage and BOOT LOCK message, STATUS's card lines and the game VMC slots.
 

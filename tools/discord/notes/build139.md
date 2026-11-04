@@ -10,7 +10,8 @@
 - **Older BIBLE builds** (1.3.4 to 1.3.8) are recognized: "BIBLE (MMCE build, older)".
 
 ## Tested
-TESTED_LINES
+- **On a real PS2** (SCPH-39001, USA, SD2PSX BOOT card in slot 0): Manage said UPDATE BIBLE for the BIBLE 1.3.8 had bound, the update bound BIBLE 3282396, and at power on BIBLE's splash, then RIPPS2.
+- **In the lab**: the BIBLE menu changes one line of BIBLE's settings file; RIPPS2 took the boot sound BIBLE handed over in memory, and STATUS said so.
 
 ## Test list
 - **Manage with an older BIBLE on your card**: does it say UPDATE BIBLE, and does the update bind?
