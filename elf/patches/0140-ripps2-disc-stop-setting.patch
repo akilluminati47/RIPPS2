@@ -1,0 +1,29 @@
+diff --git a/src/ripps2boot.c b/src/ripps2boot.c
+index 4c04b4d..bef82cc 100644
+--- a/src/ripps2boot.c
++++ b/src/ripps2boot.c
+@@ -1176,13 +1176,14 @@ typedef struct
+ } blWhere_t;
+ 
+ // The BIBLE config, unlocked (BOOT LOCK then puts RIPPS2 first): the browser by default, a button
+-// held at power on for the rest
++// held at power on for the rest. Build 140: DISC_STOP = 0: BIBLE's default stops the disc at a launch and waits on the
++// drive, about 3 s of the boot in the lab (the user, 11/03: fresh installs do not wait; Manage's BIBLE menu has the row)
+ static int blBibleConfig(const char *alt, const char *backupKelf)
+ {
+     int n = snprintf(blText, sizeof(blText),
+                      "# BIBLE: akilluminati47's boot loader (github.com/akilluminati47/BIBLE), built on PS2BBL by El Isra (GPL-3), set up by RIPPS2\r\n"
+                      "# Hold at power on: TRIANGLE the browser, START or CROSS a disc, R1 wLaunchELF, CIRCLE what started here before\r\n"
+-                     "KEY_READ_WAIT_TIME = 0\r\nSKIP_PS2LOGO = 0\r\nOSDHISTORY_READ = 1\r\nLOGO_DISPLAY = 0\r\nEJECT_TRAY = 0\r\n\r\n"
++                     "KEY_READ_WAIT_TIME = 0\r\nSKIP_PS2LOGO = 0\r\nOSDHISTORY_READ = 1\r\nLOGO_DISPLAY = 0\r\nEJECT_TRAY = 0\r\nDISC_STOP = 0\r\n\r\n"
+                      "LK_AUTO_E1 = $OSDSYS\r\n%s%s%s"
+                      "LK_AUTO_E3 = $OSDSYS\r\n\r\n"
+                      "LK_TRIANGLE_E1 = $OSDSYS\r\n"
+@@ -2045,6 +2046,7 @@ static const blSet_t blSets[] = {
+     {"BIBLE_GLYPHS", N_("Button Glyphs"), 3, {"0", "1", "2"}, {N_("None"), N_("Face Buttons"), N_("All Sixteen")}, 1},
+     {"BIBLE_INFO", N_("Info Line"), 2, {"0", "1"}, {N_("Off"), N_("On")}, 0},
+     {"KEY_READ_WAIT_TIME", N_("Power-on Wait"), 6, {"0", "1000", "2000", "3000", "6000", "10000"}, {"0 ms", "1000 ms", "2000 ms", "3000 ms", "6000 ms", "10000 ms"}, -1},
++    {"DISC_STOP", N_("Stop Disc at Launch"), 2, {"0", "1"}, {N_("Off"), N_("On")}, 1},
+     {"VIDEO_MODE", "Video Mode", 7, {"AUTO", "NTSC", "PAL", "480P", "576P", "720P", "1080I"}, {N_("Auto"), "NTSC", "PAL", "480p", "576p", "720p", "1080i"}, 0},
+     {"BIBLE_WIDESCREEN", "Widescreen", 3, {"AUTO", "ON", "OFF"}, {N_("Auto"), N_("On"), N_("Off")}, 0},
+ };
