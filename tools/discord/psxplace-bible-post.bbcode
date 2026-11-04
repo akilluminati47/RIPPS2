@@ -1,4 +1,7 @@
-[CENTER][IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/7b2ac3102582fcabe0046c03df32ef5b0c5e9a48/media/b138/bible-1080i-signed.gif[/IMG]
+[CENTER][MEDIA=youtube]sTjjmDd6r1g[/MEDIA]
+[SIZE=2]The reel (2:28, chapters in its description)[/SIZE]
+
+[IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/7b2ac3102582fcabe0046c03df32ef5b0c5e9a48/media/b138/bible-1080i-signed.gif[/IMG]
 [SIZE=2]BIBLE's splash in 1080i, all sixteen buttons, signed by akilluminati47[/SIZE]
 
 
@@ -33,7 +36,7 @@ Hold [B]TRIANGLE + CROSS[/B] at power on for the video mode page. It always open
 [CENTER][IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b139/bible-sky-red-green.jpg[/IMG]
 [SIZE=2]Blood and Ectoplasm, two of RIPPS2's Color Themes, in 1080i[/SIZE][/CENTER]
 
-[B]Background: Auto[/B] (the default) puts your RIPPS2 Color Theme's sky behind the logo when BIBLE starts RIPPS2, and goes black, like a plain boot loader, when it starts anything else. [B]Sky[/B] keeps it on for everything, and BIBLE_COLOR sets any sky you like. The same look in every video mode, and no pop when RIPPS2 takes over: the sky stays on screen, in RIPPS2's mode.
+[B]Background: Auto[/B] (the default) puts your RIPPS2 Color Theme's sky behind the logo when BIBLE starts RIPPS2, and goes black, like a plain boot loader, when it starts anything else. [B]Sky[/B] keeps it on for everything, and BIBLE_COLOR sets any sky you like. The same look in every video mode. At a launch the logo and buttons fade away and the sky stays until the console loads the next program, which blanks the screen (about 7 s in the lab with RIPPS2 on a memory card). RIPPS2 then comes up in the same video mode and colours.
 
 [SIZE=5][B]Your splash[/B][/SIZE]
 [LIST]
@@ -46,7 +49,7 @@ Hold [B]TRIANGLE + CROSS[/B] at power on for the video mode page. It always open
 
 [SIZE=5][B]Made to start RIPPS2[/B][/SIZE]
 [LIST]
-[*][LEFT][B]The boot sound, primed[/B]: with RIPPS2's Boot Sound On (fast), the MMCE, MX4SIO and HDD builds read boot.adp during BIBLE's splash and hand it to RIPPS2 in memory, so RIPPS2 doesn't have to read it from a drive, even when it lives on an SD2PSX. With the memory card build, RIPPS2 reads the file from the card itself. No sound file is the fastest boot: with the wait at 0 ms BIBLE reads it before RIPPS2 starts, about 2 s on a memory card.[/LEFT]
+[*][LEFT][B]The boot sound, primed[/B]: with RIPPS2's Boot Sound On (fast), boot.adp sits beside BIBLE's settings on the card and is read before any drive starts. No sound file is the fastest boot.[/LEFT]
 [*][LEFT][B]Video modes up to 1080i[/B]: AUTO (RIPPS2's own mode), NTSC, PAL, 480p, 576p, 720p and 1080i, with widescreen for the 4:3 ones.[/LEFT]
 [*][LEFT][B]Four builds[/B]: memory card (memory cards and USB), MMCE (SD2PSX and MemCard PRO 2), MX4SIO, and the internal HDD's boot area.[/LEFT]
 [/LIST]
@@ -100,7 +103,7 @@ One text file on the card, [B]mc?:/SYS-CONF/PS2BBL.INI[/B] (read first; else PS2
 [/LIST]
 
 [SPOILER="Changes"]
-[B]3282396[/B] (with RIPPS2 1.3.9): BIBLE_BACKGROUND, the boot sound handed to RIPPS2 in memory, RIPPS2 first in the built-in defaults, RIPPS2's settings read from mc?:/RIPPS2 when RIPPS2 lives on an SD2PSX, USB or the HDD.
+[B]3282396[/B] (with RIPPS2 1.3.9): BIBLE_BACKGROUND, boot.adp beside BIBLE's settings (its hand-off to RIPPS2 in memory has passed in the lab only), RIPPS2 first in the built-in defaults, RIPPS2's settings read from mc?:/RIPPS2 when RIPPS2 lives on an SD2PSX, USB or the HDD.
 [B]a1ffb0b[/B] (with RIPPS2 1.3.8): the MMCE and MX4SIO builds start again (f31c8d5's waited on a memory card driver that never loaded: a black screen at power on).
 [B]f31c8d5[/B] (with RIPPS2 1.3.4): the first signed BIBLE: its splash, the launch keys and video mode pages, the HD modes and widescreen.
 [/SPOILER]

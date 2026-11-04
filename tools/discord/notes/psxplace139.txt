@@ -7,11 +7,11 @@ the [CENTER] line. The first post (psxplace-post.bbcode) has the new release lin
 [SIZE=5][B]RIPPS2 v1.3.9 beta: BIBLE, set up from RIPPS2[/B][/SIZE]
 [URL='https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf']RIPPS2.elf[/URL] (2,764 KB)  |  [URL='https://github.com/akilluminati47/RIPPS2/releases/latest']What's new[/URL]  |  [URL='https://github.com/akilluminati47/RIPPS2/blob/main/CHANGELOG.md']Changelog[/URL][/CENTER]
 
-[B]BIBLE has its own thread now:[/B] [URL='https://www.psx-place.com/threads/bible.51524/']BIBLE, the boot loader RIPPS2 sets up[/URL]. Its next update rides inside 1.3.9, signed by akilluminati47, and RIPPS2 sets it up by itself, no KELFBinder needed:
+[B]BIBLE has its own thread now:[/B] [URL='https://www.psx-place.com/threads/bible.51524/']BIBLE, the boot loader RIPPS2 sets up[/URL], with [URL='https://youtu.be/sTjjmDd6r1g']its own reel[/URL]. Its next update rides inside 1.3.9, signed by akilluminati47, and RIPPS2 sets it up by itself, no KELFBinder needed:
 
 [LIST]
 [*][B]Manage's BIBLE menu[/B] (Settings > General > Boot Loader > Manage, with BIBLE on a card): UPDATE BIBLE binds the new one over an older one in place, and Background (your RIPPS2 sky, or black), Splash, Button Glyphs, Info Line, Power-on Wait, Video Mode and Widescreen each change one line of BIBLE's settings file.
-[*][B]The boot sound, handed over[/B]: Boot Sound On (fast) keeps boot.adp beside BIBLE's settings, and BIBLE hands it to RIPPS2 in memory, so RIPPS2 doesn't have to read it from a drive, even from an SD2PSX. STATUS says "handed over by BIBLE".
+[*][B]The boot sound, on the card[/B]: Boot Sound On (fast) keeps boot.adp beside BIBLE's settings on the card, read before any drive starts.
 [*][B]A faster start[/B]: DISC_STOP = 0 in BIBLE's settings file stops BIBLE waiting on the disc drive at launch. It took 3.3 s off a PCSX2 run, and a disc in the tray keeps spinning into RIPPS2. The race is in [URL='https://www.psx-place.com/threads/bible.51524/']BIBLE's thread[/URL].
 [*][B]Every older BIBLE is recognized[/B] ("BIBLE (MMCE build, older)"), so the update is offered whatever installed it.
 [*]Tested on a SCPH-39001 with an SD2PSX: UPDATE BIBLE bound the new BIBLE over the old one, and it booted RIPPS2.
