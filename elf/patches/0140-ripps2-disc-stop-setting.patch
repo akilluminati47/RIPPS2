@@ -271,7 +271,7 @@ index 4c04b4d..bef82cc 100644
      {"BIBLE_WIDESCREEN", "Widescreen", 3, {"AUTO", "ON", "OFF"}, {N_("Auto"), N_("On"), N_("Off")}, 0},
  };
 diff --git a/src/ripps2edit.c b/src/ripps2edit.c
-index 760c95f..f42b13d 100644
+index 760c95f..8679975 100644
 --- a/src/ripps2edit.c
 +++ b/src/ripps2edit.c
 @@ -35,6 +35,7 @@
@@ -321,7 +321,7 @@ index 760c95f..f42b13d 100644
 +                n++;
 +            memcpy(line, p, len + n);
 +            line[len + n] = '\0';
-+            if (rmUnScaleX(fntCalcDimensions(ED_FONT, line)) > width)
++            if (rmUnScaleX(fntCalcDimensions(RIPPS2_DIA_FONT, line)) > width)
 +                break;
 +            len += n;
 +            fit = len;
@@ -332,7 +332,7 @@ index 760c95f..f42b13d 100644
 +            fit = space;
 +        memcpy(line, p, fit);
 +        line[fit] = '\0';
-+        fntRenderString(ED_FONT, x, y + row * 17, ALIGN_VCENTER, 0, 0, line, ED_SOFT);
++        fntRenderString(RIPPS2_DIA_FONT, x, y + row * 18, ALIGN_VCENTER, 0, 0, line, ED_SOFT);
 +        p += fit;
 +        while (*p == ' ')
 +            p++;
@@ -354,7 +354,7 @@ index 760c95f..f42b13d 100644
 +    fntRenderString(RIPPS2_DIA_FONT, 20, 16, ALIGN_NONE, 0, 0, _l(_STR_RIPPS2_SET_METADATA_RENAME), gTheme->selTextColor);
 +    if (mdView.modified) {
 +        const char *ns = ripps2HintCaseText(_t("NOT SAVED"), low, sizeof(low));
-+        fntRenderString(ED_FONT, 620 - rmUnScaleX(fntCalcDimensions(ED_FONT, ns)), 28, ALIGN_VCENTER, 0, 0, ns, ED_SOFT);
++        fntRenderString(RIPPS2_DIA_FONT, 620 - rmUnScaleX(fntCalcDimensions(RIPPS2_DIA_FONT, ns)), 28, ALIGN_VCENTER, 0, 0, ns, ED_SOFT);
 +    }
 +    rmDrawLine(20, 46, 620, 46, gColWhite);
  
@@ -367,8 +367,8 @@ index 760c95f..f42b13d 100644
 +        rmDrawRect(ED_X - 6, 50, ED_RIGHT - ED_X + 12, 48, ED_PRIM(0x1E, 0x3C, 0x96, 0x58));
 +        rmDrawRect(ED_X - 6, 50, 3, 48, ED_PRIM(0x6A, 0x9A, 0xFF, 0x80));
 +    }
-+    fntRenderString(ED_FONT, ED_X + 4, 62, ALIGN_VCENTER, 0, 0, _t("File name (as it appears in your games list)"), cur0 ? ED_LIT : ED_SOFT);
-+    fntRenderStringFit(ED_FONT, ED_X + 4, 84, ALIGN_VCENTER, ED_RIGHT - ED_X - 8, mdView.file[0] ? mdView.file : "-", ED_LIT, cur0);
++    fntRenderString(RIPPS2_DIA_FONT, ED_X + 4, 62, ALIGN_VCENTER, 0, 0, _t("File name (as it appears in your games list)"), cur0 ? ED_LIT : ED_SOFT);
++    fntRenderStringFit(RIPPS2_DIA_FONT, ED_X + 4, 84, ALIGN_VCENTER, ED_RIGHT - ED_X - 8, mdView.file[0] ? mdView.file : "-", ED_LIT, cur0);
 +    rmDrawLine(20, 102, 620, 102, gColWhite);
 +
 +    // the details
@@ -388,7 +388,7 @@ index 760c95f..f42b13d 100644
 +            rmDrawRect(ED_X - 6, y, ED_RIGHT - ED_X + 12, rowH - 1, ED_PRIM(0x1E, 0x3C, 0x96, 0x58));
 +            rmDrawRect(ED_X - 6, y, 3, rowH - 1, ED_PRIM(0x6A, 0x9A, 0xFF, 0x80));
          }
-+        fntRenderString(ED_FONT, ED_X + 4, cy, ALIGN_VCENTER, 0, 0, ripps2HintCaseText(_t(mdFields[f].label), low, sizeof(low)), cur ? ED_LIT : ED_SOFT);
++        fntRenderString(RIPPS2_DIA_FONT, ED_X + 4, cy, ALIGN_VCENTER, 0, 0, ripps2HintCaseText(_t(mdFields[f].label), low, sizeof(low)), cur ? ED_LIT : ED_SOFT);
          if (mdFields[f].choices && v[0])
              mdPretty(v, shown, sizeof(shown));
          else
@@ -398,14 +398,14 @@ index 760c95f..f42b13d 100644
 -        if (!mdView.user[f][0] && mdView.db[f][0]) {
 -            const char *from = f == 0 && mdView.titleFromList ? _t("GAME LIST") : _t("DATABASE");
 -            fntRenderString(ED_FONT, ED_RIGHT - fntCalcDimensions(ED_FONT, from), y + 8, ALIGN_VCENTER, 0, 0, from, ED_DIM);
-+        fntRenderStringFit(ED_FONT, 170, cy, ALIGN_VCENTER, 340, shown, mdView.user[f][0] ? ED_LIT : ED_DIM, cur);
++        fntRenderStringFit(RIPPS2_DIA_FONT, 170, cy, ALIGN_VCENTER, 340, shown, mdView.user[f][0] ? ED_LIT : ED_DIM, cur);
 +        if (mdView.user[f][0])
 +            from = _t("YOURS");
 +        else if (mdView.db[f][0])
 +            from = f == 1 && mdView.titleFromList ? _t("GAME LIST") : _t("DATABASE");
 +        if (from != NULL) {
 +            from = ripps2HintCaseText(from, low, sizeof(low));
-+            fntRenderString(ED_FONT, ED_RIGHT - rmUnScaleX(fntCalcDimensions(ED_FONT, from)), cy, ALIGN_VCENTER, 0, 0, from, ED_DIM);
++            fntRenderString(RIPPS2_DIA_FONT, ED_RIGHT - rmUnScaleX(fntCalcDimensions(RIPPS2_DIA_FONT, from)), cy, ALIGN_VCENTER, 0, 0, from, ED_DIM);
          }
 -        else if (mdView.user[f][0])
 -            fntRenderString(ED_FONT, ED_RIGHT - fntCalcDimensions(ED_FONT, _t("YOURS")), y + 8, ALIGN_VCENTER, 0, 0, _t("YOURS"), ED_SOFT);
