@@ -8,7 +8,7 @@ BIBLE is akilluminati47's boot loader, built on [PS2BBL](https://github.com/isra
 
 ### What is new since `signed-a1ffb0b`
 - **`BIBLE_BACKGROUND`**: `AUTO` (the default: RIPPS2's sky when BIBLE starts RIPPS2 and finds its settings, else black in the console's own mode, a plain boot loader), `SKY` or `BLANK` (black). RIPPS2's settings are also read from `mc?:/RIPPS2` when BIBLE starts RIPPS2 from an SD2PSX, USB or the HDD.
-- **The boot sound, primed for RIPPS2**: RIPPS2's Boot Sound On (fast) keeps `boot.adp` beside BIBLE's settings (`mc?:/SYS-CONF/boot.adp`). BIBLE reads it while its splash counts down and hands it to RIPPS2 in memory, so RIPPS2 doesn't have to read it from a drive (the MMCE, MX4SIO and HDD builds; the memory card build tells RIPPS2 the folder). With `KEY_READ_WAIT_TIME = 0` BIBLE reads it before RIPPS2 starts, about 2 s on a memory card; no `boot.adp` is the fastest boot. [How it works](https://github.com/akilluminati47/BIBLE/blob/main/docs/boot-sound-handoff.md).
+- **The boot sound, primed for RIPPS2**: RIPPS2's Boot Sound On (fast) keeps `boot.adp` beside BIBLE's settings (`mc?:/SYS-CONF/boot.adp`). It is read before any drive starts. BIBLE can also hand it to RIPPS2 in memory, but that has only passed in the lab: on a real SD2PSX, RIPPS2 read the card's copy itself. No `boot.adp` is the fastest boot. [How it works](https://github.com/akilluminati47/BIBLE/blob/main/docs/boot-sound-handoff.md).
 - **RIPPS2 first**: the built-in defaults and the config template try `mc?:/RIPPS2/RIPPS2.ELF` and `mmce?:/APPS/RIPPS2.ELF` before OSDMenu and FMCB.
 
 <p align="center"><img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b139/bible-race-6000-vs-0.gif" width="90%" alt="Black, no buttons: Power-on Wait 6000 ms with the info line beside 0 ms, racing into RIPPS2"></p>
@@ -23,6 +23,7 @@ BIBLE is akilluminati47's boot loader, built on [PS2BBL](https://github.com/isra
 | Signing | akilluminati47's PC, kelftool (memory card builds: dnasload, HDD build: fhdb) | All four signed by akilluminati47 on 11/03 |
 | Background and the boot sound hand-off | PCSX2 (memory card and MMCE builds) | Sky from RIPPS2's settings, black for another AUTO, BLANK forced; the sound reaches RIPPS2 with its CRC intact |
 | MMCE build, bound by RIPPS2 1.3.9's UPDATE BIBLE over `a1ffb0b` | SCPH-39001 (USA, fat), SD2PSX BOOT card in slot 0 | Bound; at power on its splash, then RIPPS2 |
+| The boot sound on that console | SCPH-39001 (USA, fat), SD2PSX BOOT card in slot 0 | Not handed over: `DIAG.TXT` says "no boot sound handed over" and RIPPS2 read the card's copy itself; the sound still plays |
 
 ### The files
 | File | Build | SHA-256 |

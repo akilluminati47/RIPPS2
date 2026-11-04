@@ -34,8 +34,8 @@ Each choice changes only its own line in BIBLE's settings file; your notes and o
 <p align="center"><img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b139/bible-sky-red-green.jpg" width="90%" alt="BIBLE on the skies of two RIPPS2 Color Themes, Blood and Ectoplasm, in 1080i"></p>
 <p align="center"><sub>Background Auto: your RIPPS2 Color Theme's sky when BIBLE starts RIPPS2. Here Blood and Ectoplasm, in 1080i.</sub></p>
 
-#### The boot sound, handed over by BIBLE
-**Audio settings > Boot Sound > On (fast)** now keeps `boot.adp` beside BIBLE's settings (`mc?:/SYS-CONF/boot.adp`). BIBLE reads it while its splash counts down and hands it to RIPPS2 in memory, so RIPPS2 doesn't have to read it from a drive, even when it starts from an SD2PSX (the MMCE, MX4SIO and HDD builds; with the memory card build, RIPPS2 reads the file from the card itself). STATUS says "handed over by BIBLE". Boot Sound Off is still the fastest boot: with BIBLE's Power-on Wait at 0 ms, BIBLE reads the sound before RIPPS2 starts (about 2 s on a memory card).
+#### The boot sound, on the card
+**Audio settings > Boot Sound > On (fast)** now keeps `boot.adp` beside BIBLE's settings (`mc?:/SYS-CONF/boot.adp`). It is read before any drive starts. BIBLE can also hand it to RIPPS2 in memory, but that has only passed in the lab: on a real SD2PSX, RIPPS2 read the card's copy itself. Boot Sound Off is still the fastest boot.
 
 #### What was tested
 | What | Where | Result |
@@ -45,6 +45,7 @@ Each choice changes only its own line in BIBLE's settings file; your notes and o
 | BIBLE's Background (Auto, Sky, Black) | PCSX2 lab, BIBLE's own takes | Sky from RIPPS2's settings, black for another AUTO, BLANK forced |
 | The boot sound handed over: BIBLE's MMCE build starting RIPPS2 1.3.9 | PCSX2 lab | BIBLE read boot.adp in 440 ms; RIPPS2 took it from memory (DIAG.TXT: "BIBLE handed the boot sound over in RAM"), reached its menu, and STATUS said "handed over by BIBLE" |
 | **Updating BIBLE with Manage** (UPDATE BIBLE, over the BIBLE 1.3.8 had bound) | SCPH-39001 (USA, fat), SD2PSX BOOT card in slot 0 | **Bound**; at power on BIBLE 3282396's splash, then RIPPS2 |
+| The boot sound on that console | SCPH-39001 (USA, fat), SD2PSX BOOT card in slot 0 | Not handed over: `DIAG.TXT` says "no boot sound handed over" and RIPPS2 read the card's copy itself; the sound still plays |
 
 #### Also in 1.3.9
 - **About** credits KELFBinder's IOPRP image (El Isra, GPL-3), which binds BIBLE, and says every BIBLE build is signed by akilluminati47.
