@@ -59,6 +59,10 @@ if fl.find('!memcmp(blOut, blText, n)') > fl.find('remove(blSetPath);'):
 if 'blWrite' in body(boot, 'static int blIniEdit('):
     fail.append('a change stays in memory until the page closes')
 
+rc = body(boot, 'static void blIniRecover(void)')
+if 'stat(' in rc or 'blRead(blSetPath) >= 0' not in rc or rc.find('blRead(blSetPath) >= 0') > rc.find('blMcRename('):
+    fail.append('the recovery opens the files themselves: stat said a missing file on a card was there, and the only copy went')
+
 # launch keys
 for want in ('static const char *const blKeyIds[BL_KEYS] =', 'ripps2FilesPick(_t("CHOOSE A PROGRAM"), text, sizeof(text), &bdmType)',
              '"$OSDSYS"', '"$CDVD"', '"$CDVD_NO_PS2LOGO"', '"$CREDITS"', 'static int blPickedPath(', 'static void blArgsMenu(',

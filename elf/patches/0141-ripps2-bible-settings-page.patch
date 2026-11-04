@@ -29,7 +29,7 @@ index b1f6567..f2af125 100644
  void ripps2CardManager(int slot, const char *image); // ripps2card.c (build 86): memory card 1/2 (slot 0/1), or a card image (slot -1)
  // ripps2media.c (build 93): Memory Files opens pictures (PNG, JPG) and video (AVI, with libsmslite)
 diff --git a/src/ripps2boot.c b/src/ripps2boot.c
-index 5b025f9..fe2a10e 100644
+index 5b025f9..5ee34db 100644
 --- a/src/ripps2boot.c
 +++ b/src/ripps2boot.c
 @@ -65,6 +65,10 @@
@@ -77,7 +77,7 @@ index 5b025f9..fe2a10e 100644
  // Which of a setting's values the file holds: its index, or -1 for one RIPPS2 does not offer (shown as it is)
  static int blSetIndex(const blSet_t *s, const char *val)
  {
-@@ -2116,87 +2125,605 @@ static int blSetIndex(const blSet_t *s, const char *val)
+@@ -2116,87 +2125,611 @@ static int blSetIndex(const blSet_t *s, const char *val)
      return -1;
  }
  
@@ -99,7 +99,9 @@ index 5b025f9..fe2a10e 100644
 +    const char *u = strchr(k, '_');
 +    int n = strlen(id);
 +    if (u == NULL || (strncasecmp(k, "LK_", 3) && strncasecmp(k, "ARG_", 4) && strncasecmp(k, "NAME_", 5)))
-+        return 0;
+         return 0;
+-    nl = strstr(blText, "\r\n") != NULL ? "\r\n" : "\n";
+-    for (p = blText; *p;) {
 +    return !strncasecmp(u + 1, id, n) && (u[1 + n] == '\0' || u[1 + n] == '_');
 +}
 +
@@ -114,9 +116,7 @@ index 5b025f9..fe2a10e 100644
 +    if (value != NULL)
 +        lineLen = snprintf(line, sizeof(line), "%s = %s%s", key, value, nl);
 +    if (lineLen >= (int)sizeof(line))
-         return 0;
--    nl = strstr(blText, "\r\n") != NULL ? "\r\n" : "\n";
--    for (p = blText; *p;) {
++        return 0;
 +    for (p = blText; *p; p += len) {
          e = strchr(p, '\n');
          len = e != NULL ? (int)(e - p) + 1 : (int)strlen(p);
@@ -162,9 +162,7 @@ index 5b025f9..fe2a10e 100644
      }
 -    if (o >= (int)sizeof(blOut))
 +    if (o >= BL_MAX)
-         return 0;
--    ripps2Diag("bible: %s: %s = %s", path, key, value);
--    return blWrite(path, blOut, o) == 0;
++        return 0;
 +    memcpy(blText, blOut, o);
 +    blText[o] = '\0';
 +    blDirty = 1;
@@ -177,20 +175,28 @@ index 5b025f9..fe2a10e 100644
 +{
 +    const char *dot = strrchr(blSetPath, '.');
 +    if (dot == NULL || strncmp(blSetPath, "mc", 2))
-+        return 0;
+         return 0;
+-    ripps2Diag("bible: %s: %s = %s", path, key, value);
+-    return blWrite(path, blOut, o) == 0;
 +    return snprintf(out, size, "%.*s.TMP", (int)(dot - blSetPath), blSetPath) < size;
 +}
 +
-+// A power cut between taking the old file out and naming the new one left only the temporary one: it is the file
++// A power cut between taking the old file out and naming the new one left only the temporary one: it is the file, whole, as it was
++// read back before the old one went. Each goes by opening the file itself: the lab, 11/04: stat said a missing file on a card was
++// there, and the only copy went. With a whole file there, a temporary one is a write that never finished.
 +static void blIniRecover(void)
 +{
 +    char tmp[104];
-+    struct stat st;
-+    if (!blTmpPath(tmp, sizeof(tmp)) || stat(tmp, &st) != 0)
++    int fd;
++    if (!blTmpPath(tmp, sizeof(tmp)) || (fd = open(tmp, O_RDONLY)) < 0)
 +        return;
-+    if (stat(blSetPath, &st) == 0)
++    close(fd);
++    if (blRead(blSetPath) >= 0) {
 +        remove(tmp);
-+    else if (blMcRename(blSetPath[2] - '0', tmp + 5, strrchr(blSetPath, '/') + 1))
++        return;
++    }
++    remove(blSetPath);
++    if (blMcRename(blSetPath[2] - '0', tmp + 5, strrchr(blSetPath, '/') + 1))
 +        ripps2Diag("bible: %s came back from its temporary copy", blSetPath);
 +}
 +
@@ -724,7 +730,7 @@ index 5b025f9..fe2a10e 100644
          if (!have) {
              guiMsgBoxSound(SFX_ERROR);
              snprintf(msg, sizeof(msg), _t("BIBLE's settings file (%s) was not found. SET UP, UPDATE OR RESTORE BIBLE writes one."),
-@@ -2204,22 +2731,39 @@ static void blBibleMenu(int boot, int removed)
+@@ -2204,22 +2737,39 @@ static void blBibleMenu(int boot, int removed)
              guiMsgBox(msg, 0, NULL);
              continue;
          }
