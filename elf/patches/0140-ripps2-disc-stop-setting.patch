@@ -1,12 +1,13 @@
 diff --git a/include/sound.h b/include/sound.h
-index 8b5f391..c4c9117 100644
+index 8b5f391..3a6a565 100644
 --- a/include/sound.h
 +++ b/include/sound.h
-@@ -78,6 +78,7 @@ extern int gBibleSoundHanded;               // build 139: the boot sound came fr
+@@ -78,6 +78,8 @@ extern int gBibleSoundHanded;               // build 139: the boot sound came fr
  void ripps2BibleArgs(int argc, char *argv[]); // build 139: -bible-home= and -bible-bootsnd=, first thing in main
  void sfxBibleCopyDrop(void);                // build 139: Boot Sound Off or On: the copy beside BIBLE goes
  void sfxBootSoundsLoaded(void); // RIPPS2: the IO worker, every sound loaded: the music may start
 +void sfxTraceWrite(int fd);     // build 140: DIAG.TXT's sound trace
++void sfxBootFirstLoadDone(void); // build 140: the IO worker, the boot's own sound load has run
  void bgmBootTick(void);         // RIPPS2: every GUI frame: starts the music once the sounds are in, then fades it in
  int bgmHudReserve(void);            // RIPPS2 build 71 (perf HUD): decoded chunks waiting, -1 with no music
  extern volatile unsigned int gBgmUnderruns;  // RIPPS2 build 71 (perf HUD): times audsrv's ring ran dry
@@ -113,7 +114,7 @@ index aa13af2..be8cb0a 100644
      return ok;
  }
 diff --git a/src/sound.c b/src/sound.c
-index c24d4f9..85aba13 100644
+index c24d4f9..822cd2b 100644
 --- a/src/sound.c
 +++ b/src/sound.c
 @@ -14,6 +14,7 @@
@@ -276,7 +277,7 @@ index c24d4f9..85aba13 100644
 -               audioSfx ? audio_path : "", themeSfx ? " and the theme" : "");
 +               audioSfx ? audio_path : themeSfx ? "the theme" : !loaded ? "nowhere, no sound files found" : gBibleSoundHanded ? "BIBLE's copy in RAM" : "the boot sound read earlier",
 +               audioSfx && themeSfx ? " and the theme" : "");
-+    sfxTrace(loaded, -1, -1, SFX_TR_LOADED, NULL);
++    sfxTrace(-1, -1, -1, SFX_TR_LOADED, NULL);
      if (!sfxReloadBusy) // the late AUDIO find and the boot: a press caught by the load (sfxReloadWork does its own)
          sfxPlayHeld();
      return loaded;
@@ -466,7 +467,19 @@ index c24d4f9..85aba13 100644
          // build 119: on the IO worker, ahead of the drives' jobs still waiting; if it cannot be queued, the set's load
          // (sfxInit) reads it again as before
          if (have && ioPutRequestFront(IO_CUSTOM_SIMPLEACTION, &sfxBootEarlyUpload) != IO_OK)
-@@ -1375,7 +1517,8 @@ static void audioLateWork(void)
+@@ -1369,13 +1511,20 @@ void sfxBootStart(void)
+ // a drive once that drive is up. The GUI asks every few seconds for the first three minutes; the IO
+ // worker looks, and on a find loads the sounds from there and starts the music.
+ static volatile int audioLatePending = 0;
++static volatile int sfxFirstLoadDone = 0; // build 140: the boot's own load has run: the late check starts only then
++
++void sfxBootFirstLoadDone(void)
++{
++    sfxFirstLoadDone = 1;
++}
+ 
+ static void audioLateWork(void)
+ {
      char dir[256];
      if (!audioBaseFound && ripps2AudioBase(dir, sizeof(dir), 1) && audioBaseFound) {
          sfxInit(0);
@@ -476,7 +489,18 @@ index c24d4f9..85aba13 100644
              bgmFadeIn = 1;
              bgmFadeAt = clock();
              bgmStart();
-@@ -1398,15 +1541,18 @@ static void audioLateTick(void)
+@@ -1390,7 +1539,9 @@ static void audioLateTick(void)
+ {
+     static clock_t next = 0;
+     clock_t now = clock();
+-    if (audioBaseFound || audioLatePending || thmGetFilePath(thmGetGuiValue()) != NULL)
++    // build 140: the check now runs from the first frame; ahead of the boot's own load it found the card's AUDIO first, loaded the set twice and, with no sound
++    // loaded yet to say the boot sound was the only one, started audsrv over under it (the lab: the boot sound cut 30 ms in)
++    if (!sfxFirstLoadDone || audioBaseFound || audioLatePending || thmGetFilePath(thmGetGuiValue()) != NULL)
+         return;
+     // build 126: only a card or drive that has become ready since the last look is asked (no more three minutes of
+     // asking every place every 4 s when there is no AUDIO folder at all); at most one look every 4 s
+@@ -1398,15 +1549,18 @@ static void audioLateTick(void)
          return;
      next = now + 4 * CLOCKS_PER_SEC;
      audioLatePending = 1;
@@ -497,7 +521,7 @@ index c24d4f9..85aba13 100644
  }
  
  // build 115: 32 KB, as the music threads: the start decodes an MP3's first frame here, and minimp3 keeps ~16 KB of
-@@ -1438,8 +1584,7 @@ void bgmBootTick(void)
+@@ -1438,8 +1592,7 @@ void bgmBootTick(void)
      sfxReloadTick(); // build 98: the reload a preview's close asked for
      bgmStartWaiting(); // build 102: a start that waited for a stopped stream's decoder
  
