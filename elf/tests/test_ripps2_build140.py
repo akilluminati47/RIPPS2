@@ -60,6 +60,8 @@ if 'sfxBootSoundsLoaded();' not in opl[opl.find('static void deferredAudioDrives
     fail.append('bootAudioReady is set when the drive jobs are done')
 if 'ioPutRequestFront(IO_CUSTOM_SIMPLEACTION, &audioLateWork)' not in snd or 'if (bootAudioReady && gEnableBGM && !isBgmPlaying())' not in body('static void audioLateWork(void)'):
     fail.append('the late AUDIO find runs ahead of queued drive jobs and starts no music before they end')
+if '!sfxFirstLoadDone || audioBaseFound' not in body('static void audioLateTick(void)') or 'sfxBootFirstLoadDone();' not in opl:
+    fail.append('the late check waits for the boot\'s own load, or it loads the set twice and cuts the boot sound')
 if 'sfxLoadedCount == 1 && voiceBusy(SFX_BOOT_VOICE)' not in body('int sfxInit(int bootSnd)'):
     fail.append('a late load keeps the boot sound still playing')
 

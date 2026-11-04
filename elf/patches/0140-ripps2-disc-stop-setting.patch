@@ -12,7 +12,7 @@ index 8b5f391..3a6a565 100644
  int bgmHudReserve(void);            // RIPPS2 build 71 (perf HUD): decoded chunks waiting, -1 with no music
  extern volatile unsigned int gBgmUnderruns;  // RIPPS2 build 71 (perf HUD): times audsrv's ring ran dry
 diff --git a/src/opl.c b/src/opl.c
-index 5f2d5ec..3d19c4c 100644
+index 5f2d5ec..2ed0f03 100644
 --- a/src/opl.c
 +++ b/src/opl.c
 @@ -131,6 +131,7 @@ static void clearMenuGameList(opl_io_module_t *mdl);
@@ -46,10 +46,11 @@ index 5f2d5ec..3d19c4c 100644
  }
  
  static void deferredInit(void)
-@@ -6455,6 +6461,11 @@ static void deferredAudioInit(void)
+@@ -6455,6 +6461,12 @@ static void deferredAudioInit(void)
          LOG("sfxInit: failed to initialize - %d.\n", ret);
      else
          LOG("sfxInit: %d samples loaded.\n", ret);
++    sfxBootFirstLoadDone();
 +}
 +
 +// RIPPS2 build 140: the drive jobs queued at boot are done
