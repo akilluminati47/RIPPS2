@@ -113,6 +113,7 @@ strings:
 - en: Name
   in:
   - dialogs.c
+  - ripps2boot.c
 - en: Network Connectivity
   in:
   - dialogs.c
@@ -413,6 +414,7 @@ strings:
 - en: On (fast)
   in:
   - gui.c
+  - ripps2boot.c
 - en: On RiptOPL %s
   in:
   - gui.c
@@ -1445,6 +1447,9 @@ strings:
 - en: '%s cannot start RIPPS2 from where it is now (%s), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there.'
   in:
   - ripps2boot.c
+- en: '%s, path %d'
+  in:
+  - ripps2boot.c
 - en: (DIAG.TXT beside RIPPS2 has what the card said.)
   in:
   - ripps2boot.c
@@ -1474,6 +1479,12 @@ strings:
     The I/O processor restarts for this and every drive read stops until it is done; music and drives come back after. Keep the card in and the console on until it says done.'
   in:
   - ripps2boot.c
+- en: A BIBLE COMMAND
+  in:
+  - ripps2boot.c
+- en: ARGUMENTS
+  in:
+  - ripps2boot.c
 - en: All Sixteen
   in:
   - ripps2boot.c
@@ -1483,10 +1494,19 @@ strings:
 - en: 'An SD2PSX or MMCE card may protect itself after a refused write: if the memory card or the MMCE drive is missing now, turn the console off and on.'
   in:
   - ripps2boot.c
+- en: Argument %d
+  in:
+  - ripps2boot.c
+- en: 'Arguments: %s'
+  in:
+  - ripps2boot.c
 - en: Auto
   in:
   - ripps2boot.c
   - ripps2shot.c
+- en: Auto (no button held)
+  in:
+  - ripps2boot.c
 - en: BIBLE could not copy RIPPS2 to the HDD's %s partition. Check its free space. Nothing else was changed.
   in:
   - ripps2boot.c
@@ -1502,16 +1522,34 @@ strings:
 - en: BIBLE could not write the HDD's boot program (step %d). %s
   in:
   - ripps2boot.c
+- en: BIBLE hands these to the program, in this order.
+  in:
+  - ripps2boot.c
+- en: BIBLE has no way to reach that drive. Choose a program on another one, or type the path.
+  in:
+  - ripps2boot.c
 - en: 'BIBLE is installed on the internal HDD and BOOT LOCK is on: at power on the console starts RIPPS2 from %s%s%s%s, at once. Config: %s.%s%s'
   in:
   - ripps2boot.c
 - en: BIBLE is on memory card %d, but its config (%s) could not be written, so it starts the browser. Free some space and run MANAGE again to finish.
   in:
   - ripps2boot.c
+- en: BIBLE keeps this key from PS2BBL, but nothing in this build acts on it, so it changes nothing yet.
+  in:
+  - ripps2boot.c
+- en: BIBLE needs at least one path in its settings, or it starts in its rescue mode, so this one stays.
+  in:
+  - ripps2boot.c
 - en: BIBLE ran out of memory before it started. Nothing was changed.
   in:
   - ripps2boot.c
 - en: BIBLE ran out of memory. Nothing on the memory card was changed.
+  in:
+  - ripps2boot.c
+- en: BIBLE's Settings
+  in:
+  - ripps2boot.c
+- en: BIBLE's credits
   in:
   - ripps2boot.c
 - en: BIBLE's settings file (%s) could not be written. Check that the memory card is in and has room, then try again.
@@ -1544,6 +1582,9 @@ strings:
 - en: BOOT LOCK found no boot loader config to change.
   in:
   - ripps2boot.c
+- en: BOOT LOCK holds this line. Turn BOOT LOCK off to change it.
+  in:
+  - ripps2boot.c
 - en: BOOT LOCK is off. Your boot loader starts what it started before (%s).
   in:
   - ripps2boot.c
@@ -1559,15 +1600,36 @@ strings:
 - en: Background
   in:
   - ripps2boot.c
+- en: Binds the BIBLE RIPPS2 carries to a memory card, writes it over the one there, or puts back what it replaced.
+  in:
+  - ripps2boot.c
 - en: Black
+  in:
+  - ripps2boot.c
+- en: Boot Sound
   in:
   - ripps2boot.c
 - en: Button Glyphs
   in:
   - ripps2boot.c
+- en: CHANGE
+  in:
+  - ripps2boot.c
+  - ripps2files.c
+- en: CHOOSE A PROGRAM
+  in:
+  - ripps2boot.c
+- en: Choose a program from your drives, type a path, or pick one of BIBLE's commands. BIBLE tries the paths in order and starts the first it finds.
+  in:
+  - ripps2boot.c
 - en: 'Done: the memory card in slot %d starts what it started before BIBLE. BIBLE is kept in mc%d:/%s.'
   in:
   - ripps2boot.c
+- en: EDIT
+  in:
+  - ripps2boot.c
+  - ripps2edit.c
+  - ripps2files.c
 - en: EDIT BIBLE'S SETTINGS FILE
   in:
   - ripps2boot.c
@@ -1575,6 +1637,9 @@ strings:
   in:
   - ripps2boot.c
 - en: Face Buttons
+  in:
+  - ripps2boot.c
+- en: Follow Color Theme
   in:
   - ripps2boot.c
 - en: 'For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 1''s config before slot 0''s.
@@ -1586,6 +1651,9 @@ strings:
   in:
   - ripps2boot.c
 - en: Game ID for Discs
+  in:
+  - ripps2boot.c
+- en: 'How long BIBLE waits for a button before the Auto path. At 0 ms a button held from power on still works. A boot sound beside BIBLE is read first: about 2 s at 0 ms.'
   in:
   - ripps2boot.c
 - en: 'INSTALL BIBLE ON THE INTERNAL HDD
@@ -1607,6 +1675,12 @@ strings:
 - en: Info Line
   in:
   - ripps2boot.c
+- en: Launch Keys
+  in:
+  - ripps2boot.c
+- en: 'Launch Keys: %s'
+  in:
+  - ripps2boot.c
 - en: Logo
   in:
   - ripps2boot.c
@@ -1616,12 +1690,36 @@ strings:
 - en: MEMORY CARD IN SLOT %d  (%s)
   in:
   - ripps2boot.c
+- en: NEXT VALUE
+  in:
+  - ripps2boot.c
+  - ripps2edit.c
+- en: OPEN
+  in:
+  - ripps2boot.c
+  - ripps2files.c
+  - ripps2shot.c
+- en: On shows a disc's game ID on screen as it starts, for RetroGEM video mods.
+  in:
+  - ripps2boot.c
+- en: On shows a program's game ID on screen as it starts, for RetroGEM video mods. It is up to 11 characters from the file name.
+  in:
+  - ripps2boot.c
+- en: On stops the disc at a launch and waits for the drive to answer. Off skips that wait, about 3 s in the lab, and a disc in the tray keeps spinning.
+  in:
+  - ripps2boot.c
+- en: Opens the file itself in the text editor, comments and all. Every change here keeps the other lines as they are.
+  in:
+  - ripps2boot.c
 - en: PS2BBL cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
   in:
   - ripps2boot.c
 - en: 'PUT BACK THE HDD''S OLD BOOT PROGRAM
 
     The one BIBLE kept (RIPPS2/MBR-BACKUP.KELF on the HDD) goes back in __mbr, in BIBLE''s place. RIPPS2 and the PS2BBL config stay where they are.'
+  in:
+  - ripps2boot.c
+- en: Path %d
   in:
   - ripps2boot.c
 - en: Power-on Wait
@@ -1712,7 +1810,13 @@ strings:
     RIPPS2: Setting up BIBLE. BIBLE, akilluminati47''s boot loader built on PS2BBL by El Isra, set up by RIPPS2 on a standard 8 MB PS2 memory card or the internal HDD: a 0 ms start at power on (PS2BBL Extended does not allow 0), RIPPS2 first from where it is (it is never copied), and a button held at power on still reaches the browser (TRIANGLE), a disc (START) and what was there before (CIRCLE). Set it up, repair it or restore what it replaced?'
   in:
   - ripps2boot.c
+- en: Shows the countdown, the clock and the console's details on the splash.
+  in:
+  - ripps2boot.c
 - en: Sky
+  in:
+  - ripps2boot.c
+- en: Sky Color
   in:
   - ripps2boot.c
 - en: Splash
@@ -1721,13 +1825,28 @@ strings:
 - en: Stop Disc at Launch
   in:
   - ripps2boot.c
+- en: TYPE A PATH
+  in:
+  - ripps2boot.c
 - en: The HDD partition BIBLE uses went away. Nothing was changed.
   in:
   - ripps2boot.c
 - en: The HDD's old boot program is back. BIBLE no longer starts from the HDD.
   in:
   - ripps2boot.c
+- en: 'The button pictures under the logo: none, the four face buttons, or all sixteen.'
+  in:
+  - ripps2boot.c
 - en: The console would not bind BIBLE to the memory card in slot %d (its MagicGate step failed). Nothing on the card was changed. A card that is not a genuine or MagicGate-compatible one cannot hold a system update.
+  in:
+  - ripps2boot.c
+- en: The console's browser
+  in:
+  - ripps2boot.c
+- en: The disc in the tray
+  in:
+  - ripps2boot.c
+- en: The disc, without the PS2 logo
   in:
   - ripps2boot.c
 - en: The memory card in slot %d has %d KB free, and BIBLE needs %d KB there. Free some space, then try again.
@@ -1751,7 +1870,19 @@ strings:
 - en: 'The one that was there is kept in RIPPS2/MBR-BACKUP.KELF on the HDD: BOOT LOADER > MANAGE > RESTORE puts it back.'
   in:
   - ripps2boot.c
+- en: The same setting as in Audio. On (fast) keeps a copy on the memory card, so the sound starts with the first frame. Off is the fastest boot.
+  in:
+  - ripps2boot.c
 - en: The security module would not start on this console. Nothing on the memory card was changed.
+  in:
+  - ripps2boot.c
+- en: The shape of BIBLE's splash. Auto follows RIPPS2's Widescreen when its settings are on a memory card.
+  in:
+  - ripps2boot.c
+- en: The signal BIBLE starts in. Auto uses RIPPS2's Video Mode when its settings are on a memory card, and the console's own mode when they are not.
+  in:
+  - ripps2boot.c
+- en: The sky on BIBLE's splash. Follow Color Theme uses the sky RIPPS2 saves with its settings. A color named here stays, whatever the theme. Background on Black hides it.
   in:
   - ripps2boot.c
 - en: 'There is no formatted PS2 memory card in either slot, and no internal HDD. BIBLE lives on a memory card or the HDD: insert a card, then try again.'
@@ -1760,10 +1891,34 @@ strings:
 - en: There is no kept boot program on this HDD. Nothing was changed.
   in:
   - ripps2boot.c
+- en: This BIBLE (%s build) does not read this drive, so it moves on to the next path.
+  in:
+  - ripps2boot.c
 - en: This HDD has no __sysconf partition, so BIBLE's config has to go on a memory card (PS2BBL reads a card's first), and there is none in either slot. Insert one, then try again.
   in:
   - ripps2boot.c
 - en: 'UPDATE BIBLE: SLOT %d HAS AN OLDER ONE'
+  in:
+  - ripps2boot.c
+- en: 'What BIBLE shows while it waits for a button: nothing, its logo, or its logo with the name of what each button starts.'
+  in:
+  - ripps2boot.c
+- en: What BIBLE starts when no button is held at power on.
+  in:
+  - ripps2boot.c
+- en: What BIBLE starts when this button is held at power on. L2 + R2 held at power on shows BIBLE's own page of them all.
+  in:
+  - ripps2boot.c
+- en: What BIBLE's splash calls this button, with Splash on Logo and Names.
+  in:
+  - ripps2boot.c
+- en: What each button starts at power on, each with up to ten paths chosen from your drives.
+  in:
+  - ripps2boot.c
+- en: What stands behind BIBLE's logo. Auto shows the sky when Sky Color is set or RIPPS2's settings are on a memory card, and black when they are not.
+  in:
+  - ripps2boot.c
+- en: When a button starts a disc and the tray is empty, On opens the tray for you.
   in:
   - ripps2boot.c
 - en: a boot loader RIPPS2 does not know
@@ -2221,10 +2376,6 @@ strings:
 - en: DEVELOPER
   in:
   - ripps2edit.c
-- en: EDIT
-  in:
-  - ripps2edit.c
-  - ripps2files.c
 - en: EDIT LINE
   in:
   - ripps2edit.c
@@ -2244,9 +2395,6 @@ strings:
   in:
   - ripps2edit.c
 - en: LINE TOO LONG TO EDIT
-  in:
-  - ripps2edit.c
-- en: NEXT VALUE
   in:
   - ripps2edit.c
 - en: NOT SAVED
@@ -2421,10 +2569,10 @@ strings:
 - en: CENTER
   in:
   - ripps2files.c
-- en: CHANGE
+- en: CHECK
   in:
   - ripps2files.c
-- en: CHECK
+- en: CHOOSE AN ELF
   in:
   - ripps2files.c
 - en: COPIED
@@ -2645,10 +2793,6 @@ strings:
 - en: ONE FORMATION STAYS IN
   in:
   - ripps2files.c
-- en: OPEN
-  in:
-  - ripps2files.c
-  - ripps2shot.c
 - en: OPL's list of this folder's games
   in:
   - ripps2files.c

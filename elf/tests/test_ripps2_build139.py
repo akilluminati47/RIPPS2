@@ -57,7 +57,7 @@ if '_t("Boot sound On (fast): %s, handed over by BIBLE")' not in st:
 
 # the BIBLE menu
 for want in ('"BIBLE_BACKGROUND", N_("Background"), 3, {"AUTO", "SKY", "BLANK"}', '"LOGO_DISPLAY"', '"BIBLE_GLYPHS"', '"BIBLE_INFO"',
-             '"KEY_READ_WAIT_TIME"', '"VIDEO_MODE"', '"BIBLE_WIDESCREEN"', 'static int blIniSet(const char *path, const char *key, const char *value)',
+             '"KEY_READ_WAIT_TIME"', '"VIDEO_MODE"', '"BIBLE_WIDESCREEN"', 'static int blIniEdit(const char *key, int nth, const char *value, const char *id)',
              '_t("UPDATE BIBLE: SLOT %d HAS AN OLDER ONE")', '_t("SET UP, UPDATE OR RESTORE BIBLE")', 'ripps2EditFile(blSetPath);',
              'snprintf(blSetPath, sizeof(blSetPath), "%sPS2BBL.INI", gBibleHome)'):
     if want not in boot:
@@ -65,9 +65,9 @@ for want in ('"BIBLE_BACKGROUND", N_("Background"), 3, {"AUTO", "SKY", "BLANK"}'
 mg = boot.find('void ripps2BibleManage(void)')
 if 'blBibleMenu(boot, removed);' not in boot[mg:mg + 700] or 'blManageCards(boot, removed);' not in boot[mg:mg + 700]:
     fail.append('Manage opens the BIBLE menu when a card has BIBLE, the card summary otherwise')
-s = boot.find('static int blIniSet(')
+s = boot.find('static int blIniEdit(')
 iniset = boot[s:boot.find('\n}\n', s)]
-if 'memcpy(blOut + o, p, len);' not in iniset or 'blWrite(path, blOut, o) == 0' not in iniset:
+if 'memcpy(blOut + o, p, len);' not in iniset:
     fail.append('a setting changes only its own line; the rest of the file is kept')
 
 # the BIBLE builds RIPPS2 carried before are still BIBLE (older), and the menu offers the update

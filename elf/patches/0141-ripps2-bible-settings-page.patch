@@ -1,0 +1,1208 @@
+diff --git a/include/ripps2.h b/include/ripps2.h
+index b1f6567..f2af125 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -322,6 +322,25 @@ int ripps2VmcReadFile(const char *image, const char *save, const char *file, voi
+ int ripps2VmcExtractFile(const char *image, const char *save, const char *file, const char *dst);
+ int ripps2VmcDeleteSave(const char *image, const char *save);
+ int ripps2PickList(const char *const *items, int count); // ripps2edit.c: a small glass list; -1 = none
++// build 141: a page in the Settings look: a title with its line, label and value rows, the chosen row's tip above the hints
++typedef struct
++{
++    const char *label;       // the row's words
++    const char *value;       // on its right; NULL: none
++    const char *tip;         // what it does; NULL: none
++    const char *confirm;     // the confirm hint's word; NULL: the row only shows
++    int steps;               // Left and Right change it, and confirm is the next value
++    int clears;              // Square clears it
++    const unsigned int *sky; // three colours beside the value, 0xRRGGBB, as they are; NULL: none
++} ripps2_page_row_t;
++#define RIPPS2_PAGE_PREV   (-1)
++#define RIPPS2_PAGE_CHOOSE 0
++#define RIPPS2_PAGE_NEXT   1
++#define RIPPS2_PAGE_CLEAR  2
++int ripps2Page(const char *title, const ripps2_page_row_t *rows, int count, int *cursor, int *action); // the row, or -1 for back
++int ripps2PageList(const char *const *items, int count, int start); // a glass list over the page just drawn; -1 = none
++int ripps2FilesPick(const char *title, char *out, int size, int *bdmType); // ripps2files.c: the browser picks an ELF; 1 when one was
++void ripps2ThemeSky(int p, char *out, size_t size); // ripps2ui.c: a Color Theme's sky as RRGGBB,RRGGBB,RRGGBB
+ int ripps2FilesDriveUp(const char *root); // build 123: Memory Files would list this drive ("mass0:/"): worth a look
+ void ripps2CardManager(int slot, const char *image); // ripps2card.c (build 86): memory card 1/2 (slot 0/1), or a card image (slot -1)
+ // ripps2media.c (build 93): Memory Files opens pictures (PNG, JPG) and video (AVI, with libsmslite)
+diff --git a/src/ripps2boot.c b/src/ripps2boot.c
+index 5b025f9..13533a6 100644
+--- a/src/ripps2boot.c
++++ b/src/ripps2boot.c
+@@ -65,6 +65,8 @@
+ #include "include/hddsupport.h" // hddCheck: BIBLE on the HDD (build 73)
+ #include "include/ripps2tr.h" // build 104: _t, RIPPS2's words in the chosen language
+ #include "include/ripps2diag.h" // build 115: each BIBLE step into DIAG.TXT
++#include "include/ripps2biossnd.h" // build 141: Boot Sound in the BIBLE page
++#include "include/dia.h"         // build 141: the keyboard, for a launch key
+ #include <errno.h>
+ #include <zlib.h> // build 139: crc32, the older BIBLE builds told apart
+ 
+@@ -2076,17 +2078,17 @@ static int blSettingsFile(int boot)
+     return 0;
+ }
+ 
+-// A key's value in blText (trimmed), 1 when the file has it
+-static int blIniGet(const char *key, char *val, int size)
++// The key's nth value in blText (trimmed), 1 when the file has that many (ARG_ lines repeat)
++static int blIniGetN(const char *key, int nth, char *val, int size)
+ {
+     const char *p = blText, *e, *eq, *end;
+     char k[48];
+-    int len, n;
++    int len, n, seen = 0;
+     while (*p) {
+         e = strchr(p, '\n');
+         len = e != NULL ? (int)(e - p) : (int)strlen(p);
+         blKey(p, len, k, sizeof(k));
+-        if (k[0] && !strcasecmp(k, key) && (eq = memchr(p, '=', len)) != NULL) {
++        if (k[0] && !strcasecmp(k, key) && (eq = memchr(p, '=', len)) != NULL && seen++ == nth) {
+             eq++;
+             end = p + len;
+             while (eq < end && (*eq == ' ' || *eq == '\t'))
+@@ -2104,6 +2106,11 @@ static int blIniGet(const char *key, char *val, int size)
+     return 0;
+ }
+ 
++static int blIniGet(const char *key, char *val, int size)
++{
++    return blIniGetN(key, 0, val, size);
++}
++
+ // Which of a setting's values the file holds: its index, or -1 for one RIPPS2 does not offer (shown as it is)
+ static int blSetIndex(const blSet_t *s, const char *val)
+ {
+@@ -2116,87 +2123,604 @@ static int blSetIndex(const blSet_t *s, const char *val)
+     return -1;
+ }
+ 
+-// key = value in the file: that key's line replaced, or a line added at the end; 1 when it was written
+-static int blIniSet(const char *path, const char *key, const char *value)
++// ---- the file, in memory (build 141) ----
++//
++// The page changes blText, and the file is written once when the page closes: stepping through a row's values never waits on
++// the card, and a card is not written for each press.
++static int blDirty = 0;
++
++// The line's key belongs to this button: NAME_<id>, LK_<id>_E<n>, ARG_<id>_E<n>
++static int blLineIsButton(const char *k, const char *id)
+ {
+-    const char *p, *e, *nl;
+-    char k[48];
+-    int len, o = 0, done = 0;
+-    if (blRead(path) < 0)
++    const char *u = strchr(k, '_');
++    int n = strlen(id);
++    if (u == NULL || (strncasecmp(k, "LK_", 3) && strncasecmp(k, "ARG_", 4) && strncasecmp(k, "NAME_", 5)))
++        return 0;
++    return !strncasecmp(u + 1, id, n) && (u[1 + n] == '\0' || u[1 + n] == '_');
++}
++
++// key = value in blText: the key's nth line replaced, or taken out when value is NULL; every other line and comment stays. A new
++// line goes after the button's own lines (id), else at the end; 1 when it fits
++static int blIniEdit(const char *key, int nth, const char *value, const char *id)
++{
++    const char *p, *e, *nl = strstr(blText, "\r\n") != NULL ? "\r\n" : "\n";
++    char k[48], line[384];
++    int len, lineLen = 0, o = 0, seen = 0, done = 0, after = -1;
++
++    if (value != NULL)
++        lineLen = snprintf(line, sizeof(line), "%s = %s%s", key, value, nl);
++    if (lineLen >= (int)sizeof(line))
+         return 0;
+-    nl = strstr(blText, "\r\n") != NULL ? "\r\n" : "\n";
+-    for (p = blText; *p;) {
++    for (p = blText; *p; p += len) {
+         e = strchr(p, '\n');
+         len = e != NULL ? (int)(e - p) + 1 : (int)strlen(p);
+         blKey(p, len, k, sizeof(k));
+-        if (!done && k[0] && !strcasecmp(k, key) && memchr(p, '=', len) != NULL) {
+-            o += snprintf(blOut + o, sizeof(blOut) - o, "%s = %s%s", key, value, e != NULL ? nl : "");
++        if (o + len + lineLen >= BL_MAX)
++            return 0;
++        if (!done && k[0] && !strcasecmp(k, key) && memchr(p, '=', len) != NULL && seen++ == nth) {
+             done = 1;
+-        } else if (o + len < (int)sizeof(blOut)) {
+-            memcpy(blOut + o, p, len);
+-            o += len;
++            if (value != NULL) {
++                memcpy(blOut + o, line, lineLen);
++                o += lineLen;
++            }
++            continue;
+         }
+-        if (o >= (int)sizeof(blOut) - 64)
+-            return 0;
+-        p += len;
++        memcpy(blOut + o, p, len);
++        o += len;
++        if (id != NULL && blLineIsButton(k, id))
++            after = o;
+     }
++    if (!done && value == NULL)
++        return 1; // nothing to take out
+     if (!done) {
+-        if (o > 0 && blOut[o - 1] != '\n')
+-            o += snprintf(blOut + o, sizeof(blOut) - o, "%s", nl);
+-        o += snprintf(blOut + o, sizeof(blOut) - o, "%s = %s%s", key, value, nl);
++        if (after < 0)
++            after = o;
++        if (after == o && o > 0 && blOut[o - 1] != '\n') {
++            o += sprintf(blOut + o, "%s", nl);
++            after = o;
++        }
++        memmove(blOut + after + lineLen, blOut + after, o - after);
++        memcpy(blOut + after, line, lineLen);
++        o += lineLen;
+     }
+-    if (o >= (int)sizeof(blOut))
++    if (o >= BL_MAX)
+         return 0;
+-    ripps2Diag("bible: %s: %s = %s", path, key, value);
+-    return blWrite(path, blOut, o) == 0;
++    memcpy(blText, blOut, o);
++    blText[o] = '\0';
++    blDirty = 1;
++    ripps2Diag("bible: %s: %s = %s", blSetPath, key, value != NULL ? value : "(out)");
++    return 1;
++}
++
++// mc0:/SYS-CONF/PS2BBL.TMP beside the file
++static int blTmpPath(char *out, int size)
++{
++    const char *dot = strrchr(blSetPath, '.');
++    if (dot == NULL || strncmp(blSetPath, "mc", 2))
++        return 0;
++    return snprintf(out, size, "%.*s.TMP", (int)(dot - blSetPath), blSetPath) < size;
++}
++
++// A power cut between taking the old file out and naming the new one left only the temporary one: it is the file
++static void blIniRecover(void)
++{
++    char tmp[104];
++    struct stat st;
++    if (!blTmpPath(tmp, sizeof(tmp)) || stat(tmp, &st) != 0)
++        return;
++    if (stat(blSetPath, &st) == 0)
++        remove(tmp);
++    else if (blMcRename(blSetPath[2] - '0', tmp + 5, strrchr(blSetPath, '/') + 1))
++        ripps2Diag("bible: %s came back from its temporary copy", blSetPath);
++}
++
++// The spec's safe write: a temporary file, read back whole, then it takes the old one's name, so a pulled card leaves BIBLE
++// a whole file. 1 when the file holds blText
++static int blIniFlush(void)
++{
++    char tmp[104];
++    int n = strlen(blText), waited = 0, fd, got = 0, ok = 0;
++
++    if (!blDirty)
++        return 1;
++    while (ioWorkPending() && waited++ < 100) // let a settings save or art read finish with the cards first
++        DelayThread(10000);
++    if (!blTmpPath(tmp, sizeof(tmp)))
++        ok = blWrite(blSetPath, blText, n) == 0;
++    else if (blWrite(tmp, blText, n) == 0) {
++        if ((fd = open(tmp, O_RDONLY)) >= 0) {
++            got = read(fd, blOut, sizeof(blOut));
++            close(fd);
++        }
++        if (got == n && !memcmp(blOut, blText, n)) {
++            remove(blSetPath);
++            ok = blMcRename(blSetPath[2] - '0', tmp + 5, strrchr(blSetPath, '/') + 1);
++            if (!ok) { // the card would not rename it: written straight
++                ok = blWrite(blSetPath, blText, n) == 0;
++                remove(tmp);
++            }
++        } else
++            remove(tmp);
++    }
++    ripps2Diag("bible: %s %s (%d bytes)", blSetPath, ok ? "saved" : "NOT saved", n);
++    if (ok)
++        blDirty = 0;
++    return ok;
++}
++
++static void blIniFailed(void)
++{
++    char msg[400];
++    guiMsgBoxSound(SFX_ERROR);
++    snprintf(msg, sizeof(msg), _t("BIBLE's settings file (%s) could not be written. Check that the memory card is in and has room, then try again."), blSetPath);
++    guiMsgBox(msg, 0, NULL);
++}
++
++// ---- launch keys (build 141) ----
++//
++// BIBLE's spec: "for each button its name and up to ten paths picked with the Memory Files browser (choose an ELF instead of
++// typing a path), plus ARG_<KEY>_E<n>". BIBLE tries a button's paths in order and starts the first it finds; with a settings file,
++// a button with no lines starts nothing, and a file with no paths at all sends BIBLE to its rescue mode, so the last path stays.
++#define BL_KEYS  17
++#define BL_PATHS 10
++#define BL_ARGS  8
++static const char *const blKeyIds[BL_KEYS] = {"AUTO", "CROSS", "CIRCLE", "SQUARE", "TRIANGLE", "UP", "DOWN", "LEFT", "RIGHT", "L1", "R1", "L2", "R2", "L3", "R3", "START", "SELECT"};
++
++static const struct
++{
++    const char *command, *word;
++} blCommands[] = {
++    {"$OSDSYS", N_("The console's browser")},
++    {"$CDVD", N_("The disc in the tray")},
++    {"$CDVD_NO_PS2LOGO", N_("The disc, without the PS2 logo")},
++    {"$CREDITS", N_("BIBLE's credits")},
++};
++#define BL_COMMANDS ((int)(sizeof(blCommands) / sizeof(blCommands[0])))
++
++// How many paths the whole file has
++static int blPathsInFile(void)
++{
++    const char *p = blText, *e;
++    char k[48];
++    int len, n = 0;
++    while (*p) {
++        const char *eq;
++        e = strchr(p, '\n');
++        len = e != NULL ? (int)(e - p) : (int)strlen(p);
++        blKey(p, len, k, sizeof(k));
++        if (!strncasecmp(k, "LK_", 3) && (eq = memchr(p, '=', len)) != NULL) {
++            eq++;
++            while (eq < p + len && (*eq == ' ' || *eq == '\t' || *eq == '\r'))
++                eq++;
++            n += eq < p + len;
++        }
++        p = e != NULL ? e + 1 : p + len;
++    }
++    return n;
++}
++
++// The card's BIBLE cannot reach this path (its name for the build, or NULL): it moves on to the next
++static const char *blBuildMisses(const char *path)
++{
++    const char *b;
++    if (strncmp(blSetPath, "mc", 2) || (blSetPath[2] != '0' && blSetPath[2] != '1'))
++        return NULL;
++    if ((b = blCards[blSetPath[2] - '0'].bibleBuild) == NULL)
++        return NULL;
++    if (!strncasecmp(path, "mmce", 4))
++        return strcmp(b, "MMCE") ? b : NULL;
++    if (!strncasecmp(path, "mx4sio", 6) || !strncasecmp(path, "massX", 5))
++        return strcmp(b, "MX4SIO") ? b : NULL;
++    if (!strncasecmp(path, "hdd", 3) || !strncasecmp(path, "ata", 3))
++        return b; // a card's BIBLE has neither driver
++    return NULL;
++}
++
++// A path the browser chose, as BIBLE's settings write it; 0 when it has no way to say it
++static int blPickedPath(const char *picked, int bdmType, char *out, int size)
++{
++    if (!strncmp(picked, "pfs0:", 5)) // the HDD's OPL home
++        return gOPLPart[0] != '\0' && snprintf(out, size, "%s:pfs:/%s", gOPLPart, picked[5] == '/' ? picked + 6 : picked + 5) < size;
++    return blPathFor(1, picked, bdmType, out, size);
++}
++
++static int blPathSet(const char *id, int e, const char *path)
++{
++    char key[32], val[256];
++    int i;
++
++    snprintf(key, sizeof(key), "LK_%s_E%d", id, e);
++    if (path == NULL || !path[0]) {
++        if (blIniGet(key, val, sizeof(val)) && val[0] && blPathsInFile() <= 1) {
++            guiMsgBoxSound(SFX_ERROR);
++            guiMsgBox(_t("BIBLE needs at least one path in its settings, or it starts in its rescue mode, so this one stays."), 0, NULL);
++            return 0;
++        }
++        snprintf(key, sizeof(key), "ARG_%s_E%d", id, e);
++        for (i = 0; i < BL_ARGS * 2 && blIniGet(key, val, sizeof(val)); i++)
++            blIniEdit(key, 0, NULL, id);
++        snprintf(key, sizeof(key), "LK_%s_E%d", id, e);
++        return blIniEdit(key, 0, NULL, id);
++    }
++    return blIniEdit(key, 0, path, id);
++}
++
++// One path's arguments: BIBLE hands over one per ARG_ line, in the file's order
++static void blArgsMenu(const char *id, const char *button, int e)
++{
++    static ripps2_page_row_t rows[BL_ARGS];
++    static char labels[BL_ARGS][32], vals[BL_ARGS][128], title[96], where[64];
++    char key[32], text[128];
++    int cursor = 0, n, i, pick, action;
++
++    snprintf(key, sizeof(key), "ARG_%s_E%d", id, e);
++    snprintf(where, sizeof(where), _t("%s, path %d"), button, e);
++    snprintf(title, sizeof(title), _t("Arguments: %s"), where);
++    while (1) {
++        for (n = 0; n < BL_ARGS; n++) {
++            int has = blIniGetN(key, n, vals[n], sizeof(vals[n]));
++            snprintf(labels[n], sizeof(labels[n]), _t("Argument %d"), n + 1);
++            memset(&rows[n], 0, sizeof(rows[n]));
++            rows[n].label = labels[n];
++            rows[n].value = has ? vals[n] : "-";
++            rows[n].tip = _t("BIBLE hands these to the program, in this order.");
++            rows[n].confirm = _t("EDIT");
++            rows[n].clears = has;
++            if (!has) {
++                n++;
++                break; // one empty row to add to
++            }
++        }
++        pick = ripps2Page(title, rows, n, &cursor, &action);
++        if (pick < 0)
++            return;
++        if (action == RIPPS2_PAGE_CLEAR) {
++            if (!blIniEdit(key, pick, NULL, id))
++                blIniFailed();
++            continue;
++        }
++        i = blIniGetN(key, pick, text, sizeof(text));
++        if (!i)
++            text[0] = '\0';
++        if (diaShowKeyb(text, sizeof(text), 0, labels[pick]) && !blIniEdit(key, pick, text[0] ? text : NULL, id))
++            blIniFailed();
++        readPads();
++    }
++}
++
++static void blKeyMenu(const char *id, const char *button)
++{
++    static ripps2_page_row_t rows[BL_PATHS + 1];
++    static char vals[BL_PATHS + 1][256], labels[BL_PATHS][32], tips[BL_PATHS + 1][320], title[64];
++    static const char *const actions[] = {N_("CHOOSE A PROGRAM"), N_("TYPE A PATH"), N_("A BIBLE COMMAND"), N_("ARGUMENTS")};
++    char key[32], text[256], path[256], arg[128];
++    const char *words[BL_COMMANDS];
++    int cursor = 0, e, i, pick, action, a, bdmType, locked = !strcmp(id, "AUTO") && strstr(blText, BL_MARKER) != NULL;
++
++    snprintf(title, sizeof(title), _t("Launch Keys: %s"), button);
++    while (1) {
++        snprintf(key, sizeof(key), "NAME_%s", id);
++        blIniGet(key, vals[0], sizeof(vals[0]));
++        memset(rows, 0, sizeof(rows));
++        rows[0].label = _t("Name");
++        rows[0].value = vals[0][0] ? vals[0] : "-";
++        rows[0].tip = locked ? _t("BOOT LOCK holds this line. Turn BOOT LOCK off to change it.") : _t("What BIBLE's splash calls this button, with Splash on Logo and Names.");
++        rows[0].confirm = locked ? NULL : _t("EDIT");
++        rows[0].clears = !locked && vals[0][0];
++        for (e = 1; e <= BL_PATHS; e++) {
++            const char *miss;
++            snprintf(key, sizeof(key), "LK_%s_E%d", id, e);
++            blIniGet(key, vals[e], sizeof(vals[e]));
++            snprintf(labels[e - 1], sizeof(labels[e - 1]), _t("Path %d"), e);
++            rows[e].label = labels[e - 1];
++            rows[e].value = vals[e][0] ? vals[e] : "-";
++            rows[e].confirm = locked && e == 1 ? NULL : _t("CHANGE");
++            rows[e].clears = !(locked && e == 1) && vals[e][0];
++            rows[e].tip = tips[e];
++            snprintf(key, sizeof(key), "ARG_%s_E%d", id, e);
++            if (locked && e == 1)
++                snprintf(tips[e], sizeof(tips[e]), "%s", _t("BOOT LOCK holds this line. Turn BOOT LOCK off to change it."));
++            else if (vals[e][0] && (miss = blBuildMisses(vals[e])) != NULL)
++                snprintf(tips[e], sizeof(tips[e]), _t("This BIBLE (%s build) does not read this drive, so it moves on to the next path."), miss);
++            else if (vals[e][0] && blIniGet(key, arg, sizeof(arg)))
++                snprintf(tips[e], sizeof(tips[e]), _t("Arguments: %s"), arg);
++            else {
++                const char *word = NULL;
++                for (i = 0; i < BL_COMMANDS; i++)
++                    if (!strcasecmp(vals[e], blCommands[i].command))
++                        word = blCommands[i].word;
++                snprintf(tips[e], sizeof(tips[e]), "%s", word != NULL ? _t(word) : _t("Choose a program from your drives, type a path, or pick one of BIBLE's commands. BIBLE tries the paths in order and starts the first it finds."));
++            }
++        }
++        pick = ripps2Page(title, rows, BL_PATHS + 1, &cursor, &action);
++        if (pick < 0)
++            return;
++        if (pick == 0) {
++            snprintf(key, sizeof(key), "NAME_%s", id);
++            if (action == RIPPS2_PAGE_CLEAR) {
++                if (!blIniEdit(key, 0, NULL, id))
++                    blIniFailed();
++            } else {
++                snprintf(text, sizeof(text), "%s", vals[0]);
++                if (diaShowKeyb(text, sizeof(text), 0, _t("Name")) && !blIniEdit(key, 0, text[0] ? text : NULL, id))
++                    blIniFailed();
++                readPads();
++            }
++            continue;
++        }
++        if (action == RIPPS2_PAGE_CLEAR) {
++            blPathSet(id, pick, NULL);
++            continue;
++        }
++        if ((a = ripps2PageList(actions, vals[pick][0] ? 4 : 3, 0)) == 0) {
++            if (ripps2FilesPick(_t("CHOOSE A PROGRAM"), text, sizeof(text), &bdmType)) {
++                if (blPickedPath(text, bdmType, path, sizeof(path))) {
++                    if (!blPathSet(id, pick, path))
++                        blIniFailed();
++                } else {
++                    guiMsgBoxSound(SFX_ERROR);
++                    guiMsgBox(_t("BIBLE has no way to reach that drive. Choose a program on another one, or type the path."), 0, NULL);
++                }
++            }
++        } else if (a == 1) {
++            snprintf(text, sizeof(text), "%s", vals[pick]);
++            if (diaShowKeyb(text, sizeof(text), 0, labels[pick - 1]))
++                blPathSet(id, pick, text);
++            readPads();
++        } else if (a == 2) {
++            for (i = 0; i < BL_COMMANDS; i++)
++                words[i] = blCommands[i].word;
++            if ((i = ripps2PageList(words, BL_COMMANDS, 0)) >= 0)
++                blPathSet(id, pick, blCommands[i].command);
++        } else if (a == 3)
++            blArgsMenu(id, button, pick);
++    }
++}
++
++// How many of the buttons start something
++static int blKeysSet(void)
++{
++    char key[32], val[256];
++    int k, e, n = 0;
++    for (k = 0; k < BL_KEYS; k++)
++        for (e = 1; e <= BL_PATHS; e++) {
++            snprintf(key, sizeof(key), "LK_%s_E%d", blKeyIds[k], e);
++            if (blIniGet(key, val, sizeof(val)) && val[0]) {
++                n++;
++                break;
++            }
++        }
++    return n;
++}
++
++static void blKeysMenu(void)
++{
++    static ripps2_page_row_t rows[BL_KEYS];
++    static char labels[BL_KEYS][48], vals[BL_KEYS][272];
++    char key[32], val[256], first[256];
++    int cursor = 0, k, e, n, pick, action;
++
++    for (k = 0; k < BL_KEYS; k++)
++        snprintf(labels[k], sizeof(labels[k]), "%s", k == 0 ? _t("Auto (no button held)") : ripps2HintCaseText(blKeyIds[k], val, sizeof(val)));
++    while (1) {
++        for (k = 0; k < BL_KEYS; k++) {
++            first[0] = '\0';
++            for (n = 0, e = 1; e <= BL_PATHS; e++) {
++                snprintf(key, sizeof(key), "LK_%s_E%d", blKeyIds[k], e);
++                if (blIniGet(key, val, sizeof(val)) && val[0]) {
++                    if (!n++)
++                        snprintf(first, sizeof(first), "%s", val);
++                }
++            }
++            if (n > 1)
++                snprintf(vals[k], sizeof(vals[k]), "%s  +%d", first, n - 1);
++            else
++                snprintf(vals[k], sizeof(vals[k]), "%s", n ? first : "-");
++            memset(&rows[k], 0, sizeof(rows[k]));
++            rows[k].label = labels[k];
++            rows[k].value = vals[k];
++            rows[k].tip = k == 0 ? _t("What BIBLE starts when no button is held at power on.") :
++                                   _t("What BIBLE starts when this button is held at power on. L2 + R2 held at power on shows BIBLE's own page of them all.");
++            rows[k].confirm = _t("OPEN");
++        }
++        pick = ripps2Page(_t("Launch Keys"), rows, BL_KEYS, &cursor, &action);
++        if (pick < 0) {
++            if (!blIniFlush())
++                blIniFailed();
++            return;
++        }
++        blKeyMenu(blKeyIds[pick], labels[pick]);
++    }
+ }
+ 
++// ---- the page (build 139's list, a Settings page since build 141) ----
++
+ static void blManageCards(int boot, int removed);
+ 
++static const struct
++{
++    const char *key, *tip;
++} blTips[] = {
++    {"BIBLE_BACKGROUND", N_("What stands behind BIBLE's logo. Auto shows the sky when Sky Color is set or RIPPS2's settings are on a memory card, and black when they are not.")},
++    {"LOGO_DISPLAY", N_("What BIBLE shows while it waits for a button: nothing, its logo, or its logo with the name of what each button starts.")},
++    {"BIBLE_GLYPHS", N_("The button pictures under the logo: none, the four face buttons, or all sixteen.")},
++    {"BIBLE_INFO", N_("Shows the countdown, the clock and the console's details on the splash.")},
++    {"KEY_READ_WAIT_TIME", N_("How long BIBLE waits for a button before the Auto path. At 0 ms a button held from power on still works. A boot sound beside BIBLE is read first: about 2 s at 0 ms.")},
++    {"DISC_STOP", N_("On stops the disc at a launch and waits for the drive to answer. Off skips that wait, about 3 s in the lab, and a disc in the tray keeps spinning.")},
++    {"EJECT_TRAY", N_("When a button starts a disc and the tray is empty, On opens the tray for you.")},
++    {"OSDHISTORY_READ", N_("BIBLE keeps this key from PS2BBL, but nothing in this build acts on it, so it changes nothing yet.")},
++    {"APP_GAMEID", N_("On shows a program's game ID on screen as it starts, for RetroGEM video mods. It is up to 11 characters from the file name.")},
++    {"CDROM_DISABLE_GAMEID", N_("On shows a disc's game ID on screen as it starts, for RetroGEM video mods.")},
++    {"VIDEO_MODE", N_("The signal BIBLE starts in. Auto uses RIPPS2's Video Mode when its settings are on a memory card, and the console's own mode when they are not.")},
++    {"BIBLE_WIDESCREEN", N_("The shape of BIBLE's splash. Auto follows RIPPS2's Widescreen when its settings are on a memory card.")},
++};
++
++static const char *blTipOf(const char *key)
++{
++    int i;
++    for (i = 0; i < (int)(sizeof(blTips) / sizeof(blTips[0])); i++)
++        if (!strcmp(blTips[i].key, key))
++            return _t(blTips[i].tip);
++    return NULL;
++}
++
++// Sky Color: -1 the Color Theme's, a Color Theme's number, or -2 colours set by hand (in val)
++static int blSkyState(char *val, int size)
++{
++    char text[32];
++    int p;
++    if (!blIniGet("BIBLE_COLOR", val, size) || !val[0])
++        return -1;
++    for (p = 0; p < RIPPS2_PALETTE_COUNT; p++) {
++        ripps2ThemeSky(p, text, sizeof(text));
++        if (!strcasecmp(text, val))
++            return p;
++    }
++    return -2;
++}
++
++enum { BLR_SETUP = -1, BLR_SKY = -2, BLR_BOOT = -3, BLR_KEYS = -4, BLR_FILE = -5 }; // 0 and up: a row of blSets
++
++#define BL_ROWS (BL_SETS + 5)
++
++// Boot Sound changed here: as Audio does when it closes
++static void blBootSoundClose(int changed)
++{
++    if (!changed)
++        return;
++    if (gEnableBootSND == 2 && !ripps2BootSoundFast())
++        gEnableBootSND = 1;
++    sfxBibleCopyDrop();
++    ripps2SaveSettingsInBackground();
++}
++
+ static void blBibleMenu(int boot, int removed)
+ {
+-    static char items[BL_SETS + 2][128];
+-    const char *list[BL_SETS + 2];
+-    char val[48], msg[400];
+-    int n, i, j, pick, have, older = -1, port;
++    static ripps2_page_row_t rows[BL_ROWS];
++    static int kind[BL_ROWS];
++    static char own[BL_ROWS][160], setup[200];
++    static unsigned int sky[3];
++    static const char *const bootShown[3] = {N_("Off"), N_("On"), N_("On (fast)")};
++    char val[160], msg[400];
++    int n, i, j, k, pick, action, have, older = -1, port, cursor = 0, failed = 0, bootChanged = 0;
+ 
+     for (port = 0; port < 2; port++)
+         if (blCards[port].present && blCards[port].bible && (blCards[port].bibleBuild == NULL || blCards[port].bibleOld)) {
+             older = port; // a BIBLE that is not the one RIPPS2 carries (an earlier build)
+             break;
+         }
++    blDirty = 0;
++    have = blSettingsFile(boot);
++    if (have) {
++        blIniRecover();
++        have = blRead(blSetPath) >= 0;
++    }
+     while (1) {
+-        have = blSettingsFile(boot) && blRead(blSetPath) >= 0;
+         n = 0;
++        memset(rows, 0, sizeof(rows));
+         if (older >= 0)
+-            snprintf(items[n], sizeof(items[n]), _t("UPDATE BIBLE: SLOT %d HAS AN OLDER ONE"), older);
++            snprintf(val, sizeof(val), _t("UPDATE BIBLE: SLOT %d HAS AN OLDER ONE"), older);
+         else
+-            snprintf(items[n], sizeof(items[n]), "%s", _t("SET UP, UPDATE OR RESTORE BIBLE"));
+-        list[n] = items[n];
++            snprintf(val, sizeof(val), "%s", _t("SET UP, UPDATE OR RESTORE BIBLE"));
++        snprintf(setup, sizeof(setup), "%s", ripps2HintCaseText(val, msg, sizeof(msg)));
++        kind[n] = BLR_SETUP;
++        rows[n].label = setup;
++        rows[n].tip = _t("Binds the BIBLE RIPPS2 carries to a memory card, writes it over the one there, or puts back what it replaced.");
++        rows[n].confirm = _t("OPEN");
+         n++;
+         for (i = 0; i < BL_SETS; i++) {
+             const blSet_t *s = &blSets[i];
+             const char *shown = "-";
+             if (have) {
+-                if (blIniGet(s->key, val, sizeof(val)))
+-                    shown = (j = blSetIndex(s, val)) >= 0 ? _t(s->shown[j]) : val;
+-                else if (s->def >= 0)
++                if (blIniGet(s->key, val, sizeof(val))) {
++                    if ((j = blSetIndex(s, val)) >= 0)
++                        shown = _t(s->shown[j]);
++                    else {
++                        snprintf(own[n], sizeof(own[n]), "%s", val);
++                        shown = own[n];
++                    }
++                } else if (s->def >= 0)
+                     shown = _t(s->shown[s->def]);
+             }
+-            snprintf(items[n], sizeof(items[n]), "%s: %s", _t(s->label), shown);
+-            list[n] = items[n];
++            kind[n] = i;
++            rows[n].label = _t(s->label);
++            rows[n].value = shown;
++            rows[n].tip = blTipOf(s->key);
++            rows[n].confirm = _t("NEXT VALUE");
++            rows[n].steps = 1;
+             n++;
++            if (!strcmp(s->key, "BIBLE_BACKGROUND")) { // Sky Color beside it
++                int state = have ? blSkyState(val, sizeof(val)) : -1;
++                char text[32];
++                if (state == -1) {
++                    ripps2BibleSky(text, sizeof(text));
++                    snprintf(own[n], sizeof(own[n]), "%s", _t("Follow Color Theme"));
++                } else if (state >= 0) {
++                    ripps2ThemeSky(state, text, sizeof(text));
++                    snprintf(own[n], sizeof(own[n]), "%s", _t(ripps2PaletteName(state)));
++                } else {
++                    snprintf(text, sizeof(text), "%s", val);
++                    snprintf(own[n], sizeof(own[n]), "%s", val);
++                }
++                kind[n] = BLR_SKY;
++                rows[n].label = _t("Sky Color");
++                rows[n].value = own[n];
++                rows[n].tip = _t("The sky on BIBLE's splash. Follow Color Theme uses the sky RIPPS2 saves with its settings. A color named here stays, whatever the theme. Background on Black hides it.");
++                rows[n].confirm = _t("NEXT VALUE");
++                rows[n].steps = 1;
++                rows[n].sky = sscanf(text, "%6x,%6x,%6x", &sky[0], &sky[1], &sky[2]) == 3 ? sky : NULL;
++                n++;
++            }
++            if (!strcmp(s->key, "KEY_READ_WAIT_TIME")) { // Audio's Boot Sound, here because the copy lives with BIBLE
++                kind[n] = BLR_BOOT;
++                rows[n].label = _t("Boot Sound");
++                rows[n].value = _t(bootShown[gEnableBootSND >= 0 && gEnableBootSND <= 2 ? gEnableBootSND : 1]);
++                rows[n].tip = _t("The same setting as in Audio. On (fast) keeps a copy on the memory card, so the sound starts with the first frame. Off is the fastest boot.");
++                rows[n].confirm = _t("NEXT VALUE");
++                rows[n].steps = 1;
++                n++;
++            }
+         }
+-        snprintf(items[n], sizeof(items[n]), "%s", _t("EDIT BIBLE'S SETTINGS FILE"));
+-        list[n] = items[n];
++        kind[n] = BLR_KEYS;
++        snprintf(own[n], sizeof(own[n]), "%d / %d", have ? blKeysSet() : 0, BL_KEYS);
++        rows[n].label = _t("Launch Keys");
++        rows[n].value = own[n];
++        rows[n].tip = _t("What each button starts at power on, each with up to ten paths chosen from your drives.");
++        rows[n].confirm = _t("OPEN");
++        n++;
++        kind[n] = BLR_FILE;
++        snprintf(own[n], sizeof(own[n]), "%s", ripps2HintCaseText(_t("EDIT BIBLE'S SETTINGS FILE"), msg, sizeof(msg)));
++        rows[n].label = own[n];
++        rows[n].tip = _t("Opens the file itself in the text editor, comments and all. Every change here keeps the other lines as they are.");
++        rows[n].confirm = _t("OPEN");
+         n++;
+ 
+-        if ((pick = ripps2PickList(list, n)) < 0)
+-            return;
+-        if (pick == 0) {
+-            blManageCards(boot, removed);
++        if ((pick = ripps2Page(_t("BIBLE's Settings"), rows, n, &cursor, &action)) < 0) {
++            if (!blIniFlush() && !failed) { // once more with the card back in; a second back leaves it
++                blIniFailed();
++                failed = 1;
++                continue;
++            }
++            blBootSoundClose(bootChanged);
++            readPads();
+             return;
+         }
++        k = kind[pick];
++        if (k == BLR_SETUP) {
++            if (!blIniFlush())
++                blIniFailed();
++            else {
++                blBootSoundClose(bootChanged);
++                blManageCards(boot, removed);
++                return;
++            }
++            continue;
++        }
++        if (k == BLR_BOOT) {
++            gEnableBootSND = (gEnableBootSND + action + 3) % 3;
++            bootChanged = 1;
++            continue;
++        }
+         if (!have) {
+             guiMsgBoxSound(SFX_ERROR);
+             snprintf(msg, sizeof(msg), _t("BIBLE's settings file (%s) was not found. SET UP, UPDATE OR RESTORE BIBLE writes one."),
+@@ -2204,22 +2728,39 @@ static void blBibleMenu(int boot, int removed)
+             guiMsgBox(msg, 0, NULL);
+             continue;
+         }
+-        if (pick == n - 1) {
+-            ripps2EditFile(blSetPath);
++        if (k == BLR_KEYS) {
++            blKeysMenu();
+             continue;
+         }
+-        {
+-            const blSet_t *s = &blSets[pick - 1];
+-            const char *vals[7];
+-            for (j = 0; j < s->count; j++)
+-                vals[j] = s->shown[j]; // the list hands in its English
+-            if ((j = ripps2PickList(vals, s->count)) < 0)
++        if (k == BLR_FILE) {
++            if (!blIniFlush()) {
++                blIniFailed();
+                 continue;
+-            if (!blIniSet(blSetPath, s->key, s->values[j])) {
+-                guiMsgBoxSound(SFX_ERROR);
+-                snprintf(msg, sizeof(msg), _t("BIBLE's settings file (%s) could not be written. Check that the memory card is in and has room, then try again."), blSetPath);
+-                guiMsgBox(msg, 0, NULL);
+             }
++            ripps2EditFile(blSetPath);
++            have = blRead(blSetPath) >= 0;
++            continue;
++        }
++        if (k == BLR_SKY) {
++            char text[32];
++            int state = blSkyState(val, sizeof(val));
++            state = state == -2 ? -1 : state + action;
++            if (state < -1)
++                state = RIPPS2_PALETTE_COUNT - 1;
++            if (state >= RIPPS2_PALETTE_COUNT)
++                state = -1;
++            if (state >= 0)
++                ripps2ThemeSky(state, text, sizeof(text));
++            if (!blIniEdit("BIBLE_COLOR", 0, state >= 0 ? text : NULL, NULL))
++                blIniFailed();
++            continue;
++        }
++        {
++            const blSet_t *s = &blSets[k];
++            j = blIniGet(s->key, val, sizeof(val)) ? blSetIndex(s, val) : s->def;
++            j = j < 0 ? (action > 0 ? 0 : s->count - 1) : (j + action + s->count) % s->count;
++            if (!blIniEdit(s->key, 0, s->values[j], NULL))
++                blIniFailed();
+         }
+     }
+ }
+diff --git a/src/ripps2edit.c b/src/ripps2edit.c
+index e707566..5b43258 100644
+--- a/src/ripps2edit.c
++++ b/src/ripps2edit.c
+@@ -85,10 +85,10 @@ static void edFrameStart(const char *title, const char *right)
+ // The page a menu opens over (the editor, SET METADATA); NULL = the bare background
+ static void (*edBehind)(void) = NULL;
+ 
+-static int edMenu(const char *const *items, int count)
++static int edMenuFrom(const char *const *items, int count, int start)
+ {
+     // a small glass list over the page, which stays in view behind it, dimmed; returns the choice or -1
+-    int sel = 0, i;
++    int sel = start >= 0 && start < count ? start : 0, i;
+     while (1) {
+         readPads();
+         rmStartFrame();
+@@ -145,6 +145,11 @@ static int edMenu(const char *const *items, int count)
+     }
+ }
+ 
++static int edMenu(const char *const *items, int count)
++{
++    return edMenuFrom(items, count, 0);
++}
++
+ // A list to pick from (installers and the like): the choice, or -1
+ int ripps2PickList(const char *const *items, int count)
+ {
+@@ -743,3 +748,154 @@ int ripps2EditMetadata(config_set_t *config, const char *gameName, int canRename
+     readPads();
+     return 0;
+ }
++
++/* ---- a page in the Settings look (build 141) ----
++
++   The user, 11/04: "the bible manage menu should be like the update we did for the rename matching the rest of the settings
++   layouts, this enhances it and allows tooltips to display". The same title, line, faces and hint row as Set Metadata (Rename),
++   label on the left, value on the right, the chosen row's tip in the band above the hints. The caller keeps the cursor, so
++   a change never sends it back to the top. */
++#define PG_Y 52
++
++static struct
++{
++    const char *title;
++    const ripps2_page_row_t *rows;
++    int count, cursor;
++} pgView;
++static int pgTop = 0;
++
++static u64 pgRaw(unsigned int c) // as it is: what BIBLE will draw, not turned by the Color Theme
++{
++    return (u64)((c >> 16) & 0xFF) | ((u64)((c >> 8) & 0xFF) << 8) | ((u64)(c & 0xFF) << 16) | ((u64)0x80 << 24);
++}
++
++static void pgDraw(void)
++{
++    const ripps2_page_row_t *cur = &pgView.rows[pgView.cursor];
++    int hintY = gTheme->usedHeight - 32, tipY = hintY - MD_TIP_H, room = tipY - PG_Y - 2, rowH = room / pgView.count, visible, i, hw = 0, hx;
++
++    if (rowH > 26)
++        rowH = 26;
++    if (rowH < 19)
++        rowH = 19;
++    visible = room / rowH;
++    if (pgView.cursor < pgTop)
++        pgTop = pgView.cursor;
++    if (pgView.cursor >= pgTop + visible)
++        pgTop = pgView.cursor - visible + 1;
++    if (pgTop > pgView.count - visible)
++        pgTop = pgView.count - visible;
++    if (pgTop < 0)
++        pgTop = 0;
++
++    guiDrawBGPlasma();
++    fntRenderString(RIPPS2_DIA_FONT, 20, 16, ALIGN_NONE, 0, 0, pgView.title, gTheme->selTextColor);
++    rmDrawLine(20, 46, 620, 46, gColWhite);
++
++    for (i = 0; i < visible && pgTop + i < pgView.count; i++) {
++        const ripps2_page_row_t *r = &pgView.rows[pgTop + i];
++        int on = pgTop + i == pgView.cursor, y = PG_Y + i * rowH, cy = y + rowH / 2, lx = ED_X + 4, lw = 0, vRight = ED_RIGHT;
++        if (on) {
++            rmDrawRect(ED_X - 6, y, ED_RIGHT - ED_X + 12, rowH - 1, ED_PRIM(0x1E, 0x3C, 0x96, 0x58));
++            rmDrawRect(ED_X - 6, y, 3, rowH - 1, ED_PRIM(0x6A, 0x9A, 0xFF, 0x80));
++        }
++        if (r->value != NULL) {
++            lw = rmUnScaleX(fntCalcDimensions(RIPPS2_DIA_FONT, r->label));
++            if (lw > 300)
++                lw = 300;
++        } else
++            lw = ED_RIGHT - lx;
++        fntRenderStringFit(RIPPS2_DIA_FONT, lx, cy, ALIGN_VCENTER, lw, r->label, on ? ED_LIT : ED_SOFT, on);
++        if (r->sky != NULL) { // the sky, as BIBLE draws it: top to horizon, horizon to floor
++            int sw = 44, sh = rowH - 6, sx = ED_RIGHT - sw, sy = y + 2, hz = sy + sh * 290 / 480;
++            rmDrawQuadGouraud(sx, sy, pgRaw(r->sky[0]), sx + sw, sy, pgRaw(r->sky[0]), sx, hz, pgRaw(r->sky[1]), sx + sw, hz, pgRaw(r->sky[1]));
++            rmDrawQuadGouraud(sx, hz, pgRaw(r->sky[1]), sx + sw, hz, pgRaw(r->sky[1]), sx, sy + sh, pgRaw(r->sky[2]), sx + sw, sy + sh, pgRaw(r->sky[2]));
++            vRight = sx - 8;
++        }
++        if (r->value != NULL) {
++            int vw = rmUnScaleX(fntCalcDimensions(RIPPS2_DIA_FONT, r->value)), vRoom = vRight - (lx + lw + 16);
++            int vx = vw > vRoom ? vRight - vRoom : vRight - vw;
++            fntRenderStringFit(RIPPS2_DIA_FONT, vx, cy, ALIGN_VCENTER, vRoom, r->value, on ? ED_LIT : ED_SOFT, on);
++        }
++    }
++    if (pgView.count > visible) { // where you are on a long page
++        int h = visible * rowH, bar = h * visible / pgView.count;
++        rmDrawRect(ED_RIGHT + 10, PG_Y + h * pgTop / pgView.count, 2, bar < 8 ? 8 : bar, ED_PRIM(0x6A, 0x9A, 0xFF, 0x60));
++    }
++    rmDrawLine(20, tipY, 620, tipY, ED_PRIM(0x4A, 0x72, 0xDC, 0x40));
++    if (cur->tip != NULL)
++        mdTip(cur->tip, ED_X + 4, tipY + 12, ED_RIGHT - ED_X - 8);
++
++    if (cur->confirm != NULL)
++        hw += 24 + ripps2HintWidth(cur->confirm) + 18;
++    if (cur->clears)
++        hw += 24 + ripps2HintWidth(_t("CLEAR")) + 18;
++    hw += 24 + ripps2HintWidth(_t("BACK"));
++    hx = (640 - hw) / 2;
++    if (cur->confirm != NULL)
++        edHint(gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON, cur->confirm, &hx, hintY + 10);
++    if (cur->clears)
++        edHint(SQUARE_ICON, _t("CLEAR"), &hx, hintY + 10);
++    edHint(gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON, _t("BACK"), &hx, hintY + 10);
++}
++
++int ripps2Page(const char *title, const ripps2_page_row_t *rows, int count, int *cursor, int *action)
++{
++    int backKey = gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE, c = *cursor;
++
++    if (c >= count)
++        c = count - 1;
++    if (c < 0)
++        c = 0;
++    *action = RIPPS2_PAGE_CHOOSE;
++    pgView.title = title;
++    pgView.rows = rows;
++    pgView.count = count;
++    while (1) {
++        const ripps2_page_row_t *r = &rows[c];
++        readPads();
++        pgView.cursor = c;
++        rmStartFrame();
++        pgDraw();
++        rmEndFrame();
++        if (getKey(KEY_UP)) { // round from the first to the last, as Settings does
++            c = c > 0 ? c - 1 : count - 1;
++            sfxPlay(SFX_CURSOR);
++        } else if (getKey(KEY_DOWN)) {
++            c = c < count - 1 ? c + 1 : 0;
++            sfxPlay(SFX_CURSOR);
++        } else if (r->steps && getKey(KEY_LEFT)) {
++            sfxPlay(SFX_CURSOR);
++            *action = RIPPS2_PAGE_PREV;
++            break;
++        } else if (r->steps && getKey(KEY_RIGHT)) {
++            sfxPlay(SFX_CURSOR);
++            *action = RIPPS2_PAGE_NEXT;
++            break;
++        } else if (r->confirm != NULL && getKeyOn(gSelectButton)) {
++            sfxPlay(r->steps ? SFX_CURSOR : SFX_CONFIRM);
++            *action = r->steps ? RIPPS2_PAGE_NEXT : RIPPS2_PAGE_CHOOSE;
++            break;
++        } else if (r->clears && getKeyOn(KEY_SQUARE)) {
++            sfxPlay(SFX_CANCEL);
++            *action = RIPPS2_PAGE_CLEAR;
++            break;
++        } else if (getKeyOn(backKey)) {
++            sfxPlay(SFX_CANCEL);
++            *cursor = c;
++            return -1;
++        }
++    }
++    *cursor = c;
++    return c;
++}
++
++int ripps2PageList(const char *const *items, int count, int start)
++{
++    int r;
++    edBehind = pgDraw;
++    r = edMenuFrom(items, count, start);
++    edBehind = NULL;
++    return r;
++}
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index ca64881..c3ab8e8 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -111,6 +111,10 @@ static clock_t fbRescanAt = 0;
+ static volatile int fbDrivesUp = 0; // START DRIVES has loaded every drive's driver (whatever Storage's start modes)
+ static volatile int fbDrivesDone = 0; // ...and has just finished: read the drive list again
+ static int fbMmceSlot[2] = {0, 0};      // START DRIVES found an MMCE in that slot (its ping answered)
++// build 141: the browser choosing a program for someone (ripps2FilesPick): 1 chosen, -1 gone back
++static int fbPicking = 0, fbPickDone = 0;
++static const char *fbPickTitle = NULL;
++static char fbPicked[256];
+ 
+ // what happened last, shown top right for a moment
+ static char fbToast[64];
+@@ -3043,6 +3047,76 @@ static int fbHeldStep(int key)
+     return 0;
+ }
+ 
++// build 141: picking: Up, Down, L1, R1 and folders as ever, an ELF is the choice, and back from the drive list goes back
++static void fbPickInput(int openKey, int backKey)
++{
++    if (fbHeldStep(KEY_UP)) {
++        if (fbCursor > 0) {
++            fbCursor--;
++            sfxPlay(SFX_CURSOR);
++        }
++    } else if (fbHeldStep(KEY_DOWN)) {
++        if (fbCursor < fbCount - 1) {
++            fbCursor++;
++            sfxPlay(SFX_CURSOR);
++        }
++    } else if (getKeyOn(KEY_L1)) {
++        fbCursor -= FB_ROWS;
++        sfxPlay(SFX_CURSOR);
++    } else if (getKeyOn(KEY_R1)) {
++        fbCursor += FB_ROWS;
++        sfxPlay(SFX_CURSOR);
++    } else if (getKeyOn(openKey) && fbCount > 0) {
++        fb_entry_t *e = &fbList[fbCursor];
++        char path[256];
++        switch (e->kind) {
++            case FB_KIND_HERE:
++                break;
++            case FB_KIND_START:
++                fbOpen();
++                break;
++            case FB_KIND_DEVICE:
++                if (!strcmp(e->name, "hdd0:")) { // partitions, not files: its path can be typed
++                    sfxPlay(SFX_CANCEL);
++                    fbSetToast(_t("CHOOSE AN ELF"));
++                    break;
++                }
++                sfxPlay(SFX_CONFIRM);
++                fbOpenPath(e->name, NULL);
++                break;
++            case FB_KIND_DIR:
++            case FB_KIND_SAVE:
++                sfxPlay(SFX_CONFIRM);
++                snprintf(path, sizeof(path), "%s%s/", fbPath, e->name);
++                fbOpenPath(path, NULL);
++                break;
++            case FB_KIND_ELF:
++                sfxPlay(SFX_CONFIRM);
++                fbJoin(fbPicked, sizeof(fbPicked), fbPath, e->name);
++                fbPickDone = 1;
++                break;
++            default:
++                sfxPlay(SFX_CANCEL);
++                fbSetToast(_t("CHOOSE AN ELF"));
++                break;
++        }
++    } else if (getKeyOn(backKey)) {
++        if (fbPath[0])
++            fbUp();
++        else {
++            sfxPlay(SFX_CANCEL);
++            fbPickDone = -1;
++        }
++    } else if (getKeyOn(KEY_SELECT)) {
++        sfxPlay(SFX_CONFIRM);
++        if (fbCount > 0 && fbCursor < fbCount)
++            snprintf(fbKeepName, sizeof(fbKeepName), "%s", fbList[fbCursor].name);
++        fbDevForce = 1;
++        fbRun(FB_OP_SCAN, _t("READING"));
++    }
++    fbFixScroll();
++}
++
+ void ripps2HandleInputFiles(void)
+ {
+     int openKey = gSelectButton == KEY_CIRCLE ? KEY_CIRCLE : KEY_CROSS;
+@@ -3059,6 +3133,11 @@ void ripps2HandleInputFiles(void)
+         return;
+     }
+ 
++    if (fbPicking) { // build 141
++        fbPickInput(openKey, backKey);
++        return;
++    }
++
+     if (fbGridOpen) { // the settings grid has the pad
+         fbHandleGrid();
+         return;
+@@ -3377,7 +3456,7 @@ static const char *fbWhatIs(const char *name, int isDir)
+     if (fbHasSuffix(name, ".cue"))
+         return _t("A PS1 disc's track list, for Ember");
+     if (fbHasSuffix(name, ".elf"))
+-        return _t("A program: Cross starts it");
++        return fbPicking ? NULL : _t("A program: Cross starts it");
+     if (fbHasSuffix(name, ".psu"))
+         return _t("A save, packed in one file");
+     return NULL;
+@@ -3457,7 +3536,7 @@ void ripps2RenderFiles(void)
+     }
+ 
+     // the path, and the clipboard / what just happened
+-    fntRenderString(uiFont, FB_X, 30, ALIGN_VCENTER, 0, 0, fbPath[0] ? fbPath : _t("MEMORY FILES"), FB_LIT);
++    fntRenderString(uiFont, FB_X, 30, ALIGN_VCENTER, 0, 0, fbPath[0] ? fbPath : fbPicking ? fbPickTitle : _t("MEMORY FILES"), FB_LIT);
+     if (fbToastAt != 0 && (float)(clock() - fbToastAt) / CLOCKS_PER_SEC < 2.5f)
+         snprintf(buf, sizeof(buf), "%s", fbToast);
+     else if (fbClipCount > 0 || fbRipWhat[0])
+@@ -3594,7 +3673,12 @@ void ripps2RenderFiles(void)
+     fbHintLayout();
+     int hx = fbHintX, hy = 448;
+     int selIcon = gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON, backIcon = gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON;
+-    if (fbMenuOpen) {
++    if (fbPicking) { // build 141
++        fb_entry_t *e = fbCount > 0 ? &fbList[fbCursor] : NULL;
++        int icons[3] = {selIcon, backIcon, SELECT_ICON};
++        const char *texts[3] = {e != NULL && e->kind == FB_KIND_ELF ? _t("CHOOSE") : _t("OPEN"), _t("BACK"), _t("REFRESH")};
++        fbHintRow(icons, texts, 3, hx, hy);
++    } else if (fbMenuOpen) {
+         fbHint(selIcon, _t("SELECT"), &hx, hy);
+         fbHint(backIcon, _t("CLOSE"), &hx, hy);
+     } else {
+@@ -3624,3 +3708,42 @@ void ripps2RenderFiles(void)
+         fbHintRow(icons, texts, n, hx, hy);
+     }
+ }
++
++// build 141: the browser itself, choosing a program for Manage's launch keys: the drives, START DRIVES and the folders as
++// ever, in a loop of its own, and back where it was afterwards. 1 with its path (and a drive's BDM type) when one was chosen
++int ripps2FilesPick(const char *title, char *out, int size, int *bdmType)
++{
++    char savedPath[256], savedName[FB_NAME];
++    int waited = 0;
++
++    while (fbBusy && waited++ < 500)
++        DelayThread(10000);
++    if (fbBusy)
++        return 0;
++    snprintf(savedPath, sizeof(savedPath), "%s", fbPath);
++    snprintf(savedName, sizeof(savedName), "%s", fbCount > 0 && fbCursor < fbCount ? fbList[fbCursor].name : "");
++    fbPickTitle = title;
++    fbPicking = 1;
++    fbPickDone = 0;
++    fbGridOpen = fbGridClosing = 0;
++    fbMenuOpen = 0;
++    fbPicked[0] = '\0';
++    fbDevForce = 1; // drives may have come or gone
++    fbOpenPath("", NULL);
++    while (!fbPickDone) {
++        readPads();
++        rmStartFrame();
++        ripps2RenderFiles();
++        rmEndFrame();
++        ripps2HandleInputFiles();
++    }
++    fbPicking = 0;
++    fbOpenPath(savedPath, savedName[0] ? savedName : NULL);
++    readPads();
++    if (fbPickDone < 0)
++        return 0;
++    snprintf(out, size, "%s", fbPicked);
++    if (bdmType != NULL)
++        *bdmType = !strncmp(out, "mass", 4) ? bdmSlotDeviceType(out[4] - '0') : -1;
++    return 1;
++}
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index 6ca31ab..0f537b3 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -604,12 +604,45 @@ void ripps2SweepPreview(const ripps2_sweep_t *s)
+ // build 119: the sky the Storage page draws at rest (ripps2bg.c's drawSky with no glow) in the Color Theme in effect, a
+ // Color Sweep's first colour when one runs, as "RRGGBB,RRGGBB,RRGGBB" (top, horizon, floor). Saved with the settings as
+ // ripps2_bible_sky: BIBLE reads it from the RIPPS2 folder its AUTO entry starts, so its splash matches the theme.
+-void ripps2BibleSky(char *out, size_t size)
++static void skyText(int tinted, float hue, float sat, float lift, char *out, size_t size)
+ {
+     static const unsigned char sky[3][3] = {{0x01, 0x02, 0x09}, {0x0B, 0x19, 0x4C}, {0x02, 0x04, 0x10}};
+-    float hue = 0.0f, sat = 1.0f, lift = 0.0f, o[3];
+-    int p = gRipps2PaletteShown, tinted = 1, k, i, n = 0;
++    float o[3];
++    int k, i, n = 0;
+     unsigned char c[3];
++
++    for (k = 0; k < 3 && n < (int)size; k++) {
++        if (tinted) {
++            tintApplyF(hue, sat, lift, sky[k], o);
++            for (i = 0; i < 3; i++)
++                c[i] = (unsigned char)(o[i] + 0.5f);
++        } else
++            memcpy(c, sky[k], 3);
++        n += snprintf(out + n, size - n, "%s%02X%02X%02X", k ? "," : "", c[0], c[1], c[2]);
++    }
++}
++
++// build 141: a Color Theme's sky the same way, for Sky Color in Manage's BIBLE menu
++void ripps2ThemeSky(int p, char *out, size_t size)
++{
++    float hue = 0.0f, sat = 1.0f, lift = 0.0f;
++    int tinted = 1;
++
++    if (p == RIPPS2_PALETTE_CUSTOM)
++        tintSolve(gRipps2CustomColor, &hue, &sat, &lift);
++    else if (p > 0 && p < RIPPS2_PALETTE_COUNT) {
++        hue = paletteDef[p].hue;
++        sat = paletteDef[p].sat;
++        lift = paletteDef[p].lift;
++    } else
++        tinted = 0;
++    skyText(tinted, hue, sat, lift, out, size);
++}
++
++void ripps2BibleSky(char *out, size_t size)
++{
++    float hue = 0.0f, sat = 1.0f, lift = 0.0f;
++    int p = gRipps2PaletteShown, tinted = 1;
+     ripps2_sweep_t sw;
+ 
+     if (gRipps2Sweep > 0 && ripps2SweepGet(gRipps2Sweep, &sw))
+@@ -622,15 +655,7 @@ void ripps2BibleSky(char *out, size_t size)
+         lift = paletteDef[p].lift;
+     } else
+         tinted = 0;
+-    for (k = 0; k < 3 && n < (int)size; k++) {
+-        if (tinted) {
+-            tintApplyF(hue, sat, lift, sky[k], o);
+-            for (i = 0; i < 3; i++)
+-                c[i] = (unsigned char)(o[i] + 0.5f);
+-        } else
+-            memcpy(c, sky[k], 3);
+-        n += snprintf(out + n, size - n, "%s%02X%02X%02X", k ? "," : "", c[0], c[1], c[2]);
+-    }
++    skyText(tinted, hue, sat, lift, out, size);
+ }
+ 
+ static float sweepEase(float f)
