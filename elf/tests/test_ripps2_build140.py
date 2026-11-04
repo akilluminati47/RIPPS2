@@ -1,6 +1,6 @@
 """Build 140: DISC_STOP in Manage's BIBLE menu (BIBLE's default stops the disc at a launch and waits on the drive), and
 DISC_STOP = 0 in the config a fresh install writes; a config already on the card is kept as it is. DIAG.TXT says where the
-boot sound's time goes, the sounds line never ends on a blank "from", and STATUS's hand-off row names the file alone.
+boot sound's time goes, the IO worker sends the sound as soon as audio is up, the sounds line never ends on a blank "from", and STATUS's hand-off row names the file alone.
 
 Static checks on the patched tree."""
 import os
@@ -39,11 +39,18 @@ for fn, want in (('void sfxIntroStarted(void)', '"the towers are up"'),
     if want not in body(fn):
         fail.append('%s logs %s' % (fn, want))
 
+early = body('static void sfxBootEarlyWork(void)')
+w, u = early.find('while (!sfxAudioUp && !sfxAudioFailed'), early.find('sfxBootEarlyUpload();')
+if w < 0 or u < w or '(long)(clock() - until) < 0' not in early or 'DelayThread(2000);' not in early:
+    fail.append('the IO worker sends the boot sound itself once audio is up, with a time limit, before any drive job')
+if 'sfxAudioFailed = 1;' not in body('void sfxBootStart(void)'):
+    fail.append('no audio ends the wait at once')
+
 if 'audioSfx ? audio_path : "", themeSfx' in snd or '"BIBLE\'s copy in RAM"' not in snd or '"nowhere, no sound files found"' not in snd:
     fail.append('the sounds line always says where they came from')
 
 if 'name != NULL ? name + 1 : card' not in st:
     fail.append('STATUS\'s hand-off row names the file alone')
 
-print('\n'.join(fail) or 'build140: DISC_STOP, the boot sound\'s timing lines, the sounds line and the STATUS row OK')
+print('\n'.join(fail) or 'build140: DISC_STOP, the boot sound sent as audio comes up, its timing lines, the sounds line and the STATUS row OK')
 sys.exit(1 if fail else 0)

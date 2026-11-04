@@ -45,7 +45,7 @@ index aa13af2..babe200 100644
              snprintf(line, sizeof(line), gEnableBootSND == 2 ? _t("Boot sound On (fast): %s on the memory card, as the pillars rise") :
                                                                  _t("Boot sound On: %s on the memory card, as the pillars rise"),
 diff --git a/src/sound.c b/src/sound.c
-index c24d4f9..35838cf 100644
+index c24d4f9..845df0e 100644
 --- a/src/sound.c
 +++ b/src/sound.c
 @@ -516,8 +516,11 @@ static volatile int sfxIntroOn = 0;     // the intro's towers have begun their s
@@ -69,7 +69,12 @@ index c24d4f9..35838cf 100644
      }
  }
  
-@@ -636,15 +640,19 @@ static char sfxBootThemePath[256]; // the disk theme's sound folder ("" for none
+@@ -632,19 +636,24 @@ void sfxBibleCopyDrop(void)
+ #define SFX_EARLY_READY 2 // in the SPU: sfxInit(1) keeps it
+ static volatile int sfxBootEarly = SFX_EARLY_NONE;
+ static volatile int sfxAudioUp = 0;
++static volatile int sfxAudioFailed = 0; // build 140: audsrv did not start, so there is nothing for the boot sound to wait for
+ static char sfxBootThemePath[256]; // the disk theme's sound folder ("" for none)
  
  static void sfxBootEarlyUpload(void)
  {
@@ -90,15 +95,37 @@ index c24d4f9..35838cf 100644
  }
  
  /* RIPPS2 build 121 (the user, 10/28: the boot sound with the pillars when the sounds live on a drive). RIPPS2 started from a
-@@ -745,6 +753,7 @@ static void sfxBootEarlyWork(void)
-     if (!up)
-         sfxBootEarly = SFX_EARLY_READ; // sfxBootStart sends it on
-     EIntr();
-+    ripps2Diag("boot: the boot sound is in RAM%s", up ? "" : ", audio is not up yet"); // build 140
-     if (up)
-         sfxBootEarlyUpload();
+@@ -701,6 +710,8 @@ int sfxBootSoundWhere(char *out, int size)
+     return 0;
  }
-@@ -931,8 +940,10 @@ int sfxInit(int bootSnd)
+ 
++#define SFX_AUDIO_WAIT_S 3
++
+ static void sfxBootEarlyWork(void)
+ {
+     char base[256], path[300];
+@@ -740,6 +751,20 @@ static void sfxBootEarlyWork(void)
+     }
+     if (ret != 0)
+         return; // no boot sound where the set loads from: the set's load looks again, as before
++    /* RIPPS2 build 140 (the user, 11/03: the sound still late after BIBLE's hand-off; lab: audio up and the towers at 1.75 s, the
++       send started at 4.25 s and took 121 ms). Returning here let the IO worker start the drive job applyConfig had queued, and
++       sfxBootStart's upload, though first in the queue, cannot interrupt a job already running. So the worker stays on this
++       job until audio is up and sends the sound itself; the drives start a moment later. It holds no RPC while it waits, so
++       applyConfig's audsrv calls on the main thread stay clear of it (builds 119 and 121). The limit is for anything on the
++       main thread that waits on this worker before audio starts: past it the drives go first, as before. */
++    ripps2Diag("boot: the boot sound is in RAM%s", sfxAudioUp ? "" : ", waiting for audio");
++    {
++        clock_t until = clock() + SFX_AUDIO_WAIT_S * CLOCKS_PER_SEC;
++        while (!sfxAudioUp && !sfxAudioFailed && (long)(clock() - until) < 0)
++            DelayThread(2000);
++        if (!sfxAudioUp && !sfxAudioFailed)
++            ripps2Diag("boot: audio was not up after %d s: the drives go first", SFX_AUDIO_WAIT_S);
++    }
+     DIntr();
+     up = sfxAudioUp;
+     if (!up)
+@@ -931,8 +956,10 @@ int sfxInit(int bootSnd)
      sfxLoading = 0;
      // build 115 (the user, 10/26 evening: navigation sounds bugging again): a load holds every menu sound until it is done,
      // so the hardware log says when one ran and for how long
@@ -110,15 +137,21 @@ index c24d4f9..35838cf 100644
      if (!sfxReloadBusy) // the late AUDIO find and the boot: a press caught by the load (sfxReloadWork does its own)
          sfxPlayHeld();
      return loaded;
-@@ -1344,6 +1355,7 @@ void sfxBootStart(void)
+@@ -1344,9 +1371,12 @@ void sfxBootStart(void)
      if (done)
          return;
      done = 1;
 +    ripps2Diag("boot: audio starts"); // build 140
      audioInit();
-     if (!audio_initialized)
+-    if (!audio_initialized)
++    if (!audio_initialized) {
++        sfxAudioFailed = 1;
          return;
-@@ -1358,6 +1370,7 @@ void sfxBootStart(void)
++    }
+     audsrv_adpcm_init();
+     voicesReset();
+     voicesSilence(); // build 100: init turned every voice up
+@@ -1358,6 +1388,7 @@ void sfxBootStart(void)
          have = sfxBootEarly == SFX_EARLY_READ;
          sfxAudioUp = 1;
          EIntr();
@@ -126,3 +159,13 @@ index c24d4f9..35838cf 100644
          // build 119: on the IO worker, ahead of the drives' jobs still waiting; if it cannot be queued, the set's load
          // (sfxInit) reads it again as before
          if (have && ioPutRequestFront(IO_CUSTOM_SIMPLEACTION, &sfxBootEarlyUpload) != IO_OK)
+@@ -1406,7 +1437,8 @@ static void audioLateTick(void)
+ void sfxBootSoundsLoaded(void)
+ {
+     bootAudioReady = 1;
+-    ripps2Diag("boot: %d sounds loaded from %s", sfxLoadedCount, audioBaseFound ? audioBase : "RIPPS2's own set");
++    // build 140: "1 sounds loaded from RIPPS2's own set" was the boot sound alone, with no AUDIO folder found yet
++    ripps2Diag("boot: %d sound%s in, AUDIO folder: %s", sfxLoadedCount, sfxLoadedCount == 1 ? "" : "s", audioBaseFound ? audioBase : "none found yet");
+ }
+ 
+ // build 115: 32 KB, as the music threads: the start decodes an MP3's first frame here, and minimp3 keeps ~16 KB of
