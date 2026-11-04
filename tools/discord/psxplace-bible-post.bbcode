@@ -9,7 +9,7 @@
 [I]The boot loader RIPPS2 sets up. Signed, bound, and starting real PS2s.[/I]
 
 [URL='https://github.com/akilluminati47/BIBLE/releases/latest'][B]Signed builds and SD2PSX BOOT card[/B][/URL]  |  [URL='https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf']RIPPS2.elf (installs it for you)[/URL]  |  [URL='https://github.com/akilluminati47/BIBLE#readme']Every setting[/URL]  |  [URL='https://github.com/akilluminati47/BIBLE']Source (GPL-3)[/URL]  |  [URL='https://www.psx-place.com/threads/ripps2-a-ps2-front-end-in-one-elf-launch-disc-storage-memory-files.51316/']RIPPS2's thread[/URL]
-[SIZE=2]Current: BIBLE 3282396, carried by RIPPS2 v1.3.9 beta[/SIZE][/CENTER]
+[SIZE=2]Current: BIBLE 3282396, carried by RIPPS2 v1.4.0 beta[/SIZE][/CENTER]
 
 [SIZE=3]BIBLE is akilluminati47's boot loader: a fork of saildot4k's [URL='https://github.com/saildot4k/PlayStation2-Basic-BootLoader-Extended']PS2BBL Extended[/URL], itself built on El Isra's [URL='https://github.com/israpps/PlayStation2-Basic-BootLoader']PS2BBL[/URL]. It sits on your memory card as the console's system update (or in the internal HDD's boot area) and, at power on, starts what you chose, RIPPS2 first. [B]Every build is signed by akilluminati47[/B], with kelftool on their own PC: nobody else's keys, nobody else's signing.[/SIZE]
 
@@ -17,7 +17,7 @@
 [CENTER][IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b139/bible-race-6000-vs-0.gif[/IMG]
 [SIZE=2]Both on Background: Black, no buttons, video mode AUTO, from BIBLE's first frame. Left, the 6000 ms countdown with the info line. Right, 0 ms.[/SIZE][/CENTER]
 
-BIBLE can get out of your way. [B]Power-on Wait: 0 ms[/B] drops the countdown (PS2BBL Extended holds it at 500 ms or more), and [B]Background: Black[/B] with [B]Button Glyphs: None[/B] leaves the logo alone on black, so the hand-off into RIPPS2 reads as one piece. Those three are a menu pick in RIPPS2's Manage. For the last few seconds, add DISC_STOP = 0 to the settings file: BIBLE then leaves the disc drive alone at launch instead of waiting for it to answer, which took 3.3 s off this run.
+BIBLE can get out of your way. [B]Power-on Wait: 0 ms[/B] drops the countdown (PS2BBL Extended holds it at 500 ms or more), and [B]Background: Black[/B] with [B]Button Glyphs: None[/B] leaves the logo alone on black, so the hand-off into RIPPS2 reads as one piece. All four are a menu pick in RIPPS2's Manage. For the last few seconds, turn [B]Stop Disc at Launch[/B] Off (DISC_STOP = 0): BIBLE then leaves the disc drive alone at launch instead of waiting for it to answer, which took 3.3 s off this run.
 [CODE]KEY_READ_WAIT_TIME = 0
 BIBLE_BACKGROUND = BLANK
 BIBLE_GLYPHS = 0
@@ -60,7 +60,7 @@ Hold [B]TRIANGLE + CROSS[/B] at power on for the video mode page. It always open
 [*][LEFT][B]Already have BIBLE?[/B] Manage opens a BIBLE menu. [B]UPDATE BIBLE[/B] binds the newest over an older one in place, and every setting above is one pick away.[/LEFT]
 [/LIST]
 [CENTER][IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b139/new-01-bible-menu.jpg[/IMG]
-[SIZE=2]Manage's BIBLE menu in RIPPS2 1.3.9[/SIZE][/CENTER]
+[SIZE=2]Manage's BIBLE menu[/SIZE][/CENTER]
 [LIST]
 [*][LEFT][B]SD2PSX owners[/B]: [URL='https://github.com/akilluminati47/BIBLE/releases/latest/download/BIBLE-SD2PSX-BootCard-3282396.zip']BIBLE-SD2PSX-BootCard-3282396.zip[/URL] is a ready BOOT card with BIBLE already bound. Keep a copy of your own BootCard-1.mcd, copy this one over it, put RIPPS2.ELF in the SD card's APPS folder, power on.[/LEFT]
 [*][LEFT][B]With KELFBinder[/B]: [URL='https://github.com/akilluminati47/BIBLE/releases/latest/download/BIBLE-signed-3282396.zip']BIBLE-signed-3282396.zip[/URL] has SYSTEM.XLF (memory card), MMCE/SYSTEM.XLF, MX4SIO/SYSTEM.XLF and HSYSTEM.XLF (HDD), with their SHA-256s.[/LEFT]
@@ -78,7 +78,7 @@ One text file on the card, [B]mc?:/SYS-CONF/PS2BBL.INI[/B] (read first; else PS2
 [TR][TD]BIBLE_INFO[/TD][TD]Info Line[/TD][TD]1: console model, ROM, clock and countdown[/TD][/TR]
 [TR][TD]VIDEO_MODE[/TD][TD]Video Mode[/TD][TD]AUTO, NTSC, PAL, 480P, 576P, 720P or 1080I[/TD][/TR]
 [TR][TD]BIBLE_WIDESCREEN[/TD][TD]Widescreen[/TD][TD]AUTO (RIPPS2's Widescreen, else the PS2's 16:9 setting), ON or OFF[/TD][/TR]
-[TR][TD]DISC_STOP[/TD][TD]the file[/TD][TD]1 stops the disc at launch and waits for the drive (the default), 0 leaves it alone[/TD][/TR]
+[TR][TD]DISC_STOP[/TD][TD]Stop Disc at Launch[/TD][TD]1 stops the disc at launch and waits for the drive (the default), 0 leaves it alone[/TD][/TR]
 [TR][TD]BIBLE_COLOR[/TD][TD]the file[/TD][TD]The sky's top, horizon and floor colours (0D0000,700400,170000); unset, the Color Theme RIPPS2 saved[/TD][/TR]
 [TR][TD]NAME_<button>, LK_<button>_E1 to E10[/TD][TD]the file[/TD][TD]What each button starts (AUTO: no button held), the first entry that exists. $OSDSYS the browser, $CDVD the disc, $CREDITS BIBLE's credits[/TD][/TR]
 [/TABLE]

@@ -1,0 +1,18 @@
+psx-place bump for BIBLE's own thread (threads/bible.51524). BIBLE itself is unchanged (3282396); this is what RIPPS2 v1.4.0 beta adds around it. Post it once the release is published. Paste from the [CENTER] line.
+
+[CENTER][URL='https://github.com/akilluminati47/RIPPS2/blob/main/media/b140/bible-menu.mp4'][IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b140/bible-menu.jpg[/IMG][/URL]
+
+[SIZE=5][B]BIBLE: Stop Disc at Launch, right in Manage's menu[/B][/SIZE]
+[URL='https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf']RIPPS2 v1.4.0 beta[/URL] carries the same signed BIBLE 3282396  |  [URL='https://github.com/akilluminati47/BIBLE/releases/latest']BIBLE's release[/URL][/CENTER]
+
+Nothing to bind again: this is RIPPS2's menu, writing one line at a time in your settings file.
+
+[LIST]
+[*][B]Stop Disc at Launch[/B] is DISC_STOP. BIBLE's default stops the disc at a launch and waits for the drive to answer. Off skips that wait, about 3.3 s in a PCSX2 run, and a disc in the tray keeps spinning. A new install from Manage starts with it Off. A settings file already on your card is kept, so turn it Off yourself. It has not been timed on a real PS2 yet: if you do, post your numbers.
+[*][B]Eject Tray at Launch[/B] (EJECT_TRAY), [B]Read Console History[/B] (OSDHISTORY_READ), [B]Game ID for Apps[/B] (APP_GAMEID) and [B]Game ID for Discs[/B] (CDROM_DISABLE_GAMEID).
+[*]What each button starts stays in the file for now: EDIT BIBLE'S SETTINGS FILE, on the same menu. Choosing paths from a file browser is planned next.
+[/LIST]
+
+[B]The boot sound, plainly:[/B] with Boot Sound On (fast), boot.adp sits beside BIBLE's settings on the card and RIPPS2 reads it before any drive starts: 0.26 s after the towers on a SCPH-39001 with an SD2PSX. BIBLE handing it over in memory has only passed in the lab so far, and does not happen on that console.
+
+Still wanted most: a genuine Sony memory card, a MemCard PRO 2, MX4SIO, the HDD build, slims, PAL and Japanese consoles. Tell us here or [URL='https://github.com/akilluminati47/RIPPS2/issues']open an issue[/URL].

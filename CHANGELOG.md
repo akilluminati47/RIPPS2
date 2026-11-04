@@ -1,5 +1,44 @@
 # RIPPS2 changelog
 
+## Build 140 (beta, v1.4.0-beta), changes since build 139
+
+The user, 11/04: the boot sound still late after BIBLE's work, stray sounds ("played another sound effect after its
+playback"), the sounds holding behind the drives ("close the loading to zilch"), Set Metadata not uniform, and a crash
+spamming R1 in a film ("a scrub guard like launch guard").
+
+**The sounds**
+- Every ripped sound ended on a block flagged "end, no repeat", which sends a voice to its loop address, and the one block that
+  sets that address came after it. `sfxSealEnd` clears the flag as a sound loads and ends it on a silent block that loops on
+  itself. Files are untouched. The user's console: no stray sound on confirm or cursor after it.
+- The boot sound waited behind the drive job the IO worker had started: lab 2.6 s, console 4.46 s. The worker now waits for
+  audio (3 s limit) and sends it first: 0.13 s after the towers in the lab, 0.26 s on the console.
+- The sound set is queued ahead of the drive jobs; the music still waits for them. 5.12 s on the console with every drive on
+  Auto, was 42.85 s. A late AUDIO find keeps the boot sound playing, and waits for the boot's own load.
+- Connect and disconnect sounds stay quiet until 5 s after the boot's drive jobs (`bdmNeedsUpdate` asked with nothing pressed).
+- A music start over a start or a stream goes no further; DIAG.TXT says who asked for each start and stop. The double start the
+  user heard is not proven to be this: that run's log was lost in the crash.
+
+**Set Metadata (Rename)**
+- One name on every row. The page is remade in the Settings look: Roboto, title and line, every field on one screen, the file
+  name first and apart, a tip above the hints saying what a rename does on this row (`menuRenameTip`).
+- A PS1 game's or Ember title's CFG and art go by name, so a rename takes them along (`sbRenameSidecars`). A PS2 game's go by game
+  ID. The keyboard starts from the file's own name, not a CFG title.
+
+**The video player**
+- L1 and R1 move a marker on a timeline where the hints are. A tap is 10 s, a hold runs up to 10 minutes a second, and the player
+  seeks once, 0.6 s after the last input and only when its last seek has a frame up. Confirm goes now; cancel stays.
+- A press just after a skip went back to the film's start (`havePTS` was still 0).
+- DIAG.TXT is saved before a video plays, so a crash no longer loses it.
+
+**Manage's BIBLE menu**
+- Stop Disc at Launch (DISC_STOP), Eject Tray at Launch, Read Console History, Game ID for Apps and Game ID for Discs. A fresh install
+  writes `DISC_STOP = 0`. A taller list stays on screen.
+
+**DIAG.TXT** ends with the last 512 sound events: time, asked, played, voice, voices sounding, what became of it, who asked.
+`tools/dev/diagring.py` names them with the build's opl.elf, or reads them live from the lab over PINE.
+
+Next: launch keys picked from files and a sky colour in the BIBLE menu; the cursor staying on its row after a pick.
+
 ## Build 139 (beta, v1.3.9-beta), changes since build 138
 
 The user, 11/03: "cant i set the blank background from ripps2 and even install the system update? why use kelfbinder

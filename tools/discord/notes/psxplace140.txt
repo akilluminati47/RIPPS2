@@ -1,0 +1,22 @@
+psx-place bump for v1.4.0 beta (build 140) in RIPPS2's thread. Post it once the release is published. It covers 1.3.9 too, so if the 1.3.9 bump never went up, post only this one and keep its BIBLE line. Paste from the [CENTER] line. The first post (psxplace-post.bbcode) has the new release line, size and wording.
+
+[CENTER][URL='https://github.com/akilluminati47/RIPPS2/blob/main/media/b140/set-metadata.mp4'][IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b140/set-metadata.jpg[/IMG][/URL]
+
+[SIZE=5][B]RIPPS2 v1.4.0 beta: the sounds sorted out, Set Metadata (Rename), a timeline for your videos[/B][/SIZE]
+[URL='https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf']RIPPS2.elf[/URL] (2,768 KB)  |  [URL='https://github.com/akilluminati47/RIPPS2/releases/latest']What's new, with videos[/URL]  |  [URL='https://github.com/akilluminati47/RIPPS2/blob/main/CHANGELOG.md']Changelog[/URL][/CENTER]
+
+[B]The sounds[/B]
+[LIST]
+[*][B]Stray sounds:[/B] a ripped sound's end mark can send a voice on to read other memory, which fits another effect playing after one finished. Each sound now ends on its own silent block as it loads, none has been heard since on the test console, and nothing needs ripping again.
+[*][B]The boot sound comes in with the towers:[/B] 0.26 s after them on a SCPH-39001 with an SD2PSX, down from 4.46 s.
+[*][B]The other sounds are ready at once:[/B] 5.12 s with every drive on Auto, down from 42.85 s. A sound folder on a slow drive still waits for that drive.
+[*]Drives coming up during the boot stay quiet, and a music start over another start goes no further.
+[/LIST]
+
+[B]Set Metadata (Rename)[/B], one name on every row, on a page like Settings: Roboto, every field on one screen, the file name first as it appears in your games list. A tip says what a rename does there. PS2 games find their art and settings by game ID, so nothing changes. PS1 games and Ember titles find theirs by name, so RIPPS2 renames those with the game ([URL='https://github.com/akilluminati47/RIPPS2/blob/main/media/b140/rename-ps1.mp4']watch[/URL]). Art inside an ART Pack needs the pack built again.
+
+[B]A timeline for L1 and R1 in the video player[/B] ([URL='https://github.com/akilluminati47/RIPPS2/blob/main/media/b140/scrub.mp4']watch[/URL]). A tap moves 10 s, a hold runs up to 10 minutes a second, and the player jumps once when you let go. Spamming R1 no longer stops and restarts it on every press.
+
+[B]BIBLE[/B] has [URL='https://www.psx-place.com/threads/bible.51524/']its own thread[/URL] and [URL='https://youtu.be/sTjjmDd6r1g']its own reel[/URL]. Manage's BIBLE menu gains [B]Stop Disc at Launch[/B] and four more rows ([URL='https://github.com/akilluminati47/RIPPS2/blob/main/media/b140/bible-menu.mp4']watch[/URL]).
+
+DIAG.TXT now ends with a trace of every sound and who asked for it, so a sound bug can be named from a report. Tell us what breaks here or [URL='https://github.com/akilluminati47/RIPPS2/issues']open an issue[/URL], with your console model, what you did and your DIAG.TXT.
