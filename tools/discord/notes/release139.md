@@ -34,8 +34,8 @@ Each choice changes only its own line in BIBLE's settings file; your notes and o
 <p align="center"><img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b139/bible-sky-red-green.jpg" width="90%" alt="BIBLE on the skies of two RIPPS2 Color Themes, Blood and Ectoplasm, in 1080i"></p>
 <p align="center"><sub>Background Auto: your RIPPS2 Color Theme's sky when BIBLE starts RIPPS2. Here Blood and Ectoplasm, in 1080i.</sub></p>
 
-#### The boot sound, with RIPPS2's first frame
-**Audio settings > Boot Sound > On (fast)** now keeps `boot.adp` beside BIBLE's settings (`mc?:/SYS-CONF/boot.adp`). BIBLE reads it while its splash counts down and hands it to RIPPS2 in memory, so the sound plays with RIPPS2's first frame even when RIPPS2 starts from an SD2PSX. STATUS says "handed over by BIBLE". Boot Sound Off is still the fastest boot: with BIBLE's Power-on Wait at 0 ms, BIBLE reads the sound before RIPPS2 starts (about 2 s on a memory card).
+#### The boot sound, handed over by BIBLE
+**Audio settings > Boot Sound > On (fast)** now keeps `boot.adp` beside BIBLE's settings (`mc?:/SYS-CONF/boot.adp`). BIBLE reads it while its splash counts down and hands it to RIPPS2 in memory, so RIPPS2 doesn't have to read it from a drive, even when it starts from an SD2PSX (the MMCE, MX4SIO and HDD builds; with the memory card build, RIPPS2 reads the file from the card itself). STATUS says "handed over by BIBLE". Boot Sound Off is still the fastest boot: with BIBLE's Power-on Wait at 0 ms, BIBLE reads the sound before RIPPS2 starts (about 2 s on a memory card).
 
 #### What was tested
 | What | Where | Result |

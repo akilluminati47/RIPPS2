@@ -46,7 +46,7 @@ Hold [B]TRIANGLE + CROSS[/B] at power on for the video mode page. It always open
 
 [SIZE=5][B]Made to start RIPPS2[/B][/SIZE]
 [LIST]
-[*][LEFT][B]The boot sound, primed[/B]: with RIPPS2's Boot Sound On (fast), BIBLE reads boot.adp during its splash and hands it to RIPPS2 in memory, so it plays as RIPPS2 comes up, even when RIPPS2 lives on an SD2PSX. No sound file is the fastest boot: with the wait at 0 ms BIBLE reads it before RIPPS2 starts, about 2 s on a memory card.[/LEFT]
+[*][LEFT][B]The boot sound, primed[/B]: with RIPPS2's Boot Sound On (fast), the MMCE, MX4SIO and HDD builds read boot.adp during BIBLE's splash and hand it to RIPPS2 in memory, so RIPPS2 doesn't have to read it from a drive, even when it lives on an SD2PSX. With the memory card build, RIPPS2 reads the file from the card itself. No sound file is the fastest boot: with the wait at 0 ms BIBLE reads it before RIPPS2 starts, about 2 s on a memory card.[/LEFT]
 [*][LEFT][B]Video modes up to 1080i[/B]: AUTO (RIPPS2's own mode), NTSC, PAL, 480p, 576p, 720p and 1080i, with widescreen for the 4:3 ones.[/LEFT]
 [*][LEFT][B]Four builds[/B]: memory card (memory cards and USB), MMCE (SD2PSX and MemCard PRO 2), MX4SIO, and the internal HDD's boot area.[/LEFT]
 [/LIST]
@@ -77,7 +77,7 @@ One text file on the card, [B]mc?:/SYS-CONF/PS2BBL.INI[/B] (read first; else PS2
 [TR][TD]BIBLE_WIDESCREEN[/TD][TD]Widescreen[/TD][TD]AUTO (RIPPS2's Widescreen, else the PS2's 16:9 setting), ON or OFF[/TD][/TR]
 [TR][TD]DISC_STOP[/TD][TD]the file[/TD][TD]1 stops the disc at launch and waits for the drive (the default), 0 leaves it alone[/TD][/TR]
 [TR][TD]BIBLE_COLOR[/TD][TD]the file[/TD][TD]The sky's top, horizon and floor colours (0D0000,700400,170000); unset, the Color Theme RIPPS2 saved[/TD][/TR]
-[TR][TD]NAME_<button>, LK_<button>_E1 to E3[/TD][TD]the file[/TD][TD]What each button starts (AUTO: no button held), the first entry that exists. $OSDSYS the browser, $CDVD the disc, $CREDITS BIBLE's credits[/TD][/TR]
+[TR][TD]NAME_<button>, LK_<button>_E1 to E10[/TD][TD]the file[/TD][TD]What each button starts (AUTO: no button held), the first entry that exists. $OSDSYS the browser, $CDVD the disc, $CREDITS BIBLE's credits[/TD][/TR]
 [/TABLE]
 
 [SIZE=5][B]Tested on a real PS2[/B][/SIZE]
