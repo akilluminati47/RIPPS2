@@ -1,4 +1,4 @@
-<p align="center"><img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/v1.3.9-beta/media/ripps2-test-me.png" alt="RIPPS2: Rip it, build 139"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/accf9aa300fe3e320903065a4e24d54717fe6692/media/ripps2-test-me.png" alt="RIPPS2: Rip it, build 139"></p>
 
 ## Rip it: RIPPS2 v1.3.9 beta (build 139)
 
