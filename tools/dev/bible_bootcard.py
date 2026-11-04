@@ -6,6 +6,11 @@ by a console. SD2PSX firmware answers every card with the same identity (sd2psXt
 source), so the bound file starts on other SD2PSX cards too; tested on the user's own SD2PSX and USA PS2 only.
 
     python bible_bootcard.py <bound card .mcd> <out .mcd>
+    python bible_bootcard.py --into <clean BOOT card .mcd> <bound card .mcd> <out .mcd>
+
+--into (11/03 night, BIBLE 3282396): only the bound BIBLE file is taken from the bound card (the user's own card holds
+their settings, lists and a boot.adp ripped from their BIOS, none of which may be published); it goes into a clean BOOT
+card made before (the published one), in every name and region folder, with the settings file written fresh.
 """
 import io
 import os
@@ -41,6 +46,8 @@ EJECT_TRAY = 0
 LOGO_DISPLAY = 2
 # Buttons under the logo: 0 none, 1 the four face buttons, 2 all sixteen
 BIBLE_GLYPHS = 1
+# Behind the logo: AUTO (RIPPS2's sky when BIBLE starts RIPPS2, else black), SKY or BLANK (black)
+BIBLE_BACKGROUND = AUTO
 # 1: console model, clock and countdown on the splash
 BIBLE_INFO = 0
 # AUTO (the PS2's own, or RIPPS2's), NTSC, PAL, 480P, 576P, 720P, 1080I
@@ -144,5 +151,44 @@ def main(src, out):
     print('wrote', out)
 
 
+def into(clean, src, out):
+    braw = open(src, 'rb').read()
+    assert len(braw) == 8 * 1024 * 1024, len(braw)
+    cb = ps2mc.ps2mc(io.BytesIO(with_ecc(braw)))
+    kelf = read(cb, BOUND)
+    cb.close()
+    assert kelf[16 + 6:16 + 8] == b'\x00\x01' and len(kelf) > 100000, 'not a bound BIBLE KELF'
+    raw = open(clean, 'rb').read()
+    assert len(raw) == 8 * 1024 * 1024, len(raw)
+    buf = io.BytesIO(with_ecc(raw))
+    c = ps2mc.ps2mc(buf)
+    for d, names in NAMES.items():
+        have = [n for n, _ in live(c, '/' + d)]
+        for n in names:
+            if n in have:
+                c.remove('/%s/%s' % (d, n))
+            write(c, '/%s/%s' % (d, n), kelf)
+    if 'PS2BBL.INI' in [n for n, _ in live(c, '/SYS-CONF')]:
+        c.remove('/SYS-CONF/PS2BBL.INI')
+    write(c, '/SYS-CONF/PS2BBL.INI', INI)
+    c.check()
+    c.close()
+    img = strip_ecc(buf.getvalue())
+    c2 = ps2mc.ps2mc(io.BytesIO(with_ecc(img)))
+    for d, names in NAMES.items():
+        for n in names:
+            assert read(c2, '/%s/%s' % (d, n)) == kelf, (d, n)
+    assert read(c2, '/SYS-CONF/PS2BBL.INI') == INI
+    for d in sorted(n for n, _ in live(c2, '/')):
+        print(d + '/', ', '.join('%s %d' % (n, len(read(c2, '/%s/%s' % (d, n)))) for n, m in live(c2, '/' + d) if not m & 0x20))
+    print('free', c2.get_free_space() // 1024, 'KB')
+    c2.close()
+    open(out, 'wb').write(img)
+    print('wrote', out)
+
+
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2])
+    if sys.argv[1] == '--into':
+        into(sys.argv[2], sys.argv[3], sys.argv[4])
+    else:
+        main(sys.argv[1], sys.argv[2])

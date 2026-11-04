@@ -28,8 +28,8 @@ BIBLE is akilluminati47's boot loader, built on [PS2BBL](https://github.com/isra
 | `MMCE/SYSTEM.XLF` | memory card, also reads MMCE (SD2PSX, MemCard PRO 2) | `cbcff26cf6900df479e43eb66a601294ba75029486d967c292687562d7bacf05` |
 | `HSYSTEM.XLF` | the internal HDD's boot area | `0f8f2a7ca76d4f3392636b0a1263b62d9a155285cce40b3226ab7926af5cf2b8` |
 
-**`BIBLE-signed-3282396.zip`**: the four files, their SHA-256s, the licence and a README. A memory card KELF only starts once a console has bound it to that card (RIPPS2's Manage or KELFBinder do this as they install it); copying the file onto a card by hand does not make it boot.
+- **`BIBLE-signed-3282396.zip`**: the four files, their SHA-256s, the licence and a README. A memory card KELF only starts once a console has bound it to that card (RIPPS2's Manage or KELFBinder do this as they install it); copying the file onto a card by hand does not make it boot.
 
-**SD2PSX owners:** the ready BOOT card on [`signed-a1ffb0b`](https://github.com/akilluminati47/BIBLE/releases/tag/signed-a1ffb0b) still boots; put RIPPS2 1.3.9 in the SD card's APPS folder and **Manage > UPDATE BIBLE** brings it to this BIBLE.
+- **`BIBLE-SD2PSX-BootCard-3282396.zip`**: an 8 MB BOOT card image for an SD2PSX (`MemoryCards/PS2/BOOT/BootCard-1.mcd`) with this BIBLE's MMCE build already bound, by RIPPS2 1.3.9's UPDATE BIBLE on akilluminati47's SD2PSX, and nothing else on it (its free space is zeroed). BIBLE's settings file starts `mmce?:/APPS/RIPPS2.ELF`. Keep a copy of your own BootCard-1.mcd, copy this one over it, put RIPPS2.ELF in the SD card's APPS folder, and power on. SD2PSX firmware gives every card the same identity, so the binding should hold on other SD2PSX units; only akilluminati47's was tried.
 
 Thanks to El Isra for PS2BBL and KELFBinder, and to saildot4k for PS2BBL Extended.
