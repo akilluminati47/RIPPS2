@@ -66,7 +66,7 @@ if 'static const char *menuRenameTip(' not in menu or menu.count('menuRenameTip(
 for f in ('bdmsupport', 'mmcesupport', 'ethsupport'):
     if 'sbRenameSidecars(' not in (root / ('src/%s.c' % f)).read_text(encoding='utf-8'):
         fail.append('%s takes a PS1 game\'s CFG and art along' % f)
-for key in ('"EJECT_TRAY"', '"OSDHISTORY_READ"', '"APP_GAMEID"', '"CDROM_DISABLE_GAMEID"'):
+for key in ('"EJECT_TRAY"', '"APP_GAMEID"', '"CDROM_DISABLE_GAMEID"'):
     if key not in sets:
         fail.append('the BIBLE menu has %s' % key)
 if 'void sbRenameSidecars(' not in sup:

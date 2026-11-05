@@ -2,10 +2,19 @@
 # every _t("...") and N_("...") in the RiptOPL tree with RIPPS2's patches applied. Do not edit by hand.
 # A translation (<Language>.yml) maps each of these to its words; see README.md.
 strings:
+- en: DISCARD
+  in:
+  - dia.c
 - en: ENTER ACCEPTS, ESC CANCELS. ANY BUTTON SHOWS THE KEYS.
   in:
   - dia.c
+- en: KEEP EDITING
+  in:
+  - dia.c
 - en: USB KEYBOARD
+  in:
+  - dia.c
+- en: You changed this page but did not press OK. Accept keeps the changes. Discard drops them.
   in:
   - dia.c
 - en: Access
@@ -242,6 +251,9 @@ strings:
     1 game button map in GAMES'
   in:
   - gui.c
+- en: '%d changed'
+  in:
+  - gui.c
 - en: '%s could not be written.'
   in:
   - gui.c
@@ -290,6 +302,9 @@ strings:
 - en: Both
   in:
   - gui.c
+- en: Button Map
+  in:
+  - gui.c
 - en: Circle
   in:
   - gui.c
@@ -312,6 +327,9 @@ strings:
   in:
   - gui.c
 - en: Down on the d-pad
+  in:
+  - gui.c
+- en: Every pad profile beside RIPPS2, and what is wrong with any it refuses. These are for every game.
   in:
   - gui.c
 - en: Fade
@@ -351,6 +369,9 @@ strings:
   in:
   - gui.c
   - ripps2hints.c
+- en: Itself
+  in:
+  - gui.c
 - en: L3 (press the left stick in)
   in:
   - gui.c
@@ -376,6 +397,11 @@ strings:
   in:
   - gui.c
   - ripps2hints.c
+- en: NEXT VALUE
+  in:
+  - gui.c
+  - ripps2boot.c
+  - ripps2edit.c
 - en: 'No'
   in:
   - gui.c
@@ -392,12 +418,22 @@ strings:
 - en: Normal
   in:
   - gui.c
+- en: Nothing
+  in:
+  - gui.c
 - en: Nothing was set up, so no file was written.
   in:
   - gui.c
 - en: OK
   in:
   - gui.c
+  - ripps2color.c
+- en: OPEN
+  in:
+  - gui.c
+  - ripps2boot.c
+  - ripps2files.c
+  - ripps2shot.c
 - en: 'Off'
   in:
   - gui.c
@@ -467,6 +503,9 @@ strings:
 - en: Save
   in:
   - gui.c
+- en: Saved as %s. It works through the Pad Emulator, so turn that on for this game.
+  in:
+  - gui.c
 - en: Saved as %s. The pad now steers the menu, and plays in games with the Pad Emulator on.
   in:
   - gui.c
@@ -495,11 +534,20 @@ strings:
 - en: Sweep
   in:
   - gui.c
+- en: 'Teach RIPPS2 a USB pad it does not know: press what it asks for, try it, save. This is for every game.'
+  in:
+  - gui.c
 - en: Theme
   in:
   - gui.c
   - menusys.c
   - ripps2hints.c
+- en: 'This game''s Pad Emulator: USB and Bluetooth pads in the game.'
+  in:
+  - gui.c
+- en: 'This game''s macros: slowdown, turbo and inverted sticks.'
+  in:
+  - gui.c
 - en: This pad cannot be described in a .pad yet (%s), so no file was written.
   in:
   - gui.c
@@ -516,6 +564,12 @@ strings:
   in:
   - gui.c
 - en: Weak
+  in:
+  - gui.c
+- en: What each button does in this game, kept beside RIPPS2 in PADS/GAMES. It works through the Pad Emulator.
+  in:
+  - gui.c
+- en: What this button does in this game, on a USB pad through the Pad Emulator. Square puts it back. The file is written when this page closes.
   in:
   - gui.c
 - en: XL (One Piece)
@@ -625,6 +679,7 @@ strings:
   in:
   - mixsupport.c
   - ripps2cd.c
+  - ripps2color.c
   - ripps2disc.c
   - ripps2games.c
 - en: NETWORK
@@ -1534,9 +1589,6 @@ strings:
 - en: BIBLE is on memory card %d, but its config (%s) could not be written, so it starts the browser. Free some space and run MANAGE again to finish.
   in:
   - ripps2boot.c
-- en: BIBLE keeps this key from PS2BBL, but nothing in this build acts on it, so it changes nothing yet.
-  in:
-  - ripps2boot.c
 - en: BIBLE needs at least one path in its settings, or it starts in its rescue mode, so this one stays.
   in:
   - ripps2boot.c
@@ -1642,6 +1694,9 @@ strings:
 - en: Face Buttons
   in:
   - ripps2boot.c
+- en: Floor
+  in:
+  - ripps2boot.c
 - en: Follow Color Theme
   in:
   - ripps2boot.c
@@ -1654,6 +1709,9 @@ strings:
   in:
   - ripps2boot.c
 - en: Game ID for Discs
+  in:
+  - ripps2boot.c
+- en: Horizon
   in:
   - ripps2boot.c
 - en: How long BIBLE waits for a button before the Auto path. At 0 ms a button held from power on still works.
@@ -1693,15 +1751,6 @@ strings:
 - en: MEMORY CARD IN SLOT %d  (%s)
   in:
   - ripps2boot.c
-- en: NEXT VALUE
-  in:
-  - ripps2boot.c
-  - ripps2edit.c
-- en: OPEN
-  in:
-  - ripps2boot.c
-  - ripps2files.c
-  - ripps2shot.c
 - en: On shows a disc's game ID on screen as it starts, for RetroGEM video mods.
   in:
   - ripps2boot.c
@@ -1711,7 +1760,13 @@ strings:
 - en: On stops the disc at a launch and waits for the drive to answer. Off skips that wait, about 3 s in the lab, and a disc in the tray keeps spinning.
   in:
   - ripps2boot.c
+- en: 'On: BIBLE starts RIPPS2 first at power on, and a game''s EXIT comes back the same way. Off: BIBLE''s Auto path is what it was before. Launch Keys below edits the paths either way.'
+  in:
+  - ripps2boot.c
 - en: Opens the file itself in the text editor, comments and all. Every change here keeps the other lines as they are.
+  in:
+  - ripps2boot.c
+- en: PICK A COLOR
   in:
   - ripps2boot.c
 - en: PS2BBL cannot start RIPPS2 from where it is now (it reaches memory cards, USB drives and MX4SIO), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there, or use PS2BBL Extended, which reads MMCE and the HDD.
@@ -1790,9 +1845,6 @@ strings:
   in:
   - ripps2boot.c
 - en: 'RIPPS2: Setting up BIBLE (writing it to the memory card)'
-  in:
-  - ripps2boot.c
-- en: Read Console History
   in:
   - ripps2boot.c
 - en: Reading the memory cards
@@ -1888,7 +1940,7 @@ strings:
 - en: The signal BIBLE starts in. Auto uses RIPPS2's Video Mode when its settings are on a memory card, and the console's own mode when they are not.
   in:
   - ripps2boot.c
-- en: The sky on BIBLE's splash. Follow Color Theme uses the sky RIPPS2 saves with its settings. A color named here stays, whatever the theme.
+- en: The sky on BIBLE's splash. Left and Right step through the Color Themes. The picker makes your own, top, horizon and floor. Follow Color Theme uses the sky RIPPS2 saves with its settings.
   in:
   - ripps2boot.c
 - en: 'There is no formatted PS2 memory card in either slot, and no internal HDD. BIBLE lives on a memory card or the HDD: insert a card, then try again.'
@@ -1904,6 +1956,9 @@ strings:
   in:
   - ripps2boot.c
 - en: This console has ROM %d.%02d. Many consoles from ROM 2.30 on no longer run system updates, so a BIBLE bound here may not start at power on. If it does not, start BIBLE as a plain ELF through OpenTuna or FunTuna instead.
+  in:
+  - ripps2boot.c
+- en: Top
   in:
   - ripps2boot.c
 - en: 'UPDATE BIBLE: SLOT %d HAS AN OLDER ONE'
@@ -1925,6 +1980,9 @@ strings:
   in:
   - ripps2boot.c
 - en: When a button starts a disc and the tray is empty, On opens the tray for you.
+  in:
+  - ripps2boot.c
+- en: Your Own
   in:
   - ripps2boot.c
 - en: a boot loader RIPPS2 does not know
@@ -1958,6 +2016,9 @@ strings:
   in:
   - ripps2card.c
   - ripps2files.c
+- en: A game save
+  in:
+  - ripps2card.c
 - en: ACTIONS
   in:
   - ripps2card.c
@@ -2051,9 +2112,6 @@ strings:
   in:
   - ripps2card.c
   - ripps2hdd.c
-- en: KEPT BY ERASE
-  in:
-  - ripps2card.c
 - en: Last check. Every game save goes for good. Press START to erase them.
   in:
   - ripps2card.c
@@ -2076,6 +2134,9 @@ strings:
   in:
   - ripps2card.c
 - en: No drive is started to put the backup on. Start the drives first (START DRIVES in Memory Files).
+  in:
+  - ripps2card.c
+- en: 'Not a game save: ERASE EVERY GAME SAVE keeps it'
   in:
   - ripps2card.c
 - en: PFS0:/ (INTERNAL HDD)
@@ -2206,6 +2267,24 @@ strings:
 - en: This audio CD's table of contents could not be read. Clean the disc, close the tray again and try once more. (TYPE %02X, TOC
   in:
   - ripps2cd.c
+- en: Before
+  in:
+  - ripps2color.c
+- en: COLOR THEME
+  in:
+  - ripps2color.c
+- en: Color Themes
+  in:
+  - ripps2color.c
+- en: 'D-pad or left stick: saturation and brightness. L1, R1 or right stick: hue.'
+  in:
+  - ripps2color.c
+- en: NEXT PART
+  in:
+  - ripps2color.c
+- en: Now
+  in:
+  - ripps2color.c
 - en: '%s OF %s   %d%%'
   in:
   - ripps2disc.c
@@ -2501,6 +2580,9 @@ strings:
 - en: '%s in %s'
   in:
   - ripps2files.c
+- en: '%u BYTES'
+  in:
+  - ripps2files.c
 - en: '%u KB FREE%s'
   in:
   - ripps2files.c
@@ -2704,6 +2786,9 @@ strings:
   in:
   - ripps2files.c
 - en: IN / OUT
+  in:
+  - ripps2files.c
+- en: IN A CARD IMAGE
   in:
   - ripps2files.c
 - en: IN USE

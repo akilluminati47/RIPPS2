@@ -470,7 +470,7 @@ int main(void)
     if (!has("ROLL FULL") || !has("DEVELOP IN MEMORY FILES")) return 4;
     a.shot = RIPSHOT_DRIVE_FULL;
     igrmTestPage(&a, 0, 2, 0, 2, 2, "", buf);
-    if (!has("DRIVE FULL")) return 5;
+    if (!has("NO ROLL")) return 5;
     a.shot = RIPSHOT_NOT_HERE;
     igrmTestPage(&a, 0, 2, 0, 2, 2, "", buf);
     if (!has("NOT FOR THIS GAME")) return 6;

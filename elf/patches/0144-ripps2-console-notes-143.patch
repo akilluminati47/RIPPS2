@@ -1,0 +1,1648 @@
+diff --git a/Makefile b/Makefile
+index eda6b52..012bb2f 100644
+--- a/Makefile
++++ b/Makefile
+@@ -140,7 +140,7 @@ ifneq ($(GIT_TAG),latest)
+ endif
+ endif
+ 
+-FRONTEND_OBJS = ripps2.o ripps2ui.o ripps2side.o ripps2seance.o ripps2games.o ripps2boot.o ripps2ra.o ripps2status.o ripps2ember.o ripps2art.o ripps2artpack.o ripps2cd.o ripps2disc.o ripps2shot.o ripps2sfxpack.o ripps2bg.o ripps2files.o ripps2edit.o ripps2hdd.o ripps2card.o ripps2biossnd.o ripps2hints.o ripps2media.o ripps2iconrip.o rahunt.o ripps2kbd.o ripps2saves.o ripps2about.o ripps2tr.o padfile.o ripps2pads.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o mixsupport.o metadb.o \
++FRONTEND_OBJS = ripps2.o ripps2color.o ripps2ui.o ripps2side.o ripps2seance.o ripps2games.o ripps2boot.o ripps2ra.o ripps2status.o ripps2ember.o ripps2art.o ripps2artpack.o ripps2cd.o ripps2disc.o ripps2shot.o ripps2sfxpack.o ripps2bg.o ripps2files.o ripps2edit.o ripps2hdd.o ripps2card.o ripps2biossnd.o ripps2hints.o ripps2media.o ripps2iconrip.o rahunt.o ripps2kbd.o ripps2saves.o ripps2about.o ripps2tr.o padfile.o ripps2pads.o pad.o xparam.o fntsys.o renderman.o menusys.o OSDHistory.o system.o elfldr_noreset.o elfldr.o lang.o lang_internal.o config.o hdd.o dialogs.o favsupport.o mixsupport.o metadb.o \
+ 		dia.o ioman.o texcache.o themes.o supportbase.o bdmsupport.o netsupport.o ethsupport.o httpcatalog.o httpsupport.o udpfssupport.o hddsupport.o zso.o lz4.o launchdiag.o \
+ 		appsupport.o mmcesupport.o artindex.o vcdsupport.o cuesupport.o libview.o retrogem.o folderbrowse.o gui.o guigame.o vmcrebuild.o vmc_groups.o textures.o opl.o atlas.o nbns.o httpclient.o gsm.o cheatman.o cheatconfig.o sound.o ps2cnf.o tar.o saveicon.o cfgtitle.o
+ 
+diff --git a/ee_core/src/igrmenu.c b/ee_core/src/igrmenu.c
+index 47dad48..8eaf3ed 100644
+--- a/ee_core/src/igrmenu.c
++++ b/ee_core/src/igrmenu.c
+@@ -440,8 +440,8 @@ static void igrmCompose(const igrm_info_t *in, int sel, int armed)
+             } else if (in->shot == RIPSHOT_READY) {
+                 igrmText(y, TEXT_X, C_WARN, "ROLL FULL");
+                 igrmText(y + INFO_STEP, TEXT_X, C_DIM, "DEVELOP IN MEMORY FILES");
+-            } else if (in->shot == RIPSHOT_DRIVE_FULL)
+-                igrmText(y, TEXT_X, C_WARN, "DRIVE FULL");
++            } else if (in->shot == RIPSHOT_DRIVE_FULL) // build 144: it said DRIVE FULL for any roll it could not make
++                igrmText(y, TEXT_X, C_WARN, "NO ROLL: SEE DIAG.TXT");
+             else
+                 igrmText(y, TEXT_X, C_TEXT, "NOT FOR THIS GAME");
+             break;
+diff --git a/include/dialogs.h b/include/dialogs.h
+index b0e7928..b5cc6e4 100644
+--- a/include/dialogs.h
++++ b/include/dialogs.h
+@@ -38,6 +38,7 @@ enum UI_ITEMS {
+     UICFG_APPSVIEW,
+     UICFG_RIPPS2_RANDOM, // RIPPS2: Random Game (Off / On / Boot)
+     CFG_RIPPS2_BOOTLOCK, // RIPPS2: BOOT LOCK (PS2BBL starts RIPPS2 at power on)
++    CFG_RIPPS2_BOOTLOCK_LABEL, // build 144: hidden with it where BIBLE is in use (Manage has it)
+     CFG_RIPPS2_IGRMENU,  // RIPPS2 build 87: In-Game Menu (build 108: a row of Settings > General > In-Game Menu)
+     UICFG_RIPPS2_RIPSHOT, // RIPPS2 build 108: RIPSHOT and Develop Shots, on the same page
+     UICFG_RIPPS2_DEVELOP,
+diff --git a/include/gui.h b/include/gui.h
+index 790c510..d5bbfce 100644
+--- a/include/gui.h
++++ b/include/gui.h
+@@ -168,6 +168,7 @@ void guiShowEmberGameSettings(void);   // PS1 Triangle, Ember rows: timing/dithe
+ // Settings-layout category pages (rebuild step 06)
+ void guiShowDeviceConfig(void);
+ int guiShowControllerConfig(void);
++void guiGameShowControllers(const char *gameId, int neutrino); // build 144: a game's Controller Settings
+ int guiShowMmceConfig(void);
+ void guiShowArtworkConfig(void);
+ void guiShowCoverflowConfig(void);
+diff --git a/include/mixsupport.h b/include/mixsupport.h
+index 46b10d5..8f7b8ba 100644
+--- a/include/mixsupport.h
++++ b/include/mixsupport.h
+@@ -16,6 +16,8 @@ int mixWantsPs1(void);
+ // RIPPS2 build 114: the master list (allgames.bin). A source's list came (its saved games are replaced from now on);
+ // a row from the saved list whose source has not answered; Cross on one (start, wait, then the usual launch); how
+ // many games the kept list holds
++void mixIopWasReset(void);   // build 144
++void mixSettingsSaved(void); // build 144
+ void mixSourceAnswered(int mode, int count); // build 116: count, the games it listed (an empty pass is no answer)
+ int mixIsWaiting(int list, int id);
+ int mixIsStartRow(int list, int id); // build 130: a START row (a Manual drive with nothing saved): only Cross acts on it // build 115: list = MIX_MODE or RECENT_MODE, as below
+diff --git a/include/ripps2.h b/include/ripps2.h
+index f2af125..d3aa754 100644
+--- a/include/ripps2.h
++++ b/include/ripps2.h
+@@ -329,7 +329,7 @@ typedef struct
+     const char *value;       // on its right; NULL: none
+     const char *tip;         // what it does; NULL: none
+     const char *confirm;     // the confirm hint's word; NULL: the row only shows
+-    int steps;               // Left and Right change it, and confirm is the next value
++    int steps;               // Left and Right change it, and confirm is the next value (2, build 144: confirm chooses)
+     int clears;              // Square clears it
+     const unsigned int *sky; // three colours beside the value, 0xRRGGBB, as they are; NULL: none
+ } ripps2_page_row_t;
+@@ -337,6 +337,9 @@ typedef struct
+ #define RIPPS2_PAGE_CHOOSE 0
+ #define RIPPS2_PAGE_NEXT   1
+ #define RIPPS2_PAGE_CLEAR  2
++// ripps2color.c (build 144): a colour picker: count colours (1, or BIBLE's sky's 3 with their names), 0xRR 0xGG 0xBB each; 1 = OK
++int ripps2ColorPick(const char *title, unsigned char (*rgb)[3], int count, const char *const *partNames);
++int ripps2BootLoaderIsBible(void); // ripps2boot.c (build 144)
+ int ripps2Page(const char *title, const ripps2_page_row_t *rows, int count, int *cursor, int *action); // the row, or -1 for back
+ int ripps2PageList(const char *const *items, int count, int start); // a glass list over the page just drawn; -1 = none
+ int ripps2FilesPick(const char *title, char *out, int size, int *bdmType); // ripps2files.c: the browser picks an ELF; 1 when one was
+@@ -350,6 +353,7 @@ int ripps2MediaKind(const char *name);
+ void ripps2PlayMusicList(char (*paths)[256], int n, int start); // build 115: tracks played as a CD (ripps2media.c)
+ void ripps2ViewPicture(const char *path);
+ void ripps2ViewSaveIcon(const char *path); // build 98: a PS2 save icon (.ico / .icn) in 3D
++void ripps2ViewSaveIconInVmc(const char *image, const char *save, const char *file); // build 144: the same, from a card image
+ // build 98: the icon as OBJ (a shape each) + MTL + PNG in mass0:/RIPPS2/ICONS/<its folder>/ (in outDir); NULL = done
+ const char *ripps2RipSaveIcon(const char *iconPath, char *outDir, int outSize);
+ int ripps2CardFolderIcon(const char *dir); // build 98: the dead elf's hat on RIPPS2's card folder (icon.sys + ripps2.icn)
+diff --git a/src/dia.c b/src/dia.c
+index e20d63f..77a5b99 100644
+--- a/src/dia.c
++++ b/src/dia.c
+@@ -588,114 +588,27 @@ static int diaShowNumPad(char *text, int maxLen, int minv, int maxv)
+ 
+ static int colPadSettings[16];
+ 
++// build 144: the colour picker every colour row opens (ripps2color.c)
++static int diaColourTouched = 0;
++
+ static int diaShowColSel(unsigned char *r, unsigned char *g, unsigned char *b)
+ {
+-    int selc = 0;
+-    int ret = 0;
+-    unsigned char col[3];
++    unsigned char col[1][3];
++    int ok;
+ 
++    col[0][0] = *r;
++    col[0][1] = *g;
++    col[0][2] = *b;
+     padStoreSettings(colPadSettings);
+-
+-    col[0] = *r;
+-    col[1] = *g;
+-    col[2] = *b;
+-    setButtonDelay(KEY_LEFT, 1);
+-    setButtonDelay(KEY_RIGHT, 1);
+-
+-    while (1) {
+-        readPads();
+-
+-        rmStartFrame();
+-        if (guiDrawBGSettings() == 0)
+-            guiDrawBGPlasma();
+-        rmDrawRect(0, 0, screenWidth, screenHeight, gColDarker);
+-
+-        // "Color selection"
+-        fntRenderString(RIPPS2_DIA_FONT, 50, 50, ALIGN_NONE, 0, 0, _l(_STR_COLOR_SELECTION), GS_SETREG_RGBA(0x60, 0x60, 0x60, 0x80));
+-
+-        // 3 bars representing the colors...
+-        size_t co;
+-        int x, y;
+-
+-        for (co = 0; co < 3; ++co) {
+-            unsigned char cc[3] = {0, 0, 0};
+-            cc[co] = col[co];
+-
+-            x = 75;
+-            y = 75 + co * 25;
+-
+-            u64 dcol = GS_SETREG_RGBA(cc[0], cc[1], cc[2], 0x80);
+-
+-            if (selc == co)
+-                rmDrawRect(x, y, 200, 20, GS_SETREG_RGBA(0x60, 0x60, 0x60, 0x80));
+-            else
+-                rmDrawRect(x, y, 200, 20, GS_SETREG_RGBA(0x20, 0x20, 0x20, 0x80));
+-
+-            rmDrawRect(x + 2, y + 2, 190.0f * (cc[co] * 100 / 255) / 100, 16, dcol);
+-        }
+-
+-        // target color itself
+-        u64 dcol = GS_SETREG_RGBA(col[0], col[1], col[2], 0x80);
+-
+-        x = 300;
+-        y = 75;
+-
+-        rmDrawRect(x, y, 70, 70, GS_SETREG_RGBA(0x60, 0x60, 0x60, 0x80));
+-        rmDrawRect(x + 5, y + 5, 60, 60, dcol);
+-
+-        guiDrawIconAndText(gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON, _STR_OK, RIPPS2_DIA_FONT, 420, 417, gTheme->textColor);
+-        guiDrawIconAndText(gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON, _STR_CANCEL, RIPPS2_DIA_FONT, 500, 417, gTheme->textColor);
+-
+-        rmEndFrame();
+-
+-        /*
+-          Confirm/cancel are tested FIRST, and outside the direction chain.
+-
+-          The direction arms below use getKey() under setButtonDelay(..., 1), so while a direction
+-          is physically held getKey() reports true on EVERY frame. With confirm/cancel chained onto
+-          the same else-if ladder they were unreachable for the entire duration of a hold: press X
+-          while still leaning on the D-pad and nothing happened. getKeyOn() is edge-triggered, so
+-          hoisting it cannot steal a repeat from the directions.
+-        */
+-        if (getKeyOn(gSelectButton)) {
+-            sfxPlay(SFX_CONFIRM);
+-            *r = col[0];
+-            *g = col[1];
+-            *b = col[2];
+-            ret = 1;
+-            break;
+-        }
+-        if (getKeyOn(gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE)) {
+-            sfxPlay(SFX_CANCEL);
+-            ret = 0;
+-            break;
+-        }
+-
+-        if (getKey(KEY_LEFT)) {
+-            if (col[selc] > 0) {
+-                col[selc]--;
+-                sfxPlay(SFX_CURSOR);
+-            }
+-        } else if (getKey(KEY_RIGHT)) {
+-            if (col[selc] < 255) {
+-                col[selc]++;
+-                sfxPlay(SFX_CURSOR);
+-            }
+-        } else if (getKey(KEY_UP)) {
+-            if (selc > 0) {
+-                selc--;
+-                sfxPlay(SFX_CURSOR);
+-            }
+-        } else if (getKey(KEY_DOWN)) {
+-            if (selc < 2) {
+-                selc++;
+-                sfxPlay(SFX_CURSOR);
+-            }
+-        }
+-    }
+-
++    ok = ripps2ColorPick(_l(_STR_COLOR_SELECTION), col, 1, NULL);
+     padRestoreSettings(colPadSettings);
+-    return ret;
++    if (ok) {
++        diaColourTouched |= col[0][0] != *r || col[0][1] != *g || col[0][2] != *b;
++        *r = col[0][0];
++        *g = col[0][1];
++        *b = col[0][2];
++    }
++    return ok;
+ }
+ 
+ 
+@@ -1979,9 +1892,20 @@ static struct UIItem *diaFindByID(struct UIItem *ui, int id)
+     return NULL;
+ }
+ 
++// build 144: the page has an OK to press
++static int diaHasOkButton(struct UIItem *ui)
++{
++    for (; ui->type != UI_TERMINATOR; ui++)
++        if (ui->type == UI_OK && ui->visible && ui->enabled)
++            return 1;
++    return 0;
++}
++
+ int diaExecuteDialog(struct UIItem *ui, int uiId, short inMenu, int (*updater)(int modified))
+ {
++    int touched = 0; // build 144: the user changed a row here
+     rmGetScreenExtents(&screenWidth, &screenHeight);
++    diaColourTouched = 0;
+ 
+     struct UIItem *cur = NULL;
+     {
+@@ -2030,6 +1954,7 @@ int diaExecuteDialog(struct UIItem *ui, int uiId, short inMenu, int (*updater)(i
+         if (haveFocus) {
+             modified = 1;
+             haveFocus = diaHandleInput(cur, &modified);
++            touched |= modified;
+ 
+             if (!haveFocus) {
+                 setButtonDelay(KEY_UP, diaScrollDelay());
+@@ -2117,6 +2042,22 @@ int diaExecuteDialog(struct UIItem *ui, int uiId, short inMenu, int (*updater)(i
+ 
+             // Cancel button breaks focus or exits with false result
+             if (getKeyOn(guiCancelKey())) {
++                // build 144 (the user, 11/05: BOOT LOCK set off, Back, and it had not stuck: "make sure the entire settings menu
++                // ... mention you didnt hit ok on those pages ... a chance to apply changes and continue navigation or to cancel
++                // changes"): Back on a page that only OK keeps asks first
++                if ((touched || diaColourTouched) && (diaHasChanges(ui) || diaColourTouched) && diaHasOkButton(ui)) {
++                    int asked;
++                    guiMsgBoxStartOption(_t("KEEP EDITING"));
++                    guiMsgBoxBackLabel(_t("DISCARD"));
++                    asked = guiMsgBox(_t("You changed this page but did not press OK. Accept keeps the changes. Discard drops them."), 1, ui);
++                    readPads();
++                    if (asked == 2)
++                        continue;
++                    if (asked == 1) {
++                        diaRestoreScrollSpeed();
++                        return UIID_BTN_OK;
++                    }
++                }
+                 diaRestoreScrollSpeed();
+                 sfxPlay(SFX_CANCEL);
+                 return UIID_BTN_CANCEL;
+diff --git a/src/dialogs.c b/src/dialogs.c
+index ac5c992..4ef39e7 100644
+--- a/src/dialogs.c
++++ b/src/dialogs.c
+@@ -387,7 +387,7 @@ struct UIItem diaConfig[] = {
+     {UI_BOOL, CFG_FOLDERNAV, 1, 1, _STR_HINT_FOLDER_NAV, 0, 0, {.intvalue = {0, 0}}},
+     {UI_BREAK},
+ 
+-    {UI_LABEL, 0, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_BOOT_LOCK}}},
++    {UI_LABEL, CFG_RIPPS2_BOOTLOCK_LABEL, 1, 1, -1, -40, 0, {.label = {NULL, _STR_RIPPS2_BOOT_LOCK}}},
+     {UI_SPACER},
+     {UI_BOOL, CFG_RIPPS2_BOOTLOCK, 1, 1, _STR_HINT_RIPPS2_BOOT_LOCK, 0, 0, {.intvalue = {0, 0}}},
+     {UI_BREAK},
+diff --git a/src/gui.c b/src/gui.c
+index 159ad71..cfa20f2 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -692,6 +692,9 @@ static void guiBootLockBegin(struct UIItem *ui)
+ {
+     bootLockWas = ripps2BootLockKnown(); // build 134: scanned once, not on every open
+     diaSetInt(ui, CFG_RIPPS2_BOOTLOCK, bootLockWas);
++    // build 144 (the user, 11/05): with BIBLE, BOOT LOCK is a row of Manage, beside what it changes
++    diaSetVisible(ui, CFG_RIPPS2_BOOTLOCK, !ripps2BootLoaderIsBible());
++    diaSetVisible(ui, CFG_RIPPS2_BOOTLOCK_LABEL, !ripps2BootLoaderIsBible());
+ }
+ 
+ static void guiBootLockEnd(struct UIItem *ui)
+@@ -734,6 +737,7 @@ void guiShowConfig()
+ reshow_config:
+     ret = diaExecuteDialog(diaConfig, -1, 1, &guiUpdater);
+     if (ret == RIPPS2_BIBLE_BUTTON) { // RIPPS2: BIBLE may have turned the lock on
++        guiBootLockEnd(diaConfig);    // build 144: a change made here is not lost by going in
+         ripps2BibleManage();
+         guiBootLockBegin(diaConfig);
+         goto reshow_config;
+@@ -3803,6 +3807,164 @@ reshow_controller:
+     return guiSettingsPageResult(result);
+ }
+ 
++#ifdef PADEMU
++// build 144: this game's button map (PADS/GAMES/<its ID>.pad, which ripps2PadsPrepare hands to PADEMU), as rows: what each button
++// does in this game. The file is written once when the page closes, and taken away when every button does what it says.
++#define GUI_MAP_NONE (PAD_REF_NONE - 1)
++static const char *const guiMapKeys[PAD_B_COUNT] = {"select", "l3", "r3", "start", "up", "right", "down", "left",
++                                                    "l2", "r2", "l1", "r1", "triangle", "circle", "cross", "square"};
++static const char *const guiMapShown[PAD_B_COUNT] = {"SELECT", "L3", "R3", "START", N_("Up"), N_("Right"), N_("Down"), N_("Left"),
++                                                     "L2", "R2", "L1", "R1", N_("Triangle"), N_("Circle"), N_("Cross"), N_("Square")};
++static const unsigned char guiMapOrder[PAD_B_COUNT] = {PAD_B_CROSS, PAD_B_CIRCLE, PAD_B_SQUARE, PAD_B_TRIANGLE, PAD_B_L1, PAD_B_R1, PAD_B_L2, PAD_B_R2,
++                                                       PAD_B_L3, PAD_B_R3, PAD_B_START, PAD_B_SELECT, PAD_B_UP, PAD_B_DOWN, PAD_B_LEFT, PAD_B_RIGHT};
++
++static int guiMapPath(const char *gameId, char *path, int size)
++{
++    char dir[256];
++    if (gameId == NULL || !gameId[0] || !oplGetRipps2Dir(dir, sizeof(dir) - 16))
++        return 0;
++    return snprintf(path, size, "%sPADS/GAMES/%s.pad", dir, gameId) < size;
++}
++
++// 1 when the game has a map of its own; *moved how many buttons it changes
++static int guiMapRead(const char *gameId, unsigned char *map, int *moved)
++{
++    char path[320], text[2048], err[96];
++    int fd, n, i;
++
++    memset(map, PAD_REMAP_SAME, PAD_B_COUNT);
++    *moved = 0;
++    if (!guiMapPath(gameId, path, sizeof(path)) || (fd = open(path, O_RDONLY)) < 0)
++        return 0;
++    n = read(fd, text, sizeof(text) - 1);
++    close(fd);
++    if (n < 0 || padMapParse(text, n, map, err, sizeof(err)) != 0) {
++        memset(map, PAD_REMAP_SAME, PAD_B_COUNT);
++        return 0;
++    }
++    for (i = 0; i < PAD_B_COUNT; i++)
++        *moved += map[i] != PAD_REMAP_SAME;
++    return *moved > 0;
++}
++
++static void guiMapWrite(const char *gameId, const unsigned char *map)
++{
++    char dir[256], path[320], text[1024], msg[420];
++    int fd, i, len, moved = 0;
++
++    if (!guiMapPath(gameId, path, sizeof(path)) || !oplGetRipps2Dir(dir, sizeof(dir) - 16))
++        return;
++    for (i = 0; i < PAD_B_COUNT; i++)
++        moved += map[i] != PAD_REMAP_SAME;
++    if (!moved) {
++        remove(path);
++        return;
++    }
++    len = snprintf(text, sizeof(text), "# This game's button map, set on the PS2 by RIPPS2 (the game's Controller Settings)\n[Mapping]\nformat=%d\n", PAD_FORMAT);
++    for (i = 0; i < PAD_B_COUNT; i++)
++        if (map[i] != PAD_REMAP_SAME)
++            len += snprintf(text + len, sizeof(text) - len, "%s=%s\n", guiMapKeys[i], map[i] == GUI_MAP_NONE ? "none" : guiMapKeys[map[i]]);
++    strcat(dir, "PADS");
++    mkdir(dir, 0777);
++    strcat(dir, "/GAMES");
++    mkdir(dir, 0777);
++    if ((fd = open(path, O_WRONLY | O_CREAT | O_TRUNC)) < 0 || write(fd, text, len) != len) {
++        if (fd >= 0)
++            close(fd);
++        snprintf(msg, sizeof(msg), _t("%s could not be written."), path);
++        guiMsgBox(msg, 0, NULL);
++        return;
++    }
++    close(fd);
++    snprintf(msg, sizeof(msg), _t("Saved as %s. It works through the Pad Emulator, so turn that on for this game."), path);
++    guiMsgBoxSound(SFX_SAVE);
++    guiMsgBox(msg, 0, NULL);
++}
++
++static void guiGameButtonMap(const char *gameId)
++{
++    static ripps2_page_row_t rows[PAD_B_COUNT];
++    unsigned char map[PAD_B_COUNT], was[PAD_B_COUNT];
++    int moved, cursor = 0, i, pick, action;
++
++    guiMapRead(gameId, map, &moved);
++    memcpy(was, map, sizeof(was));
++    while (1) {
++        for (i = 0; i < PAD_B_COUNT; i++) {
++            int b = guiMapOrder[i];
++            rows[i].label = _t(guiMapShown[b]);
++            rows[i].value = map[b] == PAD_REMAP_SAME ? _t("Itself") : map[b] == GUI_MAP_NONE ? _t("Nothing") : _t(guiMapShown[map[b]]);
++            rows[i].tip = _t("What this button does in this game, on a USB pad through the Pad Emulator. Square puts it back. The file is written when this page closes.");
++            rows[i].confirm = _t("NEXT VALUE");
++            rows[i].steps = 1;
++            rows[i].clears = 1;
++            rows[i].sky = NULL;
++        }
++        if ((pick = ripps2Page(_t("Button Map"), rows, PAD_B_COUNT, &cursor, &action)) < 0)
++            break;
++        {
++            int b = guiMapOrder[pick], v;
++            if (action == RIPPS2_PAGE_CLEAR) {
++                map[b] = PAD_REMAP_SAME;
++                continue;
++            }
++            // the sixteen buttons, then nothing
++            v = map[b] == PAD_REMAP_SAME ? b : map[b] == GUI_MAP_NONE ? PAD_B_COUNT : map[b];
++            v = (v + action + PAD_B_COUNT + 1) % (PAD_B_COUNT + 1);
++            map[b] = v == b ? PAD_REMAP_SAME : v == PAD_B_COUNT ? GUI_MAP_NONE : v;
++        }
++    }
++    if (memcmp(map, was, sizeof(map)))
++        guiMapWrite(gameId, map);
++}
++
++void guiGameShowControllers(const char *gameId, int neutrino)
++{
++    enum { GC_EMU, GC_MACRO, GC_MAP, GC_PADS, GC_SETUP, GC_COUNT };
++    static ripps2_page_row_t rows[GC_COUNT];
++    static char mapValue[48];
++    unsigned char map[PAD_B_COUNT];
++    int cursor = 0, pick, action, moved;
++
++    while (1) {
++        memset(rows, 0, sizeof(rows));
++        rows[GC_EMU].label = _l(_STR_PADEMUCONFIG);
++        rows[GC_EMU].tip = _t("This game's Pad Emulator: USB and Bluetooth pads in the game.");
++        rows[GC_MACRO].label = _l(_STR_PADMACROCONFIG);
++        rows[GC_MACRO].tip = _t("This game's macros: slowdown, turbo and inverted sticks.");
++        rows[GC_MAP].label = _t("Button Map");
++        if (guiMapRead(gameId, map, &moved))
++            snprintf(mapValue, sizeof(mapValue), _t("%d changed"), moved);
++        else
++            snprintf(mapValue, sizeof(mapValue), "%s", _t("None"));
++        rows[GC_MAP].value = mapValue;
++        rows[GC_MAP].tip = _t("What each button does in this game, kept beside RIPPS2 in PADS/GAMES. It works through the Pad Emulator.");
++        rows[GC_PADS].label = _l(_STR_RIPPS2_MY_PADS);
++        rows[GC_PADS].tip = _t("Every pad profile beside RIPPS2, and what is wrong with any it refuses. These are for every game.");
++        rows[GC_SETUP].label = _l(_STR_RIPPS2_PAD_SETUP);
++        rows[GC_SETUP].tip = _t("Teach RIPPS2 a USB pad it does not know: press what it asks for, try it, save. This is for every game.");
++        for (pick = 0; pick < GC_COUNT; pick++)
++            rows[pick].confirm = _t("OPEN");
++        if ((pick = ripps2Page(_t("Controllers"), rows, GC_COUNT, &cursor, &action)) < 0)
++            return;
++        if (neutrino && pick <= GC_MAP) {
++            guiMsgBox(_l(_STR_NEUTRINO_SETTING_NA), 0, NULL);
++            continue;
++        }
++        if (pick == GC_EMU)
++            guiGameShowPadEmuConfig(0);
++        else if (pick == GC_MACRO)
++            guiGameShowPadMacroConfig(0);
++        else if (pick == GC_MAP)
++            guiGameButtonMap(gameId);
++        else if (pick == GC_PADS)
++            guiShowMyPads();
++        else
++            guiSetUpUsbPad();
++    }
++}
++#endif
++
+ static int guiSettingsSkipID(int id, const int *skipIDs, int skipCount)
+ {
+     int i;
+@@ -4025,6 +4187,7 @@ static int guiSettingsShowGeneral(void)
+ reshow_general:
+     result = diaExecuteDialog(ui, -1, 1, &guiSettingsGeneralUpdater);
+     if (result == RIPPS2_BIBLE_BUTTON) { // RIPPS2: BIBLE may have turned the lock on
++        guiBootLockEnd(ui);              // build 144: a change made here is not lost by going in (the user, 11/05)
+         ripps2BibleManage();
+         guiBootLockBegin(ui);
+         goto reshow_general;
+diff --git a/src/menusys.c b/src/menusys.c
+index 6c4cdf5..296a5d5 100644
+--- a/src/menusys.c
++++ b/src/menusys.c
+@@ -914,8 +914,7 @@ void menuInitGameMenu(item_list_t *support)
+     submenuAppendItem(&gameMenu, -1, NULL, GAME_GSM_SETTINGS, _STR_GSCONFIG);
+     submenuAppendItem(&gameMenu, -1, NULL, GAME_VMC_SETTINGS, _STR_VMC_SCREEN);
+ #ifdef PADEMU
+-    submenuAppendItem(&gameMenu, -1, NULL, GAME_PADEMU_SETTINGS, _STR_PADEMUCONFIG);
+-    submenuAppendItem(&gameMenu, -1, NULL, GAME_PADMACRO_SETTINGS, _STR_PADMACROCONFIG);
++    submenuAppendItem(&gameMenu, -1, NULL, GAME_PADEMU_SETTINGS, _STR_CONTROLLER_SETTINGS); // build 144: one page, as Settings has
+ #endif
+     submenuAppendItem(&gameMenu, -1, NULL, GAME_OSD_LANGUAGE_SETTINGS, _STR_OSD_SETTINGS);
+     submenuAppendItem(&gameMenu, -1, NULL, GAME_SAVE_CHANGES, _STR_SAVE_CHANGES);
+@@ -3183,15 +3182,11 @@ void menuHandleInputGameMenu()
+             guiGameShowVMCMenu(selected_item->item->current->item.id, selected_item->item->userdata, itemConfig);
+ #ifdef PADEMU
+         } else if (menuID == GAME_PADEMU_SETTINGS) {
+-            if (gameMenuCoreIsNeutrino())
+-                guiMsgBox(_l(_STR_NEUTRINO_SETTING_NA), 0, NULL);
+-            else
+-                guiGameShowPadEmuConfig(0);
+-        } else if (menuID == GAME_PADMACRO_SETTINGS) {
+-            if (gameMenuCoreIsNeutrino())
+-                guiMsgBox(_l(_STR_NEUTRINO_SETTING_NA), 0, NULL);
+-            else
+-                guiGameShowPadMacroConfig(0);
++            // build 144 (the user, 11/05: "the old two pademu options are on the games instead of the new Controllers menu"):
++            // the Pad Emulator, its macros, the game's button map and the user's pads on one page
++            item_list_t *padSupport = selected_item->item->userdata;
++            const char *padId = padSupport->itemGetStartup != NULL ? padSupport->itemGetStartup(padSupport, selected_item->item->current->item.id) : NULL;
++            guiGameShowControllers(padId, gameMenuCoreIsNeutrino());
+ #endif
+         } else if (menuID == GAME_OSD_LANGUAGE_SETTINGS) {
+             if (gameMenuCoreIsNeutrino())
+diff --git a/src/mixsupport.c b/src/mixsupport.c
+index 6aeb3fd..e657102 100644
+--- a/src/mixsupport.c
++++ b/src/mixsupport.c
+@@ -181,6 +181,8 @@ static int mixMasterCount = 0, mixMasterLoaded = 0, mixMasterSaved = -1;
+ static unsigned int mixMasterSum = 0;
+ static unsigned char mixAnswered[MIX_FAM_COUNT]; // its list has come at least once this boot
+ static unsigned char mixFamWaiting[MIX_FAM_COUNT]; // the last pass listed saved games of it
++static unsigned char mixDropped[MIX_FAM_COUNT];  // build 144: the last pass left its saved games off the page, unanswered
++static char mixMasterSavedPath[256];             // build 144: where the list on file was read or written
+ static double mixWaitSince[MIX_FAM_COUNT];        // when it was first seen started without its list
+ 
+ static int mixModeFamily(int mode)
+@@ -360,6 +362,7 @@ static void mixMasterLoad(void)
+     mixMasterCount = count;
+     mixMasterSum = mixLe32(buf + 12);
+     mixMasterSaved = count;
++    snprintf(mixMasterSavedPath, sizeof(mixMasterSavedPath), "%s", path);
+     free(buf);
+     LOG("mixMasterLoad: %d games from %s" "\n", count, path);
+ }
+@@ -370,12 +373,20 @@ static void mixMasterSave(const mix_rec_t *arr, int count)
+     char path[256];
+     unsigned char *buf, *p;
+     unsigned int sum;
+-    int i, len = 16, fd, ok;
++    int i, len = 16, fd, ok, extra = 0, total;
+ 
+     if (!gRipps2FastCache || !gEnableWrite || count <= 0 || count > MIX_MASTER_MAX)
+         return;
+     for (i = 0; i < count; i++)
+         len += 4 + (strlen(arr[i].startup) < 255 ? strlen(arr[i].startup) : 255) + (strlen(arr[i].text) < 255 ? strlen(arr[i].text) : 255);
++    // build 144 (the user's console, 11/05: 152 HDD games gone from allgames.bin, 176 rows down to 33): the list on file is what
++    // each drive listed last. Only a drive's own answer changes its rows: one that is off, or silent this boot, keeps them there
++    for (i = 0; i < mixMasterCount; i++)
++        if (mixDropped[mixMaster[i].family] && count + extra < MIX_MASTER_MAX) {
++            extra++;
++            len += 4 + strlen(mixMaster[i].startup) + strlen(mixMaster[i].text);
++        }
++    total = count + extra;
+     if ((buf = malloc(len)) == NULL)
+         return;
+     for (i = 0, p = buf + 16; i < count; i++) {
+@@ -388,17 +399,30 @@ static void mixMasterSave(const mix_rec_t *arr, int count)
+         memcpy(p + 4 + sl, arr[i].text, nl);
+         p += 4 + sl + nl;
+     }
++    for (i = 0; i < mixMasterCount && extra > 0; i++)
++        if (mixDropped[mixMaster[i].family]) {
++            int sl = strlen(mixMaster[i].startup), nl = strlen(mixMaster[i].text);
++            p[0] = mixMaster[i].kind;
++            p[1] = mixMaster[i].family;
++            p[2] = sl;
++            p[3] = nl;
++            memcpy(p + 4, mixMaster[i].startup, sl);
++            memcpy(p + 4 + sl, mixMaster[i].text, nl);
++            p += 4 + sl + nl;
++            extra--;
++        }
+     sum = mixFnv(buf + 16, len - 16);
+-    if (mixMasterSaved == count && sum == mixMasterSum) {
++    mixMasterPath(path, sizeof(path));
++    // build 144: and a new home for the settings gets the list too (Save Settings To moved them, the sum was the same)
++    if (mixMasterSaved == total && sum == mixMasterSum && !strcmp(path, mixMasterSavedPath)) {
+         free(buf);
+         return;
+     }
+     memcpy(buf, MIX_MASTER_MAGIC, 8);
+-    mixPutLe32(buf + 8, count);
++    mixPutLe32(buf + 8, total);
+     mixPutLe32(buf + 12, sum);
+     // written in place, as favourites.bin is: a memory card has no rename to put a staged copy in place (the lab found
+     // allgames.bin.new left behind), and a file cut short fails its sum and is not read
+-    mixMasterPath(path, sizeof(path));
+     if (!ioWriteBegin()) { // build 114: the IO worker writes this; never once a launch has begun
+         free(buf);
+         return;
+@@ -412,8 +436,9 @@ static void mixMasterSave(const mix_rec_t *arr, int count)
+     free(buf);
+     if (ok) {
+         mixMasterSum = sum;
+-        mixMasterSaved = count;
+-        LOG("mixMasterSave: %d games to %s" "\n", count, path);
++        mixMasterSaved = total;
++        snprintf(mixMasterSavedPath, sizeof(mixMasterSavedPath), "%s", path);
++        LOG("mixMasterSave: %d games to %s" "\n", total, path);
+     }
+ }
+ 
+@@ -641,12 +666,19 @@ static int mixBuildRows(item_list_t *itemList, mix_rec_t **out, int save)
+     // build 114: the saved games of every source still to answer (rank 100 and up, so a live row of the same title wins)
+     if (!mixMasterLoaded)
+         mixMasterLoad();
+-    if (page < 0)
++    if (page < 0) {
+         memset(mixFamWaiting, 0, sizeof(mixFamWaiting));
++        memset(mixDropped, 0, sizeof(mixDropped));
++    }
+     for (i = 0; gRipps2FastCache && i < mixMasterCount; i++) {
+         mix_master_t *m = &mixMaster[i];
+-        if (mixAnswered[m->family] || mixFamilyGone(m->family, &settling))
++        if (mixAnswered[m->family])
++            continue;
++        if (mixFamilyGone(m->family, &settling)) {
++            if (page < 0)
++                mixDropped[m->family] = 1; // off the page, not off the file
+             continue;
++        }
+         if (page >= 0 && mixFamilyMode(m->family) != pageMode) // build 116: a drive page shows its own drive's
+             continue;
+         mixAppend(&b, NULL, -1, -1, m->kind, 100 + m->family, m->text, m->startup, m->family);
+@@ -1397,6 +1429,25 @@ int mixWaitForRow(struct menu_item *menu)
+     }
+ }
+ 
++// build 144: an IOP restart (Manage's bind, a BIOS rip) empties every source's list. Until each answers again its saved games
++// wait as they did at boot; "it has answered" would leave those rows out, and the file with them
++void mixIopWasReset(void)
++{
++    memset(mixAnswered, 0, sizeof(mixAnswered));
++    memset(mixWaitSince, 0, sizeof(mixWaitSince));
++}
++
++// build 144: Save Settings To moved the settings: one pass writes the list beside them. Otherwise nothing: a rebuild clears the
++// page and asks for every cover again
++void mixSettingsSaved(void)
++{
++    char path[256];
++
++    mixMasterPath(path, sizeof(path));
++    if (mixMasterSavedPath[0] && strcmp(path, mixMasterSavedPath))
++        mixRequestUpdate();
++}
++
+ void mixRequestUpdate(void)
+ {
+     mixSets[0].forceUpdate = mixSets[1].forceUpdate = 1;
+diff --git a/src/mmcesupport.c b/src/mmcesupport.c
+index e8d81bb..0abcc82 100644
+--- a/src/mmcesupport.c
++++ b/src/mmcesupport.c
+@@ -659,6 +659,9 @@ void mmceInit(item_list_t *itemList)
+     mmcePs1GameCount = 0;
+     mmcePs1Games = NULL;
+     mmceResolvedDevice = -1; // re-detect the Auto slot on a fresh init (tab re-enable / settings apply)
++    // build 144 (the user's console, 11/05: after Manage's bind All Games had no MMCE rows, while Status and Memory Files saw the
++    // card): the list above was just emptied, and Trust Cache still said the list on screen stands, so it was never read again
++    sbSnapForget(&mmceSnap);
+     mmceFoldersCreatedFor[0] = '\0';
+     mmceFolderRetries = 0;
+ 
+diff --git a/src/opl.c b/src/opl.c
+index 8083107..e23059e 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -5195,6 +5195,7 @@ static void _saveConfig()
+     // build 111: Save Settings To went back to Memory Card, so no pointer may send the next boot to the old home. Only
+     // then: an ordinary save that lands on the card (a boot whose chosen drive was missing, the last game played) keeps
+     // the pointers, so the drive's settings come back with the drive.
++    mixSettingsSaved(); // build 144: the list goes with the settings, if they moved
+     if (onCard && lscret > 0 && gRipps2HomeBackToCard) {
+         ripps2ForgetRedirect();
+         gRipps2HomeBackToCard = 0;
+@@ -5684,6 +5685,7 @@ int ripps2RebootIopWith(const void *ioprp, int size)
+ 
+     ioBlockOps(0);
+     initAllSupport(1);
++    mixRequestUpdate(); // build 144: All Games shows what it holds at once, as at boot
+     audioInit();
+     sfxReload(-1); // RIPPS2 build 95: on the IO worker, after the drives
+     if (gEnableBGM)
+@@ -5748,6 +5750,7 @@ void ripps2RebootIopAfterBind(void)
+     }
+     ioBlockOps(0);
+     initAllSupport(1);
++    mixRequestUpdate(); // build 144: All Games shows what it holds at once, as at boot
+     audioInit();
+     sfxReload(-1);
+     if (gEnableBGM)
+@@ -5765,6 +5768,7 @@ static void reset(void)
+     hddIopWasReset();
+     mmceIopWasReset();
+     udpfsIopWasReset();
++    mixIopWasReset(); // build 144
+ 
+     mcInit(MC_TYPE_XMC);
+ }
+diff --git a/src/ripps2boot.c b/src/ripps2boot.c
+index 863aef6..d29ab0f 100644
+--- a/src/ripps2boot.c
++++ b/src/ripps2boot.c
+@@ -878,6 +878,12 @@ static void blSetLocked(int locked)
+ // OSDMenu; the answer is kept for EXIT (blSetLocked).
+ static int blLockKnown = -1; // build 134: the last scan's answer, -1 = none yet
+ 
++// build 144: BIBLE is what starts here: it started RIPPS2, or a card holds it (a scan has run: ripps2BootLockKnown)
++int ripps2BootLoaderIsBible(void)
++{
++    return gBibleHome[0] || (blCards[0].present && blCards[0].bible && !blCards[0].plain) || (blCards[1].present && blCards[1].bible && !blCards[1].plain);
++}
++
+ int ripps2BootLockState(void)
+ {
+     int i, boot = blScan(), kind = boot >= 0 ? blCards[boot].kind : BL_NONE, locked = 0;
+@@ -1894,7 +1900,7 @@ static int blHddHasBackup(void)
+ // written, taken only with START
+ static void blInstall(void)
+ {
+-    char items[2][64], what[64], boot[256], msg[900], alt[160] = "";
++    char items[2][160], what[96], boot[256], msg[900], alt[160] = "";
+     const char *list[8];
+     int ports[8], n = 0, port, pick, bootPort, current = -1, hdd = blHddUsable();
+     blWhere_t where[5];
+@@ -2152,7 +2158,6 @@ static const blSet_t blSets[] = {
+     {"KEY_READ_WAIT_TIME", N_("Power-on Wait"), 6, {"0", "1000", "2000", "3000", "6000", "10000"}, {"0 ms", "1000 ms", "2000 ms", "3000 ms", "6000 ms", "10000 ms"}, -1},
+     {"DISC_STOP", N_("Stop Disc at Launch"), 2, {"0", "1"}, {N_("Off"), N_("On")}, 1},
+     {"EJECT_TRAY", N_("Eject Tray at Launch"), 2, {"0", "1"}, {N_("Off"), N_("On")}, 0},
+-    {"OSDHISTORY_READ", N_("Read Console History"), 2, {"0", "1"}, {N_("Off"), N_("On")}, 1},
+     {"APP_GAMEID", N_("Game ID for Apps"), 2, {"0", "1"}, {N_("Off"), N_("On")}, 1},
+     {"CDROM_DISABLE_GAMEID", N_("Game ID for Discs"), 2, {"1", "0"}, {N_("Off"), N_("On")}, 1}, // the key says "disable"
+     {"VIDEO_MODE", "Video Mode", 7, {"AUTO", "NTSC", "PAL", "480P", "576P", "720P", "1080I"}, {N_("Auto"), "NTSC", "PAL", "480p", "576p", "720p", "1080i"}, 0},
+@@ -2657,7 +2662,6 @@ static const struct
+     {"KEY_READ_WAIT_TIME", N_("How long BIBLE waits for a button before the Auto path. At 0 ms a button held from power on still works.")},
+     {"DISC_STOP", N_("On stops the disc at a launch and waits for the drive to answer. Off skips that wait, about 3 s in the lab, and a disc in the tray keeps spinning.")},
+     {"EJECT_TRAY", N_("When a button starts a disc and the tray is empty, On opens the tray for you.")},
+-    {"OSDHISTORY_READ", N_("BIBLE keeps this key from PS2BBL, but nothing in this build acts on it, so it changes nothing yet.")},
+     {"APP_GAMEID", N_("On shows a program's game ID on screen as it starts, for RetroGEM video mods. It is up to 11 characters from the file name.")},
+     {"CDROM_DISABLE_GAMEID", N_("On shows a disc's game ID on screen as it starts, for RetroGEM video mods.")},
+     {"VIDEO_MODE", N_("The signal BIBLE starts in. Auto uses RIPPS2's Video Mode when its settings are on a memory card, and the console's own mode when they are not.")},
+@@ -2688,9 +2692,9 @@ static int blSkyState(char *val, int size)
+     return -2;
+ }
+ 
+-enum { BLR_SETUP = -1, BLR_SKY = -2, BLR_BOOT = -3, BLR_KEYS = -4, BLR_FILE = -5 }; // 0 and up: a row of blSets
++enum { BLR_SETUP = -1, BLR_SKY = -2, BLR_BOOT = -3, BLR_KEYS = -4, BLR_FILE = -5, BLR_LOCK = -6 }; // 0 and up: a row of blSets
+ 
+-#define BL_ROWS (BL_SETS + 5)
++#define BL_ROWS (BL_SETS + 6)
+ 
+ // Boot Sound changed here: as Audio does when it closes
+ static void blBootSoundClose(int changed)
+@@ -2770,14 +2774,14 @@ static void blBibleMenu(int boot, int removed)
+                     snprintf(own[n], sizeof(own[n]), "%s", _t(ripps2PaletteName(state)));
+                 } else {
+                     snprintf(text, sizeof(text), "%s", val);
+-                    snprintf(own[n], sizeof(own[n]), "%s", val);
++                    snprintf(own[n], sizeof(own[n]), "%s", _t("Your Own")); // build 144: the picker's; the hex is in the picker and the file
+                 }
+                 kind[n] = BLR_SKY;
+                 rows[n].label = _t("Sky Color");
+                 rows[n].value = own[n];
+-                rows[n].tip = _t("The sky on BIBLE's splash. Follow Color Theme uses the sky RIPPS2 saves with its settings. A color named here stays, whatever the theme.");
+-                rows[n].confirm = _t("NEXT VALUE");
+-                rows[n].steps = 1;
++                rows[n].tip = _t("The sky on BIBLE's splash. Left and Right step through the Color Themes. The picker makes your own, top, horizon and floor. Follow Color Theme uses the sky RIPPS2 saves with its settings.");
++                rows[n].confirm = _t("PICK A COLOR"); // build 144
++                rows[n].steps = 2;
+                 rows[n].sky = sscanf(text, "%6x,%6x,%6x", &sky[0], &sky[1], &sky[2]) == 3 ? sky : NULL;
+                 n++;
+             }
+@@ -2791,6 +2795,15 @@ static void blBibleMenu(int boot, int removed)
+                 n++;
+             }
+         }
++        // build 144 (the user, 11/05: "place the boot lock after widescreen before launch keys so it can be switched on or off
++        // easily and edited in manage"): written at once; it says what it changed, and the file is read again after
++        kind[n] = BLR_LOCK;
++        rows[n].label = "BOOT LOCK";
++        rows[n].value = ripps2BootLockKnown() ? _t("On") : _t("Off");
++        rows[n].tip = _t("On: BIBLE starts RIPPS2 first at power on, and a game's EXIT comes back the same way. Off: BIBLE's Auto path is what it was before. Launch Keys below edits the paths either way.");
++        rows[n].confirm = _t("NEXT VALUE");
++        rows[n].steps = 1;
++        n++;
+         kind[n] = BLR_KEYS;
+         snprintf(own[n], sizeof(own[n]), "%d / %d", have ? blKeysSet() : 0, BL_KEYS);
+         rows[n].label = _t("Launch Keys");
+@@ -2826,6 +2839,18 @@ static void blBibleMenu(int boot, int removed)
+             }
+             continue;
+         }
++        if (k == BLR_LOCK) {
++            if (!blIniFlush()) {
++                blIniFailed();
++                continue;
++            }
++            ripps2BootLockApply(!ripps2BootLockKnown());
++            have = blSettingsFile(boot);
++            if (have)
++                have = blRead(blSetPath) >= 0;
++            blDirty = 0;
++            continue;
++        }
+         if (k == BLR_BOOT) {
+             gEnableBootSND = (gEnableBootSND + action + 3) % 3;
+             bootChanged = 1;
+@@ -2851,6 +2876,33 @@ static void blBibleMenu(int boot, int removed)
+             have = blRead(blSetPath) >= 0;
+             continue;
+         }
++        if (k == BLR_SKY && action == RIPPS2_PAGE_CHOOSE) { // build 144: the picker
++            static const char *const parts[3] = {N_("Top"), N_("Horizon"), N_("Floor")};
++            unsigned char rgb[3][3];
++            unsigned int c[3];
++            char text[32];
++            int state = blSkyState(val, sizeof(val));
++            if (state == -1)
++                ripps2BibleSky(text, sizeof(text));
++            else if (state >= 0)
++                ripps2ThemeSky(state, text, sizeof(text));
++            else
++                snprintf(text, sizeof(text), "%s", val);
++            if (sscanf(text, "%6x,%6x,%6x", &c[0], &c[1], &c[2]) != 3)
++                c[0] = c[1] = c[2] = 0;
++            for (j = 0; j < 3; j++) {
++                rgb[j][0] = (c[j] >> 16) & 0xFF;
++                rgb[j][1] = (c[j] >> 8) & 0xFF;
++                rgb[j][2] = c[j] & 0xFF;
++            }
++            if (ripps2ColorPick(_t("Sky Color"), rgb, 3, parts)) {
++                snprintf(text, sizeof(text), "%02X%02X%02X,%02X%02X%02X,%02X%02X%02X", rgb[0][0], rgb[0][1], rgb[0][2], rgb[1][0], rgb[1][1],
++                         rgb[1][2], rgb[2][0], rgb[2][1], rgb[2][2]);
++                if (!blIniEdit("BIBLE_COLOR", 0, text, NULL))
++                    blIniFailed();
++            }
++            continue;
++        }
+         if (k == BLR_SKY) {
+             char text[32];
+             int state = blSkyState(val, sizeof(val));
+@@ -2892,7 +2944,7 @@ void ripps2BibleManage(void)
+ 
+ static void blManageCards(int boot, int removed)
+ {
+-    char msg[900], what[2][64];
++    char msg[900], what[2][96];
+     int port;
+ 
+     for (port = 0; port < 2; port++)
+diff --git a/src/ripps2card.c b/src/ripps2card.c
+index d133466..18a4f1b 100644
+--- a/src/ripps2card.c
++++ b/src/ripps2card.c
+@@ -27,6 +27,7 @@
+ #define NEWLIB_PORT_AWARE
+ #include <fileXio_rpc.h> // fileXioDevctl: genvmc's devctls (the one call below newlib)
+ 
++#include <time.h> // build 144: the tip's rest
+ #include "include/opl.h"
+ #include "include/gui.h"
+ #include "include/renderman.h"
+@@ -91,7 +92,7 @@ static int cmIsSystem(const char *n)
+ {
+     static const char *const keep[] = {"BOOT", "SYS-CONF", "SYS_CONF", "APPS", "PS2BBL", "FMCB", "OSDMENU", "OSDSYS", "RIPPS2", "POPSTARTER",
+                                        "NEUTRINO", "EMBER", "OPL", "BIBLE", "BOOTLOCK", "B?EXEC-SYSTEM", "BAEXEC-SYSTEM", "BEEXEC-SYSTEM",
+-                                       "BIEXEC-SYSTEM", NULL};
++                                       "BIEXEC-SYSTEM", "BCEXEC-SYSTEM", NULL};
+     int i;
+     for (i = 0; keep[i] != NULL; i++)
+         if (!strcasecmp(n, keep[i]))
+@@ -99,6 +100,40 @@ static int cmIsSystem(const char *n)
+     return cmBootDir[0] && !strcasecmp(n, cmBootDir);
+ }
+ 
++// build 144 (the user, 11/05: "kept by erase clogging up the line and clipping the file sizes ... why not use the memory files
++// tooltips per item instead to match its style"): the row under the cursor, after a rest, in Memory Files' box
++#define CM_TIP_REST_S 0.6f
++static int cmTipCursor = -1;
++static clock_t cmTipSince;
++
++static void cmDrawTip(int cursor, int top)
++{
++    const cm_save_t *s;
++    char line[64];
++    int smallFont = gTheme->fonts[5], row = cursor - top, w = 330, h = 3 * 17 + 10, x = CM_RIGHT - w, y = CM_Y + (row + 1) * CM_ROW_H + 2;
++
++    if (cursor != cmTipCursor) {
++        cmTipCursor = cursor;
++        cmTipSince = clock();
++        return;
++    }
++    if (cursor < 0 || cursor >= cmCount || (float)(clock() - cmTipSince) / CLOCKS_PER_SEC < CM_TIP_REST_S)
++        return;
++    s = &cmSaves[cursor];
++    if (y + h > CM_Y + CM_ROWS * CM_ROW_H)
++        y = CM_Y + row * CM_ROW_H - h - 4; // above the row near the bottom
++    rmDrawRect(x, y, w, h, CM_PRIM(0x03, 0x08, 0x22, 0x7A));
++    rmDrawLine(x, y, x + w, y, CM_PRIM(0x4A, 0x72, 0xDC, 0x80));
++    rmDrawLine(x, y + h, x + w, y + h, CM_PRIM(0x4A, 0x72, 0xDC, 0x80));
++    rmDrawLine(x, y, x, y + h, CM_PRIM(0x4A, 0x72, 0xDC, 0x80));
++    rmDrawLine(x + w, y, x + w, y + h, CM_PRIM(0x4A, 0x72, 0xDC, 0x80));
++    fntRenderStringFit(smallFont, x + 10, y + 13, ALIGN_VCENTER, w - 20, s->name, CM_LIT, 1);
++    snprintf(line, sizeof(line), _t("%u KB"), s->kb);
++    fntRenderStringFit(smallFont, x + 10, y + 13 + 17, ALIGN_VCENTER, w - 20, line, CM_SOFT, 0);
++    fntRenderStringFit(smallFont, x + 10, y + 13 + 2 * 17, ALIGN_VCENTER, w - 20,
++                       s->system ? _t("Not a game save: ERASE EVERY GAME SAVE keeps it") : _t("A game save"), CM_SOFT, 1);
++}
++
+ static void cmHint(int icon, const char *text, int *x, int y)
+ {
+     GSTEXTURE *t = thmGetTexture(icon);
+@@ -463,12 +498,12 @@ void ripps2CardManager(int slot, const char *image)
+                 rmDrawRect(CM_X - 6, y - 1, CM_RIGHT - CM_X + 12, CM_ROW_H - 2, CM_PRIM(0x1E, 0x3C, 0x96, 0x58));
+                 rmDrawRect(CM_X - 6, y - 1, 3, CM_ROW_H - 2, CM_PRIM(0x6A, 0x9A, 0xFF, 0x80));
+             }
+-            fntRenderStringFit(gTheme->fonts[8], CM_X + 6, y + 9, ALIGN_VCENTER, 360, s->name, cur ? CM_LIT : (s->system ? CM_DIM : CM_SOFT), cur);
+-            if (s->system)
+-                fntRenderString(gTheme->fonts[5], 420, y + 9, ALIGN_VCENTER, 0, 0, _t("KEPT BY ERASE"), CM_DIM);
+             snprintf(line, sizeof(line), _t("%u KB"), s->kb);
+-            fntRenderString(gTheme->fonts[5], CM_RIGHT - rmUnScaleX(fntCalcDimensions(gTheme->fonts[5], line)), y + 9, ALIGN_VCENTER, 0, 0, line, CM_DIM);
++            int kbW = rmUnScaleX(fntCalcDimensions(gTheme->fonts[5], line));
++            fntRenderStringFit(gTheme->fonts[8], CM_X + 6, y + 9, ALIGN_VCENTER, CM_RIGHT - CM_X - 6 - kbW - 16, s->name, cur ? CM_LIT : (s->system ? CM_DIM : CM_SOFT), cur);
++            fntRenderString(gTheme->fonts[5], CM_RIGHT - kbW, y + 9, ALIGN_VCENTER, 0, 0, line, CM_DIM);
+         }
++        cmDrawTip(cursor, top);
+         if (cmCount == 0)
+             fntRenderString(gTheme->fonts[4], 320, 200, ALIGN_CENTER, 0, 0, cmReady ? _t("NO SAVES") : _t("FORMAT IT TO USE IT"), CM_DIM);
+         if (toast[0])
+diff --git a/src/ripps2color.c b/src/ripps2color.c
+new file mode 100644
+index 0000000..56716e5
+--- /dev/null
++++ b/src/ripps2color.c
+@@ -0,0 +1,397 @@
++/*
++  ripps2color.c a colour picker (RIPPS2 build 144)
++
++  Copyright 2026, RIPPS2 contributors
++  Licenced under Academic Free License version 3.0
++  Review OpenUsbLd README & LICENSE files for further details.
++
++  The user, 11/05: "BIBLE's settings and custom color should have a color picker that creates the value (make this work in
++  the theme custom color too so they both get upgraded, use roboto and very nice ui/ux)". A field for saturation and
++  brightness, a bar for hue, the colour as it will be with its value in hex and numbers, and the Color Themes one press
++  away. One colour (the theme's, any colour row in a dialog), or the three of BIBLE's sky with the sky drawn as BIBLE draws
++  it. It does not include ripps2tint.h: what is shown is the colour itself, not turned by the Color Theme.
++*/
++
++#include <stdio.h>
++#include <string.h>
++#include "include/opl.h"
++#include "include/gui.h"
++#include "include/renderman.h"
++#include "include/fntsys.h"
++#include "include/themes.h"
++#include "include/textures.h"
++#include "include/pad.h"
++#include "include/sound.h"
++#include "include/ripps2.h"
++#include "include/ripps2tr.h" // _t, N_
++
++#define CP_FX      28
++#define CP_FY      60
++#define CP_FW      216
++#define CP_FH      216
++#define CP_HX      (CP_FX + CP_FW + 10)
++#define CP_HW      22
++#define CP_CELLS   12
++#define CP_PX      296
++#define CP_PW      316
++#define CP_PREVIEW 104
++#define CP_PARTS   3
++#define CP_LIT     GS_SETREG_RGBA(0x80, 0x80, 0x80, 0x80)
++#define CP_SOFT    GS_SETREG_RGBA(0x67, 0x6C, 0x7A, 0x80)
++#define CP_DIM     GS_SETREG_RGBA(0x4C, 0x52, 0x64, 0x80)
++
++typedef struct
++{
++    float h, s, v; // 0 to 1
++} cp_hsv_t;
++
++static u64 cpPrim(int r, int g, int b)
++{
++    return GS_SETREG_RGBAQ(r, g, b, 0x80, 0x00);
++}
++
++static float cpClamp(float x)
++{
++    return x < 0.0f ? 0.0f : x > 1.0f ? 1.0f : x;
++}
++
++static int cpByte(float x)
++{
++    int b = (int)(x * 255.0f + 0.5f);
++    return b < 0 ? 0 : b > 255 ? 255 : b;
++}
++
++// The pure colour of a hue, each part 0 to 1
++static void cpHue(float h, float *r, float *g, float *b)
++{
++    float x;
++    int seg;
++
++    while (h >= 1.0f)
++        h -= 1.0f;
++    while (h < 0.0f)
++        h += 1.0f;
++    x = h * 6.0f;
++    seg = (int)x;
++    x -= (float)seg;
++    switch (seg) {
++        case 0:
++            *r = 1.0f, *g = x, *b = 0.0f;
++            break;
++        case 1:
++            *r = 1.0f - x, *g = 1.0f, *b = 0.0f;
++            break;
++        case 2:
++            *r = 0.0f, *g = 1.0f, *b = x;
++            break;
++        case 3:
++            *r = 0.0f, *g = 1.0f - x, *b = 1.0f;
++            break;
++        case 4:
++            *r = x, *g = 0.0f, *b = 1.0f;
++            break;
++        default:
++            *r = 1.0f, *g = 0.0f, *b = 1.0f - x;
++            break;
++    }
++}
++
++static void cpToRgb(const cp_hsv_t *c, unsigned char *rgb)
++{
++    float r, g, b;
++    cpHue(c->h, &r, &g, &b);
++    rgb[0] = cpByte(c->v * (1.0f - c->s + c->s * r));
++    rgb[1] = cpByte(c->v * (1.0f - c->s + c->s * g));
++    rgb[2] = cpByte(c->v * (1.0f - c->s + c->s * b));
++}
++
++// A grey has no hue of its own: the one it had stays (keep)
++static void cpFromRgb(const unsigned char *rgb, cp_hsv_t *c, float keep)
++{
++    float r = rgb[0] / 255.0f, g = rgb[1] / 255.0f, b = rgb[2] / 255.0f;
++    float hi = r > g ? (r > b ? r : b) : (g > b ? g : b), lo = r < g ? (r < b ? r : b) : (g < b ? g : b), d = hi - lo, h = keep;
++
++    if (d > 0.0f) {
++        if (hi == r)
++            h = (g - b) / d;
++        else if (hi == g)
++            h = 2.0f + (b - r) / d;
++        else
++            h = 4.0f + (r - g) / d;
++        h /= 6.0f;
++        if (h < 0.0f)
++            h += 1.0f;
++    }
++    c->h = h;
++    c->s = hi > 0.0f ? d / hi : 0.0f;
++    c->v = hi;
++}
++
++static void cpBox(int x, int y, int w, int h, u64 col)
++{
++    rmDrawLine(x, y, x + w, y, col);
++    rmDrawLine(x, y + h, x + w, y + h, col);
++    rmDrawLine(x, y, x, y + h, col);
++    rmDrawLine(x + w, y, x + w, y + h, col);
++}
++
++static void cpDrawField(const cp_hsv_t *c)
++{
++    static u64 corner[CP_CELLS + 1][CP_CELLS + 1];
++    float r, g, b;
++    int i, j, mx, my;
++
++    cpHue(c->h, &r, &g, &b);
++    for (j = 0; j <= CP_CELLS; j++) {
++        float v = 1.0f - (float)j / CP_CELLS;
++        for (i = 0; i <= CP_CELLS; i++) {
++            float s = (float)i / CP_CELLS;
++            corner[j][i] = cpPrim(cpByte(v * (1.0f - s + s * r)), cpByte(v * (1.0f - s + s * g)), cpByte(v * (1.0f - s + s * b)));
++        }
++    }
++    for (j = 0; j < CP_CELLS; j++) {
++        int y0 = CP_FY + CP_FH * j / CP_CELLS, y1 = CP_FY + CP_FH * (j + 1) / CP_CELLS;
++        for (i = 0; i < CP_CELLS; i++) {
++            int x0 = CP_FX + CP_FW * i / CP_CELLS, x1 = CP_FX + CP_FW * (i + 1) / CP_CELLS;
++            rmDrawQuadGouraud(x0, y0, corner[j][i], x1, y0, corner[j][i + 1], x0, y1, corner[j + 1][i], x1, y1, corner[j + 1][i + 1]);
++        }
++    }
++    cpBox(CP_FX - 1, CP_FY - 1, CP_FW + 1, CP_FH + 1, cpPrim(0x4A, 0x72, 0xDC));
++
++    // the marker: a ring that shows on any colour
++    mx = CP_FX + (int)(c->s * CP_FW);
++    my = CP_FY + (int)((1.0f - c->v) * CP_FH);
++    cpBox(mx - 5, my - 5, 10, 10, cpPrim(0x00, 0x00, 0x00));
++    cpBox(mx - 4, my - 4, 8, 8, cpPrim(0xFF, 0xFF, 0xFF));
++}
++
++static void cpDrawHueBar(float hue)
++{
++    int i, y;
++    for (i = 0; i < 6; i++) {
++        float r0, g0, b0, r1, g1, b1;
++        int y0 = CP_FY + CP_FH * i / 6, y1 = CP_FY + CP_FH * (i + 1) / 6;
++        u64 top, low;
++        cpHue((float)i / 6.0f, &r0, &g0, &b0);
++        cpHue((float)(i + 1) / 6.0f, &r1, &g1, &b1);
++        top = cpPrim(cpByte(r0), cpByte(g0), cpByte(b0));
++        low = cpPrim(cpByte(r1), cpByte(g1), cpByte(b1));
++        rmDrawQuadGouraud(CP_HX, y0, top, CP_HX + CP_HW, y0, top, CP_HX, y1, low, CP_HX + CP_HW, y1, low);
++    }
++    cpBox(CP_HX - 1, CP_FY - 1, CP_HW + 1, CP_FH + 1, cpPrim(0x4A, 0x72, 0xDC));
++    y = CP_FY + (int)(hue * CP_FH);
++    rmDrawRect(CP_HX - 3, y - 2, CP_HW + 6, 5, cpPrim(0x00, 0x00, 0x00));
++    rmDrawRect(CP_HX - 2, y - 1, CP_HW + 4, 3, cpPrim(0xFF, 0xFF, 0xFF));
++}
++
++static void cpHint(int icon, const char *text, int *x, int y)
++{
++    GSTEXTURE *t = thmGetTexture(icon);
++    if (t != NULL) {
++        rmDrawPixmap(t, *x, y - 10, ALIGN_NONE, 20, 20, SCALING_RATIO, CP_LIT, 0);
++        *x += 24;
++    }
++    *x = ripps2HintText(*x, y, text, CP_SOFT) + 14;
++}
++
++static int cpHintW(const char *text)
++{
++    return 24 + ripps2HintWidth(text) + 14;
++}
++
++// A Color Theme's colours: its sky, or for one colour the sky's horizon, which is the colour the theme is known by
++static int cpThemeColors(int p, unsigned char out[3][3])
++{
++    char text[32];
++    unsigned int c[3];
++    int i;
++
++    ripps2ThemeSky(p, text, sizeof(text));
++    if (sscanf(text, "%6x,%6x,%6x", &c[0], &c[1], &c[2]) != 3)
++        return 0;
++    for (i = 0; i < 3; i++) {
++        out[i][0] = (c[i] >> 16) & 0xFF;
++        out[i][1] = (c[i] >> 8) & 0xFF;
++        out[i][2] = c[i] & 0xFF;
++    }
++    return 1;
++}
++
++int ripps2ColorPick(const char *title, unsigned char (*rgb)[3], int count, const char *const *partNames)
++{
++    static unsigned char before[CP_PARTS][3], now[CP_PARTS][3];
++    cp_hsv_t hsv[CP_PARTS];
++    char line[64];
++    int part = 0, theme = -1, i, heldFrames = 0, result = -1;
++    int backKey = gSelectButton == KEY_CIRCLE ? KEY_CROSS : KEY_CIRCLE;
++    int okIcon = gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON, backIcon = gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON;
++
++    if (count < 1)
++        return 0;
++    if (count > CP_PARTS)
++        count = CP_PARTS;
++    for (i = 0; i < count; i++) {
++        memcpy(before[i], rgb[i], 3);
++        memcpy(now[i], rgb[i], 3);
++        cpFromRgb(rgb[i], &hsv[i], 0.0f);
++    }
++
++    while (result < 0) {
++        cp_hsv_t *c = &hsv[part];
++        const char *themeName = theme >= 0 ? _t(ripps2PaletteName(theme)) : NULL;
++        int hintY = gTheme->usedHeight - 32, tipY = hintY - 22, hw, hx, sx, sy;
++
++        readPads();
++        rmStartFrame();
++        guiDrawBGPlasma();
++        fntRenderStringFit(RIPPS2_NOTE_FONT, 20, 30, ALIGN_VCENTER, 600, title, CP_LIT, 1);
++        rmDrawLine(20, 46, 620, 46, cpPrim(0x4A, 0x72, 0xDC));
++
++        cpDrawField(c);
++        cpDrawHueBar(c->h);
++
++        // the colour as it will be
++        if (count == 3) { // BIBLE's sky: top to horizon, horizon to floor
++            int top = CP_FY, hz = CP_FY + CP_PREVIEW * 290 / 480, low = CP_FY + CP_PREVIEW;
++            u64 c0 = cpPrim(now[0][0], now[0][1], now[0][2]), c1 = cpPrim(now[1][0], now[1][1], now[1][2]), c2 = cpPrim(now[2][0], now[2][1], now[2][2]);
++            rmDrawQuadGouraud(CP_PX, top, c0, CP_PX + CP_PW, top, c0, CP_PX, hz, c1, CP_PX + CP_PW, hz, c1);
++            rmDrawQuadGouraud(CP_PX, hz, c1, CP_PX + CP_PW, hz, c1, CP_PX, low, c2, CP_PX + CP_PW, low, c2);
++        } else { // what it was, and what it is now
++            int half = CP_PW / 2;
++            rmDrawRect(CP_PX, CP_FY, half, CP_PREVIEW, cpPrim(before[0][0], before[0][1], before[0][2]));
++            rmDrawRect(CP_PX + half, CP_FY, CP_PW - half, CP_PREVIEW, cpPrim(now[0][0], now[0][1], now[0][2]));
++            fntRenderString(RIPPS2_MSG_FONT, CP_PX + half / 2, CP_FY + CP_PREVIEW + 12, ALIGN_CENTER, 0, 0, _t("Before"), CP_DIM);
++            fntRenderString(RIPPS2_MSG_FONT, CP_PX + half + half / 2, CP_FY + CP_PREVIEW + 12, ALIGN_CENTER, 0, 0, _t("Now"), CP_SOFT);
++        }
++        cpBox(CP_PX - 1, CP_FY - 1, CP_PW + 1, CP_PREVIEW + 1, cpPrim(0x4A, 0x72, 0xDC));
++
++        // the parts of the sky, the chosen one lit
++        sy = CP_FY + CP_PREVIEW + 12;
++        if (count > 1) {
++            int w = CP_PW / count;
++            for (i = 0; i < count; i++) {
++                sx = CP_PX + i * w;
++                if (i == part)
++                    rmDrawRect(sx, sy - 10, w - 4, 20, cpPrim(0x1E, 0x3C, 0x96));
++                rmDrawRect(sx + 4, sy - 7, 14, 14, cpPrim(now[i][0], now[i][1], now[i][2]));
++                cpBox(sx + 4, sy - 7, 14, 14, cpPrim(0x6A, 0x9A, 0xFF));
++                fntRenderStringFit(RIPPS2_MSG_FONT, sx + 24, sy, ALIGN_VCENTER, w - 32, partNames != NULL ? _t(partNames[i]) : "", i == part ? CP_LIT : CP_SOFT, 0);
++            }
++        }
++
++        // the value
++        snprintf(line, sizeof(line), "#%02X%02X%02X", now[part][0], now[part][1], now[part][2]);
++        fntRenderString(RIPPS2_NOTE_FONT, CP_PX, sy + 28, ALIGN_VCENTER, 0, 0, line, CP_LIT);
++        snprintf(line, sizeof(line), "R %d   G %d   B %d", now[part][0], now[part][1], now[part][2]);
++        fntRenderString(RIPPS2_MSG_FONT, CP_PX, sy + 50, ALIGN_VCENTER, 0, 0, line, CP_SOFT);
++        snprintf(line, sizeof(line), "H %d   S %d   V %d", (int)(c->h * 360.0f + 0.5f), (int)(c->s * 100.0f + 0.5f), (int)(c->v * 100.0f + 0.5f));
++        fntRenderString(RIPPS2_MSG_FONT, CP_PX, sy + 70, ALIGN_VCENTER, 0, 0, line, CP_SOFT);
++
++        // the Color Themes, one press away
++        sy += 96;
++        fntRenderStringFit(RIPPS2_MSG_FONT, CP_PX, sy, ALIGN_VCENTER, CP_PW, themeName != NULL ? themeName : _t("Color Themes"), themeName != NULL ? CP_LIT : CP_DIM, 0);
++        sy += 12;
++        for (i = 0; i < RIPPS2_PALETTE_COUNT; i++) {
++            unsigned char t[3][3];
++            int w = CP_PW / RIPPS2_PALETTE_COUNT;
++            sx = CP_PX + i * w;
++            if (!cpThemeColors(i, t))
++                continue;
++            rmDrawRect(sx + 1, sy, w - 3, 14, cpPrim(t[1][0], t[1][1], t[1][2]));
++            if (i == theme)
++                cpBox(sx, sy - 1, w - 1, 16, cpPrim(0xFF, 0xFF, 0xFF));
++        }
++
++        rmDrawLine(20, tipY - 12, 620, tipY - 12, cpPrim(0x4A, 0x72, 0xDC));
++        fntRenderStringFit(RIPPS2_MSG_FONT, 320, tipY, ALIGN_CENTER, 600, _t("D-pad or left stick: saturation and brightness. L1, R1 or right stick: hue."), CP_SOFT, 0);
++
++        hw = cpHintW(_t("COLOR THEME")) + cpHintW(_t("OK")) + cpHintW(_t("CANCEL")) + (count > 1 ? cpHintW(_t("NEXT PART")) : 0);
++        hx = (640 - hw) / 2;
++        if (count > 1)
++            cpHint(SQUARE_ICON, _t("NEXT PART"), &hx, hintY + 10);
++        cpHint(TRIANGLE_ICON, _t("COLOR THEME"), &hx, hintY + 10);
++        cpHint(okIcon, _t("OK"), &hx, hintY + 10);
++        cpHint(backIcon, _t("CANCEL"), &hx, hintY + 10);
++        rmEndFrame();
++
++        if (getKeyOn(gSelectButton)) {
++            sfxPlay(SFX_CONFIRM);
++            result = 1;
++            continue;
++        }
++        if (getKeyOn(backKey)) {
++            sfxPlay(SFX_CANCEL);
++            result = 0;
++            continue;
++        }
++        if (count > 1 && getKeyOn(KEY_SQUARE)) {
++            part = (part + 1) % count;
++            sfxPlay(SFX_CURSOR);
++            continue;
++        }
++        if (getKeyOn(KEY_TRIANGLE)) { // the next Color Theme: its colours, ready to change
++            unsigned char t[3][3];
++            theme = (theme + 1) % RIPPS2_PALETTE_COUNT;
++            if (cpThemeColors(theme, t)) {
++                if (count == 1)
++                    memcpy(now[0], t[1], 3);
++                else
++                    for (i = 0; i < count; i++)
++                        memcpy(now[i], t[i], 3);
++                for (i = 0; i < count; i++)
++                    cpFromRgb(now[i], &hsv[i], hsv[i].h);
++            }
++            sfxPlay(SFX_CURSOR);
++            continue;
++        }
++
++        // held longer, it moves faster
++        {
++            float ds = 0.0f, dv = 0.0f, dh = 0.0f, step;
++            int lx, ly, rx, ry, any;
++
++            any = getKeyPressed(KEY_LEFT) || getKeyPressed(KEY_RIGHT) || getKeyPressed(KEY_UP) || getKeyPressed(KEY_DOWN) || getKeyPressed(KEY_L1) || getKeyPressed(KEY_R1);
++            heldFrames = any ? heldFrames + 1 : 0;
++            step = heldFrames > 45 ? 0.016f : heldFrames > 15 ? 0.008f : 1.0f / 255.0f;
++            if (getKeyPressed(KEY_LEFT))
++                ds -= step;
++            if (getKeyPressed(KEY_RIGHT))
++                ds += step;
++            if (getKeyPressed(KEY_UP))
++                dv += step;
++            if (getKeyPressed(KEY_DOWN))
++                dv -= step;
++            if (getKeyPressed(KEY_L1))
++                dh -= step;
++            if (getKeyPressed(KEY_R1))
++                dh += step;
++            padGetLeftStick(&lx, &ly);
++            padGetRightStick(&rx, &ry);
++            if (lx > 24 || lx < -24)
++                ds += (float)lx / 127.0f * 0.012f;
++            if (ly > 24 || ly < -24)
++                dv -= (float)ly / 127.0f * 0.012f;
++            if (ry > 24 || ry < -24)
++                dh += (float)ry / 127.0f * 0.006f;
++            if (ds != 0.0f || dv != 0.0f || dh != 0.0f) {
++                c->s = cpClamp(c->s + ds);
++                c->v = cpClamp(c->v + dv);
++                c->h += dh;
++                if (c->h > 1.0f)
++                    c->h -= 1.0f; // round the bar
++                if (c->h < 0.0f)
++                    c->h += 1.0f;
++                cpToRgb(c, now[part]);
++                theme = -1;
++                if (heldFrames == 1)
++                    sfxPlay(SFX_CURSOR);
++            }
++        }
++    }
++
++    if (result)
++        for (i = 0; i < count; i++)
++            memcpy(rgb[i], now[i], 3);
++    readPads();
++    return result;
++}
+diff --git a/src/ripps2edit.c b/src/ripps2edit.c
+index 5b43258..aabdeb1 100644
+--- a/src/ripps2edit.c
++++ b/src/ripps2edit.c
+@@ -85,10 +85,60 @@ static void edFrameStart(const char *title, const char *right)
+ // The page a menu opens over (the editor, SET METADATA); NULL = the bare background
+ static void (*edBehind)(void) = NULL;
+ 
++// build 144 (the user, 11/05: Manage's card line "was too long and cut off a word ... change the picker line to fit any drive
++// with its message", the art pack's too, "these can also change to roboto font"): a row takes the lines it needs
++#define ED_MENU_FONT   RIPPS2_MSG_FONT
++#define ED_MENU_WIDE   600
++#define ED_MENU_MAX    32
++#define ED_MENU_LINES  3
++#define ED_MENU_LINE_H 20
++
++static int edMenuWidth(const char *text)
++{
++    return rmUnScaleX(fntCalcDimensions(ED_MENU_FONT, text));
++}
++
++// Where a row's lines start (starts[ED_MENU_LINES]), breaking at spaces to fit room; how many lines
++static int edMenuBreak(const char *text, int room, int *starts)
++{
++    char part[256];
++    int lines = 1, from = 0, lastSpace = -1, i, n;
++
++    starts[0] = 0;
++    if (edMenuWidth(text) <= room)
++        return 1;
++    for (i = 0; lines < ED_MENU_LINES; i++) {
++        if (text[i] != ' ' && text[i] != '\0')
++            continue;
++        n = i - from < (int)sizeof(part) ? i - from : (int)sizeof(part) - 1;
++        memcpy(part, text + from, n);
++        part[n] = '\0';
++        if (edMenuWidth(part) > room && lastSpace > from) {
++            from = lastSpace + 1;
++            starts[lines++] = from;
++        }
++        if (text[i] == '\0')
++            break;
++        lastSpace = i;
++    }
++    return lines;
++}
++
+ static int edMenuFrom(const char *const *items, int count, int start)
+ {
+     // a small glass list over the page, which stays in view behind it, dimmed; returns the choice or -1
+-    int sel = start >= 0 && start < count ? start : 0, i;
++    static int menuLines[ED_MENU_MAX], menuStarts[ED_MENU_MAX][ED_MENU_LINES];
++    int sel = start >= 0 && start < count ? start : 0, i, wide = 220, rowsH = 0, shown = count < ED_MENU_MAX ? count : ED_MENU_MAX;
++
++    for (i = 0; i < shown; i++) {
++        int iw = edMenuWidth(_t(items[i])) + 32; // build 104: the lists hand in their English
++        if (iw > wide)
++            wide = iw > ED_MENU_WIDE ? ED_MENU_WIDE : iw;
++    }
++    for (i = 0; i < shown; i++) {
++        menuLines[i] = edMenuBreak(_t(items[i]), wide - 32, menuStarts[i]);
++        rowsH += menuLines[i] * ED_MENU_LINE_H + 4;
++    }
+     while (1) {
+         readPads();
+         rmStartFrame();
+@@ -100,14 +150,9 @@ static int edMenuFrom(const char *const *items, int count, int start)
+         // as wide as its longest item (build 69: BIBLE's card list ran off the box), centred once it
+         // outgrows the small box at the right
+         // build 98: a strip of button hints at its foot (CHOOSE, BACK), like the pages it opens over
+-        int w = 220, h = count * 24 + 20 + 28, x = 400, y = 120;
++        int w = wide, h = rowsH + 20 + 28, x = 400, y = 120, ry;
+         if (y + h > 460) // build 140: Manage's BIBLE menu has outgrown the room under the usual place
+             y = h < 460 ? (480 - h) / 2 : 10;
+-        for (i = 0; i < count; i++) {
+-            int iw = fntCalcDimensions(ED_FONT, _t(items[i])) + 32; // build 104: the lists hand in their English
+-            if (iw > w)
+-                w = iw > 600 ? 600 : iw;
+-        }
+         if (w > 220)
+             x = (640 - w) / 2;
+         rmDrawRect(x, y, w, h, ED_PRIM(0x03, 0x08, 0x22, 0x70));
+@@ -115,12 +160,22 @@ static int edMenuFrom(const char *const *items, int count, int start)
+         rmDrawLine(x, y + h, x + w, y + h, ED_PRIM(0x4A, 0x72, 0xDC, 0x80));
+         rmDrawLine(x, y, x, y + h, ED_PRIM(0x4A, 0x72, 0xDC, 0x80));
+         rmDrawLine(x + w, y, x + w, y + h, ED_PRIM(0x4A, 0x72, 0xDC, 0x80));
+-        for (i = 0; i < count; i++) {
+-            int ry = y + 10 + i * 24;
++        for (i = 0, ry = y + 10; i < shown; i++) {
++            const char *text = _t(items[i]);
++            int l, rowH = menuLines[i] * ED_MENU_LINE_H + 2;
+             if (i == sel)
+-                rmDrawRect(x + 4, ry, w - 8, 22, ED_PRIM(0x1E, 0x3C, 0x96, 0x60));
+-            // build 119: kept inside the box (a long item ran past its edge): the chosen one scrolls, the rest end in ...
+-            fntRenderStringFit(ED_FONT, x + 16, ry + 11, ALIGN_VCENTER, w - 32, _t(items[i]), i == sel ? ED_LIT : ED_SOFT, i == sel);
++                rmDrawRect(x + 4, ry, w - 8, rowH, ED_PRIM(0x1E, 0x3C, 0x96, 0x60));
++            for (l = 0; l < menuLines[i]; l++) {
++                char part[256];
++                int from = menuStarts[i][l], to = l + 1 < menuLines[i] ? menuStarts[i][l + 1] - 1 : (int)strlen(text), n = to - from;
++                if (n > (int)sizeof(part) - 1)
++                    n = (int)sizeof(part) - 1;
++                memcpy(part, text + from, n);
++                part[n] = '\0';
++                // build 119: kept inside the box: what still will not fit scrolls on the chosen row
++                fntRenderStringFit(ED_MENU_FONT, x + 16, ry + 11 + l * ED_MENU_LINE_H, ALIGN_VCENTER, w - 32, part, i == sel ? ED_LIT : ED_SOFT, i == sel);
++            }
++            ry += rowH + 2;
+         }
+         int okIcon = gSelectButton == KEY_CIRCLE ? CIRCLE_ICON : CROSS_ICON, backIcon = gSelectButton == KEY_CIRCLE ? CROSS_ICON : CIRCLE_ICON;
+         int hy = y + h - 14, hw = 24 + ripps2HintWidth(_t("CHOOSE")) + 18 + 24 + ripps2HintWidth(_t("BACK"));
+@@ -873,9 +928,9 @@ int ripps2Page(const char *title, const ripps2_page_row_t *rows, int count, int
+             sfxPlay(SFX_CURSOR);
+             *action = RIPPS2_PAGE_NEXT;
+             break;
+-        } else if (r->confirm != NULL && getKeyOn(gSelectButton)) {
+-            sfxPlay(r->steps ? SFX_CURSOR : SFX_CONFIRM);
+-            *action = r->steps ? RIPPS2_PAGE_NEXT : RIPPS2_PAGE_CHOOSE;
++        } else if (r->confirm != NULL && getKeyOn(gSelectButton)) { // build 144: steps 2: Left and Right step, confirm chooses
++            sfxPlay(r->steps == 1 ? SFX_CURSOR : SFX_CONFIRM);
++            *action = r->steps == 1 ? RIPPS2_PAGE_NEXT : RIPPS2_PAGE_CHOOSE;
+             break;
+         } else if (r->clears && getKeyOn(KEY_SQUARE)) {
+             sfxPlay(SFX_CANCEL);
+diff --git a/src/ripps2files.c b/src/ripps2files.c
+index c3ab8e8..7196f2f 100644
+--- a/src/ripps2files.c
++++ b/src/ripps2files.c
+@@ -2177,6 +2177,12 @@ static void fbOpen(void)
+             } else if (fbIsText(e->name)) {
+                 sfxPlay(SFX_CONFIRM);
+                 fbEdit(e->name);
++            } else if (ripps2MediaKind(e->name) == RIPPS2_MEDIA_ICON && fbVmcPath(fbVmc, fbPath, NULL, 0)) {
++                // build 144 (the user, 11/05: "it wouldnt let me view the icon"): a save's icon, read out of the card image
++                char save[40];
++                fbVmcPath(fbVmc, fbPath, save, sizeof(save));
++                sfxPlay(SFX_CONFIRM);
++                ripps2ViewSaveIconInVmc(fbVmc, save, e->name);
+             } else if (ripps2MediaKind(e->name) != RIPPS2_MEDIA_NONE && !fbVmcPath(fbVmc, fbPath, NULL, 0)) {
+                 // build 93: a picture or a video, full screen (not from inside a card image: no file path there)
+                 sfxPlay(SFX_CONFIRM);
+@@ -3359,6 +3365,20 @@ static void fbTipTime(const unsigned char *t, char *out, int size)
+         snprintf(out, size, "%04d-%02d-%02d  %02d:%02d", year, t[5], t[4], t[3], t[2]);
+ }
+ 
++// build 144 (the user, 11/05: in a card image "the details said drive did not say and clipped out of the tooltip box"): a card
++// image's entries answer from the list it already gave, with no drive to ask
++static void fbTipFromList(const fb_entry_t *e)
++{
++    if (e->kind == FB_KIND_FILE)
++        snprintf(fbTipLine[0], sizeof(fbTipLine[0]), _t("%u BYTES"), (unsigned int)e->size);
++    else
++        snprintf(fbTipLine[0], sizeof(fbTipLine[0]), _t("FOLDER"));
++    snprintf(fbTipLine[1], sizeof(fbTipLine[1]), "%s", _t("IN A CARD IMAGE"));
++    fbTipLine[2][0] = '\0';
++    snprintf(fbTipKey, sizeof(fbTipKey), "%s", fbTipPath);
++    fbTipState = 2;
++}
++
+ static void fbTipWork(void)
+ {
+     iox_stat_t st;
+@@ -3484,6 +3504,10 @@ static void fbDrawTip(void)
+         snprintf(fbTipPath, sizeof(fbTipPath), "%s", path);
+         return;
+     }
++    if (fbTipState == 0 && (float)(clock() - fbTipSince) / CLOCKS_PER_SEC >= FB_TIP_REST_S && fbVmcPath(fbVmc, fbPath, NULL, 0)) {
++        fbTipFromList(e);
++        return;
++    }
+     if (fbTipState == 0 && (float)(clock() - fbTipSince) / CLOCKS_PER_SEC >= FB_TIP_REST_S) {
+         fbTipState = 1;
+         if (ioPutRequest(IO_CUSTOM_SIMPLEACTION, &fbTipWork) != IO_OK)
+@@ -3504,7 +3528,7 @@ static void fbDrawTip(void)
+     fntRenderStringFit(smallFont, x + 10, y + 13, ALIGN_VCENTER, w - 20, e->name, FB_LIT, 1);
+     for (i = 0; i < 3; i++)
+         if (fbTipLine[i][0])
+-            fntRenderString(smallFont, x + 10, y + 13 + (i + 1) * 17, ALIGN_VCENTER, 0, 0, fbTipLine[i], FB_SOFT);
++            fntRenderStringFit(smallFont, x + 10, y + 13 + (i + 1) * 17, ALIGN_VCENTER, w - 20, fbTipLine[i], FB_SOFT, 0); // build 144: in the box
+     if (what != NULL)
+         fntRenderStringFit(smallFont, x + 10, y + 13 + 4 * 17, ALIGN_VCENTER, w - 20, what, FB_LIT, 1);
+ }
+@@ -3536,7 +3560,6 @@ void ripps2RenderFiles(void)
+     }
+ 
+     // the path, and the clipboard / what just happened
+-    fntRenderString(uiFont, FB_X, 30, ALIGN_VCENTER, 0, 0, fbPath[0] ? fbPath : fbPicking ? fbPickTitle : _t("MEMORY FILES"), FB_LIT);
+     if (fbToastAt != 0 && (float)(clock() - fbToastAt) / CLOCKS_PER_SEC < 2.5f)
+         snprintf(buf, sizeof(buf), "%s", fbToast);
+     else if (fbClipCount > 0 || fbRipWhat[0])
+@@ -3545,9 +3568,14 @@ void ripps2RenderFiles(void)
+         snprintf(buf, sizeof(buf), _t("%u KB FREE%s"), fbVmcFreeKb, fbVmcRO ? _t(", READ ONLY") : "");
+     else
+         buf[0] = '\0';
+-    if (buf[0]) { // build 115: a toast in the notifications' face
++    {
++        // build 144 (the user, 11/05: deep in a card image "the path name at the top was clipping onto its tail instead of scrolling
++        // like the game names do in storage"): it rolls in the room left of what is on its right
+         int bf = fbToastAt != 0 && (float)(clock() - fbToastAt) / CLOCKS_PER_SEC < 2.5f ? RIPPS2_NOTE_FONT : uiFont;
+-        fntRenderString(bf, FB_RIGHT - fntCalcDimensions(bf, buf), 30, ALIGN_VCENTER, 0, 0, buf, FB_SOFT);
++        int bw = buf[0] ? rmUnScaleX(fntCalcDimensions(bf, buf)) : 0; // build 115: a toast in the notifications' face
++        fntRenderStringFit(uiFont, FB_X, 30, ALIGN_VCENTER, FB_RIGHT - FB_X - (bw ? bw + 16 : 0), fbPath[0] ? fbPath : fbPicking ? fbPickTitle : _t("MEMORY FILES"), FB_LIT, 1);
++        if (buf[0])
++            fntRenderString(bf, FB_RIGHT - bw, 30, ALIGN_VCENTER, 0, 0, buf, FB_SOFT);
+     }
+     if (fbToastDetail[0] && fbToastAt != 0 && (float)(clock() - fbToastAt) / CLOCKS_PER_SEC < 6.0f) // what failed
+         fntRenderString(RIPPS2_NOTE_FONT, FB_RIGHT - fntCalcDimensions(RIPPS2_NOTE_FONT, fbToastDetail), 432, ALIGN_VCENTER, 0, 0, fbToastDetail, FB_SOFT);
+diff --git a/src/ripps2media.c b/src/ripps2media.c
+index 4d504fb..e69778d 100644
+--- a/src/ripps2media.c
++++ b/src/ripps2media.c
+@@ -607,6 +607,39 @@ static u64 iconShade(const unsigned char *rgba, const saveicon_light_t *l, int l
+     return GS_SETREG_RGBAQ(c[0], c[1], c[2], 0x80, 0x00);
+ }
+ 
++// build 144: an icon in a card image: its files come from the image, not a path
++static const char *viewVmcImage = NULL, *viewVmcSave = NULL;
++
++static unsigned char *viewIconFile(const char *path, int max, int *len)
++{
++    const char *name = strrchr(path, '/');
++    unsigned char *buf;
++    int n;
++
++    if (viewVmcImage == NULL)
++        return viewReadAll(path, max, len);
++    if ((buf = malloc(max)) == NULL)
++        return NULL;
++    n = ripps2VmcReadFile(viewVmcImage, viewVmcSave, name != NULL ? name + 1 : path, buf, max);
++    if (n <= 0) {
++        free(buf);
++        return NULL;
++    }
++    *len = n;
++    return buf;
++}
++
++void ripps2ViewSaveIconInVmc(const char *image, const char *save, const char *file)
++{
++    char path[80];
++
++    snprintf(path, sizeof(path), "%.32s/%.32s", save, file);
++    viewVmcImage = image;
++    viewVmcSave = save;
++    ripps2ViewSaveIcon(path);
++    viewVmcImage = viewVmcSave = NULL;
++}
++
+ void ripps2ViewSaveIcon(const char *path)
+ {
+     saveicon_model_t m;
+@@ -620,7 +653,7 @@ void ripps2ViewSaveIcon(const char *path)
+     const char *name = strrchr(path, '/');
+ 
+     guiRenderTextScreen(_t("Opening the icon"));
+-    data = viewReadAll(path, SAVEICON_MAX_FILE, &len);
++    data = viewIconFile(path, SAVEICON_MAX_FILE, &len);
+     if (data == NULL || saveIconParseModel(data, len, &m) != 0) {
+         free(data);
+         guiMsgBox(_t("This is not a PS2 save icon, or it is damaged."), 0, NULL);
+@@ -637,7 +670,7 @@ void ripps2ViewSaveIcon(const char *path)
+     // the save's own icon.sys, beside it: its lights and the four corners of its background
+     memset(&light, 0, sizeof(light));
+     snprintf(dir, sizeof(dir), "%.*sicon.sys", (int)(name - path), path);
+-    if ((sys = viewReadAll(dir, 2 * SAVEICON_SYS_SIZE, &sysLen)) != NULL) {
++    if ((sys = viewIconFile(dir, 2 * SAVEICON_SYS_SIZE, &sysLen)) != NULL) {
+         if (saveIconParseSys(sys, sysLen, listName, sizeof(listName), &light)) {
+             lit = iconLightUsable(&light);
+             for (i = 0; i < 4; i++) { // 0..255 per channel; the GS's full is 0x80
+diff --git a/src/ripps2shot.c b/src/ripps2shot.c
+index 53ebee6..49c1be9 100644
+--- a/src/ripps2shot.c
++++ b/src/ripps2shot.c
+@@ -354,13 +354,24 @@ static int rsMake(const char *root, const char *path)
+         return 0;
+     ok = rsStamp(fd, NULL, NULL);
+     memset(rsPiece, 0, sizeof(rsPiece));
+-    for (i = 0; ok && i < RS_SLOTS; i++)
+-        ok = lseek(fd, RS_SLOT_AT(i), SEEK_SET) == RS_SLOT_AT(i) && write(fd, rsPiece, RS_PIECE) == RS_PIECE;
+-    if (ok)
+-        ok = lseek(fd, RS_ROLL_BYTES - 1, SEEK_SET) == RS_ROLL_BYTES - 1 && write(fd, rsPiece, 1) == 1;
++    if (!strncmp(root, "mmce", 4)) {
++        // build 144 (the user's SD2PSX, 11/05: "DRIVE FULL" with 11 GB free, and an empty MEDIA/RIPSHOT): an SD2PSX does not seek
++        // past a file's end, so the roll is written out, once for each game
++        clock_t start = clock();
++        for (i = RS_PIECE; ok && i < RS_ROLL_BYTES; i += RS_PIECE)
++            ok = write(fd, rsPiece, RS_PIECE) == RS_PIECE;
++        ripps2Diag("ripshot: %s %s after %d ms", path, ok ? "written" : "stopped", (int)((clock() - start) * 1000 / CLOCKS_PER_SEC));
++    } else {
++        for (i = 0; ok && i < RS_SLOTS; i++)
++            ok = lseek(fd, RS_SLOT_AT(i), SEEK_SET) == RS_SLOT_AT(i) && write(fd, rsPiece, RS_PIECE) == RS_PIECE;
++        if (ok)
++            ok = lseek(fd, RS_ROLL_BYTES - 1, SEEK_SET) == RS_ROLL_BYTES - 1 && write(fd, rsPiece, 1) == 1;
++    }
+     close(fd);
+-    if (!ok)
++    if (!ok) {
+         remove(path);
++        ripps2Diag("ripshot: no roll made at %s", path);
++    }
+     return ok;
+ }
+ 
