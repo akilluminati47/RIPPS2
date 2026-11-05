@@ -1,5 +1,22 @@
 # RIPPS2 changelog
 
+## Build 144 (not released)
+
+From the user's first console run of 143 (11/05). 143's bind and AUTO fix passed on the real SCPH-39001 and SD2PSX.
+
+- **All Games after an IOP restart** (Manage's bind): with Trust Cache on, MMCE said its emptied list still stood, so its games were gone until a refresh. It reads its list again now, and every source's saved games wait as they do at boot.
+- **All Games' saved list keeps every drive.** A drive that was off or silent had its rows written out of allgames.bin (the user's went from 176 games to 33). Only a drive's own answer changes its rows now. The list also follows Save Settings To to a new home.
+- **RIPSHOT on MMCE:** an SD2PSX most likely does not seek past a file's end, so the roll was never made and the in-game menu said DRIVE FULL with 11 GB free. MMCE writes the roll out now, and the menu says NO ROLL: SEE DIAG.TXT instead of claiming a full drive.
+- **Back on a changed page** now asks: Accept keeps the changes, Discard drops them, START keeps editing. A change on General & System is applied before Manage opens.
+- **BOOT LOCK is a row in Manage**, after Widescreen and before Launch Keys, and leaves General & System where BIBLE is in use. Read Console History is gone.
+- **A colour picker**, in Roboto, for BIBLE's Sky Color (top, horizon, floor) and every colour row, the theme's custom colour included: saturation and brightness on a field, hue on a bar, the value in hex and numbers, the Color Themes one press away.
+- **A game's Controller Settings** is one page: Controller Emulation, Controller Macros, a new Button Map (PADS/GAMES/<ID>.pad), My Pads and Set Up A USB Pad.
+- **Pickers** use Roboto and wrap, so Manage's card line and the art pack's fit whatever the drive. The card line was also cut at 63 characters before any box saw it.
+- **Card Manager:** a tip per item, as Memory Files has. KEPT BY ERASE is off the rows, so sizes no longer clip.
+- **Memory Files:** a long path rolls. In a card image the details come from its list and stay in the box, and a save's icon opens.
+- **An exFAT internal HDD** no longer says "401: Hard drive not detected" after an IOP restart.
+- **One folder for BIBLE, ready but off:** the install can keep everything BIBLE has on a card in its system folder and tidy away SYS-CONF, PS2BBL and other regions' copies. It turns on with a BIBLE that reads its settings there: branch one-folder, ee9adaf, waiting on a signature.
+
 ## Build 143 (beta, v1.4.3-beta), changes since build 142
 
 BIBLE's next signed build goes in, with what follows from it. Built and run in the PCSX2 lab; nothing here has been on a real PS2.

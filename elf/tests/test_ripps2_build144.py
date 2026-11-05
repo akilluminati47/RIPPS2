@@ -106,6 +106,15 @@ if 'GAME_PADEMU_SETTINGS, _STR_CONTROLLER_SETTINGS' not in menus:
 if 'PADS/GAMES/%s.pad' not in gui or 'padMapParse(text, n, map' not in gui:
     fail.append('the button map reads and writes the file the launcher hands PADEMU')
 
+hdd = src('src/hddsupport.c')
+load = hdd[hdd.index('nonSony = hddDetectNonSonyFileSystem();') - 400:hdd.index('nonSony = hddDetectNonSonyFileSystem();')]
+if 'if (hddNotApa)' not in load:
+    fail.append('a drive known not to be APA is not asked again after an IOP restart')
+if 'blOneFolder(port, alt, backupKelf)' not in boot or '"mc0:/BEEXEC-SYSTEM/PS2BBL.INI"' not in boot:
+    fail.append('the install can keep everything in BIBLE\'s one folder')
+if 'RIPPS2_BIBLE_ONE_FOLDER' not in src('Makefile') or 'RIPPS2_TEST_BIND' not in src('Makefile'):
+    fail.append('the lab flags')
+
 if fail:
     print('\n'.join('FAIL: ' + f for f in fail))
     sys.exit(1)
