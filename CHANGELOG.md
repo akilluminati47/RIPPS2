@@ -1,5 +1,74 @@
 # RIPPS2 changelog
 
+## Build 143 (beta, v1.4.3-beta), changes since build 142
+
+BIBLE's next signed build goes in, with what follows from it. Built and run in the PCSX2 lab; nothing here has been on a real PS2.
+
+**BIBLE f5705eb inside** (signed by akilluminati47 on 11/04)
+- **The AUTO hang is fixed.** A missing file on an AUTO path, on a drive BIBLE has to load a driver for, stopped the boot on the
+  splash for good. BIBLE now moves on to the next path. The lab shows it with an MMCE path and no device.
+- **BIBLE no longer reads the boot sound into memory.** It only tells RIPPS2 the folder. The read never reached RIPPS2 on an SD2PSX,
+  and on a memory card launch it only moved the wait into BIBLE. Lab, start to towers with Manage's config, three runs each: 4.73 to
+  5.16 s before, 3.95 to 4.31 s after, and the sound still comes 0.14 s after the towers (0.13 s before). RIPPS2 still takes the copy
+  from a card on an older BIBLE.
+- The stage 2 loader is out of BIBLE's MMCE, MX4SIO and HDD builds, about 9.6 KB each. RIPPS2.elf is 2,750 KB, 25 KB smaller.
+- **A card on BIBLE 3282396 is offered the update**: Manage says "Update BIBLE: Slot N has an older one". Until a card takes it, that
+  card keeps the hang.
+
+**Manage**
+- BIBLE's folders wear BIBLE's own icon, with the colours and light it was checked under. A folder RIPPS2 makes for something else
+  keeps the plain icon.
+- **ROM 2.30 and up:** Manage warns that a bound BIBLE may not start at power on, since many of those consoles no longer run system
+  updates, and then still asks. It does not refuse: not all of them lost it. The Set Up row's tip says the same.
+- **A plain BIBLE is recognised.** BIBLE as a plain ELF at `mc?:/BOOT/BOOT.ELF`, started by OpenTuna or FunTuna, is told by its size
+  and CRC-32, so its settings rows work and the card list says "plain ELF". A card with a system update is that loader's, whatever
+  else it holds. A system folder beside a plain BIBLE still moves aside whole. RIPPS2 does not carry or install the plain ELF.
+- Power-on Wait's tip no longer says BIBLE reads a boot sound.
+
+| Lab, on the final build | Result |
+|---|---|
+| Manage, a plain BIBLE at `mc0:/BOOT/BOOT.ELF`, RIPPS2 not started by it | BIBLE's page; "BIBLE (MMCE build, plain ELF)" |
+| The same file with one byte changed | Not taken for BIBLE |
+| BIBLE 3282396 in a system folder | "Update BIBLE: Slot 0 has an older one" |
+| BIBLE f5705eb in a system folder | Named, with no update offered |
+| A test build told it has ROM 2.30 | The tip, then the warning, then the usual screen. A normal build on the lab's ROM goes straight to the usual screen |
+| BIBLE to RIPPS2 with a real set: art pack, music, sounds, a game | Boot sound 0.14 s after the towers, music started once, the game started |
+| **The install's icon step, and a bind of this BIBLE** | **Not run: the lab's cards refuse a bind, and nothing on the card changes** |
+| **Any of this on a real PS2** | **Not run yet** |
+
+## Build 142 (beta, v1.4.2-beta), changes since build 141
+
+nuno6573, 11/04: settings do not stay on MMCE or USB "despite changing configuration destination". Two causes reproduced in the lab,
+both old, not from 1.4.1. Built and run in the PCSX2 lab; nothing here has been on a real PS2.
+
+**Save Settings To stays**
+- **A settings file beside RIPPS2.ELF no longer beats your choice.** The pointer to your drive was only read when the folder RIPPS2
+  started from held no settings. With RIPPS2 in `mc?:/RIPPS2`, BIBLE's first AUTO path, that folder is the card's own settings home,
+  so the save went to the drive and the next boot read the card and showed Memory Card. Your drive now goes first, in the menu and in
+  autolaunch. If it has nothing to read, the old file is read as before.
+- **The row starts the drive you choose.** It refused any drive whose source had not started, and USB and MMCE begin on Manual: "THAT
+  DRIVE IS NOT CONNECTED" with the drive plugged in. It now starts just that drive, the way a boot does, and says so only if the drive
+  really is not there.
+- **MMCE:** the row opened the bare `mmce0:`, with no driver load and no wait. It goes the way the boot and the save go now: `mmce0:/`,
+  the driver loaded, and a wait while the card is busy.
+- **Fast Boot** names a drive by its type (`home=usb0:/RIPPS2`), as the pointer does. A gate from before named a slot, which is not up
+  that early; it is passed over, so the pointer decides.
+
+**If you hit this before:** your old choice is still on the card, and RIPPS2 follows it now, so it reads that drive's older settings and
+the row shows that drive. To stay on the card, choose Memory Card and Save Changes.
+
+| Lab, on the final build (the internal HDD goes the same way as USB) | 1.4.1 | Build 142 |
+|---|---|---|
+| RIPPS2 in `mc0:/RIPPS2`, save to the drive, power cycle | Back on Memory Card | Stays on the drive |
+| The same, then back to Memory Card, power cycle | | Both pointers gone, stays on the card |
+| RIPPS2 in `mc0:/APPS`, save to the drive, power cycle | Stays | Stays |
+| Manual mode, the drive never started, no RIPPS2 folder on it | "NO INTERNAL HDD FOUND" | Starts it, saves, stays |
+| The drive gone at the next boot | | Waits for it (10 s for an HDD, 3 s for USB by the code), reads the old file, no hang. Drive back: its settings return |
+| Fast Boot on, the drive as home | | The gate says `ata0:/RIPPS2`, and the next boot reads the drive |
+| USB and MMCE rows with no such device | "NOT CONNECTED" | "NOT CONNECTED" after the wait, no hang |
+| HDD autolaunch with the pointer and a file beside the ELF | Reads the card | Reads the drive |
+| **A real USB drive or MMCE; USB autolaunch (its iLink driver breaks PCSX2); an APA HDD not yet mounted (still says not found)** | | **Not run** |
+
 ## Build 141 (beta, v1.4.1-beta), changes since build 140
 
 The user, 11/04: "the bible manage menu should be like the update we did for the rename matching the rest of the settings layouts,

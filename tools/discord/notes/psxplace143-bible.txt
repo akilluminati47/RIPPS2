@@ -1,0 +1,20 @@
+psx-place bump for BIBLE's own thread (threads/bible.51524), for BIBLE f5705eb. Paste from the [CENTER] line. BIBLE's first post (psxplace-bible-post.bbcode) needs its Current line and download names first.
+
+[CENTER][IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b143/update-bible.jpg[/IMG]
+
+[SIZE=5][B]BIBLE f5705eb: no more hang on a missing AUTO path, and it no longer reads the boot sound[/B][/SIZE]
+[URL='https://github.com/akilluminati47/BIBLE/releases/tag/signed-f5705eb']BIBLE's release[/URL]  |  [URL='https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf']RIPPS2 v1.4.3 beta[/URL] carries it[/CENTER]
+
+Signed by akilluminati47. It has only run in the PCSX2 lab so far, not on a real PS2.
+
+[LIST]
+[*][B]The AUTO hang is fixed.[/B] A missing file on an AUTO path, on a drive BIBLE has to load a driver for (USB, MMCE, MX4SIO, HDD), stopped the boot on the splash for good. BIBLE moves on to the next path now. The lab shows it with an MMCE path and no device. Every card on 3282396 keeps the hang until it is updated.
+[*][B]BIBLE no longer reads boot.adp into memory.[/B] It only tells RIPPS2 the folder. The read never reached RIPPS2 on an SD2PSX, and on a memory card launch it only moved the wait into BIBLE. Lab, start to towers with the config Manage writes, three runs each: 4.73 to 5.16 s before, 3.95 to 4.31 s after, and the sound still 0.14 s after the towers.
+[*][B]Smaller:[/B] the stage 2 loader is out of the MMCE, MX4SIO and HDD builds, about 9.6 KB each.
+[*][B]Its own icon[/B]: its logo and an open book on a dark plate, one shape, checked on ROM 1.60A and 2.20A and in RIPPS2's Memory Files viewer.
+[*][B]A plain ELF[/B] for consoles with no system update (many from ROM 2.30 on), started by OpenTuna or FunTuna from mc?:/BOOT/BOOT.ELF. Lab-tested through the real exploit on ROM 2.20A. The only console report is one SCPH-90004 on ROM 2.30E, on the earlier test build.
+[/LIST]
+
+[B]To update:[/B] RIPPS2 v1.4.3 beta, Settings > General > Boot Loader > Manage: Update BIBLE. Or the signed files with KELFBinder, from the release page.
+
+Still wanted most: a real MMCE with a missing AUTO path (it should say not found and move on within a few seconds), a genuine Sony memory card, a MemCard PRO 2, MX4SIO, the HDD build, slims, PAL and Japanese consoles, and anything on ROM 2.30 or newer. Tell us here or [URL='https://github.com/akilluminati47/RIPPS2/issues']open an issue[/URL].

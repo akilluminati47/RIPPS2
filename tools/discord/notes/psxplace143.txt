@@ -1,0 +1,23 @@
+psx-place bump for v1.4.3 beta (builds 142 and 143) in RIPPS2's thread. Paste from the [CENTER] line. The first post (psxplace-post.bbcode) needs the new release line, size and BIBLE lines first.
+
+[CENTER][URL='https://github.com/akilluminati47/RIPPS2/blob/main/media/b143/save-settings.mp4'][IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b143/save-settings.gif[/IMG][/URL]
+
+[SIZE=5][B]RIPPS2 v1.4.3 beta: Save Settings To stays, BIBLE's AUTO hang fixed, the boot sound out of BIBLE[/B][/SIZE]
+[URL='https://github.com/akilluminati47/RIPPS2/releases/latest/download/RIPPS2.elf']RIPPS2.elf[/URL] (2,750 KB)  |  [URL='https://github.com/akilluminati47/RIPPS2/releases/tag/v1.4.3-beta']What's new[/URL]  |  [URL='https://github.com/akilluminati47/RIPPS2/blob/main/CHANGELOG.md']Changelog[/URL][/CENTER]
+
+This has only run in the PCSX2 lab, not on a real PS2 yet, so your reports count.
+
+[B]Save Settings To stays[/B] (thanks nuno6573). A settings file beside RIPPS2.ELF beat your choice: with RIPPS2 in mc?:/RIPPS2, the save went to your drive, then the next boot read the card and showed Memory Card again. Your drive goes first now. The row also refused a drive that had not started, and USB and MMCE begin on Manual. It starts that drive now, and only says it is not connected if it really is not there. If you hit this before, your old choice is still on the card and RIPPS2 follows it now: to stay on the card, choose Memory Card and Save Changes.
+
+[CENTER][IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b143/update-bible.jpg[/IMG][/CENTER]
+
+[B]BIBLE f5705eb inside.[/B] If your card has BIBLE, Manage offers the update, and you need it for the first fix:
+[LIST]
+[*][B]The AUTO hang is fixed.[/B] A missing file on an AUTO path, on a drive BIBLE has to load a driver for, stopped the boot on the splash for good. BIBLE moves on to the next path now. Until a card takes the update, that card keeps the hang.
+[*][B]BIBLE no longer reads the boot sound into memory.[/B] It only tells RIPPS2 the folder. In the lab, with the config Manage writes, the towers came about 0.8 s sooner, and the sound still comes 0.14 s after them.
+[*][B]BIBLE's own icon[/B] on its folders.
+[/LIST]
+
+[B]ROM 2.30 and newer.[/B] Many of those consoles no longer run system updates, so a bound BIBLE may not start at power on. Manage says so and still lets you try. BIBLE also comes as a plain ELF for OpenTuna or FunTuna, and Manage recognises it, so its settings rows work.
+
+Tell us what breaks here or [URL='https://github.com/akilluminati47/RIPPS2/issues']open an issue[/URL], with your console model, ROM, what you did and your DIAG.TXT.
