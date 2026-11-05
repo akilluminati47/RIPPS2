@@ -30,8 +30,9 @@ param(
   [switch]$Bios
 )
 
-$lab = "B:\Emulation\PlayStation\PCSX2\ripps2-lab"
-$exe = "$lab\pcsx2-qt.exe"
+# PS2BG_LAB, PS2BG_EXE and PS2BG_DESK point a run at another copy of PCSX2, on a desktop of its own, so two runs can go side by side
+$lab = if ($env:PS2BG_LAB) { $env:PS2BG_LAB } else { "B:\Emulation\PlayStation\PCSX2\ripps2-lab" }
+$exe = if ($env:PS2BG_EXE) { Join-Path $lab $env:PS2BG_EXE } else { "$lab\pcsx2-qt.exe" }
 $grabDir = Join-Path $PSScriptRoot "grabs"
 New-Item -ItemType Directory -Force $grabDir | Out-Null
 
@@ -214,14 +215,80 @@ public static class BG {
   }
 }
 
+// The sound of the hidden PCSX2: its own audio session, found by process id, the one Windows' mixer shows. Windows keeps a
+// program's volume and mute from one run to the next, so a run needs nothing stored here.
+public static class LabAudio {
+  [ComImport, Guid("BCDE0395-E52F-467C-8E3D-C4579291692E")] class MMDeviceEnumerator { }
+  [ComImport, Guid("A95664D2-9614-4F35-A746-DE8DB63617E6"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+  interface IMMDeviceEnumerator { [PreserveSig] int EnumAudioEndpoints(int flow, int state, out IntPtr devices); [PreserveSig] int GetDefaultAudioEndpoint(int flow, int role, out IMMDevice device); }
+  [ComImport, Guid("D666063F-1587-4E43-81F1-B948E807363F"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+  interface IMMDevice { [PreserveSig] int Activate([MarshalAs(UnmanagedType.LPStruct)] Guid iid, int ctx, IntPtr args, [MarshalAs(UnmanagedType.IUnknown)] out object iface); }
+  [ComImport, Guid("77AA99A0-1BD6-484F-8BC7-2C654C9A9B6F"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+  interface IAudioSessionManager2 { [PreserveSig] int GetAudioSessionControl(IntPtr a, int b, out IntPtr c); [PreserveSig] int GetSimpleAudioVolume(IntPtr a, int b, out IntPtr c); [PreserveSig] int GetSessionEnumerator(out IAudioSessionEnumerator e); }
+  [ComImport, Guid("E2F5BB11-0570-40CA-ACDD-3AA01277DEE8"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+  interface IAudioSessionEnumerator { [PreserveSig] int GetCount(out int n); [PreserveSig] int GetSession(int i, [MarshalAs(UnmanagedType.IUnknown)] out object s); }
+  [ComImport, Guid("BFB7FF88-7239-4FC9-8FA2-07C950BE9C6D"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+  interface IAudioSessionControl2 { [PreserveSig] int A1(); [PreserveSig] int A2(); [PreserveSig] int A3(); [PreserveSig] int A4(); [PreserveSig] int A5(); [PreserveSig] int A6(); [PreserveSig] int A7(); [PreserveSig] int A8(); [PreserveSig] int A9();
+    [PreserveSig] int B1(); [PreserveSig] int B2(); [PreserveSig] int GetProcessId(out uint pid); }
+  [ComImport, Guid("87CE5498-68D6-44E5-9215-6DA47EF883D8"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+  interface ISimpleAudioVolume { [PreserveSig] int SetMasterVolume(float v, ref Guid ctx); [PreserveSig] int GetMasterVolume(out float v); [PreserveSig] int SetMute(int m, ref Guid ctx); [PreserveSig] int GetMute(out int m); }
+  static Guid ctx = Guid.Empty;
+
+  static ISimpleAudioVolume Find(int pid) {
+    try {
+      var en = (IMMDeviceEnumerator)new MMDeviceEnumerator();
+      IMMDevice dev;
+      if (en.GetDefaultAudioEndpoint(0, 1, out dev) != 0 || dev == null) return null; // eRender, eMultimedia
+      object o;
+      if (dev.Activate(typeof(IAudioSessionManager2).GUID, 23, IntPtr.Zero, out o) != 0) return null; // CLSCTX_ALL
+      IAudioSessionEnumerator list;
+      if (((IAudioSessionManager2)o).GetSessionEnumerator(out list) != 0) return null;
+      int n;
+      list.GetCount(out n);
+      for (int i = 0; i < n; i++) {
+        object s;
+        if (list.GetSession(i, out s) != 0 || s == null) continue;
+        uint p;
+        if (((IAudioSessionControl2)s).GetProcessId(out p) == 0 && p == pid) return (ISimpleAudioVolume)s;
+      }
+    } catch { }
+    return null;
+  }
+  public static bool Read(int pid, out int volume, out bool muted) {
+    volume = 100; muted = false;
+    var v = Find(pid);
+    if (v == null) return false;
+    float f; int m;
+    v.GetMasterVolume(out f); v.GetMute(out m);
+    volume = (int)Math.Round(f * 100); muted = m != 0;
+    return true;
+  }
+  public static bool SetVolume(int pid, int volume) {
+    var v = Find(pid);
+    if (v == null) return false;
+    v.SetMasterVolume(Math.Max(0, Math.Min(100, volume)) / 100f, ref ctx);
+    return true;
+  }
+  public static bool SetMuted(int pid, bool muted) {
+    var v = Find(pid);
+    if (v == null) return false;
+    v.SetMute(muted ? 1 : 0, ref ctx);
+    return true;
+  }
+}
+
 // The run on the user's own desktop: a taskbar window that never takes the focus, says what the hidden PCSX2 is doing,
 // previews it, and lets the user stop the run or take it over. Statics carry the run's state between the script's
 // thread and the window's.
-public class LabPanel : System.Windows.Forms.Form {
+public class LabPanel : System.Windows.Forms.Form, System.Windows.Forms.IMessageFilter {
   public static volatile int Request = 0;    // 1 stop, 2 take over
   public static volatile string Status = "starting";
   public static volatile int Run = 0;        // a new run closes an old run's window
   public static IntPtr Target = IntPtr.Zero; // the hidden PCSX2 window, for the preview
+  public static volatile int Pid = 0;        // and its process, for its sound
+  System.Windows.Forms.TrackBar volume;
+  System.Windows.Forms.Button mute;
+  bool muted, syncing;
   int run;
   System.Windows.Forms.Label status;
   System.Windows.Forms.PictureBox peek;
@@ -234,7 +301,7 @@ public class LabPanel : System.Windows.Forms.Form {
     Text = "RIPPS2 lab: AI run" + (title.Length > 0 ? " (" + title + ")" : "");
     FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle; MaximizeBox = false; ShowInTaskbar = true;
     StartPosition = System.Windows.Forms.FormStartPosition.Manual;
-    ClientSize = new System.Drawing.Size(360, 386);
+    ClientSize = new System.Drawing.Size(360, 424);
     var wa = System.Windows.Forms.Screen.PrimaryScreen.WorkingArea;
     Location = new System.Drawing.Point(wa.Right - Width - 12, wa.Bottom - Height - 12);
     try { Icon = System.Drawing.Icon.ExtractAssociatedIcon(iconFrom); } catch { }
@@ -243,21 +310,50 @@ public class LabPanel : System.Windows.Forms.Form {
     status = new System.Windows.Forms.Label { Location = new System.Drawing.Point(12, 58), Size = new System.Drawing.Size(336, 18), Text = Status };
     peek = new System.Windows.Forms.PictureBox { Location = new System.Drawing.Point(12, 80), Size = new System.Drawing.Size(336, 252),
       SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom, BackColor = System.Drawing.Color.Black };
-    var take = new System.Windows.Forms.Button { Text = "Take over", Location = new System.Drawing.Point(12, 342), Size = new System.Drawing.Size(162, 32) };
-    var stop = new System.Windows.Forms.Button { Text = "Stop run", Location = new System.Drawing.Point(186, 342), Size = new System.Drawing.Size(162, 32) };
+    var soundLabel = new System.Windows.Forms.Label { Text = "Sound", Location = new System.Drawing.Point(12, 345), Size = new System.Drawing.Size(44, 18) };
+    volume = new System.Windows.Forms.TrackBar { Location = new System.Drawing.Point(56, 338), Size = new System.Drawing.Size(224, 34), Minimum = 0, Maximum = 100, TickStyle = System.Windows.Forms.TickStyle.None, LargeChange = 10, SmallChange = 5, Value = 100, Enabled = false };
+    mute = new System.Windows.Forms.Button { Text = "Mute", Location = new System.Drawing.Point(286, 340), Size = new System.Drawing.Size(62, 28), Enabled = false };
+    volume.Scroll += (o, e) => { if (!syncing) LabAudio.SetVolume(Pid, volume.Value); };
+    mute.Click += (o, e) => { muted = !muted; mute.Text = muted ? "Unmute" : "Mute"; LabAudio.SetMuted(Pid, muted); };
+    var take = new System.Windows.Forms.Button { Text = "Take over", Location = new System.Drawing.Point(12, 380), Size = new System.Drawing.Size(162, 32) };
+    var stop = new System.Windows.Forms.Button { Text = "Stop run", Location = new System.Drawing.Point(186, 380), Size = new System.Drawing.Size(162, 32) };
     var tips = new System.Windows.Forms.ToolTip();
     tips.SetToolTip(take, "Saves a state, closes the hidden run and opens PCSX2 on your desktop at that point, to play on by hand");
     tips.SetToolTip(stop, "Ends the run and closes the hidden PCSX2 (closing this window does the same)");
     take.Click += (o, e) => { if (Request == 0) { Request = 2; status.Text = "taking over: saving where it is"; } };
     stop.Click += (o, e) => { if (Request == 0) { Request = 1; status.Text = "stopping"; } };
     FormClosing += (o, e) => { if (Run == this.run && Request == 0) Request = 1; };
-    Controls.AddRange(new System.Windows.Forms.Control[] { head, status, peek, take, stop });
+    Controls.AddRange(new System.Windows.Forms.Control[] { head, status, peek, soundLabel, volume, mute, take, stop });
+    tips.SetToolTip(volume, "The hidden PCSX2's own volume, the same one Windows' mixer shows. The mouse wheel works anywhere over this window");
+    System.Windows.Forms.Application.AddMessageFilter(this);
     timer = new System.Windows.Forms.Timer { Interval = 1000 };
     timer.Tick += Tick; timer.Start();
   }
 
+  // the wheel over any part of this window turns the hidden PCSX2 up or down, as over a program's own taskbar button
+  public bool PreFilterMessage(ref System.Windows.Forms.Message m) {
+    if (m.Msg != 0x020A || Pid == 0 || !volume.Enabled) return false;
+    int notches = ((int)((long)m.WParam >> 16)) / 120;
+    syncing = true;
+    volume.Value = Math.Max(0, Math.Min(100, volume.Value + notches * 5));
+    syncing = false;
+    LabAudio.SetVolume(Pid, volume.Value);
+    return true;
+  }
+
+  // what the sound is now: it can change from outside (the mixer, a volume mod), and it only exists once PCSX2 has opened it
+  void SyncSound() {
+    int v = 100; bool m = false;
+    bool have = Pid != 0 && LabAudio.Read(Pid, out v, out m);
+    volume.Enabled = have; mute.Enabled = have;
+    if (!have) return;
+    if (!volume.Capture) { syncing = true; volume.Value = Math.Max(0, Math.Min(100, v)); syncing = false; }
+    if (m != muted) { muted = m; mute.Text = muted ? "Unmute" : "Mute"; }
+  }
+
   void Tick(object o, EventArgs e) {
     if (Run != run) { timer.Stop(); Close(); return; }
+    try { SyncSound(); } catch { }
     var t = DateTime.Now - started;
     if (Request == 0) status.Text = string.Format("{0}   ({1}:{2:00})", Status, (int)t.TotalMinutes, t.Seconds);
     if (Target != IntPtr.Zero && Request == 0 && WindowState != System.Windows.Forms.FormWindowState.Minimized) {
@@ -266,7 +362,7 @@ public class LabPanel : System.Windows.Forms.Form {
   }
 
   public static void Start(string title, string iconFrom) {
-    int r = ++Run; Request = 0; Status = "starting PCSX2"; Target = IntPtr.Zero;
+    int r = ++Run; Request = 0; Status = "starting PCSX2"; Target = IntPtr.Zero; Pid = 0;
     var t = new System.Threading.Thread(() => { System.Windows.Forms.Application.Run(new LabPanel(title, iconFrom, r)); });
     t.SetApartmentState(System.Threading.ApartmentState.STA); t.IsBackground = true; t.Start();
   }
@@ -309,6 +405,7 @@ if ($Attach) {
   $pid2 = $p.Id; "attached to pid $pid2"
 } else {
   $fgBefore = [BG]::GetForegroundWindow()
+  if ($env:PS2BG_DESK) { [BG]::DeskName = $env:PS2BG_DESK }
   if (-not $env:PS2BG_NODESK) { if ([BG]::OpenDesk()) { "on the lab's own desktop ($([BG]::DeskName)): it cannot take the focus or show" } else { "could not make the lab desktop; running parked off screen" } }
   $launchArgs = $(if ($Bios) { "-bios" } else { "-fastboot -elf `"$Elf`"" }) # -Bios: the console's own menu (the browser), no ELF
   # PS2BG_SLOWBOOT=1: the BIOS intro before the ELF, so buttons held from the start are down when it first reads the pad
@@ -326,6 +423,7 @@ $script:main = [IntPtr]::Zero
 for ($i = 0; $i -lt 60 -and $script:main -eq [IntPtr]::Zero; $i++) { Start-Sleep -Milliseconds 250; $script:main = [BG]::MainWindowOnDesk($pid2) }
 if ($script:main -eq [IntPtr]::Zero) { "no PCSX2 window appeared"; [LabPanel]::Finish(); return }
 [LabPanel]::Target = $script:main
+[LabPanel]::Pid = $pid2
 if (-not $Attach) {
   Start-Sleep -Milliseconds 400
   [BG]::ParkOnDesk($script:main, 1300, 1060)
