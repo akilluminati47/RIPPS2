@@ -72,6 +72,9 @@ cp -f "$HERE/bible/MMCE/SYSTEM.XLF" "$SRC/misc/bible_mmce_system.xlf"
 cp -f "$HERE/kelfbinder/IOPRP.img" "$SRC/misc/bind_ioprp.img"
 # BIBLE on the HDD (build 73): its HDD build, HSYSTEM.XLF (build 134: BIBLE's, signed with the card builds)
 cp -f "$HERE/bible/HSYSTEM.XLF" "$SRC/misc/bible_hdd_system.xlf"
+# build 143: BIBLE's own card icon and the icon.sys it was checked under (BIBLE's assets/icon)
+cp -f "$HERE/bible/bible.icn" "$SRC/misc/bible.icn"
+cp -f "$HERE/bible/icon.sys" "$SRC/misc/bible_icon.sys"
 # Ember and POPSTARTER are the user's own from build 113, found and launched, not carried (elf/ember, elf/popstarter)
 # build 135: Neutrino is no longer carried (elf/neutrino/README.md); RIPPS2 finds the user's own
 # The build number shown in About: the number of the last patch (build N is patch N); beta from build 100

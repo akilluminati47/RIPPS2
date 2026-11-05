@@ -17,10 +17,10 @@ st, about = rd('src/ripps2status.c'), rd('src/ripps2about.c')
 fail = []
 
 # BIBLE 3282396, all four builds
-sums = {'SYSTEM.XLF': 'f56c950f753c78b862ce5c0a6d3578e9850e1eefc1285d4a3ef560f27c457a8a',
-        'MX4SIO/SYSTEM.XLF': '9f11f1d461e668d1a35179340b332aa446aa188932596618201dd750770f47f2',
-        'MMCE/SYSTEM.XLF': 'cbcff26cf6900df479e43eb66a601294ba75029486d967c292687562d7bacf05',
-        'HSYSTEM.XLF': '0f8f2a7ca76d4f3392636b0a1263b62d9a155285cce40b3226ab7926af5cf2b8'}
+sums = {'SYSTEM.XLF': '0b251edcf67cf1ff7c9dd4bc7c420e5a33aa7415ecc69d5a9e4da9b13a7e4f52',
+        'MX4SIO/SYSTEM.XLF': 'bb927d630e27c4ab00080471bba9d0cce8691dbc3c768ca9209a2d5ef861fef8',
+        'MMCE/SYSTEM.XLF': '6a0e8364cec382c8cdd6da580de1f82a21edebc0ba1738a13b800c83b9d6e216',
+        'HSYSTEM.XLF': '304f78ce6b772a70820d6f0c1c89116b469db5345e79c53136e3c0cc8d339e9c'}
 readme = (elf / 'bible' / 'README.md').read_text(encoding='utf-8')
 for name, want in sums.items():
     data = (elf / 'bible' / name).read_bytes()

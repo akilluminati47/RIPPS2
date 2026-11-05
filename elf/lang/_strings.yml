@@ -1603,6 +1603,9 @@ strings:
 - en: Binds the BIBLE RIPPS2 carries to a memory card, writes it over the one there, or puts back what it replaced.
   in:
   - ripps2boot.c
+- en: 'Binds the BIBLE RIPPS2 carries to a memory card. On this console''s ROM a bound BIBLE may not start at power on: a plain ELF through OpenTuna or FunTuna can.'
+  in:
+  - ripps2boot.c
 - en: Black
   in:
   - ripps2boot.c
@@ -1653,7 +1656,7 @@ strings:
 - en: Game ID for Discs
   in:
   - ripps2boot.c
-- en: 'How long BIBLE waits for a button before the Auto path. At 0 ms a button held from power on still works. A boot sound beside BIBLE is read first: about 2 s at 0 ms.'
+- en: How long BIBLE waits for a button before the Auto path. At 0 ms a button held from power on still works.
   in:
   - ripps2boot.c
 - en: 'INSTALL BIBLE ON THE INTERNAL HDD
@@ -1898,6 +1901,9 @@ strings:
   in:
   - ripps2boot.c
 - en: This HDD has no __sysconf partition, so BIBLE's config has to go on a memory card (PS2BBL reads a card's first), and there is none in either slot. Insert one, then try again.
+  in:
+  - ripps2boot.c
+- en: This console has ROM %d.%02d. Many consoles from ROM 2.30 on no longer run system updates, so a BIBLE bound here may not start at power on. If it does not, start BIBLE as a plain ELF through OpenTuna or FunTuna instead.
   in:
   - ripps2boot.c
 - en: 'UPDATE BIBLE: SLOT %d HAS AN OLDER ONE'

@@ -1,0 +1,315 @@
+diff --git a/Makefile b/Makefile
+index 83e85b1..eda6b52 100644
+--- a/Makefile
++++ b/Makefile
+@@ -204,7 +204,7 @@ AUDIO_OBJS =
+ # icon_sys.o + save_icn.o are the memory-card browser save icon for the settings folder.
+ # icon.sys names list.icn, copy.icn and del.icn; all three are the same artwork, so ONE blob is
+ # embedded and util.c writes it out under all three names (see saveIconName in src/util.c).
+-MISC_OBJS =	icon_sys.o save_icn.o ripps2_icn.o icon_sys_A.o icon_sys_J.o icon_sys_C.o bible_xlf.o bible_mx4sio_xlf.o bible_mmce_xlf.o bible_hdd_xlf.o bind_ioprp.o conf_theme_OPL.o theme_coverflow.o theme_ripgrid.o ripps2_font.o ripps2_sleek.o ripps2_sleekbold.o ripps2_sleekcase.o ripps2_one.o ripps2roboto.o ripps2_condensed.o
++MISC_OBJS =	icon_sys.o save_icn.o ripps2_icn.o icon_sys_A.o icon_sys_J.o icon_sys_C.o bible_icn.o bible_icon_sys.o bible_xlf.o bible_mx4sio_xlf.o bible_mmce_xlf.o bible_hdd_xlf.o bind_ioprp.o conf_theme_OPL.o theme_coverflow.o theme_ripgrid.o ripps2_font.o ripps2_sleek.o ripps2_sleekbold.o ripps2_sleekcase.o ripps2_one.o ripps2roboto.o ripps2_condensed.o
+ # RIPPS2 build 135: one ELF, BIBLE carried, Neutrino found (builds 126-134 also made a lite ELF)
+ 
+ TRANSLATIONS = Albanian Arabic Bulgarian Cebuano Croatian Czech Danish Dutch Filipino French \
+@@ -330,6 +330,11 @@ endif
+ 
+ # RIPPS2: a test build whose CD player takes a disc image's tracks for audio (PCSX2 reports every
+ # track of an image as data, so its audio CD path cannot be reached otherwise). Never for a release.
++# RIPPS2 build 143: a lab build that believes the console has this ROM (the lab has no ROM 2.30): RIPPS2_TEST_ROM=230
++ifneq ($(RIPPS2_TEST_ROM),)
++  EE_CFLAGS += -DRIPPS2_TEST_ROM=$(RIPPS2_TEST_ROM)
++endif
++
+ ifeq ($(RIPPS2_CD_TEST),1)
+   EE_CFLAGS += -DRIPPS2_CD_TEST
+ endif
+@@ -1265,6 +1270,13 @@ $(EE_ASM_DIR)icon_sys_C.c: misc/icon_C.sys | $(EE_ASM_DIR)
+ 
+ # RIPPS2 (BIBLE): PS2BBL 1.2.0 by El Isra, signed, unchanged (GPL-3; carried as data, see the RIPPS2
+ # repo's elf/bible for its licence and source). build.sh puts them in misc/.
++# RIPPS2 build 143: BIBLE's own card icon and the icon.sys it was checked under (BIBLE's assets/icon)
++$(EE_ASM_DIR)bible_icn.c: misc/bible.icn | $(EE_ASM_DIR)
++	$(BIN2C) $< $@ bible_icn
++
++$(EE_ASM_DIR)bible_icon_sys.c: misc/bible_icon.sys | $(EE_ASM_DIR)
++	$(BIN2C) $< $@ bible_icon_sys
++
+ $(EE_ASM_DIR)bible_xlf.c: misc/bible_system.xlf | $(EE_ASM_DIR)
+ 	$(BIN2C) $< $@ bible_xlf
+ 
+diff --git a/src/ripps2boot.c b/src/ripps2boot.c
+index 5ee34db..863aef6 100644
+--- a/src/ripps2boot.c
++++ b/src/ripps2boot.c
+@@ -96,6 +96,10 @@ extern unsigned char icon_sys[];
+ extern unsigned int size_icon_sys;
+ extern unsigned char save_icn[];
+ extern unsigned int size_save_icn;
++extern unsigned char bible_icn[]; // build 143: BIBLE's own card icon, and the icon.sys it was checked under
++extern unsigned int size_bible_icn;
++extern unsigned char bible_icon_sys[];
++extern unsigned int size_bible_icon_sys;
+ extern unsigned char ripps2_icn[]; // build 98: the dead elf's hat, RIPPS2's own card folder icon
+ extern unsigned int size_ripps2_icn;
+ 
+@@ -158,6 +162,7 @@ typedef struct
+     int bible;       // ...and it is BIBLE
+     const char *bibleBuild; // build 138: which of the BIBLE builds RIPPS2 carries it is ("MMCE"...), by its bytes; NULL: not known
+     int bibleOld;           // build 139: ...one RIPPS2 carried before (an update is offered)
++    int plain;              // build 143: BIBLE as a plain ELF, mc?:/BOOT/BOOT.ELF: nothing is bound, so nothing in a system folder is BIBLE's
+     int boots;       // this console starts it at power on (its own folder and file name are there)
+     char folder[16]; // the B?EXEC-SYSTEM folder holding it ("" when none)
+     char title[48];  // its icon.sys title, in ASCII
+@@ -165,6 +170,7 @@ typedef struct
+ 
+ static blCard_t blCards[2];
+ static char blSysFolder[16], blSysFile[16]; // this console's own system update: folder and file name
++static int blRom;                           // build 143: its ROM version, 230 for 2.30; 0 when not known
+ 
+ static char blText[BL_MAX + 1], blOut[BL_MAX + 512];
+ 
+@@ -178,6 +184,7 @@ static int blConsoleUpdate(void)
+     const char *file = "osdmain.elf";
+ 
+     blSysFolder[0] = blSysFile[0] = '\0';
++    blRom = 0;
+     if (fd < 0)
+         return 0;
+     n = read(fd, ver, sizeof(ver) - 1);
+@@ -185,6 +192,10 @@ static int blConsoleUpdate(void)
+     if (n < 5)
+         return 0;
+     rom = (ver[0] - '0') * 1000 + (ver[1] - '0') * 100 + (ver[2] - '0') * 10 + (ver[3] - '0');
++#ifdef RIPPS2_TEST_ROM
++    rom = RIPPS2_TEST_ROM; // a lab build: the lab has no ROM 2.30
++#endif
++    blRom = rom;
+     switch (ver[4]) {
+         case 'J': // the first Japanese ROMs each have a name of their own
+             letter = 'I';
+@@ -336,6 +347,7 @@ static const struct
+     unsigned int crc;
+     const char *name;
+ } blBibleOlder[] = {
++    {179176, 0xEB932B45u, "MMCE"}, {176456, 0xA2BF1298u, "MX4SIO"}, {117160, 0x7B820870u, "memory card"}, // 3282396 (RIPPS2 1.3.9 to 1.4.2)
+     {169016, 0x0EEFE882u, "MMCE"}, {166264, 0xE42D0CA8u, "MX4SIO"},                                       // a1ffb0b (RIPPS2 1.3.8)
+     {166456, 0xA27798DDu, "MMCE"}, {163704, 0xB2845BEDu, "MX4SIO"}, {116136, 0x8E1FC367u, "memory card"}, // f31c8d5 (1.3.4 to 1.3.6)
+ };
+@@ -377,7 +389,65 @@ static const char *blBibleBuildOf(const char *path, int *older)
+     return found;
+ }
+ 
++/* RIPPS2 build 143 (nuno6573's SCPH-90004, ROM 2.30E, 11/04): BIBLE as a plain ELF, started by OpenTuna or FunTuna from
++   mc?:/BOOT/BOOT.ELF on a console that cannot run a system update. Nothing is bound, so it is told by the whole file: its size,
++   then its CRC-32. BIBLE's own settings rows follow from it; RIPPS2 carries no plain ELF and does not install one. */
++static const struct
++{
++    int size;
++    unsigned int crc;
++    const char *name;
++} blBiblePlain[] = {
++    {169428, 0xFA50666Cu, "MMCE"}, {166692, 0x79D0611Cu, "MX4SIO"}, {116436, 0x6930956Au, "memory card"}, {160036, 0x9510BFF7u, "HDD"}, // f5705eb
++    {179060, 0x3ABBDFB0u, "MMCE"}, {176404, 0x7B0DCE86u, "MX4SIO"}, {117028, 0x93D37D70u, "memory card"},                               // 301de13, the first test
++};
++
++static const char *blPlainBibleOf(int port)
++{
++    char path[32];
++    unsigned char *buf;
++    const char *found = NULL;
++    int fd, k, size, known = 0;
++
++    snprintf(path, sizeof(path), "mc%d:/BOOT/BOOT.ELF", port);
++    if ((fd = open(path, O_RDONLY)) < 0)
++        return NULL;
++    size = lseek(fd, 0, SEEK_END);
++    for (k = 0; k < (int)(sizeof(blBiblePlain) / sizeof(blBiblePlain[0])); k++)
++        if (size == blBiblePlain[k].size)
++            known = 1;
++    if (known && (buf = malloc(size)) != NULL) {
++        lseek(fd, 0, SEEK_SET);
++        if (read(fd, buf, size) == size) {
++            unsigned int crc = (unsigned int)crc32(0L, buf, size);
++            for (k = 0; k < (int)(sizeof(blBiblePlain) / sizeof(blBiblePlain[0])) && found == NULL; k++)
++                if (size == blBiblePlain[k].size && crc == blBiblePlain[k].crc)
++                    found = blBiblePlain[k].name;
++        }
++        free(buf);
++    }
++    close(fd);
++    return found;
++}
++
++static void blScanCardUpdate(int port);
++
+ static void blScanCard(int port)
++{
++    blCard_t *c = &blCards[port];
++    const char *plain;
++
++    blScanCardUpdate(port);
++    // a card with a system update is that loader's: what the console starts at power on is what the list has to say
++    if (c->present && !c->folder[0] && c->kind == BL_NONE && (plain = blPlainBibleOf(port)) != NULL) {
++        c->bibleBuild = plain;
++        c->bible = 1;
++        c->plain = 1;
++        c->kind = BL_PS2BBL;
++    }
++}
++
++static void blScanCardUpdate(int port)
+ {
+     blCard_t *c = &blCards[port];
+     char file[32], path[64];
+@@ -470,6 +540,10 @@ static void blCardWhat(int port, int boot, char *out, int size)
+         return;
+     }
+     char bible[40];
++    if (c->plain) { // build 143: it is started by OpenTuna or FunTuna, and power on says nothing about it
++        snprintf(out, size, "BIBLE (%s build, plain ELF)", c->bibleBuild);
++        return;
++    }
+     if (c->bibleBuild != NULL && c->bibleOld) // build 139
+         snprintf(bible, sizeof(bible), "BIBLE (%s build, older)", c->bibleBuild);
+     else if (c->bibleBuild != NULL)
+@@ -1068,21 +1142,36 @@ int ripps2CardFolderIconNamed(const char *dir, const char *title)
+         close(fd);
+         return 1;
+     }
+-    return blWriteIcons(dir, title, "RIPPS2");
++    {
++        unsigned char sys[1024];
++        char path[96];
++        if (size_icon_sys > sizeof(sys))
++            return 0;
++        blIconSys(sys, title, "RIPPS2");
++        snprintf(path, sizeof(path), "%s/icon.sys", dir);
++        if (blWrite(path, (const char *)sys, size_icon_sys) != 0)
++            return 0;
++        snprintf(path, sizeof(path), "%s/bible.icn", dir);
++        return blWrite(path, (const char *)save_icn, size_save_icn) == 0;
++    }
+ }
+ 
++/* build 143: BIBLE's folders wear BIBLE's own icon (BIBLE's assets/icon: a dark plate, its logo and an open book, one shape, cut
++   into tiles for Memory Files' viewer), with that icon.sys's colours and light, under which it passed the 1.60A and 2.20A
++   browsers and the viewer. Only the two title lines are RIPPS2's. */
+ static int blWriteIcons(const char *dir, const char *first, const char *second)
+ {
+     unsigned char sys[1024];
+     char path[96];
+-    if (size_icon_sys > sizeof(sys))
++    if (size_icon_sys > sizeof(sys) || size_bible_icon_sys != size_icon_sys)
+         return 0;
+     blIconSys(sys, first, second);
++    memcpy(sys + 0x10, bible_icon_sys + 0x10, 0xC0 - 0x10);
+     snprintf(path, sizeof(path), "%s/icon.sys", dir);
+     if (blWrite(path, (const char *)sys, size_icon_sys) != 0)
+         return 0;
+     snprintf(path, sizeof(path), "%s/bible.icn", dir);
+-    return blWrite(path, (const char *)save_icn, size_save_icn) == 0;
++    return blWrite(path, (const char *)bible_icn, size_bible_icn) == 0;
+ }
+ 
+ // A whole file onto another, with progress on screen; 1 when it all landed
+@@ -1271,7 +1360,7 @@ static void blInstallBound(int port, const blWhere_t *w, const char *alt)
+ 
+     // what starts from the folder now moves aside, whole (BIBLE itself is simply written over)
+     snprintf(dir, sizeof(dir), "mc%d:/%s", port, blSysFolder);
+-    if (blDirExists(dir) && !(c->bible && !strcmp(c->folder, blSysFolder))) {
++    if (blDirExists(dir) && !(c->bible && !c->plain && !strcmp(c->folder, blSysFolder))) {
+         blBackupName(port, blSysFolder, backup, sizeof(backup));
+         if (!blMcRename(port, blSysFolder, backup) || blDirExists(dir)) {
+             free(buf);
+@@ -1301,7 +1390,7 @@ static void blInstallBound(int port, const blWhere_t *w, const char *alt)
+     }
+     free(buf);
+     if (ok)
+-        ok = blWriteIcons(dir, "BIBLE ", "PS2BBL");
++        ok = blWriteIcons(dir, "BIBLE ", "Boot Loader");
+     if (!ok) { // put back what was there
+         remove(path);
+         snprintf(path, sizeof(path), "%s/icon.sys", dir);
+@@ -1350,12 +1439,14 @@ static void blInstallBound(int port, const blWhere_t *w, const char *alt)
+     // BOOT LOCK below sets it). SYS-CONF gets an icon when RIPPS2 makes it: the browser calls a folder without one
+     // corrupted data.
+     {
+-        char sys[32], sysConf[48];
++        char sys[32], sysConf[48], icon[48];
+         snprintf(sys, sizeof(sys), "mc%d:/SYS-CONF", port);
+         snprintf(sysConf, sizeof(sysConf), "%s/PS2BBL.INI", sys);
+         if (!blFileExists(sysConf)) {
+             mkdir(sys, 0777);
+-            ripps2CardFolderIconNamed(sys, "SYS-CONF");
++            snprintf(icon, sizeof(icon), "%s/icon.sys", sys); // build 143: BIBLE's own, when the folder is new; someone else's stays
++            if (!blFileExists(icon))
++                blWriteIcons(sys, "BIBLE ", "Settings");
+             if (blWrite(sysConf, blText, strlen(blText)) != 0)
+                 ripps2Diag("bible: %s could not be written", sysConf);
+         }
+@@ -1925,10 +2016,10 @@ static void blInstall(void)
+     }
+     pick = current;
+ 
+-    // room on the card: BIBLE, two icons and a config (build 115: never a copy of RIPPS2)
++    // room on the card: BIBLE, its icon on its three folders (build 143), RIPPS2's and a config (build 115: never a copy of RIPPS2)
+     {
+         int kelfKb = ((where[pick].mmce ? size_bible_mmce_xlf : where[pick].mx4sio ? size_bible_mx4sio_xlf : size_bible_xlf) + 1023) / 1024;
+-        int need = kelfKb + (size_save_icn + 1023) / 1024 + 2 + (size_ripps2_icn + 1023) / 1024 + 2 + 4;
++        int need = kelfKb + 3 * ((size_bible_icn + 1023) / 1024 + 2) + (size_ripps2_icn + 1023) / 1024 + 2 + 4;
+         if (blCards[port].freeKb < need) {
+             guiMsgBoxSound(SFX_ERROR);
+             snprintf(msg, sizeof(msg), _t("The memory card in slot %d has %d KB free, and BIBLE needs %d KB there. Free some space, then try again."), port, blCards[port].freeKb, need);
+@@ -1937,6 +2028,15 @@ static void blInstall(void)
+         }
+     }
+ 
++    // build 143 (nuno6573's SCPH-90004, ROM 2.30E, 11/04): late slims lost system updates, though not all of them, so this warns
++    // and goes on rather than refusing: the next screen still asks
++    if (blRom >= 230) {
++        snprintf(msg, sizeof(msg), _t("This console has ROM %d.%02d. Many consoles from ROM 2.30 on no longer run system updates, so a BIBLE bound here may not start at power on. If it does not, start BIBLE as a plain ELF through OpenTuna or FunTuna instead."), blRom / 100, blRom % 100);
++        ripps2Diag("bible: ROM %d.%02d: warned that a bind may not start", blRom / 100, blRom % 100);
++        guiMsgBoxSound(SFX_MESSAGE);
++        guiMsgBox(msg, 0, NULL);
++    }
++
+     // everything, said once, and only START goes ahead
+     {
+         const blCard_t *c = &blCards[port];
+@@ -1946,7 +2046,7 @@ static void blInstall(void)
+         o += snprintf(msg + o, sizeof(msg) - o, _t("For a standard 8 MB PS2 memory card (a MagicGate card, or an SD2PSX or MMCE BOOT card): the one in slot %d. At power on PS2BBL reads slot 1's config before slot 0's.\n"), port);
+         char sysDir[48];
+         snprintf(sysDir, sizeof(sysDir), "mc%d:/%s", port, blSysFolder);
+-        if (blDirExists(sysDir) && !(c->bible && !strcmp(c->folder, blSysFolder)))
++        if (blDirExists(sysDir) && !(c->bible && !c->plain && !strcmp(c->folder, blSysFolder)))
+             o += snprintf(msg + o, sizeof(msg) - o, _t("- %s (%s) moves to a backup folder first, whole.\n"), sysDir, _t(blKindName[c->kind]));
+         if (o < (int)sizeof(msg))
+             o += snprintf(msg + o, sizeof(msg) - o, _t("- PS2BBL is bound to this card by the console and written as %s/%s.\n- Its config, mc%d:/SYS-CONF/PS2BBL.INI, starts RIPPS2 where it is (%s) with no wait (0 ms, which PS2BBL Extended does not allow), BOOT LOCK on. RIPPS2 itself is not copied.\n"
+@@ -2321,7 +2421,7 @@ static const char *blBuildMisses(const char *path)
+     if (!strncasecmp(path, "mx4sio", 6) || !strncasecmp(path, "massX", 5))
+         return strcmp(b, "MX4SIO") ? b : NULL;
+     if (!strncasecmp(path, "hdd", 3) || !strncasecmp(path, "ata", 3))
+-        return b; // a card's BIBLE has neither driver
++        return strcmp(b, "HDD") ? b : NULL; // a card's BIBLE has neither driver (build 143: a plain HDD build has)
+     return NULL;
+ }
+ 
+@@ -2554,7 +2654,7 @@ static const struct
+     {"LOGO_DISPLAY", N_("What BIBLE shows while it waits for a button: nothing, its logo, or its logo with the name of what each button starts.")},
+     {"BIBLE_GLYPHS", N_("The button pictures under the logo: none, the four face buttons, or all sixteen.")},
+     {"BIBLE_INFO", N_("Shows the countdown, the clock and the console's details on the splash.")},
+-    {"KEY_READ_WAIT_TIME", N_("How long BIBLE waits for a button before the Auto path. At 0 ms a button held from power on still works. A boot sound beside BIBLE is read first: about 2 s at 0 ms.")},
++    {"KEY_READ_WAIT_TIME", N_("How long BIBLE waits for a button before the Auto path. At 0 ms a button held from power on still works.")},
+     {"DISC_STOP", N_("On stops the disc at a launch and waits for the drive to answer. Off skips that wait, about 3 s in the lab, and a disc in the tray keeps spinning.")},
+     {"EJECT_TRAY", N_("When a button starts a disc and the tray is empty, On opens the tray for you.")},
+     {"OSDHISTORY_READ", N_("BIBLE keeps this key from PS2BBL, but nothing in this build acts on it, so it changes nothing yet.")},
+@@ -2634,7 +2734,8 @@ static void blBibleMenu(int boot, int removed)
+         snprintf(setup, sizeof(setup), "%s", ripps2HintCaseText(val, msg, sizeof(msg)));
+         kind[n] = BLR_SETUP;
+         rows[n].label = setup;
+-        rows[n].tip = _t("Binds the BIBLE RIPPS2 carries to a memory card, writes it over the one there, or puts back what it replaced.");
++        rows[n].tip = blRom >= 230 ? _t("Binds the BIBLE RIPPS2 carries to a memory card. On this console's ROM a bound BIBLE may not start at power on: a plain ELF through OpenTuna or FunTuna can.") :
++                                     _t("Binds the BIBLE RIPPS2 carries to a memory card, writes it over the one there, or puts back what it replaced.");
+         rows[n].confirm = _t("OPEN");
+         n++;
+         for (i = 0; i < BL_SETS; i++) {

@@ -26,7 +26,7 @@ if 'static char fbPop[384];' not in files or 'guiMsgBox(fbPop, 0, NULL);' not in
     fail.append('a paste is reported in a box with how many and where')
 if 'bootLockWas = ripps2BootLockKnown();' not in gui or 'int ripps2BootLockKnown(void);' not in hdr or boot.count('ripps2BootLockForget();') < 2:
     fail.append('General & System reuses the last BOOT LOCK scan until RIPPS2 changes the lock or runs Manage')
-if 'snprintf(sysConf, sizeof(sysConf), "%s/PS2BBL.INI", sys);' not in boot or 'ripps2CardFolderIconNamed(sys, "SYS-CONF");' not in boot:
+if 'snprintf(sysConf, sizeof(sysConf), "%s/PS2BBL.INI", sys);' not in boot or 'blWriteIcons(sys, "BIBLE ", "Settings");' not in boot:  # build 143: BIBLE's own icon
     fail.append('the card install writes BIBLE\'s mc?:/SYS-CONF/PS2BBL.INI, its folder with an icon')
 if 'snprintf(conf, sizeof(conf), "mc%d:/SYS-CONF/PS2BBL.INI", port);' not in boot:
     fail.append('the HDD install\'s card config goes where BIBLE reads it')
@@ -35,9 +35,9 @@ for p, s in (('ripps2boot.c', boot), ('ripps2status.c', rd('src/ripps2status.c')
         if ('BBL 1.20' in line or 'PS2BBL 1.2.0' in line) and '_t("' in line:
             fail.append('%s still says the old loader on screen: %s' % (p, line.strip()[:80]))
 
-sums = {'SYSTEM.XLF': 'f56c950f753c78b862ce5c0a6d3578e9850e1eefc1285d4a3ef560f27c457a8a',
-        'MX4SIO/SYSTEM.XLF': '9f11f1d461e668d1a35179340b332aa446aa188932596618201dd750770f47f2',
-        'HSYSTEM.XLF': '0f8f2a7ca76d4f3392636b0a1263b62d9a155285cce40b3226ab7926af5cf2b8'}
+sums = {'SYSTEM.XLF': '0b251edcf67cf1ff7c9dd4bc7c420e5a33aa7415ecc69d5a9e4da9b13a7e4f52',
+        'MX4SIO/SYSTEM.XLF': 'bb927d630e27c4ab00080471bba9d0cce8691dbc3c768ca9209a2d5ef861fef8',
+        'HSYSTEM.XLF': '304f78ce6b772a70820d6f0c1c89116b469db5345e79c53136e3c0cc8d339e9c'}
 for name, want in sums.items():
     data = (elf / 'bible' / name).read_bytes()
     if hashlib.sha256(data).hexdigest() != want:
