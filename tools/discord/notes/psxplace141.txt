@@ -11,6 +11,8 @@ The new pages below have only run in the PCSX2 lab, not on a real PS2 yet, so yo
 
 [B]Launch keys, chosen from your drives.[/B] Each button gets its name and ten paths, chosen with the Memory Files browser, typed, or one of BIBLE's commands, with arguments. BOOT LOCK's lines only show, the last path in the file stays, and a path your card's BIBLE build cannot read says so on its row.
 
+[B]Known:[/B] BIBLE 3282396, the one RIPPS2 carries, can stay on its splash for good when an AUTO path names a file that is not there on a drive it has to load a driver for (USB, MMCE, MX4SIO, HDD). It never reaches the next path. The lab saw this with mmce?:/APPS/RIPPS2.ELF and no device; the other cases come from reading the code. Buttons held at power on are not affected, so a button with a good path gets you past it. For now, give AUTO only paths that are really there on those drives. The fix is written and comes with the next BIBLE, after a re-sign.
+
 [CENTER][IMG]https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b141/sky-splash.gif[/IMG]
 [SIZE=2]Sky Color: BIBLE itself, booted once for each, reading the file RIPPS2 wrote[/SIZE][/CENTER]
 

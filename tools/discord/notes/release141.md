@@ -22,7 +22,7 @@ With BIBLE on a card, **Settings > General > Boot Loader > Manage** opens a page
 <p align="center"><a href="https://github.com/akilluminati47/RIPPS2/blob/main/media/b141/launch-keys.mp4"><img src="https://raw.githubusercontent.com/akilluminati47/RIPPS2/main/media/b141/launch-keys.gif" width="70%" alt="Launch Keys: choosing a program for L1 in the Memory Files browser, then a BIBLE command for its second path"></a></p>
 <p align="center"><sub><a href="https://github.com/akilluminati47/RIPPS2/blob/main/media/b141/launch-keys.mp4">Watch: L1 gets a program, a command and a third path</a></sub></p>
 
-**Launch Keys** on that page lists what each button starts. Open a button for its name and its ten paths. BIBLE tries them in order and starts the first it finds. For each path:
+**Launch Keys** on that page lists what each button starts. Open a button for its name and its ten paths. BIBLE tries them in order and starts the first it finds (for now, AUTO has one exception: see Known below). For each path:
 
 | Choice | What it does |
 |---|---|
@@ -63,6 +63,7 @@ All of it is in the language pack, in all 32 translations.
 | `usb:/`, `mmce?:/`, `mx4sio:/` and `hdd0:` paths from the browser | | Not run: no such drive in the lab. They use the same code as BOOT LOCK's, except `hdd0:` |
 
 #### Known
+- **AUTO can stop on a missing file.** BIBLE 3282396, the one in this release, can stay on its splash for good when an AUTO path names a file that is not there on a drive it has to load a driver for (USB, MMCE, MX4SIO, HDD). It never reaches the next path. The lab saw this with `mmce?:/APPS/RIPPS2.ELF` and no device; the other cases come from reading the code. Buttons held at power on are not affected, so a button with a good path gets you past it. For now, give AUTO only paths that are really there on those drives. The fix is written and comes with the next BIBLE, after a re-sign.
 - **Read Console History changes nothing yet.** BIBLE 3282396 reads the key and nothing uses it. Its tip says so.
 - BIBLE's hand-off of the boot sound in memory has only passed in the lab. On a real SD2PSX, RIPPS2 reads the card's copy itself.
 

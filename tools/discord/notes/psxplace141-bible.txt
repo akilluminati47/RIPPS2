@@ -20,4 +20,6 @@ Nothing to bind again: this is RIPPS2's page, writing your settings file. It has
 
 [B]The boot sound, plainly:[/B] with Boot Sound On (fast), boot.adp sits beside BIBLE's settings on the card and RIPPS2 reads it before any drive starts: 0.26 s after the towers on a SCPH-39001 with an SD2PSX. BIBLE handing it over in memory has only passed in the lab so far, and does not happen on that console.
 
+[B]Known:[/B] BIBLE 3282396 can stay on its splash for good when an AUTO path names a file that is not there on a drive it has to load a driver for (USB, MMCE, MX4SIO, HDD). It never reaches the next path. The lab saw this with mmce?:/APPS/RIPPS2.ELF and no device; the other cases come from reading the code. Buttons held at power on are not affected, so a button with a good path gets you past it. For now, give AUTO only paths that are really there on those drives. The fix is written and comes with the next BIBLE, after a re-sign.
+
 Still wanted most: a genuine Sony memory card, a MemCard PRO 2, MX4SIO, the HDD build, slims, PAL and Japanese consoles. Tell us here or [URL='https://github.com/akilluminati47/RIPPS2/issues']open an issue[/URL].
