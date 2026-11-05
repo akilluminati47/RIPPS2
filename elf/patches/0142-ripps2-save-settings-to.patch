@@ -1,0 +1,225 @@
+diff --git a/include/opl.h b/include/opl.h
+index dec2b78..460ac0e 100644
+--- a/include/opl.h
++++ b/include/opl.h
+@@ -276,6 +276,7 @@ extern int gVcdUsbBdmaMode;
+ extern int gVcdHideGameId;    // display-only: hide a leading PS1 game-ID prefix from VCD lists
+ extern int gVcdShowPpPops;    // enumeration-only: list strict PP.<ID>.POPS.<name> one-game HDD partitions
+ extern int gVcdFirstDiscOnly; // hide discs 2+ of multi-disc PS1 sets
++int prepareMmceSettingsPath(const char *path); // build 142: Save Settings To > MMCE starts the card too
+ extern char gBootDir[256];    // boot directory (cwd) OPL launched from; "" if undeterminable
+ extern int gEnableBGArt;
+ extern int gEnableSaveIcons; // 3D save icons on the theme's SaveIcon element (fork-gaps OR1); reads the cards, so OFF by default
+diff --git a/src/opl.c b/src/opl.c
+index 2ed0f03..8083107 100644
+--- a/src/opl.c
++++ b/src/opl.c
+@@ -2842,7 +2842,7 @@ static int isTypedBdmSettingsPath(const char *path)
+ 
+ // RIPPS2 build 110: an MMCE card as the settings home (Save Settings To > MMCE). Its driver is not loaded at boot unless
+ // RIPPS2 started from the card, so load it and give the card the short wait an MMCE boot gets.
+-static int prepareMmceSettingsPath(const char *path)
++int prepareMmceSettingsPath(const char *path)
+ {
+     char root[10];
+     const char *colon = strchr(path, ':');
+@@ -3911,7 +3911,7 @@ static void fastBootWrite(void)
+     n = snprintf(text, sizeof(text),
+                  "# RIPPS2 Fast Boot (Settings > Game Sources > Cache): where this RIPPS2 reads its settings and sounds first\r\n"
+                  "home=%s\r\naudio=%s\r\n",
+-                 configGetHomePath(), audio);
++                 isTypedBdmSettingsPath(gCustomSettingsPath) ? gCustomSettingsPath : configGetHomePath(), audio);
+     if (n <= 0 || n >= (int)sizeof(text))
+         return;
+     if ((fd = open(path, O_RDONLY)) >= 0) {
+@@ -3927,6 +3927,43 @@ static void fastBootWrite(void)
+     }
+ }
+ 
++/* RIPPS2 build 142: the home Fast Boot's gate names, made ready to read. A typed drive (build 142 writes usb0:/RIPPS2, as
++   config.path has it) loads its one transport, as MMCE always did. A gate from before names a slot, massN:, which is not up
++   this early and an untyped massN: walks every transport: that one is passed over, so the settings pointer decides. */
++static int fastBootHomeReady(char *home, int size)
++{
++    if (!strncmp(home, "mass", 4))
++        return 0;
++    if (!strncmp(home, "mmce", 4) || isTypedBdmSettingsPath(home))
++        return prepareCustomSettingsPath(home, size) >= 0;
++    return 1;
++}
++
++/* RIPPS2 build 142 (nuno6573, 11/04: settings do not stay on MMCE or USB "despite changing configuration destination"; the
++   lab, on 1.4.1: RIPPS2.ELF in mc0:/RIPPS2, Save Settings To > Internal HDD, written and both pointers left, and the next boot
++   back on Memory Card). The pointer was only read once the boot home had no settings (tryAlternateDevice), so any settings
++   file beside the ELF beat it, and when RIPPS2 lives in mc?:/RIPPS2, BIBLE's first AUTO path, that is the card's own home.
++   With a pointer and a file beside the ELF, the pointer goes first and the caller reads prevHome if its drive has nothing.
++   No file beside the ELF goes on to tryAlternateDevice as it did, so a missing drive is not waited for twice. APA keeps its
++   own ownership chain there. */
++static int ripps2PointerFirst(char *prevHome, int prevSize)
++{
++    char redirect[256];
++    const char *home = configGetHomePath();
++
++    if (gBootHomeApa || home[0] == '\0' || !strncmp(home, "hdd", 3) || !bootHomeHasRiptoplMaster(home) ||
++        !readConfigPathRedirect(redirect, sizeof(redirect)))
++        return 0;
++    snprintf(prevHome, prevSize, "%s", home);
++    if (prepareCustomSettingsPath(redirect, sizeof(redirect)) < 0) {
++        ripps2Diag("settings: %s did not answer, reading %s", redirect, prevHome);
++        return 0;
++    }
++    ripps2Diag("settings: Save Settings To says %s, ahead of the file in %s", redirect, prevHome);
++    configSetMove(redirect);
++    return 1;
++}
++
+ static void _loadConfig()
+ {
+     int value, themeID = -1, langID = -1;
+@@ -3940,7 +3977,7 @@ static void _loadConfig()
+     // RIPPS2 build 115: Fast Boot's gate beside RIPPS2.ELF names the settings home: straight there
+     char fbHome[256], fbAudio[256];
+     if ((lscstatus & CONFIG_OPL) && fastBootRead(fbHome, sizeof(fbHome), fbAudio, sizeof(fbAudio)) &&
+-        (strncmp(fbHome, "mmce", 4) || prepareMmceSettingsPath(fbHome) > 0)) {
++        fastBootHomeReady(fbHome, sizeof(fbHome))) {
+         snprintf(prevHome, sizeof(prevHome), "%s", configGetHomePath());
+         configSetMove(fbHome);
+         fromCard = 1; // (read back from prevHome if it does not answer, as a card home is)
+@@ -3963,6 +4000,8 @@ static void _loadConfig()
+         snprintf(prevHome, sizeof(prevHome), "%s", configGetHomePath());
+         configSetMove(cardHome);
+         fromCard = 1;
++    } else if ((lscstatus & CONFIG_OPL) && ripps2PointerFirst(prevHome, sizeof(prevHome))) {
++        fromCard = 1; // build 142: (read back from prevHome if the chosen drive has nothing)
+     }
+     int result = configReadMulti(lscstatus);
+     if (fromCard && !(result & CONFIG_OPL)) { // unreadable there: the way it always was
+@@ -6527,7 +6566,15 @@ static void miniInit(int mode)
+     configStart = clock();
+     snprintf(initialHome, sizeof(initialHome), "%s", configGetHomePath());
+ #endif
+-    ret = configReadMulti(CONFIG_ALL);
++    {
++        char pointerHome[256]; // build 142: Save Settings To's drive first, as _loadConfig does
++        int pointerFirst = ripps2PointerFirst(pointerHome, sizeof(pointerHome));
++        ret = configReadMulti(CONFIG_ALL);
++        if (pointerFirst && !(ret & CONFIG_OPL)) {
++            configSetMove(pointerHome);
++            ret = configReadMulti(CONFIG_ALL);
++        }
++    }
+ #ifdef __OPLDIAG
+     initialRet = ret;
+ #endif
+diff --git a/src/ripps2ui.c b/src/ripps2ui.c
+index 0f537b3..3afbcd3 100644
+--- a/src/ripps2ui.c
++++ b/src/ripps2ui.c
+@@ -38,6 +38,7 @@
+ #include "include/bdmsupport.h" // build 109: bdmSlotDeviceType, BDM_TYPE_ATA
+ #include "include/dia.h"
+ #include "include/dialogs.h"    // build 109: Save Settings To
++#include "include/ripps2diag.h" // build 142: what Save Settings To found
+ #include <sys/stat.h>              // build 109: mkdir, the internal HDD's RIPPS2 folder
+ #include <libcdvd.h>
+ #include <fcntl.h>
+@@ -1865,7 +1866,7 @@ static const char *ripps2HomeHints[] = {N_("Settings go in RIPPS2's own save on
+ // order the drives came up in (a USB stick can take mass0), and an untyped massN: at boot walks every transport (USB,
+ // MX4SIO, then iLink and ATA) before the drive answers. A typed path loads its one transport and is found by its RIPPS2
+ // folder, so the folder is made here, before Save Changes looks for it.
+-static int ripps2SettingsBdmHome(int type, const char *typed, char *out, int size)
++static int ripps2SettingsBdmMounted(int type, const char *typed, char *out, int size)
+ {
+     char dir[24];
+     int i;
+@@ -1879,29 +1880,41 @@ static int ripps2SettingsBdmHome(int type, const char *typed, char *out, int siz
+     return 0;
+ }
+ 
++/* build 142 (nuno6573, 11/04; the lab, on 1.4.1: the drive in the console and its source not started: "NO INTERNAL HDD FOUND").
++   USB and MMCE begin on Manual, so a drive that is there had usually not been started when it was chosen. It is started here
++   the way the boot starts it for a pointer: the typed resolver loads the one transport and gives it the boot's wait. */
++static int ripps2SettingsBdmHome(int type, const char *typed, char *out, int size)
++{
++    char root[16];
++    int known = BDM_TYPE_UNKNOWN;
++
++    if (ripps2SettingsBdmMounted(type, typed, out, size))
++        return 1;
++    snprintf(root, sizeof(root), "%s:/", typed);
++    return bdmResolveBootDir(root, sizeof(root), "", &known) > 0 && ripps2SettingsBdmMounted(type, typed, out, size);
++}
++
+ int ripps2SettingsHddHome(char *out, int size)
+ {
+-    if (ripps2SettingsBdmHome(BDM_TYPE_ATA, "ata0", out, size)) // the internal exFAT HDD
++    if (ripps2SettingsBdmMounted(BDM_TYPE_ATA, "ata0", out, size)) // the internal exFAT HDD
+         return 1;
+     if (gHDDPrefix != NULL && gHDDPrefix[0] != '\0') { // the APA HDD, OPL's partition mounted
+         snprintf(out, size, "pfs:/RIPPS2");
+         return 1;
+     }
+-    return 0;
++    return ripps2SettingsBdmHome(BDM_TYPE_ATA, "ata0", out, size); // build 142: not started yet
+ }
+ 
+-// build 110: the MMCE card in either slot
++/* build 110: the MMCE card in either slot. Build 142: its driver is loaded and the card waited for as the boot and the save
++   do it (prepareMmceSettingsPath), and so the root is mmce0:/: the bare mmce0: this opened did not open on an SD2PSX (10/26) */
+ static int ripps2SettingsMmceHome(char *out, int size)
+ {
+-    char root[8], dir[16];
++    char dir[16];
+     int slot;
+     for (slot = 0; slot < 2; slot++) {
+-        DIR *d;
+-        snprintf(root, sizeof(root), "mmce%d:", slot);
+-        if ((d = opendir(root)) == NULL)
+-            continue;
+-        closedir(d);
+         snprintf(dir, sizeof(dir), "mmce%d:/RIPPS2", slot);
++        if (prepareMmceSettingsPath(dir) <= 0)
++            continue;
+         mkdir(dir, 0777);
+         snprintf(out, size, "%s", dir);
+         return 1;
+@@ -1970,10 +1983,20 @@ static void ripps2HomeNotice(const char *text)
+     guiMsgBox(text, 0, NULL);
+ }
+ 
++// build 142: on the IO worker, since a driver may have to load: the main thread loading one races the worker's RPC (see sound.c)
++static int ripps2HomeAsked, ripps2HomeFound, ripps2HomeBusy;
++static char ripps2HomeDrive[sizeof(gCustomSettingsPath)];
++
++static void ripps2HomeWork(void)
++{
++    ripps2HomeFound = ripps2SettingsDriveHome(ripps2HomeAsked, ripps2HomeDrive, sizeof(ripps2HomeDrive));
++    ripps2Diag("settings: Save Settings To %s: %s", ripps2HomeNames[ripps2HomeAsked], ripps2HomeFound ? ripps2HomeDrive : "not found");
++    ripps2HomeBusy = 0;
++}
++
+ // After the dialog read CFG_CUSTOMCFGPATH into gCustomSettingsPath: the choice decides what it holds
+ void ripps2SettingsHomeEnd(struct UIItem *ui)
+ {
+-    char drive[sizeof(gCustomSettingsPath)];
+     int mode = RIPPS2_HOME_CUSTOM;
+ 
+     diaGetInt(ui, UICFG_RIPPS2_SETTINGS_HOME, &mode);
+@@ -1982,8 +2005,15 @@ void ripps2SettingsHomeEnd(struct UIItem *ui)
+             gRipps2HomeBackToCard = 1; // build 111: the save to the card takes the pointers to the old home away
+         gCustomSettingsPath[0] = '\0';
+     } else if (mode != RIPPS2_HOME_CUSTOM) {
+-        if (ripps2SettingsDriveHome(mode, drive, sizeof(drive)))
+-            snprintf(gCustomSettingsPath, sizeof(gCustomSettingsPath), "%s", drive);
++        // already this drive's (a massN: is build 109's first spelling, written by type now): the save looks for it
++        if (ripps2SettingsHomeOf(gCustomSettingsPath) == mode && strncmp(gCustomSettingsPath, "mass", 4))
++            return;
++        ripps2HomeAsked = mode;
++        ripps2HomeFound = 0;
++        ripps2HomeBusy = 1;
++        guiHandleDeferedIO(&ripps2HomeBusy, _t("Starting that drive..."), IO_CUSTOM_SIMPLEACTION, &ripps2HomeWork, OPL_DEFERRED_IO_TIMEOUT_MS);
++        if (ripps2HomeFound)
++            snprintf(gCustomSettingsPath, sizeof(gCustomSettingsPath), "%s", ripps2HomeDrive);
+         else if (ripps2SettingsHomeOf(gCustomSettingsPath) != mode)
+             ripps2HomeNotice(mode == RIPPS2_HOME_HDD ? _t("NO INTERNAL HDD FOUND: SETTINGS STAY WHERE THEY ARE") :
+                                                        _t("THAT DRIVE IS NOT CONNECTED: SETTINGS STAY WHERE THEY ARE"));
