@@ -82,7 +82,7 @@ def edit(path, pairs):
         o2 = o.replace('\n', eol)
         assert b.count(o2) == 1, (path.name, b.count(o2), o[:70])
         b = b.replace(o2, n.replace('\n', eol))
-    assert '—' not in b or path.name.endswith('.md'), path.name
+    assert chr(0x2014) not in b or path.name.endswith('.md'), path.name
     return b
 
 
