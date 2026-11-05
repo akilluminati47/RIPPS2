@@ -727,7 +727,7 @@ index 8083107..e23059e 100644
      mcInit(MC_TYPE_XMC);
  }
 diff --git a/src/ripps2boot.c b/src/ripps2boot.c
-index 863aef6..b26e9e9 100644
+index 863aef6..2f0894b 100644
 --- a/src/ripps2boot.c
 +++ b/src/ripps2boot.c
 @@ -119,6 +119,14 @@ static const char *blConfigs[] = {
@@ -951,11 +951,12 @@ index 863aef6..b26e9e9 100644
              ripps2Diag("bible: mc%d bind try %d: %s", port, tries + 1, bound ? "bound" : "refused");
          }
      }
-@@ -1416,6 +1608,14 @@ static void blInstallBound(int port, const blWhere_t *w, const char *alt)
+@@ -1416,6 +1608,15 @@ static void blInstallBound(int port, const blWhere_t *w, const char *alt)
      if (mcSetFileInfo(port, 0, path, &info, sceMcFileInfoAttr) == 0)
          mcSync(0, NULL, &fd);
  
 +#ifdef RIPPS2_BIBLE_ONE_FOLDER
++    (void)len;
 +    if (!blOneFolder(port, alt, backupKelf)) {
 +        guiMsgBoxSound(SFX_ERROR);
 +        snprintf(msg, sizeof(msg), _t("BIBLE is on memory card %d, but its settings (mc%d:/%s/PS2BBL.INI) could not be written, so it starts the browser. Free some space and run MANAGE again to finish."), port, port, blSysFolder);
@@ -966,7 +967,7 @@ index 863aef6..b26e9e9 100644
      // its config: one the card already has stays (a PS2BBL owner's own); else BIBLE's
      snprintf(dir, sizeof(dir), "mc%d:/PS2BBL", port);
      snprintf(conf, sizeof(conf), "%s/CONFIG.INI", dir);
-@@ -1451,6 +1651,7 @@ static void blInstallBound(int port, const blWhere_t *w, const char *alt)
+@@ -1451,6 +1652,7 @@ static void blInstallBound(int port, const blWhere_t *w, const char *alt)
                  ripps2Diag("bible: %s could not be written", sysConf);
          }
      }
@@ -974,7 +975,7 @@ index 863aef6..b26e9e9 100644
  
      // BOOT LOCK on, with the chosen path, in this config and every other one PS2BBL might read
      // first (a drive's and slot 2's come before slot 1's)
-@@ -1894,7 +2095,7 @@ static int blHddHasBackup(void)
+@@ -1894,7 +2096,7 @@ static int blHddHasBackup(void)
  // written, taken only with START
  static void blInstall(void)
  {
@@ -983,7 +984,7 @@ index 863aef6..b26e9e9 100644
      const char *list[8];
      int ports[8], n = 0, port, pick, bootPort, current = -1, hdd = blHddUsable();
      blWhere_t where[5];
-@@ -2049,9 +2250,15 @@ static void blInstall(void)
+@@ -2049,9 +2251,15 @@ static void blInstall(void)
          if (blDirExists(sysDir) && !(c->bible && !c->plain && !strcmp(c->folder, blSysFolder)))
              o += snprintf(msg + o, sizeof(msg) - o, _t("- %s (%s) moves to a backup folder first, whole.\n"), sysDir, _t(blKindName[c->kind]));
          if (o < (int)sizeof(msg))
@@ -999,7 +1000,7 @@ index 863aef6..b26e9e9 100644
      }
      guiMsgBoxSound(SFX_MESSAGE);
      guiMsgBoxStartOption(_t("SET UP BIBLE"));
-@@ -2152,7 +2359,6 @@ static const blSet_t blSets[] = {
+@@ -2152,7 +2360,6 @@ static const blSet_t blSets[] = {
      {"KEY_READ_WAIT_TIME", N_("Power-on Wait"), 6, {"0", "1000", "2000", "3000", "6000", "10000"}, {"0 ms", "1000 ms", "2000 ms", "3000 ms", "6000 ms", "10000 ms"}, -1},
      {"DISC_STOP", N_("Stop Disc at Launch"), 2, {"0", "1"}, {N_("Off"), N_("On")}, 1},
      {"EJECT_TRAY", N_("Eject Tray at Launch"), 2, {"0", "1"}, {N_("Off"), N_("On")}, 0},
@@ -1007,7 +1008,7 @@ index 863aef6..b26e9e9 100644
      {"APP_GAMEID", N_("Game ID for Apps"), 2, {"0", "1"}, {N_("Off"), N_("On")}, 1},
      {"CDROM_DISABLE_GAMEID", N_("Game ID for Discs"), 2, {"1", "0"}, {N_("Off"), N_("On")}, 1}, // the key says "disable"
      {"VIDEO_MODE", "Video Mode", 7, {"AUTO", "NTSC", "PAL", "480P", "576P", "720P", "1080I"}, {N_("Auto"), "NTSC", "PAL", "480p", "576p", "720p", "1080i"}, 0},
-@@ -2172,7 +2378,9 @@ static int blSettingsFile(int boot)
+@@ -2172,7 +2379,9 @@ static int blSettingsFile(int boot)
      for (i = -1; i < 2; i++) {
          port = i < 0 ? boot : i;
          if (port >= 0 && blCards[port].present && blCards[port].bible) {
@@ -1018,7 +1019,7 @@ index 863aef6..b26e9e9 100644
              return 1;
          }
      }
-@@ -2657,7 +2865,6 @@ static const struct
+@@ -2657,7 +2866,6 @@ static const struct
      {"KEY_READ_WAIT_TIME", N_("How long BIBLE waits for a button before the Auto path. At 0 ms a button held from power on still works.")},
      {"DISC_STOP", N_("On stops the disc at a launch and waits for the drive to answer. Off skips that wait, about 3 s in the lab, and a disc in the tray keeps spinning.")},
      {"EJECT_TRAY", N_("When a button starts a disc and the tray is empty, On opens the tray for you.")},
@@ -1026,7 +1027,7 @@ index 863aef6..b26e9e9 100644
      {"APP_GAMEID", N_("On shows a program's game ID on screen as it starts, for RetroGEM video mods. It is up to 11 characters from the file name.")},
      {"CDROM_DISABLE_GAMEID", N_("On shows a disc's game ID on screen as it starts, for RetroGEM video mods.")},
      {"VIDEO_MODE", N_("The signal BIBLE starts in. Auto uses RIPPS2's Video Mode when its settings are on a memory card, and the console's own mode when they are not.")},
-@@ -2688,9 +2895,9 @@ static int blSkyState(char *val, int size)
+@@ -2688,9 +2896,9 @@ static int blSkyState(char *val, int size)
      return -2;
  }
  
@@ -1038,7 +1039,7 @@ index 863aef6..b26e9e9 100644
  
  // Boot Sound changed here: as Audio does when it closes
  static void blBootSoundClose(int changed)
-@@ -2770,14 +2977,14 @@ static void blBibleMenu(int boot, int removed)
+@@ -2770,14 +2978,14 @@ static void blBibleMenu(int boot, int removed)
                      snprintf(own[n], sizeof(own[n]), "%s", _t(ripps2PaletteName(state)));
                  } else {
                      snprintf(text, sizeof(text), "%s", val);
@@ -1057,7 +1058,7 @@ index 863aef6..b26e9e9 100644
                  rows[n].sky = sscanf(text, "%6x,%6x,%6x", &sky[0], &sky[1], &sky[2]) == 3 ? sky : NULL;
                  n++;
              }
-@@ -2791,6 +2998,15 @@ static void blBibleMenu(int boot, int removed)
+@@ -2791,6 +2999,15 @@ static void blBibleMenu(int boot, int removed)
                  n++;
              }
          }
@@ -1073,7 +1074,7 @@ index 863aef6..b26e9e9 100644
          kind[n] = BLR_KEYS;
          snprintf(own[n], sizeof(own[n]), "%d / %d", have ? blKeysSet() : 0, BL_KEYS);
          rows[n].label = _t("Launch Keys");
-@@ -2826,6 +3042,18 @@ static void blBibleMenu(int boot, int removed)
+@@ -2826,6 +3043,18 @@ static void blBibleMenu(int boot, int removed)
              }
              continue;
          }
@@ -1092,7 +1093,7 @@ index 863aef6..b26e9e9 100644
          if (k == BLR_BOOT) {
              gEnableBootSND = (gEnableBootSND + action + 3) % 3;
              bootChanged = 1;
-@@ -2851,6 +3079,33 @@ static void blBibleMenu(int boot, int removed)
+@@ -2851,6 +3080,33 @@ static void blBibleMenu(int boot, int removed)
              have = blRead(blSetPath) >= 0;
              continue;
          }
@@ -1126,7 +1127,7 @@ index 863aef6..b26e9e9 100644
          if (k == BLR_SKY) {
              char text[32];
              int state = blSkyState(val, sizeof(val));
-@@ -2892,7 +3147,7 @@ void ripps2BibleManage(void)
+@@ -2892,7 +3148,7 @@ void ripps2BibleManage(void)
  
  static void blManageCards(int boot, int removed)
  {
@@ -1216,10 +1217,10 @@ index d133466..18a4f1b 100644
          if (toast[0])
 diff --git a/src/ripps2color.c b/src/ripps2color.c
 new file mode 100644
-index 0000000..56716e5
+index 0000000..b5fabca
 --- /dev/null
 +++ b/src/ripps2color.c
-@@ -0,0 +1,397 @@
+@@ -0,0 +1,399 @@
 +/*
 +  ripps2color.c a colour picker (RIPPS2 build 144)
 +
@@ -1413,12 +1414,13 @@ index 0000000..56716e5
 +        rmDrawPixmap(t, *x, y - 10, ALIGN_NONE, 20, 20, SCALING_RATIO, CP_LIT, 0);
 +        *x += 24;
 +    }
-+    *x = ripps2HintText(*x, y, text, CP_SOFT) + 14;
++    fntRenderString(RIPPS2_MSG_FONT, *x, y, ALIGN_VCENTER, 0, 0, text, CP_LIT);
++    *x += rmUnScaleX(fntCalcDimensions(RIPPS2_MSG_FONT, text)) + 18;
 +}
 +
 +static int cpHintW(const char *text)
 +{
-+    return 24 + ripps2HintWidth(text) + 14;
++    return 24 + rmUnScaleX(fntCalcDimensions(RIPPS2_MSG_FONT, text)) + 18;
 +}
 +
 +// A Color Theme's colours: its sky, or for one colour the sky's horizon, which is the colour the theme is known by
@@ -1466,6 +1468,7 @@ index 0000000..56716e5
 +        readPads();
 +        rmStartFrame();
 +        guiDrawBGPlasma();
++        rmDrawRect(0, 0, 640, 480, GS_SETREG_RGBAQ(0x00, 0x02, 0x0A, 0x58, 0x00)); // the colours are what is looked at
 +        fntRenderStringFit(RIPPS2_NOTE_FONT, 20, 30, ALIGN_VCENTER, 600, title, CP_LIT, 1);
 +        rmDrawLine(20, 46, 620, 46, cpPrim(0x4A, 0x72, 0xDC));
 +
@@ -1527,13 +1530,13 @@ index 0000000..56716e5
 +        rmDrawLine(20, tipY - 12, 620, tipY - 12, cpPrim(0x4A, 0x72, 0xDC));
 +        fntRenderStringFit(RIPPS2_MSG_FONT, 320, tipY, ALIGN_CENTER, 600, _t("D-pad or left stick: saturation and brightness. L1, R1 or right stick: hue."), CP_SOFT, 0);
 +
-+        hw = cpHintW(_t("COLOR THEME")) + cpHintW(_t("OK")) + cpHintW(_t("CANCEL")) + (count > 1 ? cpHintW(_t("NEXT PART")) : 0);
++        hw = cpHintW(_t("Color Theme")) + cpHintW(_t("OK")) + cpHintW(_t("Cancel")) + (count > 1 ? cpHintW(_t("Next Part")) : 0);
 +        hx = (640 - hw) / 2;
 +        if (count > 1)
-+            cpHint(SQUARE_ICON, _t("NEXT PART"), &hx, hintY + 10);
-+        cpHint(TRIANGLE_ICON, _t("COLOR THEME"), &hx, hintY + 10);
++            cpHint(SQUARE_ICON, _t("Next Part"), &hx, hintY + 10);
++        cpHint(TRIANGLE_ICON, _t("Color Theme"), &hx, hintY + 10);
 +        cpHint(okIcon, _t("OK"), &hx, hintY + 10);
-+        cpHint(backIcon, _t("CANCEL"), &hx, hintY + 10);
++        cpHint(backIcon, _t("Cancel"), &hx, hintY + 10);
 +        rmEndFrame();
 +
 +        if (getKeyOn(gSelectButton)) {

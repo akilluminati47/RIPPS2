@@ -679,7 +679,6 @@ strings:
   in:
   - mixsupport.c
   - ripps2cd.c
-  - ripps2color.c
   - ripps2disc.c
   - ripps2games.c
 - en: NETWORK
@@ -2280,7 +2279,10 @@ strings:
 - en: Before
   in:
   - ripps2color.c
-- en: COLOR THEME
+- en: Cancel
+  in:
+  - ripps2color.c
+- en: Color Theme
   in:
   - ripps2color.c
 - en: Color Themes
@@ -2289,7 +2291,7 @@ strings:
 - en: 'D-pad or left stick: saturation and brightness. L1, R1 or right stick: hue.'
   in:
   - ripps2color.c
-- en: NEXT PART
+- en: Next Part
   in:
   - ripps2color.c
 - en: Now
