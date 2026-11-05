@@ -1527,6 +1527,13 @@ strings:
     '
   in:
   - ripps2boot.c
+- en: '- BIBLE is bound to this card by the console and written as %s/%s, starting RIPPS2 where it is (%s), BOOT LOCK on. RIPPS2 itself is not copied.
+
+    - Everything BIBLE keeps on this card goes in that one folder: its settings and the boot sound. SYS-CONF, PS2BBL and BIBLE''s copies for other regions go when they hold nothing else.
+
+    The I/O processor restarts for this and every drive read stops until it is done; music and drives come back after. Keep the card in and the console on until it says done.'
+  in:
+  - ripps2boot.c
 - en: '- PS2BBL is bound to this card by the console and written as %s/%s.
 
     - Its config, mc%d:/SYS-CONF/PS2BBL.INI, starts RIPPS2 where it is (%s) with no wait (0 ms, which PS2BBL Extended does not allow), BOOT LOCK on. RIPPS2 itself is not copied.
@@ -1587,6 +1594,9 @@ strings:
   in:
   - ripps2boot.c
 - en: BIBLE is on memory card %d, but its config (%s) could not be written, so it starts the browser. Free some space and run MANAGE again to finish.
+  in:
+  - ripps2boot.c
+- en: BIBLE is on memory card %d, but its settings (mc%d:/%s/PS2BBL.INI) could not be written, so it starts the browser. Free some space and run MANAGE again to finish.
   in:
   - ripps2boot.c
 - en: BIBLE needs at least one path in its settings, or it starts in its rescue mode, so this one stays.
