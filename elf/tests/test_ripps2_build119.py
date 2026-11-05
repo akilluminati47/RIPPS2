@@ -90,7 +90,7 @@ if 'l1 = blSjis(first, sys + 0xC0, 66);' not in boot:
     fail.append('blIconSysNamed: titles in Shift-JIS (a v1.60 browser shows ASCII as nothing)')
 
 # ---- no text past its box: the chooser's items, the progress bar's lines, the hold panel's head
-if 'fntRenderStringFit(ED_FONT, x + 16, ry + 11, ALIGN_VCENTER, w - 32, _t(items[i])' not in rd('src/ripps2edit.c'):
+if 'fntRenderStringFit(ED_MENU_FONT, x + 16, ry + 11 + l * ED_MENU_LINE_H, ALIGN_VCENTER, w - 32, part' not in rd('src/ripps2edit.c'):  # build 144: a row wraps
     fail.append("ripps2edit.c: the chooser's items kept inside its box")
 if 'fntRenderString(' in bar:
     fail.append('ripps2DrawProgress: every line fitted to the panel')

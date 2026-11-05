@@ -543,6 +543,7 @@ enum { MIX_FAM_APA = 0, MIX_FAM_ATA, MIX_FAM_USB, MIX_FAM_MX4SIO, MIX_FAM_ILINK,
 typedef struct { void *owner; int mode, id, kind, rank; char *text, *startup; int family; } mix_rec_t;
 typedef struct { unsigned char kind, family; char *text, *startup; } mix_master_t;
 static mix_master_t *mixMaster; static int mixMasterCount, mixMasterLoaded, mixMasterSaved = -1; static unsigned int mixMasterSum;
+static unsigned char mixDropped[16]; static char mixMasterSavedPath[256]; /* build 144 */
 static int gRipps2FastCache = 1, gEnableWrite = 1;
 static int ioWriteBegin(void) { return 1; } /* build 114's write gate: open, no launch here */
 static void ioWriteEnd(void) {}

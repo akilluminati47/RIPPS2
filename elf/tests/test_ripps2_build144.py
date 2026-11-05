@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""Build 144: the user's first console run of 143 (11/05). Usage: test_ripps2_build144.py <riptopl>
+"""Build 144: the user's first console run of 143 (11/05).
 
 Pins what the lab cannot show by itself: an IOP restart leaves All Games its saved rows and the file its drives, an MMCE roll is
 written out, and the rows and pickers the user asked for.
 """
-import re
+import os
 import sys
 from pathlib import Path
 
-root = Path(sys.argv[1])
+root = Path(os.environ.get('RIPTOPL_DIR', '.'))
 fail = []
 
 
@@ -103,8 +103,6 @@ if '_STR_PADMACROCONFIG' in menus or 'guiGameShowControllers(padId' not in menus
     fail.append('a game has one Controller Settings row')
 if 'GAME_PADEMU_SETTINGS, _STR_CONTROLLER_SETTINGS' not in menus:
     fail.append('its name')
-for key in re.findall(r'"(select|l3|r3|start)"', gui)[:0]:
-    pass
 if 'PADS/GAMES/%s.pad' not in gui or 'padMapParse(text, n, map' not in gui:
     fail.append('the button map reads and writes the file the launcher hands PADEMU')
 
