@@ -505,7 +505,7 @@ index 159ad71..cfa20f2 100644
          guiBootLockBegin(ui);
          goto reshow_general;
 diff --git a/src/hddsupport.c b/src/hddsupport.c
-index 2b72b83..148640b 100644
+index 2b72b83..bc7f825 100644
 --- a/src/hddsupport.c
 +++ b/src/hddsupport.c
 @@ -1027,6 +1027,11 @@ static int hddLoadCoreSupportModules(void)
@@ -520,6 +520,14 @@ index 2b72b83..148640b 100644
      // Check if the drive contains MBR/GPT partition data before we load the APA/PFS modules. If the drive is not
      // APA then loading the APA irx modules can corrupt the drive as it will try to write APA partition data.
      nonSony = hddDetectNonSonyFileSystem();
+@@ -3357,4 +3362,7 @@ static item_list_t hddGameList = {
+ void hddIopWasReset(void)
+ {
+     hddModulesLoaded = hddSupportModulesLoaded = hddDvrDrvLoaded = 0;
++    // build 144 (the user's All Games after Manage's bind, then the lab: the HDD gone until the console was turned off, APA or exFAT):
++    // the count too. Left at 1, hddLoadModules took it for a load in progress and never loaded the ATA drivers again
++    hddModulesLoadCount = 0;
+ }
 diff --git a/src/menusys.c b/src/menusys.c
 index 6c4cdf5..296a5d5 100644
 --- a/src/menusys.c

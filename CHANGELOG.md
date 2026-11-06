@@ -14,7 +14,7 @@ From the user's first console run of 143 (11/05). 143's bind and AUTO fix passed
 - **Pickers** use Roboto and wrap, so Manage's card line and the art pack's fit whatever the drive. The card line was also cut at 63 characters before any box saw it.
 - **Card Manager:** a tip per item, as Memory Files has. KEPT BY ERASE is off the rows, so sizes no longer clip.
 - **Memory Files:** a long path rolls. In a card image the details come from its list and stay in the box, and a save's icon opens.
-- **An exFAT internal HDD** no longer says "401: Hard drive not detected" after an IOP restart.
+- **The internal HDD after an IOP restart:** its drivers never loaded again, so an APA or exFAT HDD was gone until the console was turned off. They load again now, which also ends the "401: Hard drive not detected" an exFAT drive showed there.
 - **One folder for BIBLE, ready but off:** the install can keep everything BIBLE has on a card in its system folder and tidy away SYS-CONF, PS2BBL and other regions' copies. It turns on with a BIBLE that reads its settings there: branch one-folder, ee9adaf, waiting on a signature.
 
 ## Build 143 (beta, v1.4.3-beta), changes since build 142

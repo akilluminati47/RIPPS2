@@ -110,6 +110,8 @@ hdd = src('src/hddsupport.c')
 load = hdd[hdd.index('nonSony = hddDetectNonSonyFileSystem();') - 400:hdd.index('nonSony = hddDetectNonSonyFileSystem();')]
 if 'if (hddNotApa)' not in load:
     fail.append('a drive known not to be APA is not asked again after an IOP restart')
+if 'hddModulesLoadCount = 0;' not in body(hdd, 'void hddIopWasReset(void)'):
+    fail.append('an IOP restart lets the ATA drivers load again')
 if 'blOneFolder(port, alt, backupKelf)' not in boot or '"mc0:/BEEXEC-SYSTEM/PS2BBL.INI"' not in boot:
     fail.append('the install can keep everything in BIBLE\'s one folder')
 if 'RIPPS2_BIBLE_ONE_FOLDER' not in src('Makefile') or 'RIPPS2_TEST_BIND' not in src('Makefile'):
