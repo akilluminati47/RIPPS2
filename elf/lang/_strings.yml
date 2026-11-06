@@ -1634,6 +1634,9 @@ strings:
 - en: BIBLE's settings file (%s) was not found. SET UP, UPDATE OR RESTORE BIBLE writes one.
   in:
   - ripps2boot.c
+- en: BIBLE's settings would not move to this console's folder, so %d regions kept their copies. DIAG.TXT beside RIPPS2 has what the card said.
+  in:
+  - ripps2boot.c
 - en: 'BIBLE: copying RIPPS2 to %s (%d%%)'
   in:
   - ripps2boot.c
