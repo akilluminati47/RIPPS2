@@ -117,6 +117,9 @@ if 'blOneFolder(port, alt, backupKelf, conf, sizeof(conf))' not in boot or '"mc0
 one = body(boot, 'static int blOneFolder(int port, const char *alt, const char *backupKelf, char *conf, int confSize)')
 if 'blFolderEmpty' in one or 'blFolderRefresh(bound, other, NULL)' not in one or 'blRegionName(blSysFolders[f])' not in one:
     fail.append('regional support stays: every region\'s copy is refreshed and named, not removed')
+leave = body(boot, 'static void blRegionsSet(int port, int add)')
+if 'blHomeLeave(port, other)' not in leave or leave.index('blHomeLeave(port, other)') > leave.index('blFolderEmpty(other, NULL)'):
+    fail.append('the card's settings and boot sound leave a region's folder before that copy goes')
 if 'blRegionsSet(port, blRegionCount(port) < 3)' not in boot:
     fail.append('Manage adds or removes the other regions')
 if 'RIPPS2_BIBLE_ONE_FOLDER' not in src('Makefile') or 'RIPPS2_TEST_BIND' not in src('Makefile'):
