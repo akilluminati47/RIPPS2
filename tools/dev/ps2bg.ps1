@@ -104,8 +104,10 @@ public static class BG {
   }
   public static void Post(IntPtr h, uint msg, long w, long l) { OnDesk(() => PostMessage(h, msg, (IntPtr)w, (IntPtr)l)); }
   public static bool GrabOnDesk(IntPtr h, string file) { bool ok = false; OnDesk(() => { ok = Grab(h, file); }); return ok; }
-  // 11/03: burst:<sec>, frames as fast as PrintWindow gives them, uncompressed, named by the ms since the burst began. PCSX2's
+  // 11/03: burst:<sec>, frames as fast as PrintWindow gives them, uncompressed, named by the ms since the run's first burst, so
+  // several bursts into one folder sort in time (each used to start from 0, which shuffled them together). PCSX2's
   // video capture dies when one ELF starts another (BIBLE into RIPPS2); this carries straight through it
+  static System.Diagnostics.Stopwatch burstClock = null;
   public static int BurstOnDesk(IntPtr h, string dir, double seconds) {
     int n = 0;
     OnDesk(() => {
@@ -113,7 +115,8 @@ public static class BG {
       var sw = System.Diagnostics.Stopwatch.StartNew();
       using (var bmp = new System.Drawing.Bitmap(w, hh, System.Drawing.Imaging.PixelFormat.Format24bppRgb)) {
         while (sw.Elapsed.TotalSeconds < seconds) {
-          long ms = sw.ElapsedMilliseconds;
+          if (burstClock == null) burstClock = System.Diagnostics.Stopwatch.StartNew();
+          long ms = burstClock.ElapsedMilliseconds;
           using (var g = System.Drawing.Graphics.FromImage(bmp)) { IntPtr dc = g.GetHdc(); PrintWindow(h, dc, 2); g.ReleaseHdc(dc); }
           bmp.Save(System.IO.Path.Combine(dir, "f" + ms.ToString("D6") + ".bmp"), System.Drawing.Imaging.ImageFormat.Bmp);
           n++;
