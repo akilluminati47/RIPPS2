@@ -112,8 +112,13 @@ if 'if (hddNotApa)' not in load:
     fail.append('a drive known not to be APA is not asked again after an IOP restart')
 if 'hddModulesLoadCount = 0;' not in body(hdd, 'void hddIopWasReset(void)'):
     fail.append('an IOP restart lets the ATA drivers load again')
-if 'blOneFolder(port, alt, backupKelf)' not in boot or '"mc0:/BEEXEC-SYSTEM/PS2BBL.INI"' not in boot:
-    fail.append('the install can keep everything in BIBLE\'s one folder')
+if 'blOneFolder(port, alt, backupKelf, conf, sizeof(conf))' not in boot or '"mc0:/BEEXEC-SYSTEM/PS2BBL.INI"' not in boot:
+    fail.append('the install keeps one settings file on a card')
+one = body(boot, 'static int blOneFolder(int port, const char *alt, const char *backupKelf, char *conf, int confSize)')
+if 'blFolderEmpty' in one or 'blFolderRefresh(bound, other, NULL)' not in one or 'blRegionName(blSysFolders[f])' not in one:
+    fail.append('regional support stays: every region\'s copy is refreshed and named, not removed')
+if 'blRegionsSet(port, blRegionCount(port) < 3)' not in boot:
+    fail.append('Manage adds or removes the other regions')
 if 'RIPPS2_BIBLE_ONE_FOLDER' not in src('Makefile') or 'RIPPS2_TEST_BIND' not in src('Makefile'):
     fail.append('the lab flags')
 
