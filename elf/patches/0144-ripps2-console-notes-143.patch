@@ -751,7 +751,7 @@ index 8083107..e23059e 100644
      mcInit(MC_TYPE_XMC);
  }
 diff --git a/src/ripps2boot.c b/src/ripps2boot.c
-index 863aef6..6899aa0 100644
+index 863aef6..e3f7609 100644
 --- a/src/ripps2boot.c
 +++ b/src/ripps2boot.c
 @@ -119,6 +119,14 @@ static const char *blConfigs[] = {
@@ -782,7 +782,7 @@ index 863aef6..6899aa0 100644
  int ripps2BootLockState(void)
  {
      int i, boot = blScan(), kind = boot >= 0 ? blCards[boot].kind : BL_NONE, locked = 0;
-@@ -1288,6 +1302,180 @@ static int blBibleConfig(const char *alt, const char *backupKelf)
+@@ -1288,6 +1302,344 @@ static int blBibleConfig(const char *alt, const char *backupKelf)
      return n > 0 && n < (int)sizeof(blText) ? n : -1;
  }
  
@@ -908,16 +908,89 @@ index 863aef6..6899aa0 100644
 +    }
 +}
 +
-+// BIBLE's settings in its folder, then the rest of what it keeps, then the old places. 1 unless the settings could not be written
-+static int blOneFolder(int port, const char *alt, const char *backupKelf)
++// The region a system folder is for, in the browser's words
++static const char *blRegionName(const char *folder)
++{
++    switch (folder[1]) {
++        case 'A':
++            return "for USA";
++        case 'E':
++            return "for Europe";
++        case 'I':
++            return "for Japan";
++        case 'C':
++            return "for China";
++    }
++    return "Boot Loader";
++}
++
++// The names a region's consoles read, by model (RIPPS2's own blSysPaths and the SD2PSX boot card's)
++static const char *const *blRegionFiles(const char *folder)
++{
++    static const char *const usa[] = {"osdmain.elf", "osd120.elf", "osd130.elf", NULL};
++    static const char *const two[] = {"osdmain.elf", "osd130.elf", NULL};
++    static const char *const one[] = {"osdmain.elf", NULL};
++    return folder[1] == 'A' ? usa : folder[1] == 'C' ? one : two;
++}
++
++// This folder's BIBLE files take the one just bound, under the names they have (not keep, which is the bound file); and its old icon goes
++static void blFolderRefresh(const char *bound, const char *dir, const char *keep)
++{
++    char names[12][36], path[96];
++    DIR *d = opendir(dir);
++    struct dirent *e;
++    int n = 0, i, older;
++
++    if (d == NULL)
++        return;
++    while (n < 12 && (e = readdir(d)) != NULL) {
++        if (strstr(e->d_name, ".elf") == NULL || (keep != NULL && !strcasecmp(e->d_name, keep)))
++            continue;
++        snprintf(path, sizeof(path), "%s/%s", dir, e->d_name);
++        if (blBibleBuildOf(path, &older) != NULL)
++            snprintf(names[n++], sizeof(names[0]), "%.35s", e->d_name);
++    }
++    closedir(d);
++    for (i = 0; i < n; i++) {
++        snprintf(path, sizeof(path), "%s/%s", dir, names[i]);
++        if (!blCardCopy(bound, path))
++            ripps2Diag("bible: %s was not refreshed", path);
++    }
++    snprintf(path, sizeof(path), "%s/PS2BBL.icn", dir);
++    remove(path);
++}
++
++// The folder holding this card's one settings file, this console's first; this console's when there is none yet. 1 when it was there
++static int blHomeOf(int port, char *home, int size)
++{
++    char path[64];
++    int f;
++
++    for (f = -1; blSysFolders[f < 0 ? 0 : f] != NULL; f++) {
++        const char *folder = f < 0 ? blSysFolder : blSysFolders[f];
++        snprintf(path, sizeof(path), "mc%d:/%s/PS2BBL.INI", port, folder);
++        if (blFileExists(path)) {
++            snprintf(home, size, "mc%d:/%s", port, folder);
++            return 1;
++        }
++    }
++    snprintf(home, size, "mc%d:/%s", port, blSysFolder);
++    return 0;
++}
++
++// BIBLE's settings and boot sound in one folder, every region's copy current and named, the old places gone when nothing else is
++// in them. 1 unless the settings could not be written; conf: where they are
++static int blOneFolder(int port, const char *alt, const char *backupKelf, char *conf, int confSize)
 +{
 +    static const char *const sysConfNames[] = {"PS2BBL.INI", "PS2BBL.INI.RIPPS2-BACKUP", "boot.adp", "icon.sys", "PS2BBL.icn", "bible.icn", NULL};
 +    static const char *const oldConfNames[] = {"CONFIG.INI", "CONFIG.INI.RIPPS2-BACKUP", "icon.sys", "PS2BBL.icn", "bible.icn", NULL};
-+    char home[32], conf[64], from[64], to[80], sysConf[24], oldConf[24];
++    char home[32], own[32], bound[64], from[64], to[80], sysConf[24], oldConf[24];
 +    int len, f;
 +
-+    snprintf(home, sizeof(home), "mc%d:/%s", port, blSysFolder);
-+    snprintf(conf, sizeof(conf), "%s/PS2BBL.INI", home);
++    blHomeOf(port, home, sizeof(home));
++    snprintf(own, sizeof(own), "mc%d:/%s", port, blSysFolder);
++    snprintf(bound, sizeof(bound), "%s/%s", own, blSysFile);
++    snprintf(conf, confSize, "%s/PS2BBL.INI", home);
 +    snprintf(sysConf, sizeof(sysConf), "mc%d:/SYS-CONF", port);
 +    snprintf(oldConf, sizeof(oldConf), "mc%d:/PS2BBL", port);
 +
@@ -943,27 +1016,118 @@ index 863aef6..6899aa0 100644
 +        blFolderRemove(sysConf, sysConfNames);
 +    if (blFolderOnlyHas(oldConf, oldConfNames))
 +        blFolderRemove(oldConf, oldConfNames);
-+    // this folder's older BIBLEs (the names other console models read), and the other regions' copies of a boot card
-+    if (blFolderIsBibleCopy(home, blSysFile))
-+        blFolderEmpty(home, blSysFile);
++
++    // the user, 11/05: "we need regional support, can't we make it neater?". The browser shows every folder (it ignores the hidden
++    // attribute, the lab tried it), so a region's copy stays as a folder: only the boot file and BIBLE's icon, its title naming the region
++    guiRenderTextScreen(_t("RIPPS2: Setting up BIBLE (its copies for other regions)"));
++    if (blFolderIsBibleCopy(own, blSysFile))
++        blFolderRefresh(bound, own, blSysFile);
 +    for (f = 0; blSysFolders[f] != NULL; f++) {
 +        char other[32];
 +        if (!strcmp(blSysFolders[f], blSysFolder))
 +            continue;
 +        snprintf(other, sizeof(other), "mc%d:/%s", port, blSysFolders[f]);
-+        if (blDirExists(other) && blFolderIsBibleCopy(other, NULL))
-+            blFolderEmpty(other, NULL);
++        if (blDirExists(other) && blFolderIsBibleCopy(other, NULL)) {
++            blFolderRefresh(bound, other, NULL);
++            blWriteIcons(other, "BIBLE ", blRegionName(blSysFolders[f]));
++        }
 +    }
 +    if (gBibleHome[0] && gBibleHome[2] - '0' == port) // this boot's BIBLE read the old place: Manage and the sounds follow it
 +        snprintf(gBibleHome, sizeof(gBibleHome), "%s/", home);
 +    return 1;
++}
++
++// How many other regions this card has BIBLE for
++static int blRegionCount(int port)
++{
++    char other[32];
++    int f, n = 0;
++
++    for (f = 0; blSysFolders[f] != NULL; f++) {
++        if (!strcmp(blSysFolders[f], blSysFolder))
++            continue;
++        snprintf(other, sizeof(other), "mc%d:/%s", port, blSysFolders[f]);
++        n += blDirExists(other) && blFolderIsBibleCopy(other, NULL);
++    }
++    return n;
++}
++
++// Manage's Other Regions: the bound file copied to every region's names, or those copies taken away. A file is bound to the card, not to a
++// folder, so no second bind. A folder holding anything of anyone else's is left alone
++static void blRegionsSet(int port, int add)
++{
++    char bound[64], other[32], path[80], msg[300];
++    int f, kb = 0, done = 0, failed = 0;
++
++    snprintf(bound, sizeof(bound), "mc%d:/%s/%s", port, blSysFolder, blSysFile);
++    if (add) {
++        int fd = open(bound, O_RDONLY), size = 0;
++        if (fd >= 0) {
++            size = lseek(fd, 0, SEEK_END);
++            close(fd);
++        }
++        if (size <= 0) {
++            guiMsgBoxSound(SFX_ERROR);
++            snprintf(msg, sizeof(msg), _t("%s is not there, so there is nothing to copy. Set up BIBLE on this card first."), bound);
++            guiMsgBox(msg, 0, NULL);
++            return;
++        }
++        for (f = 0; blSysFolders[f] != NULL; f++) {
++            const char *const *n = blRegionFiles(blSysFolders[f]);
++            if (strcmp(blSysFolders[f], blSysFolder))
++                for (; *n != NULL; n++)
++                    kb += size / 1024 + 2;
++        }
++        kb += 3 * ((size_bible_icn + 1023) / 1024 + 2);
++        blCardInfo(port, &f);
++        if (f < kb) {
++            guiMsgBoxSound(SFX_ERROR);
++            snprintf(msg, sizeof(msg), _t("The memory card in slot %d has %d KB free, and BIBLE for the other regions needs %d KB. Free some space, then try again."), port, f, kb);
++            guiMsgBox(msg, 0, NULL);
++            return;
++        }
++    }
++    guiRenderTextScreen(_t("RIPPS2: Setting up BIBLE (its copies for other regions)"));
++    for (f = 0; blSysFolders[f] != NULL; f++) {
++        if (!strcmp(blSysFolders[f], blSysFolder))
++            continue;
++        snprintf(other, sizeof(other), "mc%d:/%s", port, blSysFolders[f]);
++        if (add) {
++            const char *const *n = blRegionFiles(blSysFolders[f]);
++            int ok = 1;
++            if (blDirExists(other) && !blFolderIsBibleCopy(other, NULL)) {
++                ripps2Diag("bible: %s holds someone else's files: left alone", other);
++                continue;
++            }
++            mkdir(other, 0777);
++            for (; *n != NULL && ok; n++) {
++                snprintf(path, sizeof(path), "%s/%s", other, *n);
++                ok = blCardCopy(bound, path);
++            }
++            if (ok)
++                ok = blWriteIcons(other, "BIBLE ", blRegionName(blSysFolders[f]));
++            done += ok;
++            failed += !ok;
++        } else if (blDirExists(other) && blFolderIsBibleCopy(other, NULL)) {
++            blFolderEmpty(other, NULL);
++            done++;
++        }
++    }
++    guiMsgBoxSound(failed ? SFX_ERROR : SFX_SAVE);
++    if (failed)
++        snprintf(msg, sizeof(msg), _t("BIBLE was copied for %d other regions, and %d would not take it. DIAG.TXT beside RIPPS2 has what the card said."), done, failed);
++    else if (add)
++        snprintf(msg, sizeof(msg), _t("This card now starts BIBLE on consoles of every region. Each has its own folder in the browser, holding only its boot file. The settings and boot sound stay in one."));
++    else
++        snprintf(msg, sizeof(msg), _t("BIBLE's copies for the other regions are gone. This card starts it on consoles of this region."));
++    guiMsgBox(msg, 0, NULL);
 +}
 +#endif
 +
  // build 138: the bind and the writes, inside the bind's own IOP session (blInstallOn, below): only the memory card and pad
  // drivers are up, as KELFBinder has it, so nothing else talks to an SD2PSX or MMCE card while it logs in and binds
  static void blInstallBound(int port, const blWhere_t *w, const char *alt)
-@@ -1341,7 +1529,11 @@ static void blInstallBound(int port, const blWhere_t *w, const char *alt)
+@@ -1341,7 +1693,11 @@ static void blInstallBound(int port, const blWhere_t *w, const char *alt)
                  ripps2Diag("bible: mc%d bind header: %d (size %d)", port, h, (int)hsize);
                  memcpy(buf, kelf, kelfSize);
              }
@@ -975,14 +1139,13 @@ index 863aef6..6899aa0 100644
              ripps2Diag("bible: mc%d bind try %d: %s", port, tries + 1, bound ? "bound" : "refused");
          }
      }
-@@ -1416,6 +1608,16 @@ static void blInstallBound(int port, const blWhere_t *w, const char *alt)
+@@ -1416,6 +1772,15 @@ static void blInstallBound(int port, const blWhere_t *w, const char *alt)
      if (mcSetFileInfo(port, 0, path, &info, sceMcFileInfoAttr) == 0)
          mcSync(0, NULL, &fd);
  
 +#ifdef RIPPS2_BIBLE_ONE_FOLDER
 +    (void)len;
-+    snprintf(conf, sizeof(conf), "mc%d:/%s/PS2BBL.INI", port, blSysFolder); // for the message that says it is done
-+    if (!blOneFolder(port, alt, backupKelf)) {
++    if (!blOneFolder(port, alt, backupKelf, conf, sizeof(conf))) {
 +        guiMsgBoxSound(SFX_ERROR);
 +        snprintf(msg, sizeof(msg), _t("BIBLE is on memory card %d, but its settings (mc%d:/%s/PS2BBL.INI) could not be written, so it starts the browser. Free some space and run MANAGE again to finish."), port, port, blSysFolder);
 +        guiMsgBox(msg, 0, NULL);
@@ -992,7 +1155,7 @@ index 863aef6..6899aa0 100644
      // its config: one the card already has stays (a PS2BBL owner's own); else BIBLE's
      snprintf(dir, sizeof(dir), "mc%d:/PS2BBL", port);
      snprintf(conf, sizeof(conf), "%s/CONFIG.INI", dir);
-@@ -1451,6 +1653,7 @@ static void blInstallBound(int port, const blWhere_t *w, const char *alt)
+@@ -1451,6 +1816,7 @@ static void blInstallBound(int port, const blWhere_t *w, const char *alt)
                  ripps2Diag("bible: %s could not be written", sysConf);
          }
      }
@@ -1000,7 +1163,7 @@ index 863aef6..6899aa0 100644
  
      // BOOT LOCK on, with the chosen path, in this config and every other one PS2BBL might read
      // first (a drive's and slot 2's come before slot 1's)
-@@ -1894,7 +2097,7 @@ static int blHddHasBackup(void)
+@@ -1894,7 +2260,7 @@ static int blHddHasBackup(void)
  // written, taken only with START
  static void blInstall(void)
  {
@@ -1009,12 +1172,12 @@ index 863aef6..6899aa0 100644
      const char *list[8];
      int ports[8], n = 0, port, pick, bootPort, current = -1, hdd = blHddUsable();
      blWhere_t where[5];
-@@ -2049,9 +2252,15 @@ static void blInstall(void)
+@@ -2049,9 +2415,15 @@ static void blInstall(void)
          if (blDirExists(sysDir) && !(c->bible && !c->plain && !strcmp(c->folder, blSysFolder)))
              o += snprintf(msg + o, sizeof(msg) - o, _t("- %s (%s) moves to a backup folder first, whole.\n"), sysDir, _t(blKindName[c->kind]));
          if (o < (int)sizeof(msg))
 +#ifdef RIPPS2_BIBLE_ONE_FOLDER
-+            o += snprintf(msg + o, sizeof(msg) - o, _t("- BIBLE is bound to this card by the console and written as %s/%s, starting RIPPS2 where it is (%s), BOOT LOCK on. RIPPS2 itself is not copied.\n- Everything BIBLE keeps on this card goes in that one folder: its settings and the boot sound. SYS-CONF, PS2BBL and BIBLE's copies for other regions go when they hold nothing else.\n"
++            o += snprintf(msg + o, sizeof(msg) - o, _t("- BIBLE is bound to this card by the console and written as %s/%s, starting RIPPS2 where it is (%s), BOOT LOCK on. RIPPS2 itself is not copied.\n- This card keeps one settings file and one boot sound, in one folder. SYS-CONF and PS2BBL go when they hold nothing else. BIBLE's copies for other regions stay, updated too.\n"
 +                                                    "The I/O processor restarts for this and every drive read stops until it is done; music and drives come back after. Keep the card in and the console on until it says done."),
 +                          sysDir, blSysFile, where[pick].path);
 +#else
@@ -1025,7 +1188,7 @@ index 863aef6..6899aa0 100644
      }
      guiMsgBoxSound(SFX_MESSAGE);
      guiMsgBoxStartOption(_t("SET UP BIBLE"));
-@@ -2152,7 +2361,6 @@ static const blSet_t blSets[] = {
+@@ -2152,7 +2524,6 @@ static const blSet_t blSets[] = {
      {"KEY_READ_WAIT_TIME", N_("Power-on Wait"), 6, {"0", "1000", "2000", "3000", "6000", "10000"}, {"0 ms", "1000 ms", "2000 ms", "3000 ms", "6000 ms", "10000 ms"}, -1},
      {"DISC_STOP", N_("Stop Disc at Launch"), 2, {"0", "1"}, {N_("Off"), N_("On")}, 1},
      {"EJECT_TRAY", N_("Eject Tray at Launch"), 2, {"0", "1"}, {N_("Off"), N_("On")}, 0},
@@ -1033,18 +1196,24 @@ index 863aef6..6899aa0 100644
      {"APP_GAMEID", N_("Game ID for Apps"), 2, {"0", "1"}, {N_("Off"), N_("On")}, 1},
      {"CDROM_DISABLE_GAMEID", N_("Game ID for Discs"), 2, {"1", "0"}, {N_("Off"), N_("On")}, 1}, // the key says "disable"
      {"VIDEO_MODE", "Video Mode", 7, {"AUTO", "NTSC", "PAL", "480P", "576P", "720P", "1080I"}, {N_("Auto"), "NTSC", "PAL", "480p", "576p", "720p", "1080i"}, 0},
-@@ -2172,7 +2380,9 @@ static int blSettingsFile(int boot)
+@@ -2172,6 +2543,16 @@ static int blSettingsFile(int boot)
      for (i = -1; i < 2; i++) {
          port = i < 0 ? boot : i;
          if (port >= 0 && blCards[port].present && blCards[port].bible) {
--            snprintf(blSetPath, sizeof(blSetPath), "mc%d:/SYS-CONF/PS2BBL.INI", port);
-+            snprintf(blSetPath, sizeof(blSetPath), "mc%d:/%s/PS2BBL.INI", port, blSysFolder); // build 144: its one folder
-+            if (!blSysFolder[0] || !blFileExists(blSetPath))
-+                snprintf(blSetPath, sizeof(blSetPath), "mc%d:/SYS-CONF/PS2BBL.INI", port);
++            int f;
++            // build 144: the card's one settings file: this console's folder first, then another region's, as BIBLE looks
++            snprintf(blSetPath, sizeof(blSetPath), "mc%d:/%s/PS2BBL.INI", port, blSysFolder);
++            if (blSysFolder[0] && blFileExists(blSetPath))
++                return 1;
++            for (f = 0; blSysFolders[f] != NULL; f++) {
++                snprintf(blSetPath, sizeof(blSetPath), "mc%d:/%s/PS2BBL.INI", port, blSysFolders[f]);
++                if (blFileExists(blSetPath))
++                    return 1;
++            }
+             snprintf(blSetPath, sizeof(blSetPath), "mc%d:/SYS-CONF/PS2BBL.INI", port);
              return 1;
          }
-     }
-@@ -2657,7 +2867,6 @@ static const struct
+@@ -2657,7 +3038,6 @@ static const struct
      {"KEY_READ_WAIT_TIME", N_("How long BIBLE waits for a button before the Auto path. At 0 ms a button held from power on still works.")},
      {"DISC_STOP", N_("On stops the disc at a launch and waits for the drive to answer. Off skips that wait, about 3 s in the lab, and a disc in the tray keeps spinning.")},
      {"EJECT_TRAY", N_("When a button starts a disc and the tray is empty, On opens the tray for you.")},
@@ -1052,19 +1221,19 @@ index 863aef6..6899aa0 100644
      {"APP_GAMEID", N_("On shows a program's game ID on screen as it starts, for RetroGEM video mods. It is up to 11 characters from the file name.")},
      {"CDROM_DISABLE_GAMEID", N_("On shows a disc's game ID on screen as it starts, for RetroGEM video mods.")},
      {"VIDEO_MODE", N_("The signal BIBLE starts in. Auto uses RIPPS2's Video Mode when its settings are on a memory card, and the console's own mode when they are not.")},
-@@ -2688,9 +2897,9 @@ static int blSkyState(char *val, int size)
+@@ -2688,9 +3068,9 @@ static int blSkyState(char *val, int size)
      return -2;
  }
  
 -enum { BLR_SETUP = -1, BLR_SKY = -2, BLR_BOOT = -3, BLR_KEYS = -4, BLR_FILE = -5 }; // 0 and up: a row of blSets
-+enum { BLR_SETUP = -1, BLR_SKY = -2, BLR_BOOT = -3, BLR_KEYS = -4, BLR_FILE = -5, BLR_LOCK = -6 }; // 0 and up: a row of blSets
++enum { BLR_SETUP = -1, BLR_SKY = -2, BLR_BOOT = -3, BLR_KEYS = -4, BLR_FILE = -5, BLR_LOCK = -6, BLR_REGIONS = -7 }; // 0 and up: a row of blSets
  
 -#define BL_ROWS (BL_SETS + 5)
-+#define BL_ROWS (BL_SETS + 6)
++#define BL_ROWS (BL_SETS + 7)
  
  // Boot Sound changed here: as Audio does when it closes
  static void blBootSoundClose(int changed)
-@@ -2770,14 +2979,14 @@ static void blBibleMenu(int boot, int removed)
+@@ -2770,14 +3150,14 @@ static void blBibleMenu(int boot, int removed)
                      snprintf(own[n], sizeof(own[n]), "%s", _t(ripps2PaletteName(state)));
                  } else {
                      snprintf(text, sizeof(text), "%s", val);
@@ -1083,7 +1252,7 @@ index 863aef6..6899aa0 100644
                  rows[n].sky = sscanf(text, "%6x,%6x,%6x", &sky[0], &sky[1], &sky[2]) == 3 ? sky : NULL;
                  n++;
              }
-@@ -2791,6 +3000,15 @@ static void blBibleMenu(int boot, int removed)
+@@ -2791,6 +3171,29 @@ static void blBibleMenu(int boot, int removed)
                  n++;
              }
          }
@@ -1096,13 +1265,45 @@ index 863aef6..6899aa0 100644
 +        rows[n].confirm = _t("NEXT VALUE");
 +        rows[n].steps = 1;
 +        n++;
++#ifdef RIPPS2_BIBLE_ONE_FOLDER
++        for (port = 0; port < 2; port++)
++            if (blCards[port].present && blCards[port].bible && !blCards[port].plain && blCards[port].boots) {
++                kind[n] = BLR_REGIONS;
++                snprintf(own[n], sizeof(own[n]), "%d / 3", blRegionCount(port));
++                rows[n].label = _t("Other Regions");
++                rows[n].value = own[n];
++                rows[n].tip = _t("BIBLE for consoles of other regions, on this card. Each region has its own folder in the browser, holding only its boot file. The settings and boot sound stay in one. A card for one console does not need them.");
++                rows[n].confirm = _t("ADD OR REMOVE");
++                rows[n].steps = 1;
++                n++;
++                break;
++            }
++#endif
          kind[n] = BLR_KEYS;
          snprintf(own[n], sizeof(own[n]), "%d / %d", have ? blKeysSet() : 0, BL_KEYS);
          rows[n].label = _t("Launch Keys");
-@@ -2826,6 +3044,18 @@ static void blBibleMenu(int boot, int removed)
+@@ -2826,6 +3229,36 @@ static void blBibleMenu(int boot, int removed)
              }
              continue;
          }
++#ifdef RIPPS2_BIBLE_ONE_FOLDER
++        if (k == BLR_REGIONS) {
++            if (!blIniFlush()) {
++                blIniFailed();
++                continue;
++            }
++            for (port = 0; port < 2; port++)
++                if (blCards[port].present && blCards[port].bible && !blCards[port].plain && blCards[port].boots) {
++                    blRegionsSet(port, blRegionCount(port) < 3);
++                    break;
++                }
++            have = blSettingsFile(boot);
++            if (have)
++                have = blRead(blSetPath) >= 0;
++            blDirty = 0;
++            continue;
++        }
++#endif
 +        if (k == BLR_LOCK) {
 +            if (!blIniFlush()) {
 +                blIniFailed();
@@ -1118,7 +1319,7 @@ index 863aef6..6899aa0 100644
          if (k == BLR_BOOT) {
              gEnableBootSND = (gEnableBootSND + action + 3) % 3;
              bootChanged = 1;
-@@ -2851,6 +3081,33 @@ static void blBibleMenu(int boot, int removed)
+@@ -2851,6 +3284,33 @@ static void blBibleMenu(int boot, int removed)
              have = blRead(blSetPath) >= 0;
              continue;
          }
@@ -1152,7 +1353,7 @@ index 863aef6..6899aa0 100644
          if (k == BLR_SKY) {
              char text[32];
              int state = blSkyState(val, sizeof(val));
-@@ -2892,7 +3149,7 @@ void ripps2BibleManage(void)
+@@ -2892,7 +3352,7 @@ void ripps2BibleManage(void)
  
  static void blManageCards(int boot, int removed)
  {

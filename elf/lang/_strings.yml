@@ -1501,6 +1501,9 @@ strings:
 - en: '%s cannot start RIPPS2 from where it is now (%s), and RIPPS2 does not copy itself. Put RIPPS2.ELF on a memory card or a USB drive and start it from there.'
   in:
   - ripps2boot.c
+- en: '%s is not there, so there is nothing to copy. Set up BIBLE on this card first.'
+  in:
+  - ripps2boot.c
 - en: '%s, path %d'
   in:
   - ripps2boot.c
@@ -1528,7 +1531,7 @@ strings:
   - ripps2boot.c
 - en: '- BIBLE is bound to this card by the console and written as %s/%s, starting RIPPS2 where it is (%s), BOOT LOCK on. RIPPS2 itself is not copied.
 
-    - Everything BIBLE keeps on this card goes in that one folder: its settings and the boot sound. SYS-CONF, PS2BBL and BIBLE''s copies for other regions go when they hold nothing else.
+    - This card keeps one settings file and one boot sound, in one folder. SYS-CONF and PS2BBL go when they hold nothing else. BIBLE''s copies for other regions stay, updated too.
 
     The I/O processor restarts for this and every drive read stops until it is done; music and drives come back after. Keep the card in and the console on until it says done.'
   in:
@@ -1541,6 +1544,9 @@ strings:
   in:
   - ripps2boot.c
 - en: A BIBLE COMMAND
+  in:
+  - ripps2boot.c
+- en: ADD OR REMOVE
   in:
   - ripps2boot.c
 - en: ARGUMENTS
@@ -1583,6 +1589,9 @@ strings:
 - en: BIBLE could not write the HDD's boot program (step %d). %s
   in:
   - ripps2boot.c
+- en: BIBLE for consoles of other regions, on this card. Each region has its own folder in the browser, holding only its boot file. The settings and boot sound stay in one. A card for one console does not need them.
+  in:
+  - ripps2boot.c
 - en: BIBLE hands these to the program, in this order.
   in:
   - ripps2boot.c
@@ -1607,7 +1616,13 @@ strings:
 - en: BIBLE ran out of memory. Nothing on the memory card was changed.
   in:
   - ripps2boot.c
+- en: BIBLE was copied for %d other regions, and %d would not take it. DIAG.TXT beside RIPPS2 has what the card said.
+  in:
+  - ripps2boot.c
 - en: BIBLE's Settings
+  in:
+  - ripps2boot.c
+- en: BIBLE's copies for the other regions are gone. This card starts it on consoles of this region.
   in:
   - ripps2boot.c
 - en: BIBLE's credits
@@ -1775,6 +1790,9 @@ strings:
 - en: Opens the file itself in the text editor, comments and all. Every change here keeps the other lines as they are.
   in:
   - ripps2boot.c
+- en: Other Regions
+  in:
+  - ripps2boot.c
 - en: PICK A COLOR
   in:
   - ripps2boot.c
@@ -1847,6 +1865,9 @@ strings:
 - en: 'RIPPS2: Setting up BIBLE (binding PS2BBL to the memory card)'
   in:
   - ripps2boot.c
+- en: 'RIPPS2: Setting up BIBLE (its copies for other regions)'
+  in:
+  - ripps2boot.c
 - en: 'RIPPS2: Setting up BIBLE (putting back what was there)'
   in:
   - ripps2boot.c
@@ -1913,6 +1934,9 @@ strings:
 - en: The disc, without the PS2 logo
   in:
   - ripps2boot.c
+- en: The memory card in slot %d has %d KB free, and BIBLE for the other regions needs %d KB. Free some space, then try again.
+  in:
+  - ripps2boot.c
 - en: The memory card in slot %d has %d KB free, and BIBLE needs %d KB there. Free some space, then try again.
   in:
   - ripps2boot.c
@@ -1962,6 +1986,9 @@ strings:
   in:
   - ripps2boot.c
 - en: This HDD has no __sysconf partition, so BIBLE's config has to go on a memory card (PS2BBL reads a card's first), and there is none in either slot. Insert one, then try again.
+  in:
+  - ripps2boot.c
+- en: This card now starts BIBLE on consoles of every region. Each has its own folder in the browser, holding only its boot file. The settings and boot sound stay in one.
   in:
   - ripps2boot.c
 - en: This console has ROM %d.%02d. Many consoles from ROM 2.30 on no longer run system updates, so a BIBLE bound here may not start at power on. If it does not, start BIBLE as a plain ELF through OpenTuna or FunTuna instead.
